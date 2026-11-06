@@ -1,0 +1,1 @@
+function e({root:e}){e.dataset.styleAtSetup=getComputedStyle(e).getPropertyValue(`--card-ready`).trim()}export{e as setup};

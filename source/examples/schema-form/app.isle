@@ -1,0 +1,25 @@
+schema Registration {
+  email: string minLength(3) maxLength(80) format("email");
+  confirmation: string minLength(3) sameAs(email);
+  age: number min(18) max(120) integer();
+  accepted: boolean equals(true);
+}
+
+view Registered { email: string; }
+export server action register(input: Registration): Registered
+  using request: RequestContext
+  authorize grant = policy.signup(request, input.email)
+  validate accounts.available effects { db.read }
+  effects { db.write }
+{ return await accounts.register(grant, input.email); }
+
+export client component SchemaSignup() {
+  <form schema="Registration" submit="register" aria-label="Create account">
+    <label>Email (required)<input name="email" autocomplete="email" /></label>
+    <label>Confirm email (required)<input name="confirmation" /></label>
+    <label>Age (required)<input name="age" value="21" /></label>
+    <label><input name="accepted" />I agree (required)</label>
+    <button type="submit">Create account</button>
+    <button type="reset">Reset</button>
+  </form>
+}

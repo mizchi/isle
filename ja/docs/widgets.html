@@ -1,0 +1,143 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="widget を使う"><title>widget を使う · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/widgets.html"><meta property="og:title" content="widget を使う · Isle"><meta property="og:type" content="website"><meta property="og:description" content="widget を使う"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html" aria-current="page">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/widgets.md">ソースで読む ↗</a></div><h1 id="widget-を使う">widget を使う</h1>
+<p>Isle の widget は、Custom Element の Shadow DOM に SSR HTML と分割コードを読み込みます。別サイトへ複数配置でき、widget ごとの状態・フォーム・CSS を分離します。iframe は使いません。</p>
+<h2 id="公開デモを埋め込む">公開デモを埋め込む</h2>
+<p>次の HTML を埋め込み先のページに追加します。ビルド環境なしで試せます。デモの保存操作は画面へ反映するだけで、DB には永続化しません。</p>
+<div class="code-block"><div class="code-language">html</div><pre tabindex="0"><code>&lt;isle-widget
+  src=&quot;https://isle-widget.mizchi.workers.dev/&quot;
+  role=&quot;region&quot; aria-label=&quot;Work planner&quot;
+  width=&quot;640&quot; height=&quot;640&quot; loading=&quot;lazy&quot;
+  style=&quot;display:block;width:640px;height:640px;max-width:100%;overflow:auto;contain:layout paint style;border:0;box-sizing:border-box&quot;
+&gt;
+  &lt;a href=&quot;https://isle-widget.mizchi.workers.dev/&quot;&gt;Open Work planner&lt;/a&gt;
+&lt;/isle-widget&gt;
+&lt;script type=&quot;module&quot;
+  src=&quot;https://isle-widget.mizchi.workers.dev/widget.js&quot;
+  crossorigin=&quot;anonymous&quot;&gt;&lt;/script&gt;</code></pre></div>
+<p><strong>寸法 CSS は最初の HTML に含めてください。</strong> Custom Element の <code>width</code> / <code>height</code> 属性だけでは領域を予約できません。上の例はコード到着前から640×640pxを確保し、狭い親では幅だけ縮めます。内容は内部でスクロールし、高さを自動変更しません。</p>
+<p><code>loading=&quot;lazy&quot;</code> は viewport の200px手前で descriptor の取得を始めます。すぐ使う配置は <code>loading=&quot;eager&quot;</code> にします。この属性は widget の取得開始の指定で、内部コードの <code>loading: &#39;eager&#39;</code> とは別です。</p>
+<p>同じページに複数置く場合は、タグを必要な数だけ追加します。同じ SDK の module script は一つで構いません。状態や close の影響は widget ごとに分離されます。JavaScript が無効な場合は固定領域内にリンクが残ります。</p>
+<h2 id="shared-と-standalone-を選ぶ">shared と standalone を選ぶ</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>配布モード</th>
+<th>動作</th>
+<th>選ぶ場面</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>shared（既定）</td>
+<td>ページ内で同じ版・ABI の runtime を一つにします</td>
+<td>複数 widget の共通コードを共有するとき</td>
+</tr>
+<tr>
+<td>standalone</td>
+<td>配布物自身の runtime を使います</td>
+<td>ページ側の共有 runtime と独立して動かすとき</td>
+</tr>
+</tbody></table>
+</div><p>shared は runtime の版を文字列の完全一致で照合します。patch の違いも拒否し、同じ family の ABI や diagnostics / profile 設定の違いも拒否します。不一致の SDK は vendor の取得・タグ定義を始めず、すでに動いている widget は維持します。standalone へ自動的に切り替わることはありません。</p>
+<p>standalone は共有 pool に参加しないため、別の版の shared と併用できます。分割チャンクと必要な API を含む配布ディレクトリを配信する方式です。異なる standalone 版を同じページに置くときは、版ごとに異なるタグ名でビルドします。同じ Window で定義済みのタグを別の版へ差し替えることはできません。</p>
+<p>公開デモの standalone は以下から使えます。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>import { renderWidgetEmbed } from &#39;./lib/widget.mjs&#39;;
+
+const html = renderWidgetEmbed({
+  src: &#39;https://isle-widget.mizchi.workers.dev/standalone/&#39;,
+  runtime: &#39;standalone&#39;,
+  title: &#39;Work planner&#39;, width: 640, height: 640,
+});</code></pre></div>
+<p>この helper はリポジトリの Node 側で使います。<code>&lt;isle-widget-standalone&gt;</code> と <code>/standalone/widget.js</code> を参照するタグを生成します。<code>runtime</code> は既定のタグ名を選ぶ指定で、配信 URL も caller が standalone のものに変えます。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just widget-embed https://isle-widget.mizchi.workers.dev/ 640 640
+just widget-embed https://isle-widget.mizchi.workers.dev/standalone/ 640 640 standalone</code></pre></div>
+<p>CLI は HTML を標準出力します。width / height は1〜8192の整数 CSS pixel を指定します。<code>auto</code> や百分率は受け付けません。</p>
+<h2 id="自分のアプリを-widget-にする">自分のアプリを widget にする</h2>
+<p><a href="/isle/ja/docs/getting-started.html">最初の Counter</a>の <code>isle()</code> に <code>widget</code> を追加します。以下は plugin オプションの抜粋です。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>widget: {
+  runtime: &#39;shared&#39;,
+  tagName: &#39;my-counter&#39;,
+  descriptorFile: &#39;widget.json&#39;,
+  loaderFile: &#39;widget.js&#39;,
+  template: &#39;&lt;section&gt;&lt;!--isle:ssr--&gt;&lt;/section&gt;&#39;,
+  css: &#39;:host{color:#182b3b}section{font:18px/1.6 system-ui;padding:16px}button{font:inherit;min-height:44px;padding:8px 16px}&#39;,
+},</code></pre></div>
+<p><code>template</code> は <code>&lt;!--isle:ssr--&gt;</code> を一つ含む HTML fragment です。<code>widget.css</code> は Shadow DOM 内へ出力します。ページの stylesheet は Shadow DOM 内に届かないため、widget 用 CSS を明示します。通常の CSS による描画で、<code>inline(css)</code> や専用 CSS 最適化構文はまだ使えません。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>pnpm exec vite build --config examples/hello/vite.config.mjs</code></pre></div>
+<p><code>dist-hello/</code> に、通常ページに加えて <code>widget.js</code>、<code>widget.json</code>、必要な assets を生成します。Counter だけなら server API は不要です。配布先が <code>https://cdn.example/counter/</code> なら、次のようにタグ名・配信 URL を指定します。URL は自分の配信先へ置き換えてください。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>renderWidgetEmbed({
+  src: &#39;https://cdn.example/counter/&#39;,
+  tagName: &#39;my-counter&#39;,
+  title: &#39;Counter&#39;, width: 320, height: 240,
+});</code></pre></div>
+<p>独立配布にする場合は <code>widget.runtime: &#39;standalone&#39;</code> に変えます。独自の <code>tagName</code> はそのまま利用でき、helper 側も同じ名前に合わせます。shared と standalone を両方提供する場合は、別の出力ディレクトリ・タグ名でビルドしてください。<a href="/isle/source/examples/worker-widget/build.mjs">Worker の例</a>は両方を生成しています。</p>
+<p>版の既定値はルートの <code>package.json.version</code> です。配布版を明示する場合は <code>widget.runtimeVersion</code> を指定します。同じ版を名乗る配布物には同じ runtime 実装・ABI を使ってください。</p>
+<p>descriptor は SDK と同じビルドのものを配信します。runtime の版・配布モードが一致しなければ HTML の展開前に拒否し、取得した mount module も mount 前に照合します。</p>
+<h2 id="sdk-と-descriptor-を別パスへ置く">SDK と descriptor を別パスへ置く</h2>
+<p>ファイル名やサブディレクトリは変更できます。<code>src</code> の代わりに descriptor と loader の URL を明示します。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>renderWidgetEmbed({
+  descriptorURL: &#39;https://cdn.example/pkg/components/counter.json&#39;,
+  loaderURL: &#39;https://cdn.example/pkg/sdk/counter.js&#39;,
+  tagName: &#39;my-counter&#39;,
+  href: &#39;https://cdn.example/pkg/&#39;,
+  title: &#39;Counter&#39;, width: 320, height: 240,
+});</code></pre></div>
+<p>URL とタグ名はビルド設定に合わせます。descriptor 内の module / preload / action の相対 URL は、埋め込み先のページではなく descriptor 自身を基準に解決します。アプリ固有のファイルを同じ相対配置で配信できます。</p>
+<h2 id="自分で-mount解除する">自分で mount・解除する</h2>
+<p>既存の container に ShadowRoot を作り、SDK の <code>mountWidget()</code> を呼べます。次はブラウザー側の module です。</p>
+<div class="code-block"><div class="code-language">html</div><pre tabindex="0"><code>&lt;div id=&quot;counter&quot; style=&quot;width:320px;height:240px;max-width:100%;overflow:auto&quot;&gt;&lt;/div&gt;
+&lt;script type=&quot;module&quot;&gt;
+  try {
+    const sdk = await import(&#39;https://cdn.example/counter/widget.js&#39;);
+    const root = document.querySelector(&#39;#counter&#39;).attachShadow({ mode: &#39;open&#39; });
+    const controller = await sdk.mountWidget(root, &#39;https://cdn.example/counter/widget.json&#39;, {
+      onError: error =&gt; console.error(error),
+    });
+    // 画面から取り外すときに controller.close() を呼びます。
+  } catch (error) {
+    console.error(&#39;Widget を読み込めませんでした&#39;, error);
+  }
+&lt;/script&gt;</code></pre></div>
+<p>この場合、寸法と解除のタイミングは caller が管理します。<code>close()</code> は listener と所有権を解放し、表示中の HTML は残します。同じ root へ同時に二重 mount はできません。待機中の読み込みも中止したい場合は <code>signal</code> に AbortController の signal を渡します。SDK を import すると、その配布物の Custom Element も定義されます。</p>
+<h2 id="配信と-server-action">配信と server action</h2>
+<p>別 origin から取得する JS・descriptor は CORS に対応させます。action や非同期検証を使う widget は、provider の API を <code>widget.actionBaseURL</code> に指定し、その API 側にも埋め込み先を許可する CORS と認可が必要です。widget の RPC は Cookie を送らない構成です。通常ページの同一 origin の認証をそのまま移す指定ではありません。</p>
+<p>Web Component の JS は埋め込み先ページの権限で実行されます。Shadow DOM は DOM / CSS のスコープなので、信頼する provider のコードを埋め込んでください。CSP を設定している親ページでは、配信 origin を script-src / connect-src に許可し、現在使っている inline style にも対応させます。</p>
+<p>Cloudflare Workers のサンプルは以下で確認できます。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just widget-dev</code></pre></div>
+<p>別のターミナルから親ページを起動します。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just widget-host</code></pre></div>
+<p><a href="http://localhost:8788/">http://localhost:8788/</a> が、<a href="http://127.0.0.1:8787/">http://127.0.0.1:8787/</a> の widget を埋め込みます。配備・API・CSP の設定は <a href="/isle/ja/docs/worker-widget.html">Workers の手順</a>を参照してください。Cloudflare を使わない構成は <a href="/isle/source/examples/portable-widget/server.mjs">Node の配信例</a>にあります。</p>
+<h2 id="読み込めないとき">読み込めないとき</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>症状</th>
+<th>確認すること</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>タグが初期リンクのまま</td>
+<td>SDK の404・CORS・CSP・import の version / ABI エラーを確認します</td>
+</tr>
+<tr>
+<td><code>data-widget-status=&quot;error&quot;</code></td>
+<td>タグの <code>isle:error</code> の detail と descriptor / module の応答を確認します</td>
+</tr>
+<tr>
+<td>別の版の SDK が拒否された</td>
+<td>ページ内の shared を同じ版に揃えるか、別タグの standalone を明示的に使います</td>
+</tr>
+<tr>
+<td>standalone のタグが定義されない</td>
+<td>SDK・タグ名・descriptor を同じ配布モードに揃えます</td>
+</tr>
+<tr>
+<td>予約領域がなく、読み込みでページが動く</td>
+<td>初期 HTML の寸法 CSS と、それを上書きする親の style を確認します</td>
+</tr>
+<tr>
+<td>保存だけ失敗する</td>
+<td><code>actionBaseURL</code>、API の CORS、入力制約、server policy を確認します</td>
+</tr>
+</tbody></table>
+</div><p>共有 SDK からは <code>runtimeIdentity</code> と <code>sharedRuntimeInfo()</code> を取得できます。SDK 自体の import が拒否される場合は、上の命令的 mount のように import の例外を扱います。タグ定義前の失敗は <code>isle:error</code> の通知より前に起きます。</p>
+<p><a href="/isle/ja/docs/index.html">ユーザーガイド</a> · <a href="/isle/ja/docs/widget-architecture.html">配布の詳細設計</a> · <a href="/isle/ja/docs/worker-widget.html">Workers の手順</a></p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

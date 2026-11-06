@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "coverage": "generated-handler-operations",
+  "exclusions": [
+    "browser style/layout/paint duration",
+    "runtime internals and DOM locator traversal",
+    "network/server duration",
+    "HTTP cache and bootstrap transfer",
+    "host wrappers and metadata script elements"
+  ],
+  "components": [
+    {
+      "component": "Notice",
+      "schemaId": "50f6bad8b9e42997",
+      "side": "universal",
+      "localElements": 1,
+      "childSites": [],
+      "restore": {
+        "owners": 0,
+        "snapshotSlots": 0,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "entries": []
+    }
+  ],
+  "entries": [],
+  "scenario": {
+    "mode": "ssr",
+    "mounts": [
+      {
+        "component": "Notice",
+        "mode": "ssr"
+      }
+    ],
+    "domElements": 1,
+    "resumableOwners": 0,
+    "snapshotSlots": 0,
+    "components": {
+      "Notice": {
+        "instances": 1,
+        "resumableInstances": 0
+      }
+    }
+  },
+  "planId": "b6e1f82506a7e443",
+  "budget": {
+    "ok": true,
+    "checks": []
+  },
+  "ok": true
+}

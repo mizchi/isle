@@ -1,0 +1,38 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Branches, keyed lists and errors"><title>Branches, keyed lists and errors · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/examples/control-flow/index.html"><meta property="og:title" content="Branches, keyed lists and errors · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Branches, keyed lists and errors"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/ja/examples/control-flow/">日本語</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/examples/">All examples</a> / control-flow</p><span class="tag live-tag">Live on Pages</span><h1>Branches, keyed lists and errors</h1><p class="lead">Switch branches, reorder keyed rows, then empty the list to reach @empty and synchronous @catch.</p><div class="hero-actions"><a class="button primary" href="/isle/demos/control-flow/">Open live demo ↗</a><a class="button secondary" href="https://github.com/mizchi/isle/blob/main/examples/control-flow">GitHub source ↗</a></div><div class="doc-content example-description"><p>Source / ソース: <a href="/isle/source/examples/control-flow/app.isle">app.isle</a> · <a href="/isle/source/examples/control-flow/vite.config.mjs">vite.config.mjs</a></p>
+<p>Switch branches, reorder keyed rows, then empty the list to reach @empty and synchronous @catch. Reverse only while there are two rows; use Restore rows after emptying. @try catches synchronous render failures, not arbitrary Promise or server mutations.</p>
+<p>From a repository checkout, run at the repository root:</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just example control-flow</code></pre></div>
+<p>Open <a href="http://127.0.0.1:4323/">http://127.0.0.1:4323/</a>.</p>
+<p>Check: <code>just examples-check</code>. For a consumer app, install the package and use the <a href="/isle/docs/quick-start.html#quick-start">npm setup</a>; the source files here show the feature and its configuration.</p>
+</div><h2>Read the implementation</h2><details class="source-details"><summary>app.isle</summary><pre tabindex="0"><code>schema Item { id: string; title: string; }
+component Row(item: Item) { &lt;li data-key={item.id}&gt;{item.title}&lt;/li&gt; }
+
+client component List(initial: Item[]) {
+  state items: Item[] = initial;
+  state visible = true;
+  state mode = &quot;list&quot;;
+  &lt;section&gt;
+    &lt;button type=&quot;button&quot;&gt;on click hide { visible = false; }Hide&lt;/button&gt;
+    &lt;button type=&quot;button&quot;&gt;on click show { visible = true; }Show&lt;/button&gt;
+    &lt;button type=&quot;button&quot;&gt;on click reverse { items = [items[1], items[0]]; }Reverse rows&lt;/button&gt;
+    &lt;button type=&quot;button&quot;&gt;on click empty { items = []; }Empty list&lt;/button&gt;
+    &lt;button type=&quot;button&quot;&gt;on click restore { items = initial; }Restore rows&lt;/button&gt;
+    &lt;button type=&quot;button&quot;&gt;on click summary { mode = &quot;summary&quot;; }Summary&lt;/button&gt;
+    @if (visible) { &lt;p data-visibility=&quot;&quot;&gt;Visible&lt;/p&gt; }
+    @else { &lt;p data-visibility=&quot;&quot;&gt;Hidden&lt;/p&gt; }
+    @switch (mode) {
+      @case &quot;list&quot;: { &lt;p data-mode=&quot;&quot;&gt;List view&lt;/p&gt; }
+      @case &quot;summary&quot;: { &lt;p data-mode=&quot;&quot;&gt;Summary view&lt;/p&gt; }
+      @default: { &lt;p data-mode=&quot;&quot;&gt;Other view&lt;/p&gt; }
+    }
+    &lt;ul&gt;@for (const item of items; key item.id) { &lt;Row item={item} /&gt; }
+    @empty { &lt;li&gt;No rows&lt;/li&gt; }&lt;/ul&gt;
+    @try { &lt;p data-first=&quot;&quot;&gt;First: {items[0].title}&lt;/p&gt; }
+    @catch (error) { &lt;p data-error=&quot;&quot;&gt;No first row: {error}&lt;/p&gt; }
+  &lt;/section&gt;
+}
+</code></pre></details><details class="source-details"><summary>vite.config.mjs</summary><pre tabindex="0"><code>import { exampleConfig } from &#39;../_shared/vite.mjs&#39;;
+export default exampleConfig(import.meta.url, {
+  mounts: [{ component: &#39;List&#39;, props: { initial: [{ id: &#39;a&#39;, title: &#39;Alpha&#39; }, { id: &#39;b&#39;, title: &#39;Beta&#39; }] }, label: &#39;Control flow&#39; }],
+});
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/">Isle</a><p>Built with Isle. Static pages, resumable interactions.</p></div><nav aria-label="Footer navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

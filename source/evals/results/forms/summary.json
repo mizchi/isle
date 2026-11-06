@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "pass": true,
+  "gates": [
+    {
+      "name": "integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "name": "copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "name": "scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "name": "handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "name": "interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "name": "contrast",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "name": "touch",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "name": "focus",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    }
+  ]
+}

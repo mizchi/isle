@@ -1,0 +1,725 @@
+{
+  "version": 1,
+  "coverage": "generated-handler-operations",
+  "exclusions": [
+    "browser style/layout/paint duration",
+    "runtime internals and DOM locator traversal",
+    "network/server duration",
+    "HTTP cache and bootstrap transfer",
+    "host wrappers and metadata script elements"
+  ],
+  "components": [
+    {
+      "component": "Search",
+      "schemaId": "e4744e331ad4b78b",
+      "side": "client",
+      "localElements": 4,
+      "childSites": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 1,
+        "bindingLocators": 2,
+        "childOwners": 0
+      },
+      "entries": [
+        {
+          "id": "Search.edit",
+          "component": "Search",
+          "event": "input",
+          "async": false,
+          "source": {
+            "start": 119,
+            "end": 157
+          },
+          "scope": "one-owner/generated-handler",
+          "captures": [
+            "query"
+          ],
+          "writes": [
+            "query"
+          ],
+          "actions": [],
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 1,
+            "bindingLocators": 2,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          },
+          "phases": [
+            {
+              "phase": "statement:0",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            },
+            {
+              "phase": "patch",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 2
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            }
+          ],
+          "updates": [
+            {
+              "id": 0,
+              "kind": "attribute",
+              "name": "value",
+              "dependencies": [
+                "query"
+              ],
+              "triggeredBy": [
+                "query"
+              ]
+            },
+            {
+              "id": 1,
+              "kind": "text",
+              "dependencies": [
+                "query"
+              ],
+              "triggeredBy": [
+                "query"
+              ]
+            }
+          ],
+          "reasons": [
+            {
+              "from": "Search.query",
+              "to": "Search.binding:0"
+            },
+            {
+              "from": "Search.query",
+              "to": "Search.binding:1"
+            }
+          ],
+          "unknownCosts": [
+            {
+              "code": "string-size",
+              "reason": "String length and string/DOM work are not bounded by operation counts."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "component": "Details",
+      "schemaId": "e12cd987b0cfa4a7",
+      "side": "client",
+      "localElements": null,
+      "childSites": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 1,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "entries": [
+        {
+          "id": "Details.open",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 344,
+            "end": 376
+          },
+          "remote": false,
+          "actions": [],
+          "captures": [
+            "opened"
+          ],
+          "writes": [
+            "opened"
+          ],
+          "symbol": "run",
+          "component": "Details",
+          "scope": "one-owner/generated-handler",
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 1,
+            "bindingLocators": 0,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "binaryOperations": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "propertyReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "slotReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "eventReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textPatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "attributePatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textConversions": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "remoteCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "createdElements": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          },
+          "phases": [],
+          "updates": [],
+          "reasons": [],
+          "unknownCosts": [
+            {
+              "code": "control-flow",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "component": "Page",
+      "schemaId": "50f6bad8b9e42997",
+      "side": "server",
+      "localElements": 1,
+      "childSites": [
+        {
+          "site": "c0",
+          "component": "Search"
+        },
+        {
+          "site": "c1",
+          "component": "Details"
+        }
+      ],
+      "restore": {
+        "owners": 0,
+        "snapshotSlots": 0,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "entries": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "Search.edit",
+      "component": "Search",
+      "event": "input",
+      "async": false,
+      "source": {
+        "start": 119,
+        "end": 157
+      },
+      "scope": "one-owner/generated-handler",
+      "captures": [
+        "query"
+      ],
+      "writes": [
+        "query"
+      ],
+      "actions": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 1,
+        "bindingLocators": 2,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "binaryOperations": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "propertyReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "slotReads": {
+          "kind": "upper-bound",
+          "value": 2
+        },
+        "eventReads": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "textPatchCalls": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "attributePatchCalls": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "textConversions": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "remoteCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "createdElements": {
+          "kind": "upper-bound",
+          "value": 0
+        }
+      },
+      "phases": [
+        {
+          "phase": "statement:0",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        },
+        {
+          "phase": "patch",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "updates": [
+        {
+          "id": 0,
+          "kind": "attribute",
+          "name": "value",
+          "dependencies": [
+            "query"
+          ],
+          "triggeredBy": [
+            "query"
+          ]
+        },
+        {
+          "id": 1,
+          "kind": "text",
+          "dependencies": [
+            "query"
+          ],
+          "triggeredBy": [
+            "query"
+          ]
+        }
+      ],
+      "reasons": [
+        {
+          "from": "Search.query",
+          "to": "Search.binding:0"
+        },
+        {
+          "from": "Search.query",
+          "to": "Search.binding:1"
+        }
+      ],
+      "unknownCosts": [
+        {
+          "code": "string-size",
+          "reason": "String length and string/DOM work are not bounded by operation counts."
+        }
+      ],
+      "instances": 1,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/loading/assets/isle-resume-Bacoi7wB.js",
+          "/isle/demos/loading/assets/setup-CnI6ud04.js",
+          "/isle/demos/loading/assets/Search.resources-BLhmAHjf.js",
+          "/isle/demos/loading/assets/Search.edit-CAQJgn-n.js"
+        ],
+        "bytes": 10001,
+        "gzipBytes": 4184,
+        "dynamicImports": [
+          "/isle/demos/loading/assets/Details.open-BQYdS5Xf.js",
+          "/isle/demos/loading/assets/Details.resources-BLhmAHjf.js"
+        ]
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 119,
+          "line": 4,
+          "column": 45
+        },
+        "end": {
+          "offset": 157,
+          "line": 4,
+          "column": 83
+        }
+      }
+    },
+    {
+      "id": "Details.open",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 344,
+        "end": 376
+      },
+      "remote": false,
+      "actions": [],
+      "captures": [
+        "opened"
+      ],
+      "writes": [
+        "opened"
+      ],
+      "symbol": "run",
+      "component": "Details",
+      "scope": "one-owner/generated-handler",
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 1,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "binaryOperations": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "propertyReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "slotReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "eventReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textPatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "attributePatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textConversions": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "remoteCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "createdElements": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      },
+      "phases": [],
+      "updates": [],
+      "reasons": [],
+      "unknownCosts": [
+        {
+          "code": "control-flow",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      ],
+      "instances": 1,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/loading/assets/isle-resume-Bacoi7wB.js",
+          "/isle/demos/loading/assets/setup-CnI6ud04.js",
+          "/isle/demos/loading/assets/Details.resources-BLhmAHjf.js",
+          "/isle/demos/loading/assets/Details.open-BQYdS5Xf.js"
+        ],
+        "bytes": 13498,
+        "gzipBytes": 5706,
+        "dynamicImports": [
+          "/isle/demos/loading/assets/Search.edit-CAQJgn-n.js",
+          "/isle/demos/loading/assets/Search.resources-BLhmAHjf.js"
+        ]
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 344,
+          "line": 11,
+          "column": 27
+        },
+        "end": {
+          "offset": 376,
+          "line": 11,
+          "column": 59
+        }
+      }
+    }
+  ],
+  "scenario": {
+    "mode": "resume",
+    "mounts": [
+      {
+        "component": "Page",
+        "mode": "resume"
+      }
+    ],
+    "domElements": null,
+    "resumableOwners": 2,
+    "snapshotSlots": 2,
+    "components": {
+      "Page": {
+        "instances": 1,
+        "resumableInstances": 0
+      },
+      "Search": {
+        "instances": 1,
+        "resumableInstances": 1
+      },
+      "Details": {
+        "instances": 1,
+        "resumableInstances": 1
+      }
+    }
+  },
+  "planId": "2d89148b3d5ab1ee",
+  "code": {
+    "scope": "static-code-closure",
+    "modules": [
+      "/isle/demos/loading/assets/isle-resume-Bacoi7wB.js",
+      "/isle/demos/loading/assets/setup-CnI6ud04.js",
+      "/isle/demos/loading/assets/Search.resources-BLhmAHjf.js",
+      "/isle/demos/loading/assets/Search.edit-CAQJgn-n.js",
+      "/isle/demos/loading/assets/Details.resources-BLhmAHjf.js",
+      "/isle/demos/loading/assets/Details.open-BQYdS5Xf.js"
+    ],
+    "bytes": 13632,
+    "gzipBytes": 5866,
+    "dynamicImports": []
+  },
+  "buildId": "6d5d023234cf2bbb",
+  "budget": {
+    "ok": true,
+    "checks": []
+  },
+  "ok": true
+}

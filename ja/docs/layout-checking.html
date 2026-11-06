@@ -1,0 +1,134 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Grid とボックスモデルの静的検査"><title>Grid とボックスモデルの静的検査 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/layout-checking.html"><meta property="og:title" content="Grid とボックスモデルの静的検査 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Grid とボックスモデルの静的検査"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html" aria-current="page">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/layout-checking.md">ソースで読む ↗</a></div><h1 id="grid-とボックスモデルの静的検査">Grid とボックスモデルの静的検査</h1>
+<p>2026-11-06。Grid と親子のサイズ契約を検査する compiler adapter を実装した。横方向に加え、container size query と明示した高さ契約による縦方向を扱う。標準 CSS を PostCSS で解析し、MoonBit frontend が composition を展開した template IR から box tree を作る。component / handler を browser で実行せずに解析する。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just layout
+just layout-axes
+just layout-reset
+just layout path/to/app.isle path/to/layout.json
+just layout-check</code></pre></div>
+<p>現在は明示的な CLI pass である。Vite build の自動 gate、CSS 最適化、CSS-ready runtime への追加処理は接続していない。production runtime には解析器・依存ライブラリ・検査用 metadata を import しない。</p>
+<p><a href="/isle/ja/docs/layout-rejections.html">リジェクト例</a>は <code>just layout-rejections</code> で、拒否されるコードと対応版を一組ずつ実行できる。</p>
+<h2 id="入力">入力</h2>
+<p><a href="/isle/source/evals/scenarios/layout/fixture.isle">実行できる fixture</a> と <a href="/isle/source/evals/scenarios/layout/layout.css">CSS</a> に対して、次の sidecar を与える。CSS のパスは sidecar 自身からの相対パスである。</p>
+<div class="code-block"><div class="code-language">json</div><pre tabindex="0"><code>{
+  &quot;component&quot;: &quot;Board&quot;,
+  &quot;css&quot;: &quot;./layout.css&quot;,
+  &quot;viewport&quot;: { &quot;min&quot;: 352, &quot;max&quot;: 1280 },
+  &quot;boxes&quot;: {
+    &quot;.side&quot;: { &quot;minInlineSize&quot;: 120 },
+    &quot;.body&quot;: { &quot;minInlineSize&quot;: 320 },
+    &quot;.copy&quot;: { &quot;minInlineSize&quot;: 320, &quot;wrap&quot;: &quot;anywhere&quot; }
+  }
+}</code></pre></div>
+<p>公開 API は <a href="/isle/source/lib/layout.d.mts">layout.d.mts</a>、入出力の型は <a href="/isle/source/lib/layout-contracts.d.ts">layout-contracts.d.ts</a>。<code>analyzeLayout(ir, options)</code> では <code>css</code> にファイルパスではなくソース本文を渡す。<code>hostInset</code> は、選択した root の外側で host が消費する横幅の合計で、既定は0。root の包含領域は <code>viewport - hostInset</code> とする。</p>
+<p><code>minInlineSize</code> は、許可する全入力・font・折り返し条件で内容を収めるための必要幅の上界を、呼出し側が宣言する契約である。compiler が文字列や font metrics から導いた証明ではない。割当幅がこれを下回る診断は契約違反を意味し、任意の具体的な文字列が必ずあふれることまでは意味しない。fixture には320pxの子を実際に置き、反例の overflow を browser でも再現する。</p>
+<p>text leaf の fit 検査にはこの幅契約が必要。契約の selector は、型名・class・id の複合 selector に限定する。同じ box へ複数契約が一致した場合や、一つも一致しない契約は入力エラーにする。</p>
+<h2 id="css-reset-と継承">CSS reset と継承</h2>
+<p>reset を暗黙の border-box として仮定せず、実際に使う CSS を先行する author stylesheet として与える。CLI の <code>reset</code> は sidecar 相対のファイルパス配列で、配列順→<code>css</code> の順に解析する。</p>
+<div class="code-block"><div class="code-language">json</div><pre tabindex="0"><code>{
+  &quot;reset&quot;: [&quot;./reset.css&quot;],
+  &quot;css&quot;: &quot;./app.css&quot;,
+  &quot;ancestors&quot;: [{ &quot;tag&quot;: &quot;html&quot; }, { &quot;tag&quot;: &quot;body&quot; }],
+  &quot;viewport&quot;: { &quot;min&quot;: 320, &quot;max&quot;: 1000 }
+}</code></pre></div>
+<div class="code-block"><div class="code-language">css</div><pre tabindex="0"><code>/* reset.css */
+html { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: inherit; }
+:where(*) { margin: 0; padding: 0; }</code></pre></div>
+<p>API の <code>reset</code> はソース配列 <code>[{ css: resetSource, file: &#39;reset.css&#39; }]</code> を受け取る。ファイルを自動 fetch する API ではない。CLI は明示されたローカルファイルを読む。解析への入力は browser への reset 挿入を意味しないため、アプリにも同じ CSS を同じ順序・layer で配布する必要がある。</p>
+<p>box-sizing 自体は非継承 property である。reset が inherit を指定した場合は、実際の親の computed value を参照する。<code>ancestors</code> は一番外側から mount 直前までの祖先を指定し、tag / 任意の id・classes で reset の一致を計算する。先頭の html を document root として :root に一致させ、選択した component の root は :root とみなさない。祖先が足りず明示 inherit を解決できなければ unknown。</p>
+<p>ancestor 入力は継承用であり、host の寸法を再計算する入力ではない。包含サイズは引き続き viewport / hostInset / hostBlockInset の契約に従う。祖先は検査対象で使える HTML 要素と html/body に限定する。祖先自体が query container、または display:none の場合はサイズの前提が不足するため unknown にし、実際の template 内で検査することを要求する。ShadowRoot の widget 等では存在しない html/body の祖先を入力しない。</p>
+<p>対応する reset 構文は次の範囲である。</p>
+<ul>
+<li>universal・型・class・id・:root と、その複合 selector。:where の specificity は0、:is は一致しない枝も含めた最大 specificity を保持する。combinator、属性 selector 等は未対応。</li>
+<li>before / after の単一・二重コロン。reset の宣言は読めるが、その selector を実 element へ適用しない。content が生成する追加 box は未対応で unknown。content:none / normal だけを許可する。</li>
+<li>平坦な名前付き layer、順序宣言、再開、匿名 layer block。通常宣言は後の layer、重要宣言は先の layer を優先する。layer 外の宣言も標準の優先順位に従う。nested layer と条件付き layer 宣言は未対応。layer 内の media / container 条件は扱える。</li>
+<li>検査対象 property の inherit / initial / unset / revert と、padding / margin / border 等の対応 shorthand、all reset。revert-layer は未対応。UA 由来の未知の margin 等を0だと推測しない。</li>
+</ul>
+<p><code>styleSources</code> に入力順と file、<code>sizes</code> に有効な <code>boxSizing</code> と <code>boxSizingSource</code> の file / line / selector / layer / specified value を記録する。reset 内の構文・未対応宣言の診断も、app CSS と区別して元ファイルを指す。</p>
+<p><a href="/isle/source/evals/scenarios/layout-reset/layout.json">実行可能な reset fixture</a>は <code>just layout-reset</code> で検査できる。<a href="https://github.com/mizchi/isle/blob/main/evals/reports/layout-reset.md">評価記録</a>には content-box へ戻してあふれる故障版と browser の computed style を保存する。</p>
+<h2 id="縦方向の入力">縦方向の入力</h2>
+<p><code>viewport.height</code> の有限な閉区間を渡すと両軸の検査になる。<code>block: true</code> でも明示できるが、その場合も height 区間を要求する。<code>hostBlockInset</code> は host が外側で消費する高さで、既定は0。</p>
+<div class="code-block"><div class="code-language">json</div><pre tabindex="0"><code>{
+  &quot;component&quot;: &quot;QueryPanel&quot;,
+  &quot;css&quot;: &quot;./layout.css&quot;,
+  &quot;block&quot;: true,
+  &quot;viewport&quot;: { &quot;min&quot;: 432, &quot;max&quot;: 1000, &quot;height&quot;: { &quot;min&quot;: 320, &quot;max&quot;: 600 } },
+  &quot;boxes&quot;: {
+    &quot;.copy&quot;: { &quot;minInlineSize&quot;: 400, &quot;minBlockSize&quot;: 200 },
+    &quot;.text&quot;: {
+      &quot;minInlineSize&quot;: 200,
+      &quot;intrinsicBlockSize&quot;: [
+        { &quot;atLeastInlineSize&quot;: 200, &quot;blockSize&quot;: 80 },
+        { &quot;atLeastInlineSize&quot;: 400, &quot;blockSize&quot;: 40 }
+      ]
+    }
+  }
+}</code></pre></div>
+<p>これは形を示す断片であり、selector と契約は実際の tree に合わせる。<a href="/isle/source/evals/scenarios/layout-axes/layout.json">実行可能な両軸 fixture</a>は <code>just layout-axes</code> で検査できる。</p>
+<p><code>minBlockSize</code> は内容を収める必要高さの上界を宣言する。自動高さの計算には、実際の content 高さを表す <strong>trusted な exact 値</strong> <code>intrinsicBlockSize</code> を使う。単一数値、または inline content 幅ごとの profile を宣言できる。profile は閾値の昇順で、最後に成立する値を選ぶ。定義域を覆わない幅は unknown。font の変更や入力の変化で exact 契約が崩れないことは caller の責任であり、font metrics の自動証明ではない。</p>
+<p>固定 block-size、または definite な row に伸長する leaf には、自動高さの profile は不要。ただし text の fit を検査するには、minBlockSize または intrinsicBlockSize が必要である。percentage block-size は definite な包含サイズがある場合に扱う。auto 行の intrinsic 計算と percentage が循環する場合は unknown にする。</p>
+<h2 id="保証する範囲">保証する範囲</h2>
+<p>各条件領域で cascade / specificity / source order / <code>!important</code> を計算し、親の content box から子の grid area へ渡す幅と高さを求める。物理・論理プロパティの対応は horizontal-tb / ltr に固定する。</p>
+<ul>
+<li>子 element を配置する container は Grid を要求する。effective な non-none float、意図を宣言していない重なり、明示列の外への配置は違反にする。</li>
+<li>列は固定 px と <code>minmax(0, Nfr)</code>。固定列・column gap を引いた残りを fr の比で配分し、fr 合計が1未満なら残余幅を一部残す。通常の <code>1fr</code> は intrinsic minimum を持つため未対応として unknown にする。</li>
+<li>数値の <code>grid-column</code>、<code>start / span N</code>、<code>start / end</code>、正の数値 <code>grid-row</code> と sparse な通常の auto-placement を扱う。確定した row を先に配置する。暗黙の追加列、名前付き area、dense、subgrid は未対応。</li>
+<li>auto・固定 px・割合の inline/block-size、content-box / border-box、px の padding・solid border・gap を扱う。margin は0だけを許可する。p / heading 等の native な block margin は明示的な reset を要求する。CSS min-size は auto / 0、max は none に限定する。</li>
+<li>row は固定 px、<code>minmax(0, Nfr)</code>、auto。implicit row は grid-auto-rows を反復する。auto row は子の自動高さを下から集約し、definite な container では余りの伸長を反映する。indefinite な fr row は max-content に対応する契約値から flex fraction を求める。</li>
+<li>item の block alignment は normal / stretch、content alignment は normal / stretch / start。row span、他の alignment、intrinsic column、subgrid は未対応である。</li>
+<li>折り返し条件は <code>white-space</code> と <code>overflow-wrap</code> の継承を含めて照合する。<code>anywhere</code> と <code>break-word</code> を同一視しない。</li>
+</ul>
+<p>CSS による通常の in-flow parent と child の関係を検査する。pure component の展開と単純な client island の root は追えるが、動的 class/id、分岐・loop・opaque children、inline style、native form control 等は unknown。初期 SSR に存在する構造だけを見て、将来の構造まで安全としない。</p>
+<h2 id="overflow-の契約">Overflow の契約</h2>
+<p>横方向は <code>overflow</code>、縦方向は <code>overflowBlock</code> を宣言し、それぞれ既定は <code>fit</code>。CSS の overflow 値だけを変えても、この要求は解除しない。以下の x を、縦方向では y として照合する。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>契約</th>
+<th>検査</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>fit</td>
+<td>子と内容が割当領域へ収まることを要求する</td>
+</tr>
+<tr>
+<td>scroll</td>
+<td>computed overflow-x が auto / scroll であることを要求し、当該内容の幅不足を許可する</td>
+</tr>
+<tr>
+<td>clip</td>
+<td>computed overflow-x が hidden / clip であることを要求し、明示した切り取りを許可する</td>
+</tr>
+<tr>
+<td>visible</td>
+<td>computed overflow-x が visible であることを要求し、明示した領域外表示を許可する</td>
+</tr>
+</tbody></table>
+</div><p>非 fit の container では、その子が割当領域を越えることも許可する。子自身の fit 契約は独立して検査する。CSS における overflow-x/y の computed value の相互作用を反映する。スクロール操作性、切り取られる情報の妥当性、focus の可視性、縦方向の scrollbar gutter は今回の保証に含めない。</p>
+<h2 id="media-と反例">Media と反例</h2>
+<p>screen 用の width / height 条件、min/max、比較演算、and、comma による選言、入れ子の media を扱う。hover / orientation / 相対単位などの未対応条件は unknown。</p>
+<p>container query は width / height / inline-size / block-size の px 条件と and、名前付き・無名・入れ子を扱う。名前は大文字・小文字を区別する。<code>container-type: inline-size</code> は inline 条件に、<code>size</code> は両軸に適格で、<code>container</code> shorthand も扱う。条件に使う全 feature を照会でき、名前も合う最も近い祖先を選ぶ。対象自身は選ばず、適格な祖先がなければ条件は不成立とする。</p>
+<p>query は container の <strong>content box</strong> に対して評価する。例えば padding が左右16pxなら、600pxの container 条件は viewport 632pxから成立する。<code>container-type: size</code> の自動高さは size containment に従って内容を空として決め、その内部の Grid と overflow は別に検査する。</p>
+<p>選択した root より外には query container がないことを、現在の解析境界の前提とする。外部 host に依存する場合は、その ancestor を解析対象へ含める必要がある。style / scroll-state query、or / not、container query list、cq 単位は未対応で unknown。</p>
+<p>有理数の半平面で条件を分割し、幅×高さの凸領域を厳密に切り出す。strict な境界と、線・一点に退化する等号領域も保持する。単一の代表幅のサンプル検査ではない。横方向だけの検査では、同じ義務が破綻する隣接区間を結合する。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>親の content 幅 = V - 32
+必要幅 = sidebar 240 + gap 16 + main 320 = 576
+二列は V &gt;= 608 で成立
+
+600 から二列にすると:
+E_LAYOUT_CONTENT .body
+違反区間 [600, 608)</code></pre></div>
+<p>寸法と係数には BigInt の有理数を使う。<code>minExact</code> / <code>maxExact</code> が正本で、数値の min/max と witness.viewport は表示用の近似値。小数入力は小数点以下6桁まで、viewport / 契約幅は0〜1,000,000 CSS pxに制限する。CSS / box 数と解析の組合せにも上限を置き、超過を unknown にする。</p>
+<p>両軸の診断は <code>axis</code>、<code>heightRange</code>、高さを含む witness、<code>region</code> を持つ。range / heightRange は各軸への射影で、直積が反例領域と一致するとは限らない。正本は region の vertices が張る閉包と strict constraints の共通部分である。<code>sizes</code> は計算したサイズ式、<code>queries</code> は選んだ target と条件成立を説明する。</p>
+<h2 id="検査結果と前提">検査結果と前提</h2>
+<ul>
+<li><code>verified</code>: 宣言した幅、または幅×高さの全実数入力について、対応する数理モデル内で指定した契約を満たした。</li>
+<li><code>violated</code>: 契約違反の区間・義務、または禁止規則を検出した。</li>
+<li><code>unknown</code>: 未対応の構造・CSS・情報不足・上限超過があり、全体を保証できない。既知部分の診断が併記されることもある。</li>
+</ul>
+<p>CLI は verified のときだけ exit 0。入力エラー、コンパイルエラー、violated、unknown は非0にする。解析できない幾何の CSS や未知の selector / at-rule を、装飾だと推測して無視しない。reset を含む閉じた author cascade を渡すことは呼出し側の前提であり、host の全 CSS を自動収集したという保証ではない。</p>
+<p>任意 font の glyph 幅・改行位置の自動推論、paint / ink overflow、画像、スクロールや layout の実時間、scrollbar gutter、browser の subpixel rounding はモデル外。非対応の幾何プロパティは unknown にする。実ブラウザとの完全同値性の証明でもない。</p>
+<p>今回は静的な純粋制約の判定であり、既存 veri の時相モデルを増やして寸法を離散化する方法は採らない。有理数の領域判定、独立した1次元・2次元の bounded arithmetic oracle、browser での反例再現を組み合わせる。判定器そのものの形式的な健全性証明は未着手。既存の MoonBit / veri 92ケースは別の検査として維持する。</p>
+<p>検証方法と結果は <a href="https://github.com/mizchi/isle/blob/main/evals/reports/layout-axes.md">両軸の評価記録</a>、<a href="https://github.com/mizchi/isle/blob/main/evals/reports/layout.md">初段の横幅検査</a>、記述・読解は <a href="https://github.com/mizchi/isle/blob/main/evals/scenarios/layout-axes/brief.md">両軸の課題</a>。参考: <a href="https://www.w3.org/TR/css-grid-2/">Grid</a>、<a href="https://www.w3.org/TR/css-sizing-3/">Box sizing</a>、<a href="https://www.w3.org/TR/css-overflow-3/">Overflow</a>、<a href="https://www.w3.org/TR/mediaqueries-4/">Media Queries</a>、<a href="https://www.w3.org/TR/css-conditional-5/#container-queries">Container queries</a>、<a href="https://www.w3.org/TR/css-contain-2/#containment-size">Size containment</a>。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

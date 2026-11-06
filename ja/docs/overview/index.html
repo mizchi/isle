@@ -1,0 +1,32 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Isle で何ができるか"><title>Isle で何ができるか · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/overview/index.html"><meta property="og:title" content="Isle で何ができるか · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Isle で何ができるか"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/overview/README.md">ソースで読む ↗</a></div><h1 id="isle-で何ができるか">Isle で何ができるか</h1>
+<p>Isle は、専用構文から SSR と再開可能な UI を生成する、UI 言語・フレームワークのプロトタイプです。状態・表示・イベント・server action を宣言すると、コンパイラが依存と更新先を解析し、Vite / Rolldown が配信用コードを分割します。</p>
+<p><img src="/isle/source/docs/overview/figures/isle-overview.fig.png" alt="宣言から配信までと、ブラウザーでの初期表示・先読み・resume" loading="lazy"></p>
+<p><code>auto</code> / <code>lazy</code> では、先読みと実行を分けます。取得済みでも setup は操作まで実行せず、対象の状態を復元して動的な表示を更新します。先読みしない場合は操作後に取得します。明示 <code>eager</code> は起動時の評価を許す別方針です。</p>
+<p>Form、server action、Web Components widget を試せます。Grid / CSS 検査は独立した CLI で、指定されたサイズ・overflow・折り返し等の契約を検査します。認証・認可 policy はホスト側で実装し、有限モデルは独立した参照モデルです。任意 TypeScript、inline 構文、compiler IR からのモデル自動生成は今後の機能です。</p>
+<p><a href="/isle/ja/docs/getting-started.html">はじめる</a> · <a href="/isle/ja/docs/forms.html">Form</a> · <a href="/isle/ja/docs/widgets.html">widget</a> · <a href="/isle/ja/docs/layout-checking.html">CSS 検査と反例</a> · <a href="/isle/ja/docs/overview/facts.html">図の根拠</a></p>
+<p><a href="/isle/source/docs/overview/figures/isle-overview.en.desktop.png">English overview image</a> · <a href="/isle/source/docs/overview/figures/isle-overview.en.mobile.png">English phone image</a>。root README は <a href="/isle/docs/quick-start.html">English</a> / <a href="/isle/ja/docs/quick-start.html">日本語</a> を用意し、アプリへ npm パッケージを組み込む視点で説明する。</p>
+<h2 id="図で使った実行可能な例">図で使った実行可能な例</h2>
+<!-- source: counter.isle -->
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>client component Counter() {
+  state count = 0;
+  &lt;button type=&quot;button&quot;&gt;
+    on click { count += 1; }
+    {count}
+  &lt;/button&gt;
+}</code></pre></div>
+<!-- output: overview -->
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>Counter: compile → SSR 0 → resume 1; one dynamic text patch</code></pre></div>
+<h2 id="読み取れるか確かめる">読み取れるか確かめる</h2>
+<details>
+<summary>何がブラウザーへ配られる？</summary><p>SSR の HTML、必要な snapshot、分割された JS / CSS、manifest。SSR のみのページには Isle の browser JS を出力しません。</p>
+</details><details>
+<summary>コードが先読みされたら、UI の setup も動く？</summary><p>auto / lazy では取得だけでは動きません。操作を受けた対象で評価・復元・setup を行います。明示 eager は別方針です。</p>
+</details><details>
+<summary>CSS の見た目とコンパイラ全体が証明されている？</summary><p>CSS 検査は制約付きの契約検査で、判断できない入力は unknown です。有限モデルは参照モデルであり、ブラウザーやコンパイラ全体の証明ではありません。</p>
+</details><h2 id="画像の更新と検証">画像の更新と検証</h2>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just overview-build
+just overview-check
+just overview-quality</code></pre></div>
+<p>画像は HTML / CSS を Playwright で描画した PNG です。デスクトップ版とモバイル版を README の picture で切り替えます。ビルドと検査はコンパイル済み Counter の実行、掲載コードの一致、事実ラベル、横方向のはみ出しを確認します。</p>
+<p>explainer の figure-check と verify-doc、vlmkit の integrity / contrast での検査手順と結果は <a href="/isle/ja/docs/overview/validation.html">検証記録</a> に残します。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

@@ -1,0 +1,39 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="リソースの寿命と破棄"><title>リソースの寿命と破棄 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/examples/resources/index.html"><meta property="og:title" content="リソースの寿命と破棄 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="リソースの寿命と破棄"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/examples/resources/">English</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/ja/examples/">サンプル一覧</a> / resources</p><span class="tag live-tag">Pages で操作できる</span><h1>リソースの寿命と破棄</h1><p class="lead">所有された timer と listener を活性化し、component を削除して一度だけ破棄されることを見る。</p><div class="hero-actions"><a class="button primary" href="/isle/demos/resources/">ライブデモを開く ↗</a><a class="button secondary" href="https://github.com/mizchi/isle/blob/main/examples/resources">GitHub source ↗</a></div><div class="doc-content example-description"><p>所有された timer と listener を活性化し、component を削除して一度だけ破棄されることを見る。 まず Session を活性化し、Remove component で削除する。root が切断されると owner が timer と listener を破棄し、外側の status が一度だけの破棄を示す。setup は通常の JavaScript module に書く。</p>
+<p>リポジトリ内の例は、ルートで上記コマンドを実行する。検査は <code>just examples-check</code>。利用者のアプリへ組み込む場合は <a href="/isle/ja/docs/quick-start.html#はじめる">npm パッケージの導入手順</a>を使い、このディレクトリのソースと設定を参照する。</p>
+</div><h2>実装を読む</h2><details class="source-details"><summary>app.isle</summary><pre tabindex="0"><code>client component Session() {
+  state count = 0;
+  &lt;section data-session=&quot;&quot;&gt;
+    &lt;h2&gt;Owned session&lt;/h2&gt;
+    &lt;button type=&quot;button&quot;&gt;on click increment { count += 1; }Activate / increment&lt;/button&gt;
+    &lt;output aria-live=&quot;polite&quot;&gt;{count}&lt;/output&gt;
+  &lt;/section&gt;
+}
+</code></pre></details><details class="source-details"><summary>main.mjs</summary><pre tabindex="0"><code>import { boot } from &#39;virtual:isle-loader&#39;;
+boot();
+document.querySelector(&#39;#remove&#39;).addEventListener(&#39;click&#39;, () =&gt; {
+  document.querySelector(&#39;[data-session]&#39;)?.remove();
+});
+</code></pre></details><details class="source-details"><summary>setup.mjs</summary><pre tabindex="0"><code>export function setup({ root, owner }) {
+  const status = document.querySelector(&#39;#lifecycle&#39;);
+  let ticks = 0;
+  status.textContent = &#39;Active&#39;;
+  status.dataset.state = &#39;active&#39;;
+  const timer = setInterval(() =&gt; { status.textContent = `Active: ${++ticks} ticks`; }, 1000);
+  owner.own(timer, clearInterval);
+  const entered = () =&gt; { root.dataset.entered = &#39;true&#39;; };
+  root.addEventListener(&#39;pointerenter&#39;, entered);
+  owner.own(root, element =&gt; {
+    element.removeEventListener(&#39;pointerenter&#39;, entered);
+    status.textContent = &#39;Disposed: timer and listener released&#39;;
+    status.dataset.state = &#39;disposed&#39;;
+    status.dataset.cleanups = String(Number(status.dataset.cleanups ?? 0) + 1);
+  });
+}
+</code></pre></details><details class="source-details"><summary>vite.config.mjs</summary><pre tabindex="0"><code>import { fileURLToPath } from &#39;node:url&#39;;
+import { exampleConfig } from &#39;../_shared/vite.mjs&#39;;
+export default exampleConfig(import.meta.url, {
+  resources: { Session: &#39;./setup.mjs&#39; },
+  clientEntry: fileURLToPath(new URL(&#39;./main.mjs&#39;, import.meta.url)),
+  mounts: [{ component: &#39;Session&#39;, props: {}, label: &#39;Owned resources&#39; }],
+});
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

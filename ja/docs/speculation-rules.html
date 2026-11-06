@@ -1,0 +1,81 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="ページ遷移の先読み"><title>ページ遷移の先読み · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/speculation-rules.html"><meta property="og:title" content="ページ遷移の先読み · Isle"><meta property="og:type" content="website"><meta property="og:description" content="ページ遷移の先読み"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/speculation-rules.md">ソースで読む ↗</a></div><h1 id="ページ遷移の先読み">ページ遷移の先読み</h1>
+<p>Vite plugin の <code>speculation</code> に標準の Speculation Rules JSON を指定できます。ビルド時に <code>&lt;script type=&quot;speculationrules&quot;&gt;</code> を HTML の head へ出力し、ブラウザーがページの prefetch / prerender を判断します。既定では無効です。追加の loader JS、hover listener、polyfill は配信しません。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>isle({
+  entry,
+  mounts,
+  loading: &#39;lazy&#39;, // このページ内の CodeRef / island は従来どおり遅延する
+  speculation: {
+    tag: &#39;isle-docs&#39;,
+    prefetch: [{
+      where: {
+        and: [
+          { href_matches: &#39;/*&#39; },
+          { selector_matches: &#39;a[data-isle-prefetch]&#39; },
+          { not: { selector_matches: &#39;[download], [data-no-speculation]&#39; } },
+        ],
+      },
+      eagerness: &#39;moderate&#39;,
+    }],
+    prerender: [{
+      where: {
+        and: [
+          { href_matches: &#39;/*&#39; },
+          { selector_matches: &#39;a[data-isle-prerender]&#39; },
+          { not: { selector_matches: &#39;[download], [data-no-speculation]&#39; } },
+        ],
+      },
+      eagerness: &#39;moderate&#39;,
+    }],
+  },
+});</code></pre></div>
+<div class="code-block"><div class="code-language">html</div><pre tabindex="0"><code>&lt;a data-isle-prefetch href=&quot;guide.html&quot;&gt;ガイド&lt;/a&gt;
+&lt;a data-isle-prerender href=&quot;next.html&quot;&gt;次のページ&lt;/a&gt;
+&lt;a data-no-speculation href=&quot;account.html&quot;&gt;アカウント設定&lt;/a&gt;</code></pre></div>
+<p>属性の名前はこの例の selector に対応する通常の HTML 属性です。framework の予約構文や特別な listener ではありません。<code>data-no-speculation</code> の除外も上の <code>not</code> 条件によるもので、URL リストを含め自動で全ルールに適用する機能ではありません。</p>
+<p>遷移先が固定なら <code>prefetch: [{ urls: [&#39;guide.html&#39;], eagerness: &#39;immediate&#39; }]</code> と指定できます。URL は通常の document-relative な意味を保持し、Vite base や chunk manifest を使って書き換えません。ルート相対パスや HTTP(S) の絶対 URL も使えます。origin を限定する場合は上の <code>href_matches</code> のような条件を含めてください。</p>
+<h2 id="ページとチャンクの違い">ページとチャンクの違い</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>対象</th>
+<th>指定方法</th>
+<th>動作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>遷移先の HTML</td>
+<td><code>speculation.prefetch</code></td>
+<td>ページを取得し、遷移に備える</td>
+</tr>
+<tr>
+<td>遷移先のページ全体</td>
+<td><code>speculation.prerender</code></td>
+<td>非表示のページでレンダリングと JS 実行を開始する</td>
+</tr>
+<tr>
+<td>入力・送信の handler / runtime</td>
+<td><code>loading: &#39;auto&#39;</code>（既定）</td>
+<td>compiler が追加 gzip 予算内で <code>modulepreload</code> を選ぶ</td>
+</tr>
+<tr>
+<td>このページの handler / runtime</td>
+<td><code>loading: &#39;preload&#39;</code></td>
+<td>manifest の依存関係を <code>modulepreload</code> する</td>
+</tr>
+<tr>
+<td>このページの handler / runtime</td>
+<td><code>loading: &#39;eager&#39;</code></td>
+<td>manifest の module を事前に import / 評価する</td>
+</tr>
+</tbody></table>
+</div><p>Speculation Rules はページ遷移用です。QRL 相当の CodeRef や JS ファイルの URL を渡してチャンクを取得する用途には使いません。ナビゲーション用 JSON を追加しても、既存の JS graph・chunk hash・manifest の loading policy は変わりません。<a href="https://html.spec.whatwg.org/multipage/speculative-loading.html">HTML Standard の定義</a></p>
+<p><code>immediate</code> / <code>eager</code> / <code>moderate</code> / <code>conservative</code> はネイティブの eagerness です。省略時は標準の既定値（URL list は immediate、document rule は conservative）を使います。先読みはヒントであり、設定・リソース制約・対応状況により実行されない場合があります。未対応でも通常のリンク遷移を続けられます。<a href="https://html.spec.whatwg.org/multipage/speculative-loading.html">HTML Standard</a></p>
+<h2 id="resume-と-ssr">resume と SSR</h2>
+<p>prerender 中も、生成した handler はイベントが来るまで実行せず、snapshot を展開しません。ページが activation された後も、最初の操作で必要な island だけを再開します。任意の clientEntry や外部スクリプトの起動処理は prerender 中に実行され得ます。分析・表示に伴う処理を遅らせる場合は、標準の <code>document.prerendering</code> と <code>prerenderingchange</code> を使います。登録した server action は、先読みや prerender を理由に検証・認可を省略しません。<a href="https://developer.chrome.com/docs/web-platform/prerender-pages?hl=ja">Chrome のライフサイクルの説明</a></p>
+<p><code>mode: &#39;ssr&#39;</code> でも navigation rules は出力できます。JSON の data block だけで、framework の実行用 JS・snapshot・イベント marker・modulepreload は出しません。GET 自体で状態が変わるページや、起動時に意図しない処理を実行するページは、対象に含めない設計が必要です。</p>
+<h2 id="契約と確認方法">契約と確認方法</h2>
+<p>現在受け付けるルールは <code>urls</code> または <code>where</code> のどちらか一方と、任意の <code>eagerness</code> / <code>tag</code> / <code>referrer_policy</code> です。where は <code>and</code> / <code>or</code> / <code>not</code> / 文字列または文字列配列の <code>href_matches</code> / <code>selector_matches</code> を扱います。未知のキー、不正な型、非 HTTP(S) URL、循環 predicate はビルド時に拒否します。CSS selector と URL pattern 自体の文法・一致条件はブラウザーが検査します。URLPatternInit オブジェクト、外部 ruleset、<code>requires</code> / <code>target_hint</code> / No-Vary-Search は未対応です。</p>
+<p>Vite の <code>html.cspNonce</code> を data block にも引き継ぎます。CSP のレスポンスヘッダーは配信側で設定し、同じ nonce を許可してください。JSON に含まれる <code>&lt;</code> は escape し、script 終端として扱われないようにします。</p>
+<p>Chrome DevTools の Speculative loads でルールの解釈と成否を確認できます。サーバーでは <code>Sec-Purpose: prefetch</code> / <code>prefetch;prerender</code>、対応実装の <code>Sec-Speculation-Tags</code> で区別できます。activation 後は <code>performance.getEntriesByType(&#39;navigation&#39;)[0].activationStart &gt; 0</code> が prerender 利用の確認になります。これらは実行・利用の観測であり、LCP や INP の改善量の計測とは別です。<a href="https://developer.chrome.com/docs/web-platform/prerender-pages?hl=ja">Chrome の検出・計測方法</a></p>
+<p><code>tests/speculation.test.mjs</code> で JSON、CSP、SSR、dev、chunk 不変性を検査します。<code>e2e/speculation.spec.mjs</code> では実際の Chromium による prefetch と prerender、snapshot の未展開、activation 後の初回操作を検査します。今回の Chromium 環境では Playwright の通常の page 接続で prerender が無効化されたため、prerender のケースは一時プロファイルの Chromium をデバッグ接続なしで起動します。fixture が標準 API と loader の観測値を HTTP で返し、ready → activation → 初回操作を同期させます。製品の loader にこの計測処理は含めません。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

@@ -1,0 +1,3504 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="CSS contract reports"><title>CSS contract reports · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/reports/layout.html"><meta property="og:title" content="CSS contract reports · Isle"><meta property="og:type" content="website"><meta property="og:description" content="CSS contract reports"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/ja/">日本語</a></nav></div></header><main id="content" class="page-width example-page"><p class="eyebrow">BUILD-TIME ANALYSIS</p><h1>Three outcomes. Explicit limits.</h1><p class="lead">Real CLI output for the declared Grid / reset contracts. Unknown is not a successful proof.</p><div class="report-grid"><section class="report-card"><div class="report-title"><h2>verified</h2><span class="tag report-tag">layout.json</span></div><pre tabindex="0"><code>{
+  &quot;version&quot;: 1,
+  &quot;ok&quot;: true,
+  &quot;status&quot;: &quot;verified&quot;,
+  &quot;component&quot;: &quot;ResetPanel&quot;,
+  &quot;scope&quot;: {
+    &quot;axis&quot;: &quot;both&quot;,
+    &quot;viewport&quot;: {
+      &quot;min&quot;: 240,
+      &quot;max&quot;: 1000,
+      &quot;minInclusive&quot;: true,
+      &quot;maxInclusive&quot;: true,
+      &quot;minExact&quot;: &quot;240&quot;,
+      &quot;maxExact&quot;: &quot;1000&quot;,
+      &quot;height&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      }
+    },
+    &quot;hostInset&quot;: 0,
+    &quot;hostBlockInset&quot;: 0,
+    &quot;closedCSS&quot;: true,
+    &quot;browserRounding&quot;: false,
+    &quot;blockSizing&quot;: true
+  },
+  &quot;assumptions&quot;: [
+    &quot;The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.&quot;,
+    &quot;Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.&quot;,
+    &quot;Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract.&quot;
+  ],
+  &quot;styleSources&quot;: [
+    {
+      &quot;kind&quot;: &quot;reset&quot;,
+      &quot;file&quot;: &quot;examples/layout-contracts/reset.css&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;app&quot;,
+      &quot;file&quot;: &quot;examples/layout-contracts/app.css&quot;
+    }
+  ],
+  &quot;diagnostics&quot;: [],
+  &quot;policies&quot;: [
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: []
+      }
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: []
+      }
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      }
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      }
+    }
+  ],
+  &quot;checks&quot;: [
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_BOX_EDGES&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: []
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;32&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_BOX_EDGES&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;32&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_TRACKS&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;-32&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_TRACKS&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;-32&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_BOX_EDGES&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;-32&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;32&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_BOX_EDGES&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;-32&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;32&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_ITEM_SIZE&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;-32&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;-32&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_CONTENT&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;-64&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;100&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_ITEM_SIZE&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;-32&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;-32&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_CONTENT&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;-64&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;24&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_ITEM_SIZE&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_ITEM_SIZE&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;enforced&quot;: true
+    }
+  ],
+  &quot;sizes&quot;: [
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;boxSizing&quot;: &quot;border-box&quot;,
+      &quot;boxSizingSource&quot;: {
+        &quot;file&quot;: &quot;examples/layout-contracts/reset.css&quot;,
+        &quot;line&quot;: 4,
+        &quot;selector&quot;: &quot;*&quot;,
+        &quot;layer&quot;: &quot;reset&quot;,
+        &quot;specified&quot;: &quot;inherit&quot;
+      },
+      &quot;inlineSize&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;-32&quot;
+      },
+      &quot;blockSize&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;-32&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      }
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;boxSizing&quot;: &quot;border-box&quot;,
+      &quot;boxSizingSource&quot;: {
+        &quot;file&quot;: &quot;examples/layout-contracts/reset.css&quot;,
+        &quot;line&quot;: 4,
+        &quot;selector&quot;: &quot;*&quot;,
+        &quot;layer&quot;: &quot;reset&quot;,
+        &quot;specified&quot;: &quot;inherit&quot;
+      },
+      &quot;inlineSize&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;blockSize&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-64&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      }
+    }
+  ],
+  &quot;queries&quot;: []
+}</code></pre></section><section class="report-card"><div class="report-title"><h2>violated</h2><span class="tag report-tag">overflow.json</span></div><pre tabindex="0"><code>{
+  &quot;version&quot;: 1,
+  &quot;ok&quot;: false,
+  &quot;status&quot;: &quot;violated&quot;,
+  &quot;component&quot;: &quot;ResetPanel&quot;,
+  &quot;scope&quot;: {
+    &quot;axis&quot;: &quot;both&quot;,
+    &quot;viewport&quot;: {
+      &quot;min&quot;: 240,
+      &quot;max&quot;: 1000,
+      &quot;minInclusive&quot;: true,
+      &quot;maxInclusive&quot;: true,
+      &quot;minExact&quot;: &quot;240&quot;,
+      &quot;maxExact&quot;: &quot;1000&quot;,
+      &quot;height&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      }
+    },
+    &quot;hostInset&quot;: 0,
+    &quot;hostBlockInset&quot;: 0,
+    &quot;closedCSS&quot;: true,
+    &quot;browserRounding&quot;: false,
+    &quot;blockSizing&quot;: true
+  },
+  &quot;assumptions&quot;: [
+    &quot;The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.&quot;,
+    &quot;Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.&quot;,
+    &quot;Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract.&quot;
+  ],
+  &quot;styleSources&quot;: [
+    {
+      &quot;kind&quot;: &quot;reset&quot;,
+      &quot;file&quot;: &quot;examples/layout-contracts/reset.css&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;app&quot;,
+      &quot;file&quot;: &quot;examples/layout-contracts/overflow.css&quot;
+    }
+  ],
+  &quot;diagnostics&quot;: [
+    {
+      &quot;code&quot;: &quot;E_LAYOUT_ITEM_SIZE&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;source&quot;: {
+        &quot;start&quot;: 47,
+        &quot;end&quot;: 49
+      },
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;message&quot;: &quot;.copy requires 400px but receives 368px on block axis at viewport 620px × 400px&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;32&quot;,
+            &quot;strict&quot;: true
+          }
+        ]
+      },
+      &quot;witness&quot;: {
+        &quot;viewport&quot;: 620,
+        &quot;viewportExact&quot;: &quot;620&quot;,
+        &quot;viewportHeight&quot;: 400,
+        &quot;viewportHeightExact&quot;: &quot;400&quot;,
+        &quot;available&quot;: 368,
+        &quot;required&quot;: 400
+      }
+    },
+    {
+      &quot;code&quot;: &quot;E_LAYOUT_ITEM_SIZE&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;source&quot;: {
+        &quot;start&quot;: 47,
+        &quot;end&quot;: 49
+      },
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;message&quot;: &quot;.copy requires 620px but receives 588px on inline axis at viewport 620px × 400px&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;32&quot;,
+            &quot;strict&quot;: true
+          }
+        ]
+      },
+      &quot;witness&quot;: {
+        &quot;viewport&quot;: 620,
+        &quot;viewportExact&quot;: &quot;620&quot;,
+        &quot;viewportHeight&quot;: 400,
+        &quot;viewportHeightExact&quot;: &quot;400&quot;,
+        &quot;available&quot;: 588,
+        &quot;required&quot;: 620
+      }
+    }
+  ],
+  &quot;policies&quot;: [
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: []
+      }
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: []
+      }
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      }
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      }
+    }
+  ],
+  &quot;checks&quot;: [
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_BOX_EDGES&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: []
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;32&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_BOX_EDGES&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;32&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_TRACKS&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;-32&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_TRACKS&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;-32&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_BOX_EDGES&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;32&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_BOX_EDGES&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;32&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_ITEM_SIZE&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;-32&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_CONTENT&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;-32&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;100&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_ITEM_SIZE&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;-32&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_CONTENT&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;-32&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;24&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_ITEM_SIZE&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_ITEM_SIZE&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;enforced&quot;: true
+    }
+  ],
+  &quot;sizes&quot;: [
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;boxSizing&quot;: &quot;content-box&quot;,
+      &quot;boxSizingSource&quot;: {
+        &quot;file&quot;: &quot;examples/layout-contracts/overflow.css&quot;,
+        &quot;line&quot;: 14,
+        &quot;selector&quot;: &quot;.copy&quot;,
+        &quot;specified&quot;: &quot;content-box&quot;
+      },
+      &quot;inlineSize&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;blockSize&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      }
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;boxSizing&quot;: &quot;border-box&quot;,
+      &quot;boxSizingSource&quot;: {
+        &quot;file&quot;: &quot;examples/layout-contracts/reset.css&quot;,
+        &quot;line&quot;: 4,
+        &quot;selector&quot;: &quot;*&quot;,
+        &quot;layer&quot;: &quot;reset&quot;,
+        &quot;specified&quot;: &quot;inherit&quot;
+      },
+      &quot;inlineSize&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;blockSize&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      }
+    }
+  ],
+  &quot;queries&quot;: []
+}</code></pre></section><section class="report-card"><div class="report-title"><h2>unknown</h2><span class="tag report-tag">unknown.json</span></div><pre tabindex="0"><code>{
+  &quot;version&quot;: 1,
+  &quot;ok&quot;: false,
+  &quot;status&quot;: &quot;unknown&quot;,
+  &quot;component&quot;: &quot;ResetPanel&quot;,
+  &quot;scope&quot;: {
+    &quot;axis&quot;: &quot;both&quot;,
+    &quot;viewport&quot;: {
+      &quot;min&quot;: 240,
+      &quot;max&quot;: 1000,
+      &quot;minInclusive&quot;: true,
+      &quot;maxInclusive&quot;: true,
+      &quot;minExact&quot;: &quot;240&quot;,
+      &quot;maxExact&quot;: &quot;1000&quot;,
+      &quot;height&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      }
+    },
+    &quot;hostInset&quot;: 0,
+    &quot;hostBlockInset&quot;: 0,
+    &quot;closedCSS&quot;: true,
+    &quot;browserRounding&quot;: false,
+    &quot;blockSizing&quot;: true
+  },
+  &quot;assumptions&quot;: [
+    &quot;The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.&quot;,
+    &quot;Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.&quot;,
+    &quot;Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract.&quot;
+  ],
+  &quot;styleSources&quot;: [
+    {
+      &quot;kind&quot;: &quot;reset&quot;,
+      &quot;file&quot;: &quot;examples/layout-contracts/reset.css&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;app&quot;,
+      &quot;file&quot;: &quot;examples/layout-contracts/unknown.css&quot;
+    }
+  ],
+  &quot;diagnostics&quot;: [
+    {
+      &quot;code&quot;: &quot;U_LAYOUT_GEOMETRY&quot;,
+      &quot;severity&quot;: &quot;unknown&quot;,
+      &quot;message&quot;: &quot;Unsupported CSS pixel length: var(--host-size)&quot;,
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;source&quot;: {
+        &quot;start&quot;: 47,
+        &quot;end&quot;: 49
+      }
+    }
+  ],
+  &quot;policies&quot;: [
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: []
+      }
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: []
+      }
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      }
+    },
+    {
+      &quot;box&quot;: &quot;.copy&quot;,
+      &quot;path&quot;: &quot;ResetPanel/0&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;overflow&quot;: &quot;fit&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      }
+    }
+  ],
+  &quot;checks&quot;: [
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_BOX_EDGES&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: []
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;32&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_BOX_EDGES&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;32&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_TRACKS&quot;,
+      &quot;axis&quot;: &quot;inline&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;1&quot;,
+        &quot;constant&quot;: &quot;-32&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;enforced&quot;: true
+    },
+    {
+      &quot;box&quot;: &quot;.panel&quot;,
+      &quot;path&quot;: &quot;ResetPanel&quot;,
+      &quot;code&quot;: &quot;E_LAYOUT_TRACKS&quot;,
+      &quot;axis&quot;: &quot;block&quot;,
+      &quot;range&quot;: {
+        &quot;min&quot;: 240,
+        &quot;max&quot;: 1000,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;240&quot;,
+        &quot;maxExact&quot;: &quot;1000&quot;
+      },
+      &quot;heightRange&quot;: {
+        &quot;min&quot;: 200,
+        &quot;max&quot;: 600,
+        &quot;minInclusive&quot;: true,
+        &quot;maxInclusive&quot;: true,
+        &quot;minExact&quot;: &quot;200&quot;,
+        &quot;maxExact&quot;: &quot;600&quot;
+      },
+      &quot;region&quot;: {
+        &quot;vertices&quot;: [
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;200&quot;
+          },
+          {
+            &quot;width&quot;: &quot;1000&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          },
+          {
+            &quot;width&quot;: &quot;240&quot;,
+            &quot;height&quot;: &quot;600&quot;
+          }
+        ],
+        &quot;constraints&quot;: [
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;1&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;strict&quot;: false
+          },
+          {
+            &quot;coefficient&quot;: &quot;0&quot;,
+            &quot;constant&quot;: &quot;-32&quot;,
+            &quot;heightCoefficient&quot;: &quot;1&quot;,
+            &quot;strict&quot;: false
+          }
+        ]
+      },
+      &quot;available&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;-32&quot;,
+        &quot;heightCoefficient&quot;: &quot;1&quot;
+      },
+      &quot;required&quot;: {
+        &quot;coefficient&quot;: &quot;0&quot;,
+        &quot;constant&quot;: &quot;0&quot;
+      },
+      &quot;enforced&quot;: true
+    }
+  ],
+  &quot;sizes&quot;: [],
+  &quot;queries&quot;: []
+}</code></pre></section></div><a href="/isle/examples/layout-contracts/">Read the example →</a></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/">Isle</a><p>Built with Isle. Static pages, resumable interactions.</p></div><nav aria-label="Footer navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

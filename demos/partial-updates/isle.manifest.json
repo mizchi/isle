@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "references": {
+    "Dashboard.edit": {
+      "ref": [
+        "/isle/demos/partial-updates/assets/Dashboard.g0-BhkBtycU.js",
+        "h1",
+        [
+          1
+        ]
+      ],
+      "chunk": "assets/Dashboard.g0-BhkBtycU.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "a1961fedd473058f",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "note"
+      ],
+      "writes": [
+        "note"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 459,
+          "line": 11,
+          "column": 27
+        },
+        "end": {
+          "offset": 493,
+          "line": 11,
+          "column": 61
+        }
+      },
+      "loading": "lazy"
+    },
+    "Dashboard.increment": {
+      "ref": [
+        "/isle/demos/partial-updates/assets/Dashboard.g0-BhkBtycU.js",
+        "h0",
+        [
+          0
+        ]
+      ],
+      "chunk": "assets/Dashboard.g0-BhkBtycU.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "a1961fedd473058f",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 380,
+          "line": 10,
+          "column": 27
+        },
+        "end": {
+          "offset": 414,
+          "line": 10,
+          "column": 61
+        }
+      },
+      "loading": "lazy"
+    },
+    "isle:resume": {
+      "ref": [
+        "/isle/demos/partial-updates/assets/isle-resume-rUFYmlON.js",
+        "resume",
+        []
+      ],
+      "chunk": "assets/isle-resume-rUFYmlON.js",
+      "requires": [],
+      "kind": "runtime",
+      "loading": "lazy"
+    }
+  },
+  "chunks": {
+    "assets/Dashboard.g0-BhkBtycU.js": {
+      "url": "/isle/demos/partial-updates/assets/Dashboard.g0-BhkBtycU.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 142,
+      "gzipBytes": 115
+    },
+    "assets/index-C8deaqyU.js": {
+      "url": "/isle/demos/partial-updates/assets/index-C8deaqyU.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/isle-resume-rUFYmlON.js"
+      ],
+      "styles": [
+        "assets/index-Dnofiqrv.css"
+      ],
+      "bytes": 1518,
+      "gzipBytes": 813
+    },
+    "assets/isle-resume-rUFYmlON.js": {
+      "url": "/isle/demos/partial-updates/assets/isle-resume-rUFYmlON.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/Dashboard.g0-BhkBtycU.js"
+      ],
+      "bytes": 3430,
+      "gzipBytes": 1658
+    }
+  },
+  "styles": {
+    "assets/index-Dnofiqrv.css": {
+      "url": "/isle/demos/partial-updates/assets/index-Dnofiqrv.css",
+      "bytes": 1079,
+      "gzipBytes": 546
+    }
+  },
+  "loading": {
+    "eager": [],
+    "preload": []
+  },
+  "resolution": {
+    "version": 1,
+    "strategy": "event-and-size",
+    "budgetGzipBytes": 8192,
+    "usedGzipBytes": 0,
+    "decisions": [
+      {
+        "id": "Dashboard.edit",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 1773,
+        "modules": [
+          "/isle/demos/partial-updates/assets/isle-resume-rUFYmlON.js",
+          "/isle/demos/partial-updates/assets/Dashboard.g0-BhkBtycU.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "Dashboard.increment",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 1773,
+        "modules": [
+          "/isle/demos/partial-updates/assets/isle-resume-rUFYmlON.js",
+          "/isle/demos/partial-updates/assets/Dashboard.g0-BhkBtycU.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "isle:resume",
+        "requested": "lazy",
+        "loading": "lazy",
+        "reason": "default",
+        "additionalGzipBytes": 0,
+        "modules": [
+          "/isle/demos/partial-updates/assets/isle-resume-rUFYmlON.js"
+        ],
+        "initialBy": []
+      }
+    ]
+  },
+  "buildId": "31561f589c2ed873"
+}

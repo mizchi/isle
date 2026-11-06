@@ -1,0 +1,181 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="ES2023 向けの runtime 小型化"><title>ES2023 向けの runtime 小型化 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/runtime-size.html"><meta property="og:title" content="ES2023 向けの runtime 小型化 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="ES2023 向けの runtime 小型化"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/runtime-size.md">ソースで読む ↗</a></div><h1 id="es2023-向けの-runtime-小型化">ES2023 向けの runtime 小型化</h1>
+<p>同じ2カウンターと非同期 Editor の fixture を使い、最適化前の <a href="/isle/source/benchmarks/results/history/before-es2023.json">raw data</a> とスロット化・minify 後の <a href="/isle/source/benchmarks/results/history/before-island-loader.json">raw data</a> を保存しています。下表は island loader を分離する前の計測です。値は gzip level 6、body ごとに圧縮した bytes です。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>Isle</th>
+<th align="right">最適化前</th>
+<th align="right">最適化後</th>
+<th align="right">削減</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>初期の外部 JS</td>
+<td align="right">2,798</td>
+<td align="right">1,513</td>
+<td align="right">45.9%</td>
+</tr>
+<tr>
+<td>HTML（CSS・snapshot 込み）</td>
+<td align="right">1,012</td>
+<td align="right">937</td>
+<td align="right">7.4%</td>
+</tr>
+<tr>
+<td>最初の Counter handler</td>
+<td align="right">118</td>
+<td align="right">90</td>
+<td align="right">23.7%</td>
+</tr>
+<tr>
+<td>最初の Editor handler</td>
+<td align="right">148</td>
+<td align="right">129</td>
+<td align="right">12.8%</td>
+</tr>
+<tr>
+<td>共通操作で取得した asset 合計</td>
+<td align="right">4,076</td>
+<td align="right">2,669</td>
+<td align="right">34.5%</td>
+</tr>
+</tbody></table>
+</div><p>圧縮前の初期 JS は 6,276 → 2,897 bytes、合計は 9,019 → 5,184 bytes です。この fixture の転送量を測定しており、一般の UI の処理速度や機能同等性の指標ではありません。</p>
+<p>その後 <a href="/isle/ja/docs/island-loader.html">island loader</a> を分離し、初期外部 JS を <strong>697 bytes gzip</strong> にしました。その時点の操作後合計は 3,261 bytes です。さらに <a href="/isle/ja/docs/code-references.html">CodeRef と manifest</a> を導入した時点では、profile 無効で初期外部 JS <strong>698 bytes</strong>、操作後合計 <strong>3,693 bytes</strong> でした。Counter の <a href="/isle/source/benchmarks/results/latest.json">raw data</a> では、初期 loader と操作時の runtime/handler を区別しています。これらは操作時の並列取得を追加する前の記録です。その後の速度と転送量は<a href="https://github.com/mizchi/isle/blob/main/benchmarks/dashboard/README.md">ダッシュボードの測定</a>を参照してください。SSR 専用ページの framework JS はゼロです。</p>
+<h2 id="静的部分と再開部分の分離">静的部分と再開部分の分離</h2>
+<p>v0 の閉じた primitive 式に、定数伝播・定数畳み込みと静的 HTML の事前生成を追加しました。どのイベントからも書かれない state の初期化が定数なら、derive、handler、template へ伝播します。別のイベントから書かれる値は初期値が literal でも動的なままです。props 等の request ごとに変わる値を宣言だけからコンパイル時の定数とは扱いません。</p>
+<p>例えば <code>state prefix = &quot;Account: &quot;; derive label = prefix + title + &quot; points&quot;;</code> は title だけを保存値にします。prefix/suffix は HTML に置き、handler に同じ文字列を重複して入れません。Text node は一つに保ち、handler は可変文字列と UTF-16 の prefix/suffix 長を渡します。runtime は <code>Text.replaceData()</code> でその範囲を更新します。数値加算を文字列の断片として分割せず、CR/LF・NUL・孤立 surrogate 等で HTML parsing と更新時の値がずれる境界は保守的に全体更新を残します。</p>
+<p>Text node の分割ではフォント描画に17 pixel の差を検出したため、文字範囲の更新へ変更しました。現在の SSR HTML と resumable 初期表示は、vlmkit 0.24.0 の3幅で raw pixel / computed style の差がゼロです。snapshot script による DOM 要素数の差は保持します。<a href="https://github.com/mizchi/isle/blob/main/benchmarks/results/static/visual/diff.md">比較レポート</a>は初期表示の検査で、操作後の意味は Playwright で確認します。</p>
+<p>再開用 DOM root は、全 handler と動的 binding を含む最小の共通祖先へ寄せます。静的 section の隣にボタンだけがある component なら、ボタンだけを root にし、静的 section を復元時に走査しません。外にも更新先があれば、それを含む祖先を root にします。DOM は作り直しません。</p>
+<p>attribute-only build はテキスト用 TreeWalker / Text node 準備 / text patch を除去します。属性の target は初回解決後に owner 内で cache し、同じ binding の次の更新で再検索しません。文字範囲を使わない build に、そのための更新関数は残しません。</p>
+<p>SSR の必要性も HTML と resume snapshot で分けます。SSR 専用では event だけが使う state を初期化・保存せず、HTML 用の値だけを評価します。props の契約、最適化前の構文・型・循環検査は維持し、resume では snapshot を検証します。</p>
+<h2 id="合成ケースの実測">合成ケースの実測</h2>
+<p><code>just compare-static</code> で production bundle を測ります。固定の長い装飾を持つ文字列、attribute-only、不変値の別名、数値 derive の重複計算の4ケースです。UTF-8 raw とファイル単位 gzip level 6 で、HTTP header、manifest、RPC と実行時間は含めません。最初の2ケースの<a href="/isle/source/benchmarks/results/static/before.json">導入前</a>と<a href="/isle/source/benchmarks/results/static/latest.json">現在</a>を保存しています。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>指標</th>
+<th align="right">前</th>
+<th align="right">後</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Decorated の snapshot slots</td>
+<td align="right">prefix / suffix / title</td>
+<td align="right">title</td>
+</tr>
+<tr>
+<td>snapshot raw</td>
+<td align="right">880</td>
+<td align="right">37</td>
+</tr>
+<tr>
+<td>HTML raw</td>
+<td align="right">2,068</td>
+<td align="right">1,225</td>
+</tr>
+<tr>
+<td>HTML + JS raw</td>
+<td align="right">6,757</td>
+<td align="right">5,926</td>
+</tr>
+<tr>
+<td>HTML + JS gzip</td>
+<td align="right">3,017</td>
+<td align="right">3,007</td>
+</tr>
+<tr>
+<td>AttributeOnly の JS gzip</td>
+<td align="right">2,504</td>
+<td align="right">2,384</td>
+</tr>
+<tr>
+<td>AttributeOnly の HTML + JS gzip</td>
+<td align="right">2,793</td>
+<td align="right">2,676</td>
+</tr>
+</tbody></table>
+</div><p>snapshot raw は95.8%減りますが、HTML と snapshot の同じ文字列は gzip でも重複圧縮されるため、asset 合計 gzip の減少は0.3%です。attribute-only JS は4.8%減りました。共通 Qwik/Preact fixture はすでに小さく、直前の <a href="/isle/source/benchmarks/results/history/before-static-split.json">3,690 bytes</a> に対して今回は3,693 bytes gzipです。全ケースで同じ割合の削減を主張しません。</p>
+<p>実行時には、静的 section の mutation がゼロ、復元の TreeWalker の root が button、attribute-only の TreeWalker がゼロ、属性の5回更新で target query が1回であることを確認します。これらは work の数で、CPU 時間や INP の測定ではありません。</p>
+<h2 id="不変値の別名と重複計算">不変値の別名と重複計算</h2>
+<p>現行 v0 の props は component の寿命中に変更されません。<code>state copied = base; state copiedAgain = copied;</code> のような初期コピーも、どのイベントからも書かれず型が同じなら、base を読む式へ置き換えます。snapshot と handler は元の slot を共有します。値が等しいという理由では統合せず、コピー元が可変なら初期値を独立して保存します。書き込みの有無は component 内の全イベントから判定し、props と残る state の型検証も維持します。</p>
+<p>数値の derive が同じ式から何度も参照される場合、handler 内のローカル変数へ取り出します。対象は primitive の純粋な数値演算で、生成する宣言も含めてソースが短くなる場合です。各代入の右辺と、代入を終えた後の DOM 更新を別の計算範囲にし、書き込み・await・イベントをまたいで結果を再利用しません。文字列や property 読み出し、remote を含む範囲は対象外です。snapshot に cache 値を加えず、算術の括弧や有限数の検証、失敗時の rollback も保ちます。</p>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>state count = 1;
+derive base = count * 2 + factor;
+// factor=3 の場合、最初は30、その書き込み後の base=63 を使って4032になる。
+count = base * base + base;
+count = base * base + base;</code></pre></div>
+<p>新しい2ケースの<a href="/isle/source/benchmarks/results/static/before-alias-cse.json">変更前</a>と<a href="/isle/source/benchmarks/results/static/latest.json">変更後</a>は次の通りです。既存の Decorated / AttributeOnly の出力サイズは変わりません。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>指標</th>
+<th align="right">前</th>
+<th align="right">後</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Aliased の snapshot slots</td>
+<td align="right">base / copied / copiedAgain / count</td>
+<td align="right">base / count</td>
+</tr>
+<tr>
+<td>Aliased の snapshot raw</td>
+<td align="right">40</td>
+<td align="right">34</td>
+</tr>
+<tr>
+<td>Aliased の HTML + JS gzip</td>
+<td align="right">2,680</td>
+<td align="right">2,674</td>
+</tr>
+<tr>
+<td>Repeated の handler raw</td>
+<td align="right">316</td>
+<td align="right">132</td>
+</tr>
+<tr>
+<td>Repeated の handler gzip</td>
+<td align="right">126</td>
+<td align="right">126</td>
+</tr>
+<tr>
+<td>Repeated の HTML + JS raw</td>
+<td align="right">5,681</td>
+<td align="right">5,497</td>
+</tr>
+<tr>
+<td>Repeated の HTML + JS gzip</td>
+<td align="right">2,852</td>
+<td align="right">2,852</td>
+</tr>
+</tbody></table>
+</div><p>Repeated は数値 derive が diamond を作り、同じ値を2つのテキストと1つの属性へ書きます。生成 handler のテストでは、1回の更新での count 読み出しが16→2回、factor が15→1回になりました。変更後の minify 済み handler でも Proxy による slot 読み出し数は2回・1回です。これは計算の重複とコード量の削減であり、実行時間や gzip 転送量の改善を示すものではありません。この変更時点の共通 Qwik/Preact fixture は初期外部 JS 698 bytes、操作後 asset 合計3,693 bytes gzipでした。</p>
+<p><a href="https://github.com/mizchi/isle/blob/main/evals/scenarios/computation-lifetime/brief.md">計算の寿命の読解課題</a>も追加しています。fixture の実行結果と期待値を照合しますが、参加者評価は未実施です。</p>
+<h2 id="再利用できる-server-artifact">再利用できる server artifact</h2>
+<p><code>prepareComponent(component)</code> は入力 IR のコピーを所有し、静的 HTML、初期化の必要性、capture、binding と handler の計画を共有します。render ごとの状態と snapshot は共有しません。generate で返す metadata から内部計画も変更できません。Vite adapter は同じ解決済み file/source なら artifact を再利用し、mount ごとの再解析・静的 HTML 生成を省きます。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>const prepared = prepareComponent(component);
+const client = prepared.generate();
+const first = prepared.render({ initial: &#39;Draft&#39; }, { scopeId: &#39;a&#39; });
+const second = prepared.render({ initial: &#39;&#39; }, { scopeId: &#39;b&#39; });</code></pre></div>
+<p>explain の analysis は folded、aliases（不変値の別名と参照元）、serverStates（snapshot も含む初期化）、htmlStates（HTML 専用）、snapshotSlots、textRanges、staticFragments、resumeRoot を表示します。handler の computations は、重複計算を除いた derive 名と <code>statement:0</code> 等の代入位置、または <code>patch</code> を示します。これらは explain / manifest の metadata で、通常の browser registry へは送りません。API は <a href="/isle/source/lib/codegen.d.mts">codegen.d.mts</a> に定義します。新しい inline/live/CSS parser や CSS DCE はこの変更の実装範囲には含めません。</p>
+<p>schema hash は source 全体から capture layout と動的 handler/binding の契約へ切り替えました。同じ長さの固定文言や静的 layout の変更は、動的計画が同じなら JS の hash を変えません。文字範囲の長さが変われば更新コードも変わり、hash が変わります。snapshot は v2 のままですが生成規則を <code>static-plan/2</code> とし、旧 plan の snapshot を誤って受け入れません。</p>
+<h2 id="境界と-mangle">境界と mangle</h2>
+<p>ユーザーの記述・MoonBit IR・server API の field 名は意味を保持します。browser snapshot は <code>[2, schemaId, scopeId, values[]]</code> にし、必要な props/state だけを <code>fields</code> の順番で番号に変換します。component 名・状態名の文字列を復元のために送る必要がなくなります。</p>
+<p>生成 handler は位置引数で値と操作を受け取ります。各 chunk のローカル変数を独立に mangle でき、property 名の変換表を chunk 間で共有しません。使わない末尾引数も生成しません。binding は root 内の番号付き locator と短い comment にします。閉じ comment は残し、隣接する静的文字列と動的文字列が HTML parser で一体化することを防ぎます。</p>
+<p>runtime の <code>_values</code> / <code>_queue</code> などの内部 property だけを、Vite が公開する Oxc minifier で module 単位に mangle します。対象は <code>runtime/client.mjs</code> のみです。JSON の field、DOM property、公開 controller、ユーザーのコードには適用しません。最終 bundle も通常の Oxc minify を通します。インストール済み Rolldown の bundle 全体の property mangle は単一 chunk 制約があるため、遅延分割を維持したまま使える範囲に限定しています。</p>
+<h2 id="標準機能と静的に確定する機能">標準機能と静的に確定する機能</h2>
+<ul>
+<li>出力 target は ES2023。標準の ESM、動的 <code>import()</code>、fetch、DOM TreeWalker、Map/WeakMap、Promise を使います。旧ブラウザー用 polyfill は含めません。</li>
+<li>event listener の破棄は標準 AbortController / AbortSignal で行います。独自の listener 削除リストを持ちません。</li>
+<li>handler は現在の文法上 JavaScript のみで、CSS やユーザー import を含みません。Vite/Rolldown の公開 <code>emitFile</code> / <code>resolveFileUrl</code> API に chunk と content hash の解決を任せ、ブラウザー標準の import を直接出力します。汎用の CSS/preload/error helper を載せません。失敗は既存の event queue の error hook に渡します。</li>
+<li>native import の依存関係を出力 chunk の <code>dynamicImports</code> に登録し、Vite manifest にも残します。code 変更時に handler と親 chunk の hash が変わること、manifest と URL が実在する chunk を指すことをテストします。</li>
+<li>production では解析済みの component が使う attribute / remote capability のみ残します。開発時は全機能を残し、HMR で capability を追加しても利用できます。</li>
+<li>production の計測値・詳細診断文は既定で除去します。<code>diagnostics: true</code> で有効にできます。機能の検証用デモは診断あり、比較用ページは診断なしです。</li>
+</ul>
+<h2 id="維持する検査">維持する検査</h2>
+<p>snapshot の version、schema hash、scope、slot 数、各 primitive 型、有限数と負のゼロの制約を検査します。未知の schema は prototype 由来の property も含めて拒否します。staged write、scope の破棄判定、直列 event queue、import 失敗後の再試行、remote action の allowlist と response 成功判定は残します。server の入力・policy・認証 context・出力検査も変更していません。</p>
+<p>Node の契約・build テストに加えて、minify 済みの出力で属性更新、空文字、連続操作、AbortSignal による close、不正 snapshot の拒否を Playwright で確認します。比較用 fixture は4実装共通の操作と3幅の視覚比較に通しています。これらは実装テストであり、既存 MoonBit/veri モデルの対象を compiler/browser 全体へ広げるものではありません。</p>
+<p>比較側も ES2023 / <code>modulePreload: false</code> に揃えたため、Preact の観測合計も 7,070 → 6,752 bytes に縮みました。Qwik 独自の loader/preloader は既定値を維持しています。最新の全比較は <a href="https://github.com/mizchi/isle/blob/main/benchmarks/results/latest.md">比較結果</a>を参照してください。</p>
+<p>参照: <a href="https://vite.dev/config/build-options">Vite build options</a>、<a href="https://rolldown.rs/reference/Interface.ManglePropertiesOptions">Rolldown property mangle</a>、<a href="https://rolldown.rs/reference/Interface.EmittedChunk">Rolldown emitted chunks</a>。実際の単一 chunk 制約と API 型は lockfile が固定する Rolldown 1.2.16 の宣言も確認しています。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

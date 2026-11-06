@@ -1,0 +1,29 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="manifest による読み込み"><title>manifest による読み込み · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/examples/loading/index.html"><meta property="og:title" content="manifest による読み込み · Isle"><meta property="og:type" content="website"><meta property="og:description" content="manifest による読み込み"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/examples/loading/">English</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/ja/examples/">サンプル一覧</a> / loading</p><span class="tag live-tag">Pages で操作できる</span><h1>manifest による読み込み</h1><p class="lead">manifest の先読み判断を調べ、入力時には Search だけが活性化することを確認する。</p><div class="hero-actions"><a class="button primary" href="/isle/demos/loading/">ライブデモを開く ↗</a><a class="button secondary" href="https://github.com/mizchi/isle/blob/main/examples/loading">GitHub source ↗</a></div><div class="doc-content example-description"><p>manifest の先読み判断を調べ、入力時には Search だけが活性化することを確認する。 Network と isle.manifest.json を調べる。Search.edit は取得のみの先読み対象になり、操作まで data-setup は付かない。config の loading を lazy/preload/eager に変えて比較できる。eager は起動時の評価を許す。この例の profile は User Timing を出力する。</p>
+<p>リポジトリ内の例は、ルートで上記コマンドを実行する。検査は <code>just examples-check</code>。利用者のアプリへ組み込む場合は <a href="/isle/ja/docs/quick-start.html#はじめる">npm パッケージの導入手順</a>を使い、このディレクトリのソースと設定を参照する。</p>
+</div><h2>実装を読む</h2><details class="source-details"><summary>app.isle</summary><pre tabindex="0"><code>client component Search() {
+  state query = &quot;&quot;;
+  &lt;section data-search=&quot;&quot;&gt;
+    &lt;label&gt;Search query&lt;input value={query}&gt;on input edit { query = event.value; }&lt;/input&gt;&lt;/label&gt;
+    &lt;output aria-live=&quot;polite&quot;&gt;{query}&lt;/output&gt;
+  &lt;/section&gt;
+}
+client component Details() {
+  state opened = false;
+  &lt;section data-details=&quot;&quot;&gt;
+    &lt;button type=&quot;button&quot;&gt;on click open { opened = true; }Open details&lt;/button&gt;
+    @if (opened) { &lt;p&gt;Details resumed&lt;/p&gt; }
+    @else { &lt;p&gt;Details are still inactive&lt;/p&gt; }
+  &lt;/section&gt;
+}
+server component Page() { &lt;section&gt;&lt;Search /&gt;&lt;Details /&gt;&lt;/section&gt; }
+</code></pre></details><details class="source-details"><summary>setup.mjs</summary><pre tabindex="0"><code>export function setup({ root }) {
+  // Observable demo instrumentation; fetching this module alone does not run setup.
+  root.setAttribute(&#39;data-setup&#39;, &#39;ready&#39;);
+}
+</code></pre></details><details class="source-details"><summary>vite.config.mjs</summary><pre tabindex="0"><code>import { exampleConfig } from &#39;../_shared/vite.mjs&#39;;
+export default exampleConfig(import.meta.url, {
+  loading: &#39;auto&#39;, autoPreloadGzipBytes: 8192, handlerChunkBytes: 0, profile: true,
+  resources: { Search: &#39;./setup.mjs&#39;, Details: &#39;./setup.mjs&#39; },
+  mounts: [{ component: &#39;Page&#39;, props: {}, label: &#39;Loading policies&#39; }],
+});
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

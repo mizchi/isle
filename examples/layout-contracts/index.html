@@ -1,0 +1,123 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="CSS contract outcomes"><title>CSS contract outcomes · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/examples/layout-contracts/index.html"><meta property="og:title" content="CSS contract outcomes · Isle"><meta property="og:type" content="website"><meta property="og:description" content="CSS contract outcomes"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/ja/examples/layout-contracts/">日本語</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/examples/">All examples</a> / layout-contracts</p><span class="tag report-tag">Build-time report</span><h1>CSS contract outcomes</h1><p class="lead">Run verified, overflow/violated and unsupported/unknown cases using reset-aware Grid contracts.</p><p class="callout">CSS contracts are checked at build time. Inspect actual verified / violated / unknown results.</p><a class="button primary" href="/isle/reports/layout.html">Read the check results →</a><div class="doc-content example-description"><p>Source / ソース: <a href="/isle/source/examples/layout-contracts/app.isle">app.isle</a> · <a href="/isle/source/examples/layout-contracts/layout.json">layout.json</a> · <a href="/isle/source/examples/layout-contracts/overflow.json">overflow.json</a> · <a href="/isle/source/examples/layout-contracts/unknown.json">unknown.json</a></p>
+<p>Run verified, overflow/violated and unsupported/unknown cases using reset-aware Grid contracts. Run the three configs below. Only the verified case exits 0. Both violated and unknown exit 1. Results apply to declared size/text contracts; unknown is not a successful proof.</p>
+<p>From a repository checkout, run at the repository root:</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just example layout-contracts</code></pre></div>
+<p>Check: <code>just examples-check</code>. For a consumer app, install the package and use the <a href="/isle/docs/quick-start.html#quick-start">npm setup</a>; the source files here show the feature and its configuration.</p>
+</div><h2>Read the implementation</h2><details class="source-details"><summary>app.css</summary><pre tabindex="0"><code>@layer app {
+  .panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    padding: 16px;
+    block-size: 100%;
+    font-family: system-ui;
+    line-height: 24px;
+  }
+  .copy { inline-size: 100%; block-size: 100%; padding: 16px; overflow-wrap: anywhere; }
+}
+</code></pre></details><details class="source-details"><summary>app.isle</summary><pre tabindex="0"><code>component ResetPanel() {
+  &lt;main class=&quot;panel&quot;&gt;&lt;p class=&quot;copy&quot;&gt;Reset-aware box model&lt;/p&gt;&lt;/main&gt;
+}
+</code></pre></details><details class="source-details"><summary>layout.json</summary><pre tabindex="0"><code>{
+  &quot;component&quot;: &quot;ResetPanel&quot;,
+  &quot;reset&quot;: [&quot;./reset.css&quot;],
+  &quot;css&quot;: &quot;./app.css&quot;,
+  &quot;ancestors&quot;: [{ &quot;tag&quot;: &quot;html&quot; }, { &quot;tag&quot;: &quot;body&quot; }],
+  &quot;viewport&quot;: { &quot;min&quot;: 240, &quot;max&quot;: 1000, &quot;height&quot;: { &quot;min&quot;: 200, &quot;max&quot;: 600 } },
+  &quot;boxes&quot;: { &quot;.copy&quot;: { &quot;minInlineSize&quot;: 100, &quot;minBlockSize&quot;: 24, &quot;wrap&quot;: &quot;anywhere&quot; } }
+}
+</code></pre></details><details class="source-details"><summary>overflow.css</summary><pre tabindex="0"><code>@layer app {
+  .panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    padding: 16px;
+    block-size: 100%;
+    font-family: system-ui;
+    line-height: 24px;
+  }
+  .copy { inline-size: 100%; block-size: 100%; padding: 16px; overflow-wrap: anywhere; }
+}
+
+.copy { box-sizing: content-box; }
+</code></pre></details><details class="source-details"><summary>overflow.json</summary><pre tabindex="0"><code>{
+  &quot;component&quot;: &quot;ResetPanel&quot;,
+  &quot;reset&quot;: [
+    &quot;./reset.css&quot;
+  ],
+  &quot;css&quot;: &quot;./overflow.css&quot;,
+  &quot;ancestors&quot;: [
+    {
+      &quot;tag&quot;: &quot;html&quot;
+    },
+    {
+      &quot;tag&quot;: &quot;body&quot;
+    }
+  ],
+  &quot;viewport&quot;: {
+    &quot;min&quot;: 240,
+    &quot;max&quot;: 1000,
+    &quot;height&quot;: {
+      &quot;min&quot;: 200,
+      &quot;max&quot;: 600
+    }
+  },
+  &quot;boxes&quot;: {
+    &quot;.copy&quot;: {
+      &quot;minInlineSize&quot;: 100,
+      &quot;minBlockSize&quot;: 24,
+      &quot;wrap&quot;: &quot;anywhere&quot;
+    }
+  }
+}
+</code></pre></details><details class="source-details"><summary>reset.css</summary><pre tabindex="0"><code>@layer reset, app;
+@layer reset {
+  :root { box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: inherit; }
+  :where(*) { margin: 0; padding: 0; }
+}
+</code></pre></details><details class="source-details"><summary>unknown.css</summary><pre tabindex="0"><code>@layer app {
+  .panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    padding: 16px;
+    block-size: 100%;
+    font-family: system-ui;
+    line-height: 24px;
+  }
+  .copy { inline-size: 100%; block-size: 100%; padding: 16px; overflow-wrap: anywhere; }
+}
+
+.copy { inline-size: var(--host-size); }
+</code></pre></details><details class="source-details"><summary>unknown.json</summary><pre tabindex="0"><code>{
+  &quot;component&quot;: &quot;ResetPanel&quot;,
+  &quot;reset&quot;: [
+    &quot;./reset.css&quot;
+  ],
+  &quot;css&quot;: &quot;./unknown.css&quot;,
+  &quot;ancestors&quot;: [
+    {
+      &quot;tag&quot;: &quot;html&quot;
+    },
+    {
+      &quot;tag&quot;: &quot;body&quot;
+    }
+  ],
+  &quot;viewport&quot;: {
+    &quot;min&quot;: 240,
+    &quot;max&quot;: 1000,
+    &quot;height&quot;: {
+      &quot;min&quot;: 200,
+      &quot;max&quot;: 600
+    }
+  },
+  &quot;boxes&quot;: {
+    &quot;.copy&quot;: {
+      &quot;minInlineSize&quot;: 100,
+      &quot;minBlockSize&quot;: 24,
+      &quot;wrap&quot;: &quot;anywhere&quot;
+    }
+  }
+}
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/">Isle</a><p>Built with Isle. Static pages, resumable interactions.</p></div><nav aria-label="Footer navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

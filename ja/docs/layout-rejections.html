@@ -1,0 +1,110 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="リジェクトされるコードを実行する"><title>リジェクトされるコードを実行する · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/layout-rejections.html"><meta property="og:title" content="リジェクトされるコードを実行する · Isle"><meta property="og:type" content="website"><meta property="og:description" content="リジェクトされるコードを実行する"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/layout-rejections.md">ソースで読む ↗</a></div><h1 id="リジェクトされるコードを実行する">リジェクトされるコードを実行する</h1>
+<p>現在のレイアウト検査で成功扱いにしない14例と、それぞれの対応版を実行できる。契約違反の <code>violated</code> が6例、未対応・情報不足の <code>unknown</code> が8例である。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just layout-rejections
+just layout-rejections container-breakpoint</code></pre></div>
+<p>各例は <code>.isle</code>、CSS、reset、layout.json、診断 JSON として <code>evals/results/layout-rejections/&lt;id&gt;/reject</code> と <code>accept</code> 以下へ生成する。全例の実行後は <a href="https://github.com/mizchi/isle/blob/main/evals/results/layout-rejections/index.md">実行結果一覧</a>から両側のコードを参照できる。例を一つ指定した場合、一覧はその実行対象だけを記録する。</p>
+<p>suite の PASS は「拒否版が期待する診断で exit 1となり、対応版が verified で exit 0となった」という意味である。拒否版を直接検査すると非0になる。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just layout evals/results/layout-rejections/content-box/reject/app.isle \
+  evals/results/layout-rejections/content-box/reject/layout.json</code></pre></div>
+<h2 id="期待する結果">期待する結果</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>拒否される記述・条件</th>
+<th>診断</th>
+<th>対応版</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>float</td>
+<td>float:left</td>
+<td>E_LAYOUT_FLOAT</td>
+<td>float:none</td>
+</tr>
+<tr>
+<td>flex</td>
+<td>container が display:flex</td>
+<td>E_LAYOUT_CONTAINER</td>
+<td>Grid にする</td>
+</tr>
+<tr>
+<td>content-box</td>
+<td>width:100% + padding + content-box</td>
+<td>E_LAYOUT_ITEM_SIZE</td>
+<td>border-box を保つ</td>
+</tr>
+<tr>
+<td>block-height</td>
+<td>必要高さ200pxに row が100px</td>
+<td>E_LAYOUT_CONTENT</td>
+<td>row に200pxを与える</td>
+</tr>
+<tr>
+<td>wrapping</td>
+<td>wrap:anywhere と white-space:nowrap</td>
+<td>E_LAYOUT_WRAP</td>
+<td>CSS と契約を一致させる</td>
+</tr>
+<tr>
+<td>container-breakpoint</td>
+<td>616px必要なのに600pxから二列</td>
+<td>E_LAYOUT_CONTENT</td>
+<td>616pxから切り替える</td>
+</tr>
+<tr>
+<td>intrinsic-fr</td>
+<td>intrinsic minimum を持つ1fr</td>
+<td>U_LAYOUT_GEOMETRY</td>
+<td>この例を minmax(0,1fr) で書く</td>
+</tr>
+<tr>
+<td>css-variable</td>
+<td>値域不明の var(--size)</td>
+<td>U_LAYOUT_GEOMETRY</td>
+<td>この例の値320pxを明示する</td>
+</tr>
+<tr>
+<td>inherit-boundary</td>
+<td>inherit の祖先情報が不足</td>
+<td>U_LAYOUT_GEOMETRY</td>
+<td>実在する html/body を入力する</td>
+</tr>
+<tr>
+<td>generated-content</td>
+<td>content で pseudo box を生成</td>
+<td>U_LAYOUT_CSS</td>
+<td>実 DOM の leaf として記述する</td>
+</tr>
+<tr>
+<td>nested-layer</td>
+<td>layer の階層</td>
+<td>U_LAYOUT_LAYER</td>
+<td>小例を flat layer で記述する</td>
+</tr>
+<tr>
+<td>revert-layer</td>
+<td>layer rollback</td>
+<td>U_LAYOUT_CSS</td>
+<td>小例の意図する値を明示する</td>
+</tr>
+<tr>
+<td>missing-auto-height</td>
+<td>text の自動高さが不明</td>
+<td>U_LAYOUT_GEOMETRY</td>
+<td>trusted な exact 高さを入力する</td>
+</tr>
+<tr>
+<td>percentage-height-cycle</td>
+<td>自動高さと子の高さ50%が循環</td>
+<td>U_LAYOUT_GEOMETRY</td>
+<td>親と row に definite な高さを与える</td>
+</tr>
+</tbody></table>
+</div><p>container-breakpoint では、viewport の <code>[632, 648)</code> が反例になることも自動検査する。単一画面幅での失敗確認に限定しない。</p>
+<h2 id="対応版の意味">対応版の意味</h2>
+<p>対応版は、解析可能な書き方や追加情報を示す。任意の入力で同じ browser の意味を保つ変換の証明ではない。例えば1frとminmax(0,1fr)、pseudo boxと実DOM、layer階層とflat layerでは、一般に挙動やaccessibilityが変わり得る。各例の note に目的と限界を記す。</p>
+<p>どの例も viewport の検査範囲を狭めて成功させない。自動高さや font の契約は caller の仮定として残る。unknown を「不正なCSS」と読み替えない。</p>
+<p>正本は <a href="/isle/source/evals/scenarios/layout-rejections/cases.mjs">cases.mjs</a>。<code>just layout-check</code> と <code>just ci</code> は、実 CLI を使う回帰テストにより、期待する status・診断 code・軸・反例区間・終了 code と、全対応版の verified を確認する。単なる構文エラーや設定エラーを、期待するレイアウト拒否として合格させない。</p>
+<p><a href="https://github.com/mizchi/isle/blob/main/evals/reports/layout-rejections.md">評価記録</a>、<a href="https://github.com/mizchi/isle/blob/main/evals/scenarios/layout-rejections/brief.md">記述・読解課題</a>。この追加は現行の検査挙動を再現するサンプル群であり、unknown の解析対応を拡大する変更ではない。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

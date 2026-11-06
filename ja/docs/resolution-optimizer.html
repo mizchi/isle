@@ -1,0 +1,70 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="コンパイラによる解決時期の最適化"><title>コンパイラによる解決時期の最適化 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/resolution-optimizer.html"><meta property="og:title" content="コンパイラによる解決時期の最適化 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="コンパイラによる解決時期の最適化"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html" aria-current="page">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/resolution-optimizer.md">ソースで読む ↗</a></div><h1 id="コンパイラによる解決時期の最適化">コンパイラによる解決時期の最適化</h1>
+<p>2026-11-06。UI の依存・効果・寿命を解析し、再開可能なコードと状態遷移モデルを生成する言語を目指す。CodeRef の解決時期は compiler / build pass が計画する。現在はイベント種別と生成後の JS / CSS サイズによる <code>auto</code> 計画、CSS-ready と owner の確認後に評価・適用へ進む経路を実装した。型付き遷移・effect 推論・task policy・CSS の必要性解析からの統合計画は後続である。</p>
+<h2 id="四つの段階">四つの段階</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>段階</th>
+<th>意味</th>
+<th>前倒しできる条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>fetch</td>
+<td>module / asset を取得・準備する</td>
+<td>manifest の依存閉包と取得予算に従う</td>
+</tr>
+<tr>
+<td>evaluate</td>
+<td>module のトップレベルを評価し export を解決する</td>
+<td>auto/lazy は CSS-ready・適用後に解決する。明示 eager は起動時の評価を許可する</td>
+</tr>
+<tr>
+<td>activate</td>
+<td>handler / resource setup を対象 owner に結び付けて実行する</td>
+<td>操作または明示 resume、snapshot 検査、owner の生存確認</td>
+</tr>
+<tr>
+<td>commit</td>
+<td>state と準備した DOM patch を反映する</td>
+<td>owner generation と対象 DOM がまだ有効であること</td>
+</tr>
+</tbody></table>
+</div><p>modulepreload は handler 呼び出しでも snapshot 復元でもない。取得が終わっても component と resource を一括初期化しない。setup と handler の code を並列取得し、setup の登録を先に行い、登録された非同期取得の完了は handler を待たせない。unmount 後の取得完了は公開せず cleanup へ回す。これらの実行規則は既存の owner / resource kernel が担う。</p>
+<p><strong>コードの取得時期と、生リソースの取得開始は別の計画にする。</strong> fetchUser のコードを先読みしても API request は開始しない。resource / server action の実行を前倒しするには、認可・引数の確定・effect・scope の契約が別途必要になる。</p>
+<h2 id="実装済みの-auto-計画">実装済みの auto 計画</h2>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>isle({
+  entry,
+  mounts,
+  loading: &#39;auto&#39;,            // 既定値
+  autoPreloadGzipBytes: 8192, // 自動で追加する JS / CSS 取得の予算
+});</code></pre></div>
+<p>通常のアプリは境界ごとに QRL の URL や先読み時期を書かない。DSL の名前付き event と resource 設定から CodeRef を生成し、Vite / Rolldown が物理 chunk を決定した後、次の pass を実行する。</p>
+<ol>
+<li>明示した <code>lazy</code> / <code>preload</code> / <code>eager</code> を保持する。同じ component の複数 mount は明示 policy を auto より優先し、明示 policy 同士は既存の強い指定を採る。</li>
+<li>auto の <code>input</code> / <code>change</code>、次いで <code>submit</code> / <code>invalid</code> を先読み候補にする。他のイベントと単独の resource は操作時の取得を保つ。</li>
+<li>各候補の runtime・resource CodeRef・静的 import の閉包を求める。無関係な dynamic import と子 component の entry へは広げない。</li>
+<li>明示 preload / eager と選択済み候補が取得する URL を差し引き、追加の gzip bytes を算出する。</li>
+<li>予算に収まる候補のうち、イベント優先度、追加 bytes の小ささ、境界 ID の順で選ぶ。共有依存が増えるたびに追加費用を再計算する。</li>
+<li>サイズ不明・外部 import のある追加依存は <code>unknown-size</code>、予算外は <code>budget</code> として lazy に残す。</li>
+<li>選択した閉包を HTML の modulepreload、widget では descriptor の preload に下げる。未選択の操作では、既存の inert template から依存を並列取得する。</li>
+</ol>
+<p>予算は生成された各 JS / CSS file の gzip level 6 を、物理 URL ごとに一度だけ合計する。bootstrap、HTML、font / image、API response、明示 preload / eager はこの「自動で追加する資産」の予算へ含めない。0 なら新しい資産を自動追加しないが、明示指定で既に準備する閉包を再利用できる。先読みはブラウザーへのヒントで、未取得でも通常の import / stylesheet load で解決する。HTTP cache・転送時間・イベント完了時間の上限ではない。</p>
+<p>小さい handler の packing も auto のイベント優先度ごとに分ける。非連続の click sibling は同じ group にできるが、input の先読みに巻き込まない。schema Form は独立した境界を維持する。budget が小さく先読みされなかった場合も、この group 分けは維持する。これは一つの決定的な greedy 戦略で、最適な分割・配置を証明したものではない。</p>
+<p>development は最終 gzip サイズが未確定なので、auto 候補を保守的に lazy とする。明示 preload / eager は使用できる。production build と <code>just chunks</code> で最終判断を確認する。</p>
+<h2 id="説明と検証">説明と検証</h2>
+<p><code>isle.manifest.json</code> の <code>resolution</code> は strategy、budget、追加 bytes、各境界の要求・結果・理由・依存 URL を保存する。<code>initialBy</code> は、その境界の物理 module を初期取得する entry ID を示す。例えば resource 自体が lazy でも、input handler の依存として取得されることを区別できる。<code>just chunks</code> も同じ判断を返す。実行時 registry は従来の CodeRef のままで、ブラウザへ planner や費用表を import しない。snapshot / registry は同じ形式を保ち、CSS 対応の共有 engine は ABI 6、transport は ABI 3にする。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just loading-check
+just chunks dist/isle.manifest.json</code></pre></div>
+<p>Node は予算、共有依存、手動指定、サイズ不明、将来 dynamic chunk の除外、packing を検査する。Chromium は予算8192 / 0の双方で、実際の request・module 評価・snapshot 復元・setup・unmount を区別して観測する。SSR 専用では resource module を解決せず JS / preload / planner を出力しない。</p>
+<h2 id="次の段階">次の段階</h2>
+<p>採用した方向性は、型付き状態・遷移、effect / capability、競合方針と scope、差分 collection、操作と accessibility の契約、外部 DOM の所有境界、IR からのモデル抽出である。最初に状態・遷移と task scope の意味を定義し、その IR を実行コードと検証へ接続する。</p>
+<ul>
+<li><strong>解決の制約グラフ</strong>: export / capture / setup / handler / CSS-ready / commit の前後関係を生成し、並列に準備できる依存を compiler がまとめる。既存の JS 実行順からこの IR への対応も検査する。</li>
+<li><strong>CSS</strong>: <a href="/isle/ja/docs/style-resolution.html">CodeRef の CSS 依存と準備ゲート</a>は実装した。初期 SSR と将来 region の CSS の分類、class token の意味解析・不要規則の除去を次の対象にする。</li>
+<li><strong>より早い評価・実行</strong>: pure / effect summary と明示的な契約がある場合だけ検討する。opaque な TS の top-level effect を auto が安全と推定しない。</li>
+<li><strong>profile による計画改善</strong>: build ID と境界 ID の付いた測定から頻度・cold cost を受け取り、次回 build の判断材料にする。現在は profile 入力や online 学習を使わない。</li>
+<li><strong>検証</strong>: source の閉じた状態・event・effect から有限モデルを抽出し、fetch / evaluate / activate / commit の反例を生成コードへ再生する。現在の owner / resource の参照モデルと browser tests は、この変換全体の refinement 証明ではない。</li>
+</ul>
+<p>参考: <a href="https://qwik.dev/docs/advanced/qrl/">Qwik QRL</a> は symbol と capture を伴う遅延参照、<a href="https://vite.dev/guide/features#async-chunk-loading-optimization">Vite の async chunk 最適化</a>は共有依存の並列取得、<a href="https://vite.dev/guide/ssr#generating-preload-directives">SSR manifest</a>は module ID から配信ファイルへの対応として参照した。Isle はこれらを DSL の境界と owner の実行規則に結び付ける。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

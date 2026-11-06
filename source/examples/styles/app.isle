@@ -1,0 +1,8 @@
+client component Card() {
+  state count = 0;
+  <section class="lazy-card">
+    <h2>Component CSS</h2>
+    <button type="button">on click activate { count += 1; }Activate style</button>
+    <output aria-live="polite">{count}</output>
+  </section>
+}

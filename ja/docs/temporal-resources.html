@@ -1,0 +1,187 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="時相的な値の意味論とモデル検査"><title>時相的な値の意味論とモデル検査 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/temporal-resources.html"><meta property="og:title" content="時相的な値の意味論とモデル検査 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="時相的な値の意味論とモデル検査"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/temporal-resources.md">ソースで読む ↗</a></div><h1 id="時相的な値の意味論とモデル検査">時相的な値の意味論とモデル検査</h1>
+<p><code>Once&lt;T&gt;</code> を「一度だけ読む値」ではなく、同じ resource identity の寿命中に高々一度だけ結果を公開する値とする。読み取りは何度でもよい。公開の結果は <code>Ready(T)</code> または <code>Failed(PublicError)</code> で、初期化の開始回数、結果の公開回数、component の更新回数を別に扱う。</p>
+<p>2026-11-05 時点で、以下の参照モデルと検査は実行できる。所有・破棄カーネルと Vite <code>resources</code> から browser の component / widget 寿命への接続も実装した。resource / <code>Once</code> / <code>@pending</code> の DSL と temporal codegen は未実装であり、このモデルの検査結果をそれらの実装の証明とは扱わない。</p>
+<h2 id="型をトレースの集合として解釈する">型をトレースの集合として解釈する</h2>
+<p>モデルの状態を S、許される遷移を <code>Next ⊆ S × S</code> とする。実行は無限列 <code>σ = s₀,s₁,…</code> で、初期状態を満たし、各組 <code>(sᵢ,sᵢ₊₁)</code> が Next に属する。状態を変えない Tick も許す。待ち続ける実行をモデルから消して、活性が成立したことにはしない。</p>
+<p><code>Γ ⊢ r : Once&lt;T&gt;@o</code> の目標となる意味は、owner o に属する r の許される実行が <code>SpecOnce</code> を満たすこと。値そのものの型 T、実行側、呼べる RPC と effect の契約は別に検査する。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>値の分類</th>
+<th>トレースの制約</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Val&lt;T&gt;</code></td>
+<td>生存期間中、同じ確定値を読む</td>
+</tr>
+<tr>
+<td><code>Once&lt;T&gt;</code></td>
+<td>未確定から終端結果へ高々一度だけ公開し、結果を安定させる</td>
+</tr>
+<tr>
+<td><code>Live&lt;T&gt;</code></td>
+<td>宣言した更新に従って結果が変わり得る</td>
+</tr>
+</tbody></table>
+</div><p><code>Once</code> の安全性だけでは、必ず結果が得られるとは要求しない。処理を開始しない、owner が破棄される、外部処理が永遠に返らない実行を区別する。この文書の Val / Live との型関係は意味論の設計であり、compiler の temporal type checker は未実装。</p>
+<h2 id="resource-の状態遷移">resource の状態遷移</h2>
+<div class="code-block"><div class="code-language">mermaid</div><pre tabindex="0"><code>stateDiagram-v2
+  [*] --&gt; Dormant
+  Dormant --&gt; Pending: Start / 開始権を消費
+  Pending --&gt; Ready: 成功結果を公開
+  Pending --&gt; Failed: 失敗結果を公開
+  Dormant --&gt; Disposed: owner を破棄
+  Pending --&gt; Disposed: owner を破棄
+  Ready --&gt; Disposed: owner を破棄
+  Failed --&gt; Disposed: owner を破棄</code></pre></div>
+<p>完了した外部処理と、その結果の公開を二段階にする。外部処理は先に終わっていても、配送されるまで UI 側は Pending のままでよい。公開時に生存・owner generation・未確定状態を照合する。古い結果は破棄してもよいが、現在の resource の結果を失ってはいけない。</p>
+<p>同じ owner generation の Ready / Failed から Dormant には戻らない。再生成は別の identity。現在のモデルは owner の破棄・再生成を First / Second の2世代で表す。同じ owner を残した refresh に必要な resource revision は別軸で、今回のモデルには含めない。</p>
+<p>SSR で確定済みの場合は、初期状態を Ready(Seed) にする。SSR で済ませた1回の開始と公開を初期履歴へ織り込み、Resume は初期化を繰り返さない。これは「component の更新回数では SSR 描画を数えない」という規則とは異なる量である。</p>
+<h2 id="検査する時相性質">検査する時相性質</h2>
+<p>G は「常に」、F は「いつか」、W は weak until。g は再利用しない論理 resource identity とする。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>性質</th>
+<th>式の例</th>
+<th>実装した検査</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>開始は高々1回</td>
+<td><code>G(starts_g ≤ 1)</code></td>
+<td>Safety(start_once)</td>
+</tr>
+<tr>
+<td>結果の公開は高々1回</td>
+<td><code>G(settlements_g ≤ 1)</code></td>
+<td>Safety(settle_once)</td>
+</tr>
+<tr>
+<td>生きている正しい owner だけへ公開</td>
+<td><code>G(publish_g ⇒ alive_g ∧ token_matches_g)</code></td>
+<td>違反を記録する monitor に対する Safety(current_owner)</td>
+</tr>
+<tr>
+<td>終端結果は破棄まで不変</td>
+<td><code>G(ready_g(v) ⇒ (ready_g(v) W disposed_g))</code></td>
+<td>Safety(terminal_stable)、失敗結果の再初期化も禁止</td>
+</tr>
+<tr>
+<td>読める値を早く捨てない</td>
+<td><code>G(alive_g ∧ ready_g ⇒ payload_retained_g)</code></td>
+<td>Safety(retain_readable)</td>
+</tr>
+<tr>
+<td>Pending は結果または破棄へ進む</td>
+<td><code>G(pending_g ⇒ F(ready_g ∨ failed_g ∨ disposed_g))</code></td>
+<td>Response(pending_first, done_first) と second</td>
+</tr>
+</tbody></table>
+</div><p>一般の LTL parser や任意の式を検査器へ追加したわけではない。veri 0.2.1 の公開 API の <code>Safety(p)</code> と <code>Response(p,q)</code> を使い、履歴が必要な性質は状態に monitor を加えて検査する。W の式は意図する意味論で、checker へ直接渡す文字列ではない。<code>Reachability(p)</code> は存在する実行の到達性 <code>EF(p)</code> とし、全実行の <code>F(p)</code> と混同しない。</p>
+<p>安全性は公平性を付けずに検査する。応答性には次の明示的な弱公平性を付ける。</p>
+<ol>
+<li>生存中の現在の owner の処理が Pending で、producer の進行が継続して可能なら、いつか進む。</li>
+<li>生存中の現在の owner 向けの完了通知が継続して配送可能なら、いつか配送する。</li>
+</ol>
+<p>生きていない owner の、放棄したリクエストの応答まで要求しない。古い成功・失敗が遅れて届く操作自体はモデルに残す。失敗で producer が終了すれば、成功操作を実行する義務は消える。公平性はネットワークやブラウザが実際にこの前提を満たすことの証明ではなく、外部とスケジューラについての仮定である。F は実時間の締切も保証しない。</p>
+<p>安全性・活性・弱公平性の区別と stuttering に関する基礎は、Lamport の <a href="https://lamport.azurewebsites.net/tla/book-02-08-08.pdf">Specifying Systems 第8章</a> を参照。ここでは TLA+ の実装を追加せず、既存の MoonBit / veri で同じ種類の状態遷移を検査している。</p>
+<h2 id="実行できるモデルと反例">実行できるモデルと反例</h2>
+<p><a href="https://github.com/mizchi/isle/blob/main/models/resource_once/model.mbt">resource_once/model.mbt</a> は不変の State と純粋な step を持つ。1 resource、owner 2世代、全体で2 tickets、3種類の payload と不正な解放を表す marker に制限する。counter は最初の違反値2で飽和し、wraparound はしない。モデルの状態は Ready / Failed / Disposed 後も Tick や Read で無限実行を表せる。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>検査</th>
+<th>機械実行の結果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Strict / cold</td>
+<td>到達可能126状態で5つの安全性を確認</td>
+</tr>
+<tr>
+<td>Strict / SSR ready</td>
+<td>到達可能22状態で5つの安全性を確認</td>
+</tr>
+<tr>
+<td>生存している各 generation の応答性</td>
+<td>明示した公平性の下で反例なし</td>
+</tr>
+<tr>
+<td>二重開始を許す</td>
+<td><code>Resume → Start → Start</code></td>
+</tr>
+<tr>
+<td>二重公開を許す</td>
+<td><code>Resume → Start → Succeed0 → Publish0 → Publish0</code></td>
+</tr>
+<tr>
+<td>generation guard を省く</td>
+<td>First の完了を、再生成後の Second へ公開する反例</td>
+</tr>
+<tr>
+<td>disposal guard を省く</td>
+<td><code>… → Dispose → Publish0</code></td>
+</tr>
+<tr>
+<td>SSR ready を再初期化する</td>
+<td><code>Resume</code> で終端状態を壊す反例</td>
+</tr>
+<tr>
+<td>continuation と一緒に readable value を解放する</td>
+<td>公開後の ReleaseContinuation で retain_readable に違反</td>
+</tr>
+<tr>
+<td>公平性なし</td>
+<td><code>Resume → Start → (Tick)∞</code></td>
+</tr>
+<tr>
+<td>producer だけ公平</td>
+<td>外部処理が終わった後、配送せず <code>(Tick)∞</code></td>
+</tr>
+<tr>
+<td>完了通知を失う</td>
+<td>公平性があっても Pending に留まる循環反例</td>
+</tr>
+</tbody></table>
+</div><p>反例は単なる状態の JSON ではなく、veri の <code>Client.accepts</code> により同じ <code>step</code> / <code>holds</code> で再生する。応答性の反例は prefix と閉じた loop を持つ lasso。検査時と再生時に同じ公平性を明示的に渡す。モデルが提案する justice は API に自動適用されない。</p>
+<p><code>resource_once/pair.mbt</code> は独立する2個の Once を4状態で扱う。各値は1回だけ公開されるが、<code>LeftCompletes → RightCompletes</code> では component が2 transaction 更新される。したがって「すべて Once 値だから component 全体も once」という推論は成立しない。このモデルは別 transaction で配送される実行を許しており、常に batching 不可能という主張ではない。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>moon test models/resource_once --target js --deny-warn
+just verify</code></pre></div>
+<p><a href="/isle/source/evals/results/formal.json">formal.json</a> の report v2 は、破棄・CSS 解決モデルを含む92ケースを検査する。応答性16ケースは9つの循環反例と7つの成立を期待する。全35反例の内訳は、故障版29件、仮定を外した検査4件、不十分な契約の検査2件。反例の存在が想定されるケースも含め、期待した結果と再生が一致したときだけ全体が成功する。全拒否のモデルを避けるため、成功・失敗・破棄・次世代での成功の到達性も検査する。</p>
+<p>探索の depth / states 上限で打ち切られた場合はエラーにする。完了した有限グラフに対する SCC と公平性の検査なので、そのグラフの無限経路を対象にする。深さ40まで反例がなかった、という上限付き活性検査とは区別する。ただし、任意の値・任意数の owner / resource・無制限の再試行についての定理ではない。</p>
+<h2 id="codegen-の最適化へ接続する条件">codegen の最適化へ接続する条件</h2>
+<p>将来の source / IR の意味保存の目標は、内部の準備手順を隠した観測について <code>Traces(optimized) ⊆ Spec(source)</code> とする。最適化の都合で無限に内部処理だけを続ける実装を許さないよう、応答性と公平性の対応も必要。G / F / W を使うのは、内部手順の数を固定する X に依存しない仕様にするためである。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>最適化</th>
+<th>必要な検査</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>終端後に完了用 continuation を解放</td>
+<td>再公開しない。将来読む payload は保持する</td>
+</tr>
+<tr>
+<td>SSR ready から init chunk を除去</td>
+<td>Resume が新しい Start を発行しない</td>
+</tr>
+<tr>
+<td>一度だけ確定する binding を追跡対象から外す</td>
+<td>その binding の他の依存が Live ではない</td>
+</tr>
+<tr>
+<td>component 全体の更新情報を解放</td>
+<td>独立 resource、子 owner、今後の event / factory の consumer が残らない</td>
+</tr>
+<tr>
+<td>複数処理の batching</td>
+<td>観測する結果と effect の順序を保ち、終端への到達を失わない</td>
+</tr>
+</tbody></table>
+</div><p>モデルから compiler / generated JS への refinement mapping と、その意味保存証明は未実装。破棄カーネルにはモデル由来の schedule を Node で再生し、component / widget の自動接続は browser E2E で別に検査する。Once の UI 公開・<code>@pending</code> を含む resource DSL 全体の検証ではない。</p>
+<p>再試行、同じ owner 内での refresh、streaming SSR の完了配送、timeout、複数 observer の保持解析、RPC の認可や外部副作用の exactly-once は追加のモデルが必要。型だけでネットワークの完了や外部 mutation の高々一回実行を保証したとは扱わない。</p>
+<p>所有する生リソースの終了処理は <a href="/isle/ja/docs/resource-disposal.html">unmount とリソース破棄</a>へ拡張した。Once の確定と解放責任は別の契約で、破棄カーネル・モデル由来の schedule 再生・component 寿命との自動接続を実装している。専用 DSL / temporal codegen は未実装。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

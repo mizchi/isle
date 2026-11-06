@@ -1,0 +1,20 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="動的な表示だけ更新"><title>動的な表示だけ更新 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/examples/partial-updates/index.html"><meta property="og:title" content="動的な表示だけ更新 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="動的な表示だけ更新"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/examples/partial-updates/">English</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/ja/examples/">サンプル一覧</a> / partial-updates</p><span class="tag live-tag">Pages で操作できる</span><h1>動的な表示だけ更新</h1><p class="lead">一つの値を変更し、静的見出しと無関係な出力の DOM が保持されることを確かめる。</p><div class="hero-actions"><a class="button primary" href="/isle/demos/partial-updates/">ライブデモを開く ↗</a><a class="button secondary" href="https://github.com/mizchi/isle/blob/main/examples/partial-updates">GitHub source ↗</a></div><div class="doc-content example-description"><p>一つの値を変更し、静的見出しと無関係な出力の DOM が保持されることを確かめる。 生成 handler では increment が count と派生テキストを更新する。note の編集では count に触れない。ブラウザー検査で実際の DOM mutation を確認する。</p>
+<p>リポジトリ内の例は、ルートで上記コマンドを実行する。検査は <code>just examples-check</code>。利用者のアプリへ組み込む場合は <a href="/isle/ja/docs/quick-start.html#はじめる">npm パッケージの導入手順</a>を使い、このディレクトリのソースと設定を参照する。</p>
+</div><h2>実装を読む</h2><details class="source-details"><summary>app.isle</summary><pre tabindex="0"><code>client component Dashboard() {
+  state count = 0;
+  state note = &quot;Unchanged&quot;;
+  derive doubled = count * 2;
+  &lt;section&gt;
+    &lt;h2 data-static=&quot;&quot;&gt;This heading is static&lt;/h2&gt;
+    &lt;p&gt;Count &lt;output data-count=&quot;&quot;&gt;{count}&lt;/output&gt;&lt;/p&gt;
+    &lt;p&gt;Doubled &lt;output data-doubled=&quot;&quot;&gt;{doubled}&lt;/output&gt;&lt;/p&gt;
+    &lt;p&gt;Independent note &lt;output data-note=&quot;&quot;&gt;{note}&lt;/output&gt;&lt;/p&gt;
+    &lt;button type=&quot;button&quot;&gt;on click increment { count += 1; }Increment&lt;/button&gt;
+    &lt;button type=&quot;button&quot;&gt;on click edit { note = &quot;Edited&quot;; }Edit note&lt;/button&gt;
+  &lt;/section&gt;
+}
+</code></pre></details><details class="source-details"><summary>vite.config.mjs</summary><pre tabindex="0"><code>import { exampleConfig } from &#39;../_shared/vite.mjs&#39;;
+export default exampleConfig(import.meta.url, {
+  mounts: [{ component: &#39;Dashboard&#39;, props: {}, label: &#39;Selective updates&#39; }],
+});
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

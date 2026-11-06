@@ -1,0 +1,23 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="遅延 CSS と準備完了"><title>遅延 CSS と準備完了 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/examples/styles/index.html"><meta property="og:title" content="遅延 CSS と準備完了 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="遅延 CSS と準備完了"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/examples/styles/">English</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/ja/examples/">サンプル一覧</a> / styles</p><span class="tag live-tag">Pages で操作できる</span><h1>遅延 CSS と準備完了</h1><p class="lead">setup module と CSS を読み込み、setup から見える適用済み style を調べる。</p><div class="hero-actions"><a class="button primary" href="/isle/demos/styles/">ライブデモを開く ↗</a><a class="button secondary" href="https://github.com/mizchi/isle/blob/main/examples/styles">GitHub source ↗</a></div><div class="doc-content example-description"><p>setup module と CSS を読み込み、setup から見える適用済み style を調べる。 card.css と setup.mjs を読む。活性化後の data-style-at-setup が ready になり、setup 前に CSS が適用されたことを示す。CSS 分割は Vite が扱い、class 単位の CSS DCE は未実装。</p>
+<p>リポジトリ内の例は、ルートで上記コマンドを実行する。検査は <code>just examples-check</code>。利用者のアプリへ組み込む場合は <a href="/isle/ja/docs/quick-start.html#はじめる">npm パッケージの導入手順</a>を使い、このディレクトリのソースと設定を参照する。</p>
+</div><h2>実装を読む</h2><details class="source-details"><summary>app.isle</summary><pre tabindex="0"><code>client component Card() {
+  state count = 0;
+  &lt;section class=&quot;lazy-card&quot;&gt;
+    &lt;h2&gt;Component CSS&lt;/h2&gt;
+    &lt;button type=&quot;button&quot;&gt;on click activate { count += 1; }Activate style&lt;/button&gt;
+    &lt;output aria-live=&quot;polite&quot;&gt;{count}&lt;/output&gt;
+  &lt;/section&gt;
+}
+</code></pre></details><details class="source-details"><summary>card.css</summary><pre tabindex="0"><code>.lazy-card { --card-ready: ready; border-top: 6px solid #08665c; background: #eaf3f1; }
+.lazy-card h2 { color: #064c45; }
+</code></pre></details><details class="source-details"><summary>setup.mjs</summary><pre tabindex="0"><code>import &#39;./card.css&#39;;
+export function setup({ root }) {
+  // The loader waits for this CodeRef&#39;s stylesheet before calling setup.
+  root.dataset.styleAtSetup = getComputedStyle(root).getPropertyValue(&#39;--card-ready&#39;).trim();
+}
+</code></pre></details><details class="source-details"><summary>vite.config.mjs</summary><pre tabindex="0"><code>import { exampleConfig } from &#39;../_shared/vite.mjs&#39;;
+export default exampleConfig(import.meta.url, {
+  resources: { Card: &#39;./setup.mjs&#39; },
+  mounts: [{ component: &#39;Card&#39;, props: {}, label: &#39;CSS readiness&#39; }],
+});
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

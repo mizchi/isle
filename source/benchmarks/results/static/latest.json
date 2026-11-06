@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "description": "Synthetic production build sizes; gzip level 6 per file. Work counts instrument slot reads in emitted handlers using a Proxy; not CPU timings.",
+  "rows": [
+    {
+      "name": "Decorated",
+      "snapshotSlots": [
+        "title"
+      ],
+      "snapshot": {
+        "raw": 37,
+        "gzip": 57
+      },
+      "html": {
+        "raw": 1225,
+        "gzip": 578
+      },
+      "javascript": {
+        "raw": 4701,
+        "gzip": 2429
+      },
+      "work": {
+        "slotReads": {
+          "title": 2
+        },
+        "textPatches": 1,
+        "attributePatches": 0
+      },
+      "computations": [],
+      "assetTotal": {
+        "raw": 5926,
+        "gzip": 3007
+      },
+      "chunks": [
+        {
+          "file": "assets/Decorated.append-rMqFqDQ7.js",
+          "raw": 74,
+          "gzip": 92
+        },
+        {
+          "file": "assets/index-DlSuuq0m.js",
+          "raw": 1259,
+          "gzip": 699
+        },
+        {
+          "file": "assets/isle-resume-C5fOx1K3.js",
+          "raw": 3368,
+          "gzip": 1638
+        }
+      ]
+    },
+    {
+      "name": "AttributeOnly",
+      "snapshotSlots": [
+        "locked"
+      ],
+      "snapshot": {
+        "raw": 35,
+        "gzip": 55
+      },
+      "html": {
+        "raw": 446,
+        "gzip": 292
+      },
+      "javascript": {
+        "raw": 4672,
+        "gzip": 2384
+      },
+      "work": {
+        "slotReads": {
+          "locked": 2
+        },
+        "textPatches": 0,
+        "attributePatches": 2
+      },
+      "computations": [],
+      "assetTotal": {
+        "raw": 5118,
+        "gzip": 2676
+      },
+      "chunks": [
+        {
+          "file": "assets/AttributeOnly.lock-C0ZNdcWw.js",
+          "raw": 84,
+          "gzip": 96
+        },
+        {
+          "file": "assets/index-ZNKjoWvD.js",
+          "raw": 1259,
+          "gzip": 700
+        },
+        {
+          "file": "assets/isle-resume-CqG92BeC.js",
+          "raw": 3329,
+          "gzip": 1588
+        }
+      ]
+    },
+    {
+      "name": "Aliased",
+      "snapshotSlots": [
+        "base",
+        "count"
+      ],
+      "snapshot": {
+        "raw": 34,
+        "gzip": 54
+      },
+      "html": {
+        "raw": 374,
+        "gzip": 266
+      },
+      "javascript": {
+        "raw": 4679,
+        "gzip": 2408
+      },
+      "work": {
+        "slotReads": {
+          "count": 2,
+          "base": 3
+        },
+        "textPatches": 1,
+        "attributePatches": 0
+      },
+      "computations": [],
+      "assetTotal": {
+        "raw": 5053,
+        "gzip": 2674
+      },
+      "chunks": [
+        {
+          "file": "assets/Aliased.add-C4bR9G46.js",
+          "raw": 80,
+          "gzip": 90
+        },
+        {
+          "file": "assets/index-MyTbJ5zF.js",
+          "raw": 1259,
+          "gzip": 699
+        },
+        {
+          "file": "assets/isle-resume-Blh9CYLe.js",
+          "raw": 3340,
+          "gzip": 1619
+        }
+      ]
+    },
+    {
+      "name": "Repeated",
+      "snapshotSlots": [
+        "factor",
+        "count"
+      ],
+      "snapshot": {
+        "raw": 33,
+        "gzip": 53
+      },
+      "html": {
+        "raw": 459,
+        "gzip": 304
+      },
+      "javascript": {
+        "raw": 5038,
+        "gzip": 2548
+      },
+      "work": {
+        "slotReads": {
+          "count": 2,
+          "factor": 1
+        },
+        "textPatches": 2,
+        "attributePatches": 1
+      },
+      "computations": [
+        {
+          "phase": "patch",
+          "derives": [
+            "base",
+            "total"
+          ]
+        }
+      ],
+      "assetTotal": {
+        "raw": 5497,
+        "gzip": 2852
+      },
+      "chunks": [
+        {
+          "file": "assets/Repeated.add-e3G9e6hU.js",
+          "raw": 132,
+          "gzip": 126
+        },
+        {
+          "file": "assets/index-CE_gJxWV.js",
+          "raw": 1259,
+          "gzip": 697
+        },
+        {
+          "file": "assets/isle-resume-DDCjaRmD.js",
+          "raw": 3647,
+          "gzip": 1725
+        }
+      ]
+    }
+  ]
+}

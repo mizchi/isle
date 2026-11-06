@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Lazy CSS readiness"><title>Lazy CSS readiness · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/examples/styles/index.html"><meta property="og:title" content="Lazy CSS readiness · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Lazy CSS readiness"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/ja/examples/styles/">日本語</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/examples/">All examples</a> / styles</p><span class="tag live-tag">Live on Pages</span><h1>Lazy CSS readiness</h1><p class="lead">Load component CSS with its setup module and inspect the style seen by setup.</p><div class="hero-actions"><a class="button primary" href="/isle/demos/styles/">Open live demo ↗</a><a class="button secondary" href="https://github.com/mizchi/isle/blob/main/examples/styles">GitHub source ↗</a></div><div class="doc-content example-description"><p>Source / ソース: <a href="/isle/source/examples/styles/app.isle">app.isle</a> · <a href="/isle/source/examples/styles/card.css">card.css</a> · <a href="/isle/source/examples/styles/setup.mjs">setup.mjs</a> · <a href="/isle/source/examples/styles/vite.config.mjs">vite.config.mjs</a></p>
+<p>Load component CSS with its setup module and inspect the style seen by setup. Inspect card.css and setup.mjs. data-style-at-setup becomes ready on activation, showing that CSS was applied before setup. Vite handles CSS splitting; class-level CSS dead-code elimination is not implemented.</p>
+<p>From a repository checkout, run at the repository root:</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just example styles</code></pre></div>
+<p>Open <a href="http://127.0.0.1:4326/">http://127.0.0.1:4326/</a>.</p>
+<p>Check: <code>just examples-check</code>. For a consumer app, install the package and use the <a href="/isle/docs/quick-start.html#quick-start">npm setup</a>; the source files here show the feature and its configuration.</p>
+</div><h2>Read the implementation</h2><details class="source-details"><summary>app.isle</summary><pre tabindex="0"><code>client component Card() {
+  state count = 0;
+  &lt;section class=&quot;lazy-card&quot;&gt;
+    &lt;h2&gt;Component CSS&lt;/h2&gt;
+    &lt;button type=&quot;button&quot;&gt;on click activate { count += 1; }Activate style&lt;/button&gt;
+    &lt;output aria-live=&quot;polite&quot;&gt;{count}&lt;/output&gt;
+  &lt;/section&gt;
+}
+</code></pre></details><details class="source-details"><summary>card.css</summary><pre tabindex="0"><code>.lazy-card { --card-ready: ready; border-top: 6px solid #08665c; background: #eaf3f1; }
+.lazy-card h2 { color: #064c45; }
+</code></pre></details><details class="source-details"><summary>setup.mjs</summary><pre tabindex="0"><code>import &#39;./card.css&#39;;
+export function setup({ root }) {
+  // The loader waits for this CodeRef&#39;s stylesheet before calling setup.
+  root.dataset.styleAtSetup = getComputedStyle(root).getPropertyValue(&#39;--card-ready&#39;).trim();
+}
+</code></pre></details><details class="source-details"><summary>vite.config.mjs</summary><pre tabindex="0"><code>import { exampleConfig } from &#39;../_shared/vite.mjs&#39;;
+export default exampleConfig(import.meta.url, {
+  resources: { Card: &#39;./setup.mjs&#39; },
+  mounts: [{ component: &#39;Card&#39;, props: {}, label: &#39;CSS readiness&#39; }],
+});
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/">Isle</a><p>Built with Isle. Static pages, resumable interactions.</p></div><nav aria-label="Footer navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

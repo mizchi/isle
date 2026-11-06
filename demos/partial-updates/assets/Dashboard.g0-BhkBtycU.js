@@ -1,0 +1,1 @@
+function e(e,t,n){t(0,e[0]+1),n(0,String(e[0])),n(1,String(e[0]*2))}function t(e,t,n){t(0,`Edited`),n(2,String(e[0]))}export{e as h0,t as h1};

@@ -1,0 +1,63 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="図の主張と根拠"><title>図の主張と根拠 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/overview/facts.html"><meta property="og:title" content="図の主張と根拠 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="図の主張と根拠"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/overview/facts.md">ソースで読む ↗</a></div><h1 id="図の主張と根拠">図の主張と根拠</h1>
+<p>公開 README の想定読者は <a href="https://github.com/mizchi/isle/blob/main/personas/readme-reader.md">仮の読者像</a>。図は実装済みの機能を扱う。速度の優劣や、コンパイラ全体の形式証明は主張しない。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>図の主張</th>
+<th>実装・実行する検査</th>
+<th>範囲</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>専用 <code>.isle</code> を MoonBit frontend で解析する</td>
+<td><a href="https://github.com/mizchi/isle/blob/main/compiler/">compiler</a>、<a href="/isle/source/lib/compiler.mjs">JS adapter</a>、<code>node tools/readme-overview.mjs</code></td>
+<td>現在の制約付き構文。任意 TS / inline は未対応</td>
+</tr>
+<tr>
+<td>HTML + snapshot、分割 JS / CSS、manifest を出力する</td>
+<td><a href="/isle/source/lib/vite.mjs">Vite plugin</a>、<a href="/isle/source/tests/build.test.mjs">build tests</a>、<a href="/isle/source/tests/style-build.test.mjs">style build tests</a></td>
+<td>Vite / Rolldown がチャンクを生成する</td>
+</tr>
+<tr>
+<td>初期化を再実行せず、動的テキストだけ更新する</td>
+<td><a href="/isle/source/docs/overview/counter.isle">図の Counter</a>、<a href="/isle/source/lib/codegen.mjs">codegen</a>、<code>node tools/readme-overview.mjs</code></td>
+<td>snapshot 0 → handler 1、更新先は1つ。一般の部分更新は <a href="/isle/source/tests/control-flow.test.mjs">control flow tests</a> も参照</td>
+</tr>
+<tr>
+<td>auto / lazy は取得と setup を分ける</td>
+<td><a href="/isle/source/tests/loading-optimizer-build.test.mjs">loading build tests</a>、<a href="/isle/source/playwright.loading.config.mjs">ブラウザー検査</a>、<a href="/isle/ja/docs/resolution-optimizer.html">解説</a></td>
+<td>コードは操作前に取得可能。明示 eager は別方針</td>
+</tr>
+<tr>
+<td>SSR のみなら Isle の browser JS は不要</td>
+<td><a href="/isle/source/tests/build.test.mjs">build tests</a> の forced-ssr / server / universal / no-handlers</td>
+<td>ページ上の任意の外部 JS まで削除する意味ではない</td>
+</tr>
+<tr>
+<td>Form / server action</td>
+<td><a href="/isle/source/tests/forms.test.mjs">Form tests</a>、<a href="/isle/ja/docs/forms.html">ガイド</a>、<a href="/isle/ja/docs/schema-contracts.html">共通 schema</a></td>
+<td>認証・業務 policy は trusted host adapter が実装する</td>
+</tr>
+<tr>
+<td>Web Components widget</td>
+<td><a href="/isle/ja/docs/widget-architecture.html">widget architecture</a>、<a href="/isle/source/tests/shared-runtime.test.mjs">共有 runtime tests</a></td>
+<td>ShadowRoot、固定寸法、完全一致版で runtime 共有。異なる版は拒否</td>
+</tr>
+<tr>
+<td>Grid / CSS 静的検査</td>
+<td><a href="/isle/source/tools/isle.mjs">独立 CLI</a>、<a href="https://github.com/mizchi/isle/blob/main/evals/results/layout-rejections/index.md">リジェクト14例</a>、<a href="/isle/ja/docs/layout-checking.html">仕様</a></td>
+<td>宣言されたサイズ・折り返し・overflow 契約内。unknown を成功扱いしない</td>
+</tr>
+<tr>
+<td>有限モデルで寿命を検査</td>
+<td><a href="https://github.com/mizchi/isle/blob/main/models/README.md">独立した参照モデル</a>、<code>just verify</code></td>
+<td>compiler IR からのモデル自動生成と全体証明は未実装</td>
+</tr>
+<tr>
+<td>ES2023 / Web 標準 API、MoonBit / Wasm runtime の配布なし</td>
+<td><a href="https://github.com/mizchi/isle/blob/main/runtime/">runtime</a>、<a href="/isle/source/tools/check-build.mjs">出力検査</a></td>
+<td>コンパイラは開発時に動く</td>
+</tr>
+</tbody></table>
+</div><p>事実ラベルは <a href="/isle/source/docs/overview/figures/isle-overview.facts.json">isle-overview.facts.json</a> に列挙し、描画後のテキストに対して検査する。矢印を使わず、番号と左→右／上→下の順序で、宣言→生成物と初期表示→操作を表す。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

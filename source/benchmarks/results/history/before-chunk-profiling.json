@@ -1,0 +1,793 @@
+{
+  "generatedAt": "2026-11-02T14:02:51.909Z",
+  "environment": {
+    "node": "v24.21.0",
+    "chromium": "156.0.8078.4",
+    "platform": "darwin/arm64"
+  },
+  "buildPolicy": {
+    "target": "es2023",
+    "viteModulePreload": false,
+    "isleDiagnostics": false
+  },
+  "variants": [
+    {
+      "id": "isle",
+      "package": "@isle/prototype",
+      "version": "0.0.1",
+      "vite": "8.3.5",
+      "correctness": {
+        "ssrWithoutJS": true,
+        "independentState": true,
+        "repeatedClick": true,
+        "remoteAction": true,
+        "retainedDOM": true
+      },
+      "transfers": {
+        "phases": {
+          "initial": {
+            "html": {
+              "count": 1,
+              "raw": 2078,
+              "gzip": 941
+            },
+            "js": {
+              "count": 1,
+              "raw": 1259,
+              "gzip": 700
+            },
+            "css": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "rpc": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "other": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            }
+          },
+          "counter-first": {
+            "html": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "js": {
+              "count": 2,
+              "raw": 3823,
+              "gzip": 1922
+            },
+            "css": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "rpc": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "other": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            }
+          },
+          "remote-first": {
+            "html": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "js": {
+              "count": 1,
+              "raw": 127,
+              "gzip": 129
+            },
+            "css": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "rpc": {
+              "count": 1,
+              "raw": 50,
+              "gzip": 69
+            },
+            "other": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            }
+          }
+        },
+        "total": {
+          "count": 5,
+          "raw": 7287,
+          "gzip": 3692
+        }
+      },
+      "build": {
+        "assets": [
+          {
+            "file": "assets/Counter.h0-CxJgHqIU.js",
+            "raw": 85,
+            "gzip": 90
+          },
+          {
+            "file": "assets/Editor.h1-WsKkkGT5.js",
+            "raw": 127,
+            "gzip": 129
+          },
+          {
+            "file": "assets/index-BvspW0wS.js",
+            "raw": 1259,
+            "gzip": 700
+          },
+          {
+            "file": "assets/isle-resume-C2db9NBf.js",
+            "raw": 3738,
+            "gzip": 1832
+          }
+        ],
+        "raw": 5209,
+        "gzip": 2751
+      },
+      "requests": [
+        {
+          "url": "/isle/",
+          "phase": "initial",
+          "order": 0,
+          "kind": "html",
+          "status": 200,
+          "method": "GET",
+          "raw": 2078,
+          "gzip": 941
+        },
+        {
+          "url": "/isle/assets/index-BvspW0wS.js",
+          "phase": "initial",
+          "order": 1,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 1259,
+          "gzip": 700
+        },
+        {
+          "url": "/isle/assets/isle-resume-C2db9NBf.js",
+          "phase": "counter-first",
+          "order": 2,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 3738,
+          "gzip": 1832
+        },
+        {
+          "url": "/isle/assets/Counter.h0-CxJgHqIU.js",
+          "phase": "counter-first",
+          "order": 3,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 85,
+          "gzip": 90
+        },
+        {
+          "url": "/isle/assets/Editor.h1-WsKkkGT5.js",
+          "phase": "remote-first",
+          "order": 4,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 127,
+          "gzip": 129
+        },
+        {
+          "url": "/__isle/action/renameDocument",
+          "phase": "remote-first",
+          "order": 5,
+          "kind": "rpc",
+          "status": 200,
+          "method": "POST",
+          "raw": 50,
+          "gzip": 69
+        }
+      ]
+    },
+    {
+      "id": "qwik",
+      "package": "@builder.io/qwik",
+      "version": "1.20.3",
+      "vite": "7.3.7",
+      "correctness": {
+        "ssrWithoutJS": true,
+        "independentState": true,
+        "repeatedClick": true,
+        "remoteAction": true,
+        "retainedDOM": true
+      },
+      "transfers": {
+        "phases": {
+          "initial": {
+            "html": {
+              "count": 1,
+              "raw": 3600,
+              "gzip": 1642
+            },
+            "js": {
+              "count": 5,
+              "raw": 55334,
+              "gzip": 23591
+            },
+            "css": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "rpc": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "other": {
+              "count": 1,
+              "raw": 193,
+              "gzip": 167
+            }
+          },
+          "remote-first": {
+            "html": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "js": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "css": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "rpc": {
+              "count": 1,
+              "raw": 50,
+              "gzip": 69
+            },
+            "other": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            }
+          }
+        },
+        "total": {
+          "count": 7,
+          "raw": 59127,
+          "gzip": 25400
+        }
+      },
+      "build": {
+        "assets": [
+          {
+            "file": "qwik/build/q-B5Z4nBIv.js",
+            "raw": 129,
+            "gzip": 119
+          },
+          {
+            "file": "qwik/build/q-C1pIh9NZ.js",
+            "raw": 46732,
+            "gzip": 18930
+          },
+          {
+            "file": "qwik/build/q-CTMgUsXF.js",
+            "raw": 892,
+            "gzip": 543
+          },
+          {
+            "file": "qwik/build/q-HLYxzaO6.js",
+            "raw": 876,
+            "gzip": 434
+          },
+          {
+            "file": "qwik/build/q-hlQTHS0s.js",
+            "raw": 3734,
+            "gzip": 2006
+          },
+          {
+            "file": "qwik/build/q-naDMFAHy.js",
+            "raw": 3100,
+            "gzip": 1678
+          }
+        ],
+        "raw": 55463,
+        "gzip": 23710
+      },
+      "requests": [
+        {
+          "url": "/qwik/",
+          "phase": "initial",
+          "order": 0,
+          "kind": "html",
+          "status": 200,
+          "method": "GET",
+          "raw": 3600,
+          "gzip": 1642
+        },
+        {
+          "url": "/qwik/build/q-naDMFAHy.js",
+          "phase": "initial",
+          "order": 1,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 3100,
+          "gzip": 1678
+        },
+        {
+          "url": "/qwik/build/q-hlQTHS0s.js",
+          "phase": "initial",
+          "order": 2,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 3734,
+          "gzip": 2006
+        },
+        {
+          "url": "/qwik/assets/xv_7L48a-bundle-graph.json",
+          "phase": "initial",
+          "order": 3,
+          "kind": "other",
+          "status": 200,
+          "method": "GET",
+          "raw": 193,
+          "gzip": 167
+        },
+        {
+          "url": "/qwik/build/q-C1pIh9NZ.js",
+          "phase": "initial",
+          "order": 4,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 46732,
+          "gzip": 18930
+        },
+        {
+          "url": "/qwik/build/q-CTMgUsXF.js",
+          "phase": "initial",
+          "order": 5,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 892,
+          "gzip": 543
+        },
+        {
+          "url": "/qwik/build/q-HLYxzaO6.js",
+          "phase": "initial",
+          "order": 6,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 876,
+          "gzip": 434
+        },
+        {
+          "url": "/__isle/action/renameDocument",
+          "phase": "remote-first",
+          "order": 7,
+          "kind": "rpc",
+          "status": 200,
+          "method": "POST",
+          "raw": 50,
+          "gzip": 69
+        }
+      ]
+    },
+    {
+      "id": "qwik-next",
+      "package": "@qwik.dev/core",
+      "version": "2.0.0-rc.4",
+      "vite": "8.3.5",
+      "correctness": {
+        "ssrWithoutJS": true,
+        "independentState": true,
+        "repeatedClick": true,
+        "remoteAction": true,
+        "retainedDOM": true
+      },
+      "transfers": {
+        "phases": {
+          "initial": {
+            "html": {
+              "count": 1,
+              "raw": 3973,
+              "gzip": 1680
+            },
+            "js": {
+              "count": 9,
+              "raw": 102248,
+              "gzip": 39189
+            },
+            "css": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "rpc": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "other": {
+              "count": 1,
+              "raw": 342,
+              "gzip": 250
+            }
+          },
+          "remote-first": {
+            "html": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "js": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "css": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "rpc": {
+              "count": 1,
+              "raw": 50,
+              "gzip": 69
+            },
+            "other": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            }
+          }
+        },
+        "total": {
+          "count": 11,
+          "raw": 106563,
+          "gzip": 41119
+        }
+      },
+      "build": {
+        "assets": [
+          {
+            "file": "build/q-9v-fvcj0.js",
+            "raw": 426,
+            "gzip": 322
+          },
+          {
+            "file": "build/q-BTUIEz9o.js",
+            "raw": 5282,
+            "gzip": 2414
+          },
+          {
+            "file": "build/q-BU2_-5WP.js",
+            "raw": 88,
+            "gzip": 103
+          },
+          {
+            "file": "build/q-BXcZXMbC.js",
+            "raw": 584,
+            "gzip": 331
+          },
+          {
+            "file": "build/q-BbCifaMF.js",
+            "raw": 333,
+            "gzip": 266
+          },
+          {
+            "file": "build/q-CNXK_dmG.js",
+            "raw": 304,
+            "gzip": 259
+          },
+          {
+            "file": "build/q-ClGbMQC3.js",
+            "raw": 91727,
+            "gzip": 33785
+          },
+          {
+            "file": "build/q-DK3Fl9T5.js",
+            "raw": 158,
+            "gzip": 154
+          },
+          {
+            "file": "build/q-DajyI2wx.js",
+            "raw": 242,
+            "gzip": 191
+          },
+          {
+            "file": "build/q-Dem29lbk.js",
+            "raw": 4020,
+            "gzip": 1897
+          },
+          {
+            "file": "build/q-DoZqrhrJ.js",
+            "raw": 120,
+            "gzip": 124
+          },
+          {
+            "file": "build/q-KbqO1XIo.js",
+            "raw": 225,
+            "gzip": 197
+          },
+          {
+            "file": "build/q-pfenRY-X.js",
+            "raw": 123,
+            "gzip": 131
+          },
+          {
+            "file": "build/q-vQIC4flz.js",
+            "raw": 83,
+            "gzip": 97
+          }
+        ],
+        "raw": 103715,
+        "gzip": 40271
+      },
+      "requests": [
+        {
+          "url": "/qwik-next/",
+          "phase": "initial",
+          "order": 0,
+          "kind": "html",
+          "status": 200,
+          "method": "GET",
+          "raw": 3973,
+          "gzip": 1680
+        },
+        {
+          "url": "/qwik-next/build/q-BTUIEz9o.js",
+          "phase": "initial",
+          "order": 1,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 5282,
+          "gzip": 2414
+        },
+        {
+          "url": "/qwik-next/build/q-Dem29lbk.js",
+          "phase": "initial",
+          "order": 2,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 4020,
+          "gzip": 1897
+        },
+        {
+          "url": "/qwik-next/assets/DgpaG7Ot-bundle-graph.json",
+          "phase": "initial",
+          "order": 3,
+          "kind": "other",
+          "status": 200,
+          "method": "GET",
+          "raw": 342,
+          "gzip": 250
+        },
+        {
+          "url": "/qwik-next/build/q-ClGbMQC3.js",
+          "phase": "initial",
+          "order": 4,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 91727,
+          "gzip": 33785
+        },
+        {
+          "url": "/qwik-next/build/q-DK3Fl9T5.js",
+          "phase": "initial",
+          "order": 5,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 158,
+          "gzip": 154
+        },
+        {
+          "url": "/qwik-next/build/q-DoZqrhrJ.js",
+          "phase": "initial",
+          "order": 6,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 120,
+          "gzip": 124
+        },
+        {
+          "url": "/qwik-next/build/q-BU2_-5WP.js",
+          "phase": "initial",
+          "order": 7,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 88,
+          "gzip": 103
+        },
+        {
+          "url": "/qwik-next/build/q-CNXK_dmG.js",
+          "phase": "initial",
+          "order": 8,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 304,
+          "gzip": 259
+        },
+        {
+          "url": "/qwik-next/build/q-pfenRY-X.js",
+          "phase": "initial",
+          "order": 9,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 123,
+          "gzip": 131
+        },
+        {
+          "url": "/qwik-next/build/q-9v-fvcj0.js",
+          "phase": "initial",
+          "order": 10,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 426,
+          "gzip": 322
+        },
+        {
+          "url": "/__isle/action/renameDocument",
+          "phase": "remote-first",
+          "order": 11,
+          "kind": "rpc",
+          "status": 200,
+          "method": "POST",
+          "raw": 50,
+          "gzip": 69
+        }
+      ]
+    },
+    {
+      "id": "preact",
+      "package": "preact",
+      "version": "11.1.1",
+      "vite": "8.3.5",
+      "correctness": {
+        "ssrWithoutJS": true,
+        "independentState": true,
+        "repeatedClick": true,
+        "remoteAction": true,
+        "retainedDOM": true
+      },
+      "transfers": {
+        "phases": {
+          "initial": {
+            "html": {
+              "count": 1,
+              "raw": 1452,
+              "gzip": 764
+            },
+            "js": {
+              "count": 1,
+              "raw": 14201,
+              "gzip": 5988
+            },
+            "css": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "rpc": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "other": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            }
+          },
+          "remote-first": {
+            "html": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "js": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "css": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            },
+            "rpc": {
+              "count": 1,
+              "raw": 50,
+              "gzip": 69
+            },
+            "other": {
+              "count": 0,
+              "raw": 0,
+              "gzip": 0
+            }
+          }
+        },
+        "total": {
+          "count": 2,
+          "raw": 15653,
+          "gzip": 6752
+        }
+      },
+      "build": {
+        "assets": [
+          {
+            "file": "assets/index-C236HaQ9.js",
+            "raw": 14201,
+            "gzip": 5988
+          }
+        ],
+        "raw": 14201,
+        "gzip": 5988
+      },
+      "requests": [
+        {
+          "url": "/preact/",
+          "phase": "initial",
+          "order": 0,
+          "kind": "html",
+          "status": 200,
+          "method": "GET",
+          "raw": 1452,
+          "gzip": 764
+        },
+        {
+          "url": "/preact/assets/index-C236HaQ9.js",
+          "phase": "initial",
+          "order": 1,
+          "kind": "js",
+          "status": 200,
+          "method": "GET",
+          "raw": 14201,
+          "gzip": 5988
+        },
+        {
+          "url": "/__isle/action/renameDocument",
+          "phase": "remote-first",
+          "order": 2,
+          "kind": "rpc",
+          "status": 200,
+          "method": "POST",
+          "raw": 50,
+          "gzip": 69
+        }
+      ]
+    }
+  ]
+}

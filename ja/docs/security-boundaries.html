@@ -1,0 +1,198 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="server / client と非同期処理の境界"><title>server / client と非同期処理の境界 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/security-boundaries.html"><meta property="og:title" content="server / client と非同期処理の境界 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="server / client と非同期処理の境界"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/security-boundaries.md">ソースで読む ↗</a></div><h1 id="server--client-と非同期処理の境界">server / client と非同期処理の境界</h1>
+<p>状態: 設計案と prototype v0。2026-11-02。ユーザー確定方針は、server component と client component を明示的に分け、非同期関数のセキュリティ境界を検査可能にすること。v0 は primitive schema、policy 付き action、明示 remote、直接 request の実行時検査を実装した。現在動く構文は <a href="/isle/ja/docs/prototype-guide.html">記述ガイド</a> を参照する。以下の Result / expose / query / server async render、一般の権限型と情報フローは未実装の提案を含む。</p>
+<h2 id="1-実行場所公開範囲非同期性を別に定義する">1. 実行場所、公開範囲、非同期性を別に定義する</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>宣言案</th>
+<th>実行と利用</th>
+<th>境界の扱い</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>component</code></td>
+<td>両側で利用できる純粋な描画</td>
+<td>props・純粋な derive・HTML に限定。state / on / host capability は持たない</td>
+</tr>
+<tr>
+<td><code>server component</code></td>
+<td>SSR request 内で評価。async 可</td>
+<td>server の capability を利用できる。HTML と client props は出力境界</td>
+</tr>
+<tr>
+<td><code>client component</code></td>
+<td>browser の state、event、effect、resume を所有</td>
+<td>初期 HTML は SSR 可。server-only capability は持ち込めない</td>
+</tr>
+<tr>
+<td><code>server async fn</code></td>
+<td>server 内部の非同期 helper</td>
+<td>宣言・export だけでは RPC として公開しない</td>
+</tr>
+<tr>
+<td><code>client async fn</code></td>
+<td>browser 内部の非同期 helper</td>
+<td>DOM 等の能力を宣言。server の実装へ直接アクセスしない</td>
+</tr>
+<tr>
+<td><code>server query / action</code></td>
+<td>明示的に公開した RPC entry</td>
+<td>query は宣言した読み取り、action は宣言した変更。入力・出力・policy が必須</td>
+</tr>
+<tr>
+<td><code>shared pure fn</code></td>
+<td>両側で利用できる純粋 helper</td>
+<td>DOM、DB、request、secret などの host capability を持たない</td>
+</tr>
+</tbody></table>
+</div><p><code>async</code> は中断可能性を表す。<code>remote</code> が client から server への RPC を表す。<code>await</code> や関数の export だけでネットワーク境界を生成しない。compiler は実行側・effect・公開種別を別フィールドで管理する。</p>
+<p>無指定 component の共通サブセットは v0 に実装済みで、IR の side は <code>universal</code> とする。能力の追加によって暗黙に client / server へ切り替えることはなく、state や on を使うなら <code>client component</code> を明示する。component の合成は、純粋な展開と独立した client owner に分ける。host capability を使う server render は後続仕様である。</p>
+<p><code>client component</code> は CSR 専用という意味ではない。SSR backend は初期化・描画の projection を実行でき、browser backend は snapshot と生成済み処理から再開する。browser API は明示的な event / client effect 内に置き、SSR 初期化からは呼べない。<code>server component</code> は browser event / mutable client state を直接持たず、client component を描画し、許可した props を渡す。</p>
+<p>client 側から server component の実装を import することは拒否する。v0 の <code>children: RenderFragment</code> は、呼び出し元が所有する描画内容を一度だけ投影する。state や snapshot に入れず、client 境界を越える mutable な親の値や親の handler も拒否する。任意の server component を client から呼び出せる仕組みへ自動変換しない。</p>
+<h2 id="2-境界が見える構文案">2. 境界が見える構文案</h2>
+<p>schema / view は型検査と実行時 codec の共通宣言とする。view は client へ渡す field の契約であり、認可そのものではない。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>schema RenameInput {
+  id: DocumentId;
+  title: NonEmptyString&lt;200&gt;;
+}
+
+view DocumentView {
+  id: DocumentId;
+  title: string;
+}
+
+export server async component DocumentPage({ id }: { id: DocumentId })
+  using request: RequestContext
+{
+  const grant = await policy.documentReader(request, id);
+  const document = await documents.read(grant);
+  const initial = expose DocumentView {
+    id: document.id,
+    title: document.title,
+  };
+
+  &lt;DocumentEditor initial={initial} /&gt;
+}
+
+export server action renameDocument(input: RenameInput)
+  -&gt; Result&lt;DocumentView, RenameError&gt;
+  using request: RequestContext
+  authorize grant = policy.documentEditor(request, input.id)
+  effects { db.write }
+{
+  const document = await documents.rename(grant, input.title);
+  return Ok(expose DocumentView {
+    id: document.id,
+    title: document.title,
+  });
+}
+
+export client component DocumentEditor({ initial }: { initial: DocumentView }) {
+  state title = initial.title;
+  state error: RenameError? = None;
+
+  &lt;button&gt;
+    on click async {
+      const result = await remote renameDocument({ id: initial.id, title });
+      match result {
+        Ok(document) =&gt; { title = document.title; error = None; }
+        Err(reason) =&gt; { error = Some(reason); }
+      }
+    }
+    保存
+  &lt;/button&gt;
+}</code></pre></div>
+<p>これは未コンパイルの専用言語案である。<code>using request</code> は server adapter から注入し、client が送れる引数に含めない。<code>authorize grant</code> は許可を得た場合だけ body へ進む entry 契約で、拒否は宣言した error schema へ変換する。body 内の業務エラーも明示的に Result へ変換し、予期しない例外の stack や secret を response に載せない。</p>
+<p><code>grant</code> は actor / tenant / resource / operation と有効条件を持つ server 内部の Permit とする。一般の値から構築したり snapshot に入れたりできない。<code>documents.rename</code> は対象 resource と操作が一致する Permit を要求し、実際の変更点で policy の有効条件を保証する trusted adapter の契約を持つ。単に <code>authenticated</code> であることと、対象 document を変更できることを分ける。</p>
+<p><code>expose</code> は任意の secret を client データへ変換する万能 cast ではない。宣言済み view の shape、出力先の audience、field の情報ラベルを確認する境界とする。承認した公開・復号・情報ラベル変更が必要な処理は、別の audited policy として登録する。</p>
+<h2 id="3-コンパイル時と-request-時の責務">3. コンパイル時と request 時の責務</h2>
+<p>compiler が保証する対象は、許可した DSL と登録した host adapter の契約に限定する。TypeScript の型注釈、Content Mapper、<code>await</code> の存在だけをセキュリティの根拠にしない。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>コンパイル時に確認すること</th>
+<th>request / 実行時に確認すること</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>client graph へ server 実装・DB handle・secret capability が入らない</td>
+<td>認証情報を現在の request から構成する</td>
+</tr>
+<tr>
+<td>RPC entry に input / output / error schema と access policy がある</td>
+<td>wire data を実 schema で decode / validate する</td>
+</tr>
+<tr>
+<td>client の server 呼出しは explicit <code>remote</code> と descriptor 経由に限る</td>
+<td>UI や生成 stub を通らない直接 request にも同じ検査を行う</td>
+</tr>
+<tr>
+<td>許可された effect 集合を、各 call / await の伝播で満たす</td>
+<td>actor / tenant / resource / operation の許可を評価する</td>
+</tr>
+<tr>
+<td>DB 変更点へ必要な Permit が渡り、policy を飛び越える経路がない</td>
+<td>Permit の resource、主体、有効条件を実際の変更点で満たす</td>
+</tr>
+<tr>
+<td>client props / HTML / snapshot / RPC の出力ラベルを検査する</td>
+<td>response schema、公開 error、audience に合う転送と cache を守る</td>
+</tr>
+</tbody></table>
+</div><p>public endpoint を許す場合も <code>access public</code> 等の明示宣言を要求する。policy の省略を public の意味にしない。query の read-only 判定は effect graph 上の制約であり、外部サービスが実際に副作用を持たないことまで compiler が推測するものではない。</p>
+<p>RPC はブラウザから直接呼べる API として扱う。endpoint ID の難読化、client での条件分岐、型付き stub、SSR で一度行った認証を認可の代用にしない。React の公式資料も Server Function の引数を client 制御の入力として扱い、操作の認可を server で行うことを求めている。(<a href="https://react.dev/reference/rsc/use-server#security-considerations">React security considerations</a>)</p>
+<p>認証済み cookie を使う action の場合、request adapter は method / origin / CSRF の明示的な transport policy を持つ。別 origin へ提供する API は別の credentials 契約で登録する。HTTP を使わない server 内部呼出しにも actor と Permit の整合が必要だが、HTTP の origin 検査を内部呼出しへ混同しない。</p>
+<h2 id="4-await-をまたぐ権限と-client-の寿命">4. await をまたぐ権限と client の寿命</h2>
+<p><code>await</code> ごとに実行側が変わるわけではない。内部 helper への await と remote の await を IR で区別し、前者は通常の effect 合成、後者は codec / transport / policy の境界になる。</p>
+<p>認可後に権限・所有者・tenant が変更され得る場合、古い Permit のまま更新できるとは仮定しない。候補は、変更と同じ transaction / 条件付き更新内での再検査、または policy が明示的に許す有効期間付き Permit である。選んだ有効性の意味を adapter の契約にする。すべての await で機械的に再認証する規則にはしない。</p>
+<p>client component の dispose や AbortSignal は、未適用の client 更新を中止できても、既に行った server mutation を rollback しない。client の owner generation と server の認可 revision は別のものとして管理する。action の retry / 二重実行に対する idempotency と、resource の latest-wins も分けて定義する。</p>
+<p>初期段階の async は、許可した内部 helper、明示 RPC、生成 runtime が管理する中断点に絞る。任意 Promise の snapshot 保存は許可せず、未知の callback / effect は明示した trusted adapter 以外で拒否する。</p>
+<h2 id="5-情報の出力と-bundler">5. 情報の出力と bundler</h2>
+<p>保存可能な値であることと、client に渡してよいことは別である。秘密の string も JSON にはできるため、codec の成功だけで出力を許可しない。</p>
+<p>情報ラベルの対象は client props / snapshot だけでなく、server component の HTML、RPC response、公開 error も含む。server component と宣言しただけでは出力が秘密になるわけではない。明示的にラベル付けした secret について、演算・分岐条件を含む伝播規則を設計する。任意 JS、host の副作用、timing 等を含む完全な非干渉性を現段階で保証したとは主張しない。</p>
+<p>client bundle に入るのは RPC descriptor と入力・出力契約、および client 実装だけである。server action の実装、policy、request context、Permit、server closure を serialize しない。descriptor は公開可能な ID / schema / protocol 情報であり、持っているだけで操作を認可する capability にはしない。</p>
+<p>server と client の graph は phase 解析から分離して生成する。server capability の混入を tree shaking が偶然消すことに依存させない。Vite の server graph は entry と policy を登録し、client graph は typed descriptor を解決する。Rolldown が決める physical chunk ID と、server の access policy は独立した契約にする。</p>
+<p><code>explain boundary</code> の候補出力は、entry、実行側、remote 呼出箇所、入力・出力 schema、policy、要求 effect、server へ残る値、client へ出る field とその理由である。詳細な認可ロジックや secret の値を client 向け manifest に含めない。</p>
+<h2 id="6-形式モデルへ追加する性質">6. 形式モデルへ追加する性質</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>性質の候補</th>
+<th>故障版 / 健全性の確認</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>B01</td>
+<td>client から server 内部関数を直接呼べない</td>
+<td>server helper の自動公開を許す変種</td>
+</tr>
+<tr>
+<td>B02</td>
+<td>wire の actor / tenant / Permit を server の権限として採用しない</td>
+<td>forged payload を受理する変種</td>
+</tr>
+<tr>
+<td>B03</td>
+<td>protected mutation は有効な actor / target / operation の許可を伴う</td>
+<td>policy skip、別 resource の Permit 再利用</td>
+</tr>
+<tr>
+<td>B04</td>
+<td>policy が失効を即時反映すると定めた変更点では、古い認可で commit しない</td>
+<td>Authorize → Suspend → Revoke → Commit</td>
+</tr>
+<tr>
+<td>B05</td>
+<td>secret ラベルの値が未承認の HTML / snapshot / response へ流れない</td>
+<td>直列化可能な secret string の出力、secret 分岐からの出力</td>
+</tr>
+<tr>
+<td>B06</td>
+<td>有効な許可を持つ正常 request が成功へ到達できる</td>
+<td>全 request 拒否という空虚な安全性を排除</td>
+</tr>
+</tbody></table>
+</div><p>MoonBit＋veri の最初の security model は actor 二人・document 二個程度で、<code>Receive / Decode / Authenticate / Authorize / Suspend / Revoke / Commit / Respond</code> と攻撃者からの直接 request を入力にする案とする。B04 は policy の有効性を先に決めてから検査する。Lean では side / effect の保存、許可される cross-boundary flow、entry 検査を含む変換の意味保存を小さな DSL 上で定義する。</p>
+<p>v0 の security model は主体偽造・失効・resource 違いを検査し、strict 69状態の閉包と故障版反例を確認した。<a href="/isle/source/evals/results/formal.json">formal.json</a> に実行結果を保存する。B05 の情報ラベルや任意の業務 policy は未検証である。実アプリの policy、trusted host adapter、生成 JS とモデルの対応は別に検査し、認証・認可全体を証明済みとは扱わない。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

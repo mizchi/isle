@@ -1,0 +1,169 @@
+{
+  "version": 1,
+  "references": {
+    "isle:resume": {
+      "ref": [
+        "/isle/ja/assets/isle-resume-Bzm23-Gn.js",
+        "resume",
+        []
+      ],
+      "chunk": "assets/isle-resume-Bzm23-Gn.js",
+      "requires": [],
+      "kind": "runtime",
+      "loading": "lazy"
+    },
+    "LiveCounter.increment": {
+      "ref": [
+        "/isle/ja/assets/LiveCounter.g0-ClmGEPE8.js",
+        "h0",
+        [
+          0
+        ]
+      ],
+      "chunk": "assets/LiveCounter.g0-ClmGEPE8.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "5290197e75119db8",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "../../../site/app.isle",
+        "start": {
+          "offset": 1785,
+          "line": 29,
+          "column": 142
+        },
+        "end": {
+          "offset": 1819,
+          "line": 29,
+          "column": 176
+        }
+      },
+      "loading": "lazy"
+    },
+    "LiveCounter.reset": {
+      "ref": [
+        "/isle/ja/assets/LiveCounter.g0-ClmGEPE8.js",
+        "h1",
+        [
+          0
+        ]
+      ],
+      "chunk": "assets/LiveCounter.g0-ClmGEPE8.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "5290197e75119db8",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "../../../site/app.isle",
+        "start": {
+          "offset": 1873,
+          "line": 29,
+          "column": 230
+        },
+        "end": {
+          "offset": 1902,
+          "line": 29,
+          "column": 259
+        }
+      },
+      "loading": "lazy"
+    }
+  },
+  "chunks": {
+    "assets/index-BkRGPHlx.js": {
+      "url": "/isle/ja/assets/index-BkRGPHlx.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/isle-resume-Bzm23-Gn.js"
+      ],
+      "bytes": 1518,
+      "gzipBytes": 814
+    },
+    "assets/isle-resume-Bzm23-Gn.js": {
+      "url": "/isle/ja/assets/isle-resume-Bzm23-Gn.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/LiveCounter.g0-ClmGEPE8.js"
+      ],
+      "bytes": 3432,
+      "gzipBytes": 1656
+    },
+    "assets/LiveCounter.g0-ClmGEPE8.js": {
+      "url": "/isle/ja/assets/LiveCounter.g0-ClmGEPE8.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 115,
+      "gzipBytes": 96
+    }
+  },
+  "loading": {
+    "eager": [],
+    "preload": []
+  },
+  "resolution": {
+    "version": 1,
+    "strategy": "event-and-size",
+    "budgetGzipBytes": 8192,
+    "usedGzipBytes": 0,
+    "decisions": [
+      {
+        "id": "LiveCounter.increment",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 1752,
+        "modules": [
+          "/isle/ja/assets/isle-resume-Bzm23-Gn.js",
+          "/isle/ja/assets/LiveCounter.g0-ClmGEPE8.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "LiveCounter.reset",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 1752,
+        "modules": [
+          "/isle/ja/assets/isle-resume-Bzm23-Gn.js",
+          "/isle/ja/assets/LiveCounter.g0-ClmGEPE8.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "isle:resume",
+        "requested": "lazy",
+        "loading": "lazy",
+        "reason": "default",
+        "additionalGzipBytes": 0,
+        "modules": [
+          "/isle/ja/assets/isle-resume-Bzm23-Gn.js"
+        ],
+        "initialBy": []
+      }
+    ]
+  },
+  "buildId": "69bd60e5db2a312a"
+}

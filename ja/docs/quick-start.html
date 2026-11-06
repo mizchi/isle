@@ -1,0 +1,175 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="はじめる"><title>はじめる · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/quick-start.html"><meta property="og:title" content="はじめる · Isle"><meta property="og:type" content="website"><meta property="og:description" content="はじめる"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html" aria-current="page">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/README.ja.md">ソースで読む ↗</a></div><h1 id="はじめる">はじめる</h1>
+<p>Node.js 24+ と Vite 8 系（8.3.5 以上）を使います。コンパイル済み frontend をパッケージに含めるため、アプリの利用者は MoonBit・Z3・コンパイラの checkout を用意する必要はありません。</p>
+<p><strong>プレビュー配布:</strong> パッケージは現在 private です。<a href="/isle/downloads/isle-prototype-0.0.1.tgz">プレビュー版の npm アーカイブ</a>をダウンロードし、自分のアプリへインストールします。レジストリ公開は別の工程として扱います。パッケージ名と import パスは <code>@isle/prototype</code> です。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>pnpm add ./isle-prototype-0.0.1.tgz
+pnpm add -D vite@^8.3.5</code></pre></div>
+<p>レジストリ公開後は、最初のコマンドを <code>pnpm add @isle/prototype</code> に置き換えます。自分のアプリに次の3ファイルを作ります。</p>
+<h3 id="appisle"><code>app.isle</code></h3>
+<!-- file: app.isle -->
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>client component Counter(initial: number) {
+  state count = initial;
+  derive doubled = count * 2;
+  &lt;section&gt;
+    &lt;h2&gt;Counter&lt;/h2&gt;
+    &lt;output aria-live=&quot;polite&quot;&gt;{count} / {doubled}&lt;/output&gt;
+    &lt;button type=&quot;button&quot;&gt;on click increment { count += 1; }Increment&lt;/button&gt;
+    &lt;button type=&quot;button&quot;&gt;on click reset { count = initial; }Reset&lt;/button&gt;
+  &lt;/section&gt;
+}</code></pre></div>
+<h3 id="indexhtml"><code>index.html</code></h3>
+<!-- file: index.html -->
+<div class="code-block"><div class="code-language">html</div><pre tabindex="0"><code>&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+  &lt;title&gt;My Isle app&lt;/title&gt;
+  &lt;style&gt;
+    body { max-width: 640px; margin: 32px auto; padding: 0 16px; font: 18px/1.6 system-ui; }
+    button { display: block; min-height: 44px; margin: 8px 0; padding: 8px 16px; font: inherit; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;My Isle app&lt;/h1&gt;
+  &lt;!--isle:ssr--&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></div>
+<h3 id="viteconfigmjs"><code>vite.config.mjs</code></h3>
+<!-- file: vite.config.mjs -->
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>import { defineConfig } from &#39;vite&#39;;
+import { fileURLToPath } from &#39;node:url&#39;;
+import { isle } from &#39;@isle/prototype/vite&#39;;
+
+export default defineConfig({
+  plugins: [isle({
+    entry: fileURLToPath(new URL(&#39;./app.isle&#39;, import.meta.url)),
+    mounts: [{ component: &#39;Counter&#39;, props: { initial: 5 }, label: &#39;Counter&#39; }],
+  })],
+  build: { target: &#39;es2023&#39; },
+});</code></pre></div>
+<p><code>pnpm exec vite</code> を実行し、表示された URL を開きます。Counter は <code>5 / 10</code> から始まり、Increment で <code>6 / 12</code>、Reset で初期値に戻ります。<code>pnpm exec vite build</code> でビルドし、<code>dist/</code> の出力を確認・配信できます。</p>
+<p>この例にブラウザー entry の記述は不要です。<code>&lt;!--isle:ssr--&gt;</code> が SSR の HTML の挿入位置で、plugin が操作に必要な loader と chunk も生成します。</p>
+<p>このビルドは初期 HTML をビルド時に生成します。リクエスト時の server action には server adapter が必要で、この設定だけで一般のリクエスト時ページレンダラーが構成されるわけではありません。<code>.isle</code> の制約付き宣言以外のロジックは、通常の JavaScript の setup / host module に書けます。</p>
+<h2 id="試せる機能">試せる機能</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>試す機能</th>
+<th>操作と確認</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="/isle/examples/hello/">最小の Counter</a></td>
+<td>SSR した値を増やし、初期値へ戻す。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/ssr-only/">ブラウザー JS のない SSR</a></td>
+<td>ビルドに Isle runtime・snapshot・handler chunk が含まれないことを確認する。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/partial-updates/">動的な表示だけ更新</a></td>
+<td>一つの値を変更し、静的見出しと無関係な出力の DOM が保持されることを確かめる。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/composition/">入れ子と children</a></td>
+<td>親と子を独立に再開し、純粋 component の children を表示する。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/control-flow/">分岐・key 付きリスト・例外</a></td>
+<td>分岐を切り替え、key 付き行を並べ替え、空配列で @empty と同期 @catch を確認する。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/loading/">manifest による読み込み</a></td>
+<td>manifest の先読み判断を調べ、入力時には Search だけが活性化することを確認する。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/resources/">リソースの寿命と破棄</a></td>
+<td>所有された timer と listener を活性化し、component を削除して一度だけ破棄されることを見る。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/styles/">遅延 CSS と準備完了</a></td>
+<td>setup module と CSS を読み込み、setup から見える適用済み style を調べる。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/navigation/">標準の遷移先読み</a></td>
+<td>Speculation Rules の data block と通常リンクを確認する。Isle の browser JS は出力しない。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/form/">標準フォームの検証</a></td>
+<td>不正入力・必須同意・送信成功を、ラベル付きのフォームで試す。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/schema-form/">共通 schema とサーバー検証</a></td>
+<td><a href="mailto:taken@example.com">taken@example.com</a> の重複エラーを確認し、修正・送信・reset を試す。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/counter/">明示的な server action</a></td>
+<td>独立した Counter と、検証・認可を経由する文書名変更を試す。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/layout-contracts/">CSS 契約の3つの結果</a></td>
+<td>reset を考慮した Grid 契約で verified・overflow の violated・未対応の unknown を試す。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/portable-widget/">ポータブルな Web Components</a></td>
+<td>複数 widget をマウントし、共有版・standalone 版・版の不一致の拒否を確認する。</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/worker-widget/">Workers からの widget 配信</a></td>
+<td>widget-dev と widget-host を別 terminal で起動し、別 origin に固定サイズの Shadow DOM widget を埋め込む。</td>
+</tr>
+</tbody></table>
+</div><p><a href="/isle/ja/examples/">サンプル一覧</a>には、操作・確認ポイント・ソース・検査方法があります。各例の <code>just</code> はリポジトリのデモ用コマンドです。利用者のアプリでは、上記の公開 import と Vite のコマンドを使います。</p>
+<h2 id="境界を選ぶ">境界を選ぶ</h2>
+<ul>
+<li><code>component Label(title: string)</code> は server/client 共通の純粋な component です。状態・イベントを使う場合は <code>client</code>、server に限定する場合は <code>server</code> を付けます。</li>
+<li><code>@if</code>・<code>@switch</code>・key 付き <code>@for</code>・同期の <code>@try</code> は構造を保って部分更新します。client component の props は不変の初期値です。</li>
+<li>server action には schema・認可・effect を宣言します。実認証・policy・operation は利用側の server host に実装し、静的配信とは別に接続します。</li>
+<li><code>resources</code> で通常の setup module を component の寿命に接続します。import した CSS は setup の前に準備され、削除時には所有リソースを破棄します。</li>
+<li><code>loading: &#39;auto&#39; | &#39;lazy&#39; | &#39;preload&#39; | &#39;eager&#39;</code> で解決時期を選びます。preload は取得、eager は起動時の評価も許します。ページ遷移の Speculation Rules は別の設定です。</li>
+<li><code>widget</code> は外部サイト用の Web Components loader と descriptor を生成します。width/height で領域を予約し、共有版・standalone 版を選べます。runtime の版は完全一致させます。</li>
+</ul>
+<p>ブラウザー出力は ES2023 と標準の DOM / ESM / fetch を使い、MoonBit / Wasm runtime や polyfill を含めません。動的な領域だけに更新コードを生成しますが、あらゆるアプリで実行時間が短くなることを保証するものではありません。</p>
+<h2 id="公開-api-とガイド">公開 API とガイド</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>import / コマンド</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@isle/prototype/vite</code></td>
+<td>SSR・チャンク・先読み・resources・widget・cost budget の Vite plugin</td>
+</tr>
+<tr>
+<td><code>@isle/prototype/compiler</code></td>
+<td>server / build 環境での <code>.isle</code> のコンパイルと解析</td>
+</tr>
+<tr>
+<td><code>@isle/prototype/server</code></td>
+<td><code>createActionHandler()</code> を Request / Response server に接続</td>
+</tr>
+<tr>
+<td><code>@isle/prototype/widget</code> / <code>widget/browser</code></td>
+<td>埋め込みタグの生成 / browser widget API</td>
+</tr>
+<tr>
+<td><code>@isle/prototype/layout</code></td>
+<td>宣言した CSS / Grid 契約の解析</td>
+</tr>
+<tr>
+<td><code>@isle/prototype/resources</code></td>
+<td>resource owner の API と型</td>
+</tr>
+<tr>
+<td><code>pnpm exec isle</code></td>
+<td>source・manifest・cost budget・layout 契約の検査</td>
+</tr>
+</tbody></table>
+</div><p>詳しい使い方: <a href="/isle/ja/docs/composition.html">入れ子と children</a>・<a href="/isle/ja/docs/forms.html">Form</a>・<a href="/isle/ja/docs/control-flow.html">制御構文</a>・<a href="/isle/ja/docs/resolution-optimizer.html">読み込み</a>・<a href="/isle/ja/docs/widgets.html">widget</a>・<a href="/isle/ja/docs/layout-checking.html">CSS 契約</a>・<a href="/isle/ja/docs/index.html">ドキュメント一覧</a>。</p>
+<h2 id="現在の対応範囲">現在の対応範囲</h2>
+<p>制約付きの式・型を持つ prototype であり、任意の TypeScript を実行する言語ではありません。<code>inline(ts/moonbit/css)</code>、Content Mapper、一般の async server render、class 単位の CSS DCE は未実装です。対応する制御構文では閉じた record / array を使えます。</p>
+<p>CSS 検査は宣言したサイズ・折り返し・overflow の契約を扱い、<code>verified</code>・<code>violated</code>・<code>unknown</code> を返します。任意の browser layout の証明ではありません。寿命・security の有限モデルは独立した参照モデルで、compiler からのモデル生成や compiler / runtime / browser 全体の証明は今後の機能です。デモの server host は固定 principal とメモリー内のデータを使います。</p>
+<p><a href="/isle/ja/docs/contributing.html">開発者向けセットアップと検査</a>・<a href="/isle/ja/docs/design.html">設計</a>・<a href="https://github.com/mizchi/isle/blob/main/models/README.md">形式モデル</a>・<a href="https://github.com/mizchi/isle/blob/main/benchmarks/README.md">ベンチマーク</a>・<a href="https://github.com/mizchi/isle/blob/main/evals/README.md">記述評価</a></p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

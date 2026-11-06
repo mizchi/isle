@@ -1,0 +1,59 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Isle ユーザーガイド"><title>Isle ユーザーガイド · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/index.html"><meta property="og:title" content="Isle ユーザーガイド · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Isle ユーザーガイド"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/README.md">ソースで読む ↗</a></div><h1 id="isle-ユーザーガイド">Isle ユーザーガイド</h1>
+<p>Isle は、サーバーで生成した HTML を表示し、操作された UI だけを再開するフレームワークです。<code>.isle</code> ファイルに状態・表示・イベントと server action の境界を書き、Vite / Rolldown でブラウザー向けのコードを生成します。</p>
+<p>現在はプロトタイプです。<a href="/isle/ja/docs/quick-start.html#はじめる">npm 配布物の導入手順</a>を起点に、Vite アプリへ組み込みます。ブラウザー向け出力は ES2023 と標準の DOM / ESM / fetch を使い、MoonBit や Wasm のランタイムは必要ありません。アプリのビルドにも MoonBit・Z3 は不要です。機能別の <a href="/isle/ja/examples/">examples</a> にはソース・設定・操作・検査方法を用意しています。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>やりたいこと</th>
+<th>ガイド</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>パッケージを導入し、自分の Counter を作る</td>
+<td><a href="/isle/ja/docs/getting-started.html">はじめる</a></td>
+</tr>
+<tr>
+<td>状態・server action・フォーム・読み込み方針を指定する</td>
+<td><a href="/isle/ja/docs/application-guide.html">アプリを書く</a></td>
+</tr>
+<tr>
+<td>親子の component、children、独立した再開を使う</td>
+<td><a href="/isle/ja/docs/composition.html">コンポーネントを組み合わせる</a></td>
+</tr>
+<tr>
+<td>別サイトへ埋め込む、shared / standalone を選ぶ</td>
+<td><a href="/isle/ja/docs/widgets.html">widget を使う</a></td>
+</tr>
+</tbody></table>
+</div><h2 id="構文と機能の詳細">構文と機能の詳細</h2>
+<ul>
+<li><a href="/isle/ja/docs/prototype-guide.html">構文リファレンス</a>：props、state、derive、HTML、イベント、明示 RPC。</li>
+<li><a href="/isle/ja/docs/forms.html">Form とアクセシビリティ</a>：入力制約、非同期検証、エラー、pending、reset。</li>
+<li><a href="/isle/ja/docs/chunk-profiling.html">チャンクとプロファイル</a>：イベント名、manifest、User Timing。</li>
+<li><a href="/isle/ja/docs/static-profiling.html">静的な負荷予測</a>：入口ごとの仕事量、更新の波及、debug 情報、性能 budget。</li>
+<li><a href="/isle/ja/docs/speculation-rules.html">ページ遷移の先読み</a>：Speculation Rules の設定。</li>
+<li><a href="/isle/ja/docs/worker-widget.html">Workers への配布</a>：公開ファイル、CORS、RPC、配備コマンド。</li>
+</ul>
+<h2 id="現在の対応範囲">現在の対応範囲</h2>
+<p>使える値の型は <code>string</code> / <code>number</code> / <code>boolean</code> です。props は <code>component Label(title: string)</code> のように名前と型で宣言します。無指定の <code>component</code> は純粋な共通サブセット、状態・イベントを持つ UI は <code>client component</code>、server に限定する UI は <code>server component</code> と書きます。</p>
+<p>コンポーネントは HTML root または別の component を root とし、タグで入れ子にできます。children には描画専用の <code>RenderFragment</code> を使います。ページの入口を Vite の <code>mounts</code> に配置します。HTML の標準要素や通常の CSS を使えます。</p>
+<p><code>.isle</code> は TypeScript の式・型を基にした専用言語です。<code>@if</code> / <code>@switch</code> / key 付き <code>@for</code> / 同期の <code>@try</code> は <a href="/isle/ja/docs/control-flow.html">制御構文の範囲</a> で対応しています。任意の TypeScript、import、ユーザー定義関数、File・複数選択フォームは未対応です。client 境界を越える reactive props は未対応で、不変の初期値に限定します。<code>inline(ts)</code> / <code>inline(moonbit)</code> / <code>inline(css)</code>、Content Mapper、一般の async server render は設計段階です。</p>
+<p>リリース前のため、構文・API は変更することがあります。通常ページの HTML・snapshot・分割コードは同じビルドで配布します。widget にはバージョンと配布モードの照合があり、異なる版の共有 runtime へ自動的に接続しません。</p>
+<p>内部設計や検証へ進む場合は、<a href="/isle/ja/docs/design.html">設計書</a>、<a href="https://github.com/mizchi/isle/blob/main/models/README.md">形式モデル</a>、<a href="https://github.com/mizchi/isle/blob/main/evals/README.md">評価シナリオ</a>、<a href="https://github.com/mizchi/isle/blob/main/benchmarks/README.md">ベンチマーク</a>を参照してください。設計書には未実装の提案も含まれます。</p>
+<ul>
+<li><p><a href="/isle/ja/docs/control-flow.html">テンプレートの制御構文</a>: 同期の実装範囲、closed array / record、key と寿命、将来の resource 契約。</p>
+</li>
+<li><p><a href="/isle/ja/docs/temporal-resources.html">時相的な値とモデル検査</a>: Once の参照意味論、安全性・応答性・公平性と反例の再生。</p>
+</li>
+<li><p><a href="/isle/ja/docs/resource-disposal.html">unmount とリソース破棄</a>: resources 設定から component / widget への自動接続、abort と完了、遅い取得、モデル由来の schedule 検査。</p>
+</li>
+<li><p><a href="/isle/ja/docs/resolution-optimizer.html">解決時期の最適化</a>: compiler による auto 計画、先読み予算、fetch / evaluate / activate / commit。</p>
+</li>
+<li><p><a href="/isle/ja/docs/style-resolution.html">CSS の解決</a>: 非同期 CSS の準備・適用、owner と ShadowRoot、有限モデル。</p>
+</li>
+<li><p><a href="/isle/ja/docs/layout-checking.html">Grid の静的検査</a>: 両軸の box model、親子契約、media/container と反例領域。</p>
+</li>
+<li><p><a href="/isle/ja/docs/layout-rejections.html">リジェクト例を実行する</a>: violated / unknown の14例と対応版。</p>
+</li>
+</ul>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

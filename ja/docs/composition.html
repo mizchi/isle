@@ -1,0 +1,136 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="コンポーネントを組み合わせる"><title>コンポーネントを組み合わせる · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/composition.html"><meta property="og:title" content="コンポーネントを組み合わせる · Isle"><meta property="og:type" content="website"><meta property="og:description" content="コンポーネントを組み合わせる"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html" aria-current="page">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/composition.md">ソースで読む ↗</a></div><h1 id="コンポーネントを組み合わせる">コンポーネントを組み合わせる</h1>
+<p>コンポーネントは <code>&lt;Counter initial={5} /&gt;</code> のようにタグで配置します。引数の名前が props の名前になり、呼び出し側の属性の順番は問いません。分割代入と型を二重に書かない方針は、<a href="https://flow.org/en/docs/react/component-syntax/">Flow の Component Syntax</a>を参考にしています。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>component Card(title: string, children: RenderFragment) {
+  &lt;section&gt;&lt;h2&gt;{title}&lt;/h2&gt;{children}&lt;/section&gt;
+}
+
+client component Counter(initial: number) {
+  state count = initial;
+  &lt;button type=&quot;button&quot;&gt;
+    on click increment { count += 1; }
+    {count}
+  &lt;/button&gt;
+}
+
+server component Page(seed: number) {
+  &lt;Card title=&quot;Counters&quot;&gt;
+    &lt;Counter initial={seed} /&gt;
+    &lt;Counter initial={seed + 10} /&gt;
+  &lt;/Card&gt;
+}</code></pre></div>
+<p>Vite の mounts には Page だけを登録します。seed=5 なら二つの Counter は5と15で表示され、それぞれ独立して操作できます。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>mounts: [{ component: &#39;Page&#39;, props: { seed: 5 }, scopeId: &#39;page&#39;, label: &#39;Page&#39; }],</code></pre></div>
+<p>全ての定義はファイルのトップレベルに置きます。後ろで宣言した component も参照できます。コンポーネント名には大文字で始まる名前を使い、普通の関数のように <code>Counter(...)</code> と呼ぶことはできません。</p>
+<h2 id="デモを動かす">デモを動かす</h2>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just dev-composition</code></pre></div>
+<p><a href="http://127.0.0.1:4192/">http://127.0.0.1:4192/</a> を開きます。親のボタンは親の表示だけ、子 A / B / C のボタンは各子の状態だけを変更します。<a href="/isle/source/examples/composition/app.isle">ソース</a>には純粋な表示用 component、状態を持つ親子、children を受け取る Card が含まれます。</p>
+<h2 id="実行側の組み合わせ">実行側の組み合わせ</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>呼び出し元</th>
+<th>呼び出せる component</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>無指定の <code>component</code></td>
+<td>無指定の component</td>
+</tr>
+<tr>
+<td><code>client component</code></td>
+<td>無指定の component、client component</td>
+</tr>
+<tr>
+<td><code>server component</code></td>
+<td>無指定の component、server component、client component</td>
+</tr>
+</tbody></table>
+</div><p>無指定の component は props・純粋な derive・HTML の範囲に制約します。client の state / on や server 専用の処理を、呼び出しによって暗黙に取り込むことはありません。client から server component を直接生成する呼び出しは <code>E_COMPONENT_PHASE</code> になります。</p>
+<p>この制約は、server 側で作った内容を children として client の枠へ渡すことを妨げません。内容は呼び出し元のスコープに属し、受け取った component は表示位置を決めます。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>server component Note(message: string) { &lt;p&gt;{message}&lt;/p&gt; }
+client component Panel(children: RenderFragment) {
+  state count = 0;
+  &lt;section&gt;
+    &lt;button type=&quot;button&quot;&gt;on click add { count += 1; }{count}&lt;/button&gt;
+    {children}
+  &lt;/section&gt;
+}
+server component Page() {
+  &lt;Panel&gt;&lt;Note message=&quot;Server content&quot; /&gt;&lt;/Panel&gt;
+}</code></pre></div>
+<h2 id="children-の契約">Children の契約</h2>
+<p><code>children: RenderFragment</code> を宣言し、本文に <code>{children}</code> を一度だけ置きます。渡す内容がない場合は空になります。children を宣言していない component へ本文を渡したり、複数箇所へ展開したりすると <code>E_COMPONENT_CHILDREN</code> になります。</p>
+<p>RenderFragment はコンパイラが扱う描画用の値です。props の JSON、state、derive、属性、snapshot に入れたり、文字列の HTML として注入したりする用途には使えません。Flow の React.Node 全体を実装する型ではなく、静的な template の合成に限定しています。</p>
+<h2 id="純粋な子と-client-の子">純粋な子と client の子</h2>
+<p>無指定の component と server component は、呼び出し先の props・derive を展開して HTML を生成します。純粋な子を増やすだけで、新しい runtime owner や snapshot は追加しません。例えば次の表示は、親の count に追従します。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>component Value(value: number) { &lt;output&gt;{value}&lt;/output&gt; }
+client component Parent(initial: number) {
+  state count = initial;
+  &lt;div&gt;
+    &lt;button type=&quot;button&quot;&gt;on click increment { count += 1; }Add&lt;/button&gt;
+    &lt;Value value={count} /&gt;
+  &lt;/div&gt;
+}</code></pre></div>
+<p>client の子は独立した状態と再開範囲を持ちます。現在、この境界を越える props は、親の操作で変化しない初期値に限定しています。<code>&lt;Counter initial={seed} /&gt;</code> は使えますが、親が変更する count を渡す <code>&lt;Counter initial={count} /&gt;</code> は <code>E_COMPONENT_CAPTURE</code> で拒否します。初期化をやり直したり、更新が追従しないまま受理したりはしません。</p>
+<p>client の枠へ渡す children も、親の mutable な値や親が所有するイベントを持たせられません。静的 HTML、既に server で描画する内容、独立した client component は渡せます。親の値に追従する表示用の子には、無指定の component を使ってください。</p>
+<h2 id="resume-と破棄">Resume と破棄</h2>
+<p>client の各 instance に固有の scope と snapshot を生成します。同じ Counter を何個配置しても、コードは共有し、状態は共有しません。子の最初の操作で親や兄弟の snapshot まで復元することはありません。</p>
+<p>親の文字・属性の更新先は子の領域と分離します。純粋な component 内の id と label / ARIA 参照も配置ごとに変換するため、同じ template の繰り返しで混ざりません。component の外にある id を label の参照先にする機能は提供していません。</p>
+<p><code>dispose(parentScope)</code> は、まだ再開していない子も含めて停止します。<code>dispose(childScope)</code> は親や兄弟を停止しません。所有関係は最適化後の DOM の親子とは別に保持するため、親の再開 root がボタンだけに縮んでも、この関係を維持します。native import 自体は中止できませんが、破棄後に届くコードで状態の復元や更新を行いません。</p>
+<h2 id="チャンクと-ssr">チャンクと SSR</h2>
+<p>生成するコードは mounts から到達できる client component に限定します。<code>loading</code> は入れ子の子にも継承し、同じ component に複数の指定が届く場合は従来どおり最も早い方針を使います。</p>
+<p><code>lazy</code> では、操作された entry とその静的依存を取得します。入れ子の下にある handler 全部を無条件で取得する方針ではありません。Vite / Rolldown が同じファイルへまとめたコードは一緒に届くため、物理的な分割は manifest で確認します。共通 runtime / registry はページ内で使います。</p>
+<p><code>mode: &#39;ssr&#39;</code> は全ての子と children に伝わります。通常ページでは framework の実行用 JS・snapshot・イベント marker を生成しません。widget では表示用 SDK を使いますが、SSR 専用 descriptor に動的 module や UI engine を展開しません。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>node tools/isle.mjs check examples/composition/app.isle
+node tools/isle.mjs explain examples/composition/app.isle
+node tools/isle.mjs ssr examples/composition/app.isle Page &#39;{&quot;seed&quot;:5}&#39;</code></pre></div>
+<p>独自の SSR adapter からは、単体の renderComponent の代わりに program 全体を準備します。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>import { compileFile, requireIR } from &#39;./lib/compiler.mjs&#39;;
+import { prepareProgram } from &#39;./lib/codegen.mjs&#39;;
+
+const ir = requireIR(await compileFile(&#39;examples/composition/app.isle&#39;));
+const program = prepareProgram(ir);
+const result = program.render(&#39;Page&#39;, { seed: 5 }, { scopeId: &#39;page&#39; });
+const html = result.html + result.snapshotHtml;</code></pre></div>
+<p>複数の top-level mount は <code>program.renderAll(mounts)</code> で描画できます。明示した scopeId と自動生成した子の scope が衝突する場合も拒否します。</p>
+<h2 id="コンパイル時の診断">コンパイル時の診断</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>code</th>
+<th>確認すること</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>E_COMPONENT_UNKNOWN</td>
+<td>呼び出す component を同じファイルで宣言します</td>
+</tr>
+<tr>
+<td>E_COMPONENT_PROPS</td>
+<td>props の名前、型、欠落、余分な値、重複を確認します</td>
+</tr>
+<tr>
+<td>E_COMPONENT_PHASE</td>
+<td>上の実行側の組み合わせに合わせます</td>
+</tr>
+<tr>
+<td>E_COMPONENT_CHILDREN</td>
+<td>RenderFragment の宣言と一度だけの投影を確認します</td>
+</tr>
+<tr>
+<td>E_COMPONENT_CAPTURE</td>
+<td>client 境界を越える mutable 値・親のイベントを取り除きます</td>
+</tr>
+<tr>
+<td>E_COMPONENT_CYCLE</td>
+<td>診断の循環経路を読み、直接・間接の再帰を解消します</td>
+</tr>
+<tr>
+<td>E_COMPONENT_HTML / E_FORM_NESTING</td>
+<td>展開後の DOM と form の入れ子を確認します</td>
+</tr>
+</tbody></table>
+</div><p>Form は同じ client owner 内で control を構成します。純粋な component を使って control をまとめられますが、schema Form の control 群を別の client owner や未確定の children に分割することはできません。フォーム自体を client component として入れ子にする構成は使えます。</p>
+<p>Flow の optional/default/rest、renaming、ref、renders 型、props spread、dynamic component、list / branch は今回の対象に含みません。従来の TS 分割代入表記は互換用に残し、ドキュメントでは個別の名前付き引数を基本にします。</p>
+<p><a href="/isle/ja/docs/index.html">ユーザーガイド</a> · <a href="/isle/ja/docs/prototype-guide.html">構文リファレンス</a> · <a href="/isle/ja/docs/chunk-profiling.html">チャンクと計測</a></p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

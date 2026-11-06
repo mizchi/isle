@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "references": {
+    "Counter.increment": {
+      "ref": [
+        "/isle/demos/composition/assets/Counter.g0-sIr0C6hm.js",
+        "h0",
+        [
+          1
+        ]
+      ],
+      "chunk": "assets/Counter.g0-sIr0C6hm.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "e1e153ec8f8f09dd",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 476,
+          "line": 15,
+          "column": 29
+        },
+        "end": {
+          "offset": 510,
+          "line": 15,
+          "column": 63
+        }
+      },
+      "loading": "lazy"
+    },
+    "Counter.reset": {
+      "ref": [
+        "/isle/demos/composition/assets/Counter.g0-sIr0C6hm.js",
+        "h1",
+        [
+          0,
+          1
+        ]
+      ],
+      "chunk": "assets/Counter.g0-sIr0C6hm.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "e1e153ec8f8f09dd",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "initial",
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 551,
+          "line": 16,
+          "column": 29
+        },
+        "end": {
+          "offset": 586,
+          "line": 16,
+          "column": 64
+        }
+      },
+      "loading": "lazy"
+    },
+    "isle:resume": {
+      "ref": [
+        "/isle/demos/composition/assets/isle-resume-DBDfVQ7a.js",
+        "resume",
+        []
+      ],
+      "chunk": "assets/isle-resume-DBDfVQ7a.js",
+      "requires": [],
+      "kind": "runtime",
+      "loading": "lazy"
+    },
+    "Parent.increment": {
+      "ref": [
+        "/isle/demos/composition/assets/Parent.increment-D9asJW1r.js",
+        "run",
+        [
+          0
+        ]
+      ],
+      "chunk": "assets/Parent.increment-D9asJW1r.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "3ec521384b0352b9",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 761,
+          "line": 25,
+          "column": 27
+        },
+        "end": {
+          "offset": 795,
+          "line": 25,
+          "column": 61
+        }
+      },
+      "loading": "lazy"
+    }
+  },
+  "chunks": {
+    "assets/Counter.g0-sIr0C6hm.js": {
+      "url": "/isle/demos/composition/assets/Counter.g0-sIr0C6hm.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 118,
+      "gzipBytes": 100
+    },
+    "assets/index-Bty9EuWx.js": {
+      "url": "/isle/demos/composition/assets/index-Bty9EuWx.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/isle-resume-DBDfVQ7a.js"
+      ],
+      "bytes": 1590,
+      "gzipBytes": 837
+    },
+    "assets/isle-resume-DBDfVQ7a.js": {
+      "url": "/isle/demos/composition/assets/isle-resume-DBDfVQ7a.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/Counter.g0-sIr0C6hm.js",
+        "assets/Parent.increment-D9asJW1r.js"
+      ],
+      "bytes": 3717,
+      "gzipBytes": 1757
+    },
+    "assets/Parent.increment-D9asJW1r.js": {
+      "url": "/isle/demos/composition/assets/Parent.increment-D9asJW1r.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 65,
+      "gzipBytes": 83
+    }
+  },
+  "loading": {
+    "eager": [],
+    "preload": []
+  },
+  "resolution": {
+    "version": 1,
+    "strategy": "event-and-size",
+    "budgetGzipBytes": 8192,
+    "usedGzipBytes": 0,
+    "decisions": [
+      {
+        "id": "Counter.increment",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 1857,
+        "modules": [
+          "/isle/demos/composition/assets/isle-resume-DBDfVQ7a.js",
+          "/isle/demos/composition/assets/Counter.g0-sIr0C6hm.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "Counter.reset",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 1857,
+        "modules": [
+          "/isle/demos/composition/assets/isle-resume-DBDfVQ7a.js",
+          "/isle/demos/composition/assets/Counter.g0-sIr0C6hm.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "Parent.increment",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 1840,
+        "modules": [
+          "/isle/demos/composition/assets/isle-resume-DBDfVQ7a.js",
+          "/isle/demos/composition/assets/Parent.increment-D9asJW1r.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "isle:resume",
+        "requested": "lazy",
+        "loading": "lazy",
+        "reason": "default",
+        "additionalGzipBytes": 0,
+        "modules": [
+          "/isle/demos/composition/assets/isle-resume-DBDfVQ7a.js"
+        ],
+        "initialBy": []
+      }
+    ]
+  },
+  "buildId": "82cbeafb8168e973"
+}

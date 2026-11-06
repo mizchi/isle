@@ -1,0 +1,1196 @@
+{
+  "version": 1,
+  "coverage": "generated-handler-operations",
+  "exclusions": [
+    "browser style/layout/paint duration",
+    "runtime internals and DOM locator traversal",
+    "network/server duration",
+    "HTTP cache and bootstrap transfer",
+    "host wrappers and metadata script elements"
+  ],
+  "components": [
+    {
+      "component": "List",
+      "schemaId": "b09102f05c3ae94b",
+      "side": "client",
+      "localElements": null,
+      "childSites": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 4,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "entries": [
+        {
+          "id": "List.hide",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 274,
+            "end": 308
+          },
+          "remote": false,
+          "actions": [],
+          "captures": [
+            "initial",
+            "items",
+            "visible",
+            "mode"
+          ],
+          "writes": [
+            "visible"
+          ],
+          "symbol": "run",
+          "component": "List",
+          "scope": "one-owner/generated-handler",
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 4,
+            "bindingLocators": 0,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "binaryOperations": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "propertyReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "slotReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "eventReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textPatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "attributePatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textConversions": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "remoteCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "createdElements": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          },
+          "phases": [],
+          "updates": [],
+          "reasons": [],
+          "unknownCosts": [
+            {
+              "code": "control-flow",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          ]
+        },
+        {
+          "id": "List.show",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 348,
+            "end": 381
+          },
+          "remote": false,
+          "actions": [],
+          "captures": [
+            "initial",
+            "items",
+            "visible",
+            "mode"
+          ],
+          "writes": [
+            "visible"
+          ],
+          "symbol": "run",
+          "component": "List",
+          "scope": "one-owner/generated-handler",
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 4,
+            "bindingLocators": 0,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "binaryOperations": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "propertyReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "slotReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "eventReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textPatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "attributePatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textConversions": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "remoteCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "createdElements": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          },
+          "phases": [],
+          "updates": [],
+          "reasons": [],
+          "unknownCosts": [
+            {
+              "code": "control-flow",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          ]
+        },
+        {
+          "id": "List.reverse",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 421,
+            "end": 471
+          },
+          "remote": false,
+          "actions": [],
+          "captures": [
+            "initial",
+            "items",
+            "visible",
+            "mode"
+          ],
+          "writes": [
+            "items"
+          ],
+          "symbol": "run",
+          "component": "List",
+          "scope": "one-owner/generated-handler",
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 4,
+            "bindingLocators": 0,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "binaryOperations": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "propertyReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "slotReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "eventReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textPatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "attributePatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textConversions": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "remoteCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "createdElements": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          },
+          "phases": [],
+          "updates": [],
+          "reasons": [],
+          "unknownCosts": [
+            {
+              "code": "control-flow",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          ]
+        },
+        {
+          "id": "List.empty",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 519,
+            "end": 549
+          },
+          "remote": false,
+          "actions": [],
+          "captures": [
+            "initial",
+            "items",
+            "visible",
+            "mode"
+          ],
+          "writes": [
+            "items"
+          ],
+          "symbol": "run",
+          "component": "List",
+          "scope": "one-owner/generated-handler",
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 4,
+            "bindingLocators": 0,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "binaryOperations": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "propertyReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "slotReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "eventReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textPatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "attributePatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textConversions": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "remoteCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "createdElements": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          },
+          "phases": [],
+          "updates": [],
+          "reasons": [],
+          "unknownCosts": [
+            {
+              "code": "control-flow",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          ]
+        },
+        {
+          "id": "List.restore",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 595,
+            "end": 632
+          },
+          "remote": false,
+          "actions": [],
+          "captures": [
+            "initial",
+            "items",
+            "visible",
+            "mode"
+          ],
+          "writes": [
+            "items"
+          ],
+          "symbol": "run",
+          "component": "List",
+          "scope": "one-owner/generated-handler",
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 4,
+            "bindingLocators": 0,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "binaryOperations": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "propertyReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "slotReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "eventReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textPatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "attributePatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textConversions": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "remoteCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "createdElements": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          },
+          "phases": [],
+          "updates": [],
+          "reasons": [],
+          "unknownCosts": [
+            {
+              "code": "control-flow",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          ]
+        },
+        {
+          "id": "List.summary",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 680,
+            "end": 718
+          },
+          "remote": false,
+          "actions": [],
+          "captures": [
+            "initial",
+            "items",
+            "visible",
+            "mode"
+          ],
+          "writes": [
+            "mode"
+          ],
+          "symbol": "run",
+          "component": "List",
+          "scope": "one-owner/generated-handler",
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 4,
+            "bindingLocators": 0,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "binaryOperations": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "propertyReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "slotReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "eventReads": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textPatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "attributePatchCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "textConversions": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "remoteCalls": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            },
+            "createdElements": {
+              "kind": "unknown",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          },
+          "phases": [],
+          "updates": [],
+          "reasons": [],
+          "unknownCosts": [
+            {
+              "code": "control-flow",
+              "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "List.hide",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 274,
+        "end": 308
+      },
+      "remote": false,
+      "actions": [],
+      "captures": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "visible"
+      ],
+      "symbol": "run",
+      "component": "List",
+      "scope": "one-owner/generated-handler",
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 4,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "binaryOperations": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "propertyReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "slotReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "eventReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textPatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "attributePatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textConversions": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "remoteCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "createdElements": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      },
+      "phases": [],
+      "updates": [],
+      "reasons": [],
+      "unknownCosts": [
+        {
+          "code": "control-flow",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      ],
+      "instances": 1,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js"
+        ],
+        "bytes": 12237,
+        "gzipBytes": 5019,
+        "dynamicImports": [
+          "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js"
+        ]
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 274,
+          "line": 9,
+          "column": 27
+        },
+        "end": {
+          "offset": 308,
+          "line": 9,
+          "column": 61
+        }
+      }
+    },
+    {
+      "id": "List.show",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 348,
+        "end": 381
+      },
+      "remote": false,
+      "actions": [],
+      "captures": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "visible"
+      ],
+      "symbol": "run",
+      "component": "List",
+      "scope": "one-owner/generated-handler",
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 4,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "binaryOperations": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "propertyReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "slotReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "eventReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textPatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "attributePatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textConversions": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "remoteCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "createdElements": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      },
+      "phases": [],
+      "updates": [],
+      "reasons": [],
+      "unknownCosts": [
+        {
+          "code": "control-flow",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      ],
+      "instances": 1,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js"
+        ],
+        "bytes": 12237,
+        "gzipBytes": 5019,
+        "dynamicImports": [
+          "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js"
+        ]
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 348,
+          "line": 10,
+          "column": 27
+        },
+        "end": {
+          "offset": 381,
+          "line": 10,
+          "column": 60
+        }
+      }
+    },
+    {
+      "id": "List.reverse",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 421,
+        "end": 471
+      },
+      "remote": false,
+      "actions": [],
+      "captures": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "items"
+      ],
+      "symbol": "run",
+      "component": "List",
+      "scope": "one-owner/generated-handler",
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 4,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "binaryOperations": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "propertyReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "slotReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "eventReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textPatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "attributePatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textConversions": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "remoteCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "createdElements": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      },
+      "phases": [],
+      "updates": [],
+      "reasons": [],
+      "unknownCosts": [
+        {
+          "code": "control-flow",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      ],
+      "instances": 1,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js"
+        ],
+        "bytes": 12237,
+        "gzipBytes": 5019,
+        "dynamicImports": [
+          "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js"
+        ]
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 421,
+          "line": 11,
+          "column": 27
+        },
+        "end": {
+          "offset": 471,
+          "line": 11,
+          "column": 77
+        }
+      }
+    },
+    {
+      "id": "List.empty",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 519,
+        "end": 549
+      },
+      "remote": false,
+      "actions": [],
+      "captures": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "items"
+      ],
+      "symbol": "run",
+      "component": "List",
+      "scope": "one-owner/generated-handler",
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 4,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "binaryOperations": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "propertyReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "slotReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "eventReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textPatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "attributePatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textConversions": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "remoteCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "createdElements": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      },
+      "phases": [],
+      "updates": [],
+      "reasons": [],
+      "unknownCosts": [
+        {
+          "code": "control-flow",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      ],
+      "instances": 1,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js"
+        ],
+        "bytes": 12187,
+        "gzipBytes": 4970,
+        "dynamicImports": [
+          "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js"
+        ]
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 519,
+          "line": 12,
+          "column": 27
+        },
+        "end": {
+          "offset": 549,
+          "line": 12,
+          "column": 57
+        }
+      }
+    },
+    {
+      "id": "List.restore",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 595,
+        "end": 632
+      },
+      "remote": false,
+      "actions": [],
+      "captures": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "items"
+      ],
+      "symbol": "run",
+      "component": "List",
+      "scope": "one-owner/generated-handler",
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 4,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "binaryOperations": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "propertyReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "slotReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "eventReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textPatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "attributePatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textConversions": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "remoteCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "createdElements": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      },
+      "phases": [],
+      "updates": [],
+      "reasons": [],
+      "unknownCosts": [
+        {
+          "code": "control-flow",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      ],
+      "instances": 1,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js"
+        ],
+        "bytes": 12187,
+        "gzipBytes": 4970,
+        "dynamicImports": [
+          "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js"
+        ]
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 595,
+          "line": 13,
+          "column": 27
+        },
+        "end": {
+          "offset": 632,
+          "line": 13,
+          "column": 64
+        }
+      }
+    },
+    {
+      "id": "List.summary",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 680,
+        "end": 718
+      },
+      "remote": false,
+      "actions": [],
+      "captures": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "mode"
+      ],
+      "symbol": "run",
+      "component": "List",
+      "scope": "one-owner/generated-handler",
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 4,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "binaryOperations": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "propertyReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "slotReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "eventReads": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textPatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "attributePatchCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "textConversions": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "remoteCalls": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        },
+        "createdElements": {
+          "kind": "unknown",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      },
+      "phases": [],
+      "updates": [],
+      "reasons": [],
+      "unknownCosts": [
+        {
+          "code": "control-flow",
+          "reason": "Control-flow work is data-dependent; region bounds are not yet implemented."
+        }
+      ],
+      "instances": 1,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js"
+        ],
+        "bytes": 12187,
+        "gzipBytes": 4970,
+        "dynamicImports": [
+          "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js"
+        ]
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 680,
+          "line": 14,
+          "column": 27
+        },
+        "end": {
+          "offset": 718,
+          "line": 14,
+          "column": 65
+        }
+      }
+    }
+  ],
+  "scenario": {
+    "mode": "resume",
+    "mounts": [
+      {
+        "component": "List",
+        "mode": "resume"
+      }
+    ],
+    "domElements": null,
+    "resumableOwners": 1,
+    "snapshotSlots": 4,
+    "components": {
+      "List": {
+        "instances": 1,
+        "resumableInstances": 1
+      }
+    }
+  },
+  "planId": "527579b2c7af19cf",
+  "code": {
+    "scope": "static-code-closure",
+    "modules": [
+      "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+      "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+      "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+      "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js",
+      "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js"
+    ],
+    "bytes": 12646,
+    "gzipBytes": 5220,
+    "dynamicImports": []
+  },
+  "buildId": "4662905421d3d7b2",
+  "budget": {
+    "ok": true,
+    "checks": []
+  },
+  "ok": true
+}

@@ -1,0 +1,142 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Form とアクセシビリティ"><title>Form とアクセシビリティ · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/forms.html"><meta property="og:title" content="Form とアクセシビリティ · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Form とアクセシビリティ"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html" aria-current="page">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/forms.md">ソースで読む ↗</a></div><h1 id="form-とアクセシビリティ">Form とアクセシビリティ</h1>
+<p>現行 v0 で入力、submit、HTML 標準の制約検証、ラベルと参照の静的検査を実装しています。<code>just dev-form</code> で <a href="http://127.0.0.1:4190/">http://127.0.0.1:4190/</a> を開けます。<a href="/isle/source/evals/scenarios/forms/fixture.isle">実行するソース</a>は読解・記述課題とも共用します。</p>
+<p>共通 schema、相関・非同期検証、型付き FormData、server error、pending/reset まで扱う版は <strong><code>just dev-schema-form</code>（4191）</strong> です。<a href="/isle/source/evals/scenarios/forms/shared.isle">ソース</a>と<a href="/isle/source/examples/schema-form/host.mjs">デモ host</a>を参照してください。下の primitive event 形式も引き続き使えます。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>state email = initial;
+state invalid = false;
+state error = &quot;&quot;;
+state submitted = &quot;&quot;;
+
+&lt;form aria-label=&quot;Signup&quot;&gt;
+  on submit save { submitted = email; }
+  &lt;label for=&quot;email&quot;&gt;Email address (required)&lt;/label&gt;
+  &lt;input id=&quot;email&quot; type=&quot;email&quot; required minlength=&quot;6&quot; value={email}
+    aria-invalid={invalid} aria-describedby=&quot;email-help email-error&quot;&gt;
+    on input edit {
+      email = event.value;
+      invalid = event.invalid;
+      error = event.validationMessage;
+    }
+    on invalid report {
+      invalid = event.invalid;
+      error = event.validationMessage;
+    }
+  &lt;/input&gt;
+  &lt;p id=&quot;email-help&quot;&gt;Use your work email.&lt;/p&gt;
+  &lt;p id=&quot;email-error&quot; aria-live=&quot;polite&quot;&gt;{error}&lt;/p&gt;
+  &lt;button type=&quot;submit&quot;&gt;Save&lt;/button&gt;
+  &lt;output aria-live=&quot;polite&quot;&gt;{submitted}&lt;/output&gt;
+&lt;/form&gt;</code></pre></div>
+<p>上は component 内の抜粋です。v0 の <code>on</code> は対象要素の内側に書くため、input にも DSL の閉じ tag を書きます。生成 HTML は void element の input に閉じ tag を出力しません。</p>
+<h2 id="入力と再開の契約">入力と再開の契約</h2>
+<p><code>event</code> は handler 内だけの予約参照です。入力、select、textarea の input/change/invalid entry で <code>event.value: string</code>、<code>event.invalid: boolean</code>、<code>event.validationMessage: string</code> を読めます。checkbox/radio では <code>event.checked: boolean</code> も読めます。DOM Event 全体や任意 property は渡せません。</p>
+<p>loader はイベント発生時に primitive を捕捉し、runtime/handler の import 後に DOM から読み直しません。値は一回の呼び出しだけに渡し、snapshot の slot に加えません。更新が待機中でも新しいユーザー入力を上書きせず、同じ値の再代入で selection を動かさないようにします。内部では source control の DOM identity を保持しますが、ソース言語や保存形式には公開しません。</p>
+<p>同一 owner の entry は順番に実行します。submit 本文は先行 input/change の commit 後の state を読みます。DOM を直接変更しただけで input/change を発生させない外部 script の値を、自動で state と同期する契約ではありません。</p>
+<p>input の value / checked、textarea の text content、select の option selected を SSR 時点で設定します。textarea の先頭改行も HTML parser の規則に合わせます。value を束縛する select の初期値は、明示した option value のいずれかである必要があります。現在の保存値は primitive なので、複数選択値・File の取り込みは未実装です。</p>
+<h2 id="検証と-submit">検証と submit</h2>
+<p><code>required</code>、<code>type=&quot;email&quot;</code> 等の形式、<code>minlength/maxlength</code>、<code>min/max/step</code>、<code>pattern</code> は標準 HTML の検証を使います。JS 無効・SSR 専用でも働きます。<code>required={false}</code> 等の false boolean 属性は出力せず、<code>required=&quot;false&quot;</code> はコンパイルエラーにします。長さ・行列数は静的な整数 literal、pattern は静的な文字列に限定します。矛盾した静的上下限、不適切な対象要素、pattern の構文を検査します。Unicode sets の正規表現は Node 24 backend で検査し、独自の検証 runtime は送信しません。</p>
+<p>通常の submit はブラウザーの対話的制約検証後に発火します。loader は接続した submit entry の既定動作を同期的に取り消し、標準 <code>reportValidity()</code> を再確認してから処理をキューへ入れます。合成 submit に対しても検証を省きません。invalid は capture listener で受け取ります。エラー文は UA の言語・実装で変わり、英語の固定メッセージを契約にしません。(<a href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#form-submission-algorithm">HTML 制約検証と送信</a>)</p>
+<p><code>mode: &#39;ssr&#39;</code> では handler / marker / snapshot / JS を出さず、native validation は残します。このデモの submit は表示更新だけで、データを server へ送信しません。既存の明示 remote action は使えますが、server 側の schema・policy・認証 context の検査を省く根拠にはなりません。</p>
+<h2 id="静的なアクセシビリティ検査">静的なアクセシビリティ検査</h2>
+<p>MoonBit frontend が最適化前に次を検査し、失敗した要素の UTF-16 source span を返します。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>検査</th>
+<th>診断</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>可視 control に label、aria-label、aria-labelledby がない／空</td>
+<td>E_A11Y_LABEL</td>
+</tr>
+<tr>
+<td>placeholder だけをラベルとして使う／一つの label に複数 control</td>
+<td>E_A11Y_LABEL</td>
+</tr>
+<tr>
+<td>local id の重複・空白・動的な id/reference</td>
+<td>E_A11Y_ID</td>
+</tr>
+<tr>
+<td>for、aria-labelledby/describedby/errormessage の参照切れ</td>
+<td>E_A11Y_REFERENCE</td>
+</tr>
+<tr>
+<td>label の参照先が control でない／hidden input</td>
+<td>E_A11Y_REFERENCE</td>
+</tr>
+<tr>
+<td>form 内の button の type 省略／form の入れ子</td>
+<td>E_FORM_BUTTON_TYPE / E_FORM_NESTING</td>
+</tr>
+</tbody></table>
+</div><p>local id と参照は mount ごとに <code>isle-&lt;encoded-scope&gt;:&lt;local-id&gt;</code> に変換します。2つの同じ component でも関連付けが混ざらず、SSR 専用にも同じ規則を使います。component 内の id/reference は静的文字列に限定し、component 外の id や外部の <code>#id</code> CSS selector をそのまま接続する機能はありません。class でのスタイリングは変換しません。</p>
+<p>静的検査でラベルの業務上の適切さ、動的文字列の常時非空、実際の発話、色・フォーカス等の全ては判定できません。標準 label を基本とし、説明・エラーとの接続を検査します。(<a href="https://www.w3.org/WAI/tutorials/forms/labels/">WAI の labeling controls</a>)</p>
+<h2 id="ci-とモデル">CI とモデル</h2>
+<p><code>just a11y-form</code> は production デモをビルドして一時 preview を起動し、vlmkit 0.24.0 の integrity / copy / scroll / handlers / interactions / contrast / touch / focus の8 gate を実行します。<code>just ci</code> に含みます。結果と desktop/mobile の初期・エラー時の画像は <a href="/isle/source/evals/results/forms/summary.json">evals/results/forms</a> に保存します。これはデモの受入検査で、任意のアプリの WCAG 適合を保証するものではありません。</p>
+<p>MoonBit/veri 0.2.1 の forms model は、入力または submit 一回、2つの DOM/validity の組、import 一回の22状態を全探索します。入力を import 後に再取得、既定動作の取消を延期、検証を省略する3故障版の反例も再生します。対応する順序は production の <a href="/isle/source/e2e/forms.spec.mjs">Playwright テスト</a>で確認します。DOM / native validation / 全 UI を形式証明したモデルではありません。</p>
+<h2 id="共通-schema-を使う-form">共通 schema を使う Form</h2>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>schema Registration {
+  email: string minLength(3) maxLength(80) format(&quot;email&quot;);
+  confirmation: string minLength(3) sameAs(email);
+  age: number min(18) max(120) integer();
+  accepted: boolean equals(true);
+}
+
+view Registered { email: string; }
+export server action register(input: Registration): Registered
+  using request: RequestContext
+  authorize grant = policy.signup(request, input.email)
+  validate accounts.available effects { db.read }
+  effects { db.write }
+{ return await accounts.register(grant, input.email); }
+
+// client component 内。register は Registration を入力に取る明示 server action。
+&lt;form schema=&quot;Registration&quot; submit=&quot;register&quot; aria-label=&quot;Create account&quot;&gt;
+  &lt;label&gt;Email (required)&lt;input name=&quot;email&quot; /&gt;&lt;/label&gt;
+  &lt;label&gt;Confirm email (required)&lt;input name=&quot;confirmation&quot; /&gt;&lt;/label&gt;
+  &lt;label&gt;Age (required)&lt;input name=&quot;age&quot; value=&quot;21&quot; /&gt;&lt;/label&gt;
+  &lt;label&gt;&lt;input name=&quot;accepted&quot; /&gt;I agree (required)&lt;/label&gt;
+  &lt;button type=&quot;submit&quot;&gt;Create account&lt;/button&gt;
+  &lt;button type=&quot;reset&quot;&gt;Reset&lt;/button&gt;
+&lt;/form&gt;</code></pre></div>
+<p>schema が制約の正本です。各 field に静的な name を持つ control が一個ずつ必要で、余分な control、重複名、矛盾する HTML 制約、form の入れ子、手書き handler との混在はコンパイルエラーにします。純粋な component で control をまとめられますが、同じ schema Form の control 群を別 client owner や未確定の children に分割することはできません。named button や、framework が使う form DOM API を隠す field 名も拒否し、JS/native POST の入力差や DOM clobbering を防ぎます。型から input type を決め、length/range/pattern、必要な required 属性を投影します。string の password/search/tel/hidden は表示形式として指定できます。動的な control shape、disabled/multiple の field、File はこの契約に含めません。</p>
+<p>対応する制約は minLength/maxLength、min/max、integer、equals、sameAs、pattern、format(&quot;email&quot;) です。integer は JavaScript の安全な整数、文字数は UTF-16 code units です。shared pattern は ES2023 の Unicode (u) と HTML pattern の両方で有効な全体一致に限定し、set 演算・inline flag は拒否します。email は HTML の ASCII grammar に合わせ、入力の trim や任意の coercion はしません。(<a href="https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address">HTML の email 定義</a>)</p>
+<p>制約・名前・型を小さい descriptor に投影し、同じ <code>createValidator()</code> で browser と server を検査します。validator は契約のコピーを所有します。server-only helper 名・effects・request context を client descriptor に送りません。schema Form 専用の capture 処理と遅延 runtime は、使わない build から除去します。</p>
+<h3 id="認可付きの非同期検証">認可付きの非同期検証</h3>
+<p>action の authorize の後の <code>validate accounts.available effects { db.read }</code> は、host の同名 validator を使う宣言です。schema は値の形と同期制約だけを持ち、同じ schema を使う別の action の検証には影響しません。省略した action は非同期検証を呼びません。<a href="/isle/ja/docs/schema-contracts.html">Schema IR と TS 宣言の比較</a>も参照してください。登録例は次の形です。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>validators: {
+  &#39;accounts.available&#39;: {
+    effects: [&#39;db.read&#39;],
+    async validate({ input, context, permit, signal }) {
+      return await exists(input.email, signal)
+        ? [{ field: &#39;email&#39;, code: &#39;taken&#39; }]
+        : [];
+    }
+  }
+}</code></pre></div>
+<p>input は freeze した primitive record、context と permit は server 側で作ります。公開できる結果は宣言 field と短い code だけで、未登録 adapter、宣言外 effect、不正な field/結果は拒否します。db.read は trusted host の宣言であり、本体が書き込まないことを compiler が証明した意味ではありません。</p>
+<p>ブラウザーの同期検証を通った後、150ms の debounce と AbortController を使って <code>POST /__isle/validate/&lt;action&gt;</code> を呼びます。これは action と同じ入力・認証・resource policy を検査し、operation の prepare/commit は呼びません。検証待ち中に権限が失効したら、結果を返す前の policy 再検査で拒否します。相関は全 field、非同期 validator も全 record を対象にし、同期制約に失敗した record では非同期検証を実行しません。</p>
+<p><code>POST /__isle/action/&lt;action&gt;</code> は、preflight の成否を信用せず同期・非同期制約を再検査し、その後も従来の prepare→policy 再検査→同期 commit を維持します。検証エラーは HTTP 422 と <code>{ ok: false, error: &#39;validation_failed&#39;, issues: [{ field, code }] }</code>、検証専用の成功は <code>{ ok: true }</code> です。認証・認可や内部エラーは field error と区別します。</p>
+<h3 id="formdata-とエラー表示">FormData とエラー表示</h3>
+<p>イベント発生時の標準 FormData を捕捉し、schema の field/type だけを decode します。number は空文字・非有限値・負のゼロ・hex 等を拒否し、未チェックの checkbox は false、存在する checkbox は true にします。フォーム文字列の改行は LF に揃え、native POST の CRLF と textarea の API 値で長さ検証がずれないようにします。名前の重複、余分な名前、File、欠落した string/number も拒否します。native の URL encoded / multipart POST も同じ decoder と validator を通ります。SSR 専用には POST の action/method と制約を残し、JS・snapshot・イベント marker を出しません。現行の native POST response は JSON で、HTML に戻す route adapter は後続です。</p>
+<p>field の保存値を component state と二重に作りません。ブラウザーの入力と発生時のデータを使い、Form の snapshot slot は空です。成功は response view を検証したうえで、標準 CustomEvent <code>isle:submit</code> の detail に value を渡します。</p>
+<p>各 control に一意な id と error の aria-describedby を生成し、エラーは label の外側・直後に置きます。送信エラーはリンク付き role=alert の一覧と field の aria-invalid に反映し、最初の修正可能な control へ focus します。schema Form の invalid は JS が有効な場合に既定 UI を取り消し、標準 popup と一覧の重複を避けます。JS 無効時の native validation は維持します。hidden field しか直せない場合は一覧へ focus します。エラー文は現在は短い英語の既定文で、server の自由文や HTML をそのまま表示しません。</p>
+<h3 id="dirty--touched--pending--reset">dirty / touched / pending / reset</h3>
+<ul>
+<li>dirty は SSR の defaultValue/defaultChecked と異なるかを表します。最後に保存した値との差ではありません。</li>
+<li>touched は input/change/focusout の field を記録し、submit では全 field を対象にします。</li>
+<li>pending は最初のコード読み込み前から submit button を無効化して保持します。追加 submit はその場で拒否し、成功・失敗・reset・dispose で元の disabled 状態へ戻します。</li>
+<li>reset はブラウザーの既定値と Form の状態を戻し、エラー・dirty/touched/pending を消し、待機中の検証・送信を中止します。</li>
+</ul>
+<p>revision と owner generation の両方を確認して、古い検証結果・reset 前の応答・破棄後の完了を UI に適用しません。編集中に以前の送信が成功しても、入力を上書きせず、以前の送信値が保存されたことを表示します。reset/abort は server で既に完了した書き込みを rollback する契約ではありません。pending は同一 Form の二重送信を防ぐ UX で、HTTP の再送全般の exactly-once 保証ではありません。</p>
+<p>DOM/HTTP から独立した <a href="/isle/source/runtime/form-session.d.mts">FormSession API</a> と、その上の小さい DOM adapter に分けています。<code>loader.settled()</code> は schema Form の非同期処理も待ちます。<a href="https://github.com/mizchi/isle/blob/main/models/form_session/model.mbt">form-session model</a> は2 revision・2 generation・検証1回・送信1回と重複試行・reset 1回の186状態を全探索します。revision/generation/pending の3故障版の反例を含みます。全モデルの現在の件数と範囲は <a href="/isle/ja/docs/formal-methods.html">形式検査の記録</a>を参照してください。</p>
+<p><code>just a11y-schema-form</code> は schema Form に同じ8 gate を実行し、初期・エラー・保存後の desktop/mobile 画像を保存します。<code>just ci</code> には primitive / schema の両 Form の a11y 検査が含まれます。</p>
+<h2 id="次に必要な機能">次に必要な機能</h2>
+<ol>
+<li>field array / list、File / 複数選択、fieldset と group の専用検査。</li>
+<li>アプリ側の message / locale 設定、HTML の native POST response adapter。</li>
+<li>DB 側の atomic 制約・idempotency と実認証 adapter。UI の pending だけで代替しません。</li>
+</ol>
+<p>primitive event 版の native reset は、任意の手書き state と自動同期しません。上の reset 契約は schema Form が所有する control に適用します。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

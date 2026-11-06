@@ -1,0 +1,1 @@
+import{t as e}from"./shared-runtime-DMG-kdSZ.js";var t=await e(`isle/client/6:debug=0:profile=0`,()=>import(`./isle-widget-engine-Ck_SQYaz.js`),{version:`0.0.1`,exports:[`loadIslands`,`resume`,`handleForm`]});export{t};

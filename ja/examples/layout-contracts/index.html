@@ -1,0 +1,123 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="CSS 契約の3つの結果"><title>CSS 契約の3つの結果 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/examples/layout-contracts/index.html"><meta property="og:title" content="CSS 契約の3つの結果 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="CSS 契約の3つの結果"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/examples/layout-contracts/">English</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/ja/examples/">サンプル一覧</a> / layout-contracts</p><span class="tag report-tag">静的な検査結果</span><h1>CSS 契約の3つの結果</h1><p class="lead">reset を考慮した Grid 契約で verified・overflow の violated・未対応の unknown を試す。</p><p class="callout">CSS 契約はビルド時に検査します。verified / violated / unknown の実際の結果を確認できます。</p><a class="button primary" href="/isle/reports/layout.html">検査結果を読む →</a><div class="doc-content example-description"><p>reset を考慮した Grid 契約で verified・overflow の violated・未対応の unknown を試す。 下の3設定を実行する。verified のみ終了コード0、violated と unknown は1。宣言したサイズ・テキスト契約の範囲の検査であり、unknown は検証成功ではない。</p>
+<p>リポジトリ内の例は、ルートで上記コマンドを実行する。検査は <code>just examples-check</code>。利用者のアプリへ組み込む場合は <a href="/isle/ja/docs/quick-start.html#はじめる">npm パッケージの導入手順</a>を使い、このディレクトリのソースと設定を参照する。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>node tools/isle.mjs layout examples/layout-contracts/app.isle examples/layout-contracts/layout.json
+node tools/isle.mjs layout examples/layout-contracts/app.isle examples/layout-contracts/overflow.json
+node tools/isle.mjs layout examples/layout-contracts/app.isle examples/layout-contracts/unknown.json</code></pre></div>
+</div><h2>実装を読む</h2><details class="source-details"><summary>app.css</summary><pre tabindex="0"><code>@layer app {
+  .panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    padding: 16px;
+    block-size: 100%;
+    font-family: system-ui;
+    line-height: 24px;
+  }
+  .copy { inline-size: 100%; block-size: 100%; padding: 16px; overflow-wrap: anywhere; }
+}
+</code></pre></details><details class="source-details"><summary>app.isle</summary><pre tabindex="0"><code>component ResetPanel() {
+  &lt;main class=&quot;panel&quot;&gt;&lt;p class=&quot;copy&quot;&gt;Reset-aware box model&lt;/p&gt;&lt;/main&gt;
+}
+</code></pre></details><details class="source-details"><summary>layout.json</summary><pre tabindex="0"><code>{
+  &quot;component&quot;: &quot;ResetPanel&quot;,
+  &quot;reset&quot;: [&quot;./reset.css&quot;],
+  &quot;css&quot;: &quot;./app.css&quot;,
+  &quot;ancestors&quot;: [{ &quot;tag&quot;: &quot;html&quot; }, { &quot;tag&quot;: &quot;body&quot; }],
+  &quot;viewport&quot;: { &quot;min&quot;: 240, &quot;max&quot;: 1000, &quot;height&quot;: { &quot;min&quot;: 200, &quot;max&quot;: 600 } },
+  &quot;boxes&quot;: { &quot;.copy&quot;: { &quot;minInlineSize&quot;: 100, &quot;minBlockSize&quot;: 24, &quot;wrap&quot;: &quot;anywhere&quot; } }
+}
+</code></pre></details><details class="source-details"><summary>overflow.css</summary><pre tabindex="0"><code>@layer app {
+  .panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    padding: 16px;
+    block-size: 100%;
+    font-family: system-ui;
+    line-height: 24px;
+  }
+  .copy { inline-size: 100%; block-size: 100%; padding: 16px; overflow-wrap: anywhere; }
+}
+
+.copy { box-sizing: content-box; }
+</code></pre></details><details class="source-details"><summary>overflow.json</summary><pre tabindex="0"><code>{
+  &quot;component&quot;: &quot;ResetPanel&quot;,
+  &quot;reset&quot;: [
+    &quot;./reset.css&quot;
+  ],
+  &quot;css&quot;: &quot;./overflow.css&quot;,
+  &quot;ancestors&quot;: [
+    {
+      &quot;tag&quot;: &quot;html&quot;
+    },
+    {
+      &quot;tag&quot;: &quot;body&quot;
+    }
+  ],
+  &quot;viewport&quot;: {
+    &quot;min&quot;: 240,
+    &quot;max&quot;: 1000,
+    &quot;height&quot;: {
+      &quot;min&quot;: 200,
+      &quot;max&quot;: 600
+    }
+  },
+  &quot;boxes&quot;: {
+    &quot;.copy&quot;: {
+      &quot;minInlineSize&quot;: 100,
+      &quot;minBlockSize&quot;: 24,
+      &quot;wrap&quot;: &quot;anywhere&quot;
+    }
+  }
+}
+</code></pre></details><details class="source-details"><summary>reset.css</summary><pre tabindex="0"><code>@layer reset, app;
+@layer reset {
+  :root { box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: inherit; }
+  :where(*) { margin: 0; padding: 0; }
+}
+</code></pre></details><details class="source-details"><summary>unknown.css</summary><pre tabindex="0"><code>@layer app {
+  .panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    padding: 16px;
+    block-size: 100%;
+    font-family: system-ui;
+    line-height: 24px;
+  }
+  .copy { inline-size: 100%; block-size: 100%; padding: 16px; overflow-wrap: anywhere; }
+}
+
+.copy { inline-size: var(--host-size); }
+</code></pre></details><details class="source-details"><summary>unknown.json</summary><pre tabindex="0"><code>{
+  &quot;component&quot;: &quot;ResetPanel&quot;,
+  &quot;reset&quot;: [
+    &quot;./reset.css&quot;
+  ],
+  &quot;css&quot;: &quot;./unknown.css&quot;,
+  &quot;ancestors&quot;: [
+    {
+      &quot;tag&quot;: &quot;html&quot;
+    },
+    {
+      &quot;tag&quot;: &quot;body&quot;
+    }
+  ],
+  &quot;viewport&quot;: {
+    &quot;min&quot;: 240,
+    &quot;max&quot;: 1000,
+    &quot;height&quot;: {
+      &quot;min&quot;: 200,
+      &quot;max&quot;: 600
+    }
+  },
+  &quot;boxes&quot;: {
+    &quot;.copy&quot;: {
+      &quot;minInlineSize&quot;: 100,
+      &quot;minBlockSize&quot;: 24,
+      &quot;wrap&quot;: &quot;anywhere&quot;
+    }
+  }
+}
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

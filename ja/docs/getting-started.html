@@ -1,0 +1,53 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="はじめる"><title>はじめる · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/getting-started.html"><meta property="og:title" content="はじめる · Isle"><meta property="og:type" content="website"><meta property="og:description" content="はじめる"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/getting-started.md">ソースで読む ↗</a></div><h1 id="はじめる">はじめる</h1>
+<p>Isle を自分の Vite アプリへ追加する手順です。Node.js 24+ と Vite 8.3.5+ を使います。コンパイル済み frontend は npm 配布物に含まれるため、利用者に MoonBit・Z3・コンパイラの checkout は不要です。</p>
+<p>配布状態とインストール、最小の3ファイルは <a href="/isle/ja/docs/quick-start.html#はじめる">README の導入手順</a>にまとめています。現時点の package は private 設定なので、公開前は受け取った npm アーカイブを使います。公開 API はレジストリ配布と同じ <code>@isle/prototype/vite</code> です。</p>
+<h2 id="最小のアプリから広げる">最小のアプリから広げる</h2>
+<ol>
+<li>アプリへパッケージと Vite をインストールする。</li>
+<li><code>app.isle</code> に状態・表示・イベントを書く。</li>
+<li>HTML の <code>&lt;!--isle:ssr--&gt;</code> と、Vite plugin の entry / mounts を設定する。</li>
+<li><code>pnpm exec vite</code> で開き、操作する。<code>pnpm exec vite build</code> で <code>dist/</code> を生成する。</li>
+</ol>
+<p><code>state</code> は変更できる値、<code>derive</code> はその値から計算する式です。イベント名は生成コードと計測結果の境界にもなります。単純な Counter には追加の browser entry は不要です。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>次に試す機能</th>
+<th>ソースと操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Counter と reset</td>
+<td><a href="/isle/examples/hello/">hello</a></td>
+</tr>
+<tr>
+<td>初期化を再実行せず、動的な表示だけ変更する</td>
+<td><a href="/isle/examples/partial-updates/">partial-updates</a></td>
+</tr>
+<tr>
+<td>props・children と親子の独立した再開</td>
+<td><a href="/isle/examples/composition/">composition</a></td>
+</tr>
+<tr>
+<td>共通 schema と非同期フォーム検証</td>
+<td><a href="/isle/examples/schema-form/">schema-form</a></td>
+</tr>
+<tr>
+<td>setup と unmount 時の破棄</td>
+<td><a href="/isle/examples/resources/">resources</a></td>
+</tr>
+<tr>
+<td>CSS の遅延読み込み</td>
+<td><a href="/isle/examples/styles/">styles</a></td>
+</tr>
+<tr>
+<td>外部サイトへの埋め込み</td>
+<td><a href="/isle/examples/portable-widget/">portable-widget</a></td>
+</tr>
+</tbody></table>
+</div><p><a href="/isle/ja/examples/">15例の一覧</a>には各機能の説明と検査方法があります。ソース中の共通 config helper はデモ用です。自分のアプリでは README のように <code>isle()</code> を直接 Vite 設定へ組み込みます。</p>
+<h2 id="配信する">配信する</h2>
+<p>静的な HTML と JS/CSS は <code>dist/</code> を配信します。server action があるアプリは、<code>@isle/prototype/server</code> の <code>createActionHandler()</code> と server host を Request / Response adapter に接続してください。Vite のローカル host 設定だけで production の RPC endpoint が生まれるわけではありません。</p>
+<p>生成した HTML、snapshot、chunks は同じビルドで配布します。SSR 専用なら Isle の browser JS は出力しません。widget の共有 runtime は版の完全一致を要求します。</p>
+<p>コンパイラ自体を変更する場合に限り、<a href="/isle/ja/docs/contributing.html">開発者向けセットアップ</a>を使います。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

@@ -1,0 +1,64 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="README 説明画像の検証"><title>README 説明画像の検証 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/overview/validation.html"><meta property="og:title" content="README 説明画像の検証 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="README 説明画像の検証"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/overview/validation.md">ソースで読む ↗</a></div><h1 id="readme-説明画像の検証">README 説明画像の検証</h1>
+<p>読者像と質問を explainer で整理し、実装・実行結果を根拠に HTML / CSS の説明図を作成した。画像生成 AI は使わず、Playwright で文字と配置を描画する。</p>
+<p>2026-11-06 の結果：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>検査</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>掲載コードの実行・画像と生成元の整合性・README の画像選択</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>図の根拠となる実装検査</td>
+<td>28 pass / 0 fail</td>
+</tr>
+<tr>
+<td>explainer figure-check：重なり・はみ出し・文字サイズ・事実ラベル</td>
+<td>CLEAN</td>
+</tr>
+<tr>
+<td>explainer verify-doc：引用と解説ページ</td>
+<td>VERIFIED</td>
+</tr>
+<tr>
+<td>vlmkit：図の integrity / contrast、README 配置</td>
+<td>CLEAN / コントラスト違反0</td>
+</tr>
+<tr>
+<td>vlmkit responsive：375〜1040px、seed 1</td>
+<td>24ケース / 違反0</td>
+</tr>
+<tr>
+<td>ローカル参照の検査：README と追加文書3件</td>
+<td>参照切れ0</td>
+</tr>
+</tbody></table>
+</div><p>同日の英日 README / examples 更新では、説明画像にも英語版を追加した。日本語・英語それぞれの図を figure-check と vlmkit に通し、両言語の README の画像切替を検査した。利用側 README の最小アプリは npm archive から展開した public API でビルドし、compiler の開発環境を必要としないことを別途確認した。機能別 examples は15例、新規8 UI の vlmkit 検査は40件、Playwright は21件が通過した。</p>
+<h2 id="再実行">再実行</h2>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just overview-build
+just overview-check
+just overview-quality</code></pre></div>
+<ul>
+<li>Counter をコンパイルし、SSR の snapshot 0 から生成 handler で 1 に更新する。動的テキストの更新先は1つ。</li>
+<li>図中のコードを <code>counter.isle</code> と照合し、事実ラベルと禁止した過大な主張を検査する。</li>
+<li>HTML 図を375・620・621・728・740・741・760・1040pxで調べ、カード内の文字のはみ出しを検出する。</li>
+<li>root README の実際の picture を描画し、375・760・761・1040pxで画像選択・読み込み・代替テキストを検査する。</li>
+<li>保存済み PNG と生成元のハッシュを <a href="/isle/source/docs/overview/render.json">render.json</a> に記録する。OS ごとのフォント描画差は失敗扱いにしない。</li>
+<li>vlmkit の integrity・contrast と、375〜1040pxの responsive 24ケースを検査する。README の配置も integrity で検査する。</li>
+</ul>
+<p>explainer がインストールされた環境では、次も実行する。<code>EXPLAINER_SKILL</code> にインストール先を指定できる。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>EXPLAINER_SKILL=&quot;${EXPLAINER_SKILL:-$HOME/.agents/skills/explainer}&quot;
+node &quot;$EXPLAINER_SKILL/scripts/verify-doc.mjs&quot; docs/overview --write</code></pre></div>
+<p>この検査は図の文字の重なり・はみ出し・小ささ・事実ラベル、light / dark / mobile の描画、引用コードと実行結果、解説ページの integrity / contrast を調べる。画像中の主張は <a href="/isle/ja/docs/overview/facts.html">根拠表</a> と、<a href="/isle/source/docs/overview/checks.json">checks.json</a> の実装検査28件で対応づける。</p>
+<h2 id="初見レビューの範囲">初見レビューの範囲</h2>
+<p>first-reader の手順で、PC で読む好意的な TS / React 開発者と、スマートフォンで読む慎重な開発者を仮定した。新しいコンテキストのエージェントが README 冒頭と画像だけを読んだ。実際の人のユーザーテストではない。</p>
+<p>初回は SSR・先読み・操作時の resume の違いと widget 対応が伝わった。CSS の導入先と契約の範囲が見つけにくく、「依存閉包」などは意味が残らなかった。これを受け、CSS のガイドリンクと「宣言したサイズ契約の範囲」を追加し、図中の用語を具体化した。生の記録は <code>.first-reader/overview/</code> に保存し、配布対象から除外する。</p>
+<p>改稿後は新しい読者エージェントで再検査し、両方の読者像で先読みと setup の違い、Form / widget / CSS の入口を読み取れた。慎重な読者も CSS を「宣言したサイズ契約の範囲に限り、unknown も返す」と解釈した。起動手順や詳しい検査条件はリンク先で確認する段階で、モバイルの図が縦長である点は残る。</p>
+<p>npm 利用者向けの再構成も、英語・日本語の新しい読者コンテキストで検査した。導入する3ファイル、public import、利用者に MoonBit / Z3 / clone が不要なこと、Form / CSS / cleanup / widget の例を探せた。archive の入手先とビルド時 HTML 生成が不明という反応を受け、配布 archive へのリンクと生成時期の説明を追記した。記録は <code>.first-reader/consumers/run1/</code>。</p>
+<h2 id="掲載の境界">掲載の境界</h2>
+<p>prototype の現在の機能を説明する図であり、実運用の安定性、他 framework より速いこと、任意 CSS の正しさ、compiler / browser 全体の形式証明を保証しない。任意 TS / inline と compiler からのモデル自動生成は図にも今後の機能と記した。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

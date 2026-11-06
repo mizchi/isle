@@ -1,0 +1,76 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Cloudflare Workers と Web Components widget"><title>Cloudflare Workers と Web Components widget · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/worker-widget.html"><meta property="og:title" content="Cloudflare Workers と Web Components widget · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Cloudflare Workers と Web Components widget"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/worker-widget.md">ソースで読む ↗</a></div><h1 id="cloudflare-workers-と-web-components-widget">Cloudflare Workers と Web Components widget</h1>
+<p>埋め込みタグの使い方と配布モードの選択は<a href="/isle/ja/docs/widgets.html">widget ユーザーガイド</a>を参照してください。このページは付属の Worker を動かし、配布する手順です。</p>
+<p><code>examples/worker-widget/</code> は64項目の dashboard と検証付き Form を、<code>&lt;isle-widget&gt;</code> Custom Element と Shadow DOM に展開します。iframe は生成しません。Workers Static Assets が定義用 ESM、コンパイル済み HTML と snapshot の descriptor、manifest、分割 ESM を配信し、Worker が RPC / 非同期検証を処理します。</p>
+<p>Provider: <a href="https://isle-widget.mizchi.workers.dev/">https://isle-widget.mizchi.workers.dev/</a></p>
+<p>共通層と任意の配置先・アプリへの適用は <a href="/isle/ja/docs/widget-architecture.html">widget の共通設計</a>を参照してください。現在は Vite の widget 設定から直接生成し、descriptor の検査、mount、Custom Element、HTTP と host adapter を分離しています。共有版の SDK はページ内で版・ABI が完全一致するランタイムを共有し、不一致なら後続 SDK を停止します。独立した standalone 版も生成します。</p>
+<h2 id="埋め込み">埋め込み</h2>
+<div class="code-block"><div class="code-language">html</div><pre tabindex="0"><code>&lt;isle-widget
+  src=&quot;https://isle-widget.mizchi.workers.dev/&quot;
+  role=&quot;region&quot; aria-label=&quot;Work planner&quot;
+  width=&quot;640&quot; height=&quot;640&quot; loading=&quot;lazy&quot;
+  style=&quot;display:block;width:640px;height:640px;max-width:100%;overflow:auto;contain:layout paint style;border:0;box-sizing:border-box&quot;
+&gt;
+  &lt;a href=&quot;https://isle-widget.mizchi.workers.dev/&quot;&gt;Open Work planner&lt;/a&gt;
+&lt;/isle-widget&gt;
+&lt;script type=&quot;module&quot;
+  src=&quot;https://isle-widget.mizchi.workers.dev/widget.js&quot;
+  crossorigin=&quot;anonymous&quot;&gt;&lt;/script&gt;</code></pre></div>
+<p><strong>Custom Element の width/height 属性だけでは領域は予約されません。</strong> 上の寸法 CSS も初期 HTML に含めます。定義 JS、descriptor、runtime の到着より前から幅640px・高さ640pxを確保します。幅は親に合わせて縮め、高さは維持します。内容の増減はタグ内部のスクロールで扱い、自動高さ変更はしません。親が後からタグを挿入・移動したり寸法 CSS を上書きする場合は別の layout change になります。</p>
+<p><a href="/isle/source/lib/widget.d.mts"><code>renderWidgetEmbed()</code></a> と CLI でも同じタグと module script を生成できます。サイズは1〜8192の整数 CSS pixel が必須で、百分率・auto・省略は拒否します。URL とラベルは HTML escape します。</p>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>import { renderWidgetEmbed } from &#39;./lib/widget.mjs&#39;;
+const html = renderWidgetEmbed({
+  src: &#39;https://isle-widget.mizchi.workers.dev/&#39;,
+  title: &#39;Work planner&#39;, width: 640, height: 640,
+});</code></pre></div>
+<p><code>src</code> は provider の絶対 HTTP(S) base URL です。そこから <code>widget.js</code>、<code>widget.json</code>、<code>__isle/</code> を解決します。<code>loading=&quot;lazy&quot;</code> は viewport の200px手前まで descriptor を取得しません。すぐ使う配置では <code>loading=&quot;eager&quot;</code> を指定します。これは内部コードの eager / preload policy とは別です。複数タグが同じ module script を参照しても、Custom Element の定義と ESM の評価は共有されます。</p>
+<p>JavaScript が無効なら固定領域内のリンクを表示します。provider の通常ページでは SSR の64項目を表示できます。Custom Element 内の SSR HTML は descriptor の到着後に挿入するため、埋め込み先の初回 HTML に実内容を配信する Declarative Shadow DOM は現時点では未実装です。</p>
+<h2 id="standalone-版を埋め込む">standalone 版を埋め込む</h2>
+<p>同じビルドで <code>/standalone/</code> 以下にも成果物を生成します。共有版は <code>/widget.js</code> と <code>/widget.json</code>、standalone は <code>/standalone/widget.js</code> と <code>/standalone/widget.json</code> です。</p>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>renderWidgetEmbed({
+  src: &#39;https://isle-widget.mizchi.workers.dev/standalone/&#39;,
+  runtime: &#39;standalone&#39;,
+  title: &#39;Work planner&#39;, width: 640, height: 640,
+});</code></pre></div>
+<p><code>&lt;isle-widget-standalone&gt;</code> と standalone SDK を出力し、同じ寸法 CSS で領域を予約します。共有 pool に参加せず、異なる版の共有 SDK とも併用できます。異なる standalone 版同士には別のタグ名を割り当ててビルドします。版・配布モードの違う descriptor や mount module は拒否します。コード分割した assets と <code>/__isle/</code> API を配信する方式で、単一 JS ファイルやオフライン版ではありません。</p>
+<p>版は package.json の <code>version</code> で固定します。共有 SDK は不一致時に vendor の取得・タグ定義を始めず、すでに動いている widget は維持します。standalone へ自動的には切り替えません。配布モードと版の契約は<a href="/isle/ja/docs/widget-architecture.html#standalone-配布">共通設計</a>を参照してください。</p>
+<h2 id="resume-と-lifecycle">resume と lifecycle</h2>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>publisher document
+  └─ isle-widget: fixed size before upgrade
+       └─ ShadowRoot: scoped CSS + SSR DOM + inert snapshots
+            ├─ widget.json → manifest-derived parallel modulepreload
+            ├─ provider ESM → mount(ShadowRoot, options)
+            └─ /__isle/action/*, /__isle/validate/* → provider Worker</code></pre></div>
+<p><code>loadIslands()</code> / <code>resume()</code> は Document と ShadowRoot を受け取ります。listener、snapshot 検索、root ID、復元状態をその root ごとに管理します。同じ scope ID を持つ widget を複数置いても状態・フォームのラベル・team filter は独立します。CSS は Shadow DOM 内に置き、狭い widget には container query を適用します。</p>
+<p>descriptor から manifest の依存 closure を得て、provider の chunk を並列で modulepreload します。eager の code を準備しても snapshot は操作まで parse しません。handler の URL と export は既存 CodeRef のままで、親ページの URL を基準に解決しません。共有版の vendor は factory で一つだけ読み込みます。最新の構成とサイズは<a href="https://github.com/mizchi/isle/blob/main/evals/reports/runtime-distributions.md">版の固定と standalone 配布の評価</a>を参照してください。</p>
+<p>取り外した要素は fetch、observer、listener、FormSession を解放します。共通 mount の所有権と AbortSignal を検査し、古い mount が再接続後へ書き込まないようにします。同期的な DOM 移動では状態を維持し、実際に切り離して再接続した場合は初期表示から読み直します。<a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements">Custom Elements の lifecycle</a>に合わせています。</p>
+<p><code>isle:ready</code>、<code>isle:error</code> をタグから通知します。Form の <code>isle:submit</code> は validated output を detail に持ち、Shadow DOM の外でも受け取れる composed event です。エラー一覧のリンクは同じ ShadowRoot 内の入力へ直接フォーカスします。</p>
+<h2 id="origin-と-server-の境界">origin と server の境界</h2>
+<p>Web Component の JS は<strong>埋め込み元の権限で実行されます</strong>。Shadow DOM は DOM / CSS のスコープであり、origin や JavaScript のセキュリティ境界にはしません。provider のコードを信頼する埋め込み方式です。</p>
+<p>RPC の送信元 Origin は publisher になります。mount の <code>actionBaseURL</code> で provider の <code>__isle/</code> を指定し、通常 action と Form の action / validate が同じ transport を使います。この widget は <code>credentials: &#39;omit&#39;</code> で Cookie を送信しません。既存の通常ページは同一 origin の経路と <code>same-origin</code> credentials を維持します。</p>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>const worker = createWorkerHandler(contracts, host, {
+  allowedOrigins: [&#39;https://publisher.example&#39;],
+});</code></pre></div>
+<p><code>createWorkerHandler()</code> の既定値は引き続き同一 origin 限定です。明示した origin list、または公開デモ用の <code>&#39;*&#39;</code> のときだけ CORS / OPTIONS を許可します。preflight は POST と content-type に限定し、通常応答だけでなく422等にも CORS header を付けます。null / 不正 origin、cross-origin の Cookie / Authorization は拒否し、Access-Control-Allow-Credentials は返しません。公開・非 credential の CORS は<a href="https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CORS">標準の構成</a>に従います。</p>
+<p>このデモの host は公開・stateless なので <code>allowedOrigins: &#39;*&#39;</code> を明示しています。保存は検証済み DTO を画面へ反映するだけで、DB には永続化しません。入力型、schema 制約、resource policy、operation effects の検査は全て server に残します。origin list 自体をユーザー認証の代わりには扱いません。private な認証・token protocol はこの例には含みません。</p>
+<p>descriptor の module / preload URL は同じ provider に限定し、HTML はコンパイラが生成した inert markup を前提にします。任意の未検査 HTML を安全化する機能ではありません。</p>
+<h2 id="workers-と-csp">Workers と CSP</h2>
+<p><code>assets.run_worker_first: [&quot;/__isle/*&quot;]</code> により、RPC だけを Worker 優先にします。公開ファイルは <code>dist/worker-widget/client/</code>、server 契約はその外の <code>server/</code> に置きます。境界型検査と HTML encoder は codegen から独立し、Worker runtime に compiler・filesystem・Node API は不要です。<code>nodejs_compat</code> を使いません。<a href="https://developers.cloudflare.com/workers/static-assets/binding/">ASSETS binding</a>を使う薄い Request/Response adapter です。</p>
+<p>公開 ESM / descriptor は CORS を許可します。hash 付き assets は immutable、<code>widget.js</code> / <code>widget.json</code> / HTML / manifest は再検証、RPC は no-store です。asset の header は <code>_headers</code>、RPC の CORS は Worker の応答で設定します。<a href="https://developers.cloudflare.com/workers/static-assets/headers/">Cloudflare の header 適用範囲</a>を区別します。</p>
+<p>親ページに CSP がある場合は provider を script-src と connect-src に許可します。現在はタグの寸法と Shadow DOM の CSS に inline style を使うため、親側の style-src もその使用を許可する必要があります。nonce の伝播や外部 stylesheet 用の生成は未実装です。provider ページの CSP が親へ引き継がれるわけではありません。</p>
+<h2 id="実行検証">実行・検証</h2>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just widget-check        # compiler/build、Wrangler dry-run、unit、workerd E2E
+just widget-dev          # terminal A: http://127.0.0.1:8787/
+just widget-host         # terminal B: http://localhost:8788/ への埋め込み
+just widget-quality     # terminal C: 親 / provider の14 gateと初期画像
+just widget-deploy
+just widget-embed https://isle-widget.mizchi.workers.dev/ 640 640
+just widget-host https://isle-widget.mizchi.workers.dev/
+just widget-embed https://isle-widget.mizchi.workers.dev/standalone/ 640 640 standalone
+just widget-host https://isle-widget.mizchi.workers.dev/standalone/ standalone
+just widget-quality http://127.0.0.1:8787/standalone/ standalone
+just widget-check-remote https://isle-widget.mizchi.workers.dev/</code></pre></div>
+<p><code>just ci</code> が共通 compiler / runtime、<code>just widget-check</code> が Workers を含む追加検査を行います。他 example の build が dist/ を消すため、widget には build 付きタスクを使います。</p>
+<p>Playwright では定義 JS、descriptor、残りの code を個別に遅延させます。1280pxの親では640×640px、375pxでは343×640pxを保持し、後続要素の位置は読み込み・RPC・Form 操作後も同一です。計測した CLS は0で iframe は0個です。Shadow DOM 内の shift も親 document の PerformanceObserver の対象になります。任意の親ページ全体や、将来の動的内容の CLS を保証するものではありません。</p>
+<p><a href="https://github.com/mizchi/isle/blob/main/evals/reports/widget-elements.md">評価記録</a>、<a href="/isle/source/evals/results/widget-elements/layout-1280.json">PC 計測</a>、<a href="/isle/source/evals/results/widget-elements/layout-375.json">モバイル計測</a>を参照してください。以前の iframe 版は<a href="https://github.com/mizchi/isle/blob/main/evals/reports/worker-widget.md">過去の評価</a>として残します。</p>
+<p>公開 Workers に対する最新の検査と standalone の寸法計測は<a href="https://github.com/mizchi/isle/blob/main/evals/reports/runtime-distributions.md">配布モードの評価</a>を参照してください。従来の共有版の<a href="/isle/source/evals/results/widget-elements/remote/layout-1280.json">PC</a>・<a href="/isle/source/evals/results/widget-elements/remote/layout-375.json">モバイル</a>の計測も保持しています。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

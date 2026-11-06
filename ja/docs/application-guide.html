@@ -1,0 +1,156 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="アプリを書く"><title>アプリを書く · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/application-guide.html"><meta property="og:title" content="アプリを書く · Isle"><meta property="og:type" content="website"><meta property="og:description" content="アプリを書く"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/application-guide.md">ソースで読む ↗</a></div><h1 id="アプリを書く">アプリを書く</h1>
+<p><code>.isle</code> は、初期 HTML に残せる部分と、操作に必要な状態・コードを分けて生成します。ページへの配置は Vite の <code>mounts</code> で指定します。<a href="/isle/ja/docs/getting-started.html">最初の Counter</a>の設定を起点に、機能を追加できます。</p>
+<h2 id="状態と表示">状態と表示</h2>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>export client component Counter(initial: number) {
+  state count = initial;
+  derive doubled = count * 2;
+  &lt;button type=&quot;button&quot;&gt;
+    on click increment { count += 1; }
+    {count} / {doubled}
+  &lt;/button&gt;
+}</code></pre></div>
+<p>props は <code>initial: number</code> のように名前と型を一度ずつ書きます。受け渡しは <code>props: { initial: 5 }</code> のままで、読み取り専用です。従来の <code>({ initial }: { initial: number })</code> も同じ契約として使えます。</p>
+<p>イベントから変更する値を <code>state</code>、他の値から求める純粋な式を <code>derive</code> にします。<code>derive</code> は依存する値の更新に合わせて再計算されます。自己参照や間接的な循環はコンパイルエラーになります。</p>
+<p>通常の HTML 要素、テキスト、<code>{式}</code>、<code>class</code> / <code>aria-*</code> / <code>data-*</code> などの属性を使えます。コンポーネントには一つの HTML root が必要です。対応する式は literal、変数、括弧、<code>+ - * /</code> などに限定されています。任意の関数呼び出しは使えません。</p>
+<p><code>a</code> の <code>href</code> は不変な string として記述できます。相対 URL・HTTP(S)・mailto・tel を受け付け、実行可能な URL scheme と制御文字を拒否します。server props の URL は SSR 時にも検査します。状態や derive でリンク先を変更する構文、および client の制御領域内の非 literal なリンクは現在の対象外です。</p>
+<p>Vite plugin の <code>wrapMounts: false</code> は、デモ用の card / 見出しを付けずに component の HTML を挿入します。サイトの header・main・footer などを自分で構成する場合に使います。既定値は <code>true</code> です。</p>
+<p>イベントの書き方は <code>on &lt;event&gt; [async] [名前] { ... }</code> です。<code>click</code> / <code>input</code> / <code>change</code> / <code>submit</code> / <code>invalid</code> に対応します。コード分割のために関数を別途包む必要はなく、イベントブロックが論理的な境界になります。小さい境界は bundler が同じファイルにまとめることがあります。</p>
+<h2 id="複数の-ui-を配置する">複数の UI を配置する</h2>
+<p><code>mounts</code> に同じコンポーネントを複数登録できます。次は <code>isle()</code> オプションの抜粋です。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>mounts: [
+  { component: &#39;Counter&#39;, props: { initial: 5 }, scopeId: &#39;first&#39;, label: &#39;First counter&#39; },
+  { component: &#39;Counter&#39;, props: { initial: 10 }, scopeId: &#39;second&#39;, label: &#39;Second counter&#39; },
+],</code></pre></div>
+<p>二つの Counter は状態を共有しません。最初の操作でもページ全体を再開せず、対象の instance を復元します。コンポーネント内で <code>&lt;Counter initial={5} /&gt;</code> と配置する入れ子も使えます。<a href="/isle/ja/docs/composition.html">合成と children</a>を参照してください。</p>
+<h2 id="component-の実行側と-html-のみの出力">Component の実行側と HTML のみの出力</h2>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>export component Heading(title: string) {
+  &lt;h1&gt;{title}&lt;/h1&gt;
+}</code></pre></div>
+<p>無指定の <code>component</code> は、server/client の両方で使える純粋なサブセットです。props・純粋な derive・HTML に限定し、state やイベントを追加しても自動で client へ切り替えません。操作が必要なら <code>client component</code> と宣言します。</p>
+<p>server 側に限定する場合は、明示的に <code>server component</code> を使います。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>export server component Heading(title: string) {
+  &lt;h1&gt;{title}&lt;/h1&gt;
+}</code></pre></div>
+<p>server component は HTML と props の描画に使います。<code>state</code> やイベントは置けません。client component も初期表示は SSR され、操作に必要なコードだけがブラウザーへ渡ります。</p>
+<p>イベントを持つコンポーネントを HTML のみで出力したい場合は、<code>isle()</code> に <code>mode: &#39;ssr&#39;</code> を指定します。個別の mount にも同じ指定ができます。以下はオプションの抜粋です。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>mounts: [
+  { component: &#39;Counter&#39;, props: { initial: 5 }, label: &#39;Preview&#39;, mode: &#39;ssr&#39; },
+],</code></pre></div>
+<p>この Counter は初期値を表示しますが、クリックしても値は変わりません。SSR 専用 mount の snapshot・イベント marker・動的コードを生成しません。ページ内の全 mount が静的なら Isle の browser JS も出力しません。<code>details</code> / <code>summary</code> など、標準 HTML だけで動く UI はそのまま使えます。</p>
+<h2 id="server-action-を呼ぶ">Server action を呼ぶ</h2>
+<p>サーバー越境は <code>remote</code> として明示します。次は単独で検査できる <code>.isle</code> ソースです。action と client component は同じファイルに置きます。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>schema RenameInput { id: string; title: string; }
+view DocumentView { id: string; title: string; }
+
+export server action renameDocument(input: RenameInput): DocumentView
+  using request: RequestContext
+  authorize grant = policy.documentEditor(request, input.id)
+  effects { db.write }
+{
+  return await documents.rename(grant, input.title);
+}
+
+export client component Editor(id: string, initial: string) {
+  state title = initial;
+  &lt;button type=&quot;button&quot;&gt;
+    on click async save {
+      title = (await remote renameDocument({ id, title: title + &quot;!&quot; })).title;
+    }
+    {title}
+  &lt;/button&gt;
+}</code></pre></div>
+<p><code>schema</code> は受け取る入力、<code>view</code> は返す field の契約です。<code>using request</code> の値はサーバーが現在の request から作ります。<code>authorize</code> は対象 resource に対する許可、<code>effects</code> は操作に認める能力を宣言します。<code>async</code> は await を使う指定で、server component へ自動的に切り替わる意味ではありません。</p>
+<p>JavaScript 側には、同名の policy と operation を持つ <code>host</code> が必要です。<a href="/isle/source/examples/counter/host.mjs">Counter デモの host</a>はこの action に対応します。<code>isle({ ..., host })</code> で登録し、Editor の props に <code>{ id: &#39;demo&#39;, initial: &#39;Draft&#39; }</code> を渡すと、クリックで <code>Draft!</code> が返ります。<code>just dev</code> で実行済みのデモを試せます。</p>
+<p>ローカルデモの principal は固定です。実アプリでは <code>host.context(request)</code> で認証済みの利用者を特定し、<code>host.policies</code> で対象の操作権限を確認します。入力や出力の形は直接 HTTP request に対しても検査します。</p>
+<p><code>host.operations</code> の effect 宣言や実装はアプリ側の責任です。現在の commit は同期の in-memory 処理を対象にしています。</p>
+<p>開発サーバーと Vite preview は登録した host を使います。production の server action には、<a href="/isle/source/lib/server.d.mts">createActionHandler()</a> を Request / Response を扱うサーバーへ接続します。HTML と JS を静的配信するだけでは RPC は動きません。動く配布例は<a href="/isle/ja/docs/worker-widget.html">Workers</a>と<a href="/isle/source/examples/portable-widget/server.mjs">Node adapter</a>を参照してください。</p>
+<h2 id="検証付きフォームを作る">検証付きフォームを作る</h2>
+<p>共通 schema を使うフォームでは、入力制約と送信先を宣言します。以下は <a href="/isle/source/evals/scenarios/forms/shared.isle">schema Form デモ</a>と同じ構成です。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>schema Registration {
+  email: string minLength(3) maxLength(80) format(&quot;email&quot;);
+  confirmation: string minLength(3) sameAs(email);
+  age: number min(18) max(120) integer();
+  accepted: boolean equals(true);
+}
+
+view Registered { email: string; }
+export server action register(input: Registration): Registered
+  using request: RequestContext
+  authorize grant = policy.signup(request, input.email)
+  validate accounts.available effects { db.read }
+  effects { db.write }
+{ return await accounts.register(grant, input.email); }
+
+export client component SchemaSignup() {
+  &lt;form schema=&quot;Registration&quot; submit=&quot;register&quot; aria-label=&quot;Create account&quot;&gt;
+    &lt;label&gt;Email (required)&lt;input name=&quot;email&quot; autocomplete=&quot;email&quot; /&gt;&lt;/label&gt;
+    &lt;label&gt;Confirm email (required)&lt;input name=&quot;confirmation&quot; /&gt;&lt;/label&gt;
+    &lt;label&gt;Age (required)&lt;input name=&quot;age&quot; value=&quot;21&quot; /&gt;&lt;/label&gt;
+    &lt;label&gt;&lt;input name=&quot;accepted&quot; /&gt;I agree (required)&lt;/label&gt;
+    &lt;button type=&quot;submit&quot;&gt;Create account&lt;/button&gt;
+    &lt;button type=&quot;reset&quot;&gt;Reset&lt;/button&gt;
+  &lt;/form&gt;
+}</code></pre></div>
+<p>schema の各 field に、同じ <code>name</code> の control を一つずつ置きます。型と制約から input type、required、範囲などを生成します。schema Form の control に手書きの入力・submit handler を混在させることはできません。値を保存するためだけの <code>state</code> も不要です。</p>
+<p>このソースには <code>policy.signup</code>、<code>accounts.available</code>、<code>accounts.register</code> を登録した host が必要です。<a href="/isle/source/examples/schema-form/host.mjs">デモ host</a>を使う設定は <a href="/isle/source/examples/schema-form/vite.config.mjs">vite.config.mjs</a>にあります。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just dev-schema-form</code></pre></div>
+<p><a href="http://127.0.0.1:4191/">http://127.0.0.1:4191/</a> で試せます。<code>taken@example.com</code> はデモで登録済みのため非同期検証に失敗します。確認用 email を一致させ、年齢と同意を満たし、別の email を送信すると保存できます。データはメモリ内だけに保持します。</p>
+<p>送信前にブラウザーと共通 validator が検査し、server action でも入力・認可・非同期検証を再確認します。field error と送信エラーの一覧、<code>aria-invalid</code>、修正する control への focus を生成します。</p>
+<p>送信中は submit を抑制し、reset では初期値・エラー・待機中の UI 処理をリセットします。reset で完了済みのサーバー書き込みを取り消すことはできません。</p>
+<p>成功時は検証済みの response を <code>isle:submit</code> の <code>detail</code> で受け取れます。必要なら自分の client entry に次の処理を書き、その module を <code>isle()</code> の <code>clientEntry</code> に指定します。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>import { boot } from &#39;virtual:isle-loader&#39;;
+
+document.addEventListener(&#39;isle:submit&#39;, event =&gt; {
+  console.log(&#39;保存した値&#39;, event.detail);
+});
+boot({ onError: error =&gt; console.error(error) });</code></pre></div>
+<p>通常は client entry を書かなくても plugin が起動コードを追加します。自分で指定する場合は <code>boot()</code> を呼んでください。JS 無効・SSR 専用の schema Form では native POST が使えますが、現在の応答は JSON です。入力イベントを細かく制御する書き方、制約一覧、非同期検証、エラー表示の詳細は <a href="/isle/ja/docs/forms.html">Form ガイド</a>を参照してください。</p>
+<h2 id="アクセシビリティを検査する">アクセシビリティを検査する</h2>
+<p>control の label、id の重複、<code>for</code> / <code>aria-describedby</code> 等の参照、form 内の button の <code>type</code> をコンパイル時に検査します。例えばラベル不足は <code>E_A11Y_LABEL</code>、参照切れは <code>E_A11Y_REFERENCE</code> になります。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>node tools/isle.mjs check examples/hello/app.isle
+just a11y-form
+just a11y-schema-form</code></pre></div>
+<p><code>check</code> は指定したソースを検査します。後ろの二つは、付属のフォームデモをビルドし、keyboard / contrast / touch / focus 等を検査するコマンドです。自分のアプリの見た目・読み上げ・キーボード操作も別途確認してください。</p>
+<h2 id="component-の寿命にリソースを結び付ける">Component の寿命にリソースを結び付ける</h2>
+<p><code>isle({ resources: { VideoPanel: &#39;./video.resources.ts&#39; }, ... })</code> で、イベントを持つ client component に setup module を指定できます。module は <code>setup({ root, owner, id })</code> を export し、<code>owner.own(value, release)</code> または <code>owner.acquire(signal =&gt; initialize(signal), release)</code> で解放責任を登録します。初回 resume の handler より前に instance ごとに一度実行し、DOM 削除・dispose・widget の切断で自動破棄します。setup は同期関数です。非同期の取得完了は handler を待たせません。</p>
+<p>module のトップレベルは先読みで評価され得るため、取得処理は setup 内に置きます。SSR 専用では resource code を出力しません。ready / failed を UI へ反映する専用 resource 構文は未実装です。<a href="/isle/ja/docs/resource-disposal.html">実行例と寿命の契約</a>を参照してください。</p>
+<h2 id="コードを読み込むタイミング">コードを読み込むタイミング</h2>
+<p><code>isle()</code> の <code>loading</code>、または各 mount の <code>loading</code> で指定します。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>値</th>
+<th>操作前に行うこと</th>
+<th>状態の復元とイベント実行</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>auto</code>（既定）</td>
+<td>入力・送信の依存コードを gzip 予算内で先読みします</td>
+<td>操作時</td>
+</tr>
+<tr>
+<td><code>lazy</code></td>
+<td>必要なコードの取得を操作まで遅らせます</td>
+<td>操作時</td>
+</tr>
+<tr>
+<td><code>preload</code></td>
+<td>manifest の依存に基づき modulepreload します</td>
+<td>操作時</td>
+</tr>
+<tr>
+<td><code>eager</code></td>
+<td>module の import・評価まで準備します</td>
+<td>操作時</td>
+</tr>
+</tbody></table>
+</div><p>先読みしても、全 instance の状態を一括で復元することはありません。manifest による依存チャンクの並列取得と、操作された UI の resume は別の処理です。<code>mode: &#39;ssr&#39;</code> は loading 指定より優先します。</p>
+<p>ページ遷移先の先読みには別の <code>speculation</code> オプションを使います。<a href="/isle/ja/docs/speculation-rules.html">Speculation Rules の設定</a>を参照してください。</p>
+<h2 id="ビルドと操作を調べる">ビルドと操作を調べる</h2>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>node tools/isle.mjs explain examples/hello/app.isle
+just chunks dist-hello/isle.manifest.json</code></pre></div>
+<p><code>explain</code> は状態・依存・イベント境界の解析結果を返します。<code>chunks</code> は production build の manifest を読み、イベント名とソース位置、ファイル、共通依存を含むサイズを対応させます。</p>
+<p><code>isle()</code> に <code>profile: true</code> を指定すると、DevTools の User Timing にコード取得・状態復元・実行の区間が出ます。<code>diagnostics: true</code> は production に詳細エラーと controller の metrics を残す設定です。計測や診断を有効にした成果物のサイズは、通常の production build と分けて扱います。<a href="/isle/ja/docs/chunk-profiling.html">チャンクとプロファイル</a>に出力の読み方をまとめています。</p>
+<p><a href="/isle/ja/docs/index.html">ユーザーガイド</a> · <a href="/isle/ja/docs/widgets.html">widget を使う</a> · <a href="/isle/ja/docs/prototype-guide.html">構文リファレンス</a></p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

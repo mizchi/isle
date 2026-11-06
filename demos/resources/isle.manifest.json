@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "references": {
+    "isle:resume": {
+      "ref": [
+        "/isle/demos/resources/assets/isle-resume-CUTcvJSN.js",
+        "resume",
+        []
+      ],
+      "chunk": "assets/isle-resume-CUTcvJSN.js",
+      "requires": [],
+      "kind": "runtime",
+      "loading": "lazy"
+    },
+    "Session.$resources": {
+      "ref": [
+        "/isle/demos/resources/assets/Session.resources-D5m5woyE.js",
+        "setup",
+        []
+      ],
+      "chunk": "assets/Session.resources-D5m5woyE.js",
+      "requires": [],
+      "kind": "resource",
+      "schemaId": "3d693b4ccff19791",
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 50,
+          "line": 3,
+          "column": 3
+        },
+        "end": {
+          "offset": 58,
+          "line": 3,
+          "column": 11
+        }
+      },
+      "loading": "lazy"
+    },
+    "Session.increment": {
+      "ref": [
+        "/isle/demos/resources/assets/Session.increment-D9asJW1r.js",
+        "run",
+        [
+          0
+        ]
+      ],
+      "chunk": "assets/Session.increment-D9asJW1r.js",
+      "requires": [
+        "isle:resume",
+        "Session.$resources"
+      ],
+      "kind": "handler",
+      "schemaId": "3d693b4ccff19791",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 129,
+          "line": 5,
+          "column": 27
+        },
+        "end": {
+          "offset": 163,
+          "line": 5,
+          "column": 61
+        }
+      },
+      "loading": "lazy"
+    }
+  },
+  "chunks": {
+    "assets/index-EnAq9sKF.js": {
+      "url": "/isle/demos/resources/assets/index-EnAq9sKF.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/isle-resume-CUTcvJSN.js"
+      ],
+      "styles": [
+        "assets/index-Dnofiqrv.css"
+      ],
+      "bytes": 1912,
+      "gzipBytes": 919
+    },
+    "assets/isle-resume-CUTcvJSN.js": {
+      "url": "/isle/demos/resources/assets/isle-resume-CUTcvJSN.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/Session.increment-D9asJW1r.js",
+        "assets/Session.resources-D5m5woyE.js"
+      ],
+      "bytes": 7875,
+      "gzipBytes": 3239
+    },
+    "assets/Session.increment-D9asJW1r.js": {
+      "url": "/isle/demos/resources/assets/Session.increment-D9asJW1r.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 65,
+      "gzipBytes": 83
+    },
+    "assets/Session.resources-D5m5woyE.js": {
+      "url": "/isle/demos/resources/assets/Session.resources-D5m5woyE.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 500,
+      "gzipBytes": 301
+    }
+  },
+  "styles": {
+    "assets/index-Dnofiqrv.css": {
+      "url": "/isle/demos/resources/assets/index-Dnofiqrv.css",
+      "bytes": 1079,
+      "gzipBytes": 546
+    }
+  },
+  "loading": {
+    "eager": [],
+    "preload": []
+  },
+  "resolution": {
+    "version": 1,
+    "strategy": "event-and-size",
+    "budgetGzipBytes": 8192,
+    "usedGzipBytes": 0,
+    "decisions": [
+      {
+        "id": "Session.$resources",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 301,
+        "modules": [
+          "/isle/demos/resources/assets/Session.resources-D5m5woyE.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "Session.increment",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 3623,
+        "modules": [
+          "/isle/demos/resources/assets/isle-resume-CUTcvJSN.js",
+          "/isle/demos/resources/assets/Session.resources-D5m5woyE.js",
+          "/isle/demos/resources/assets/Session.increment-D9asJW1r.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "isle:resume",
+        "requested": "lazy",
+        "loading": "lazy",
+        "reason": "default",
+        "additionalGzipBytes": 0,
+        "modules": [
+          "/isle/demos/resources/assets/isle-resume-CUTcvJSN.js"
+        ],
+        "initialBy": []
+      }
+    ]
+  },
+  "buildId": "beb5090d97b8f864"
+}

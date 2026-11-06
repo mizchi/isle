@@ -1,0 +1,1275 @@
+{
+  "version": 1,
+  "coverage": "generated-handler-operations",
+  "exclusions": [
+    "browser style/layout/paint duration",
+    "runtime internals and DOM locator traversal",
+    "network/server duration",
+    "HTTP cache and bootstrap transfer",
+    "host wrappers and metadata script elements"
+  ],
+  "components": [
+    {
+      "component": "Counter",
+      "schemaId": "e1e153ec8f8f09dd",
+      "side": "client",
+      "localElements": 7,
+      "childSites": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 2,
+        "bindingLocators": 1,
+        "childOwners": 0
+      },
+      "entries": [
+        {
+          "id": "Counter.increment",
+          "component": "Counter",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 476,
+            "end": 510
+          },
+          "scope": "one-owner/generated-handler",
+          "captures": [
+            "count"
+          ],
+          "writes": [
+            "count"
+          ],
+          "actions": [],
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 2,
+            "bindingLocators": 1,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          },
+          "phases": [
+            {
+              "phase": "statement:0",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            },
+            {
+              "phase": "patch",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            }
+          ],
+          "updates": [
+            {
+              "id": 0,
+              "kind": "text",
+              "dependencies": [
+                "count"
+              ],
+              "triggeredBy": [
+                "count"
+              ]
+            }
+          ],
+          "reasons": [
+            {
+              "from": "Counter.count",
+              "to": "Counter.binding:0"
+            }
+          ],
+          "unknownCosts": []
+        },
+        {
+          "id": "Counter.reset",
+          "component": "Counter",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 551,
+            "end": 586
+          },
+          "scope": "one-owner/generated-handler",
+          "captures": [
+            "initial",
+            "count"
+          ],
+          "writes": [
+            "count"
+          ],
+          "actions": [],
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 2,
+            "bindingLocators": 1,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          },
+          "phases": [
+            {
+              "phase": "statement:0",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            },
+            {
+              "phase": "patch",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            }
+          ],
+          "updates": [
+            {
+              "id": 0,
+              "kind": "text",
+              "dependencies": [
+                "count"
+              ],
+              "triggeredBy": [
+                "count"
+              ]
+            }
+          ],
+          "reasons": [
+            {
+              "from": "Counter.count",
+              "to": "Counter.binding:0"
+            }
+          ],
+          "unknownCosts": []
+        }
+      ]
+    },
+    {
+      "component": "Parent",
+      "schemaId": "3ec521384b0352b9",
+      "side": "client",
+      "localElements": 5,
+      "childSites": [
+        {
+          "site": "c1",
+          "component": "Counter"
+        },
+        {
+          "site": "c2",
+          "component": "Counter"
+        }
+      ],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 1,
+        "bindingLocators": 1,
+        "childOwners": 0
+      },
+      "entries": [
+        {
+          "id": "Parent.increment",
+          "component": "Parent",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 761,
+            "end": 795
+          },
+          "scope": "one-owner/generated-handler",
+          "captures": [
+            "count"
+          ],
+          "writes": [
+            "count"
+          ],
+          "actions": [],
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 1,
+            "bindingLocators": 1,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          },
+          "phases": [
+            {
+              "phase": "statement:0",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            },
+            {
+              "phase": "patch",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            }
+          ],
+          "updates": [
+            {
+              "id": 0,
+              "kind": "text",
+              "dependencies": [
+                "count"
+              ],
+              "triggeredBy": [
+                "count"
+              ]
+            }
+          ],
+          "reasons": [
+            {
+              "from": "Parent.count",
+              "to": "Parent.binding:0"
+            }
+          ],
+          "unknownCosts": []
+        }
+      ]
+    },
+    {
+      "component": "Page",
+      "schemaId": "50f6bad8b9e42997",
+      "side": "server",
+      "localElements": 6,
+      "childSites": [
+        {
+          "site": "c1",
+          "component": "Parent"
+        },
+        {
+          "site": "c3",
+          "component": "Counter"
+        }
+      ],
+      "restore": {
+        "owners": 0,
+        "snapshotSlots": 0,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "entries": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "Counter.increment",
+      "component": "Counter",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 476,
+        "end": 510
+      },
+      "scope": "one-owner/generated-handler",
+      "captures": [
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 2,
+        "bindingLocators": 1,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "binaryOperations": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "propertyReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "slotReads": {
+          "kind": "upper-bound",
+          "value": 2
+        },
+        "eventReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textPatchCalls": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "attributePatchCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textConversions": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "remoteCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "createdElements": {
+          "kind": "upper-bound",
+          "value": 0
+        }
+      },
+      "phases": [
+        {
+          "phase": "statement:0",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        },
+        {
+          "phase": "patch",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "updates": [
+        {
+          "id": 0,
+          "kind": "text",
+          "dependencies": [
+            "count"
+          ],
+          "triggeredBy": [
+            "count"
+          ]
+        }
+      ],
+      "reasons": [
+        {
+          "from": "Counter.count",
+          "to": "Counter.binding:0"
+        }
+      ],
+      "unknownCosts": [],
+      "instances": 3,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/composition/assets/isle-resume-DBDfVQ7a.js",
+          "/isle/demos/composition/assets/Counter.g0-sIr0C6hm.js"
+        ],
+        "bytes": 3835,
+        "gzipBytes": 1857,
+        "dynamicImports": [
+          "/isle/demos/composition/assets/Parent.increment-D9asJW1r.js"
+        ]
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 476,
+          "line": 15,
+          "column": 29
+        },
+        "end": {
+          "offset": 510,
+          "line": 15,
+          "column": 63
+        }
+      }
+    },
+    {
+      "id": "Counter.reset",
+      "component": "Counter",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 551,
+        "end": 586
+      },
+      "scope": "one-owner/generated-handler",
+      "captures": [
+        "initial",
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 2,
+        "bindingLocators": 1,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "binaryOperations": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "propertyReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "slotReads": {
+          "kind": "upper-bound",
+          "value": 2
+        },
+        "eventReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textPatchCalls": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "attributePatchCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textConversions": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "remoteCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "createdElements": {
+          "kind": "upper-bound",
+          "value": 0
+        }
+      },
+      "phases": [
+        {
+          "phase": "statement:0",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        },
+        {
+          "phase": "patch",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "updates": [
+        {
+          "id": 0,
+          "kind": "text",
+          "dependencies": [
+            "count"
+          ],
+          "triggeredBy": [
+            "count"
+          ]
+        }
+      ],
+      "reasons": [
+        {
+          "from": "Counter.count",
+          "to": "Counter.binding:0"
+        }
+      ],
+      "unknownCosts": [],
+      "instances": 3,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/composition/assets/isle-resume-DBDfVQ7a.js",
+          "/isle/demos/composition/assets/Counter.g0-sIr0C6hm.js"
+        ],
+        "bytes": 3835,
+        "gzipBytes": 1857,
+        "dynamicImports": [
+          "/isle/demos/composition/assets/Parent.increment-D9asJW1r.js"
+        ]
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 551,
+          "line": 16,
+          "column": 29
+        },
+        "end": {
+          "offset": 586,
+          "line": 16,
+          "column": 64
+        }
+      }
+    },
+    {
+      "id": "Parent.increment",
+      "component": "Parent",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 761,
+        "end": 795
+      },
+      "scope": "one-owner/generated-handler",
+      "captures": [
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 1,
+        "bindingLocators": 1,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "binaryOperations": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "propertyReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "slotReads": {
+          "kind": "upper-bound",
+          "value": 2
+        },
+        "eventReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textPatchCalls": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "attributePatchCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textConversions": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "remoteCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "createdElements": {
+          "kind": "upper-bound",
+          "value": 0
+        }
+      },
+      "phases": [
+        {
+          "phase": "statement:0",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        },
+        {
+          "phase": "patch",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "updates": [
+        {
+          "id": 0,
+          "kind": "text",
+          "dependencies": [
+            "count"
+          ],
+          "triggeredBy": [
+            "count"
+          ]
+        }
+      ],
+      "reasons": [
+        {
+          "from": "Parent.count",
+          "to": "Parent.binding:0"
+        }
+      ],
+      "unknownCosts": [],
+      "instances": 1,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/composition/assets/isle-resume-DBDfVQ7a.js",
+          "/isle/demos/composition/assets/Parent.increment-D9asJW1r.js"
+        ],
+        "bytes": 3782,
+        "gzipBytes": 1840,
+        "dynamicImports": [
+          "/isle/demos/composition/assets/Counter.g0-sIr0C6hm.js"
+        ]
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 761,
+          "line": 25,
+          "column": 27
+        },
+        "end": {
+          "offset": 795,
+          "line": 25,
+          "column": 61
+        }
+      }
+    }
+  ],
+  "scenario": {
+    "mode": "resume",
+    "mounts": [
+      {
+        "component": "Page",
+        "mode": "resume"
+      }
+    ],
+    "domElements": 32,
+    "resumableOwners": 4,
+    "snapshotSlots": 7,
+    "components": {
+      "Page": {
+        "instances": 1,
+        "resumableInstances": 0
+      },
+      "Parent": {
+        "instances": 1,
+        "resumableInstances": 1
+      },
+      "Counter": {
+        "instances": 3,
+        "resumableInstances": 3
+      }
+    }
+  },
+  "planId": "4a55aa64b59b8d98",
+  "code": {
+    "scope": "static-code-closure",
+    "modules": [
+      "/isle/demos/composition/assets/isle-resume-DBDfVQ7a.js",
+      "/isle/demos/composition/assets/Counter.g0-sIr0C6hm.js",
+      "/isle/demos/composition/assets/Parent.increment-D9asJW1r.js"
+    ],
+    "bytes": 3900,
+    "gzipBytes": 1940,
+    "dynamicImports": []
+  },
+  "buildId": "82cbeafb8168e973",
+  "budget": {
+    "ok": true,
+    "checks": []
+  },
+  "ok": true
+}

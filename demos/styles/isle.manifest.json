@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "references": {
+    "Card.$resources": {
+      "ref": [
+        "/isle/demos/styles/assets/Card.resources-BzIjjX8k.js",
+        "setup",
+        []
+      ],
+      "chunk": "assets/Card.resources-BzIjjX8k.js",
+      "requires": [],
+      "kind": "resource",
+      "schemaId": "ab2ce805265739b4",
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 47,
+          "line": 3,
+          "column": 3
+        },
+        "end": {
+          "offset": 55,
+          "line": 3,
+          "column": 11
+        }
+      },
+      "loading": "lazy"
+    },
+    "Card.activate": {
+      "ref": [
+        "/isle/demos/styles/assets/Card.activate-D9asJW1r.js",
+        "run",
+        [
+          0
+        ]
+      ],
+      "chunk": "assets/Card.activate-D9asJW1r.js",
+      "requires": [
+        "isle:resume",
+        "Card.$resources"
+      ],
+      "kind": "handler",
+      "schemaId": "ab2ce805265739b4",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 128,
+          "line": 5,
+          "column": 27
+        },
+        "end": {
+          "offset": 161,
+          "line": 5,
+          "column": 60
+        }
+      },
+      "loading": "lazy"
+    },
+    "isle:resume": {
+      "ref": [
+        "/isle/demos/styles/assets/isle-resume-B0DT78Co.js",
+        "resume",
+        []
+      ],
+      "chunk": "assets/isle-resume-B0DT78Co.js",
+      "requires": [],
+      "kind": "runtime",
+      "loading": "lazy"
+    }
+  },
+  "chunks": {
+    "assets/Card.activate-D9asJW1r.js": {
+      "url": "/isle/demos/styles/assets/Card.activate-D9asJW1r.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 65,
+      "gzipBytes": 83
+    },
+    "assets/Card.resources-BzIjjX8k.js": {
+      "url": "/isle/demos/styles/assets/Card.resources-BzIjjX8k.js",
+      "imports": [],
+      "dynamicImports": [],
+      "styles": [
+        "assets/Card-BC_Z3IxH.css"
+      ],
+      "bytes": 123,
+      "gzipBytes": 127
+    },
+    "assets/index-Dj6_xiKt.js": {
+      "url": "/isle/demos/styles/assets/index-Dj6_xiKt.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/isle-resume-B0DT78Co.js"
+      ],
+      "styles": [
+        "assets/index-Dnofiqrv.css"
+      ],
+      "bytes": 1795,
+      "gzipBytes": 885
+    },
+    "assets/isle-resume-B0DT78Co.js": {
+      "url": "/isle/demos/styles/assets/isle-resume-B0DT78Co.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/Card.activate-D9asJW1r.js",
+        "assets/Card.resources-BzIjjX8k.js"
+      ],
+      "bytes": 9919,
+      "gzipBytes": 3997
+    }
+  },
+  "styles": {
+    "assets/Card-BC_Z3IxH.css": {
+      "url": "/isle/demos/styles/assets/Card-BC_Z3IxH.css",
+      "bytes": 107,
+      "gzipBytes": 113
+    },
+    "assets/index-Dnofiqrv.css": {
+      "url": "/isle/demos/styles/assets/index-Dnofiqrv.css",
+      "bytes": 1079,
+      "gzipBytes": 546
+    }
+  },
+  "loading": {
+    "eager": [],
+    "preload": []
+  },
+  "resolution": {
+    "version": 1,
+    "strategy": "event-and-size",
+    "budgetGzipBytes": 8192,
+    "usedGzipBytes": 0,
+    "decisions": [
+      {
+        "id": "Card.$resources",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 240,
+        "modules": [
+          "/isle/demos/styles/assets/Card.resources-BzIjjX8k.js"
+        ],
+        "initialBy": [],
+        "styles": [
+          "/isle/demos/styles/assets/Card-BC_Z3IxH.css"
+        ]
+      },
+      {
+        "id": "Card.activate",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 4320,
+        "modules": [
+          "/isle/demos/styles/assets/isle-resume-B0DT78Co.js",
+          "/isle/demos/styles/assets/Card.resources-BzIjjX8k.js",
+          "/isle/demos/styles/assets/Card.activate-D9asJW1r.js"
+        ],
+        "initialBy": [],
+        "styles": [
+          "/isle/demos/styles/assets/Card-BC_Z3IxH.css"
+        ]
+      },
+      {
+        "id": "isle:resume",
+        "requested": "lazy",
+        "loading": "lazy",
+        "reason": "default",
+        "additionalGzipBytes": 0,
+        "modules": [
+          "/isle/demos/styles/assets/isle-resume-B0DT78Co.js"
+        ],
+        "initialBy": []
+      }
+    ]
+  },
+  "buildId": "ecd43be882e6c9f6"
+}

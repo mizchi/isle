@@ -1,0 +1,158 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Isle prototype v0: 記述ガイド"><title>Isle prototype v0: 記述ガイド · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/prototype-guide.html"><meta property="og:title" content="Isle prototype v0: 記述ガイド · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Isle prototype v0: 記述ガイド"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/prototype-guide.md">ソースで読む ↗</a></div><h1 id="isle-prototype-v0-記述ガイド">Isle prototype v0: 記述ガイド</h1>
+<p>初めて利用する場合は<a href="/isle/ja/docs/getting-started.html">はじめる</a>、機能別の手順は<a href="/isle/ja/docs/application-guide.html">アプリを書く</a>を参照してください。このページは現在動く構文と意味規則のリファレンスです。</p>
+<p>UI 言語は TypeScript の式・型を基にした専用構文です。現在は小さな部分言語だけを実装しています。任意の TS、import、関数定義、分岐、list、class、cast、任意 callback は未対応で、暗黙の動的実行へ逃がさずエラーにします。</p>
+<h2 id="ソースを読むための意味規則">ソースを読むための意味規則</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>表記</th>
+<th>この言語の契約</th>
+<th>ソースだけでは決まらないこと</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>component</code></td>
+<td>server/client 両方で使える純粋なサブセット。state・イベントから実行側を推論しない</td>
+<td>配置先と、将来の合成先</td>
+</tr>
+<tr>
+<td><code>client component</code></td>
+<td>SSR した HTML と保存値から再開し、browser で state 初期化を繰り返さない</td>
+<td>復元形式と実際の byte 数</td>
+</tr>
+<tr>
+<td><code>server component</code></td>
+<td>server 側の HTML 描画。state・browser event は持たない</td>
+<td>配信基盤</td>
+</tr>
+<tr>
+<td><code>server action</code></td>
+<td>外部から直接呼べる RPC entry を登録する</td>
+<td>transport adapter の配備先</td>
+</tr>
+<tr>
+<td><code>using request: RequestContext</code></td>
+<td>server の <code>host.context(request)</code> が現在の request から注入する。wire input には含めない</td>
+<td>ログイン方式と principal の生成実装</td>
+</tr>
+<tr>
+<td><code>authorize grant = policy.name(request, input.field)</code></td>
+<td>その field の resource に対する policy の成功が必要</td>
+<td>policy の業務条件。名前だけから所有者判定等を推測しない</td>
+</tr>
+<tr>
+<td><code>effects { db.write }</code></td>
+<td>登録 adapter の宣言 effect がこの集合内であることを要求する</td>
+<td>adapter 本体の副作用を完全に証明するものではない</td>
+</tr>
+<tr>
+<td><code>view</code></td>
+<td>許可する response field の契約</td>
+<td>field の値が公開可能かを一般に自動証明するものではない</td>
+</tr>
+</tbody></table>
+</div><p>これらは言語の意味規則です。構文を読めることと、runtime/host が契約を満たすことの検証は別に行います。</p>
+<h2 id="検査する">検査する</h2>
+<p>Node 24+、pnpm、MoonBit が必要です。プロジェクトで <code>pnpm install</code>、<code>just build-compiler</code> の後に実行します。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>node tools/isle.mjs check path/to/example.isle
+node tools/isle.mjs explain path/to/example.isle
+node tools/isle.mjs emit path/to/example.isle Counter
+node tools/isle.mjs ssr path/to/example.isle Counter &#39;{&quot;initial&quot;:37}&#39;</code></pre></div>
+<p>失敗時は exit 1 と <code>diagnostics</code> を返します。<code>start/end</code> は原文の UTF-16 offset、<code>code</code> は安定した診断種別、<code>hint</code> は次に直す箇所です。文法はまだ変更します。</p>
+<h2 id="props-の宣言">Props の宣言</h2>
+<p>推奨表記は <code>name: type</code> をコンマで並べる形です。component 専用 DSL の名前付き props 宣言で、TS の位置引数の関数として呼び出すものではありません。Vite の <code>mounts</code> は引き続き <code>props: { id: &#39;demo&#39;, title: &#39;Draft&#39; }</code> のように object で渡し、キーの順番は問いません。</p>
+<p>従来の TS 分割代入の表記も使用できます。次の二つは同じ props 契約です。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>export component Label(title: string, count: number) {
+  &lt;p&gt;{title}{count}&lt;/p&gt;
+}</code></pre></div>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>export component Label({ title, count }: { title: string; count: number }) {
+  &lt;p&gt;{title}{count}&lt;/p&gt;
+}</code></pre></div>
+<p>TS の <code>({ title: string })</code> は title を string という変数に改名する分割代入であり、型注釈ではありません。この形を短い型宣言として再解釈しません。<a href="https://www.typescriptlang.org/docs/handbook/2/objects.html">TypeScript の説明</a></p>
+<p>値を渡す props は required の <code>string</code> / <code>number</code> / <code>boolean</code> に限定します。children に限って描画専用の <code>RenderFragment</code> を使えます。個別の名前付き引数・読み取り専用・タグによる合成は <a href="https://flow.org/en/docs/react/component-syntax/">Flow Component Syntax</a>を参考にしています。省略可能な field、デフォルト値、rest、型 alias、分割代入での改名は未対応です。末尾コンマは使えます。引数リストの区切りはコンマで、型 object 内では従来どおりセミコロンも使えます。</p>
+<h2 id="実行側を限定しない-component">実行側を限定しない component</h2>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>export component Heading(title: string) {
+  derive text = title + &quot;!&quot;;
+  &lt;h1&gt;{text}&lt;/h1&gt;
+}</code></pre></div>
+<p><code>client</code> / <code>server</code> を省略した component は、読み取り専用 props・純粋な derive・HTML を扱う共通サブセットです。IR の side は <code>universal</code> で、通常の mount では静的 HTML となり、snapshot・handler・UI runtime を必要としません。client/server どちらの契約とも整合する描画として扱います。</p>
+<p>state は <code>E_COMPONENT_STATE</code>、on block は <code>E_COMPONENT_EVENT</code> で拒否します。利用する場合は <code>client component</code> を明示します。schema Form も client 専用です。純粋な derive から remote を呼ぶことや、イベント payload を参照することはできません。別の component は <code>&lt;Label title=&quot;Text&quot; count={5} /&gt;</code> の形で配置します。<a href="/isle/ja/docs/composition.html">入れ子・children・実行側の制約</a>を参照してください。</p>
+<h2 id="client-component">Client component</h2>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>export client component Counter(initial: number) {
+  state count: number = initial;
+  derive doubled: number = count * 2;
+
+  &lt;button class=&quot;counter&quot;&gt;
+    on click { count += 1; }
+    {count} / {doubled}
+  &lt;/button&gt;
+}</code></pre></div>
+<ul>
+<li>props は <code>Counter(initial: number)</code> の形で宣言する読み取り専用の名前付き値です。複数は <code>Editor(id: string, title: string)</code>。引数なしは <code>Counter()</code>。</li>
+<li><code>state</code> は mutable な保存対象候補です。初期化は SSR で行い、resume 時は再実行しません。</li>
+<li><code>derive</code> は純粋な式です。依存は解析され、循環を拒否します。</li>
+<li>型は <code>number/string/boolean</code>。式は literal、変数、括弧、<code>+ - * /</code>。型注釈を省略した state は初期値から推論します。</li>
+<li>template は一つの HTML root。通常の要素・text・<code>{式}</code>、<code>class/id/title/type/name/value/role/aria-*/data-*</code> などの属性を使えます。<code>data-isle-*</code> は予約です。</li>
+<li><code>a</code> の <code>href</code> は不変な string とし、relative / HTTP(S) / mailto / tel を使えます。危険な scheme と制御文字を拒否し、props の URL は SSR 時にも検査します。client の制御領域内では literal なリンク先に限定します。</li>
+<li>空白だけの text fragment（改行・字下げ等）は出力しません。文字を含む text は原文を保持し、通常の HTML の空白規則で表示します。式の間の <code>/</code> も保持します。表示上の改行には <code>&lt;br&gt;</code> 等を使います。<code>pre</code> の厳密な whitespace-preserving 仕様は未確定です。</li>
+<li><code>on click increment { ... }</code> は親要素の event handler と遅延チャンクの境界です。名前は省略でき、<code>on click { ... }</code> も使えます。<code>=</code>、<code>+=</code>、<code>-=</code> で state を変更します。props と derive は書換不可です。</li>
+<li>同期 handler の中の state 更新が終わったら、影響する binding を生成済みコードで更新します。</li>
+</ul>
+<p><code>on click async save { ... }</code> の <code>async</code> は本文の await を表します。名前・分割・計測の詳細は <a href="/isle/ja/docs/chunk-profiling.html">チャンクとプロファイル</a> を参照してください。</p>
+<p>derive の自己参照や間接循環は <code>E_DERIVE_CYCLE</code> になります。例えば <code>derive a = b + 1; derive b = a + 1;</code> は、<code>Counter.a -&gt; Counter.b -&gt; Counter.a</code> という閉じた経路を返します。<code>start/end</code> は循環を閉じる参照の UTF-16 位置、<code>cycle</code> は経路、<code>related</code> は各宣言の位置です。template から未使用でも、最適化前に検査します。forward reference や共有する依存は循環でなければ許可され、依存先を先に評価する順序になります。</p>
+<p>parser から独立した graph の検査には <code>checkDependencies(graph)</code> と <code>node tools/isle.mjs dependencies graph.json</code> を使えます。詳細は <a href="/isle/ja/docs/design.html#24-循環参照の検出と診断">設計 §2.4</a> を参照してください。</p>
+<p>コンパイル時に確定する不変 state は定数伝播し、HTML の固定文字列を snapshot / handler に重複して入れません。文字列の一部だけが変わる場合も Text node は一つに保ち、可変範囲を更新します。再開用 root は全イベント・更新先を含む最小の祖先になり、component の root element と異なる場合があります。<code>explain</code> の analysis で保存 slot・初期化・文字範囲・DOM root を確認できます。<a href="/isle/ja/docs/runtime-size.html">チューニングと測定</a>を参照してください。</p>
+<p>client component も初期 HTML は SSR されます。browser には必要な state/props と handler/update code を渡し、初期 setup を再実行しません。イベントは click/input/change/submit/invalid です。入力 entry では <code>event.value</code>、checkbox/radio では <code>event.checked</code>、標準検証には <code>event.invalid</code> / <code>event.validationMessage</code> を使います。Event 全体を保存・参照せず、発生時点の primitive だけを渡します。<a href="/isle/ja/docs/forms.html">Form の構文・標準制約・アクセシビリティ検査</a>を参照してください。</p>
+<p>作業メモの開閉には標準の <code>details</code> / <code>summary</code> も使えます。ネイティブの開閉に framework handler は不要です。<a href="https://github.com/mizchi/isle/blob/main/benchmarks/dashboard/README.md">64項目のダッシュボード</a>では、静的な説明文とこれらの標準要素を残し、計算・保存する部分だけを再開します。</p>
+<p>ブラウザー向け出力は ES2023 と標準 DOM / ESM / fetch / AbortController を前提にします。互換 polyfill は含めません。通常の client 出力に MoonBit/Wasm runtime は不要です。<code>disabled={false}</code> は SSR では属性を省略し、再開後は標準の <code>disabled</code> property を更新します。</p>
+<p>復元データは <a href="/isle/source/lib/client-contracts.d.ts">client-contracts.d.ts</a> の v2 です。snapshot は <code>[2, schemaId, scopeId, values[]]</code> で、slot の並びは codegen の <code>fields</code> と一致します。生成 handler は <code>run(values, set, text, attribute, remote, event)</code> の位置引数を使い、使わない末尾引数は省略します。現在の <code>values</code> は <a href="/isle/ja/docs/code-references.html">CodeRef</a> の捕捉 index に対応する local 配列です。MoonBit→JS の ProgramIR は引き続き v1 です。snapshot / registry / handler は同じビルドで配備し、旧形式や異なる schemaId の復元はエラーにします。</p>
+<p>Vite plugin は production で未使用 capability と診断を除去します。<code>isle({ ..., diagnostics: true })</code> で詳細エラーと controller の <code>metrics</code> を残せます。既定の production では短いエラーコードを返し、<code>metrics</code> は <code>undefined</code> です。<code>dispose</code> / <code>settled</code> / <code>close</code> / <code>onError</code> は両モードで使えます。開発時は全 capability を含め、HMR で属性や remote を追加できます。</p>
+<p>起動は <a href="/isle/ja/docs/island-loader.html">island loader</a> が担当します。HTML の <code>&lt;!--isle:ssr--&gt;</code> へ描画し、再開する mount があるときだけ plugin が loader を追加します。既定の auto では初回に loader だけを実行し、入力・送信の依存を予算内で先読みします。最初の操作で未取得の runtime と handler を並列取得し、その island だけを復元します。ページ全体または mount に <code>mode: &#39;ssr&#39;</code> を指定すると HTML のみを描画し、復元データ・event marker・動的 chunk を省略します。handler のない component も自動で静的になります。起動 hook が必要な場合は <code>clientEntry</code> で指定した module から <code>virtual:isle-loader</code> の <code>boot()</code> を呼びます。</p>
+<p>既定の <code>loading: &#39;auto&#39;</code> は入力・送信イベントの依存を、生成後の gzip サイズと追加予算から modulepreload します。クリックは操作時の取得を保ちます。<code>lazy</code> / <code>preload</code> / <code>eager</code> の明示指定もできます。preload は標準 modulepreload、eager は module 評価までで、操作前に handler を実行しません。SSR 専用指定は loading より優先します。<a href="/isle/ja/docs/resolution-optimizer.html">compiler の計画</a>を参照してください。</p>
+<h2 id="server-component">Server component</h2>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>export server component Heading(title: string) {
+  &lt;h1&gt;{title}&lt;/h1&gt;
+}</code></pre></div>
+<p>server component には state と on を置けません。HTML と props を描画し、他の server / universal / client component を入れ子にできます。一般の async server render は未実装です。</p>
+<h2 id="公開-action">公開 action</h2>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>schema RenameInput { id: string; title: string; }
+view DocumentView { id: string; title: string; }
+
+export server action renameDocument(input: RenameInput): DocumentView
+  using request: RequestContext
+  authorize grant = policy.documentEditor(request, input.id)
+  effects { db.write }
+{
+  return await documents.rename(grant, input.title);
+}</code></pre></div>
+<p><code>schema</code> は wire の入力、<code>view</code> は出力 field の契約です。どちらも現在は primitive field の record のみ。action の return 型は TypeScript と同じ <code>: DocumentView</code>。以前の設計案の <code>-&gt;</code>、<code>Result</code>、<code>expose</code> は v0 の構文には含みません。</p>
+<p>field には <code>minLength(3)</code> / <code>maxLength(80)</code> / <code>min(18)</code> / <code>max(120)</code> / <code>integer()</code> / <code>equals(true)</code> / <code>sameAs(other)</code> / <code>pattern(&quot;...&quot;)</code> / <code>format(&quot;email&quot;)</code> を付けられます。非同期検証は server action の authorize の後に <code>validate qualified.validator effects { db.read }</code> と宣言します。同じ schema の action ごとに検証を変えられます。<a href="/isle/ja/docs/schema-contracts.html">Schema IR の責務</a>、Form への接続・field error・reset は <a href="/isle/ja/docs/forms.html#共通-schema-を使う-form">Form ガイド</a>を参照してください。</p>
+<p><code>using request</code> は server が注入する context、<code>authorize grant</code> は対象 resource の許可、<code>effects</code> は宣言する能力です。body は <code>return await qualified.operation(grant, input.field, ...);</code> に限定します。最初の引数は必ず grant。policy は <code>qualified.policy(request, input.resourceField)</code> の形です。<code>resourceField</code> は input schema 内の field で、<code>id</code> は必須の固定名ではありません。<code>input.noteId</code> 等も使えます。</p>
+<p><code>check</code> は policy/operation 名の構文と境界を検査し、host の実登録は調べません。名前と schema を持つ source だけを記述できます。実行時には server host へ同名の policy/operation を登録する必要があり、未登録なら処理は成功しません。通常の server helper の自動公開は行いません。</p>
+<p>client の async handler は、次の明示 RPC と出力 field の取得を使えます。action と component は v0 では同じファイルに置きます。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>export client component Editor(id: string, initial: string) {
+  state title = initial;
+  &lt;button&gt;
+    on click async {
+      title = (await remote renameDocument({ id, title })).title;
+    }
+    {title}
+  &lt;/button&gt;
+}</code></pre></div>
+<p><code>async</code> は中断、<code>remote</code> は server 越境です。<code>await</code> はこの形だけを許し、任意 Promise を保存しません。失敗は runtime の error hook へ渡り、state と DOM を更新しません。component 破棄後の client 更新は中止しますが、server 変更の rollback はしません。</p>
+<h2 id="host-を登録する">Host を登録する</h2>
+<p>実例は <a href="/isle/source/examples/counter/host.mjs">examples/counter/host.mjs</a>、公開する形は <a href="/isle/source/lib/contracts.d.ts">ServerHost</a> を参照してください。Vite plugin の <code>host</code> option に次の対応を渡します。</p>
+<ul>
+<li><code>context(request)</code>: server が検証した subject/tenant。wire の値から principal を選びません。</li>
+<li><code>policies[qualifiedName](context, resource)</code>: この request の対象操作を許す boolean。v0 の commit 直前は同期関数を要求します。</li>
+<li><code>operations[qualifiedName]</code>: 対応する policy 名、effect 集合、任意の async prepare、同期の commit。prepare で書込みを行わず、commit の直前に policy を再検査します。</li>
+</ul>
+<p><code>lib/server.mjs</code> の <code>createActionHandler(ir, host)</code> は標準 Request→Response の入口です。cookie による browser action を想定して POST / same-origin を要求し、JSON と型付き native FormData を受け取ります。デモでは context を server 固定値にし、実認証として提供していません。wire の schema/view は余分な field も拒否します。公開 error は <code>invalid_input</code> / <code>validation_failed</code> / <code>forbidden</code> / <code>internal_error</code> 等の短いタグです。</p>
+<h2 id="保証の範囲">保証の範囲</h2>
+<p>compiler は構文・名前・依存・実行側・境界契約を検査します。server runtime は直接 request に対しても入力、request principal、resource policy、出力を検査します。host の prepare は副作用を持たず、commit は同期の in-memory mutation であることを信頼します。実 DB transaction、実ログイン、完全な情報フロー保証、TypeScript の Content Mapper はまだ実装していません。</p>
+<p>MoonBit/veri の有限モデル、<code>moon prove</code> の小さい契約、browser のテストはそれぞれ対象が違います。モデル検査成功を runtime や compiler 全体の証明とは呼びません。</p>
+<h2 id="template-control-flow">Template control flow</h2>
+<p><code>@if (boolean) { ... } @else if (boolean) { ... } @else { ... }</code>、<code>@switch (tag) { @case &quot;value&quot;: { ... } @default: { ... } }</code>、<code>@for (const item of items; index i; key item.id) { ... } @empty { ... }</code>、同期の <code>@try { ... } @catch (error) { ... }</code> を利用できます。全 arm を型検査した後、定数で到達不能と分かる arm を取り除きます。</p>
+<p>配列は <code>Item[]</code> / <code>readonly Item[]</code>、レコードは既存 schema / view で型を付けます。<code>state items: Item[] = initial;</code>、<code>items = [items[1], items[0]];</code>、空配列 <code>[]</code>、文脈で型が決まるレコード literal を扱います。行と index は readonly。key は行だけに依存する string または safe integer とし、重複は state / DOM の commit 前に拒否します。</p>
+<p>実行できる例は <a href="/isle/source/evals/scenarios/control-flow/fixture.isle">control-flow/fixture.isle</a>。独立 client owner、schema Form、RenderFragment などに関する現在の制約と、resource / <code>@pending</code> の未実装範囲は <a href="/isle/ja/docs/control-flow.html">制御構文の契約</a>を参照してください。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

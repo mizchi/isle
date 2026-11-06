@@ -1,0 +1,33 @@
+{
+  "../../isle:resume": {
+    "file": "assets/isle-resume-RP_kfqgZ.js",
+    "name": "isle-resume",
+    "src": "../../isle:resume",
+    "isEntry": true,
+    "dynamicImports": [
+      "../../virtual:isle-handler-group/Signup.g0",
+      "../../virtual:isle-handler-group/Signup.g1"
+    ]
+  },
+  "../../virtual:isle-handler-group/Signup.g0": {
+    "file": "assets/Signup.g0-zCPTxrV_.js",
+    "name": "Signup.g0",
+    "src": "../../virtual:isle-handler-group/Signup.g0",
+    "isEntry": true
+  },
+  "../../virtual:isle-handler-group/Signup.g1": {
+    "file": "assets/Signup.g1-DVhN_WU7.js",
+    "name": "Signup.g1",
+    "src": "../../virtual:isle-handler-group/Signup.g1",
+    "isEntry": true
+  },
+  "index.html": {
+    "file": "assets/index-CXn0ZDmJ.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "dynamicImports": [
+      "../../isle:resume"
+    ]
+  }
+}

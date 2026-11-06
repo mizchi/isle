@@ -1,0 +1,159 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Widget の共通設計"><title>Widget の共通設計 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/widget-architecture.html"><meta property="og:title" content="Widget の共通設計 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Widget の共通設計"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/widget-architecture.md">ソースで読む ↗</a></div><h1 id="widget-の共通設計">Widget の共通設計</h1>
+<p>widget をビルド成果物、root への mount、公開方法に分ける。アプリのデータ・CSS・認可、Custom Element の接続 lifecycle、HTTP 配信基盤を互いに依存させない。</p>
+<div class="code-block"><div class="code-language">mermaid</div><pre tabindex="0"><code>flowchart LR
+  DSL[Isle source + mounts + widget config] --&gt; Vite[Vite / Rolldown]
+  Vite --&gt; Descriptor[WidgetDescriptor]
+  Vite --&gt; Code[mount ESM + handler chunks]
+  Descriptor --&gt; Mount[mountWidget on ShadowRoot]
+  Code --&gt; Mount
+  CE[Custom Element adapter] --&gt; Mount
+  Manual[Imperative caller] --&gt; Mount
+  Mount --&gt; HTTP[Request / Response action handler]
+  HTTP --&gt; Host[ServerHost: context / policy / operation]
+  Worker[Workers adapter] --&gt; HTTP
+  Node[Node adapter] --&gt; HTTP</code></pre></div>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>層</th>
+<th>公開契約</th>
+<th>責務</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>wire</td>
+<td><a href="/isle/source/runtime/widget-contract.d.mts"><code>WidgetDescriptor</code></a></td>
+<td>runtime の版と配布モード、HTML、module、preload、action directory。検査と URL 解決は DOM に依存しない</td>
+</tr>
+<tr>
+<td>build</td>
+<td><a href="/isle/source/lib/vite.d.mts"><code>IsleOptions.widget</code></a></td>
+<td>同じ IR と SSR renderer から descriptor / loader / mount ESM を生成</td>
+</tr>
+<tr>
+<td>mount</td>
+<td><a href="/isle/source/runtime/widget-mount.d.mts"><code>mountWidget()</code> / <code>WidgetModule</code></a></td>
+<td>配置、コード準備、resume controller、キャンセルと所有権</td>
+</tr>
+<tr>
+<td>element</td>
+<td><a href="/isle/source/runtime/widget.d.mts"><code>defineWidget()</code></a></td>
+<td>visibility、必須寸法、接続・切断、ready / error 通知</td>
+</tr>
+<tr>
+<td>embed</td>
+<td><a href="/isle/source/lib/widget.d.mts"><code>renderWidgetEmbed()</code></a></td>
+<td>初期サイズ予約、ラベル、source と loader、任意のタグ名</td>
+</tr>
+<tr>
+<td>HTTP</td>
+<td><a href="/isle/source/lib/server.d.mts"><code>createActionHandler()</code></a></td>
+<td>共通 routing / CORS と入力検証、認証・認可・operation の呼び出し</td>
+</tr>
+<tr>
+<td>hosting</td>
+<td><a href="/isle/source/lib/worker.d.mts"><code>createWorkerHandler()</code></a></td>
+<td>RPC と ASSETS の振り分け。Cloudflare 固有の binding をここだけで扱う</td>
+</tr>
+</tbody></table>
+</div><p>MoonBit frontend、ProgramIR、snapshot v2、CodeRef、handler の位置引数 ABI は変更しない。例が benchmark のデータを使っても、共通 lib/ / runtime/ は dashboard のモデルを import しない。</p>
+<h2 id="vite-から直接生成する">Vite から直接生成する</h2>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>isle({
+  entry: &#39;/project/app.isle&#39;,
+  mounts: [{ component: &#39;Counter&#39;, props: { initial: 17 }, label: &#39;Counter&#39; }],
+  loading: &#39;eager&#39;,
+  widget: {
+    runtime: &#39;shared&#39;, // default。独立した runtime は &#39;standalone&#39;
+    tagName: &#39;demo-counter&#39;,
+    descriptorFile: &#39;components/counter.json&#39;,
+    loaderFile: &#39;sdk/counter.js&#39;,
+    actionBaseURL: &#39;../api/actions/&#39;,
+    template: &#39;&lt;main&gt;&lt;h1&gt;Counter&lt;/h1&gt;&lt;!--isle:ssr--&gt;&lt;/main&gt;&#39;,
+    css: &#39;main{font:16px system-ui;padding:24px}&#39;,
+  },
+});</code></pre></div>
+<p>template は <code>&lt;!--isle:ssr--&gt;</code> を一つ含む trusted fragment、CSS は native Shadow DOM 用に明示して書く。ページと widget は同じ SSR renderer を使い、label は escape する。生成後の document の切り出し、script 削除、body / :root selector の書き換えは行わない。</p>
+<p>Vite plugin が loader と mount module を chunk として登録するため、アプリごとの app.mjs / embed.mjs や追加 entry 設定は不要。descriptor の module / preload は Vite の page base に依存しない相対 URL として出力し、配信先の prefix へ移動できる。</p>
+<h2 id="配置と-wire-契約">配置と wire 契約</h2>
+<div class="code-block"><div class="code-language">json</div><pre tabindex="0"><code>{
+  &quot;version&quot;: 2,
+  &quot;runtime&quot;: { &quot;version&quot;: &quot;0.0.1&quot;, &quot;mode&quot;: &quot;shared&quot; },
+  &quot;html&quot;: &quot;&lt;main&gt;…SSR and inert snapshots…&lt;/main&gt;&quot;,
+  &quot;module&quot;: &quot;../assets/isle-widget-mount-HASH.js&quot;,
+  &quot;preload&quot;: [&quot;../assets/isle-resume-HASH.js&quot;],
+  &quot;actions&quot;: &quot;../api/actions/&quot;
+}</code></pre></div>
+<p>相対 URL は descriptor 自身を基準に解決する。<code>/package/components/counter.json</code> の <code>../api/actions/</code> は <code>/package/api/actions/</code> になる。module / preload は同一 provider に限定する。actions は別の HTTP(S) API origin も明示でき、その API が publisher に対する CORS と認可を担当する。action directory の query / fragment は拒否する。</p>
+<p>wire の <code>version: 2</code> と runtime の release version は別の値。runtime の版・配布モードが SDK と完全一致しない descriptor は、HTML の展開・preload・module import より前に拒否する。runtime 情報のない v1 descriptor も拒否する。読み込んだ mount module の <code>runtimeIdentity</code> も、<code>mount()</code> を呼ぶ前に照合する。native import の module 評価自体はこの照合より先に起こるため、trusted compiler output を前提とする。</p>
+<p>actions 省略時は <code>./__isle/</code>。<code>module: null</code> は静的出力で、その場合 preload は空に限定する。静的 widget は Custom Element の表示用 transport だけを使い、UI runtime、handler、snapshot を出力・取得しない。通常の SSR ページは browser JS なしの出力を維持する。</p>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>renderWidgetEmbed({
+  descriptorURL: &#39;https://cdn.example/package/components/counter.json&#39;,
+  loaderURL: &#39;https://cdn.example/package/sdk/counter.js&#39;,
+  tagName: &#39;demo-counter&#39;, // loader が登録する名前と一致させる
+  href: &#39;https://cdn.example/package/&#39;,
+  title: &#39;Counter&#39;, width: 320, height: 280,
+});</code></pre></div>
+<p><code>src: &#39;https://provider.example/&#39;</code> は widget.json / widget.js を使う互換用の短縮形。明示的 descriptor と同時には指定しない。同じ Window でタグ名が競合するアプリや版には、異なる tagName を使う。</p>
+<h2 id="複数-sdk-の共有ランタイム">複数 SDK の共有ランタイム</h2>
+<p><code>runtime: &#39;shared&#39;</code> が既定値。埋め込み SDK は小さい bootstrap とし、同じ JavaScript realm（通常は一つの Window）の <code>Symbol.for(&#39;isle.runtime.registry/1&#39;)</code> を使う。最初の SDK が runtime の版を固定し、配信 origin や URL が違っても、同じ版・ABI の読み込み Promise と実装を一つにする。</p>
+<div class="code-block"><div class="code-language">mermaid</div><pre tabindex="0"><code>flowchart LR
+  A[SDK A] --&gt; Pool[Page registry]
+  B[SDK B] --&gt; Pool
+  Pool --&gt; Transport[Shared transport]
+  Pool --&gt; Engine[Shared UI engine]
+  Transport --&gt; R1[Root A: private state]
+  Transport --&gt; R2[Root B: private state]
+  Engine --&gt; R1
+  Engine --&gt; R2</code></pre></div>
+<ul>
+<li><code>isle/widget/3</code> は Custom Element / imperative mount の transport。descriptor-relative な CSS と <code>preloadStyles</code>、eager CSS の準備に対応する。descriptor の wire version は2のまま。</li>
+<li><code>isle/client/6:debug=0:profile=0</code> は loader / resume / Form / 入れ子の owner 管理、閉じた構造化値、region commit bridge、resource setup と自動破棄、CSS-ready の適用ゲートを持つ UI エンジン。共有 widget ビルドは機能一式を含め、最初の小さなアプリの機能削減を他のアプリへ持ち込まない。</li>
+<li>state、registry、action transport、event listener は root ごとに分離する。一つの close は別 root や共通エンジンを閉じない。</li>
+<li>版は文字列の完全一致。semver range は使わず、patch の違いも拒否する。同じ family の ABI、diagnostics / profile の異なる variant も拒否する。SDK は vendor の取得・タグ定義より前に必要な版・ABI をまとめて確保する。</li>
+<li>不一致はその SDK の初期化を失敗させる。すでに動いている widget は維持し、別 runtime への自動切り替えは行わない。</li>
+<li>vendor の版・ABI・必須 export を検査する。初期化に失敗した entry は破棄して同じ版で再試行できるが、ページの版・ABI の固定は解除しない。古い registry protocol も拒否する。同じ Symbol key を維持し、非対応 SDK と別 pool を作って併走しない。</li>
+</ul>
+<p>共有 vendor は factory が選ばれたときにだけ import する。manifest の eager preload で全 provider の vendor を先取りしない。SDK の bootstrap、app 固有 module、descriptor の取得自体が全て一つになるという意味ではない。</p>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>import { sharedRuntimeInfo } from &#39;https://provider.example/widget.js&#39;;
+console.table(sharedRuntimeInfo()); // version / ABI / loading・ready の snapshot</code></pre></div>
+<p>14 root の同時 mount と、同じ版の異なるビルドを組み合わせた Form 操作でも transport / UI エンジンをそれぞれ一回だけ取得・評価した。<a href="https://github.com/mizchi/isle/blob/main/evals/reports/shared-runtime.md">共有ランタイムの評価</a>を参照。通常の widget を有効にしないページは従来の capability 別 tree shaking を維持する。static descriptor は UI エンジンを取得しない。</p>
+<h2 id="standalone-配布">standalone 配布</h2>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>isle({
+  entry, mounts,
+  widget: { runtime: &#39;standalone&#39;, tagName: &#39;my-counter-v2&#39; },
+});</code></pre></div>
+<p>standalone SDK は自身の transport / UI runtime を使い、共有 registry を参照・作成しない。共有版とは異なる版でも同じページへ配置できる。機能別の tree shaking を使い、Vite / Rolldown のコード分割と manifest による並列取得を維持する。配布ディレクトリと必要な API を配信する形であり、単一ファイル化やオフライン実行の指定ではない。</p>
+<p>既定のタグ名は shared が <code>isle-widget</code>、standalone が <code>isle-widget-standalone</code>。Custom Element registry は Window ごとに一つなので、異なる版の standalone もそれぞれ別のタグ名でビルドする。同名の定義に版・配布モードの不一致があれば拒否する。命令的な <code>mountWidget()</code> でも SDK の import はタグを定義する。</p>
+<p>runtime の版は <code>package.json.version</code> が既定値。配布版を指定する場合は <code>widget.runtimeVersion</code> に正確な版を設定する。これは同じ版を名乗る任意の改変コードの同一性を保証する hash ではない。ビルドごとに同じ配布版の実装・ABI を揃える。版の fixture は <code>0.0.1-fixture</code> のように明示する。</p>
+<p>埋め込み helper の <code>runtime: &#39;standalone&#39;</code> は既定のタグ名を選ぶ。URL の切り替えは caller が行う。</p>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>renderWidgetEmbed({
+  src: &#39;https://provider.example/standalone/&#39;, runtime: &#39;standalone&#39;,
+  title: &#39;Counter&#39;, width: 320, height: 280,
+});</code></pre></div>
+<p>現在の評価は<a href="https://github.com/mizchi/isle/blob/main/evals/reports/runtime-distributions.md">版の固定と standalone 配布</a>を参照。</p>
+<h2 id="命令的な-mount-と所有権">命令的な mount と所有権</h2>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>import { mountWidget } from &#39;https://cdn.example/package/sdk/counter.js&#39;;
+const abort = new AbortController();
+const controller = await mountWidget(
+  container.attachShadow({ mode: &#39;open&#39; }),
+  &#39;https://cdn.example/package/components/counter.json&#39;,
+  { signal: abort.signal, onError: console.error },
+);
+await controller.settled();
+controller.close(); // または abort.abort()</code></pre></div>
+<p>寸法と配置は caller が管理する。同じ root には同時に一つだけ mount でき、二重 mount は DOM を書き換える前に拒否する。root 上の Symbol に所有権を記録し、異なる版の standalone と共有版の間でも検査する。これは runtime の共有ではない。close は idempotent で、SSR DOM を残して listener / runtime の所有権を解放する。close 後は同じ root へ再度 mount できる。</p>
+<p>Abort は未完了の mount の所有権も即座に解放する。native import は停止できないため、await 後にも signal を検査し、古い処理が新しい mount へ書き込まないようにする。Custom Element は同じ mount を使い、実際の切断時に abort、同期 DOM 移動では接続を保持する。</p>
+<h2 id="http-と配信基盤">HTTP と配信基盤</h2>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>const handle = createActionHandler(contracts, host, {
+  actionBasePath: &#39;/package/api/actions/&#39;,
+  allowedOrigins: [&#39;https://publisher.example&#39;],
+});
+// Node / edge adapter で Request を渡し、返された Response を配信する。</code></pre></div>
+<p>path / method / Origin / CORS preflight は共通 HTTP envelope、schema / policy / operation は server executor に分けた。Workers と Node は同じ handler を使う。既定 path は <code>/__isle/</code>、Origin の既定値は同一 origin 限定。公開デモの <code>&#39;*&#39;</code> は明示設定で、cross-origin Cookie / Authorization は拒否する。</p>
+<p>Shadow DOM は JS の権限境界にはしない。trusted template / CSS / compiler output を前提とし、任意 HTML の sanitizer は提供しない。認証・永続化は ServerHost の責務であり、origin list で代替しない。</p>
+<p><a href="/isle/source/examples/portable-widget/vite.config.mjs"><code>examples/portable-widget/</code></a> は別アプリの Counter / Editor と static Notice を、Node の /portable/ 以下から配信する。同じ plugin 設定でカスタムタグ、nested descriptor、SDK、独自 RPC path を使い、Custom Element と imperative mount の両方を検証する。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just widget-check        # Workers + 複数 origin の Node SDK、unit、16 E2E
+just widget-portable-dev # http://127.0.0.1:8793/portable/
+just ci                  # 共通 compiler / runtime / models / a11y</code></pre></div>
+<p><a href="/isle/ja/docs/worker-widget.html">Workers の利用手順</a>、<a href="https://github.com/mizchi/isle/blob/main/evals/reports/widget-refactor.md">一般化の評価</a>も参照。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

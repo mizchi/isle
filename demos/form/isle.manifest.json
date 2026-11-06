@@ -1,0 +1,312 @@
+{
+  "version": 1,
+  "references": {
+    "isle:resume": {
+      "ref": [
+        "/isle/demos/form/assets/isle-resume-RP_kfqgZ.js",
+        "resume",
+        []
+      ],
+      "chunk": "assets/isle-resume-RP_kfqgZ.js",
+      "requires": [],
+      "kind": "runtime",
+      "loading": "lazy"
+    },
+    "Signup.consent": {
+      "ref": [
+        "/isle/demos/form/assets/Signup.g1-DVhN_WU7.js",
+        "h1",
+        [
+          1
+        ]
+      ],
+      "chunk": "assets/Signup.g1-DVhN_WU7.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "eca092feff6a448b",
+      "event": "change",
+      "async": false,
+      "captureNames": [
+        "accepted"
+      ],
+      "writes": [
+        "accepted"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 912,
+          "line": 20,
+          "column": 9
+        },
+        "end": {
+          "offset": 959,
+          "line": 20,
+          "column": 56
+        }
+      },
+      "loading": "preload"
+    },
+    "Signup.edit": {
+      "ref": [
+        "/isle/demos/form/assets/Signup.g1-DVhN_WU7.js",
+        "h0",
+        [
+          0,
+          2,
+          3
+        ]
+      ],
+      "chunk": "assets/Signup.g1-DVhN_WU7.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "eca092feff6a448b",
+      "event": "input",
+      "async": false,
+      "captureNames": [
+        "email",
+        "invalid",
+        "error"
+      ],
+      "writes": [
+        "email",
+        "invalid",
+        "error"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 519,
+          "line": 13,
+          "column": 7
+        },
+        "end": {
+          "offset": 615,
+          "line": 13,
+          "column": 103
+        }
+      },
+      "loading": "preload"
+    },
+    "Signup.report": {
+      "ref": [
+        "/isle/demos/form/assets/Signup.g0-zCPTxrV_.js",
+        "h1",
+        [
+          2,
+          3
+        ]
+      ],
+      "chunk": "assets/Signup.g0-zCPTxrV_.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "eca092feff6a448b",
+      "event": "invalid",
+      "async": false,
+      "captureNames": [
+        "invalid",
+        "error"
+      ],
+      "writes": [
+        "invalid",
+        "error"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 622,
+          "line": 14,
+          "column": 7
+        },
+        "end": {
+          "offset": 701,
+          "line": 14,
+          "column": 86
+        }
+      },
+      "loading": "preload"
+    },
+    "Signup.save": {
+      "ref": [
+        "/isle/demos/form/assets/Signup.g0-zCPTxrV_.js",
+        "h0",
+        [
+          0,
+          4
+        ]
+      ],
+      "chunk": "assets/Signup.g0-zCPTxrV_.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "eca092feff6a448b",
+      "event": "submit",
+      "async": false,
+      "captureNames": [
+        "email",
+        "submitted"
+      ],
+      "writes": [
+        "submitted"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 220,
+          "line": 8,
+          "column": 5
+        },
+        "end": {
+          "offset": 257,
+          "line": 8,
+          "column": 42
+        }
+      },
+      "loading": "preload"
+    }
+  },
+  "chunks": {
+    "assets/index-CXn0ZDmJ.js": {
+      "url": "/isle/demos/form/assets/index-CXn0ZDmJ.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/isle-resume-RP_kfqgZ.js"
+      ],
+      "bytes": 1886,
+      "gzipBytes": 995
+    },
+    "assets/isle-resume-RP_kfqgZ.js": {
+      "url": "/isle/demos/form/assets/isle-resume-RP_kfqgZ.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/Signup.g0-zCPTxrV_.js",
+        "assets/Signup.g1-DVhN_WU7.js"
+      ],
+      "bytes": 4467,
+      "gzipBytes": 2077
+    },
+    "assets/Signup.g0-zCPTxrV_.js": {
+      "url": "/isle/demos/form/assets/Signup.g0-zCPTxrV_.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 177,
+      "gzipBytes": 143
+    },
+    "assets/Signup.g1-DVhN_WU7.js": {
+      "url": "/isle/demos/form/assets/Signup.g1-DVhN_WU7.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 221,
+      "gzipBytes": 165
+    }
+  },
+  "loading": {
+    "eager": [],
+    "preload": [
+      "Signup.consent",
+      "Signup.edit",
+      "Signup.report",
+      "Signup.save"
+    ]
+  },
+  "resolution": {
+    "version": 1,
+    "strategy": "event-and-size",
+    "budgetGzipBytes": 8192,
+    "usedGzipBytes": 2385,
+    "decisions": [
+      {
+        "id": "Signup.consent",
+        "requested": "auto",
+        "loading": "preload",
+        "reason": "input",
+        "additionalGzipBytes": 2242,
+        "modules": [
+          "/isle/demos/form/assets/isle-resume-RP_kfqgZ.js",
+          "/isle/demos/form/assets/Signup.g1-DVhN_WU7.js"
+        ],
+        "initialBy": [
+          "Signup.consent",
+          "Signup.edit"
+        ]
+      },
+      {
+        "id": "Signup.edit",
+        "requested": "auto",
+        "loading": "preload",
+        "reason": "input",
+        "additionalGzipBytes": 0,
+        "modules": [
+          "/isle/demos/form/assets/isle-resume-RP_kfqgZ.js",
+          "/isle/demos/form/assets/Signup.g1-DVhN_WU7.js"
+        ],
+        "initialBy": [
+          "Signup.consent",
+          "Signup.edit"
+        ]
+      },
+      {
+        "id": "Signup.report",
+        "requested": "auto",
+        "loading": "preload",
+        "reason": "form",
+        "additionalGzipBytes": 143,
+        "modules": [
+          "/isle/demos/form/assets/isle-resume-RP_kfqgZ.js",
+          "/isle/demos/form/assets/Signup.g0-zCPTxrV_.js"
+        ],
+        "initialBy": [
+          "Signup.report",
+          "Signup.save"
+        ]
+      },
+      {
+        "id": "Signup.save",
+        "requested": "auto",
+        "loading": "preload",
+        "reason": "form",
+        "additionalGzipBytes": 0,
+        "modules": [
+          "/isle/demos/form/assets/isle-resume-RP_kfqgZ.js",
+          "/isle/demos/form/assets/Signup.g0-zCPTxrV_.js"
+        ],
+        "initialBy": [
+          "Signup.report",
+          "Signup.save"
+        ]
+      },
+      {
+        "id": "isle:resume",
+        "requested": "lazy",
+        "loading": "lazy",
+        "reason": "default",
+        "additionalGzipBytes": 0,
+        "modules": [
+          "/isle/demos/form/assets/isle-resume-RP_kfqgZ.js"
+        ],
+        "initialBy": [
+          "Signup.consent",
+          "Signup.edit",
+          "Signup.report",
+          "Signup.save"
+        ]
+      }
+    ]
+  },
+  "buildId": "ef1d79e3eb6af7d0"
+}

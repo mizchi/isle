@@ -1,0 +1,38 @@
+component Card(title: string, children: RenderFragment) {
+  <section class="panel"><h2>{title}</h2>{children}</section>
+}
+
+component Value(label: string, value: number) {
+  <p class="value">{label}<output aria-live="polite">{value}</output></p>
+}
+
+client component Counter(label: string, initial: number) {
+  state count = initial;
+  <section class="counter">
+    <h3>{label}</h3>
+    <Value label="現在の値" value={count} />
+    <div class="actions">
+      <button type="button">on click increment { count += 1; }増やす</button>
+      <button type="button">on click reset { count = initial; }戻す</button>
+    </div>
+  </section>
+}
+
+client component Parent(seed: number) {
+  state count = seed;
+  <div>
+    <Value label="親の値" value={count} />
+    <button type="button">on click increment { count += 1; }親の値を増やす</button>
+    <div class="children"><Counter label="子 A" initial={seed} /><Counter label="子 B" initial={seed + 10} /></div>
+  </div>
+}
+
+server component Page(seed: number) {
+  <main>
+    <Card title="親と子の状態">
+      <p>親・子 A・子 B の値は、それぞれ独立しています。</p>
+      <Parent seed={seed} />
+    </Card>
+    <Card title="別のカウンター"><Counter label="子 C" initial={seed + 20} /></Card>
+  </main>
+}

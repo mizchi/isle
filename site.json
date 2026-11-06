@@ -1,0 +1,138 @@
+{
+  "base": "/isle/",
+  "repository": "https://github.com/mizchi/isle",
+  "pages": [
+    "index.html",
+    "ja/index.html",
+    "demos/portable-widget/index.html",
+    "examples/index.html",
+    "examples/hello/index.html",
+    "examples/ssr-only/index.html",
+    "examples/partial-updates/index.html",
+    "examples/composition/index.html",
+    "examples/control-flow/index.html",
+    "examples/loading/index.html",
+    "examples/resources/index.html",
+    "examples/styles/index.html",
+    "examples/navigation/index.html",
+    "examples/form/index.html",
+    "examples/schema-form/index.html",
+    "examples/counter/index.html",
+    "examples/layout-contracts/index.html",
+    "examples/portable-widget/index.html",
+    "examples/worker-widget/index.html",
+    "ja/examples/index.html",
+    "ja/examples/hello/index.html",
+    "ja/examples/ssr-only/index.html",
+    "ja/examples/partial-updates/index.html",
+    "ja/examples/composition/index.html",
+    "ja/examples/control-flow/index.html",
+    "ja/examples/loading/index.html",
+    "ja/examples/resources/index.html",
+    "ja/examples/styles/index.html",
+    "ja/examples/navigation/index.html",
+    "ja/examples/form/index.html",
+    "ja/examples/schema-form/index.html",
+    "ja/examples/counter/index.html",
+    "ja/examples/layout-contracts/index.html",
+    "ja/examples/portable-widget/index.html",
+    "ja/examples/worker-widget/index.html",
+    "docs/quick-start.html",
+    "ja/docs/quick-start.html",
+    "ja/docs/index.html",
+    "ja/docs/application-guide.html",
+    "ja/docs/chunk-profiling.html",
+    "ja/docs/code-references.html",
+    "ja/docs/component-declarations.html",
+    "ja/docs/composition.html",
+    "ja/docs/contributing.html",
+    "ja/docs/control-flow.html",
+    "ja/docs/design.html",
+    "ja/docs/formal-methods.html",
+    "ja/docs/forms.html",
+    "ja/docs/getting-started.html",
+    "ja/docs/island-loader.html",
+    "ja/docs/layout-checking.html",
+    "ja/docs/layout-rejections.html",
+    "ja/docs/overview/index.html",
+    "ja/docs/overview/facts.html",
+    "ja/docs/overview/validation.html",
+    "ja/docs/prototype-guide.html",
+    "ja/docs/resolution-optimizer.html",
+    "ja/docs/resource-disposal.html",
+    "ja/docs/runtime-size.html",
+    "ja/docs/schema-contracts.html",
+    "ja/docs/security-boundaries.html",
+    "ja/docs/speculation-rules.html",
+    "ja/docs/static-profiling.html",
+    "ja/docs/style-resolution.html",
+    "ja/docs/temporal-resources.html",
+    "ja/docs/widget-architecture.html",
+    "ja/docs/widgets.html",
+    "ja/docs/worker-widget.html",
+    "reports/layout.html",
+    "404.html"
+  ],
+  "examples": [
+    {
+      "id": "hello",
+      "availability": "live"
+    },
+    {
+      "id": "ssr-only",
+      "availability": "live"
+    },
+    {
+      "id": "partial-updates",
+      "availability": "live"
+    },
+    {
+      "id": "composition",
+      "availability": "live"
+    },
+    {
+      "id": "control-flow",
+      "availability": "live"
+    },
+    {
+      "id": "loading",
+      "availability": "live"
+    },
+    {
+      "id": "resources",
+      "availability": "live"
+    },
+    {
+      "id": "styles",
+      "availability": "live"
+    },
+    {
+      "id": "navigation",
+      "availability": "live"
+    },
+    {
+      "id": "form",
+      "availability": "live"
+    },
+    {
+      "id": "schema-form",
+      "availability": "server"
+    },
+    {
+      "id": "counter",
+      "availability": "server"
+    },
+    {
+      "id": "layout-contracts",
+      "availability": "report"
+    },
+    {
+      "id": "portable-widget",
+      "availability": "widget"
+    },
+    {
+      "id": "worker-widget",
+      "availability": "server"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+import{t as e}from"./_isle_widget-engine-bridge-DXdv33ap.js";var t=[{"00afafb4a417b546":[`number`,`number`]},[`click`],{"Counter.increment":[`./Counter.g0-CMYYoIpx.js`,`h0`,[1]],"Counter.reset":[`./Counter.g0-CMYYoIpx.js`,`h1`,[0,1]]},[],import.meta.url],n=e.resume;export{t as registry,n as resume};

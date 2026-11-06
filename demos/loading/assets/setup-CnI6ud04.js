@@ -1,0 +1,1 @@
+function e({root:e}){e.setAttribute(`data-setup`,`ready`)}export{e as t};

@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "description": "Synthetic production build sizes; gzip level 6 per file, no timing claims.",
+  "rows": [
+    {
+      "name": "Decorated",
+      "snapshotSlots": [
+        "title"
+      ],
+      "snapshot": {
+        "raw": 37,
+        "gzip": 57
+      },
+      "html": {
+        "raw": 1225,
+        "gzip": 578
+      },
+      "javascript": {
+        "raw": 4701,
+        "gzip": 2429
+      },
+      "assetTotal": {
+        "raw": 5926,
+        "gzip": 3007
+      },
+      "chunks": [
+        {
+          "file": "assets/Decorated.append-rMqFqDQ7.js",
+          "raw": 74,
+          "gzip": 92
+        },
+        {
+          "file": "assets/index-DlSuuq0m.js",
+          "raw": 1259,
+          "gzip": 699
+        },
+        {
+          "file": "assets/isle-resume-C5fOx1K3.js",
+          "raw": 3368,
+          "gzip": 1638
+        }
+      ]
+    },
+    {
+      "name": "AttributeOnly",
+      "snapshotSlots": [
+        "locked"
+      ],
+      "snapshot": {
+        "raw": 35,
+        "gzip": 55
+      },
+      "html": {
+        "raw": 446,
+        "gzip": 292
+      },
+      "javascript": {
+        "raw": 4672,
+        "gzip": 2384
+      },
+      "assetTotal": {
+        "raw": 5118,
+        "gzip": 2676
+      },
+      "chunks": [
+        {
+          "file": "assets/AttributeOnly.lock-C0ZNdcWw.js",
+          "raw": 84,
+          "gzip": 96
+        },
+        {
+          "file": "assets/index-ZNKjoWvD.js",
+          "raw": 1259,
+          "gzip": 700
+        },
+        {
+          "file": "assets/isle-resume-CqG92BeC.js",
+          "raw": 3329,
+          "gzip": 1588
+        }
+      ]
+    },
+    {
+      "name": "Aliased",
+      "snapshotSlots": [
+        "base",
+        "copied",
+        "copiedAgain",
+        "count"
+      ],
+      "snapshot": {
+        "raw": 40,
+        "gzip": 55
+      },
+      "html": {
+        "raw": 380,
+        "gzip": 265
+      },
+      "javascript": {
+        "raw": 4701,
+        "gzip": 2415
+      },
+      "assetTotal": {
+        "raw": 5081,
+        "gzip": 2680
+      },
+      "chunks": [
+        {
+          "file": "assets/Aliased.add-CYCixzVs.js",
+          "raw": 80,
+          "gzip": 95
+        },
+        {
+          "file": "assets/index-jSQfoylr.js",
+          "raw": 1259,
+          "gzip": 698
+        },
+        {
+          "file": "assets/isle-resume-vU7R0lCj.js",
+          "raw": 3362,
+          "gzip": 1622
+        }
+      ]
+    },
+    {
+      "name": "Repeated",
+      "snapshotSlots": [
+        "factor",
+        "count"
+      ],
+      "snapshot": {
+        "raw": 33,
+        "gzip": 53
+      },
+      "html": {
+        "raw": 459,
+        "gzip": 301
+      },
+      "javascript": {
+        "raw": 5222,
+        "gzip": 2551
+      },
+      "assetTotal": {
+        "raw": 5681,
+        "gzip": 2852
+      },
+      "chunks": [
+        {
+          "file": "assets/Repeated.add-BTbOGPB-.js",
+          "raw": 316,
+          "gzip": 126
+        },
+        {
+          "file": "assets/index-C7CW3Snu.js",
+          "raw": 1259,
+          "gzip": 698
+        },
+        {
+          "file": "assets/isle-resume-BjF8nJqo.js",
+          "raw": 3647,
+          "gzip": 1727
+        }
+      ]
+    }
+  ]
+}

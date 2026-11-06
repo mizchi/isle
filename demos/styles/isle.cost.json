@@ -1,0 +1,455 @@
+{
+  "version": 1,
+  "coverage": "generated-handler-operations",
+  "exclusions": [
+    "browser style/layout/paint duration",
+    "runtime internals and DOM locator traversal",
+    "network/server duration",
+    "HTTP cache and bootstrap transfer",
+    "host wrappers and metadata script elements"
+  ],
+  "components": [
+    {
+      "component": "Card",
+      "schemaId": "ab2ce805265739b4",
+      "side": "client",
+      "localElements": 4,
+      "childSites": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 1,
+        "bindingLocators": 1,
+        "childOwners": 0
+      },
+      "entries": [
+        {
+          "id": "Card.activate",
+          "component": "Card",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 128,
+            "end": 161
+          },
+          "scope": "one-owner/generated-handler",
+          "captures": [
+            "count"
+          ],
+          "writes": [
+            "count"
+          ],
+          "actions": [],
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 1,
+            "bindingLocators": 1,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          },
+          "phases": [
+            {
+              "phase": "statement:0",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            },
+            {
+              "phase": "patch",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            }
+          ],
+          "updates": [
+            {
+              "id": 0,
+              "kind": "text",
+              "dependencies": [
+                "count"
+              ],
+              "triggeredBy": [
+                "count"
+              ]
+            }
+          ],
+          "reasons": [
+            {
+              "from": "Card.count",
+              "to": "Card.binding:0"
+            }
+          ],
+          "unknownCosts": []
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "Card.activate",
+      "component": "Card",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 128,
+        "end": 161
+      },
+      "scope": "one-owner/generated-handler",
+      "captures": [
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 1,
+        "bindingLocators": 1,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "binaryOperations": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "propertyReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "slotReads": {
+          "kind": "upper-bound",
+          "value": 2
+        },
+        "eventReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textPatchCalls": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "attributePatchCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textConversions": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "remoteCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "createdElements": {
+          "kind": "upper-bound",
+          "value": 0
+        }
+      },
+      "phases": [
+        {
+          "phase": "statement:0",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        },
+        {
+          "phase": "patch",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "updates": [
+        {
+          "id": 0,
+          "kind": "text",
+          "dependencies": [
+            "count"
+          ],
+          "triggeredBy": [
+            "count"
+          ]
+        }
+      ],
+      "reasons": [
+        {
+          "from": "Card.count",
+          "to": "Card.binding:0"
+        }
+      ],
+      "unknownCosts": [],
+      "instances": 1,
+      "code": {
+        "scope": "static-code-closure",
+        "modules": [
+          "/isle/demos/styles/assets/isle-resume-B0DT78Co.js",
+          "/isle/demos/styles/assets/Card.resources-BzIjjX8k.js",
+          "/isle/demos/styles/assets/Card.activate-D9asJW1r.js"
+        ],
+        "styles": [
+          "/isle/demos/styles/assets/Card-BC_Z3IxH.css"
+        ],
+        "bytes": 10214,
+        "gzipBytes": 4320,
+        "dynamicImports": []
+      },
+      "location": {
+        "file": "app.isle",
+        "start": {
+          "offset": 128,
+          "line": 5,
+          "column": 27
+        },
+        "end": {
+          "offset": 161,
+          "line": 5,
+          "column": 60
+        }
+      }
+    }
+  ],
+  "scenario": {
+    "mode": "resume",
+    "mounts": [
+      {
+        "component": "Card",
+        "mode": "resume"
+      }
+    ],
+    "domElements": 4,
+    "resumableOwners": 1,
+    "snapshotSlots": 1,
+    "components": {
+      "Card": {
+        "instances": 1,
+        "resumableInstances": 1
+      }
+    }
+  },
+  "planId": "c3ada2e09d87af25",
+  "code": {
+    "scope": "static-code-closure",
+    "modules": [
+      "/isle/demos/styles/assets/isle-resume-B0DT78Co.js",
+      "/isle/demos/styles/assets/Card.resources-BzIjjX8k.js",
+      "/isle/demos/styles/assets/Card.activate-D9asJW1r.js"
+    ],
+    "styles": [
+      "/isle/demos/styles/assets/Card-BC_Z3IxH.css"
+    ],
+    "bytes": 10214,
+    "gzipBytes": 4320,
+    "dynamicImports": []
+  },
+  "buildId": "ecd43be882e6c9f6",
+  "budget": {
+    "ok": true,
+    "checks": []
+  },
+  "ok": true
+}

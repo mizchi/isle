@@ -1,0 +1,22 @@
+{
+  "checks": [
+    {
+      "name": "overview",
+      "cmd": "node tools/readme-overview.mjs --check",
+      "cwd": "../..",
+      "expect": [
+        "Counter: compile → SSR 0 → resume 1; one dynamic text patch",
+        "Image desktop: facts present; compiled example matches; no horizontal overflow",
+        "Image mobile: facts present; compiled example matches; no horizontal overflow",
+        "README picture: mobile/desktop switch checked at 375, 760, 761, 1040px",
+        "README overview: verified"
+      ]
+    },
+    {
+      "name": "implementation-contracts",
+      "cmd": "node --test --test-reporter=tap tests/build.test.mjs tests/loading-optimizer-build.test.mjs tests/forms.test.mjs tests/style-build.test.mjs tests/shared-runtime.test.mjs",
+      "cwd": "../..",
+      "expect": ["# fail 0", "# cancelled 0", "# skipped 0"]
+    }
+  ]
+}

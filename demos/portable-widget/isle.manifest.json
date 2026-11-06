@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "references": {
+    "Counter.increment": {
+      "ref": [
+        "/isle/demos/portable-widget/assets/Counter.g0-CMYYoIpx.js",
+        "h0",
+        [
+          1
+        ]
+      ],
+      "chunk": "assets/Counter.g0-CMYYoIpx.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "00afafb4a417b546",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "../../../examples/hello/app.isle",
+        "start": {
+          "offset": 218,
+          "line": 7,
+          "column": 27
+        },
+        "end": {
+          "offset": 252,
+          "line": 7,
+          "column": 61
+        }
+      },
+      "loading": "lazy"
+    },
+    "Counter.reset": {
+      "ref": [
+        "/isle/demos/portable-widget/assets/Counter.g0-CMYYoIpx.js",
+        "h1",
+        [
+          0,
+          1
+        ]
+      ],
+      "chunk": "assets/Counter.g0-CMYYoIpx.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "00afafb4a417b546",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "initial",
+        "count"
+      ],
+      "writes": [
+        "count"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "../../../examples/hello/app.isle",
+        "start": {
+          "offset": 297,
+          "line": 8,
+          "column": 27
+        },
+        "end": {
+          "offset": 332,
+          "line": 8,
+          "column": 62
+        }
+      },
+      "loading": "lazy"
+    },
+    "isle:resume": {
+      "ref": [
+        "/isle/demos/portable-widget/assets/isle-resume-BZU-xb2g.js",
+        "resume",
+        []
+      ],
+      "chunk": "assets/isle-resume-BZU-xb2g.js",
+      "requires": [],
+      "kind": "runtime",
+      "loading": "lazy"
+    }
+  },
+  "chunks": {
+    "assets/_isle_loader-BJ2IFTRN.js": {
+      "url": "/isle/demos/portable-widget/assets/_isle_loader-BJ2IFTRN.js",
+      "imports": [
+        "assets/_isle_widget-engine-bridge-DXdv33ap.js"
+      ],
+      "dynamicImports": [
+        "assets/isle-resume-BZU-xb2g.js"
+      ],
+      "bytes": 183,
+      "gzipBytes": 176
+    },
+    "assets/_isle_widget-engine-bridge-DXdv33ap.js": {
+      "url": "/isle/demos/portable-widget/assets/_isle_widget-engine-bridge-DXdv33ap.js",
+      "imports": [
+        "assets/shared-runtime-DMG-kdSZ.js"
+      ],
+      "dynamicImports": [
+        "assets/isle-widget-engine-Ck_SQYaz.js"
+      ],
+      "bytes": 219,
+      "gzipBytes": 206
+    },
+    "assets/Counter.g0-CMYYoIpx.js": {
+      "url": "/isle/demos/portable-widget/assets/Counter.g0-CMYYoIpx.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 158,
+      "gzipBytes": 112
+    },
+    "assets/index-DKKdGzLG.js": {
+      "url": "/isle/demos/portable-widget/assets/index-DKKdGzLG.js",
+      "imports": [
+        "assets/_isle_loader-BJ2IFTRN.js"
+      ],
+      "dynamicImports": [],
+      "bytes": 51,
+      "gzipBytes": 71
+    },
+    "assets/isle-resume-BZU-xb2g.js": {
+      "url": "/isle/demos/portable-widget/assets/isle-resume-BZU-xb2g.js",
+      "imports": [
+        "assets/_isle_widget-engine-bridge-DXdv33ap.js"
+      ],
+      "dynamicImports": [
+        "assets/Counter.g0-CMYYoIpx.js"
+      ],
+      "bytes": 300,
+      "gzipBytes": 225
+    },
+    "assets/isle-widget-engine-Ck_SQYaz.js": {
+      "url": "/isle/demos/portable-widget/assets/isle-widget-engine-Ck_SQYaz.js",
+      "imports": [
+        "assets/styles-DwvSixrV.js"
+      ],
+      "dynamicImports": [],
+      "bytes": 23656,
+      "gzipBytes": 8740
+    },
+    "assets/isle-widget-mount-zMKLK5Xq.js": {
+      "url": "/isle/demos/portable-widget/assets/isle-widget-mount-zMKLK5Xq.js",
+      "imports": [
+        "assets/_isle_loader-BJ2IFTRN.js",
+        "assets/shared-runtime-DMG-kdSZ.js"
+      ],
+      "dynamicImports": [],
+      "bytes": 166,
+      "gzipBytes": 156
+    },
+    "assets/isle-widget-runtime-Tssq7Os2.js": {
+      "url": "/isle/demos/portable-widget/assets/isle-widget-runtime-Tssq7Os2.js",
+      "imports": [
+        "assets/shared-runtime-DMG-kdSZ.js",
+        "assets/styles-DwvSixrV.js"
+      ],
+      "dynamicImports": [],
+      "bytes": 6085,
+      "gzipBytes": 2495
+    },
+    "assets/shared-runtime-DMG-kdSZ.js": {
+      "url": "/isle/demos/portable-widget/assets/shared-runtime-DMG-kdSZ.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 2416,
+      "gzipBytes": 999
+    },
+    "assets/styles-DwvSixrV.js": {
+      "url": "/isle/demos/portable-widget/assets/styles-DwvSixrV.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 1869,
+      "gzipBytes": 916
+    },
+    "widget.js": {
+      "url": "/isle/demos/portable-widget/widget.js",
+      "imports": [
+        "assets/shared-runtime-DMG-kdSZ.js"
+      ],
+      "dynamicImports": [
+        "assets/isle-widget-runtime-Tssq7Os2.js"
+      ],
+      "bytes": 408,
+      "gzipBytes": 270
+    }
+  },
+  "loading": {
+    "eager": [],
+    "preload": []
+  },
+  "resolution": {
+    "version": 1,
+    "strategy": "event-and-size",
+    "budgetGzipBytes": 8192,
+    "usedGzipBytes": 0,
+    "decisions": [
+      {
+        "id": "Counter.increment",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 1542,
+        "modules": [
+          "/isle/demos/portable-widget/assets/shared-runtime-DMG-kdSZ.js",
+          "/isle/demos/portable-widget/assets/_isle_widget-engine-bridge-DXdv33ap.js",
+          "/isle/demos/portable-widget/assets/isle-resume-BZU-xb2g.js",
+          "/isle/demos/portable-widget/assets/Counter.g0-CMYYoIpx.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "Counter.reset",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 1542,
+        "modules": [
+          "/isle/demos/portable-widget/assets/shared-runtime-DMG-kdSZ.js",
+          "/isle/demos/portable-widget/assets/_isle_widget-engine-bridge-DXdv33ap.js",
+          "/isle/demos/portable-widget/assets/isle-resume-BZU-xb2g.js",
+          "/isle/demos/portable-widget/assets/Counter.g0-CMYYoIpx.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "isle:resume",
+        "requested": "lazy",
+        "loading": "lazy",
+        "reason": "default",
+        "additionalGzipBytes": 0,
+        "modules": [
+          "/isle/demos/portable-widget/assets/shared-runtime-DMG-kdSZ.js",
+          "/isle/demos/portable-widget/assets/_isle_widget-engine-bridge-DXdv33ap.js",
+          "/isle/demos/portable-widget/assets/isle-resume-BZU-xb2g.js"
+        ],
+        "initialBy": []
+      }
+    ]
+  },
+  "buildId": "8f8801a6892690c1"
+}

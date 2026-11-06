@@ -1,0 +1,3 @@
+component ResetPanel() {
+  <main class="panel"><p class="copy">Reset-aware box model</p></main>
+}

@@ -1,0 +1,160 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="unmount と所有リソースの破棄"><title>unmount と所有リソースの破棄 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/resource-disposal.html"><meta property="og:title" content="unmount と所有リソースの破棄 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="unmount と所有リソースの破棄"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html" aria-current="page">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/resource-disposal.md">ソースで読む ↗</a></div><h1 id="unmount-と所有リソースの破棄">unmount と所有リソースの破棄</h1>
+<p>状態: 2026-11-05。<code>models/resource_disposal</code> の時相モデル、所有・破棄カーネル、モデル由来の schedule 再生に加え、Vite の <code>resources</code> 指定から component / widget の寿命への自動接続を実装した。resource / Once / <code>@pending</code> の専用 DSL と temporal type checker は未実装。</p>
+<p><code>Once&lt;T&gt;</code> は結果を公開する回数の契約である。<code>Owned&lt;T&gt;</code> は解放する責任の契約であり、別の軸にする。非同期取得の結果が <code>Once&lt;Owned&lt;T&gt;&gt;</code> なら、取得済みの T ごとに解放権を一つ持ち、owner の寿命の終了で消費する。読み取り側は解放権を複製・呼び出しできない。失敗して T を取得できなかった場合は、その T の destructor を呼ばない。</p>
+<h2 id="破棄を三段階に分ける">破棄を三段階に分ける</h2>
+<ol>
+<li><strong>論理的な無効化</strong>: owner と全ての子 owner を同期的に閉じる。新しい初期化、handle の読み取り、結果の公開を禁止する。</li>
+<li><strong>abort の要求</strong>: 進行中の処理へ AbortSignal を通知する。abort は、処理が停止したことや取得済みリソースが解放されたことの証明ではない。</li>
+<li><strong>取得済みの値の解放</strong>: destructor を一度だけ呼び、その成功・失敗を記録する。unmount より後に取得結果が届いた場合は、公開せずに解放する。</li>
+</ol>
+<p><a href="https://dom.spec.whatwg.org/#aborting-ongoing-activities">DOM Standard の AbortController</a> は、対応する API に中止を通知する仕組みである。API が abort を無視する可能性をモデルと実装の両方へ残す。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>Acquiring ──成功──&gt; Acquired ──生存中なら公開──&gt; Published
+    │                 │                         │
+    │ unmount         └──────── owner終了 ───────┘
+    ▼                                │
+abort要求                            ▼
+    │                      Releasing ──成功──&gt; Released
+    └─遅い成功──&gt; 非公開の値 ──┘       └─失敗──&gt; ReleaseFailed</code></pre></div>
+<p><code>dispose()</code> が同期的に終わるのは無効化・abort 通知・既に取得済みの値の解放開始まで。初期化や非同期 destructor の完了は <code>settled()</code> で別に待つ。非協調的な初期化や destructor が永遠に返らなければ、settled も完了しない。通常の UI unmount はこれを await して待機しない。</p>
+<h2 id="実行できるカーネル">実行できるカーネル</h2>
+<p>通常の component では次の自動接続を使う。単独の <code>createResourceOwner()</code> は独自 adapter を作る場合の API である。</p>
+<h2 id="component-へ自動接続する">Component へ自動接続する</h2>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>isle({
+  entry: &#39;/absolute/path/app.isle&#39;,
+  mounts: [{ component: &#39;Page&#39;, props: {}, label: &#39;Page&#39; }],
+  resources: { VideoPanel: &#39;./video.resources.mjs&#39; },
+});</code></pre></div>
+<p>値は <code>.isle</code> entry からの相対パスで、Vite が扱えるローカル ESM / TypeScript module を指定する。キーはイベントを持つ client component 名。server / universal / 非対話 component は拒否する。handler がない component を visibility から開始する機能は含まない。</p>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>// video.resources.ts（上の設定も .ts に変更する）
+import type { ClientResourceSetup } from &#39;../lib/client-contracts.d.ts&#39;;
+
+export const setup: ClientResourceSetup = ({ root, owner }) =&gt; {
+  const resize = new ResizeObserver(entries =&gt; {
+    // ready の結果を外部 API へ通知するなど、adapter 内の処理を書く。
+    console.log(entries[0]?.contentRect.width);
+  });
+  owner.own(resize, observer =&gt; observer.disconnect());
+  resize.observe(root);
+
+  owner.acquire(async signal =&gt; {
+    const response = await fetch(&#39;/api/connection&#39;, { signal });
+    if (!response.ok) throw new Error(&#39;connection failed&#39;);
+    return response.body;
+  }, body =&gt; body?.cancel());
+};</code></pre></div>
+<p><code>setup({ root, owner, id })</code> は対象 instance の初回 resume で handler より前に一度だけ実行する。module のトップレベルにはリソース取得を書かない。先読み時の評価は複数 instance の初期化を意味しない。setup 自体は同期関数で undefined を返し、非同期取得は <code>owner.acquire</code> に登録する。取得の完了は handler 開始を待たせない。ready / failed を UI state へ反映する DSL はまだ提供しない。</p>
+<ul>
+<li><code>controller.dispose(id)</code> は対象と子孫を先に無効化し、子から親へ破棄する。<code>close()</code> は root 内の全 component を無効化してから破棄する。</li>
+<li>native DOM の削除は、resource owner が初めて作られた時だけ登録する MutationObserver で検出する。同じ root 内の同期的な remove → append は保持する。確定的な同期破棄が必要なら DOM 削除前に <code>dispose(id)</code> を呼ぶ。</li>
+<li>Custom Element の実際の disconnect は既存 mount の abort → loader.close → owner.dispose に接続する。別 widget の scope ID が同じでも owner を共有しない。独自 ShadowRoot adapter は host の切断時に <code>close()</code> を呼ぶ。</li>
+<li>setup の途中で throw した場合は部分的な登録も破棄し、その instance の handler を実行しない。code import の失敗は初期化前なので次の操作で再試行できる。</li>
+<li>resource 対応 build では <code>await controller.resources(id)</code> から同じ owner を明示的に取得できる。snapshot を検証し setup を一度だけ行う。close 後・DOM 切断後は拒否する。</li>
+</ul>
+<p>setup は <code>VideoPanel.$resources</code> / symbol <code>setup</code> の CodeRef として manifest に載り、component の各 handler の <code>requires</code> へ入る。初回操作では handler と setup を並列取得する。<code>lazy</code> / <code>preload</code> / <code>eager</code> に従いコードを取得・評価しても、setup の実行は対象 instance の resume まで遅延する。cleanup は取得側 module の依存として先に読み込み、unmount 時の import に依存しない。</p>
+<p>SSR 専用 mount は resource module を解決・出力しない。resource を使わない通常の production build は owner カーネル・監視・公開 API を dead code elimination で除去する。共有 widget engine は、最初の app の機能削減が後続 app を壊さないよう resource 機能を含む。snapshot ABI は v2 のまま、registry の位置6へ schema ID → setup CodeRef を追加した。現在の共有 engine は CSS-ready を含む <code>isle/client/6</code> である。</p>
+<p>実行例は <a href="/isle/source/e2e/fixtures/resource-bindings/vite.config.mjs">resource-bindings fixture</a>、検証は <code>just resource-binding-check</code>。</p>
+<p>サイズ検査は <code>just resource-binding-size</code>。ES2023・diagnostics/profile 無効の同一 Counter では、adapter を含む全 JS の増分は raw 4,901 B / ファイル別 gzip 合計 1,789 B。<a href="https://github.com/mizchi/isle/blob/main/evals/reports/resource-bindings.md">測定条件と通常アプリの差分</a>を参照する。</p>
+<h2 id="独自-adapter-から使う">独自 adapter から使う</h2>
+<div class="code-block"><div class="code-language">ts</div><pre tabindex="0"><code>import { createResourceOwner } from &#39;../runtime/resource-owner.mjs&#39;;
+
+const owner = createResourceOwner({
+  signal: mountSignal,
+  onError(error) { reportCleanupError(error); },
+});
+
+const connection = owner.acquire(
+  signal =&gt; connect(url, signal),
+  value =&gt; value.close(),
+);
+
+// ready の場合だけ読み取る。pending / failed / disposed では read が throw する。
+if (connection.state === &#39;ready&#39;) {
+  connection.read().send(&#39;hello&#39;);
+}
+
+// mountSignal の abort からも同じ破棄経路に入る。
+owner.dispose();
+await owner.settled(); // 管理側やテストが必要に応じて完了を待つ</code></pre></div>
+<ul>
+<li><code>own(value, release)</code> は取得済みの値を引き取る。owner が閉じた後に渡された値も即座に解放へ回す。</li>
+<li>「一度だけ」は取得・所有権の登録 token ごとの保証。同じ生の T を二重に所有させないことは adapter の契約であり、任意 JavaScript の alias をカーネルが検出したとは扱わない。共有する実体には、参照計数などで独立した解放責任を持つ lease が必要。</li>
+<li><code>acquire(initialize, release)</code> は初期化前に解放責任を登録する。unmount 中や後に初期化が成功しても取りこぼさない。initialize が失敗する前に部分的に取得したものは、返されていないため adapter 側が解放する。</li>
+<li><code>fork()</code> は子 owner を作る。親の終了では、全子孫を無効化してから host callback を呼ぶ。子から親へ、各 owner 内では登録の逆順に destructor を開始する。独立した destructor は一つが待機・失敗しても残りを開始する。</li>
+<li>非同期 destructor の<strong>完了順</strong>まで LIFO にする契約ではない。子の cleanup 完了まで親リソースを使う依存関係・構造化 task join は追加の契約が必要。</li>
+<li><code>errors</code> と onError は cleanup 失敗を通知する。失敗を Released と偽らず、同じ解放権で自動 retry しない。再実行や外部の物理解放成功には adapter の別契約が必要。</li>
+<li>処理が済んだ子 owner は親の保持集合から外す。初期化中に dispose が再入した場合や遅い解放がある場合は、それが終わるまで drain の対象へ残す。</li>
+</ul>
+<p>取得・解放には関数を明示して渡す。ES2023 の Promise と Web 標準の AbortController を使い、Symbol.dispose / Symbol.asyncDispose の実行時機構や polyfill を要求しない。Vite は resource 未使用時に接続部分ごと除去する。</p>
+<p>既に read で渡した T の生参照を JavaScript から回収することはできない。カーネルが防ぐのは、閉じた handle からの新たな読み取りと、取得結果の新たな公開。borrow の外部保存、await を越える利用、解放関数自身の物理動作には、今後の DSL の検査または trusted adapter の契約が必要。</p>
+<h2 id="時相的な契約">時相的な契約</h2>
+<p>r は取得試行に付いた identity と元 owner の世代、<code>abandoned(r)</code> は元 owner が閉じたか世代が変わった状態とする。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>性質</th>
+<th>式の例</th>
+<th>条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>二重解放しない</td>
+<td><code>G(releaseCalls(r) ≤ 1)</code></td>
+<td>無条件の安全性</td>
+</tr>
+<tr>
+<td>未取得の値を解放しない</td>
+<td><code>G(releaseCalls(r) &gt; 0 ⇒ acquired(r))</code></td>
+<td>無条件の安全性</td>
+</tr>
+<tr>
+<td>生存中に勝手に解放しない</td>
+<td><code>G(releaseBegin(r) ⇒ abandoned(r))</code></td>
+<td>owner による寿命管理</td>
+</tr>
+<tr>
+<td>破棄済み・旧世代へ公開しない</td>
+<td><code>G(publish(r) ⇒ currentOwner(r))</code></td>
+<td>公開時にも照合</td>
+</tr>
+<tr>
+<td>進行中の取得へ abort を要求</td>
+<td><code>G(abandoned(r) ∧ acquiring(r) ⇒ abortRequested(r))</code></td>
+<td>論理的な要求の記録</td>
+</tr>
+<tr>
+<td>遅い取得結果も解放へ回す</td>
+<td><code>G(abandoned(r) ∧ acquired(r) ⇒ F releaseAttempted(r))</code></td>
+<td>解放開始の弱公平性</td>
+</tr>
+<tr>
+<td>解放処理が終端へ進む</td>
+<td><code>G(releasing(r) ⇒ F(released(r) ∨ releaseFailed(r)))</code></td>
+<td>destructor が成功か失敗を返すという追加仮定</td>
+</tr>
+</tbody></table>
+</div><p><code>G(unmounted ⇒ F released)</code> と無条件に書かない。まだ取得されていない値や、永久に返らない destructor、throw する解放処理まで「物理解放できた」としてしまうためである。線形な責任は「高々一度呼ぶ」という安全性と「取得済みの責任を取り残さない」という活性を合わせて表す。</p>
+<h2 id="検査結果と実装との照合">検査結果と実装との照合</h2>
+<p>Strict の到達集合は1,452状態。対象は2 resources・owner 2世代・取得・abort・公開・解放開始・解放成功／失敗で、初期化の実体と物理リソースの内部は抽象化する。深さや状態数の上限で探索が未完了なら検査を失敗させる。完了した有限グラフの循環と弱公平性を調べることで、そのグラフの無限経路を検査する。</p>
+<p>故障版は二重解放、未取得の解放、生存中の解放、owner 無視、abort 忘れ、二重 abort、遅い取得の取りこぼし、公開済みの値の解放漏れ、一つの cleanup 失敗による残りの放棄。9種類それぞれに反例を検出し、veri の step / holds で再生する。開始・完了の公平性を外した循環反例と、destructor が失敗するため物理解放成功を保証できない反例も区別する。</p>
+<p><a href="/isle/source/tests/resource-disposal-replay.test.mjs">tests/resource-disposal-replay.test.mjs</a> は保存済み fixture ではなく、実行した MoonBit verifier から9反例の操作列を受け取る。取得の成功・失敗、unmount、再生成、cleanup の成功・失敗の外部 schedule を、Promise barrier と Node の task 境界でカーネルへ再生する。公開と解放開始はカーネルが自動で行い、テスト側からその権限を呼ばない。修正版では漏れ・二重解放・早すぎる解放・古い handle の再公開が起きないことを確認する。</p>
+<p><a href="/isle/source/evals/results/resource-disposal/replay.json">再生結果</a>は外部 schedule に対する回帰検査であり、実装とモデルの全トレースの refinement 証明ではない。子 owner の順序・再入・エラー継続・mount AbortSignal は <a href="/isle/source/tests/resource-owner.test.mjs">resource-owner.test.mjs</a>、component / widget への接続は <a href="/isle/source/e2e/resource-bindings.spec.mjs">resource-bindings.spec.mjs</a>で別に検査する。専用 resource DSL の意味保存証明とは区別する。</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just resource-disposal-check
+just verify</code></pre></div>
+<p>verifier 全体は report v2 の92ケース、応答性16ケースを含む。全35反例は故障版29件、仮定不足4件、契約不足2件に分け、想定結果と再生が一致して初めて成功にする。</p>
+<h2 id="dsl-と-chunk-へ接続する方針">DSL と chunk へ接続する方針</h2>
+<p>将来の構文候補は値の確定回数と所有を分ける。</p>
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>client component VideoPanel(deviceId: string) {
+  resource once camera: Owned&lt;MediaStream&gt;
+    start(resume)
+    = inline(ts) {
+      return await openCamera(deviceId, signal);
+    }
+    release(stream) inline(ts) {
+      for (const track of stream.getTracks()) track.stop();
+    };
+
+  // template 側は ready/pending/failed を処理し、解放権は保持しない。
+}</code></pre></div>
+<p>これは未実装の DSL 案。camera を取得する module は、取得開始前に release 関数も用意する。cleanup chunk を unmount 時に初めて import し、取得失敗によって destructor が不在になる設計にはしない。compiler は owner の終了経路へ release を結び付け、取得処理と合わせて依存として chunk manifest に載せる。</p>
+<p><code>Owned&lt;MediaStream&gt;</code> のような client の生リソースは snapshot に載せない。server の DB connection 等は server の request / streaming の寿命に属し、client の unmount へ移送しない。scope ID の再利用でも解放責任を新しい owner へ付け替えない。component の DOM move は寿命の終了と区別し、mount adapter が確定した unmount を通知する。</p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

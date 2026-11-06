@@ -1,0 +1,58 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Island loader と SSR 専用出力"><title>Island loader と SSR 専用出力 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/docs/island-loader.html"><meta property="og:title" content="Island loader と SSR 専用出力 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Island loader と SSR 専用出力"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/docs/quick-start.html">English</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/ja/docs/quick-start.html">はじめる</a><a href="/isle/ja/docs/composition.html">入れ子と children</a><a href="/isle/ja/docs/control-flow.html">制御構文</a><a href="/isle/ja/docs/forms.html">Form と検証</a><a href="/isle/ja/docs/resolution-optimizer.html">読み込みと manifest</a><a href="/isle/ja/docs/resource-disposal.html">リソースの寿命</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS 契約</a><a href="/isle/ja/docs/index.html">すべてのガイド →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE ガイド</span><a href="https://github.com/mizchi/isle/blob/main/docs/island-loader.md">ソースで読む ↗</a></div><h1 id="island-loader-と-ssr-専用出力">Island loader と SSR 専用出力</h1>
+<p>既定の auto では初回に小さい event loader だけを実行し、入力・送信の依存コードを予算内で先読みします。未取得の runtime と handler は対象 island の最初の操作で並列取得します。manifest から生成した inert な modulepreload リンクを操作時に有効にし、state の復元は対象 island の dispatch まで待ちます。<a href="https://qwik.dev/docs/advanced/qwikloader/">Qwikloader</a> の、イベントを委譲して必要なコードを遅延取得する役割を参考にしています。出力は ES2023 と標準 ESM / DOM / fetch / AbortController のみです。<a href="/isle/ja/docs/code-references.html">CodeRef と manifest</a> によって <code>lazy</code> / <code>preload</code> / <code>eager</code> も明示できます。</p>
+<h2 id="通常の使い方">通常の使い方</h2>
+<p>HTML に <code>&lt;!--isle:ssr--&gt;</code> を置き、Vite plugin に mount を渡します。起動用の script tag は plugin が必要なときだけ追加します。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>isle({
+  entry: &#39;/absolute/path/app.isle&#39;,
+  mounts: [
+    { component: &#39;Counter&#39;, props: { initial: 37 }, scopeId: &#39;counter&#39;, label: &#39;Counter&#39; },
+  ],
+});</code></pre></div>
+<p>HTML に framework の起動 script を手で追加する必要はありません。初期ローダーは root の識別と event listener の登録だけを行い、snapshot を parse せず、binding の DOM 探索も行いません。最初の対象イベントで runtime/registry を取得し、対応する handler を取得してから、その island の保存値と locator を復元します。別の island の snapshot は未展開のままです。component 初期化やテンプレート描画を browser で再実行しません。</p>
+<p>初期ローダーは document ごとに一度だけ登録します。<code>dispose</code> は import 待ちのイベントも中止し、<code>close</code> は AbortSignal で listener を除去します。入力値はイベント発生時に捕捉します。DOM に合成イベントを再送しないため、他の listener とブラウザーの既定動作を重ねて実行しません。click/input/change/submit/invalid に対応し、submit は import 前に既定動作を取り消して native validation を検査します。invalid は capture で受け取ります。任意の Event 参照や一般の preventDefault 構文は未実装です。<a href="/isle/ja/docs/forms.html">Form</a>を参照してください。</p>
+<h2 id="ssr-のみにする">SSR のみにする</h2>
+<p>ページ全体では <code>mode: &#39;ssr&#39;</code> を指定します。mount に <code>mode: &#39;resume&#39;</code> があっても、ページ全体の SSR 専用指定が優先します。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>isle({
+  entry: &#39;/absolute/path/app.isle&#39;,
+  mode: &#39;ssr&#39;,
+  mounts: [
+    { component: &#39;Counter&#39;, props: { initial: 37 }, label: &#39;Static counter&#39; },
+  ],
+});</code></pre></div>
+<p>props・state 初期値・derive を server で評価し、数値や文字列を通常の HTML に描画します。client component に <code>on click</code> が書かれていても、SSR 専用 mount には event 属性、binding comment、snapshot を出力しません。loader、復元 runtime、handler chunk も出力しません。</p>
+<p><code>server component</code> および handler のない <code>client component</code> は、既定の <code>mode: &#39;resume&#39;</code> でも自動で静的出力になります。静的 mount しかなければ、plugin は起動 script を追加しません。SSR 専用モードが対象にするのは Isle のコードであり、HTML に別途書かれた汎用 script は保持します。</p>
+<p>JS adapter を直接使う場合は <code>renderComponent(component, props, { mode: &#39;ssr&#39; })</code> です。<code>snapshot</code> は <code>null</code>、<code>snapshotHtml</code> は空文字列になります。server の認証・action API の契約は SSR の描画指定と独立しています。</p>
+<h2 id="混在させる">混在させる</h2>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>isle({
+  entry: &#39;/absolute/path/app.isle&#39;,
+  mounts: [
+    { component: &#39;Counter&#39;, props: { initial: 37 }, mode: &#39;ssr&#39;, label: &#39;Static&#39; },
+    { component: &#39;Counter&#39;, props: { initial: 5 }, scopeId: &#39;active&#39;, label: &#39;Interactive&#39; },
+  ],
+});</code></pre></div>
+<p>静的な Counter は通常の HTML、再開する Counter は marker と snapshot を持ちます。静的部分の操作では runtime を取得しません。SSR 専用 component のためだけに必要な handler・schema・remote action 名は client registry から除外します。同じページで共通の runtime/registry chunk を取得し、状態の復元と handler の取得を island ごとに行います。</p>
+<p><a href="/isle/ja/docs/composition.html">component の入れ子</a>にも対応します。子の操作で親や兄弟の snapshot を復元せず、親の更新先から子の marker を除外します。親の dispose は未再開の子にも伝わります。各 component が独立した runtime bundle を持つ方式ではありません。</p>
+<h2 id="起動時の-hook-を使う">起動時の hook を使う</h2>
+<p><code>clientEntry</code> に framework 起動用 module を指定できます。この module も、再開する mount がある場合だけ plugin が読み込みます。</p>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>// vite.config.mjs の isle option
+clientEntry: &#39;/absolute/path/main.mjs&#39;</code></pre></div>
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>// main.mjs
+import { boot } from &#39;virtual:isle-loader&#39;;
+const controller = boot({ onError: error =&gt; console.error(error) });</code></pre></div>
+<p><code>boot()</code> は同じ document に対して同じ controller を返します。<code>dispose(scopeId)</code> / <code>settled()</code> / <code>close()</code> は runtime が未ロードでも使えます。<code>metrics</code> は <code>diagnostics: true</code> の場合だけ有効で、<code>loads</code> は handler の初回解決、<code>restores</code> は snapshot の復元を数えます。ネットワーク要求数は eager/preload や ESM cache の状況と区別します。<code>runtime/client.mjs</code> の <code>resume</code> は loader 用の engine 入口で、DOM event listener を登録しません。</p>
+<p>Vite 以外の adapter からは <a href="/isle/source/runtime/loader.mjs">loadIslands</a> に標準 Document、動的 import を行う関数、event 種別を渡せます。契約は <a href="/isle/source/lib/client-contracts.d.ts">client-contracts.d.ts</a>、Vite option は <a href="/isle/source/lib/vite.d.mts">vite.d.mts</a> に定義しています。</p>
+<h2 id="計測と検証">計測と検証</h2>
+<p>loader 分離時点の共通 fixture では、gzip level 6 の初期外部 JS は 1,513 → <strong>697 bytes</strong>、全操作後の合計は 2,669 → <strong>3,261 bytes</strong> でした。CodeRef 導入時点では profile 無効で初期外部 JS <strong>698 bytes</strong>、全操作後の合計 <strong>3,693 bytes</strong> でした。これらは操作時の並列取得を追加する前の記録です。初期転送量と合計転送量は別に評価します。初回操作の時間は<a href="https://github.com/mizchi/isle/blob/main/benchmarks/dashboard/README.md">ダッシュボードの測定</a>を参照してください。INP の測定ではありません。</p>
+<p>分離前の <a href="/isle/source/benchmarks/results/history/before-island-loader.json">記録</a> と <a href="https://github.com/mizchi/isle/blob/main/benchmarks/results/latest.md">最新の比較</a> を保存しています。SSR 専用 fixture は出力 JS がゼロで、JS 有効のブラウザーでも script/fetch/xhr 要求がゼロになることを確認します。</p>
+<p><code>just ci</code> と <code>just compare</code> で次を再検査できます。</p>
+<ul>
+<li>SSR 専用・server component のみ・handler なしの各 build が HTML のみを出力する。</li>
+<li>初期表示では loader だけを取得し、JSON parse と binding 探索を行わない。</li>
+<li>manifest 由来の modulepreload は対象イベントで有効にし、runtime の応答待ちでも handler を取得できる。取得だけでは評価・復元しない。</li>
+<li>最初の操作で対象 island のみを復元し、静的 mount の操作では取得しない。</li>
+<li>runtime/handler の import 中に dispose/close しても状態を更新しない。</li>
+<li>非同期 import の前に input 値を捕捉し、連続操作の順番を保持する。</li>
+<li>hash 付きの loader → runtime → handler の URL と manifest が整合し、handler の変更が親の hash に伝播する。</li>
+<li>既存の共通操作と3幅の画素・computed style の一致を維持する。</li>
+</ul>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

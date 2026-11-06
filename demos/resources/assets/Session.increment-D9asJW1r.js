@@ -1,0 +1,1 @@
+function e(e,t,n){t(0,e[0]+1),n(0,String(e[0]))}export{e as run};

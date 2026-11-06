@@ -1,0 +1,1 @@
+import{t as e}from"./_isle_loader-BJ2IFTRN.js";import{a as t}from"./shared-runtime-DMG-kdSZ.js";var n=(t,n)=>e({...n,root:t});export{n as mount,t as runtimeIdentity};

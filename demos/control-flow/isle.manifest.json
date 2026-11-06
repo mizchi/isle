@@ -1,0 +1,463 @@
+{
+  "version": 1,
+  "references": {
+    "isle:resume": {
+      "ref": [
+        "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+        "resume",
+        []
+      ],
+      "chunk": "assets/isle-resume-6T6VzcA-.js",
+      "requires": [],
+      "kind": "runtime",
+      "loading": "lazy"
+    },
+    "List.empty": {
+      "ref": [
+        "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js",
+        "h0",
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "chunk": "assets/List.g1-CXuX44xQ.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "b09102f05c3ae94b",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "items"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 519,
+          "line": 12,
+          "column": 27
+        },
+        "end": {
+          "offset": 549,
+          "line": 12,
+          "column": 57
+        }
+      },
+      "loading": "lazy"
+    },
+    "List.hide": {
+      "ref": [
+        "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js",
+        "h0",
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "chunk": "assets/List.g0-DMVsKtLQ.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "b09102f05c3ae94b",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "visible"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 274,
+          "line": 9,
+          "column": 27
+        },
+        "end": {
+          "offset": 308,
+          "line": 9,
+          "column": 61
+        }
+      },
+      "loading": "lazy"
+    },
+    "List.restore": {
+      "ref": [
+        "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js",
+        "h1",
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "chunk": "assets/List.g1-CXuX44xQ.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "b09102f05c3ae94b",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "items"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 595,
+          "line": 13,
+          "column": 27
+        },
+        "end": {
+          "offset": 632,
+          "line": 13,
+          "column": 64
+        }
+      },
+      "loading": "lazy"
+    },
+    "List.reverse": {
+      "ref": [
+        "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js",
+        "h2",
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "chunk": "assets/List.g0-DMVsKtLQ.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "b09102f05c3ae94b",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "items"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 421,
+          "line": 11,
+          "column": 27
+        },
+        "end": {
+          "offset": 471,
+          "line": 11,
+          "column": 77
+        }
+      },
+      "loading": "lazy"
+    },
+    "List.show": {
+      "ref": [
+        "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js",
+        "h1",
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "chunk": "assets/List.g0-DMVsKtLQ.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "b09102f05c3ae94b",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "visible"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 348,
+          "line": 10,
+          "column": 27
+        },
+        "end": {
+          "offset": 381,
+          "line": 10,
+          "column": 60
+        }
+      },
+      "loading": "lazy"
+    },
+    "List.summary": {
+      "ref": [
+        "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js",
+        "h2",
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "chunk": "assets/List.g1-CXuX44xQ.js",
+      "requires": [
+        "isle:resume"
+      ],
+      "kind": "handler",
+      "schemaId": "b09102f05c3ae94b",
+      "event": "click",
+      "async": false,
+      "captureNames": [
+        "initial",
+        "items",
+        "visible",
+        "mode"
+      ],
+      "writes": [
+        "mode"
+      ],
+      "actions": [],
+      "computations": [],
+      "source": {
+        "file": "app.isle",
+        "start": {
+          "offset": 680,
+          "line": 14,
+          "column": 27
+        },
+        "end": {
+          "offset": 718,
+          "line": 14,
+          "column": 65
+        }
+      },
+      "loading": "lazy"
+    }
+  },
+  "chunks": {
+    "assets/index-C-S83imc.js": {
+      "url": "/isle/demos/control-flow/assets/index-C-S83imc.js",
+      "imports": [],
+      "dynamicImports": [
+        "assets/isle-resume-6T6VzcA-.js"
+      ],
+      "styles": [
+        "assets/index-Dnofiqrv.css"
+      ],
+      "bytes": 1530,
+      "gzipBytes": 820
+    },
+    "assets/isle-resume-6T6VzcA-.js": {
+      "url": "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+      "imports": [
+        "assets/value-Cpan_bTX.js"
+      ],
+      "dynamicImports": [
+        "assets/List.g0-DMVsKtLQ.js",
+        "assets/List.g1-CXuX44xQ.js"
+      ],
+      "bytes": 3482,
+      "gzipBytes": 1592
+    },
+    "assets/List-DHWkT3-g.js": {
+      "url": "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+      "imports": [
+        "assets/value-Cpan_bTX.js"
+      ],
+      "dynamicImports": [],
+      "bytes": 7335,
+      "gzipBytes": 2703
+    },
+    "assets/List.g0-DMVsKtLQ.js": {
+      "url": "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js",
+      "imports": [
+        "assets/List-DHWkT3-g.js",
+        "assets/value-Cpan_bTX.js"
+      ],
+      "dynamicImports": [],
+      "bytes": 459,
+      "gzipBytes": 250
+    },
+    "assets/List.g1-CXuX44xQ.js": {
+      "url": "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js",
+      "imports": [
+        "assets/List-DHWkT3-g.js"
+      ],
+      "dynamicImports": [],
+      "bytes": 409,
+      "gzipBytes": 201
+    },
+    "assets/value-Cpan_bTX.js": {
+      "url": "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+      "imports": [],
+      "dynamicImports": [],
+      "bytes": 961,
+      "gzipBytes": 474
+    }
+  },
+  "styles": {
+    "assets/index-Dnofiqrv.css": {
+      "url": "/isle/demos/control-flow/assets/index-Dnofiqrv.css",
+      "bytes": 1079,
+      "gzipBytes": 546
+    }
+  },
+  "loading": {
+    "eager": [],
+    "preload": []
+  },
+  "resolution": {
+    "version": 1,
+    "strategy": "event-and-size",
+    "budgetGzipBytes": 8192,
+    "usedGzipBytes": 0,
+    "decisions": [
+      {
+        "id": "List.empty",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 4970,
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "List.hide",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 5019,
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "List.restore",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 4970,
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "List.reverse",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 5019,
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "List.show",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 5019,
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g0-DMVsKtLQ.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "List.summary",
+        "requested": "auto",
+        "loading": "lazy",
+        "reason": "interaction",
+        "additionalGzipBytes": 4970,
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js",
+          "/isle/demos/control-flow/assets/List-DHWkT3-g.js",
+          "/isle/demos/control-flow/assets/List.g1-CXuX44xQ.js"
+        ],
+        "initialBy": []
+      },
+      {
+        "id": "isle:resume",
+        "requested": "lazy",
+        "loading": "lazy",
+        "reason": "default",
+        "additionalGzipBytes": 0,
+        "modules": [
+          "/isle/demos/control-flow/assets/value-Cpan_bTX.js",
+          "/isle/demos/control-flow/assets/isle-resume-6T6VzcA-.js"
+        ],
+        "initialBy": []
+      }
+    ]
+  },
+  "buildId": "4662905421d3d7b2"
+}

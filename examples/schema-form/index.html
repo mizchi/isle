@@ -1,0 +1,56 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Shared schema and server validation"><title>Shared schema and server validation · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/examples/schema-form/index.html"><meta property="og:title" content="Shared schema and server validation · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Shared schema and server validation"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/ja/examples/schema-form/">日本語</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/examples/">All examples</a> / schema-form</p><span class="tag server-tag">Requires a server</span><h1>Shared schema and server validation</h1><p class="lead">Submit taken@example.com, correct it, then submit and reset the shared-schema form.</p><p class="callout server-notice">This example needs a server. GitHub Pages does not run its RPC endpoint; use the host and run instructions below.</p><div class="doc-content example-description"><p>Source / ソース: <a href="/isle/source/examples/schema-form/app.isle">app.isle</a> · <a href="/isle/source/examples/schema-form/host.mjs">host.mjs</a> · <a href="/isle/source/examples/schema-form/vite.config.mjs">vite.config.mjs</a></p>
+<p>Submit <a href="mailto:taken@example.com">taken@example.com</a>, correct it, then submit and reset the shared-schema form. <a href="mailto:taken@example.com">taken@example.com</a> is reserved in memory. Async validation and submit return public field issues. The host uses a fixed demo principal, not production authentication.</p>
+<p>From a repository checkout, run at the repository root:</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just example schema-form</code></pre></div>
+<p>Open <a href="http://127.0.0.1:4191/">http://127.0.0.1:4191/</a>.</p>
+<p>Check: <code>just a11y-schema-form</code>. For a consumer app, install the package and use the <a href="/isle/docs/quick-start.html#quick-start">npm setup</a>; the source files here show the feature and its configuration.</p>
+</div><h2>Read the implementation</h2><details class="source-details"><summary>app.isle</summary><pre tabindex="0"><code>schema Registration {
+  email: string minLength(3) maxLength(80) format(&quot;email&quot;);
+  confirmation: string minLength(3) sameAs(email);
+  age: number min(18) max(120) integer();
+  accepted: boolean equals(true);
+}
+
+view Registered { email: string; }
+export server action register(input: Registration): Registered
+  using request: RequestContext
+  authorize grant = policy.signup(request, input.email)
+  validate accounts.available effects { db.read }
+  effects { db.write }
+{ return await accounts.register(grant, input.email); }
+
+export client component SchemaSignup() {
+  &lt;form schema=&quot;Registration&quot; submit=&quot;register&quot; aria-label=&quot;Create account&quot;&gt;
+    &lt;label&gt;Email (required)&lt;input name=&quot;email&quot; autocomplete=&quot;email&quot; /&gt;&lt;/label&gt;
+    &lt;label&gt;Confirm email (required)&lt;input name=&quot;confirmation&quot; /&gt;&lt;/label&gt;
+    &lt;label&gt;Age (required)&lt;input name=&quot;age&quot; value=&quot;21&quot; /&gt;&lt;/label&gt;
+    &lt;label&gt;&lt;input name=&quot;accepted&quot; /&gt;I agree (required)&lt;/label&gt;
+    &lt;button type=&quot;submit&quot;&gt;Create account&lt;/button&gt;
+    &lt;button type=&quot;reset&quot;&gt;Reset&lt;/button&gt;
+  &lt;/form&gt;
+}
+</code></pre></details><details class="source-details"><summary>host.mjs</summary><pre tabindex="0"><code>// Local demo only: the request principal is fixed. Registration is an in-memory write.
+const accounts = new Set([&#39;taken@example.com&#39;]);
+export const host = {
+  context: () =&gt; ({ subject: &#39;demo&#39;, tenant: &#39;local&#39; }),
+  policies: { &#39;policy.signup&#39;: context =&gt; context.tenant === &#39;local&#39; },
+  validators: { &#39;accounts.available&#39;: { effects: [&#39;db.read&#39;],
+    validate: async ({ input }) =&gt; accounts.has(input.email) ? [{ field: &#39;email&#39;, code: &#39;taken&#39; }] : [] } },
+  operations: { &#39;accounts.register&#39;: { policy: &#39;policy.signup&#39;, effects: [&#39;db.write&#39;],
+    commit: ({ args }) =&gt; { accounts.add(args[1]); return { email: args[1] }; } } },
+};
+</code></pre></details><details class="source-details"><summary>main.mjs</summary><pre tabindex="0"><code>import { boot } from &#39;virtual:isle-loader&#39;;
+window.isleDemo = boot();
+</code></pre></details><details class="source-details"><summary>vite.config.mjs</summary><pre tabindex="0"><code>import { defineConfig } from &#39;vite&#39;;
+import { fileURLToPath } from &#39;node:url&#39;;
+import { isle } from &#39;@isle/prototype/vite&#39;;
+import { host } from &#39;./host.mjs&#39;;
+export default defineConfig({
+  root: fileURLToPath(new URL(&#39;.&#39;, import.meta.url)),
+  plugins: [isle({ entry: fileURLToPath(new URL(&#39;./app.isle&#39;, import.meta.url)), host,
+    diagnostics: true, clientEntry: fileURLToPath(new URL(&#39;./main.mjs&#39;, import.meta.url)),
+    mounts: [{ component: &#39;SchemaSignup&#39;, props: {}, scopeId: &#39;signup&#39;, label: &#39;Signup&#39; }] })],
+  server: { host: &#39;127.0.0.1&#39;, port: 4191, strictPort: true, fs: { allow: [fileURLToPath(new URL(&#39;../..&#39;, import.meta.url))] } },
+  build: { outDir: &#39;../../dist-schema-form&#39;, emptyOutDir: true, manifest: true },
+});
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/">Isle</a><p>Built with Isle. Static pages, resumable interactions.</p></div><nav aria-label="Footer navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

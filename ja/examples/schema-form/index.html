@@ -1,0 +1,52 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="共通 schema とサーバー検証"><title>共通 schema とサーバー検証 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/examples/schema-form/index.html"><meta property="og:title" content="共通 schema とサーバー検証 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="共通 schema とサーバー検証"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/examples/schema-form/">English</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/ja/examples/">サンプル一覧</a> / schema-form</p><span class="tag server-tag">サーバーが必要</span><h1>共通 schema とサーバー検証</h1><p class="lead">taken@example.com の重複エラーを確認し、修正・送信・reset を試す。</p><p class="callout server-notice">この例にはサーバーが必要です。GitHub Pages には RPC endpoint を置かず、下の host と実行手順を使います。</p><div class="doc-content example-description"><p><a href="mailto:taken@example.com">taken@example.com</a> の重複エラーを確認し、修正・送信・reset を試す。 <a href="mailto:taken@example.com">taken@example.com</a> はメモリー内で使用済み。非同期検証と submit が公開可能な field issue を返す。host の principal はデモ固定値で実認証ではない。</p>
+<p>リポジトリ内の例は、ルートで上記コマンドを実行する。検査は <code>just a11y-schema-form</code>。利用者のアプリへ組み込む場合は <a href="/isle/ja/docs/quick-start.html#はじめる">npm パッケージの導入手順</a>を使い、このディレクトリのソースと設定を参照する。</p>
+</div><h2>実装を読む</h2><details class="source-details"><summary>app.isle</summary><pre tabindex="0"><code>schema Registration {
+  email: string minLength(3) maxLength(80) format(&quot;email&quot;);
+  confirmation: string minLength(3) sameAs(email);
+  age: number min(18) max(120) integer();
+  accepted: boolean equals(true);
+}
+
+view Registered { email: string; }
+export server action register(input: Registration): Registered
+  using request: RequestContext
+  authorize grant = policy.signup(request, input.email)
+  validate accounts.available effects { db.read }
+  effects { db.write }
+{ return await accounts.register(grant, input.email); }
+
+export client component SchemaSignup() {
+  &lt;form schema=&quot;Registration&quot; submit=&quot;register&quot; aria-label=&quot;Create account&quot;&gt;
+    &lt;label&gt;Email (required)&lt;input name=&quot;email&quot; autocomplete=&quot;email&quot; /&gt;&lt;/label&gt;
+    &lt;label&gt;Confirm email (required)&lt;input name=&quot;confirmation&quot; /&gt;&lt;/label&gt;
+    &lt;label&gt;Age (required)&lt;input name=&quot;age&quot; value=&quot;21&quot; /&gt;&lt;/label&gt;
+    &lt;label&gt;&lt;input name=&quot;accepted&quot; /&gt;I agree (required)&lt;/label&gt;
+    &lt;button type=&quot;submit&quot;&gt;Create account&lt;/button&gt;
+    &lt;button type=&quot;reset&quot;&gt;Reset&lt;/button&gt;
+  &lt;/form&gt;
+}
+</code></pre></details><details class="source-details"><summary>host.mjs</summary><pre tabindex="0"><code>// Local demo only: the request principal is fixed. Registration is an in-memory write.
+const accounts = new Set([&#39;taken@example.com&#39;]);
+export const host = {
+  context: () =&gt; ({ subject: &#39;demo&#39;, tenant: &#39;local&#39; }),
+  policies: { &#39;policy.signup&#39;: context =&gt; context.tenant === &#39;local&#39; },
+  validators: { &#39;accounts.available&#39;: { effects: [&#39;db.read&#39;],
+    validate: async ({ input }) =&gt; accounts.has(input.email) ? [{ field: &#39;email&#39;, code: &#39;taken&#39; }] : [] } },
+  operations: { &#39;accounts.register&#39;: { policy: &#39;policy.signup&#39;, effects: [&#39;db.write&#39;],
+    commit: ({ args }) =&gt; { accounts.add(args[1]); return { email: args[1] }; } } },
+};
+</code></pre></details><details class="source-details"><summary>main.mjs</summary><pre tabindex="0"><code>import { boot } from &#39;virtual:isle-loader&#39;;
+window.isleDemo = boot();
+</code></pre></details><details class="source-details"><summary>vite.config.mjs</summary><pre tabindex="0"><code>import { defineConfig } from &#39;vite&#39;;
+import { fileURLToPath } from &#39;node:url&#39;;
+import { isle } from &#39;@isle/prototype/vite&#39;;
+import { host } from &#39;./host.mjs&#39;;
+export default defineConfig({
+  root: fileURLToPath(new URL(&#39;.&#39;, import.meta.url)),
+  plugins: [isle({ entry: fileURLToPath(new URL(&#39;./app.isle&#39;, import.meta.url)), host,
+    diagnostics: true, clientEntry: fileURLToPath(new URL(&#39;./main.mjs&#39;, import.meta.url)),
+    mounts: [{ component: &#39;SchemaSignup&#39;, props: {}, scopeId: &#39;signup&#39;, label: &#39;Signup&#39; }] })],
+  server: { host: &#39;127.0.0.1&#39;, port: 4191, strictPort: true, fs: { allow: [fileURLToPath(new URL(&#39;../..&#39;, import.meta.url))] } },
+  build: { outDir: &#39;../../dist-schema-form&#39;, emptyOutDir: true, manifest: true },
+});
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

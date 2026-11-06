@@ -1,0 +1,110 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Workers からの widget 配信"><title>Workers からの widget 配信 · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/ja/examples/worker-widget/index.html"><meta property="og:title" content="Workers からの widget 配信 · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Workers からの widget 配信"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">本文へ移動</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/ja/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/ja/docs/quick-start.html">ガイド</a><a href="/isle/ja/examples/">サンプル</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/examples/worker-widget/">English</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/ja/examples/">サンプル一覧</a> / worker-widget</p><span class="tag server-tag">サーバーが必要</span><h1>Workers からの widget 配信</h1><p class="lead">widget-dev と widget-host を別 terminal で起動し、別 origin に固定サイズの Shadow DOM widget を埋め込む。</p><p class="callout server-notice">この例にはサーバーが必要です。GitHub Pages には RPC endpoint を置かず、下の host と実行手順を使います。</p><div class="doc-content example-description"><p>widget-dev と widget-host を別 terminal で起動し、別 origin に固定サイズの Shadow DOM widget を埋め込む。 別 terminal で just widget-host を起動して <a href="http://127.0.0.1:8788/">http://127.0.0.1:8788/</a> を開く。widget 自体は8787で動く。width/height で領域を予約し、runtime の版は完全一致させる。host policy は配備ガイドを参照。</p>
+<p>リポジトリ内の例は、ルートで上記コマンドを実行する。検査は <code>just widget-check</code>。利用者のアプリへ組み込む場合は <a href="/isle/ja/docs/quick-start.html#はじめる">npm パッケージの導入手順</a>を使い、このディレクトリのソースと設定を参照する。</p>
+<p>This larger example uses the <a href="/isle/source/benchmarks/variants/isle/dashboard.isle">dashboard source</a> and <a href="/isle/source/benchmarks/dashboard/model.mjs">dataset</a>.</p>
+<p>大きい widget の例なので、上記の dashboard ソースと dataset も参照する。</p>
+</div><h2>実装を読む</h2><details class="source-details"><summary>build.mjs</summary><pre tabindex="0"><code>import { mkdir, writeFile } from &#39;node:fs/promises&#39;;
+import { build } from &#39;vite&#39;;
+import { config } from &#39;./vite.config.mjs&#39;;
+import { compileFile, requireIR } from &#39;@isle/prototype/compiler&#39;;
+import { tasks } from &#39;../../benchmarks/dashboard/model.mjs&#39;;
+
+await build({ ...config(), configFile: false });
+await build({ ...config(&#39;standalone&#39;), configFile: false });
+const ir = requireIR(await compileFile(new URL(&#39;../../benchmarks/variants/isle/dashboard.isle&#39;, import.meta.url)));
+const server = new URL(&#39;../../dist/worker-widget/server/&#39;, import.meta.url);
+await mkdir(server, { recursive: true });
+await writeFile(new URL(&#39;contracts.json&#39;, server), JSON.stringify({ schemas: ir.schemas, actions: ir.actions, taskIds: tasks.map(task =&gt; task.id) }) + &#39;\n&#39;);
+await writeFile(new URL(&#39;../../dist/worker-widget/client/_headers&#39;, import.meta.url), `/*
+  Content-Security-Policy: default-src &#39;self&#39;; script-src &#39;self&#39;; style-src &#39;self&#39; &#39;unsafe-inline&#39;; img-src &#39;self&#39; data:; connect-src &#39;self&#39;; base-uri &#39;none&#39;; form-action &#39;self&#39;; frame-ancestors *
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Access-Control-Allow-Origin: *
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/
+  Cache-Control: no-cache
+
+/isle.manifest.json
+  Cache-Control: no-cache
+
+/widget.js
+  Cache-Control: no-cache
+
+/widget.json
+  Cache-Control: no-cache
+
+/standalone/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/standalone/
+  Cache-Control: no-cache
+
+/standalone/widget.js
+  Cache-Control: no-cache
+
+/standalone/widget.json
+  Cache-Control: no-cache
+
+/standalone/isle.manifest.json
+  Cache-Control: no-cache
+`);
+console.log(&#39;Built widget client assets and server-only action contracts.&#39;);
+</code></pre></details><details class="source-details"><summary>host-page.mjs</summary><pre tabindex="0"><code>import { renderWidgetEmbed } from &#39;@isle/prototype/widget&#39;;
+
+export function renderHostPage(widgetURL, { width = 640, height = 640, loading = &#39;eager&#39;, count = 1, runtime = &#39;shared&#39; } = {}) {
+  const widgets = Array.from({ length: count }, (_, i) =&gt; renderWidgetEmbed({ src: widgetURL, width, height, loading, runtime, title: `Work planner ${i + 1}` })).join(&#39;\n&#39;);
+  return `&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;&gt;&lt;link rel=&quot;icon&quot; href=&quot;data:,&quot;&gt;&lt;title&gt;Widget publisher demo&lt;/title&gt;&lt;style&gt;
+  *{box-sizing:border-box}body{font:16px/1.6 system-ui,sans-serif;color:#182b3b;background:#edf2f7;margin:0}main{max-width:900px;margin:auto;padding:24px 16px}h1{font-size:28px;line-height:1.3}isle-widget,isle-widget-standalone{background:white;margin:24px 0}#after{padding:16px;border:1px solid #bccbd8;border-radius:8px;background:white}a{color:#185891}
+  &lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;main&gt;&lt;h1&gt;Widget publisher demo&lt;/h1&gt;&lt;p&gt;This page belongs to the publisher. The work planner below is a Web Component served by Cloudflare Workers.&lt;/p&gt;
+  ${widgets}&lt;p id=&quot;after&quot;&gt;Following content keeps its place while the widget loads and changes.&lt;/p&gt;&lt;/main&gt;&lt;/body&gt;&lt;/html&gt;`;
+}
+</code></pre></details><details class="source-details"><summary>host.mjs</summary><pre tabindex="0"><code>/** Public stateless demo. Real authentication/persistence belongs in a separate host adapter. */
+export function createDemoHost(ids) {
+  const tasks = new Set(ids);
+  return {
+    context: () =&gt; ({ subject: &#39;public-demo&#39;, tenant: &#39;widget-demo&#39; }),
+    policies: {
+      &#39;policy.planEditor&#39;: (context, id) =&gt; context.tenant === &#39;widget-demo&#39; &amp;&amp; tasks.has(id),
+      &#39;policy.projectCreator&#39;: context =&gt; context.tenant === &#39;widget-demo&#39;,
+    },
+    validators: { &#39;projects.available&#39;: { effects: [&#39;db.read&#39;], validate: ({ input }) =&gt; input.project === &#39;Taken project&#39; ? [{ field: &#39;project&#39;, code: &#39;taken&#39; }] : [] } },
+    operations: {
+      &#39;plans.save&#39;: { policy: &#39;policy.planEditor&#39;, effects: [&#39;db.write&#39;], commit: ({ args }) =&gt; ({ hours: args[1] }) },
+      &#39;projects.create&#39;: { policy: &#39;policy.projectCreator&#39;, effects: [&#39;db.write&#39;], commit: ({ args }) =&gt; ({ project: args[1] }) },
+    },
+  };
+}
+</code></pre></details><details class="source-details"><summary>vite.config.mjs</summary><pre tabindex="0"><code>import { defineConfig } from &#39;vite&#39;;
+import { fileURLToPath } from &#39;node:url&#39;;
+import { isle } from &#39;@isle/prototype/vite&#39;;
+import { tasks, teams } from &#39;../../benchmarks/dashboard/model.mjs&#39;;
+import { styles, dashboardStyles } from &#39;../../benchmarks/dashboard/shell.mjs&#39;;
+
+const root = fileURLToPath(new URL(&#39;.&#39;, import.meta.url));
+const markup = `&lt;main&gt;&lt;h1&gt;Work planner widget&lt;/h1&gt;
+&lt;p class=&quot;intro&quot;&gt;Public demo. Changes reset when this widget reloads.&lt;/p&gt;
+&lt;fieldset&gt;&lt;legend&gt;Filter work packages by team&lt;/legend&gt;&lt;label&gt;&lt;input type=&quot;radio&quot; id=&quot;team-all&quot; name=&quot;team-filter&quot; checked&gt;All teams&lt;/label&gt;${teams.map((team, i) =&gt; `&lt;label&gt;&lt;input type=&quot;radio&quot; id=&quot;team-${i}&quot; name=&quot;team-filter&quot;&gt;${team}&lt;/label&gt;`).join(&#39;&#39;)}&lt;/fieldset&gt;
+&lt;!--isle:ssr--&gt;&lt;footer&gt;64 independent work packages. No sign-in or third-party cookies required.&lt;/footer&gt;&lt;/main&gt;`;
+export function config(runtime = &#39;shared&#39;) { return defineConfig({ root, base: &#39;./&#39;, plugins: [
+  { name: &#39;widget-shell&#39;, transformIndexHtml: { order: &#39;pre&#39;, handler: html =&gt; html.replace(&#39;&lt;/head&gt;&#39;, `&lt;style&gt;${styles}&lt;/style&gt;&lt;/head&gt;`).replace(&#39;&lt;!--widget:shell--&gt;&#39;, markup) } },
+  isle({ entry: fileURLToPath(new URL(&#39;../../benchmarks/variants/isle/dashboard.isle&#39;, import.meta.url)), loading: &#39;eager&#39;,
+    widget: {
+      runtime,
+      actionBaseURL: runtime === &#39;standalone&#39; ? &#39;../__isle/&#39; : &#39;./__isle/&#39;,
+      template: `&lt;div class=&quot;widget-root&quot;&gt;${markup}&lt;/div&gt;`,
+      css: &#39;:host{container-type:inline-size;color-scheme:light}.widget-root{font:16px system-ui,sans-serif;text-align:left}&#39; + dashboardStyles({ root: &#39;.widget-root&#39;, body: &#39;.widget-root&#39;, compact: &#39;@container (max-width:600px)&#39; }),
+    }, mounts: [
+    { component: &#39;ProjectForm&#39;, props: {}, scopeId: &#39;project&#39;, label: &#39;Create a project&#39; },
+    ...tasks.map(task =&gt; ({ component: &#39;WorkItem&#39;, props: task, scopeId: task.id, label: task.title })),
+  ] }),
+], build: { outDir: `../../dist/worker-widget/client${runtime === &#39;standalone&#39; ? &#39;/standalone&#39; : &#39;&#39;}`, emptyOutDir: true, target: &#39;es2023&#39;, sourcemap: false } }); }
+export default config();
+</code></pre></details><details class="source-details"><summary>worker.mjs</summary><pre tabindex="0"><code>import contracts from &#39;../../dist/worker-widget/server/contracts.json&#39; with { type: &#39;json&#39; };
+import { createWorkerHandler } from &#39;../../lib/worker.mjs&#39;;
+import { createDemoHost } from &#39;./host.mjs&#39;;
+
+// Explicitly public/stateless. Restrict publishers with an exact origin list when needed.
+export default createWorkerHandler(contracts, createDemoHost(contracts.taskIds), { allowedOrigins: &#39;*&#39; });
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/ja/">Isle</a><p>このサイトも Isle で構築しています。静的なページと、必要な操作だけ。</p></div><nav aria-label="Footer navigation"><a href="/isle/ja/docs/quick-start.html">Docs</a><a href="/isle/ja/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

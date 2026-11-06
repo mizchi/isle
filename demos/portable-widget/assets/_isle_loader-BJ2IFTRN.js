@@ -1,0 +1,1 @@
+import{t as e}from"./_isle_widget-engine-bridge-DXdv33ap.js";var{loadIslands:t}=e,n=()=>import(`./isle-resume-BZU-xb2g.js`),r=(e={})=>t(e.root??document,n,[`click`],e);export{r as t};

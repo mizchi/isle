@@ -1,0 +1,175 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Quick start"><title>Quick start · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/docs/quick-start.html"><meta property="og:title" content="Quick start · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Quick start"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/ja/docs/quick-start.html">日本語</a></nav></div></header><main id="content" class="page-width doc-shell"><aside class="doc-sidebar"><p class="eyebrow">DOCUMENTATION</p><nav aria-label="Documentation"><a href="/isle/docs/quick-start.html" aria-current="page">Quick start</a><a href="/isle/ja/docs/composition.html">Components</a><a href="/isle/ja/docs/control-flow.html">Control flow</a><a href="/isle/ja/docs/forms.html">Forms &amp; validation</a><a href="/isle/ja/docs/resolution-optimizer.html">Loading &amp; manifests</a><a href="/isle/ja/docs/resource-disposal.html">Resource lifetime</a><a href="/isle/ja/docs/widgets.html">Web Components</a><a href="/isle/ja/docs/layout-checking.html">CSS contracts</a><a href="/isle/ja/docs/index.html">All guides (日本語) →</a></nav></aside><article class="doc-content"><div class="doc-meta"><span>ISLE DOCUMENTATION</span><a href="https://github.com/mizchi/isle/blob/main/README.md">View source ↗</a></div><h1 id="quick-start">Quick start</h1>
+<p>Use Node.js 24+ and Vite 8 (8.3.5 or later). App developers do not need MoonBit, Z3 or a compiler checkout: the package includes the compiled frontend.</p>
+<p><strong>Preview distribution:</strong> the package is currently private. <a href="/isle/downloads/isle-prototype-0.0.1.tgz">Download the preview npm archive</a> and install it in your app; registry publication is a separate step. The package name and import paths are <code>@isle/prototype</code>.</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>pnpm add ./isle-prototype-0.0.1.tgz
+pnpm add -D vite@^8.3.5</code></pre></div>
+<p>After a registry release, the first command becomes <code>pnpm add @isle/prototype</code>. In your app, create these three files:</p>
+<h3 id="appisle"><code>app.isle</code></h3>
+<!-- file: app.isle -->
+<div class="code-block"><div class="code-language">text</div><pre tabindex="0"><code>client component Counter(initial: number) {
+  state count = initial;
+  derive doubled = count * 2;
+  &lt;section&gt;
+    &lt;h2&gt;Counter&lt;/h2&gt;
+    &lt;output aria-live=&quot;polite&quot;&gt;{count} / {doubled}&lt;/output&gt;
+    &lt;button type=&quot;button&quot;&gt;on click increment { count += 1; }Increment&lt;/button&gt;
+    &lt;button type=&quot;button&quot;&gt;on click reset { count = initial; }Reset&lt;/button&gt;
+  &lt;/section&gt;
+}</code></pre></div>
+<h3 id="indexhtml"><code>index.html</code></h3>
+<!-- file: index.html -->
+<div class="code-block"><div class="code-language">html</div><pre tabindex="0"><code>&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+  &lt;title&gt;My Isle app&lt;/title&gt;
+  &lt;style&gt;
+    body { max-width: 640px; margin: 32px auto; padding: 0 16px; font: 18px/1.6 system-ui; }
+    button { display: block; min-height: 44px; margin: 8px 0; padding: 8px 16px; font: inherit; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;My Isle app&lt;/h1&gt;
+  &lt;!--isle:ssr--&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></div>
+<h3 id="viteconfigmjs"><code>vite.config.mjs</code></h3>
+<!-- file: vite.config.mjs -->
+<div class="code-block"><div class="code-language">js</div><pre tabindex="0"><code>import { defineConfig } from &#39;vite&#39;;
+import { fileURLToPath } from &#39;node:url&#39;;
+import { isle } from &#39;@isle/prototype/vite&#39;;
+
+export default defineConfig({
+  plugins: [isle({
+    entry: fileURLToPath(new URL(&#39;./app.isle&#39;, import.meta.url)),
+    mounts: [{ component: &#39;Counter&#39;, props: { initial: 5 }, label: &#39;Counter&#39; }],
+  })],
+  build: { target: &#39;es2023&#39; },
+});</code></pre></div>
+<p>Run <code>pnpm exec vite</code> and open the URL it prints. The counter starts at <code>5 / 10</code>; Increment changes it to <code>6 / 12</code>, and Reset restores the initial value. Build with <code>pnpm exec vite build</code>, then inspect or serve <code>dist/</code>.</p>
+<p>There is no browser entry to write for this example. <code>&lt;!--isle:ssr--&gt;</code> marks where the plugin inserts server-rendered HTML; it also emits the loader and chunks needed for interaction.</p>
+<p>This build generates the initial HTML at build time. Request-time server actions need a server adapter; the example does not set up a general-purpose request-time page renderer. Write ordinary JavaScript setup/host modules for app logic outside the constrained <code>.isle</code> declarations.</p>
+<h2 id="what-you-can-build">What you can build</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Try and observe</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="/isle/examples/hello/">Minimal counter</a></td>
+<td>Increment and reset a server-rendered value.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/ssr-only/">HTML without browser JS</a></td>
+<td>Inspect the build: HTML and CSS, with no Isle runtime, snapshots or handler chunks.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/partial-updates/">Selective DOM updates</a></td>
+<td>Change one value while the static heading and unrelated output keep their DOM identity.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/composition/">Nested components</a></td>
+<td>Resume a child independently of its parent; project children through a pure component.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/control-flow/">Branches, keyed lists and errors</a></td>
+<td>Switch branches, reorder keyed rows, then empty the list to reach @empty and synchronous @catch.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/loading/">Manifest-driven loading</a></td>
+<td>Inspect preload decisions in the manifest; typing activates Search while Details stays inactive.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/resources/">Resource lifetime and cleanup</a></td>
+<td>Activate an owned timer and listener, remove the component, and observe one cleanup.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/styles/">Lazy CSS readiness</a></td>
+<td>Load component CSS with its setup module and inspect the style seen by setup.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/navigation/">Native navigation hints</a></td>
+<td>Inspect a native Speculation Rules data block and follow an ordinary link; no Isle browser JS is emitted.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/form/">Native form validation</a></td>
+<td>Try invalid input, required consent and successful submission with accessible labels.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/schema-form/">Shared schema and server validation</a></td>
+<td>Submit <a href="mailto:taken@example.com">taken@example.com</a>, correct it, then submit and reset the shared-schema form.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/counter/">Explicit server action</a></td>
+<td>Compare independent counters and rename a document through a validated, authorized server boundary.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/layout-contracts/">CSS contract outcomes</a></td>
+<td>Run verified, overflow/violated and unsupported/unknown cases using reset-aware Grid contracts.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/portable-widget/">Portable Web Components</a></td>
+<td>Mount independent widgets, compare shared and standalone distributions, and reject a version mismatch.</td>
+</tr>
+<tr>
+<td><a href="/isle/examples/worker-widget/">Cloudflare Workers widget</a></td>
+<td>Use two terminals for widget-dev and widget-host; embed fixed-size Shadow DOM widgets on another origin.</td>
+</tr>
+</tbody></table>
+</div><p><a href="/isle/examples/">Browse all examples</a>. Each directory explains what to try, which source/configuration controls it, and how to verify it. The <code>just</code> commands there run the repository demos; your own app uses its Vite commands and the public package imports above.</p>
+<h2 id="choose-the-boundaries">Choose the boundaries</h2>
+<ul>
+<li><code>component Label(title: string)</code> declares a pure component usable on either side. Add <code>client</code> for state/events or <code>server</code> to restrict rendering to the server.</li>
+<li><code>@if</code>, <code>@switch</code>, keyed <code>@for</code> and synchronous <code>@try</code> preserve structure for selective updates. Props passed into a client component are immutable initial values.</li>
+<li>Server actions declare schemas, authorization and effects. Provide your authentication, policies and operations through a server host. Static hosting alone does not execute actions.</li>
+<li><code>resources</code> connects an ordinary setup module to an interactive component&#39;s lifetime. CSS imported by that module is prepared before setup; removal disposes owned resources.</li>
+<li><code>loading: &#39;auto&#39; | &#39;lazy&#39; | &#39;preload&#39; | &#39;eager&#39;</code> controls resolution. Preload fetches code; eager can evaluate it at startup. Speculation Rules target page navigation separately.</li>
+<li><code>widget</code> builds a generated loader and descriptor for third-party Web Components. Reserve width/height, choose shared or standalone, and require exact runtime versions.</li>
+</ul>
+<p>Browser output targets ES2023 and native DOM / ESM / fetch. It ships no MoonBit/Wasm runtime or polyfills. Only dynamic regions receive generated update code; this is not a guarantee of lower latency for every application.</p>
+<h2 id="package-apis-and-guides">Package APIs and guides</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Reference table"><table>
+<thead>
+<tr>
+<th>Import / command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@isle/prototype/vite</code></td>
+<td>Vite plugin: SSR, chunking, loading, resources, widgets and cost budgets</td>
+</tr>
+<tr>
+<td><code>@isle/prototype/compiler</code></td>
+<td>Compile and inspect a constrained <code>.isle</code> program on the server/build machine</td>
+</tr>
+<tr>
+<td><code>@isle/prototype/server</code></td>
+<td>Connect <code>createActionHandler()</code> to a Request/Response server adapter</td>
+</tr>
+<tr>
+<td><code>@isle/prototype/widget</code> / <code>widget/browser</code></td>
+<td>Render an embed tag / use the browser widget API</td>
+</tr>
+<tr>
+<td><code>@isle/prototype/layout</code></td>
+<td>Analyze declared CSS/Grid contracts</td>
+</tr>
+<tr>
+<td><code>@isle/prototype/resources</code></td>
+<td>Resource-owner APIs and types</td>
+</tr>
+<tr>
+<td><code>pnpm exec isle</code></td>
+<td>Inspect source, manifests, cost budgets and layout contracts</td>
+</tr>
+</tbody></table>
+</div><p>The feature examples are bilingual. Detailed guides are currently in Japanese: <a href="/isle/ja/docs/composition.html">composition</a>, <a href="/isle/ja/docs/forms.html">forms</a>, <a href="/isle/ja/docs/control-flow.html">control flow</a>, <a href="/isle/ja/docs/resolution-optimizer.html">loading</a>, <a href="/isle/ja/docs/widgets.html">widgets</a>, <a href="/isle/ja/docs/layout-checking.html">CSS contracts</a>, <a href="/isle/ja/docs/index.html">all documentation</a>.</p>
+<h2 id="current-scope">Current scope</h2>
+<p>Isle is a prototype with a constrained expression/type subset, not an arbitrary TypeScript runtime. <code>inline(ts/moonbit/css)</code>, Content Mappers, general async server rendering and class-level CSS elimination are not implemented. The schema subset includes closed records/arrays for supported control flow.</p>
+<p>CSS checks apply to declared size, wrapping and overflow contracts and return <code>verified</code>, <code>violated</code> or <code>unknown</code>; they do not prove arbitrary browser layout. Finite lifecycle/security models are independent reference models. Compiler-to-model generation and a proof of the whole compiler/runtime/browser are future work. Demo server hosts use fixed principals and in-memory data.</p>
+<p><a href="/isle/ja/docs/contributing.html">Contributor setup and checks</a> · <a href="/isle/ja/docs/design.html">Design</a> · <a href="https://github.com/mizchi/isle/blob/main/models/README.md">Models</a> · <a href="https://github.com/mizchi/isle/blob/main/benchmarks/README.md">Benchmarks</a> · <a href="https://github.com/mizchi/isle/blob/main/evals/README.md">Authoring evaluations</a></p>
+</article></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/">Isle</a><p>Built with Isle. Static pages, resumable interactions.</p></div><nav aria-label="Footer navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>

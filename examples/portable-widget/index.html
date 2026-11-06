@@ -1,0 +1,88 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef"><meta name="description" content="Portable Web Components"><title>Portable Web Components · Isle</title><link rel="icon" href="/isle/assets/isle.svg" type="image/svg+xml"><link rel="canonical" href="https://mizchi.github.io/isle/examples/portable-widget/index.html"><meta property="og:title" content="Portable Web Components · Isle"><meta property="og:type" content="website"><meta property="og:description" content="Portable Web Components"><link rel="stylesheet" href="/isle/assets/site.css"></head><body><a class="skip-link" href="#content">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/isle/"><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a><nav class="main-nav" aria-label="Main navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a><a class="language-link" href="/isle/ja/examples/portable-widget/">日本語</a></nav></div></header><main id="content" class="page-width example-page"><p class="breadcrumbs"><a href="/isle/examples/">All examples</a> / portable-widget</p><span class="tag live-tag">Live Web Components</span><h1>Portable Web Components</h1><p class="lead">Mount independent widgets, compare shared and standalone distributions, and reject a version mismatch.</p><div class="hero-actions"><a class="button primary" href="/isle/demos/portable-widget/">Open live demo ↗</a><a class="button secondary" href="https://github.com/mizchi/isle/blob/main/examples/portable-widget">GitHub source ↗</a></div><div class="doc-content example-description"><p>Source / ソース: <a href="/isle/source/examples/portable-widget/server.mjs">server.mjs</a> · <a href="/isle/source/examples/portable-widget/static.isle">static.isle</a> · <a href="/isle/source/examples/portable-widget/vite.config.mjs">vite.config.mjs</a></p>
+<p>Mount independent widgets, compare shared and standalone distributions, and reject a version mismatch. Open <a href="http://127.0.0.1:8793/portable/">http://127.0.0.1:8793/portable/</a>. Its Node server serves a custom asset path, shared/standalone builds and a mismatch case. The descriptor and generated loader are the public embed interface.</p>
+<p>From a repository checkout, run at the repository root:</p>
+<div class="code-block"><div class="code-language">sh</div><pre tabindex="0"><code>just widget-portable-dev</code></pre></div>
+<p>Open <a href="http://127.0.0.1:8793/portable/">http://127.0.0.1:8793/portable/</a>.</p>
+<p>Check: <code>just widget-check</code>. For a consumer app, install the package and use the <a href="/isle/docs/quick-start.html#quick-start">npm setup</a>; the source files here show the feature and its configuration.</p>
+</div><h2>Read the implementation</h2><details class="source-details"><summary>build.mjs</summary><pre tabindex="0"><code>import { mkdir, writeFile } from &#39;node:fs/promises&#39;;
+import { build } from &#39;vite&#39;;
+import { config, alternateVersion } from &#39;./vite.config.mjs&#39;;
+import { compileFile, requireIR } from &#39;@isle/prototype/compiler&#39;;
+
+await build({ ...config(), configFile: false });
+await build({ ...config(true), configFile: false });
+await build({ ...config(false, { distribution: &#39;other&#39;, runtimeVersion: alternateVersion }), configFile: false });
+await build({ ...config(false, { distribution: &#39;standalone&#39;, runtime: &#39;standalone&#39; }), configFile: false });
+await build({ ...config(false, { distribution: &#39;standalone-other&#39;, runtime: &#39;standalone&#39;, runtimeVersion: alternateVersion }), configFile: false });
+await build({ ...config(true, { distribution: &#39;standalone-static&#39;, runtime: &#39;standalone&#39; }), configFile: false });
+await build({ ...config(false, { distribution: &#39;standalone-collision&#39;, runtime: &#39;standalone&#39;, runtimeVersion: alternateVersion, tagName: &#39;demo-counter-standalone&#39; }), configFile: false });
+const ir = requireIR(await compileFile(new URL(&#39;../counter/app.isle&#39;, import.meta.url)));
+const server = new URL(&#39;../../dist-portable-widget/server/&#39;, import.meta.url);
+await mkdir(server, { recursive: true });
+await writeFile(new URL(&#39;contracts.json&#39;, server), JSON.stringify({ schemas: ir.schemas, actions: ir.actions }) + &#39;\n&#39;);
+</code></pre></details><details class="source-details"><summary>page.mjs</summary><pre tabindex="0"><code>import { boot } from &#39;virtual:isle-loader&#39;;
+boot({ actionBaseURL: new URL(&#39;/portable/api/actions/&#39;, location.href).href, requestCredentials: &#39;omit&#39; });
+</code></pre></details><details class="source-details"><summary>server.mjs</summary><pre tabindex="0"><code>// Node adapter example. Core RPC depends only on standard Request/Response.
+import { createServer } from &#39;node:http&#39;;
+import { readFile } from &#39;node:fs/promises&#39;;
+import { resolve, sep } from &#39;node:path&#39;;
+import { fileURLToPath } from &#39;node:url&#39;;
+import contracts from &#39;../../dist-portable-widget/server/contracts.json&#39; with { type: &#39;json&#39; };
+import { createActionHandler } from &#39;@isle/prototype/server&#39;;
+
+const actionBasePath = &#39;/portable/api/actions/&#39;;
+const handle = createActionHandler(contracts, {
+  context: () =&gt; ({ subject: &#39;public-demo&#39;, tenant: &#39;portable&#39; }),
+  policies: { &#39;policy.documentEditor&#39;: (context, id) =&gt; context.tenant === &#39;portable&#39; &amp;&amp; id === &#39;portable-demo&#39; },
+  operations: { &#39;documents.rename&#39;: { policy: &#39;policy.documentEditor&#39;, effects: [&#39;db.write&#39;], commit: ({ args }) =&gt; ({ id: &#39;portable-demo&#39;, title: args[1] }) } },
+}, { allowedOrigins: &#39;*&#39;, actionBasePath });
+const client = resolve(fileURLToPath(new URL(&#39;../../dist-portable-widget/client/&#39;, import.meta.url)));
+const server = createServer(async (request, response) =&gt; {
+  const origin = `http://${request.headers.host}`, url = new URL(request.url, origin);
+  if (url.pathname.startsWith(actionBasePath)) {
+    const chunks = []; for await (const chunk of request) chunks.push(chunk);
+    const wire = new Request(url, { method: request.method, headers: request.headers, ...(request.method === &#39;POST&#39; ? { body: Buffer.concat(chunks) } : {}) });
+    const result = await handle(wire);
+    response.writeHead(result.status, Object.fromEntries(result.headers)); response.end(await result.text()); return;
+  }
+  try {
+    if (![&#39;GET&#39;, &#39;HEAD&#39;].includes(request.method) || !url.pathname.startsWith(&#39;/portable/&#39;)) throw new Error(&#39;Not found&#39;);
+    const path = decodeURIComponent(url.pathname.slice(&#39;/portable/&#39;.length)) || &#39;index.html&#39;;
+    const file = resolve(client, path);
+    if (!file.startsWith(client + sep)) throw new Error(&#39;Not found&#39;);
+    const body = await readFile(file);
+    const type = path.endsWith(&#39;.js&#39;) ? &#39;text/javascript&#39; : path.endsWith(&#39;.json&#39;) ? &#39;application/json&#39; : &#39;text/html&#39;;
+    response.writeHead(200, { &#39;content-type&#39;: `${type}; charset=utf-8`, &#39;access-control-allow-origin&#39;: &#39;*&#39;, &#39;cache-control&#39;: &#39;no-cache&#39; });
+    response.end(request.method === &#39;HEAD&#39; ? undefined : body);
+  } catch { response.writeHead(404); response.end(&#39;Not found&#39;); }
+});
+server.listen(Number(process.env.PORT ?? 8793), &#39;127.0.0.1&#39;, () =&gt; console.log(`Portable widget: http://127.0.0.1:${server.address().port}/portable/`));
+for (const signal of [&#39;SIGINT&#39;, &#39;SIGTERM&#39;]) process.on(signal, () =&gt; server.close(() =&gt; process.exit()));
+</code></pre></details><details class="source-details"><summary>static.isle</summary><pre tabindex="0"><code>export component Notice(message: string) {
+  &lt;p&gt;{message}&lt;/p&gt;
+}
+</code></pre></details><details class="source-details"><summary>vite.config.mjs</summary><pre tabindex="0"><code>import { fileURLToPath } from &#39;node:url&#39;;
+import { isle } from &#39;@isle/prototype/vite&#39;;
+import { runtimeIdentity } from &#39;../../runtime/runtime-identity.mjs&#39;;
+export const alternateVersion = `${runtimeIdentity.version}-fixture`;
+
+export function config(staticMode = false, { runtime = &#39;shared&#39;, runtimeVersion = runtimeIdentity.version, distribution = staticMode ? &#39;static&#39; : &#39;&#39;, tagName } = {}) {
+  const root = fileURLToPath(new URL(&#39;.&#39;, import.meta.url));
+  const title = staticMode ? &#39;Static notice&#39; : &#39;Portable counter&#39;;
+  const template = `&lt;main&gt;&lt;h1&gt;${title}&lt;/h1&gt;&lt;!--isle:ssr--&gt;&lt;/main&gt;`;
+  const css = &#39;:host{color-scheme:light}*{box-sizing:border-box}body{margin:0}main{font:16px/1.6 system-ui,sans-serif;color:#182b3b;background:#f3f6fa;padding:24px}h1{font-size:24px;line-height:1.2;margin:0 0 20px}h2{font-size:18px;margin:16px 0 8px}button{font:inherit;min-height:44px;min-width:120px;padding:8px 16px;border:1px solid #224e72;border-radius:6px;background:#193f60;color:white}button:focus-visible{outline:3px solid #a44f00;outline-offset:3px}&#39;;
+  return { root, base: &#39;./&#39;, plugins: [
+    { name: &#39;portable-widget-shell&#39;, transformIndexHtml: { order: &#39;pre&#39;, handler: html =&gt; html.replace(&#39;&lt;/head&gt;&#39;, `&lt;style&gt;${css}&lt;/style&gt;&lt;/head&gt;`).replace(&#39;&lt;!--widget:shell--&gt;&#39;, template) } },
+    isle({ entry: fileURLToPath(new URL(staticMode ? &#39;static.isle&#39; : &#39;../counter/app.isle&#39;, import.meta.url)),
+      mode: staticMode ? &#39;ssr&#39; : &#39;resume&#39;, loading: &#39;eager&#39;, clientEntry: staticMode ? undefined : &#39;/page.mjs&#39;,
+      mounts: staticMode ? [{ component: &#39;Notice&#39;, props: { message: &#39;This widget has no UI runtime or handler chunks.&#39; }, label: &#39;Server output&#39; }] : [
+        { component: &#39;Counter&#39;, props: { initial: 17 }, scopeId: &#39;count&#39;, label: &#39;Counter&#39; },
+        { component: &#39;Editor&#39;, props: { id: &#39;portable-demo&#39;, initial: &#39;Draft&#39; }, scopeId: &#39;edit&#39;, label: &#39;Editor&#39; },
+      ],
+      widget: { runtime, runtimeVersion, tagName: tagName ?? `${staticMode ? &#39;static-counter&#39; : &#39;demo-counter&#39;}${distribution &amp;&amp; distribution !== &#39;static&#39; ? `-${distribution}` : &#39;&#39;}`, descriptorFile: `components/${staticMode ? &#39;static&#39; : &#39;counter&#39;}.json`,
+        loaderFile: `sdk/${staticMode ? &#39;static&#39; : &#39;counter&#39;}.js`, actionBaseURL: distribution ? &#39;../../api/actions/&#39; : &#39;../api/actions/&#39;, template, css },
+    }),
+  ], build: { outDir: `../../dist-portable-widget/client${distribution ? `/${distribution}` : &#39;&#39;}`, emptyOutDir: true, target: &#39;es2023&#39; } };
+}
+export default config();
+</code></pre></details></main><footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href="/isle/">Isle</a><p>Built with Isle. Static pages, resumable interactions.</p></div><nav aria-label="Footer navigation"><a href="/isle/docs/quick-start.html">Docs</a><a href="/isle/examples/">Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer></body></html>
