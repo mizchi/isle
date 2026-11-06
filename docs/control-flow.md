@@ -1,5 +1,7 @@
 # Template の制御構文と最適化
 
+現在の推奨表記は [制御コンポーネント](control-components.md) の `Show` / `For` / `Switch` / `ErrorBoundary` です。以下は互換用の旧 `@` 構文と、最適化・寿命に関する設計記録です。両表記は同じ検査済み IR を使います。
+
 状態: 初期の実行実装あり。`@if` / `@else if` / `@else`、`@switch`、key 必須の `@for` / `@empty`、同期描画用の `@try` / `@catch` が MoonBit parser → 型検査 → Region IR → SSR / resume まで動く。以下は全体設計を含むため、実装範囲と将来の契約を分けて読む。
 
 実装済みの [fixture](../evals/scenarios/control-flow/fixture.isle) と `just control-check` で、並べ替え時の DOM 同一性、index 更新、行のハンドラ、空配列、重複 key の commit 前拒否、入れ子、失敗境界、遅延取得中の要素差し替えを検査する。1 行と 4,096 行で同じ行 factory を共有する。

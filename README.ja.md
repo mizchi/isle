@@ -117,7 +117,7 @@ export default defineConfig({
 ## 境界を選ぶ
 
 - `component Label(title: string)` は server/client 共通の純粋な component です。状態・イベントを使う場合は `client`、server に限定する場合は `server` を付けます。
-- `@if`・`@switch`・key 付き `@for`・同期の `@try` は構造を保って部分更新します。client component の props は不変の初期値です。
+- [`Show`・`For`・`Switch` / `Match`・`ErrorBoundary`](docs/control-components.md) で構造を保って部分更新します。行のルート、または複数要素をまとめる `Fragment` に `key` を指定します。client component の props は不変の初期値です。
 - server action には schema・認可・effect を宣言します。実認証・policy・operation は利用側の server host に実装し、静的配信とは別に接続します。
 - `resources` で通常の setup module を component の寿命に接続します。import した CSS は setup の前に準備され、削除時には所有リソースを破棄します。
 - `loading: 'auto' | 'lazy' | 'preload' | 'eager'` で解決時期を選びます。preload は取得、eager は起動時の評価も許します。ページ遷移の Speculation Rules は別の設定です。

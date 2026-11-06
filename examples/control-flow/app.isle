@@ -12,16 +12,18 @@ client component List(initial: Item[]) {
     <button type="button">on click empty { items = []; }Empty list</button>
     <button type="button">on click restore { items = initial; }Restore rows</button>
     <button type="button">on click summary { mode = "summary"; }Summary</button>
-    @if (visible) { <p data-visibility="">Visible</p> }
-    @else { <p data-visibility="">Hidden</p> }
-    @switch (mode) {
-      @case "list": { <p data-mode="">List view</p> }
-      @case "summary": { <p data-mode="">Summary view</p> }
-      @default: { <p data-mode="">Other view</p> }
-    }
-    <ul>@for (const item of items; key item.id) { <Row item={item} /> }
-    @empty { <li>No rows</li> }</ul>
-    @try { <p data-first="">First: {items[0].title}</p> }
-    @catch (error) { <p data-error="">No first row: {error}</p> }
+    <Show when={visible} fallback={<p data-visibility="">Hidden</p>}>
+      <p data-visibility="">Visible</p>
+    </Show>
+    <Switch fallback={<p data-mode="">Other view</p>}>
+      <Match when={mode === "list"}><p data-mode="">List view</p></Match>
+      <Match when={mode === "summary"}><p data-mode="">Summary view</p></Match>
+    </Switch>
+    <ul><For each={items} fallback={<li>No rows</li>}>
+      {(item) => <Row key={item.id} item={item} />}
+    </For></ul>
+    <ErrorBoundary fallback={(error) => <p data-error="">No first row: {error}</p>}>
+      <p data-first="">First: {items[0].title}</p>
+    </ErrorBoundary>
   </section>
 }

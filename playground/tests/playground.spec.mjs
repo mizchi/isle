@@ -43,6 +43,29 @@ test('SSR emits no dynamic data, CSS edits work and invalid props recover',async
   await expect(preview(page).locator('output')).toHaveText('7 / 14');
 });
 
+test('Fragment keys own the whole group across moves, replacement and reinsertion',async({page})=>{
+  await page.goto('/');await page.locator('#preset').selectOption('fragments');
+  const frame=preview(page);
+  await expect(frame.locator('[data-row]')).toHaveCount(2);
+  await frame.locator('body').evaluate(()=>{
+    window.originalA=document.querySelector('[data-row="a"]');window.originalDetailA=document.querySelector('[data-detail="a"]');
+    window.originalB=document.querySelector('[data-row="b"]');window.originalDetailB=document.querySelector('[data-detail="b"]');
+  });
+  await frame.getByRole('button',{name:'Reverse groups'}).click();
+  await expect(frame.locator('[data-row]').first()).toHaveAttribute('data-row','b');
+  expect(await frame.locator('[data-row="a"]').evaluate(node=>node===window.originalA)).toBe(true);
+  expect(await frame.locator('[data-detail="a"]').evaluate(node=>node===window.originalDetailA)).toBe(true);
+  await frame.getByRole('button',{name:'Replace first key'}).click();
+  await expect(frame.locator('[data-row]').first()).toHaveAttribute('data-row','c');
+  expect(await frame.locator('body').evaluate(()=>window.originalB.isConnected || window.originalDetailB.isConnected)).toBe(false);
+  expect(await frame.locator('[data-row="a"]').evaluate(node=>node===window.originalA)).toBe(true);
+  await frame.getByRole('button',{name:'Replacement',exact:true}).click();await expect(frame.locator('[data-selected]')).toHaveText('c');
+  await frame.getByRole('button',{name:'Clear groups'}).click();await expect(frame.locator('ul')).toHaveText('No groups');
+  await frame.getByRole('button',{name:'Restore groups'}).click();await expect(frame.locator('[data-row]')).toHaveCount(2);
+  expect(await frame.locator('[data-row="a"]').evaluate(node=>node===window.originalA)).toBe(false);
+  expect(await page.locator('#preview').getAttribute('srcdoc')).not.toMatch(/<Fragment\b|\skey=/);
+});
+
 test('compilation stays local offline; manual run, module inspection and download work',async({page,context})=>{
   await page.goto('/');await expect(page.getByRole('status')).toContainText('Ready');
   await context.setOffline(true);
@@ -127,4 +150,7 @@ for(const width of [390,1440]) test(`editor, preview and error state remain usab
   await expect(preview(page).locator('li')).toHaveCount(2);await preview(page).getByRole('button',{name:'Empty list'}).click();
   await expect(preview(page).locator('li')).toHaveText(['No rows']);
   await page.screenshot({path:testInfo.outputPath('empty.png'),fullPage:true});
+  await page.locator('#preset').selectOption('fragments');await expect(preview(page).locator('[data-row]')).toHaveCount(2);
+  await page.locator('#preview').screenshot({path:testInfo.outputPath('fragments-preview.png')});
+  await page.screenshot({path:testInfo.outputPath('fragments.png'),fullPage:true});
 });

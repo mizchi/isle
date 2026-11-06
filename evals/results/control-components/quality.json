@@ -1,0 +1,91 @@
+{
+  "results": [
+    {
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 2,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inert-control",
+          "severity": "warn",
+          "message": "button \"Show\" (main>section.card>section>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+          "evidence": {
+            "element": "button \"Show\" (main>section.card>section>button)"
+          }
+        },
+        {
+          "rule": "inert-control",
+          "severity": "warn",
+          "message": "button \"Restore rows\" (main>section.card>section>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+          "evidence": {
+            "element": "button \"Restore rows\" (main>section.card>section>button)"
+          }
+        }
+      ]
+    },
+    {
+      "gate": "check.breakpoints",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.responsive",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    }
+  ]
+}

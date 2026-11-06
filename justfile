@@ -209,12 +209,17 @@ widget-portable-dev: widget-portable-build
 
 # Typed template regions, key identity, selective patches and render failure boundaries.
 control-check: build-compiler
-    node --test tests/control-flow*.test.mjs
+    node --test tests/control-components.test.mjs tests/control-flow*.test.mjs
     pnpm exec playwright test --config playwright.control-flow.config.mjs
 
 # Fixed DOM/keyboard gates and desktop/phone states for the executable control-flow fixture.
 control-quality: build-compiler
     node tools/check-control-quality.mjs
+
+# Public control-component example, with responsive and keyboard gates.
+control-components-quality: build-compiler
+    pnpm exec vite build --config examples/control-flow/vite.config.mjs
+    node tools/check-playground.mjs control-flow
 
 # Teardown safety/liveness plus model-derived schedules against the resource owner kernel.
 resource-disposal-check:

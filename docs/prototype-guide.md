@@ -2,7 +2,7 @@
 
 初めて利用する場合は[はじめる](getting-started.md)、機能別の手順は[アプリを書く](application-guide.md)を参照してください。このページは現在動く構文と意味規則のリファレンスです。
 
-UI 言語は TypeScript の式・型を基にした専用構文です。現在は小さな部分言語だけを実装しています。任意の TS、import、関数定義、分岐、list、class、cast、任意 callback は未対応で、暗黙の動的実行へ逃がさずエラーにします。
+UI 言語は TypeScript の式・型を基にした専用構文です。分岐・反復は [Show / For などの制御コンポーネント](control-components.md) を使います。For のインライン描画関数も含め、現在は解析できる部分言語だけを実装しています。任意の TS、import、一般の関数定義、class、cast、任意 callback は未対応で、暗黙の動的実行へ逃がさずエラーにします。
 
 ## ソースを読むための意味規則
 

@@ -15,21 +15,23 @@ client component Controls(initial: Item[]) {
     <button type="button" data-test="add">on click add { offset += 1; }Add</button>
     <button type="button" data-test="summary">on click summary { mode = "summary"; }Summary</button>
     <button type="button" data-test="restore">on click restore { items = initial; }Restore</button>
-    @if (visible) {
+    <Show when={visible} fallback={<p data-test="hidden">Hidden</p>}>
       <div data-test="visible">Visible <output>{offset}</output></div>
-    } @else { <p data-test="hidden">Hidden</p> }
-    @switch (mode) {
-      @case "rows": { <p data-test="mode">Rows</p> }
-      @case "summary": { <p data-test="mode">Summary</p> }
-      @default: { <p data-test="mode">Other</p> }
-    }
-    <ul>@for (const item of items; index i; key item.id) {
-      <Row item={item} index={i} />
-      <li><small>Total <output data-price={item.id}>{item.value + offset}</output></small></li>
-      <li><button type="button" data-item={item.id}>on click select { offset = item.value; }Select</button></li>
-    } @empty { <li data-test="empty-message">Empty</li> }</ul>
-    @try { <p data-test="first">{items[0].value}</p> }
-    @catch (error) { <p data-test="error">{error}</p> }
+    </Show>
+    <Switch fallback={<p data-test="mode">Other</p>}>
+      <Match when={mode === "rows"}><p data-test="mode">Rows</p></Match>
+      <Match when={mode === "summary"}><p data-test="mode">Summary</p></Match>
+    </Switch>
+    <ul><For each={items} fallback={<li data-test="empty-message">Empty</li>}>
+      {(item, i) => <Fragment key={item.id}>
+        <Row item={item} index={i} />
+        <li><small>Total <output data-price={item.id}>{item.value + offset}</output></small></li>
+        <li><button type="button" data-item={item.id}>on click select { offset = item.value; }Select</button></li>
+      </Fragment>}
+    </For></ul>
+    <ErrorBoundary fallback={(error) => <p data-test="error">{error}</p>}>
+      <p data-test="first">{items[0].value}</p>
+    </ErrorBoundary>
   </section>
 }
 client component Nested(groups: string[], numbers: number[]) {
@@ -40,17 +42,13 @@ client component Nested(groups: string[], numbers: number[]) {
     <button type="button" data-test="nested-hide">on click hide { shown = false; }Hide rows</button>
     <button type="button" data-test="nested-show">on click show { shown = true; }Show rows</button>
     <output data-test="nested-result">{selected}{value}</output>
-    @if (shown) {
-      @for (const group of groups; key group) {
-        <div data-group={group}>
-          @for (const n of numbers; key n) {
-            <button type="button" data-group={group} data-number={n}>on click choose { selected = group; value = n; }{group}{n}</button>
-          }
-        </div>
-      }
-    }
-    @try {
-      @try {<p>{numbers[99]}</p>} @catch (inner) {<p>{numbers[98]}</p>}
-    } @catch (outer) {<p data-test="outer-error">{outer}</p>}
+    <Show when={shown}>
+      <For each={groups}>{(group) => <div key={group} data-group={group}>
+        <For each={numbers}>{(n) => <button key={n} type="button" data-group={group} data-number={n}>on click choose { selected = group; value = n; }{group}{n}</button>}</For>
+      </div>}</For>
+    </Show>
+    <ErrorBoundary fallback={(outer) => <p data-test="outer-error">{outer}</p>}>
+      <ErrorBoundary fallback={(inner) => <p>{numbers[98]}</p>}><p>{numbers[99]}</p></ErrorBoundary>
+    </ErrorBoundary>
   </section>
 }

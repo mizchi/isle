@@ -117,7 +117,7 @@ This build generates the initial HTML at build time. Request-time server actions
 ## Choose the boundaries
 
 - `component Label(title: string)` declares a pure component usable on either side. Add `client` for state/events or `server` to restrict rendering to the server.
-- `@if`, `@switch`, keyed `@for` and synchronous `@try` preserve structure for selective updates. Props passed into a client component are immutable initial values.
+- [`Show`, `For`, `Switch` / `Match` and `ErrorBoundary`](docs/control-components.md) compile to selective updates. Put each row's `key` on its returned root, or a `Fragment` for multiple roots. Props passed into a client component are immutable initial values.
 - Server actions declare schemas, authorization and effects. Provide your authentication, policies and operations through a server host. Static hosting alone does not execute actions.
 - `resources` connects an ordinary setup module to an interactive component's lifetime. CSS imported by that module is prepared before setup; removal disposes owned resources.
 - `loading: 'auto' | 'lazy' | 'preload' | 'eager'` controls resolution. Preload fetches code; eager can evaluate it at startup. Speculation Rules target page navigation separately.

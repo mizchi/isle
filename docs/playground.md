@@ -1,6 +1,6 @@
 # ブラウザーコンパイラと Playground
 
-[Playground](https://mizchi.github.io/isle/playground/) では `.isle`、props の JSON、CSS を編集し、ブラウザー内でコンパイルして実際に操作できます。Counter、分岐とキー付きリスト、入れ子の独立した owner、静的な server component のプリセットがあります。Component と Resume / SSR only を選択でき、コンパイル失敗時には診断をクリックしてソース位置へ移動できます。
+[Playground](https://mizchi.github.io/isle/playground/) では `.isle`、props の JSON、CSS を編集し、ブラウザー内でコンパイルして実際に操作できます。Counter、Show / For によるリスト、Fragment の key でまとめる複数要素の行、入れ子の独立した owner、静的な server component のプリセットがあります。[制御コンポーネント](control-components.md)の仕様も参照してください。Component と Resume / SSR only を選択でき、コンパイル失敗時には診断をクリックしてソース位置へ移動できます。
 
 Auto-run は 250ms の debounce で動きます。無効にした場合は Compile または Cmd / Ctrl + Enter で実行します。Inspect output で HTML と snapshot、生成モジュール、解析結果、IR を確認でき、Download output でソース・props・CSS とプレビューの成果物を JSON 保存できます。入力を変更すると古いプレビューを破棄し、古いコンパイル結果やプレビューからの通知は反映しません。
 
