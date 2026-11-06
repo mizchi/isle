@@ -17,7 +17,7 @@ The browser displays the server's HTML without replaying component initializatio
 
 ## Quick start
 
-Use Node.js 24+ and Vite 8 (8.3.5 or later). App developers do not need MoonBit, Z3 or a compiler checkout: the package includes the compiled frontend.
+Use Node.js 24+ and Vite 8 (8.3.5 or later). The package includes the compiled frontend and depends on Z3 Wasm for layout checks. App developers do not need MoonBit, a Z3 executable or a compiler checkout.
 
 **Preview distribution:** the package is currently private. [Download the preview npm archive](artifacts/isle-prototype-0.0.1.tgz) and install it in your app; registry publication is a separate step. The package name and import paths are `@isle/prototype`.
 
@@ -138,6 +138,7 @@ Browser output targets ES2023 and native DOM / ESM / fetch. It ships no MoonBit/
 | `@isle/prototype/server` | Connect `createActionHandler()` to a Request/Response server adapter |
 | `@isle/prototype/widget` / `widget/browser` | Render an embed tag / use the browser widget API |
 | `@isle/prototype/layout` | Analyze declared CSS/Grid contracts |
+| `@isle/prototype/layout/z3` / `layout/z3/node` | Verify layout models with Z3 in a Worker / Node; return proofs or counterexamples |
 | `@isle/prototype/resources` | Resource-owner APIs and types |
 | `pnpm exec isle` | Inspect source, manifests, cost budgets and layout contracts |
 

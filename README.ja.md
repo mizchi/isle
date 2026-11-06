@@ -17,7 +17,7 @@ SSR するアプリと、外部サイトへ埋め込む Web Components を、操
 
 ## はじめる
 
-Node.js 24+ と Vite 8 系（8.3.5 以上）を使います。コンパイル済み frontend をパッケージに含めるため、アプリの利用者は MoonBit・Z3・コンパイラの checkout を用意する必要はありません。
+Node.js 24+ と Vite 8 系（8.3.5 以上）を使います。コンパイル済み frontend をパッケージに含め、レイアウト検査には依存パッケージの Z3 Wasm を使います。MoonBit・Z3 の実行ファイル・コンパイラの checkout を用意する必要はありません。
 
 **プレビュー配布:** パッケージは現在 private です。[プレビュー版の npm アーカイブ](artifacts/isle-prototype-0.0.1.tgz)をダウンロードし、自分のアプリへインストールします。レジストリ公開は別の工程として扱います。パッケージ名と import パスは `@isle/prototype` です。
 
@@ -138,6 +138,7 @@ export default defineConfig({
 | `@isle/prototype/server` | `createActionHandler()` を Request / Response server に接続 |
 | `@isle/prototype/widget` / `widget/browser` | 埋め込みタグの生成 / browser widget API |
 | `@isle/prototype/layout` | 宣言した CSS / Grid 契約の解析 |
+| `@isle/prototype/layout/z3` / `layout/z3/node` | Worker / Node で Z3 検査を行い、証明結果か反例を返す |
 | `@isle/prototype/resources` | resource owner の API と型 |
 | `pnpm exec isle` | source・manifest・cost budget・layout 契約の検査 |
 
