@@ -19,7 +19,7 @@ export function regionContext(root, scope, spec, values) {
   if (contexts.has(root)) return contexts.get(root);
   const document = root.ownerDocument;
   let handles = new Map(), frames = new Map();
-  let queue = [], binding = true;
+  let queue = [], binding = true, payload;
   function scan(container) {
     const walker = document.createTreeWalker(container, 129);
     for (let node = walker.currentNode; node; node = walker.nextNode()) {
@@ -93,13 +93,18 @@ export function regionContext(root, scope, spec, values) {
     attribute(f, id, name, value) {
       const target = handles.get(f.id + '|' + id);
       if (!target) throw new Error('Missing region attribute');
-      if (!binding) queue.push(() => {
-        if (['disabled', 'checked', 'required', 'readonly', 'multiple', 'selected', 'hidden'].includes(name)) {
-          if (value) target.setAttribute(name, ''); else target.removeAttribute(name);
-          if (name === 'checked') target.checked = value;
-        } else if (name === 'value') { if (target.value !== String(value)) target.value = String(value); }
-        else if (target.getAttribute(name) !== String(value)) target.setAttribute(name, value);
-      });
+      if (!binding) {
+        const captured = payload;
+        queue.push(() => {
+          // An older queued entry must not overwrite a newer edit already in the DOM.
+          if (captured?.element === target && ((name === 'value' && target.value !== captured.value) || (name === 'checked' && target.checked !== captured.checked))) return;
+          if (['disabled', 'checked', 'required', 'readonly', 'multiple', 'selected', 'hidden', 'autofocus'].includes(name)) {
+            if (value) target.setAttribute(name, ''); else target.removeAttribute(name);
+            if (name === 'checked') target.checked = value;
+          } else if (name === 'value') { if (target.value !== String(value)) target.value = String(value); }
+          else if (target.getAttribute(name) !== String(value)) target.setAttribute(name, value);
+        });
+      }
     },
     ...(SELECT ? { select } : {}),
     ...(EACH ? { each(parent, site, getRows, reconcile, spec, empty, v, l, dirty) {
@@ -156,9 +161,11 @@ export function regionContext(root, scope, spec, values) {
   try { patch(top, values, [], null); } finally { binding = false; queue = []; }
   const context = {
     locals(element) { const f = frames.get(element.closest('[data-isle-frame]')?.getAttribute('data-isle-frame')); if (!f) throw new Error('Disposed region'); return f.locals; },
-    prepare(v, dirty) {
+    prepare(v, dirty, event) {
+      payload = event;
       queue = [];
       try { patch(top, v, [], dirty); } catch (error) { queue = []; throw error; }
+      finally { payload = undefined; }
       const commits = queue; queue = [];
       return () => { commits.forEach(commit => commit()); };
     },

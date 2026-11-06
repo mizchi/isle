@@ -7,7 +7,7 @@ import { compile, requireIR } from '@isle/prototype/compiler';
 import { isle } from '@isle/prototype/vite';
 import { prepareProgram } from '../lib/codegen.mjs';
 import { content } from './content.mjs';
-import { normalizeBase, siteExamples, sourceRoutes, sourceURL, repository, guideLinks } from './config.mjs';
+import { normalizeBase, siteExamples, sourceRoutes, sourceURL, repository, guideLinks, hashRoutes } from './config.mjs';
 import { renderMarkdown, escapeHTML as escape } from './markdown.mjs';
 
 export const root = resolve(fileURLToPath(new URL('../', import.meta.url)));
@@ -103,7 +103,7 @@ export async function buildSite({ base = process.env.SITE_BASE, origin = process
     for (const lang of ['en', 'ja']) {
       const ja = lang === 'ja', prefix = ja ? 'ja/' : '';
       const cards = siteExamples.map(example => `<article class="example-card">${tag(example, lang)}<h2>${escape(ja ? example.ja : example.title)}</h2><p>${escape(ja ? example.observeJa : example.observe)}</p><p class="example-id">${example.id}</p><div class="example-links"><a class="text-link" href="${base + prefix}examples/${example.id}/">${ja ? '説明とソース' : 'Guide & source'} →</a>${['live', 'widget'].includes(example.availability) ? `<a class="text-link" href="${demoURL(example)}">${ja ? 'デモを開く' : 'Open demo'} ↗</a>` : ''}</div></article>`).join('');
-      await page(prefix + 'examples/index.html', { lang, title: ja ? 'サンプル集' : 'Examples', alternate: gallery(ja ? 'en' : 'ja'), body: `<main id="content" class="page-width"><div class="page-intro"><p class="eyebrow">15 FOCUSED EXAMPLES</p><h1>${ja ? '境界を、触って確かめる。' : 'Explore the boundaries.'}</h1><p>${ja ? 'Pages で動く例にはライブデモを用意しました。サーバーが必要な例は、実装と実行手順を案内します。' : 'Try the static-host demos in your browser. Server examples show the implementation and the adapter they need.'}</p></div><div class="example-grid catalog-grid">${cards}</div></main>` });
+      await page(prefix + 'examples/index.html', { lang, title: ja ? 'サンプル集' : 'Examples', alternate: gallery(ja ? 'en' : 'ja'), body: `<main id="content" class="page-width"><div class="page-intro"><p class="eyebrow">${siteExamples.length} FOCUSED EXAMPLES</p><h1>${ja ? '境界を、触って確かめる。' : 'Explore the boundaries.'}</h1><p>${ja ? 'Pages で動く例にはライブデモを用意しました。サーバーが必要な例は、実装と実行手順を案内します。' : 'Try the static-host demos in your browser. Server examples show the implementation and the adapter they need.'}</p></div><div class="example-grid catalog-grid">${cards}</div></main>` });
       for (const example of siteExamples) {
         const source = `examples/${example.id}/README.md`, readme = await read(source);
         const instructions = ja ? readme.split('## 日本語')[1] : readme.split('## English')[1]?.split('## 日本語')[0];
@@ -141,6 +141,7 @@ export async function buildSite({ base = process.env.SITE_BASE, origin = process
       reports.push(`<section class="report-card"><div class="report-title"><h2>${name}</h2><span class="tag report-tag">${file}</span></div><pre tabindex="0"><code>${escape(JSON.stringify(data, null, 2))}</code></pre></section>`);
     }
     await page('reports/layout.html', { title: 'CSS contract reports', body: `<main id="content" class="page-width example-page"><p class="eyebrow">BUILD-TIME ANALYSIS</p><h1>Three outcomes. Explicit limits.</h1><p class="lead">Real CLI output for the declared Grid / reset contracts. Unknown is not a successful proof.</p><div class="report-grid">${reports.join('')}</div><a href="${base}examples/layout-contracts/">Read the example →</a></main>` });
+    await page('reports/todomvc.html', { title: 'TodoMVC payload comparison', body: `<main id="content" class="page-width example-page doc-content">${markdown(await read('benchmarks/results/todomvc/latest.md'), 'benchmarks/results/todomvc/latest.md')}<p><a href="${base}examples/todomvc/">TodoMVC guide &amp; source →</a></p><p><a href="${base}demos/todomvc/">Open the live demo →</a></p></main>` });
     await page('404.html', { title: 'Page not found', body: `<main id="content" class="page-width example-page"><p class="eyebrow">404</p><h1>This page isn’t here.</h1><p>Find a guide or try an example.</p><div class="hero-actions"><a class="button primary" href="${home('en')}">Back to Isle →</a><a class="button secondary" href="${gallery('en')}">Explore examples</a></div></main>` });
 
     // Copy only source assets referenced by the rendered documents.
@@ -161,8 +162,8 @@ export async function buildSite({ base = process.env.SITE_BASE, origin = process
     await mkdir(resolve(out, 'downloads'), { recursive: true }); await copyFile(resolve(temporary, archive), resolve(out, 'downloads', archive));
     await write('.nojekyll', '');
     await write('sitemap.xml', `<?xml version="1.0" encoding="utf-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${pages.filter(path => path !== '404.html').map(path => `<url><loc>${escape(new URL(base + path.replace(/index\.html$/, ''), origin).href)}</loc></url>`).join('')}</urlset>`);
-    await write('site.json', JSON.stringify({ base, repository, pages, examples: siteExamples.map(({ id, availability }) => ({ id, availability })) }, null, 2));
-    console.log(`Site: ${pages.length} pages, 10 static demos + Web Components, base ${base}`);
+    await write('site.json', JSON.stringify({ base, repository, pages, hashRoutes, examples: siteExamples.map(({ id, availability }) => ({ id, availability })) }, null, 2));
+    console.log(`Site: ${pages.length} pages, ${siteExamples.filter(example => example.availability === 'live').length} static demos + Web Components, base ${base}`);
     return { base, output: out, pages };
   } finally { await rm(temporary, { recursive: true, force: true }); }
 }

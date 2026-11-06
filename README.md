@@ -91,6 +91,7 @@ This build generates the initial HTML at build time. Request-time server actions
 
 | Feature | Try and observe |
 | --- | --- |
+| [TodoMVC](examples/todomvc/) | Add, edit, filter and persist todos; compare production sizes with Qwik and Preact. |
 | [Minimal counter](examples/hello/) | Increment and reset a server-rendered value. |
 | [HTML without browser JS](examples/ssr-only/) | Inspect the build: HTML and CSS, with no Isle runtime, snapshots or handler chunks. |
 | [Selective DOM updates](examples/partial-updates/) | Change one value while the static heading and unrelated output keep their DOM identity. |

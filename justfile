@@ -80,6 +80,23 @@ compare: compare-build compare-test compare-visual
 compare-serve:
     NODE_ENV=production node benchmarks/serve.mjs
 
+# TodoMVC: identical CRUD, hash filters, persistence and host capabilities.
+todomvc-build: build-compiler
+    node benchmarks/todomvc/build.mjs
+
+todomvc-check: todomvc-build
+    node --test tests/collections.test.mjs tests/todomvc-metrics.test.mjs
+    NODE_ENV=production node benchmarks/todomvc/check.mjs
+
+todomvc-size: todomvc-check
+    NODE_ENV=production node benchmarks/todomvc/size.mjs
+
+todomvc-serve: todomvc-build
+    NODE_ENV=production node benchmarks/todomvc/serve.mjs
+
+todomvc-quality: todomvc-build
+    NODE_ENV=production node benchmarks/todomvc/quality.mjs
+
 # 64 work packages + validated form, four implementations, cold/warm browser timings.
 dashboard-build: build-compiler
     node benchmarks/dashboard/build.mjs

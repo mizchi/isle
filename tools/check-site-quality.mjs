@@ -8,7 +8,7 @@ const server = spawn(process.execPath, ['tools/serve-site.mjs'], { stdio: ['igno
 let log = '';
 for (const stream of [server.stdout, server.stderr]) stream.on('data', data => { log = (log + data).slice(-4000); });
 const results = [];
-const routes = ['', 'ja/', 'examples/', 'ja/examples/', 'docs/quick-start.html', 'examples/resources/', 'demos/portable-widget/', 'reports/layout.html'];
+const routes = ['', 'ja/', 'examples/', 'ja/examples/', 'docs/quick-start.html', 'examples/resources/', 'demos/portable-widget/', 'reports/layout.html', 'examples/todomvc/', 'demos/todomvc/', 'reports/todomvc.html'];
 const tasks = routes.map(route => ({ route, args: ['check', 'integrity'] }));
 for (const route of ['', 'ja/']) {
   const lang = route ? 'ja' : 'en';

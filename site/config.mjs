@@ -2,7 +2,12 @@ import { posix } from 'node:path';
 import { examples } from '../examples/catalog.mjs';
 
 export const repository = 'https://github.com/mizchi/isle';
-export const liveExampleIds = ['hello', 'ssr-only', 'partial-updates', 'composition', 'control-flow', 'loading', 'resources', 'styles', 'navigation', 'form'];
+export const hashRoutes = { 'demos/todomvc/index.html': ['#/', '#/active', '#/completed'] };
+export function hasFragment(content, hash, routes = []) {
+  const id = decodeURIComponent(hash.slice(1));
+  return content.includes(`id="${id}"`) || content.includes(`name="${id}"`) || routes.includes(hash);
+}
+export const liveExampleIds = ['todomvc', 'hello', 'ssr-only', 'partial-updates', 'composition', 'control-flow', 'loading', 'resources', 'styles', 'navigation', 'form'];
 export const siteExamples = examples.map(example => ({ ...example,
   availability: liveExampleIds.includes(example.id) ? 'live' : example.id === 'portable-widget' ? 'widget' : example.kind === 'layout' ? 'report' : 'server',
 }));
@@ -16,6 +21,7 @@ export function sourceRoutes(documents) {
   const routes = new Map([
     ['README.md', 'docs/quick-start.html'], ['README.ja.md', 'ja/docs/quick-start.html'],
     ['examples/README.md', 'examples/'], ['examples/README.ja.md', 'ja/examples/'],
+    ['benchmarks/results/todomvc/latest.md', 'reports/todomvc.html'],
   ]);
   for (const file of documents) routes.set(file, 'ja/' + file.replace(/\.md$/, '.html').replace('/README.html', '/index.html'));
   for (const example of siteExamples) {

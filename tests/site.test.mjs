@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeBase, siteExamples, sourceRoutes } from '../site/config.mjs';
+import { normalizeBase, siteExamples, sourceRoutes, hashRoutes, hasFragment } from '../site/config.mjs';
 import { renderMarkdown, resolveDocLink } from '../site/markdown.mjs';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -16,6 +16,15 @@ test('the site respects a project Pages prefix and fails closed on invalid base 
   for (const base of ['https://example.test/', '//host/', '/isle/../', '/isle/?x', '/a\\b/']) assert.throws(() => normalizeBase(base));
 });
 
+test('hash routes are explicitly bounded to their demo without weakening ordinary anchor checks', () => {
+  const routes = hashRoutes['demos/todomvc/index.html'];
+  assert.equal(hasFragment('<h2 id="guide">Guide</h2>', '#guide'), true);
+  assert.equal(hasFragment('', '#/active', routes), true);
+  assert.equal(hasFragment('', '#/unknown', routes), false);
+  assert.equal(hasFragment('', '#/active'), false);
+  assert.equal(hasFragment('', '#missing', routes), false);
+});
+
 test('declarative widgets resolve a relative source against their document base', () => {
   assert.equal(resolveWidgetSource({ descriptorURL: './counter.json' }, 'https://example.test/isle/widget/'), 'https://example.test/isle/widget/counter.json');
   assert.equal(resolveWidgetSource({ src: '../widget/' }, 'https://example.test/isle/demo/'), 'https://example.test/isle/widget/widget.json');
@@ -24,12 +33,12 @@ test('declarative widgets resolve a relative source against their document base'
 });
 
 test('live examples are static-host compatible and server examples do not advertise broken RPC demos', () => {
-  assert.equal(siteExamples.length, 15);
+  assert.equal(siteExamples.length, 16);
   assert.equal(siteExamples.find(example => example.id === 'schema-form').availability, 'server');
   assert.equal(siteExamples.find(example => example.id === 'counter').availability, 'server');
   assert.equal(siteExamples.find(example => example.id === 'layout-contracts').availability, 'report');
   assert.equal(siteExamples.find(example => example.id === 'portable-widget').availability, 'widget');
-  assert.equal(siteExamples.filter(example => example.availability === 'live').length, 10);
+  assert.equal(siteExamples.filter(example => example.availability === 'live').length, 11);
 });
 
 test('Markdown links and raw picture assets resolve within the deployed subpath', () => {

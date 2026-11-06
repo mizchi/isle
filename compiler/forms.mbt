@@ -4,7 +4,7 @@ fn supported_attribute(name : String) -> Bool {
     "class", "id", "title", "value", "type", "name", "disabled", "role", "for", "required",
     "schema", "submit", "tabindex", "hidden", "checked", "readonly", "multiple",
     "selected", "minlength", "maxlength", "min", "max", "step", "pattern", "autocomplete",
-    "placeholder", "inputmode", "rows", "cols", "href",
+    "placeholder", "inputmode", "rows", "cols", "href", "autofocus",
   ].contains(name) ||
   name.has_prefix("data-") ||
   name.has_prefix("aria-")
@@ -14,6 +14,7 @@ fn supported_attribute(name : String) -> Bool {
 fn boolean_attribute(name : String) -> Bool {
   [
     "disabled", "required", "checked", "readonly", "multiple", "selected", "hidden",
+    "autofocus",
   ].contains(name)
 }
 
@@ -75,7 +76,13 @@ fn event_environment(
   }
   let result = env.copy()
   result.set("$event", handler.event)
-  if control && ["input", "change", "invalid"].contains(handler.event) {
+  if handler.event == "keydown" {
+    result.set("$event.key", "string")
+  }
+  if control &&
+    ["input", "change", "invalid", "keydown", "focusout"].contains(
+      handler.event,
+    ) {
     result.set("$event.value", "string")
     result.set("$event.invalid", "boolean")
     result.set("$event.validationMessage", "string")

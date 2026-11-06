@@ -1,0 +1,68 @@
+schema Todo { id: number; title: string; completed: boolean; }
+
+client component TodoMVC() {
+  state items: Todo[] = [];
+  state draft = "";
+  state editing = 0;
+  state editDraft = "";
+  state filter = "all";
+  derive active = items.filter(todo => !todo.completed);
+  derive visible = items.filter(todo => filter === "all" || (filter === "active" ? !todo.completed : todo.completed));
+  derive nextId = items.length === 0 ? 1 : items[items.length - 1].id + 1;
+  <section class="todoapp" data-todos={JSON.stringify(items)} data-filter={filter}>
+    <header class="header">
+      <h1>todos</h1>
+      <input class="new-todo" type="text" aria-label="New todo" placeholder="What needs to be done?" autofocus value={draft}>
+        on input draftChanged { draft = event.value; }
+        on keydown add {
+          items = event.key === "Enter" && event.value.trim() !== "" ? items.concat([{ id: nextId, title: event.value.trim(), completed: false }]) : items;
+          draft = event.key === "Enter" ? "" : draft;
+        }
+      </input>
+    </header>
+    <input type="hidden" data-restore="">on input restore { items = JSON.parse<Todo[]>(event.value); }</input>
+    <input type="hidden" data-route="">on input route { filter = event.value; }</input>
+    <section class="main" hidden={items.length === 0}>
+      <label class="toggle-all-label"><input class="toggle-all" type="checkbox" checked={items.length > 0 && active.length === 0}>
+        on change toggleAll { items = items.map(todo => ({ id: todo.id, title: todo.title, completed: event.checked })); }
+      </input>Mark all as complete</label>
+      <ul class="todo-list">
+        @for (const todo of visible; key todo.id) {
+          <li data-id={todo.id} class={editing === todo.id ? "editing" : todo.completed ? "completed" : ""}>
+            <div class="view">
+              <input class="toggle" type="checkbox" aria-label="Complete todo" checked={todo.completed}>
+                on change toggle { items = items.map(other => other.id === todo.id ? ({ id: other.id, title: other.title, completed: event.checked }) : other); }
+              </input>
+              <button class="todo-title" type="button" aria-label="Edit todo">
+                on click edit { editing = todo.id; editDraft = todo.title; }
+                on dblclick editDouble { editing = todo.id; editDraft = todo.title; }
+                {todo.title}
+              </button>
+              <button class="destroy" type="button" aria-label="Delete todo">on click remove { items = items.filter(other => other.id !== todo.id); }×</button>
+            </div>
+            <input class="edit" type="text" aria-label="Edit todo title" value={editing === todo.id ? editDraft : todo.title}>
+              on input editChanged { editDraft = event.value; }
+              on keydown editKey {
+                items = editing === todo.id && event.key === "Enter" ? event.value.trim() === "" ? items.filter(other => other.id !== todo.id) : items.map(other => other.id === todo.id ? ({ id: other.id, title: event.value.trim(), completed: other.completed }) : other) : items;
+                editing = event.key === "Enter" || event.key === "Escape" ? 0 : editing;
+              }
+              on focusout editBlur {
+                items = editing === todo.id ? event.value.trim() === "" ? items.filter(other => other.id !== todo.id) : items.map(other => other.id === todo.id ? ({ id: other.id, title: event.value.trim(), completed: other.completed }) : other) : items;
+                editing = 0;
+              }
+            </input>
+          </li>
+        }
+      </ul>
+    </section>
+    <footer class="footer" hidden={items.length === 0}>
+      <span class="todo-count"><strong>{active.length}</strong> {active.length === 1 ? " item left" : " items left"}</span>
+      <nav class="filters" aria-label="Todo filters">
+        <a href="#/" class={filter === "all" ? "selected" : ""}>All</a>
+        <a href="#/active" class={filter === "active" ? "selected" : ""}>Active</a>
+        <a href="#/completed" class={filter === "completed" ? "selected" : ""}>Completed</a>
+      </nav>
+      <button class="clear-completed" type="button" hidden={active.length === items.length}>on click clear { items = items.filter(todo => !todo.completed); }Clear completed</button>
+    </footer>
+  </section>
+}

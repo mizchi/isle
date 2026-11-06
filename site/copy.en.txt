@@ -5,5 +5,5 @@ Explore demos
 This counter is built with Isle
 Clear boundaries. Less work.
 From declaration to interaction.
-Explore all 15 examples
+Explore all 16 examples
 Built with Isle. Static pages, resumable interactions.

@@ -6,7 +6,12 @@ export type Expression =
   | { kind: 'string'; value: string }
   | { kind: 'boolean'; value: boolean }
   | { kind: 'name'; name: string }
-  | { kind: 'event'; field: 'value' | 'checked' | 'invalid' | 'validationMessage' }
+  | { kind: 'event'; field: 'value' | 'checked' | 'invalid' | 'validationMessage' | 'key' }
+  | { kind: 'conditional'; test: Expression; yes: Expression; no: Expression }
+  | { kind: 'method'; object: Expression; method: 'trim' | 'concat'; args: Expression[] }
+  | { kind: 'collection'; object: Expression; method: 'map' | 'filter' | 'some' | 'every'; parameter: string; body: Expression }
+  | { kind: 'json-parse'; type: string; value: Expression }
+  | { kind: 'json-stringify'; value: Expression }
   | { kind: 'binary'; op: '+' | '-' | '*' | '/' | '===' | '!==' | '<' | '>' | '<=' | '>=' | '&&' | '||'; left: Expression; right: Expression }
   | { kind: 'array'; values: Expression[] }
   | { kind: 'record'; fields: { name: string; value: Expression }[] }
@@ -16,7 +21,7 @@ export type Expression =
   | { kind: 'remote'; name: string; fields: { name: string; value: Expression }[] };
 export interface Statement { target: string; op: '=' | '+=' | '-='; value: Expression }
 export interface FormContract { schema: { name: string; fields: Field[] }; output: { name: string; fields: Field[] }; action: string; asyncValidation: boolean; events: string[] }
-export interface Handler { id: string; event: 'click' | 'input' | 'change' | 'submit' | 'invalid'; async: boolean; source: SourceSpan; statements: Statement[]; form?: FormContract }
+export interface Handler { id: string; event: 'click' | 'input' | 'change' | 'submit' | 'invalid' | 'keydown' | 'dblclick' | 'focusout'; async: boolean; source: SourceSpan; statements: Statement[]; form?: FormContract }
 export type WireValue = Primitive | readonly WireValue[] | { readonly [key: string]: WireValue };
 export type ValueType = 'number' | 'string' | 'boolean' | { array: ValueType } | { record: Record<string, ValueType> };
 export type ComponentField = Omit<Field, 'type'> & { type: string };

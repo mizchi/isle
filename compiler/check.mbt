@@ -1,6 +1,25 @@
 ///|
 fn Expr::refs(self : Expr) -> Array[(String, Int32)] {
   match self {
+    Conditional(condition, yes, no) => {
+      let out = condition.refs()
+      out.append(yes.refs())
+      out.append(no.refs())
+      out
+    }
+    Method(base, _, args) => {
+      let out = base.refs()
+      for arg in args {
+        out.append(arg.refs())
+      }
+      out
+    }
+    Collection(base, _, parameter, body) => {
+      let out = base.refs()
+      out.append(body.refs().filter(reference => reference.0 != parameter))
+      out
+    }
+    JsonDecode(_, value) | JsonEncode(value) => value.refs()
     ArrayValue(values) =>
       values.fold(init=[], (out, e) => {
         out.append(e.refs())
@@ -39,6 +58,11 @@ fn Expr::refs(self : Expr) -> Array[(String, Int32)] {
 ///|
 fn Expr::has_remote(self : Expr) -> Bool {
   match self {
+    Conditional(condition, yes, no) =>
+      condition.has_remote() || yes.has_remote() || no.has_remote()
+    Method(base, _, args) => base.has_remote() || args.any(e => e.has_remote())
+    Collection(base, _, _, body) => base.has_remote() || body.has_remote()
+    JsonDecode(_, value) | JsonEncode(value) => value.has_remote()
     ArrayValue(values) => values.any(e => e.has_remote())
     RecordValue(fields) => fields.any(f => f.1.has_remote())
     Index(base, index) => base.has_remote() || index.has_remote()
@@ -59,6 +83,90 @@ fn Expr::ty(
   p : Parser,
 ) -> String raise CompileError {
   match self {
+    Conditional(condition, yes, no) => {
+      if condition.ty(env, schemas, actions, p) != "boolean" {
+        p.fail(
+          "E_EXPRESSION_TYPE", "Conditional test requires boolean", "Use a boolean condition.",
+        )
+      }
+      let ty = yes.ty(env, schemas, actions, p)
+      if !accepts(no, ty, env, schemas, actions, p) {
+        p.fail(
+          "E_EXPRESSION_TYPE", "Conditional arms require the same type", "Return one closed type from both arms.",
+        )
+      }
+      ty
+    }
+    Method(base, operation, args) => {
+      let ty = base.ty(env, schemas, actions, p)
+      if operation == "trim" && ty == "string" && args.is_empty() {
+        "string"
+      } else if operation == "concat" &&
+        ty.has_suffix("[]") &&
+        args.length() == 1 &&
+        accepts(args[0], ty, env, schemas, actions, p) {
+        ty
+      } else {
+        p.fail(
+          "E_EXPRESSION_TYPE", "Unsupported pure operation or arguments", "Use string.trim() or array.concat(array) with matching closed types.",
+        )
+      }
+    }
+    Collection(base, operation, parameter, body) => {
+      let ty = base.ty(env, schemas, actions, p)
+      if !ty.has_suffix("[]") ||
+        ty == "[]" ||
+        env.contains(parameter) ||
+        parameter == "event" ||
+        parameter == "JSON" {
+        p.fail(
+          "E_EXPRESSION_TYPE", "Collection callbacks require a typed array and a fresh parameter",
+          "Use one non-shadowing parameter in a pure expression callback.",
+        )
+      }
+      let inner = env.copy()
+      inner.set(parameter, ty[:ty.length() - 2].to_owned())
+      if body.has_remote() ||
+        !accepts(
+          body,
+          if operation == "map" {
+            ty[:ty.length() - 2].to_owned()
+          } else {
+            "boolean"
+          },
+          inner,
+          schemas,
+          actions,
+          p,
+        ) {
+        p.fail(
+          "E_EXPRESSION_TYPE", "Invalid pure collection callback", "map preserves the item type; filter/some/every require boolean. Effects are forbidden.",
+        )
+      }
+      if ["some", "every"].contains(operation) {
+        "boolean"
+      } else {
+        ty
+      }
+    }
+    JsonDecode(ty, value) => {
+      if !valid_value_type(ty, schemas) ||
+        value.ty(env, schemas, actions, p) != "string" {
+        p.fail(
+          "E_EXPRESSION_TYPE", "JSON decode requires a closed type and string input",
+          "Use JSON.parse<DeclaredType>(text); decoded values are checked at runtime.",
+        )
+      }
+      ty
+    }
+    JsonEncode(value) => {
+      if !valid_value_type(value.ty(env, schemas, actions, p), schemas) {
+        p.fail(
+          "E_EXPRESSION_TYPE", "JSON encode requires a closed value", "Encode a typed serializable value.",
+        )
+      }
+      "string"
+    }
     ArrayValue(values) =>
       if values.is_empty() {
         "[]"
@@ -231,6 +339,10 @@ fn accepts(
   p : Parser,
 ) -> Bool raise CompileError {
   match value {
+    Conditional(condition, yes, no) =>
+      condition.ty(env, schemas, actions, p) == "boolean" &&
+      accepts(yes, expected, env, schemas, actions, p) &&
+      accepts(no, expected, env, schemas, actions, p)
     ArrayValue(values) => {
       if !expected.has_suffix("[]") {
         return false
@@ -521,11 +633,22 @@ fn check_node(
       check_form_attributes(tag, attributes, env, schemas, actions, p, start)
       for attribute in attributes {
         if attribute.name == "href" &&
-          (attribute.value.ty(env, schemas, actions, p) != "string" ||
-            attribute.value.refs().any(pair =>
+          (
+            attribute.value.ty(env, schemas, actions, p) != "string" ||
+            attribute.value
+            .refs()
+            .any(pair => {
               component.states.any(state => state.name == pair.0) ||
-              component.derives.any(derived => derived.name == pair.0))) {
-          p.fail_at("E_LINK", "Link destinations must be immutable strings", "Use a literal or an immutable server prop.", start, tag.length() + 1)
+              component.derives.any(derived => derived.name == pair.0)
+            })
+          ) {
+          p.fail_at(
+            "E_LINK",
+            "Link destinations must be immutable strings",
+            "Use a literal or an immutable server prop.",
+            start,
+            tag.length() + 1,
+          )
         }
         if attribute.value.has_remote() {
           p.fail(
@@ -606,9 +729,9 @@ fn check_component(
   check_accessibility(component.root, p)
   let env : Map[String, String] = Map([])
   for prop in component.props {
-    if prop.name == "event" {
+    if ["event", "JSON"].contains(prop.name) {
       p.fail(
-        "E_EVENT_BINDING", "event is reserved for event payloads", "Choose another prop name.",
+        "E_EVENT_BINDING", "event and JSON are reserved boundary names", "Choose another prop name.",
       )
     }
     if prop.ty != "RenderFragment" && !valid_value_type(prop.ty, schemas) {
@@ -619,7 +742,7 @@ fn check_component(
     env.set(prop.name, prop.ty)
   }
   for state in component.states {
-    if state.name == "event" || env.contains(state.name) {
+    if ["event", "JSON"].contains(state.name) || env.contains(state.name) {
       p.fail(
         "E_DUPLICATE",
         "Duplicate binding '" + state.name + "'",
@@ -656,7 +779,7 @@ fn check_component(
   }
   let declared : Map[String, Bool] = Map([])
   for derived_item in component.derives {
-    if derived_item.name == "event" ||
+    if ["event", "JSON"].contains(derived_item.name) ||
       env.contains(derived_item.name) ||
       declared.contains(derived_item.name) {
       p.fail(

@@ -18,3 +18,9 @@ export function rowKey(value) {
   if (typeof value !== 'string' && !(typeof value === 'number' && Number.isSafeInteger(value) && !Object.is(value, -0))) throw new Error('Invalid row key');
   return encodeURIComponent(JSON.stringify([typeof value, value]));
 }
+/** The DSL's explicit JSON.parse<T> boundary checks its closed wire type. */
+export function parseJSON(text, type) {
+  const value = JSON.parse(text);
+  if (!validValue(type, value)) throw new Error('Invalid decoded value');
+  return value;
+}

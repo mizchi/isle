@@ -305,7 +305,41 @@ fn Parser::atom(self : Parser) -> Expr raise CompileError {
   let mut value = base
   while true {
     if self.eat(".") {
-      value = Property(value, self.ident())
+      let operation = self.ident()
+      if value is Name("JSON", _) && operation == "parse" {
+        self.need("<")
+        let ty = self.type_name()
+        self.need(">")
+        self.need("(")
+        let input = self.expr()
+        self.need(")")
+        value = JsonDecode(ty, input)
+      } else if value is Name("JSON", _) && operation == "stringify" {
+        self.need("(")
+        let input = self.expr()
+        self.need(")")
+        value = JsonEncode(input)
+      } else if self.eat("(") {
+        if ["map", "filter", "some", "every"].contains(operation) {
+          let parameter = self.ident()
+          self.need("=>")
+          let body = self.expr()
+          self.need(")")
+          value = Collection(value, operation, parameter, body)
+        } else {
+          let args = []
+          while !self.eat(")") {
+            args.push(self.expr())
+            if !self.eat(",") {
+              self.need(")")
+              break
+            }
+          }
+          value = Method(value, operation, args)
+        }
+      } else {
+        value = Property(value, operation)
+      }
     } else if self.eat("[") {
       let index = self.expr()
       self.need("]")
@@ -373,6 +407,11 @@ fn Parser::expr(self : Parser) -> Expr raise CompileError {
   let mut value = self.conjunction()
   while self.eat("||") {
     value = Binary("||", value, self.conjunction())
+  }
+  if self.eat("?") {
+    let yes = self.expr()
+    self.need(":")
+    value = Conditional(value, yes, self.expr())
   }
   value
 }
@@ -523,11 +562,13 @@ fn Parser::handler(
     )
   }
   let event = self.ident()
-  if !["click", "input", "change", "submit", "invalid"].contains(event) {
+  if ![
+      "click", "input", "change", "submit", "invalid", "keydown", "dblclick", "focusout",
+    ].contains(event) {
     self.fail(
       "E_EVENT",
       "Unsupported event '" + event + "'",
-      "Use click, input, change, submit or invalid on a supported DOM target.",
+      "Use click, input, change, submit, invalid, keydown, dblclick or focusout on a supported DOM target.",
     )
   }
   let is_async = self.word("async")

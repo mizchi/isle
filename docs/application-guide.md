@@ -25,7 +25,11 @@ props は `initial: number` のように名前と型を一度ずつ書きます�
 
 Vite plugin の `wrapMounts: false` は、デモ用の card / 見出しを付けずに component の HTML を挿入します。サイトの header・main・footer などを自分で構成する場合に使います。既定値は `true` です。
 
-イベントの書き方は `on <event> [async] [名前] { ... }` です。`click` / `input` / `change` / `submit` / `invalid` に対応します。コード分割のために関数を別途包む必要はなく、イベントブロックが論理的な境界になります。小さい境界は bundler が同じファイルにまとめることがあります。
+イベントの書き方は `on <event> [async] [名前] { ... }` です。`click` / `input` / `change` / `submit` / `invalid` / `keydown` / `dblclick` / `focusout` に対応します。コード分割のために関数を別途包む必要はなく、イベントブロックが論理的な境界になります。小さい境界は bundler が同じファイルにまとめることがあります。
+
+TodoMVC のようなリストには、純粋な `array.filter(item => condition)`、`map(item => value)`、`some`、`every`、`concat(array)`、`string.trim()` と `condition ? yes : no` を使えます。callback は単一の新しい引数を取り、外側の binding を隠せず、副作用を持てません。現在の `map` は要素型を保持する変換に限定します。`JSON.stringify(value)` と `JSON.parse<ClosedType>(text)` は保存の境界に使えます。後者はこの DSL の明示的な型付き JSON decode で、通常の TypeScript の型引数なし `JSON.parse` より制約が強く、復元値を実行時にも検査してから state を commit します。
+
+`keydown` / `dblclick` / `focusout` にも対応します。`keydown` 内では発生時点の `event.key` と入力要素の `event.value` を利用できます。保存、URL hash、フォーカスのような browser capability は host module に接続し、リスト描画・state 遷移は生成コードが担当します。[TodoMVC](../examples/todomvc/README.md) と[同じ機能のサイズ比較](../benchmarks/todomvc/README.md)を参照してください。配列式・三項演算子は現在の region backend を使うため、その component には control-flow と同じ owner / native control の制約が適用されます。
 
 ## 複数の UI を配置する
 

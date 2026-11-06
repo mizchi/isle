@@ -1,0 +1,621 @@
+{
+  "version": "0.24.0",
+  "results": [
+    {
+      "command": "check integrity",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": [],
+      "suppressed": [],
+      "retuned": [],
+      "report": {
+        "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "verdict": "clean",
+        "findings": [],
+        "exempted": [],
+        "viewports": [
+          {
+            "width": 1280,
+            "height": 800,
+            "components": 8,
+            "inkRatio": 0.179,
+            "textBlocks": 13
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "components": 8,
+            "inkRatio": 0.2652,
+            "textBlocks": 13
+          },
+          {
+            "width": 375,
+            "height": 700,
+            "components": 8,
+            "inkRatio": 0.4587,
+            "textBlocks": 13
+          }
+        ],
+        "kickback": []
+      }
+    },
+    {
+      "command": "check copy",
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": [],
+      "suppressed": [],
+      "retuned": [],
+      "report": {
+        "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "textLength": 249,
+        "manifestLines": 10,
+        "forbidLines": 0,
+        "forbiddenLines": [],
+        "missingLines": [],
+        "revealedLines": [],
+        "invisibleLines": [],
+        "allowedInvisibleLines": [],
+        "statesExplored": 0,
+        "droppedStates": 0,
+        "placeholders": [],
+        "issues": []
+      }
+    },
+    {
+      "command": "scan scroll",
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": [],
+      "suppressed": [],
+      "retuned": [],
+      "report": {
+        "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "page": {
+          "viewportWidth": 1280,
+          "viewportHeight": 720,
+          "scrollWidth": 1280,
+          "scrollHeight": 720,
+          "horizontalOverflow": 0,
+          "verticalScroll": 0
+        },
+        "containers": [],
+        "deadScrollports": [],
+        "clipped": [],
+        "visuallyHidden": 0,
+        "expectedScrollports": [],
+        "issues": []
+      }
+    },
+    {
+      "command": "scan handlers",
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": [],
+      "suppressed": [],
+      "retuned": [],
+      "report": {
+        "surface": {
+          "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+          "elements": [],
+          "globals": {
+            "document:input": 1,
+            "document:keydown": 1,
+            "document:change": 1,
+            "document:click": 1,
+            "document:dblclick": 1,
+            "document:focusout": 1,
+            "window:hashchange": 1
+          },
+          "totalRegistrations": 7,
+          "visibleControls": 11
+        },
+        "issues": []
+      }
+    },
+    {
+      "command": "check interactions",
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "no-focus-indicator",
+          "severity": "warn",
+          "message": "textbox \"New todo\" (main>section.todoapp>header.header>input.new-todo) paints NO visible focus indicator on keyboard focus (outline/box-shadow/border/background all unchanged) — keyboard users cannot see where they are.",
+          "evidence": {
+            "element": "textbox \"New todo\" (main>section.todoapp>header.header>input.new-todo)"
+          }
+        }
+      ],
+      "suppressed": [],
+      "retuned": [],
+      "report": {
+        "map": {
+          "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+          "elements": [
+            {
+              "index": 0,
+              "key": "textbox|New todo",
+              "role": "textbox",
+              "name": "New todo",
+              "path": "main>section.todoapp>header.header>input.new-todo",
+              "hasAriaExpanded": false,
+              "hasPopup": false,
+              "tabReachable": true,
+              "focusIndicator": false
+            },
+            {
+              "index": 1,
+              "key": "checkbox|Mark all as complete",
+              "role": "checkbox",
+              "name": "Mark all as complete",
+              "path": "section.todoapp>section.main>label.toggle-all-label>input.toggle-all",
+              "hasAriaExpanded": false,
+              "hasPopup": false,
+              "tabReachable": true,
+              "focusIndicator": true,
+              "activation": {
+                "key": "Space",
+                "ariaDelta": {
+                  "checked": [
+                    "false",
+                    "true"
+                  ]
+                },
+                "controlsBecameVisible": null,
+                "layoutChanged": true,
+                "focusMovedTo": null
+              }
+            },
+            {
+              "index": 2,
+              "key": "checkbox|Complete todo",
+              "role": "checkbox",
+              "name": "Complete todo",
+              "path": "ul.todo-list>li>div.view>input.toggle",
+              "hasAriaExpanded": false,
+              "hasPopup": false,
+              "tabReachable": true,
+              "focusIndicator": true,
+              "activation": {
+                "key": "Space",
+                "ariaDelta": {
+                  "checked": [
+                    "false",
+                    "true"
+                  ]
+                },
+                "controlsBecameVisible": null,
+                "layoutChanged": true,
+                "focusMovedTo": null
+              }
+            },
+            {
+              "index": 3,
+              "key": "button|Edit todo",
+              "role": "button",
+              "name": "Edit todo",
+              "path": "ul.todo-list>li>div.view>button.todo-title",
+              "hasAriaExpanded": false,
+              "hasPopup": false,
+              "tabReachable": true,
+              "focusIndicator": true,
+              "activation": {
+                "key": "Enter",
+                "ariaDelta": {},
+                "focusMovedWithin": true,
+                "controlsBecameVisible": null,
+                "layoutChanged": true,
+                "focusMovedTo": null
+              }
+            },
+            {
+              "index": 4,
+              "key": "button|Delete todo",
+              "role": "button",
+              "name": "Delete todo",
+              "path": "ul.todo-list>li>div.view>button.destroy",
+              "hasAriaExpanded": false,
+              "hasPopup": false,
+              "tabReachable": true,
+              "focusIndicator": true
+            },
+            {
+              "index": 5,
+              "key": "checkbox|Complete todo",
+              "role": "checkbox",
+              "name": "Complete todo",
+              "path": "ul.todo-list>li>div.view>input.toggle",
+              "hasAriaExpanded": false,
+              "hasPopup": false,
+              "tabReachable": true,
+              "focusIndicator": true,
+              "activation": {
+                "key": "Space",
+                "ariaDelta": {
+                  "checked": [
+                    "false",
+                    "true"
+                  ]
+                },
+                "controlsBecameVisible": null,
+                "layoutChanged": true,
+                "focusMovedTo": null
+              }
+            },
+            {
+              "index": 6,
+              "key": "button|Edit todo",
+              "role": "button",
+              "name": "Edit todo",
+              "path": "ul.todo-list>li>div.view>button.todo-title",
+              "hasAriaExpanded": false,
+              "hasPopup": false,
+              "tabReachable": true,
+              "focusIndicator": true,
+              "activation": {
+                "key": "Enter",
+                "ariaDelta": {},
+                "focusMovedWithin": true,
+                "controlsBecameVisible": null,
+                "layoutChanged": true,
+                "focusMovedTo": null
+              }
+            },
+            {
+              "index": 7,
+              "key": "button|Delete todo",
+              "role": "button",
+              "name": "Delete todo",
+              "path": "ul.todo-list>li>div.view>button.destroy",
+              "hasAriaExpanded": false,
+              "hasPopup": false,
+              "tabReachable": true,
+              "focusIndicator": true
+            },
+            {
+              "index": 8,
+              "key": "link|All",
+              "role": "link",
+              "name": "All",
+              "path": "section.todoapp>footer.footer>nav.filters>a.selected",
+              "hasAriaExpanded": false,
+              "hasPopup": false,
+              "tabReachable": true,
+              "focusIndicator": true
+            },
+            {
+              "index": 9,
+              "key": "link|Active",
+              "role": "link",
+              "name": "Active",
+              "path": "section.todoapp>footer.footer>nav.filters>a",
+              "hasAriaExpanded": false,
+              "hasPopup": false,
+              "tabReachable": true,
+              "focusIndicator": true
+            },
+            {
+              "index": 10,
+              "key": "link|Completed",
+              "role": "link",
+              "name": "Completed",
+              "path": "section.todoapp>footer.footer>nav.filters>a",
+              "hasAriaExpanded": false,
+              "hasPopup": false,
+              "tabReachable": true,
+              "focusIndicator": true
+            }
+          ],
+          "capped": 0
+        },
+        "issues": [
+          {
+            "kind": "no-focus-indicator",
+            "severity": "warn",
+            "element": "textbox \"New todo\" (main>section.todoapp>header.header>input.new-todo)",
+            "message": "textbox \"New todo\" (main>section.todoapp>header.header>input.new-todo) paints NO visible focus indicator on keyboard focus (outline/box-shadow/border/background all unchanged) — keyboard users cannot see where they are."
+          }
+        ]
+      }
+    },
+    {
+      "command": "check responsive",
+      "gate": "check.responsive",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": [],
+      "suppressed": [],
+      "retuned": [],
+      "report": {
+        "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "seed": 1,
+        "space": {
+          "minWidth": 375,
+          "maxWidth": 1440,
+          "minHeight": 480,
+          "maxHeight": 1000,
+          "defaultHeight": 900,
+          "textScales": [
+            1
+          ],
+          "colorSchemes": [
+            "light"
+          ],
+          "reducedMotions": [
+            "no-preference"
+          ]
+        },
+        "conditions": [
+          "(width <= 480px)"
+        ],
+        "transitions": [
+          {
+            "width": 481,
+            "entering": [],
+            "leaving": [
+              "(width <= 480px)"
+            ]
+          }
+        ],
+        "regimes": [
+          {
+            "from": 375,
+            "to": 480,
+            "matches": [
+              "(width <= 480px)"
+            ],
+            "cases": 12,
+            "failingCases": 0
+          },
+          {
+            "from": 481,
+            "to": 1440,
+            "matches": [],
+            "cases": 12,
+            "failingCases": 0
+          }
+        ],
+        "unvaried": [],
+        "containerQueries": 0,
+        "properties": [
+          "page-overflow-x",
+          "clipped-content",
+          "text-collision",
+          "text-clipped",
+          "container-protrusion",
+          "occluded-text",
+          "collapsed-container",
+          "text-starved"
+        ],
+        "cases": 24,
+        "failingCases": 0,
+        "failures": [],
+        "issues": [],
+        "timing": {
+          "partitionMs": 329,
+          "casesMs": 938,
+          "shrinkMs": 0
+        }
+      }
+    },
+    {
+      "command": "check a11y contrast",
+      "gate": "check.a11y.contrast",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": [],
+      "suppressed": [],
+      "retuned": [],
+      "report": {
+        "html": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "screenshot": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-contrast/quality-2bf87884/page.png",
+        "totalText": 14,
+        "failures": [],
+        "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-contrast/quality-2bf87884/report.md"
+      }
+    },
+    {
+      "command": "check a11y focus",
+      "gate": "check.a11y.focus",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": [],
+      "suppressed": [],
+      "retuned": [],
+      "report": {
+        "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "screenshot": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-focus-order/quality-2bf87884/page.png",
+        "steps": [
+          {
+            "tabIndex": 0,
+            "path": "main>section.todoapp>section.main>label.toggle-all-label>input.toggle-all",
+            "tag": "input",
+            "text": "",
+            "bbox": {
+              "x": 384,
+              "y": 238.59375,
+              "width": 24,
+              "height": 24
+            },
+            "tabindexAttr": null,
+            "pinned": false
+          },
+          {
+            "tabIndex": 1,
+            "path": "section.main>ul.todo-list>li>div.view>input.toggle",
+            "tag": "input",
+            "text": "Complete todo",
+            "bbox": {
+              "x": 384,
+              "y": 297.390625,
+              "width": 24,
+              "height": 24
+            },
+            "tabindexAttr": null,
+            "pinned": false
+          },
+          {
+            "tabIndex": 2,
+            "path": "section.main>ul.todo-list>li>div.view>button.todo-title",
+            "tag": "button",
+            "text": "Write tests",
+            "bbox": {
+              "x": 418,
+              "y": 282.59375,
+              "width": 430,
+              "height": 53.59375
+            },
+            "tabindexAttr": null,
+            "pinned": false
+          },
+          {
+            "tabIndex": 3,
+            "path": "section.main>ul.todo-list>li>div.view>button.destroy",
+            "tag": "button",
+            "text": "×",
+            "bbox": {
+              "x": 858,
+              "y": 287.390625,
+              "width": 44,
+              "height": 44
+            },
+            "tabindexAttr": null,
+            "pinned": false
+          },
+          {
+            "tabIndex": 4,
+            "path": "section.main>ul.todo-list>li>div.view>input.toggle",
+            "tag": "input",
+            "text": "Complete todo",
+            "bbox": {
+              "x": 384,
+              "y": 365.984375,
+              "width": 24,
+              "height": 24
+            },
+            "tabindexAttr": null,
+            "pinned": false
+          },
+          {
+            "tabIndex": 5,
+            "path": "section.main>ul.todo-list>li>div.view>button.todo-title",
+            "tag": "button",
+            "text": "Ship demo",
+            "bbox": {
+              "x": 418,
+              "y": 351.1875,
+              "width": 430,
+              "height": 53.59375
+            },
+            "tabindexAttr": null,
+            "pinned": false
+          },
+          {
+            "tabIndex": 6,
+            "path": "section.main>ul.todo-list>li>div.view>button.destroy",
+            "tag": "button",
+            "text": "×",
+            "bbox": {
+              "x": 858,
+              "y": 355.984375,
+              "width": 44,
+              "height": 44
+            },
+            "tabindexAttr": null,
+            "pinned": false
+          },
+          {
+            "tabIndex": 7,
+            "path": "main>section.todoapp>footer.footer>nav.filters>a.selected",
+            "tag": "a",
+            "text": "All",
+            "bbox": {
+              "x": 727.546875,
+              "y": 424.78125,
+              "width": 31.015625,
+              "height": 40
+            },
+            "tabindexAttr": null,
+            "pinned": false
+          },
+          {
+            "tabIndex": 8,
+            "path": "main>section.todoapp>footer.footer>nav.filters>a",
+            "tag": "a",
+            "text": "Active",
+            "bbox": {
+              "x": 762.5625,
+              "y": 424.78125,
+              "width": 53.03125,
+              "height": 40
+            },
+            "tabindexAttr": null,
+            "pinned": false
+          },
+          {
+            "tabIndex": 9,
+            "path": "main>section.todoapp>footer.footer>nav.filters>a",
+            "tag": "a",
+            "text": "Completed",
+            "bbox": {
+              "x": 819.59375,
+              "y": 424.78125,
+              "width": 82.40625,
+              "height": 40
+            },
+            "tabindexAttr": null,
+            "pinned": false
+          }
+        ],
+        "findings": [],
+        "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-focus-order/quality-2bf87884/report.md"
+      }
+    }
+  ]
+}

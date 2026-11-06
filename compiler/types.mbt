@@ -46,6 +46,11 @@ priv enum Expr {
   RecordValue(Array[(String, Expr)])
   Index(Expr, Expr)
   Not(Expr)
+  Conditional(Expr, Expr, Expr)
+  Method(Expr, String, Array[Expr])
+  Collection(Expr, String, String, Expr)
+  JsonDecode(String, Expr)
+  JsonEncode(Expr)
 }
 
 ///|

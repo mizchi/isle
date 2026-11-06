@@ -1,0 +1,848 @@
+{
+  "generatedAt": "2026-11-06T02:41:51.938Z",
+  "environment": {
+    "node": "v24.21.0",
+    "chromium": "156.0.8078.4",
+    "platform": "darwin/arm64"
+  },
+  "variants": [
+    {
+      "id": "isle",
+      "package": "@isle/prototype",
+      "version": "0.0.1",
+      "vite": "8.3.5",
+      "buildJS": {
+        "raw": 20667,
+        "gzip": 8663,
+        "br": 7668
+      },
+      "emitted": [
+        {
+          "file": "assets/TodoMVC-B1TjmQfm.js",
+          "raw": 9760,
+          "gzip": 3127,
+          "br": 2812
+        },
+        {
+          "file": "assets/TodoMVC.editKey-CWpItwbf.js",
+          "raw": 397,
+          "gzip": 280,
+          "br": 244
+        },
+        {
+          "file": "assets/TodoMVC.g0-cbmcDR6s.js",
+          "raw": 505,
+          "gzip": 331,
+          "br": 287
+        },
+        {
+          "file": "assets/TodoMVC.g1-RVUEwiF1.js",
+          "raw": 410,
+          "gzip": 284,
+          "br": 239
+        },
+        {
+          "file": "assets/TodoMVC.g2-haX6iJWD.js",
+          "raw": 419,
+          "gzip": 236,
+          "br": 204
+        },
+        {
+          "file": "assets/TodoMVC.g3-BhPAB2YU.js",
+          "raw": 364,
+          "gzip": 197,
+          "br": 167
+        },
+        {
+          "file": "assets/TodoMVC.g4-rd6Wj3Ly.js",
+          "raw": 329,
+          "gzip": 221,
+          "br": 186
+        },
+        {
+          "file": "assets/TodoMVC.g6-BAAhPPs-.js",
+          "raw": 486,
+          "gzip": 282,
+          "br": 244
+        },
+        {
+          "file": "assets/isle-resume-D9GpULNF.js",
+          "raw": 4036,
+          "gzip": 1755,
+          "br": 1582
+        },
+        {
+          "file": "assets/todomvc-B5u9ChEc.js",
+          "raw": 2895,
+          "gzip": 1439,
+          "br": 1280
+        },
+        {
+          "file": "assets/value-BfJLwyrD.js",
+          "raw": 1066,
+          "gzip": 511,
+          "br": 423
+        }
+      ],
+      "initialHTML": {
+        "raw": 6932,
+        "gzip": 2181,
+        "br": 1742
+      },
+      "initialJS": {
+        "raw": 2895,
+        "gzip": 1439,
+        "br": 1280
+      },
+      "firstAddJS": {
+        "raw": 15367,
+        "gzip": 5724,
+        "br": 5104
+      },
+      "observedJS": {
+        "raw": 20667,
+        "gzip": 8663,
+        "br": 7668
+      },
+      "observedAssets": {
+        "raw": 27599,
+        "gzip": 10844,
+        "br": 9410
+      },
+      "requests": [
+        {
+          "url": "/todomvc/isle/",
+          "phase": "initial",
+          "order": 0,
+          "status": 200,
+          "kind": "html",
+          "raw": 6932,
+          "gzip": 2181,
+          "br": 1742
+        },
+        {
+          "url": "/todomvc/isle/assets/todomvc-B5u9ChEc.js",
+          "phase": "initial",
+          "order": 1,
+          "status": 200,
+          "kind": "js",
+          "raw": 2895,
+          "gzip": 1439,
+          "br": 1280
+        },
+        {
+          "url": "/todomvc/isle/assets/value-BfJLwyrD.js",
+          "phase": "first-add",
+          "order": 2,
+          "status": 200,
+          "kind": "js",
+          "raw": 1066,
+          "gzip": 511,
+          "br": 423
+        },
+        {
+          "url": "/todomvc/isle/assets/isle-resume-D9GpULNF.js",
+          "phase": "first-add",
+          "order": 3,
+          "status": 200,
+          "kind": "js",
+          "raw": 4036,
+          "gzip": 1755,
+          "br": 1582
+        },
+        {
+          "url": "/todomvc/isle/assets/TodoMVC-B1TjmQfm.js",
+          "phase": "first-add",
+          "order": 4,
+          "status": 200,
+          "kind": "js",
+          "raw": 9760,
+          "gzip": 3127,
+          "br": 2812
+        },
+        {
+          "url": "/todomvc/isle/assets/TodoMVC.g0-cbmcDR6s.js",
+          "phase": "first-add",
+          "order": 5,
+          "status": 200,
+          "kind": "js",
+          "raw": 505,
+          "gzip": 331,
+          "br": 287
+        },
+        {
+          "url": "/todomvc/isle/assets/TodoMVC.g2-haX6iJWD.js",
+          "phase": "crud",
+          "order": 6,
+          "status": 200,
+          "kind": "js",
+          "raw": 419,
+          "gzip": 236,
+          "br": 204
+        },
+        {
+          "url": "/todomvc/isle/assets/TodoMVC.g1-RVUEwiF1.js",
+          "phase": "crud",
+          "order": 7,
+          "status": 200,
+          "kind": "js",
+          "raw": 410,
+          "gzip": 284,
+          "br": 239
+        },
+        {
+          "url": "/todomvc/isle/assets/TodoMVC.g3-BhPAB2YU.js",
+          "phase": "crud",
+          "order": 8,
+          "status": 200,
+          "kind": "js",
+          "raw": 364,
+          "gzip": 197,
+          "br": 167
+        },
+        {
+          "url": "/todomvc/isle/assets/TodoMVC.g4-rd6Wj3Ly.js",
+          "phase": "crud",
+          "order": 9,
+          "status": 200,
+          "kind": "js",
+          "raw": 329,
+          "gzip": 221,
+          "br": 186
+        },
+        {
+          "url": "/todomvc/isle/assets/TodoMVC.editKey-CWpItwbf.js",
+          "phase": "crud",
+          "order": 10,
+          "status": 200,
+          "kind": "js",
+          "raw": 397,
+          "gzip": 280,
+          "br": 244
+        },
+        {
+          "url": "/todomvc/isle/assets/TodoMVC.g6-BAAhPPs-.js",
+          "phase": "crud",
+          "order": 11,
+          "status": 200,
+          "kind": "js",
+          "raw": 486,
+          "gzip": 282,
+          "br": 244
+        }
+      ],
+      "correctness": {
+        "add": true,
+        "editEnterBlurEscape": true,
+        "delete": true,
+        "hashFilters": true,
+        "toggleAll": true,
+        "clearCompleted": true,
+        "persistence": true,
+        "retainedKeyedDOM": true
+      }
+    },
+    {
+      "id": "qwik",
+      "package": "@builder.io/qwik",
+      "version": "1.20.3",
+      "vite": "7.3.7",
+      "buildJS": {
+        "raw": 60052,
+        "gzip": 24503,
+        "br": 22069
+      },
+      "emitted": [
+        {
+          "file": "todomvc/qwik/build/q-BmOZh_3z.js",
+          "raw": 3742,
+          "gzip": 2013,
+          "br": 1821
+        },
+        {
+          "file": "todomvc/qwik/build/q-CxaxIilR.js",
+          "raw": 51886,
+          "gzip": 20017,
+          "br": 18108
+        },
+        {
+          "file": "todomvc/qwik/build/q-DJhHa1ZM.js",
+          "raw": 175,
+          "gzip": 150,
+          "br": 141
+        },
+        {
+          "file": "todomvc/qwik/build/q-DrA5-Lp5.js",
+          "raw": 1149,
+          "gzip": 645,
+          "br": 538
+        },
+        {
+          "file": "todomvc/qwik/build/q-naDMFAHy.js",
+          "raw": 3100,
+          "gzip": 1678,
+          "br": 1461
+        }
+      ],
+      "initialHTML": {
+        "raw": 6912,
+        "gzip": 2696,
+        "br": 2196
+      },
+      "initialJS": {
+        "raw": 59877,
+        "gzip": 24353,
+        "br": 21928
+      },
+      "firstAddJS": {
+        "raw": 0,
+        "gzip": 0,
+        "br": 0
+      },
+      "observedJS": {
+        "raw": 59877,
+        "gzip": 24353,
+        "br": 21928
+      },
+      "observedAssets": {
+        "raw": 67113,
+        "gzip": 27284,
+        "br": 24348
+      },
+      "requests": [
+        {
+          "url": "/todomvc/qwik/",
+          "phase": "initial",
+          "order": 0,
+          "status": 200,
+          "kind": "html",
+          "raw": 6912,
+          "gzip": 2696,
+          "br": 2196
+        },
+        {
+          "url": "/todomvc/qwik/build/q-naDMFAHy.js",
+          "phase": "initial",
+          "order": 1,
+          "status": 200,
+          "kind": "js",
+          "raw": 3100,
+          "gzip": 1678,
+          "br": 1461
+        },
+        {
+          "url": "/todomvc/qwik/build/q-BmOZh_3z.js",
+          "phase": "initial",
+          "order": 2,
+          "status": 200,
+          "kind": "js",
+          "raw": 3742,
+          "gzip": 2013,
+          "br": 1821
+        },
+        {
+          "url": "/todomvc/qwik/assets/BJaxNu46-bundle-graph.json",
+          "phase": "initial",
+          "order": 3,
+          "status": 200,
+          "kind": "other",
+          "raw": 324,
+          "gzip": 235,
+          "br": 224
+        },
+        {
+          "url": "/todomvc/qwik/build/q-CxaxIilR.js",
+          "phase": "initial",
+          "order": 4,
+          "status": 200,
+          "kind": "js",
+          "raw": 51886,
+          "gzip": 20017,
+          "br": 18108
+        },
+        {
+          "url": "/todomvc/qwik/build/q-DrA5-Lp5.js",
+          "phase": "initial",
+          "order": 5,
+          "status": 200,
+          "kind": "js",
+          "raw": 1149,
+          "gzip": 645,
+          "br": 538
+        }
+      ],
+      "correctness": {
+        "add": true,
+        "editEnterBlurEscape": true,
+        "delete": true,
+        "hashFilters": true,
+        "toggleAll": true,
+        "clearCompleted": true,
+        "persistence": true,
+        "retainedKeyedDOM": true
+      }
+    },
+    {
+      "id": "qwik-next",
+      "package": "@qwik.dev/core",
+      "version": "2.0.0-rc.4",
+      "vite": "8.3.5",
+      "buildJS": {
+        "raw": 108725,
+        "gzip": 42757,
+        "br": 38248
+      },
+      "emitted": [
+        {
+          "file": "build/q-B2VqN8Ls.js",
+          "raw": 3960,
+          "gzip": 1557,
+          "br": 1424
+        },
+        {
+          "file": "build/q-BM-ZHNtA.js",
+          "raw": 243,
+          "gzip": 200,
+          "br": 173
+        },
+        {
+          "file": "build/q-BNDUdkIa.js",
+          "raw": 278,
+          "gzip": 226,
+          "br": 200
+        },
+        {
+          "file": "build/q-BTUIEz9o.js",
+          "raw": 5282,
+          "gzip": 2414,
+          "br": 2134
+        },
+        {
+          "file": "build/q-B_QGwTly.js",
+          "raw": 202,
+          "gzip": 176,
+          "br": 185
+        },
+        {
+          "file": "build/q-BcF_JqE_.js",
+          "raw": 183,
+          "gzip": 165,
+          "br": 146
+        },
+        {
+          "file": "build/q-BeTVWHsB.js",
+          "raw": 198,
+          "gzip": 173,
+          "br": 177
+        },
+        {
+          "file": "build/q-C0V7WYGD.js",
+          "raw": 153,
+          "gzip": 152,
+          "br": 146
+        },
+        {
+          "file": "build/q-CBSfZrpi.js",
+          "raw": 137,
+          "gzip": 141,
+          "br": 129
+        },
+        {
+          "file": "build/q-CFvxp7GC.js",
+          "raw": 126,
+          "gzip": 130,
+          "br": 128
+        },
+        {
+          "file": "build/q-CU9A8Wh6.js",
+          "raw": 217,
+          "gzip": 188,
+          "br": 157
+        },
+        {
+          "file": "build/q-CX_nqNMV.js",
+          "raw": 83,
+          "gzip": 97,
+          "br": 81
+        },
+        {
+          "file": "build/q-CZl0hUGa.js",
+          "raw": 1137,
+          "gzip": 643,
+          "br": 539
+        },
+        {
+          "file": "build/q-CcMIRcT8.js",
+          "raw": 181,
+          "gzip": 162,
+          "br": 151
+        },
+        {
+          "file": "build/q-CfrShwku.js",
+          "raw": 149,
+          "gzip": 147,
+          "br": 142
+        },
+        {
+          "file": "build/q-D4YjkS4b.js",
+          "raw": 125,
+          "gzip": 129,
+          "br": 116
+        },
+        {
+          "file": "build/q-D6beY1nD.js",
+          "raw": 198,
+          "gzip": 173,
+          "br": 154
+        },
+        {
+          "file": "build/q-DK3Fl9T5.js",
+          "raw": 158,
+          "gzip": 154,
+          "br": 116
+        },
+        {
+          "file": "build/q-Dem29lbk.js",
+          "raw": 4020,
+          "gzip": 1897,
+          "br": 1709
+        },
+        {
+          "file": "build/q-DnuA-w48.js",
+          "raw": 131,
+          "gzip": 139,
+          "br": 119
+        },
+        {
+          "file": "build/q-_Ar1fm29.js",
+          "raw": 91564,
+          "gzip": 33694,
+          "br": 30122
+        }
+      ],
+      "initialHTML": {
+        "raw": 8824,
+        "gzip": 3222,
+        "br": 2650
+      },
+      "initialJS": {
+        "raw": 108511,
+        "gzip": 42521,
+        "br": 38048
+      },
+      "firstAddJS": {
+        "raw": 0,
+        "gzip": 0,
+        "br": 0
+      },
+      "observedJS": {
+        "raw": 108511,
+        "gzip": 42521,
+        "br": 38048
+      },
+      "observedAssets": {
+        "raw": 117989,
+        "gzip": 46147,
+        "br": 41065
+      },
+      "requests": [
+        {
+          "url": "/todomvc/qwik-next/",
+          "phase": "initial",
+          "order": 0,
+          "status": 200,
+          "kind": "html",
+          "raw": 8824,
+          "gzip": 3222,
+          "br": 2650
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-BTUIEz9o.js",
+          "phase": "initial",
+          "order": 1,
+          "status": 200,
+          "kind": "js",
+          "raw": 5282,
+          "gzip": 2414,
+          "br": 2134
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-Dem29lbk.js",
+          "phase": "initial",
+          "order": 2,
+          "status": 200,
+          "kind": "js",
+          "raw": 4020,
+          "gzip": 1897,
+          "br": 1709
+        },
+        {
+          "url": "/todomvc/qwik-next/assets/9U7Dxvwn-bundle-graph.json",
+          "phase": "initial",
+          "order": 3,
+          "status": 200,
+          "kind": "other",
+          "raw": 654,
+          "gzip": 404,
+          "br": 367
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-_Ar1fm29.js",
+          "phase": "initial",
+          "order": 4,
+          "status": 200,
+          "kind": "js",
+          "raw": 91564,
+          "gzip": 33694,
+          "br": 30122
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-CZl0hUGa.js",
+          "phase": "initial",
+          "order": 5,
+          "status": 200,
+          "kind": "js",
+          "raw": 1137,
+          "gzip": 643,
+          "br": 539
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-DK3Fl9T5.js",
+          "phase": "initial",
+          "order": 6,
+          "status": 200,
+          "kind": "js",
+          "raw": 158,
+          "gzip": 154,
+          "br": 116
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-CfrShwku.js",
+          "phase": "initial",
+          "order": 7,
+          "status": 200,
+          "kind": "js",
+          "raw": 149,
+          "gzip": 147,
+          "br": 142
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-BNDUdkIa.js",
+          "phase": "initial",
+          "order": 8,
+          "status": 200,
+          "kind": "js",
+          "raw": 278,
+          "gzip": 226,
+          "br": 200
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-C0V7WYGD.js",
+          "phase": "initial",
+          "order": 9,
+          "status": 200,
+          "kind": "js",
+          "raw": 153,
+          "gzip": 152,
+          "br": 146
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-CFvxp7GC.js",
+          "phase": "initial",
+          "order": 10,
+          "status": 200,
+          "kind": "js",
+          "raw": 126,
+          "gzip": 130,
+          "br": 128
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-CBSfZrpi.js",
+          "phase": "initial",
+          "order": 11,
+          "status": 200,
+          "kind": "js",
+          "raw": 137,
+          "gzip": 141,
+          "br": 129
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-D4YjkS4b.js",
+          "phase": "initial",
+          "order": 12,
+          "status": 200,
+          "kind": "js",
+          "raw": 125,
+          "gzip": 129,
+          "br": 116
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-B2VqN8Ls.js",
+          "phase": "initial",
+          "order": 13,
+          "status": 200,
+          "kind": "js",
+          "raw": 3960,
+          "gzip": 1557,
+          "br": 1424
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-B_QGwTly.js",
+          "phase": "initial",
+          "order": 14,
+          "status": 200,
+          "kind": "js",
+          "raw": 202,
+          "gzip": 176,
+          "br": 185
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-D6beY1nD.js",
+          "phase": "initial",
+          "order": 15,
+          "status": 200,
+          "kind": "js",
+          "raw": 198,
+          "gzip": 173,
+          "br": 154
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-BeTVWHsB.js",
+          "phase": "initial",
+          "order": 16,
+          "status": 200,
+          "kind": "js",
+          "raw": 198,
+          "gzip": 173,
+          "br": 177
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-BM-ZHNtA.js",
+          "phase": "initial",
+          "order": 17,
+          "status": 200,
+          "kind": "js",
+          "raw": 243,
+          "gzip": 200,
+          "br": 173
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-CU9A8Wh6.js",
+          "phase": "initial",
+          "order": 18,
+          "status": 200,
+          "kind": "js",
+          "raw": 217,
+          "gzip": 188,
+          "br": 157
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-BcF_JqE_.js",
+          "phase": "initial",
+          "order": 19,
+          "status": 200,
+          "kind": "js",
+          "raw": 183,
+          "gzip": 165,
+          "br": 146
+        },
+        {
+          "url": "/todomvc/qwik-next/build/q-CcMIRcT8.js",
+          "phase": "initial",
+          "order": 20,
+          "status": 200,
+          "kind": "js",
+          "raw": 181,
+          "gzip": 162,
+          "br": 151
+        }
+      ],
+      "correctness": {
+        "add": true,
+        "editEnterBlurEscape": true,
+        "delete": true,
+        "hashFilters": true,
+        "toggleAll": true,
+        "clearCompleted": true,
+        "persistence": true,
+        "retainedKeyedDOM": true
+      }
+    },
+    {
+      "id": "preact",
+      "package": "preact",
+      "version": "11.1.1",
+      "vite": "8.3.5",
+      "buildJS": {
+        "raw": 16950,
+        "gzip": 6917,
+        "br": 6281
+      },
+      "emitted": [
+        {
+          "file": "assets/todomvc-DG8ypGtV.js",
+          "raw": 16950,
+          "gzip": 6917,
+          "br": 6281
+        }
+      ],
+      "initialHTML": {
+        "raw": 3976,
+        "gzip": 1681,
+        "br": 1294
+      },
+      "initialJS": {
+        "raw": 16950,
+        "gzip": 6917,
+        "br": 6281
+      },
+      "firstAddJS": {
+        "raw": 0,
+        "gzip": 0,
+        "br": 0
+      },
+      "observedJS": {
+        "raw": 16950,
+        "gzip": 6917,
+        "br": 6281
+      },
+      "observedAssets": {
+        "raw": 20926,
+        "gzip": 8598,
+        "br": 7575
+      },
+      "requests": [
+        {
+          "url": "/todomvc/preact/",
+          "phase": "initial",
+          "order": 0,
+          "status": 200,
+          "kind": "html",
+          "raw": 3976,
+          "gzip": 1681,
+          "br": 1294
+        },
+        {
+          "url": "/todomvc/preact/assets/todomvc-DG8ypGtV.js",
+          "phase": "initial",
+          "order": 1,
+          "status": 200,
+          "kind": "js",
+          "raw": 16950,
+          "gzip": 6917,
+          "br": 6281
+        }
+      ],
+      "correctness": {
+        "add": true,
+        "editEnterBlurEscape": true,
+        "delete": true,
+        "hashFilters": true,
+        "toggleAll": true,
+        "clearCompleted": true,
+        "persistence": true,
+        "retainedKeyedDOM": true
+      }
+    }
+  ]
+}

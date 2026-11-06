@@ -1,7 +1,8 @@
 import { readFile, stat, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { resolve, relative } from 'node:path';
 import assert from 'node:assert/strict';
 import { walk } from '../site/build.mjs';
+import { hasFragment } from '../site/config.mjs';
 const directory = resolve('dist/site');
 const metadata = JSON.parse(await readFile(resolve(directory, 'site.json'), 'utf8'));
 const failures = [], htmlFiles = (await walk(directory)).filter(file => file.endsWith('.html'));
@@ -19,9 +20,8 @@ for (const file of htmlFiles) {
       if ((await stat(destination)).isDirectory()) destination = resolve(destination, 'index.html');
       await stat(destination); checked++;
       if (url.hash && destination.endsWith('.html')) {
-        const id = decodeURIComponent(url.hash.slice(1));
         const content = await readFile(destination, 'utf8');
-        if (!content.includes(`id="${id}"`) && !content.includes(`name="${id}"`)) failures.push({ file, target, reason: 'missing anchor' });
+        if (!hasFragment(content, url.hash, metadata.hashRoutes?.[relative(directory, destination).replaceAll('\\', '/')])) failures.push({ file, target, reason: 'missing anchor' });
       }
     } catch { failures.push({ file, target, reason: 'missing file' }); }
   }

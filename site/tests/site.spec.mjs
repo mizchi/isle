@@ -34,7 +34,7 @@ for (const route of ['', 'ja/', 'examples/', 'ja/examples/', 'docs/quick-start.h
 
 test('the gallery labels server-only examples and opens a working static demo', async ({ page }) => {
   await page.goto('./examples/');
-  await expect(page.locator('.example-card')).toHaveCount(15);
+  await expect(page.locator('.example-card')).toHaveCount(16);
   const card = page.locator('.example-card').filter({ has: page.getByRole('heading', { name: 'Shared schema and server validation' }) });
   await expect(card).toContainText('Requires a server');
   await expect(card.getByRole('link', { name: 'Open demo' })).toHaveCount(0);
@@ -50,6 +50,11 @@ for (const id of liveExampleIds) {
     page.on('response', response => { if (response.status() >= 400) failed.push(response.url()); });
     await page.goto('./demos/' + id + '/');
     await expect(page.locator('h1')).toBeVisible();
+    if (id === 'todomvc') {
+      await page.getByRole('textbox', { name: 'New todo', exact: true }).fill('Try Pages');
+      await page.getByRole('textbox', { name: 'New todo', exact: true }).press('Enter');
+      await expect(page.locator('.todo-title')).toHaveText('Try Pages');
+    }
     if (id === 'loading') {
       await page.getByLabel('Search query').fill('Pages');
       await expect(page.locator('output')).toHaveText('Pages');

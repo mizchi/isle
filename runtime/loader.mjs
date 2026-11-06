@@ -48,7 +48,7 @@ export function loadIslands(root, load, events, options = {}) {
     }
     // Capture mutable DOM properties before the first asynchronous import.
     const payload = { type: event.type, value: event.target?.value, checked: event.target?.checked };
-    if (REGIONS) payload.element = element;
+    if (REGIONS) { payload.element = element; payload.key = event.key; }
     if (SCHEMA_FORMS && schemaForm) {
       payload.form = captureFormEvent(document, event, element);
       if (!payload.form) return;

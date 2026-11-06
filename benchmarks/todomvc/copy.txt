@@ -1,0 +1,10 @@
+todos
+Mark all as complete
+Write tests
+Ship demo
+2 items left
+All
+Active
+Completed
+Double-click or activate a todo to edit.
+Enter saves · Escape cancels · Changes are saved locally.

@@ -99,7 +99,7 @@ parser から独立した graph の検査には `checkDependencies(graph)` と `
 
 コンパイル時に確定する不変 state は定数伝播し、HTML の固定文字列を snapshot / handler に重複して入れません。文字列の一部だけが変わる場合も Text node は一つに保ち、可変範囲を更新します。再開用 root は全イベント・更新先を含む最小の祖先になり、component の root element と異なる場合があります。`explain` の analysis で保存 slot・初期化・文字範囲・DOM root を確認できます。[チューニングと測定](runtime-size.md)を参照してください。
 
-client component も初期 HTML は SSR されます。browser には必要な state/props と handler/update code を渡し、初期 setup を再実行しません。イベントは click/input/change/submit/invalid です。入力 entry では `event.value`、checkbox/radio では `event.checked`、標準検証には `event.invalid` / `event.validationMessage` を使います。Event 全体を保存・参照せず、発生時点の primitive だけを渡します。[Form の構文・標準制約・アクセシビリティ検査](forms.md)を参照してください。
+client component も初期 HTML は SSR されます。browser には必要な state/props と handler/update code を渡し、初期 setup を再実行しません。イベントは click/input/change/submit/invalid/keydown/dblclick/focusout です。入力 entry では `event.value`、keydown では `event.key`、checkbox/radio では `event.checked`、標準検証には `event.invalid` / `event.validationMessage` を使います。Event 全体を保存・参照せず、発生時点の primitive だけを渡します。[Form の構文・標準制約・アクセシビリティ検査](forms.md)を参照してください。
 
 作業メモの開閉には標準の `details` / `summary` も使えます。ネイティブの開閉に framework handler は不要です。[64項目のダッシュボード](../benchmarks/dashboard/README.md)では、静的な説明文とこれらの標準要素を残し、計算・保存する部分だけを再開します。
 

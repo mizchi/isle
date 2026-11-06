@@ -26,6 +26,36 @@ fn[T] json_array(values : Array[T], f : (T) -> Json) -> Json {
 ///|
 fn Expr::json(self : Expr) -> Json {
   match self {
+    Conditional(condition, yes, no) =>
+      obj([
+        ("kind", string_json("conditional")),
+        ("test", condition.json()),
+        ("yes", yes.json()),
+        ("no", no.json()),
+      ])
+    Method(base, operation, args) =>
+      obj([
+        ("kind", string_json("method")),
+        ("object", base.json()),
+        ("method", string_json(operation)),
+        ("args", json_array(args, e => e.json())),
+      ])
+    Collection(base, operation, parameter, body) =>
+      obj([
+        ("kind", string_json("collection")),
+        ("object", base.json()),
+        ("method", string_json(operation)),
+        ("parameter", string_json(parameter)),
+        ("body", body.json()),
+      ])
+    JsonDecode(ty, value) =>
+      obj([
+        ("kind", string_json("json-parse")),
+        ("type", string_json(ty)),
+        ("value", value.json()),
+      ])
+    JsonEncode(value) =>
+      obj([("kind", string_json("json-stringify")), ("value", value.json())])
     Literal(value, ty) => obj([("kind", string_json(ty)), ("value", value)])
     ArrayValue(values) =>
       obj([

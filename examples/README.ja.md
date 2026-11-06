@@ -6,6 +6,7 @@
 
 | 試す機能 | 操作と確認 |
 | --- | --- |
+| [TodoMVC](todomvc/) | Todo の追加・編集・絞り込み・保存と、Qwik・Preact との production サイズ比較。 |
 | [最小の Counter](hello/) | SSR した値を増やし、初期値へ戻す。 |
 | [ブラウザー JS のない SSR](ssr-only/) | ビルドに Isle runtime・snapshot・handler chunk が含まれないことを確認する。 |
 | [動的な表示だけ更新](partial-updates/) | 一つの値を変更し、静的見出しと無関係な出力の DOM が保持されることを確かめる。 |

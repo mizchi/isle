@@ -22,6 +22,7 @@ export interface ProfileDetail {
   phase: ProfilePhase; status: ProfileStatus; url?: string; cached?: boolean;
 }
 export type EventPayload = { type: string; value?: string; checked?: boolean; invalid?: boolean; validationMessage?: string;
+  /** Captured synchronously at the keyboard entry, before lazy code loading. */ key?: string;
   /** Internal schema-form dispatch, never part of the wire snapshot. */ form?: import('../runtime/form-events.mjs').CapturedFormEvent;
   /** Internal asynchronous framework error hook. */ reportError?: (error: Error) => void;
   /** Internal source-control identity; never serialized or exposed to source expressions. */ element?: Element;

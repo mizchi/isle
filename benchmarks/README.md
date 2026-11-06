@@ -1,5 +1,7 @@
 # 同じ UI による Qwik / Preact 比較
 
+[TodoMVC](todomvc/README.md) は追加・編集・絞り込み・保存を4実装で揃え、`just todomvc-size` で raw / gzip / Brotli と実取得量を比較します。[実測表](results/todomvc/latest.md)。
+
 Counter より大きな [作業計画ダッシュボード](dashboard/README.md) も追加しました。`just dashboard` で64項目・検証付きフォームの共通操作、速度測定、表示比較を実行します。[速度の実測表](results/dashboard/latest.md)を参照してください。
 
 [大量商品行の検証](heavy-render/README.md) は4,096商品の一括更新を使い、Isle の静的解析と実際の DOM mutation・Event Timing・layout を照合します。`just heavy-bench` で再現でき、[結果表](results/heavy-render/latest.md)に負荷の増え方を記録します。
