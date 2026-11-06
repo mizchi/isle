@@ -97,6 +97,13 @@ todomvc-serve: todomvc-build
 todomvc-quality: todomvc-build
     NODE_ENV=production node benchmarks/todomvc/quality.mjs
 
+# CDP CPU profiles + Chrome traces, separate precise coverage, loading-policy controls.
+todomvc-profile: todomvc-build
+    node --test tests/todomvc-profile.test.mjs
+    NODE_ENV=production node benchmarks/todomvc/profile-build.mjs
+    NODE_ENV=production node benchmarks/todomvc/profile-run.mjs
+    node benchmarks/todomvc/profile-report.mjs
+
 # 64 work packages + validated form, four implementations, cold/warm browser timings.
 dashboard-build: build-compiler
     node benchmarks/dashboard/build.mjs
