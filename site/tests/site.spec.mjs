@@ -11,6 +11,10 @@ test('the playground compiles and resumes on the deployed project subpath',async
   const frame=page.frameLocator('#preview');await expect(frame.locator('output')).toHaveText('5 / 10');
   await frame.getByRole('button',{name:'Increment',exact:true}).click();
   await expect(frame.locator('output')).toHaveText('6 / 12');
+  await page.locator('#preset').selectOption('list');await expect(frame.locator('li')).toHaveCount(2);
+  await page.locator('#source').fill('component C(){<main>@if(true){<p>Removed</p>}</main>}');
+  await expect(page.getByRole('status')).toContainText('Compile error');
+  await expect(page.locator('#diagnostics')).toContainText('E_CONTROL_REMOVED');
   await page.getByRole('link',{name:'Docs',exact:true}).click();
   await expect(page).toHaveURL(/\/docs\/quick-start.html$/);
 });

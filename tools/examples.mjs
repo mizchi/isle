@@ -26,7 +26,7 @@ if (command === 'list') {
     if (command === 'build' || command === 'preview') {
       await build({ configFile, build: { outDir, emptyOutDir: true } });
       if (command === 'preview') {
-        const server = await preview({ configFile, build: { outDir }, preview: { port: example.port + 200, strictPort: true } });
+        const server = await preview({ configFile, build: { outDir }, preview: { host: '127.0.0.1', port: example.port + 200, strictPort: true } });
         server.printUrls();
       }
     }

@@ -20,12 +20,12 @@ test('control syntax lowers to typed regions and renders SSR without resume mach
 
 test('every arm is checked; keys are mandatory, immutable and not array indexes', () => {
   for (const [source, expected] of [
-    ['client component C() { <div>@if (true) {<p>{missing}</p>}</div> }', 'E_UNKNOWN_NAME'],
-    ['client component C() { <div>@if (1) {<p>A</p>}</div> }', 'E_CONTROL_TYPE'],
-    ['component C(xs: string[]) { <ul>@for (const x of xs) {<li>{x}</li>}</ul> }', 'E_SYNTAX'],
-    ['component C(xs: string[]) { <ul>@for (const x of xs; index i; key i) {<li>{x}</li>}</ul> }', 'E_CONTROL_KEY'],
-    ['client component C(xs: string[]) { state n=0; <ul>@for (const x of xs; key n) {<li>{x}</li>}</ul> }', 'E_CONTROL_KEY'],
-    ['component C() { <div>@switch ("a") { @case "a": {<p>A</p>} @case "a": {<p>B</p>} }</div> }', 'E_CONTROL_CASE'],
+    ['client component C() { <div><Show when={true}><p>{missing}</p></Show></div> }', 'E_UNKNOWN_NAME'],
+    ['client component C() { <div><Show when={1}><p>A</p></Show></div> }', 'E_CONTROL_TYPE'],
+    ['component C(xs: string[]) { <ul><For each={xs}>{(x) => <Fragment><li>{x}</li></Fragment>}</For></ul> }', 'E_CONTROL_KEY'],
+    ['component C(xs: string[]) { <ul><For each={xs}>{(x, i) => <Fragment key={i}><li>{x}</li></Fragment>}</For></ul> }', 'E_CONTROL_KEY'],
+    ['client component C(xs: string[]) { state n=0; <ul><For each={xs}>{(x) => <Fragment key={n}><li>{x}</li></Fragment>}</For></ul> }', 'E_CONTROL_KEY'],
+    ['component C() { <div><Switch fallback={<p>A</p>} fallback={<p>B</p>} /></div> }', 'E_CONTROL_PROP'],
   ]) {
     const result = compile(source);
     assert.equal(result.ok, false, source);
@@ -37,20 +37,20 @@ test('closed records, array literals, boolean operators and synchronous render f
   const ir = requireIR(compile(`schema Item { id: string; value: number; }
     client component C() { state items: Item[] = [{ id: "a", value: 2 }]; state n=0;
     <div><button type="button">on click clear { items = []; }Clear</button>
-      @if (!(n > 0) && items.length === 1) {<p>One</p>}
-      @try {<p>{items[1].value}</p>} @catch(error) {<p>{error}</p>}
+      <Show when={!(n > 0) && items.length === 1}><p>One</p></Show>
+      <ErrorBoundary fallback={(error) => <Fragment><p>{error}</p></Fragment>}><p>{items[1].value}</p></ErrorBoundary>
     </div> }`));
   const rendered = prepareProgram(ir).render('C', {});
   assert.match(rendered.html, />One<\/p>/);
   assert.match(rendered.html, /Render failed/);
-  assert.equal(compile('component C() { <div>@try {<p>Ready</p>} @pending {<p>Wait</p>} @catch(e) {<p>{e}</p>}</div> }').diagnostics[0].code, 'E_RESOURCE_PENDING');
+  assert.equal(compile('component C() { <div><ErrorBoundary pending={true} fallback={<p>Failed</p>}><p>Ready</p></ErrorBoundary></div> }').diagnostics[0].code, 'E_CONTROL_PROP');
   assert.equal(compile('client component C() { state xs: number[] = ["wrong"]; <div/> }').diagnostics[0].code, 'E_STATE_TYPE');
-  assert.equal(compile('component C(xs: readonly number[]) { <div>@for(const x of xs; key x){<p>{x}</p>}</div> }').ok, true);
+  assert.equal(compile('component C(xs: readonly number[]) { <div><For each={xs}>{(x) => <Fragment key={x}><p>{x}</p></Fragment>}</For></div> }').ok, true);
   assert.equal(compile('component C(x: readonly number) { <p>{x}</p> }').diagnostics[0].code, 'E_TYPE');
 });
 
 test('SSR skips event-only initializers and duplicate keys fail before HTML is published', () => {
-  const ir = requireIR(compile('client component C(xs: number[]) { state spare = xs[100]; <div><button type="button">on click add { spare += 1; }Add</button>@if (true) {<p>Static</p>}</div> }'));
+  const ir = requireIR(compile('client component C(xs: number[]) { state spare = xs[100]; <div><button type="button">on click add { spare += 1; }Add</button><Show when={true}><p>Static</p></Show></div> }'));
   assert.doesNotThrow(() => prepareProgram(ir).render('C', { xs: [] }, { mode: 'ssr' }));
   const program = prepareProgram(requireIR(compile(source)));
   assert.throws(() => program.render('Controls', { initial: [{ id: 'a', value: 1 }, { id: 'a', value: 2 }] }), /Duplicate row key/);
@@ -58,7 +58,7 @@ test('SSR skips event-only initializers and duplicate keys fail before HTML is p
 
 test('unsupported cross-owner and cross-frame label edges fail with compiler diagnostics', () => {
   for (const code of [
-    'client component Child() { <button>on click add {}Add</button> } client component C() { <div>@if (true) {<Child/>}</div> }',
-    'component C() { <div><label for="x">X</label>@if (true) {<input id="x" type="text" aria-label="X"/>}</div> }',
+    'client component Child() { <button>on click add {}Add</button> } client component C() { <div><Show when={true}><Child/></Show></div> }',
+    'component C() { <div><label for="x">X</label><Show when={true}><input id="x" type="text" aria-label="X"/></Show></div> }',
   ]) assert.equal(compile(code).diagnostics[0].code, 'E_CONTROL_CONTRACT');
 });

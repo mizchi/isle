@@ -98,7 +98,7 @@ This build generates the initial HTML at build time. Request-time server actions
 | [HTML without browser JS](examples/ssr-only/) | Inspect the build: HTML and CSS, with no Isle runtime, snapshots or handler chunks. |
 | [Selective DOM updates](examples/partial-updates/) | Change one value while the static heading and unrelated output keep their DOM identity. |
 | [Nested components](examples/composition/) | Resume a child independently of its parent; project children through a pure component. |
-| [Branches, keyed lists and errors](examples/control-flow/) | Switch branches, reorder keyed rows, then empty the list to reach @empty and synchronous @catch. |
+| [Branches, keyed lists and errors](examples/control-flow/) | Switch branches, reorder keyed rows, then empty the list to reach the For fallback and ErrorBoundary. |
 | [Manifest-driven loading](examples/loading/) | Inspect preload decisions in the manifest; typing activates Search while Details stays inactive. |
 | [Resource lifetime and cleanup](examples/resources/) | Activate an owned timer and listener, remove the component, and observe one cleanup. |
 | [Lazy CSS readiness](examples/styles/) | Load component CSS with its setup module and inspect the style seen by setup. |

@@ -122,7 +122,7 @@ test('unsupported CSS, external dependencies, dynamic structure and replaced ele
   ]) assert.equal(run({ css: css + extra }).status, 'unknown', extra);
   assert.equal(run({ css: css.replace('minmax(0, 1fr)', '1fr') }).status, 'unknown');
   assert.equal(run({}, source.replace('Content', '<input type="text" aria-label="Content" />')).status, 'unknown');
-  const dynamic=run({}, source.replace('Board()', 'Board(show: boolean)').replace('Content', '@if (show) { <span>Content</span> }'));
+  const dynamic=run({}, source.replace('Board()', 'Board(show: boolean)').replace('Content', '<Show when={show}> <span>Content</span> </Show>'));
   assert.equal(dynamic.structure.complete,true);
   assert.equal(dynamic.status,'violated'); // The added child requires a Grid container.
 });

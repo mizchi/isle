@@ -26,7 +26,7 @@ Isle は、サーバーで生成した HTML を表示し、操作された UI �
 
 コンポーネントは HTML root または別の component を root とし、タグで入れ子にできます。children には描画専用の `RenderFragment` を使います。ページの入口を Vite の `mounts` に配置します。HTML の標準要素や通常の CSS を使えます。
 
-`.isle` は TypeScript の式・型を基にした専用言語です。`@if` / `@switch` / key 付き `@for` / 同期の `@try` は [制御構文の範囲](control-flow.md) で対応しています。任意の TypeScript、import、ユーザー定義関数、File・複数選択フォームは未対応です。client 境界を越える reactive props は未対応で、不変の初期値に限定します。`inline(ts)` / `inline(moonbit)` / `inline(css)`、Content Mapper、一般の async server render は設計段階です。
+`.isle` は TypeScript の式・型を基にした専用言語です。`Show` / `Switch` / key 付き `For` / 同期の `ErrorBoundary` は [制御構文の範囲](control-flow.md) で対応しています。任意の TypeScript、import、ユーザー定義関数、File・複数選択フォームは未対応です。client 境界を越える reactive props は未対応で、不変の初期値に限定します。`inline(ts)` / `inline(moonbit)` / `inline(css)`、Content Mapper、一般の async server render は設計段階です。
 
 リリース前のため、構文・API は変更することがあります。通常ページの HTML・snapshot・分割コードは同じビルドで配布します。widget にはバージョンと配布モードの照合があり、異なる版の共有 runtime へ自動的に接続しません。
 

@@ -15,8 +15,9 @@ client component Choice() {
   <section data-panel=""><h2>Deferred branch</h2>
     <button type="button">on click toggle { expanded = !expanded; }Toggle details</button>
     <div class="reserved">
-      @if (expanded) { <p>Details occupy a reserved grid track and preserve surrounding geometry.</p> }
-      @else { <p>Ready.</p> }
+      <Show when={expanded} fallback={<p>Ready.</p>}>
+        <p>Details occupy a reserved grid track and preserve surrounding geometry.</p>
+      </Show>
     </div>
   </section>
 }
@@ -27,8 +28,9 @@ client component Rows(initial: Row[]) {
   <section data-panel=""><h2>Keyed rows</h2>
     <button type="button">on click clear { items = []; }Clear rows</button>
     <div class="reserved"><ul>
-      @for (const row of items; key row.id) { <li data-row={row.id}>{row.title}</li> }
-      @empty { <li>No rows.</li> }
+      <For each={items} fallback={<li>No rows.</li>}>
+        {(row) => <li key={row.id} data-row={row.id}>{row.title}</li>}
+      </For>
     </ul></div>
   </section>
 }

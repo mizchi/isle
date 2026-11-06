@@ -18,7 +18,7 @@ test('unsafe literals and mutable destinations fail before code generation', () 
 });
 
 test('static server list links are validated at SSR while client factory URLs stay literal', () => {
-  const source = 'schema Entry {id:string; url:string;} server component Links(entries:Entry[]){<ul>@for(const entry of entries; key entry.id){<li><a href={entry.url}>Guide</a></li>}</ul>}';
+  const source = 'schema Entry {id:string; url:string;} server component Links(entries:Entry[]){<ul><For each={entries}>{(entry) => <Fragment key={entry.id}><li><a href={entry.url}>Guide</a></li></Fragment>}</For></ul>}';
   const program = prepareProgram(requireIR(compile(source)));
   assert.match(program.render('Links', { entries: [{ id: 'a', url: '/docs/' }] }).html, /href="\/docs\/"/);
   assert.throws(() => program.render('Links', { entries: [{ id: 'a', url: 'data:text/html,bad' }] }), /link URL/);

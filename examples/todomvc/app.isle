@@ -27,8 +27,8 @@ client component TodoMVC() {
         on change toggleAll { items = items.map(todo => ({ id: todo.id, title: todo.title, completed: event.checked })); }
       </input>Mark all as complete</label>
       <ul class="todo-list">
-        @for (const todo of visible; key todo.id) {
-          <li data-id={todo.id} class={editing === todo.id ? "editing" : todo.completed ? "completed" : ""}>
+        <For each={visible}>{(todo) => (
+          <li key={todo.id} data-id={todo.id} class={editing === todo.id ? "editing" : todo.completed ? "completed" : ""}>
             <div class="view">
               <input class="toggle" type="checkbox" aria-label="Complete todo" checked={todo.completed}>
                 on change toggle { items = items.map(other => other.id === todo.id ? ({ id: other.id, title: other.title, completed: event.checked }) : other); }
@@ -52,7 +52,7 @@ client component TodoMVC() {
               }
             </input>
           </li>
-        }
+        )}</For>
       </ul>
     </section>
     <footer class="footer" hidden={items.length === 0}>

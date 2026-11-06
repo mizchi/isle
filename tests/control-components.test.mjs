@@ -23,19 +23,14 @@ client component List(initial: Item[]) {
     <ErrorBoundary fallback={(error) => <p>{error}</p>}><p>{items[0].title}</p></ErrorBoundary>
   </section>
 }`;
-const legacy=source
-  .replace('<Show when={visible} fallback={<p>Hidden</p>}><p>Visible</p></Show>','@if(visible){<p>Visible</p>}@else{<p>Hidden</p>}')
-  .replace(/<Switch fallback={<p>Other<\/p>}>[\s\S]*?<\/Switch>/,'@if(mode === "list"){<p>List</p>}@else if(mode === "summary"){<p>Summary</p>}@else{<p>Other</p>}')
-  .replace('<For each={items} fallback={<li>No rows</li>}>{(item) => <Row key={item.id} item={item} />}</For>','@for(const item of items;key item.id){<Row item={item}/>}@empty{<li>No rows</li>}')
-  .replace('<ErrorBoundary fallback={(error) => <p>{error}</p>}><p>{items[0].title}</p></ErrorBoundary>','@try{<p>{items[0].title}</p>}@catch(error){<p>{error}</p>}');
-const withoutSources=value=>JSON.parse(JSON.stringify(value,(key,value)=>key==='source' ? undefined : value));
-
-test('control components lower to the same checked IR as existing controls without runtime wrappers',()=>{
-  const ir=requireIR(compile(source)),old=requireIR(compile(legacy));
-  assert.deepEqual(withoutSources(ir),withoutSources(old));
+test('control components lower to checked regions without runtime wrappers',()=>{
+  const ir=requireIR(compile(source));
+  assert.equal(ir.components.at(-1).root.children.filter(node=>node.kind==='select').length,1,'the immutable mode branch is folded');
+  assert.equal(ir.components.at(-1).root.children.at(-1).kind,'boundary');
   for(const initial of [[{id:'a',title:'First'},{id:'b',title:'Second'}],[]]) {
     const html=prepareProgram(ir).render('List',{initial},{mode:'ssr'}).html;
-    assert.equal(html,prepareProgram(old).render('List',{initial},{mode:'ssr'}).html);
+    assert.match(html,/>Visible<\/p><p>List<\/p>/);
+    assert.match(html,initial.length ? /data-key="a">First/ : /No rows<\/li><\/ul><p>Render failed/);
     assert.doesNotMatch(html,/<(?:For|Show|Fragment|Switch|Match|ErrorBoundary)\b|\skey=/);
   }
   assert.ok(compilePreview(source,{props:{initial:[]}}).ok);
@@ -103,8 +98,8 @@ test('layout checking still enumerates every bounded row count, including the em
   assert.equal(analyzeLayout(ir,{css,viewport:{min:140,max:300,height:{min:200,max:600}}}).status,'verified');
 });
 
-test('quoted markup is unchanged, fragments are transparent and new syntax nests in legacy blocks',()=>{
-  const input='client component C(){state label="<For each={xs}>";state n=0;<main>on click {n+=1;}@if(n>0){<Show when={n>1} fallback={"Waiting"}><Fragment><p>{label}</p><><p>Nested</p></></Fragment></Show>}</main>}';
+test('quoted markup is unchanged and nested controls preserve transparent fragments',()=>{
+  const input='client component C(){state label="<For each={xs}>";state n=0;<main>on click {n+=1;}<Show when={n>0}><Show when={n>1} fallback={"Waiting"}><Fragment><p>{label}</p><><p>Nested</p></></Fragment></Show></Show></main>}';
   const ir=requireIR(compile(input));assert.equal(ir.components[0].states[0].initial.value,'<For each={xs}>');
   assert.equal(prepareProgram(ir).render('C',{}, {mode:'ssr'}).html,'<main></main>');
   assert.equal(compile('component C(){<Show when={true}><p>Missing owner</p></Show>}').diagnostics[0].code,'E_CONTROL_ROOT');

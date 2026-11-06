@@ -1,8 +1,8 @@
 # TodoMVC のチャンク分割をプロファイラで検証
 
-測定: 2026-11-06T04:33:18.701Z。対象アプリの基準 commit: `253fe89`、production manifest: `197c7f499e5c87c9`。
+測定: 2026-11-06T13:23:14.434Z。対象アプリの基準 commit: `9eb3156`、production manifest: `fdd56ce0542eca88`。
 
-**依存チャンクの並列取得を保ち、SSR と重複する親の HTML factory と同一値代入の一覧更新を削除した。** 全生成 JS は 8663 → 8036 B gzip。初回の scalar input に共通描画モジュールが必要な点は残っている。
+**依存チャンクの並列取得を保ち、SSR と重複する親の HTML factory と同一値代入の一覧更新を削除した。** 全生成 JS は 8663 → 8035 B gzip。初回の scalar input に共通描画モジュールが必要な点は残っている。
 
 ## 取得と評価
 
@@ -10,15 +10,15 @@
 
 | 役割 | gzip B |
 |---|---:|
-| runtime / registry | 1741 |
+| runtime / registry | 1740 |
 | 値・key の検査 | 511 |
 | 共通描画 + region kernel | 2545 |
 | draftChanged / add | 354 |
-| 追加合計 | 5151 |
+| 追加合計 | 5150 |
 
-この時点で全生成 JS の **82.0%**（6591 / 8036 B gzip）が到着する。編集・フィルターの handler ファイルすべてが来るわけではないが、それらの表示を扱う共通描画コードは来る。
+この時点で全生成 JS の **82.0%**（6590 / 8035 B gzip）が到着する。編集・フィルターの handler ファイルすべてが来るわけではないが、それらの表示を扱う共通描画コードは来る。
 
-500件を保存済みの別試行では、host の restore が起動時に走り、初期外部 JS は 6543 B gzip だった。空の localStorage の値を再訪ユーザーへそのまま一般化しない。
+500件を保存済みの別試行では、host の restore が起動時に走り、初期外部 JS は 6542 B gzip だった。空の localStorage の値を再訪ユーザーへそのまま一般化しない。
 
 実線は操作時に有効化する並列取得、破線は静的 import。後続 handler の dynamic import は省略した。
 
@@ -34,7 +34,7 @@ flowchart LR
   renderer -.-> value
 ```
 
-80 ms のレスポンス遅延、1 MiB/s、同じ Node HTTP/1.1 server で比較した。標準構成では4リクエストの開始差が **0.2 ms**、最初の開始から最後の完了まで **93.7 ms**。HTML 内の並列取得用 template を取り除く対照実験では開始差 264.7 ms、取得区間 **352.7 ms** となった。manifest から生成した inert modulepreload を操作時に移す処理は有効である。
+80 ms のレスポンス遅延、1 MiB/s、同じ Node HTTP/1.1 server で比較した。標準構成では4リクエストの開始差が **0.2 ms**、最初の開始から最後の完了まで **94.8 ms**。HTML 内の並列取得用 template を取り除く対照実験では開始差 271.3 ms、取得区間 **364.3 ms** となった。manifest から生成した inert modulepreload を操作時に移す処理は有効である。
 
 module body の先頭に診断用 mark を置いた別試行でも確認した。`auto` は先読みした依存を初期に評価せず、最初の操作で評価した。**fetch と evaluate は分離されている。** この mark は配布コードやサイズ比較には含めていない。
 
@@ -44,13 +44,13 @@ module body の先頭に診断用 mark を置いた別試行でも確認した�
 
 | 構成 | handlerファイル数 | 全JS B | 初期外部JS B | 初回input追加 B / 件 | input取得区間 ms | 次のEnter追加 B |
 |---|---:|---:|---:|---:|---:|---:|
-| production | 6 | 8036 | 1440 | 5151 / 4 | 93.7 | 0 |
-| no-hints | 6 | 8036 | 1440 | 5151 / 4 | 352.7 | 0 |
-| ungrouped | 13 | 9176 | 1439 | 5035 / 4 | 93.2 | 302 |
-| auto | 7 | 8218 | 7017 | 0 / 0 | 取得済み | 372 |
+| production | 6 | 8035 | 1440 | 5150 / 4 | 94.8 | 0 |
+| no-hints | 6 | 8035 | 1440 | 5150 / 4 | 364.3 | 0 |
+| ungrouped | 13 | 9175 | 1439 | 5034 / 4 | 98.5 | 302 |
+| auto | 7 | 8221 | 7020 | 0 / 0 | 取得済み | 372 |
 
 - 1 handler / file では初回 input が 116 B 小さくなるが、次の Enter に 302 B の追加取得が発生する。全 JS は 1140 B 増える。現在の小さい handler の結合には意味がある。
-- `auto` は初期に 7017 B を先読みし、input の追加取得をなくす。これは初期取得量との交換条件であり、初期ペイロードを最優先する現在のデモでは `lazy` を保つ根拠になる。
+- `auto` は初期に 7020 B を先読みし、input の追加取得をなくす。これは初期取得量との交換条件であり、初期ペイロードを最優先する現在のデモでは `lazy` を保つ根拠になる。
 - 別出力 URL の名前による微小なサイズ差も含む。1回の診断であり、実ネットワークや HTTP/2 / HTTP/3 の速度差を代表しない。
 
 現在の物理グループは以下。source byte budget と宣言順でまとまり、`lazy` 指定時にはイベントの優先度を使わない。使用しない helper import を生成しないことで、分割予算も不要な source bytes に消費しない。
@@ -80,15 +80,15 @@ CPU は production の JS を変更せず、V8 の最適化を許した別試行
 
 | 入力方式 | region.prepare 呼出 | region.each 呼出 | app URL の sampled self ms（参考） |
 |---|---:|---:|---:|
-| 通常キー（keydown + input） | 65 | 1 | 1.3 |
-| input イベントだけ | 65 | 1 | 1.6 |
+| 通常キー（keydown + input） | 65 | 1 | 1.5 |
+| input イベントだけ | 65 | 1 | 1.2 |
 
 変更前の通常キーでは一覧の照合が 65 回、input だけでは 1 回だった。生成 handler は全 keydown を受け取るが、同一値の代入では setter を呼ばず、実際に変化した slot だけを dirty にする。dirty が空なら region.prepare も呼ばない。配列の identity no-op は再検査しないが、新しい値は従来の型検査付き setter を通し、失敗時の transaction rollback を保つ。初回の owner 接続と handler の取得を飛ばすキーガードはまだ実装していない。
 
 | keyboard 試行の関数 | source map で対応した場所 | sampled self ms |
 |---|---|---:|
-| (anonymous) | runtime/regions.mjs:130 | 1.3 |
-| attribute | runtime/regions.mjs:98 | 0.1 |
+| (anonymous) | runtime/regions.mjs:135 | 1.1 |
+| attribute | runtime/regions.mjs:98 | 0.4 |
 
 呼出回数は別の coverage 試行で数えた正確な回数。CPU は少ないサンプルの推計なので、上の時間比を性能倍率として断定しない。待機・Playwright の操作処理を app CPU に足していない。native 側の処理時間や描画全体を網羅した数値でもない。
 
@@ -98,8 +98,8 @@ profile 有効 + module mark の別試行。以下は入力から transaction �
 
 | 構成 | interaction ms | runtime ms | code ms | restore ms | run ms |
 |---|---:|---:|---:|---:|---:|
-| profile | 94.1 | 88.5 | 0.3 | 0.2 | 1.2 |
-| profile-no-hints | 355.0 | 175.7 | 176.2 | 0.3 | 1.6 |
+| profile | 103.0 | 98.8 | 0.6 | 0.3 | 1.9 |
+| profile-no-hints | 372.6 | 187.0 | 183.6 | 0.2 | 1.0 |
 
 ## 残る改善
 

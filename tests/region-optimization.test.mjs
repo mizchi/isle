@@ -52,7 +52,7 @@ test('a scalar update marks only the changed slot and repeated values do no work
 test('skipping identical writes preserves statement order and transaction rollback', async () => {
   const code = `client component C() { state n=1; state xs: number[]=[];
     <div><button>on click change { n = n; n += 1; xs = [xs[0]]; }Change</button>
-    @if(n > 0){<p>{n}</p>}</div> }`;
+    <Show when={n > 0}><p>{n}</p></Show></div> }`;
   const handler = prepareProgram(requireIR(compile(code))).get('C').generate().handlers[0];
   const { run, updates } = await instrument(handler), validations = [];
   const scope = { _values: [1, []], _validate(i, v) { validations.push([i, v]); }, _set(i, v) { this._values[i] = v; } };

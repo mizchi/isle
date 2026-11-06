@@ -1,6 +1,6 @@
 # 初回描画のクリティカルパスと CLS
 
-測定 2026-11-06T04:38:15.270Z、Chromium 156.0.8078.4。51 ケース + 3 対照実験。全 JS を FCP 後まで停止し、その後もリクエストごとに 650ms 遅らせた。route-split は route だけ 1900ms。slow-css は render-blocking stylesheet をさらに 400ms 遅らせた。低速処理を最初の描画より前や入力後500ms以内に収めて隠す検査ではない。
+測定 2026-11-06T13:17:33.940Z、Chromium 156.0.8078.4。51 ケース + 3 対照実験。全 JS を FCP 後まで停止し、その後もリクエストごとに 650ms 遅らせた。route-split は route だけ 1900ms。slow-css は render-blocking stylesheet をさらに 400ms 遅らせた。低速処理を最初の描画より前や入力後500ms以内に収めて隠す検査ではない。
 
 | パターン | viewport 幅 px | 初期 CLS 最大 | 初期 raw shift 最大 | 操作後までの CLS 最大 | 判定 |
 |---|---|---:|---:|---:|---|
@@ -33,8 +33,8 @@ TodoMVC は CSS Grid の明示トラックでリストとフッターの領域�
 
 | 指標 | 変更前 | 変更後 |
 |---|---:|---:|
-| 全生成 JS gzip B | 8663 | 8036 |
-| 初回 input の追加 JS gzip B | 5724 | 5151 |
+| 全生成 JS gzip B | 8663 | 8035 |
+| 初回 input の追加 JS gzip B | 5724 | 5150 |
 | 500件・64文字+Enter の一覧照合回数 | 65 | 1 |
 | input のみ+Enter の一覧照合回数 | 1 | 1 |
 

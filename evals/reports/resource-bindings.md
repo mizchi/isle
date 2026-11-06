@@ -1,6 +1,6 @@
 # Resource の自動接続
 
-2026-11-05。`resources: { Counter: './resources.mjs' }` から component の初回 resume、親子 owner、native DOM 削除、widget disconnect へ所有・破棄カーネルを接続した。専用 resource / Once / `@pending` 構文の実装ではない。
+2026-11-05。`resources: { Counter: './resources.mjs' }` から component の初回 resume、親子 owner、native DOM 削除、widget disconnect へ所有・破棄カーネルを接続した。専用 resource / Once / `Suspense` 構文の実装ではない。
 
 受入 fixture は [app.isle](../../e2e/fixtures/resource-bindings/app.isle) と [setup module](../../e2e/fixtures/resource-bindings/resources.mjs)。Node 10ケース、共有 widget engine の Chromium 8ケース、機能を削減した通常 app engine の7ケースを検査した。通常 app では widget 専用の1ケースを対象外とする。
 

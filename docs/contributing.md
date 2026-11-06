@@ -80,7 +80,7 @@ just widget-portable-dev # 別アプリを任意パスから配信する Node �
 
 `compiler/` は外部 I/O を持たない MoonBit frontend、`lib/` は Node/Vite adapter と codegen、`runtime/` は DOM/ESM の小さな client runtime、`models/` は独立した参照モデルです。`evals/` は課題・attempt・期待値・採点結果を分けています。
 
-v0 は required props、state、derive、DOM template、component の入れ子と children、state assignment、schema/view、明示 action と remote、Form と検証を扱います。閉じた record / array と `@if` / `@switch` / key 付き `@for` / 同期の `@try` も実装しています。Vite の resources 指定から client component の取得・破棄を自動接続できます。制御構文の backend には owner・Form・HTML の制約があります。任意 TypeScript、inline、import、resource / `@pending` の専用構文、union の網羅性、Content Mapper、一般の server async render は未対応です。
+v0 は required props、state、derive、DOM template、component の入れ子と children、state assignment、schema/view、明示 action と remote、Form と検証を扱います。閉じた record / array と `Show` / `Switch` / key 付き `For` / 同期の `ErrorBoundary` も実装しています。Vite の resources 指定から client component の取得・破棄を自動接続できます。制御構文の backend には owner・Form・HTML の制約があります。任意 TypeScript、inline、import、resource / `Suspense` の専用構文、union の網羅性、Content Mapper、一般の server async render は未対応です。
 
 server host の認証・policy・operation は trusted adapter です。デモの principal は server 固定値で、実ログインではありません。prepare は副作用を持たず、commit は同期の in-memory mutation に限定します。実 DB transaction、完全な情報フロー、compiler/JS/browser 全体の形式証明を実装したとは扱いません。
 

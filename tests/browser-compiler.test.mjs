@@ -16,7 +16,7 @@ test('browser compiler shares every frontend pass and explanation with the Node 
   const browser=await import('../lib/compiler-browser.mjs');
   for(const source of [
     'client component Counter(){state n=0;<button>on click {n+=1;}{n}</button>}',
-    'client component List(){state xs=[0];<main>on click {xs=xs.concat([xs.length]);}@for(const x of xs;key x){<p>{x}</p>}</main>}',
+    'client component List(){state xs=[0];<main>on click {xs=xs.concat([xs.length]);}<For each={xs}>{(x) => <Fragment key={x}><p>{x}</p></Fragment>}</For></main>}',
     'component Bad(){<main>{missing}</main>}',
     'component List(xs:number[]){<main><Show when={xs.length>0} fallback={<p>Empty</p>}><For each={xs}>{(x)=><Fragment key={x}><p>{x}</p><p>Detail</p></Fragment>}</For></Show></main>}',
   ]) {

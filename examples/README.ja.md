@@ -11,7 +11,7 @@
 | [ブラウザー JS のない SSR](ssr-only/) | ビルドに Isle runtime・snapshot・handler chunk が含まれないことを確認する。 |
 | [動的な表示だけ更新](partial-updates/) | 一つの値を変更し、静的見出しと無関係な出力の DOM が保持されることを確かめる。 |
 | [入れ子と children](composition/) | 親と子を独立に再開し、純粋 component の children を表示する。 |
-| [分岐・key 付きリスト・例外](control-flow/) | 分岐を切り替え、key 付き行を並べ替え、空配列で @empty と同期 @catch を確認する。 |
+| [分岐・key 付きリスト・例外](control-flow/) | 分岐を切り替え、key 付き行を並べ替え、空配列で For の fallback と ErrorBoundary を確認する。 |
 | [manifest による読み込み](loading/) | manifest の先読み判断を調べ、入力時には Search だけが活性化することを確認する。 |
 | [リソースの寿命と破棄](resources/) | 所有された timer と listener を活性化し、component を削除して一度だけ破棄されることを見る。 |
 | [遅延 CSS と準備完了](styles/) | setup module と CSS を読み込み、setup から見える適用済み style を調べる。 |

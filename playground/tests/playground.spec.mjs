@@ -90,6 +90,16 @@ test('renaming the selected component and rapid edits use the latest source',asy
   await expect(preview(page).locator('output')).toHaveText('303 / 606');
 });
 
+test('removed directive syntax reports a migration diagnostic and a new preset recovers',async({page})=>{
+  await page.goto('/');await expect(page.getByRole('status')).toContainText('Ready');
+  await page.locator('#source').fill('component Page(){<main>@if(true){<p>Legacy</p>}</main>}');
+  await expect(page.getByRole('status')).toContainText('Compile error');
+  await expect(page.locator('#diagnostics')).toContainText('E_CONTROL_REMOVED');
+  await expect(page.locator('#diagnostics')).toContainText('Show');
+  await page.locator('#preset').selectOption('list');await expect(page.getByRole('status')).toContainText('Ready');
+  await expect(preview(page).locator('li')).toHaveText(['First','Second']);
+});
+
 test('a stalled compiler is terminated and the next compilation recovers',async({page})=>{
   await page.addInitScript(()=>{
     const NativeWorker=window.Worker;

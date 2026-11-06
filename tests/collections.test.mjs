@@ -17,7 +17,7 @@ client component Todos(initial: Todo[]) {
     <input type="hidden">on input restore { items = JSON.parse<Todo[]>(event.value); }</input>
     <button>on click complete { items = items.map(todo => { id: todo.id, title: todo.title, completed: true }); }Complete</button>
     <output>{count === 1 ? "1 item" : "Other items"}</output>
-    <ul>@for (const todo of active; key todo.id) { <li>{todo.title}</li> }</ul>
+    <ul><For each={active}>{(todo) => <Fragment key={todo.id}> <li>{todo.title}</li> </Fragment>}</For></ul>
     <span data-store={JSON.stringify(items)}></span>
   </section>
 }`;

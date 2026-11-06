@@ -708,8 +708,8 @@ fn Parser::element(self : Parser, side : String) -> Node raise CompileError {
     self.pos = before_space
     if self.starts("<") {
       children.push(self.element(side))
-    } else if self.char() == 64 {
-      children.push(self.control(side))
+    } else if self.char() == 31 {
+      children.push(self.generated_control(side))
     } else if self.char() == 123 {
       self.pos += 1
       let value = self.expr()
@@ -720,7 +720,7 @@ fn Parser::element(self : Parser, side : String) -> Node raise CompileError {
       while self.char() != -1 &&
             self.char() != 60 &&
             self.char() != 123 &&
-            self.char() != 64 {
+            self.char() != 31 {
         self.pos += 1
       }
       if self.char() == -1 {
@@ -762,11 +762,11 @@ fn Parser::template_block(
       let value = self.expr()
       self.need("}")
       children.push(Expression(value))
-    } else if self.starts("@") {
-      children.push(self.control(side))
+    } else if self.starts("\u001f") {
+      children.push(self.generated_control(side))
     } else {
       let start = self.pos
-      while self.char() != -1 && ![60, 123, 125, 64].contains(self.char()) {
+      while self.char() != -1 && ![60, 123, 125, 31].contains(self.char()) {
         self.pos += 1
       }
       let value = self.part(start, self.pos)
@@ -778,18 +778,19 @@ fn Parser::template_block(
   children
 }
 
+// Private control transport emitted by the JS frontend, not authored syntax.
 ///|
-fn Parser::control(self : Parser, side : String) -> Node raise CompileError {
+fn Parser::generated_control(self : Parser, side : String) -> Node raise CompileError {
   self.space()
   let start = self.pos
-  self.need("@")
+  self.need("\u001f")
   if self.word("if") {
     self.need("(")
     let condition = self.expr()
     self.need(")")
     let cases = [(condition, self.template_block(side))]
     let mut fallback = []
-    while self.eat("@else") {
+    while self.eat("\u001felse") {
       if self.word("if") {
         self.need("(")
         let condition = self.expr()
@@ -798,40 +799,6 @@ fn Parser::control(self : Parser, side : String) -> Node raise CompileError {
       } else {
         fallback = self.template_block(side)
         break
-      }
-    }
-    Select(cases, fallback, start)
-  } else if self.word("switch") {
-    self.need("(")
-    let value = self.expr()
-    self.need(")")
-    self.need("{")
-    let cases = []
-    let labels = []
-    let mut fallback = []
-    let mut default_seen = false
-    while !self.eat("}") {
-      if self.eat("@case") {
-        let label = self.atom()
-        let signature = label.json().stringify()
-        if !(label is Literal(_, _)) || labels.contains(signature) {
-          self.fail(
-            "E_CONTROL_CASE", "Cases require distinct literal labels", "Use unique string, number or boolean literals.",
-          )
-        }
-        labels.push(signature)
-        self.need(":")
-        cases.push((Binary("===", value, label), self.template_block(side)))
-      } else {
-        self.need("@default")
-        self.need(":")
-        if default_seen {
-          self.fail(
-            "E_CONTROL_CASE", "Duplicate default", "Use one default arm.",
-          )
-        }
-        default_seen = true
-        fallback = self.template_block(side)
       }
     }
     Select(cases, fallback, start)
@@ -853,23 +820,18 @@ fn Parser::control(self : Parser, side : String) -> Node raise CompileError {
     let key = self.expr()
     self.need(")")
     let body = self.template_block(side)
-    let empty = if self.eat("@empty") { self.template_block(side) } else { [] }
+    let empty = if self.eat("\u001fempty") { self.template_block(side) } else { [] }
     Each(item, index, source, key, body, empty, start)
   } else if self.word("try") {
     let body = self.template_block(side)
-    if self.eat("@pending") {
-      self.fail(
-        "E_RESOURCE_PENDING", "Pending requires an explicit resource contract", "This version supports synchronous render boundaries with @catch.",
-      )
-    }
-    self.need("@catch")
+    self.need("\u001fcatch")
     self.need("(")
     let error = self.ident()
     self.need(")")
     Boundary(body, error, self.template_block(side), start)
   } else {
     self.fail(
-      "E_CONTROL", "Unknown template control", "Use @if, @for, @switch or @try.",
+      "E_CONTROL", "Unknown template control", "Use Show, For, Switch or ErrorBoundary.",
     )
   }
 }

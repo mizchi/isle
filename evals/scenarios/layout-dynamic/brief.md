@@ -2,7 +2,7 @@
 
 [実行例](../../../examples/responsive-dynamic/)を使い、npm の Vite API を前提に次を試す。
 
-1. `@if` の非表示側と、class のもう一方を重くする。現在の SSR が正常でもビルドで拒否されることを説明する。
+1. `Show` の非表示側と、class のもう一方を重くする。現在の SSR が正常でもビルドで拒否されることを説明する。
 2. guarded append の上限を4から5へ変え、レポートの件数上界を確認する。上限ガードを外し、設定の maxItems で免除できないことを確認する。
 3. overlay 0px / classic15px の両 profile を宣言する。min-width100pxの子に115pxが必要となる理由を説明する。profile は全OSや0〜15pxの連続範囲を意味しない。
 4. stableをautoに変えて、表示/非表示の組み合わせを読む。both-edges と横 scrollbar の高さを区別する。

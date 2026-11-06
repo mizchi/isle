@@ -2,7 +2,7 @@
 
 `Once<T>` を「一度だけ読む値」ではなく、同じ resource identity の寿命中に高々一度だけ結果を公開する値とする。読み取りは何度でもよい。公開の結果は `Ready(T)` または `Failed(PublicError)` で、初期化の開始回数、結果の公開回数、component の更新回数を別に扱う。
 
-2026-11-05 時点で、以下の参照モデルと検査は実行できる。所有・破棄カーネルと Vite `resources` から browser の component / widget 寿命への接続も実装した。resource / `Once` / `@pending` の DSL と temporal codegen は未実装であり、このモデルの検査結果をそれらの実装の証明とは扱わない。
+2026-11-05 時点で、以下の参照モデルと検査は実行できる。所有・破棄カーネルと Vite `resources` から browser の component / widget 寿命への接続も実装した。resource / `Once` / `Suspense` の DSL と temporal codegen は未実装であり、このモデルの検査結果をそれらの実装の証明とは扱わない。
 
 ## 型をトレースの集合として解釈する
 
@@ -106,7 +106,7 @@ just verify
 | component 全体の更新情報を解放 | 独立 resource、子 owner、今後の event / factory の consumer が残らない |
 | 複数処理の batching | 観測する結果と effect の順序を保ち、終端への到達を失わない |
 
-モデルから compiler / generated JS への refinement mapping と、その意味保存証明は未実装。破棄カーネルにはモデル由来の schedule を Node で再生し、component / widget の自動接続は browser E2E で別に検査する。Once の UI 公開・`@pending` を含む resource DSL 全体の検証ではない。
+モデルから compiler / generated JS への refinement mapping と、その意味保存証明は未実装。破棄カーネルにはモデル由来の schedule を Node で再生し、component / widget の自動接続は browser E2E で別に検査する。Once の UI 公開・`Suspense` を含む resource DSL 全体の検証ではない。
 
 再試行、同じ owner 内での refresh、streaming SSR の完了配送、timeout、複数 observer の保持解析、RPC の認可や外部副作用の exactly-once は追加のモデルが必要。型だけでネットワークの完了や外部 mutation の高々一回実行を保証したとは扱わない。
 

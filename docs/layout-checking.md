@@ -44,7 +44,7 @@ isle({
 - mount は一つ、`wrapMounts:false`。HTML に SSR marker が一つあり、body の描画要素はその component の tree と一致すること。
 - html/body を viewport 全体の Grid shell として出力し、実際の class/id・reset・padding/border を含めて両軸を解析する。`hostInset` や、解析のためだけの仮の ancestor は受け取らない。
 - 幅と高さの有限区間を両方指定する。到達可能な media/container query の組み合わせを有理数の領域として検査し、違反と **unknown の両方**で production build を失敗させる。成功を少数の viewport のサンプリングで代用しない。
-- `@if`/`@switch`/同期 `@try` の各候補、有限な class/id、上限を静的に導ける `@for` を含めて検査する。text 更新だけの状態を構造の直積に含めない。以下の動的構造の節を参照。
+- `Show`/`Switch`/同期 `ErrorBoundary` の各候補、有限な class/id、上限を静的に導ける `For` を含めて検査する。text 更新だけの状態を構造の直積に含めない。以下の動的構造の節を参照。
 - `clientEntry`、`resources`、widget 設定、追加の実行 script、未所有の client module、inline style、popover、noscript、CSP meta 等は拒否する。head・snapshot・loader の非描画要素を CSS が表示する場合も拒否する。HTTP の CSP 等、配信側の policy は所有する stylesheet の適用を許可する前提である。
 - overflow 契約は fit/clip/scroll。scrollbar は指定した native profile ごとに占有幅を差し引く。visible 契約による無制限の流出は拒否する。CLI 単体では visible 契約も利用できる。
 
@@ -56,7 +56,7 @@ Vite/Rolldown の HTML transform 後、Isle manifest 注入後の `generateBundl
 
 ## 動的構造の集合を検査する
 
-[実行例](../examples/responsive-dynamic/)は、リストの追加・全削除、class の切り替え、空状態を持つ。`@if`/`@switch` の候補と同期 `@try`/`@catch` を結合し、現在の SSR に現れない構造も調べる。同じ component の有限な scalar state は繰り返し内でも同じ値として扱う。class/id は有限な文字列集合へ解決できる式を許可し、任意入力からの class 等は unknown にする。
+[実行例](../examples/responsive-dynamic/)は、リストの追加・全削除、class の切り替え、空状態を持つ。`Show`/`Switch` の候補と同期 `ErrorBoundary`/`fallback` を結合し、現在の SSR に現れない構造も調べる。同じ component の有限な scalar state は繰り返し内でも同じ値として扱う。class/id は有限な文字列集合へ解決できる式を許可し、任意入力からの class 等は unknown にする。
 
 ```text
 state items = [0];

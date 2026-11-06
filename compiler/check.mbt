@@ -489,7 +489,7 @@ fn check_node(
       let ty = source.ty(env, schemas, actions, p)
       if source.has_remote() || !ty.has_suffix("[]") {
         p.fail(
-          "E_CONTROL_TYPE", "@for requires a typed array", "Pass a readonly array of serializable values.",
+          "E_CONTROL_TYPE", "For requires a typed array", "Pass a readonly array of serializable values.",
         )
       }
       if item == index ||

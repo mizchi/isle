@@ -15,7 +15,7 @@
 
 次段階 DSL の [inline/live/CSS 課題](scenarios/inline-live-css/brief.md) は、読解を `inline-live-css-intent` で採点できます。`.isle.next` は未実装構文の設計 fixture で、v0 compiler の対象ではありません。新課題の記述 grader、CSS 最適化の受入テスト、参加者評価は未実施です。
 
-[制御構文の課題](scenarios/control-flow/brief.md) は、@if / @for / @switch / @try の構造、key と owner、配列全置換の費用、error boundary の範囲を読み取れるかを評価します。採点は `control-flow-intent`。`.isle.next` は resource / inline / union を含む設計 fixture です。`fixture.isle` は実装済みの同期サブセットで、型検査・SSR・browser resume・key の寿命を受入テストにしています。記述 grader と参加者評価は未実施です。
+[制御構文の課題](scenarios/control-flow/brief.md) は、Show / For / Switch / ErrorBoundary の構造、key と owner、配列全置換の費用、error boundary の範囲を読み取れるかを評価します。採点は `control-flow-intent`。`.isle.next` は resource / inline / union を含む設計 fixture です。`fixture.isle` は実装済みの同期サブセットで、型検査・SSR・browser resume・key の寿命を受入テストにしています。記述 grader と参加者評価は未実施です。
 
 [静的部分と再開部分の課題](scenarios/static-split/brief.md) は現在の v0 で動きます。読解の採点は `static-split-intent` です。snapshot、server 初期化、再開 root、文字範囲の更新を区別できるかを評価します。参加者評価はまだありません。
 

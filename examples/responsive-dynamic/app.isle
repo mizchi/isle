@@ -9,11 +9,12 @@ export client component DynamicBoard() {
       <button class="action" type="button" aria-pressed={compact}>on click { compact = !compact; }Style</button>
     </nav>
     <section class="scroller" aria-label="Scrollable cards" tabindex="0">
-      @for (const item of items; key item) {
-        <div class={compact ? "tile compact" : "tile"}>Card {item}</div>
-      } @empty { <p class="empty">No cards</p> }
+      <For each={items} fallback={<p class="empty">No cards</p>}>
+        {(item) => <div key={item} class={compact ? "tile compact" : "tile"}>Card {item}</div>}
+      </For>
     </section>
-    @if (items.length === 0) { <p class="note">Add up to four cards.</p> }
-    @else { <p class="note">Scroll to see every card.</p> }
+    <Show when={items.length === 0} fallback={<p class="note">Scroll to see every card.</p>}>
+      <p class="note">Add up to four cards.</p>
+    </Show>
   </main>
 }

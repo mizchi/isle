@@ -72,12 +72,12 @@ Fragment は解析時に取り除き、複数ノードを一つの行として�
 - component 自体には一つの native container root が必要です。root を直接 Show / For / Fragment にする場合は、section などで包みます。
 - Region backend の既存の制約を引き継ぎます。独立 client owner、RenderFragment の投影、schema Form、textarea / select / option は反復・分岐を持つ owner では未対応です。純粋な universal component の静的展開は使えます。
 - 型検査の後に定数分岐を除去し、動的な値・属性・構造だけの更新を生成します。レイアウト検査には全 branch / fallback と、証明できる全反復回数を渡します。SSR 専用では snapshot、動的属性、クライアント JS を出しません。
-- 旧 `@if` / `@for` / `@switch` / `@try` は互換用に受理します。新しい利用例と playground は制御コンポーネント表記を使います。
+- 制御構文は制御コンポーネント表記だけを受理します。旧 `@` ディレクティブは `E_CONTROL_REMOVED` で拒否し、診断に移行先を示します。文字列やコメント、メールアドレス中の `@` は通常のデータです。
 
-この追加の解析層はブラウザーで動く JavaScript で実装しています。既存の閉じた式・型検査エンジンを再利用し、元ソースの UTF-16 位置に診断と profile の位置を戻します。MoonBit 側の文法やアプリ用ランタイムには変更を加えません。
+解析層はブラウザーで動く JavaScript で実装しています。閉じた式・型検査エンジンへはソースから注入できない専用の内部ストリームを渡し、元ソースの UTF-16 位置に診断と profile の位置を戻します。旧ディレクティブのパーサーと互換経路は削除しています。アプリ用ランタイムには変更を加えません。
 
 ## English
 
 Use Show, For, Switch / Match, and ErrorBoundary as compiler intrinsics. Put a stable row-dependent string or number key on the returned row root. Use a named Fragment with a key for multiple sibling roots. Keys are consumed by the compiler and never forwarded as component props or DOM attributes; Fragments add no DOM wrappers.
 
-The examples above use the supported syntax. when requires a boolean; For accepts a typed array and one inline template function. Its optional index argument is a number. Arbitrary render helpers, statement bodies, keyBy, and ErrorBoundary reset callbacks are unsupported. Components still need one native container root. Existing static checks, keyed lifetime handling, SSR-only output, and bounded layout analysis apply to the generated IR. Legacy @ controls remain accepted for compatibility.
+The examples above use the supported syntax. when requires a boolean; For accepts a typed array and one inline template function. Its optional index argument is a number. Arbitrary render helpers, statement bodies, keyBy, and ErrorBoundary reset callbacks are unsupported. Components still need one native container root. Existing static checks, keyed lifetime handling, SSR-only output, and bounded layout analysis apply to the generated IR. Legacy directives are rejected with E_CONTROL_REMOVED; strings, comments and email addresses retain their literal at signs.

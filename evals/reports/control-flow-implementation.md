@@ -28,4 +28,4 @@ vlmkit 0.24.0 の integrity / copy / scroll / handlers / interactions は全て 
 
 `just control-check` と `just control-quality` で再実行できる。control-check は通常 CI にも追加した。
 
-現在の制約は [制御構文の契約](../../docs/control-flow.md) 冒頭を参照。@try は同期描画だけを扱い、@pending は拒否する。制御 component 内の独立 client owner / schema Form / RenderFragment、一部 native control、literal union の網羅性、resource、構造化配列 delta は今後の対象。Region の静的費用はまだ unknown で、DOM 数も null とし、明示 budget は通さない。従来の固定 template のコスト上限は継続する。有限モデルは行の寿命の限られた状態遷移の検査であり、compiler や DOM 操作全体の証明ではない。
+現在の制約は [制御構文の契約](../../docs/control-flow.md) 冒頭を参照。ErrorBoundary は同期描画だけを扱い、Suspense は拒否する。制御 component 内の独立 client owner / schema Form / RenderFragment、一部 native control、literal union の網羅性、resource、構造化配列 delta は今後の対象。Region の静的費用はまだ unknown で、DOM 数も null とし、明示 budget は通さない。従来の固定 template のコスト上限は継続する。有限モデルは行の寿命の限られた状態遷移の検査であり、compiler や DOM 操作全体の証明ではない。

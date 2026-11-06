@@ -7,7 +7,7 @@ const css = '*{box-sizing:border-box;margin:0}.root{display:grid;grid-template-c
 const run = (source,options={}) => analyzeLayout(requireIR(compile(source)),{css,viewport:{min:100,max:300,height:{min:200,max:600}},...options});
 
 test('all dynamic branch arms are checked, including an arm absent from SSR',()=>{
-  const source='client component C(){state show=true;<main class="root">on click {show=false;}@if(show){<div class="cell"></div>} @else {<div class="wide"></div>}</main>}';
+  const source='client component C(){state show=true;<main class="root">on click {show=false;}<Show when={show} fallback={<Fragment><div class="wide"></div></Fragment>}><div class="cell"></div></Show></main>}';
   const report=run(source);
   assert.equal(report.status,'violated',JSON.stringify(report.diagnostics));
   assert.equal(report.structure.complete,true);
@@ -17,7 +17,7 @@ test('all dynamic branch arms are checked, including an arm absent from SSR',()=
 });
 
 test('switch and synchronous error fallbacks join the same checked structure union',()=>{
-  const source='client component C(){state n=0;<main class="root">on click {n+=1;}@switch(n){@case 0:{<div class="cell"></div>}@default:{<div class="wide"></div>}}@try {<div>{[1][n]}</div>} @catch(error){<div class="cell"></div>}</main>}';
+  const source='client component C(){state n=0;<main class="root">on click {n+=1;}<Switch fallback={<Fragment><div class="wide"></div></Fragment>}><Match when={n === 0}><div class="cell"></div></Match></Switch><ErrorBoundary fallback={(error) => <Fragment><div class="cell"></div></Fragment>}><div>{[1][n]}</div></ErrorBoundary></main>}';
   const report=run(source,{boxes:{div:{minInlineSize:40,minBlockSize:20}}});
   assert.equal(report.status,'violated',JSON.stringify(report.diagnostics));
   assert.equal(report.structure.variants.length,4);
@@ -30,7 +30,7 @@ test('finite dynamic classes are analyzed without trusting the initial class',()
 });
 
 test('guarded append proves a list bound and checks every count, including empty',()=>{
-  const source='client component C(){state items=[1];<main class="root">on click {items=items.length < 4 ? items.concat([2]) : items;}on dblclick {items=[];}@for(const item of items;key item){<div class="cell"></div>}@empty{<div class="wide"></div>}</main>}';
+  const source='client component C(){state items=[1];<main class="root">on click {items=items.length < 4 ? items.concat([2]) : items;}on dblclick {items=[];}<For each={items} fallback={<Fragment><div class="wide"></div></Fragment>}>{(item) => <Fragment key={item}><div class="cell"></div></Fragment>}</For></main>}';
   const report=run(source);
   assert.equal(report.status,'violated',JSON.stringify(report.diagnostics));
   assert.deepEqual(report.structure.bounds.find(row=>row.state==='items').length,{min:0,max:4});
@@ -39,26 +39,26 @@ test('guarded append proves a list bound and checks every count, including empty
 });
 
 test('unbounded growth stays unknown rather than trusting a max-items assertion',()=>{
-  const source='client component C(){state items=[1];<main class="root">on click {items=items.concat([2]);}@for(const item of items;key item){<div class="cell"></div>}</main>}';
+  const source='client component C(){state items=[1];<main class="root">on click {items=items.concat([2]);}<For each={items}>{(item) => <Fragment key={item}><div class="cell"></div></Fragment>}</For></main>}';
   const report=run(source);
   assert.equal(report.status,'unknown');
   assert.ok(report.diagnostics.some(row=>row.code==='U_LAYOUT_CARDINALITY'));
 });
 
 test('length proofs account for sequential writes in one handler',()=>{
-  const source='client component C(){state items=[1];<main class="root">on click {items=items.length < 4 ? items.concat([2]) : items;items=items.concat([3]);}@for(const item of items;key item){<div class="cell"></div>}</main>}';
+  const source='client component C(){state items=[1];<main class="root">on click {items=items.length < 4 ? items.concat([2]) : items;items=items.concat([3]);}<For each={items}>{(item) => <Fragment key={item}><div class="cell"></div></Fragment>}</For></main>}';
   assert.equal(run(source).status,'unknown');
 });
 
 test('immutable mount arrays give finite bounds; unmatched contracts are checked across arms',()=>{
-  const source='component C(items: number[],show:boolean){<main class="root">@if(show){@for(const item of items;key item){<div class="cell"></div>}}@else{<div class="wide"></div>}</main>}';
+  const source='component C(items: number[],show:boolean){<main class="root"><Show when={show} fallback={<Fragment><div class="wide"></div></Fragment>}><For each={items}>{(item) => <Fragment key={item}><div class="cell"></div></Fragment>}</For></Show></main>}';
   const report=run(source,{props:{items:[1,2]},boxes:{'.cell':{minInlineSize:40},'.wide':{minInlineSize:40}}});
   assert.equal(report.status,'violated',JSON.stringify(report.diagnostics));
   assert.throws(()=>run(source,{props:{items:[1]},boxes:{'.typo':{minInlineSize:40}}}),/does not match/);
 });
 
 test('finite state choices stay correlated across repeated rows',()=>{
-  const source='client component C(){state show=true;state items=[1,2,3,4];<main class="root">on click {show=!show;}@for(const item of items;key item){<div class={show ? "cell":"wide"}></div>}</main>}';
+  const source='client component C(){state show=true;state items=[1,2,3,4];<main class="root">on click {show=!show;}<For each={items}>{(item) => <Fragment key={item}><div class={show ? "cell":"wide"}></div></Fragment>}</For></main>}';
   const report=run(source,{viewport:{min:140,max:300,height:{min:200,max:600}}});
   assert.equal(report.status,'verified');
   assert.equal(report.structure.variants.length,2,'one global boolean, not 2^4 independent row choices');
@@ -80,7 +80,7 @@ test('text-only state does not multiply structural variants',()=>{
 });
 
 test('a view guard can bound a repeated slice of an otherwise unknown typed array',()=>{
-  const source='component C(items:number[]){<main class="root">@if(items.length<4){@for(const item of items;key item){<div class="cell"></div>}}@else{<div class="wide"></div>}</main>}';
+  const source='component C(items:number[]){<main class="root"><Show when={items.length<4} fallback={<Fragment><div class="wide"></div></Fragment>}><For each={items}>{(item) => <Fragment key={item}><div class="cell"></div></Fragment>}</For></Show></main>}';
   const report=run(source,{viewport:{min:140,max:300,height:{min:200,max:400}}});
   assert.equal(report.status,'verified',JSON.stringify(report.diagnostics));
   assert.equal(report.structure.variants.length,5);

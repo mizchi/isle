@@ -19,7 +19,7 @@ Qwik は `$` を目印に式を遅延読み込み可能な symbol へ抽出し�
 
 component 直下の任意の `const` / `let`、文としての `if` / `for`、call、`await` は許さない。`state` の初期式と `derive` の式には閉じた純粋な式を使う。表示の条件分岐やリストを追加するときも、構造を compiler が読める template の宣言にする。TS 本文が返すものはデータであり、動的な component 定義や解析できない描画関数は初期範囲に含めない。
 
-template の制御構文には `@if` / `@for` / `@switch` / `@try` を用いる方針とし、[制御構文と最適化](control-flow.md) に意味規則を提案する。これらの body も宣言 DSL の範囲に保つ。構造が変わらない更新、arm の切り替え、keyed row の寿命を IR で区別し、TS の通常の文へ早期に変換して情報を失わないようにする。現行 v0 には未実装である。
+template の制御構文は実装済みの `Show` / `For` / `Switch` / `ErrorBoundary` を使う。[制御構文と最適化](control-flow.md) に意味規則を記録する。これらの body も宣言 DSL の範囲に保つ。構造が変わらない更新、arm の切り替え、keyed row の寿命を IR で区別し、TS の通常の文へ早期に変換して情報を失わないようにする。
 
 ## 記述例
 

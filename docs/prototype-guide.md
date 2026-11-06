@@ -180,8 +180,8 @@ MoonBit/veri の有限モデル、`moon prove` の小さい契約、browser の�
 
 ## Template control flow
 
-`@if (boolean) { ... } @else if (boolean) { ... } @else { ... }`、`@switch (tag) { @case "value": { ... } @default: { ... } }`、`@for (const item of items; index i; key item.id) { ... } @empty { ... }`、同期の `@try { ... } @catch (error) { ... }` を利用できます。全 arm を型検査した後、定数で到達不能と分かる arm を取り除きます。
+`Show`、`Switch` / `Match`、`For`、同期描画用の `ErrorBoundary` を利用できます。行のルート要素、または複数要素をまとめる `Fragment` に key を指定します。全 arm と fallback を型検査した後、定数で到達不能と分かる arm を取り除きます。旧ディレクティブ構文は受理しません。具体例は [制御コンポーネント](control-components.md) を参照してください。
 
 配列は `Item[]` / `readonly Item[]`、レコードは既存 schema / view で型を付けます。`state items: Item[] = initial;`、`items = [items[1], items[0]];`、空配列 `[]`、文脈で型が決まるレコード literal を扱います。行と index は readonly。key は行だけに依存する string または safe integer とし、重複は state / DOM の commit 前に拒否します。
 
-実行できる例は [control-flow/fixture.isle](../evals/scenarios/control-flow/fixture.isle)。独立 client owner、schema Form、RenderFragment などに関する現在の制約と、resource / `@pending` の未実装範囲は [制御構文の契約](control-flow.md)を参照してください。
+実行できる例は [control-flow/fixture.isle](../evals/scenarios/control-flow/fixture.isle)。独立 client owner、schema Form、RenderFragment などに関する現在の制約と、resource / `Suspense` の未実装範囲は [制御構文の契約](control-flow.md)を参照してください。

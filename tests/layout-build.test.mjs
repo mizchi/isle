@@ -106,7 +106,7 @@ test('noscript cannot introduce another stylesheet when scripting is disabled', 
 });
 
 test('dynamic structure is certified across both structural states', async t => {
-  const run = await fixture(t, {source:'export client component Four() { state show = true; <main class="row">on click { show = false; }@if(show) { <div class="cell"></div> }</main> }'});
+  const run = await fixture(t, {source:'export client component Four() { state show = true; <main class="row">on click { show = false; }<Show when={show}> <div class="cell"></div> </Show></main> }'});
   const output=await run();
   assert.equal(JSON.parse(artifact(output,'isle.layout.json').source).report.structure.variants.length,2);
 });
@@ -179,7 +179,7 @@ test('bounded dynamic regions and scrollbar proofs add no browser code',async t=
 });
 
 test('a later HTML transform cannot change the initial snapshot used by the bound proof',async t=>{
-  const source='export client component Four(){state items=[0];<main class="row">on click {items=items.length<4 ? items.concat([items.length]):items;}@for(const item of items;key item){<div class="cell"></div>}</main>}';
+  const source='export client component Four(){state items=[0];<main class="row">on click {items=items.length<4 ? items.concat([items.length]):items;}<For each={items}>{(item) => <Fragment key={item}><div class="cell"></div></Fragment>}</For></main>}';
   const run=await fixture(t,{source,plugins:[{name:'change-state',transformIndexHtml:{order:'post',handler(html){
     return html.replace(/(<script[^>]*data-isle-snapshot[^>]*>)([^<]+)(<\/script>)/,(_all,start,text,end)=>{
       const snapshot=JSON.parse(text);snapshot[3][0]=[0,1,2,3,4];return start+JSON.stringify(snapshot)+end;

@@ -270,7 +270,7 @@ flowchart TD
 
 モデルは `Module / Template / StateSlot / Derived / EventEntry / Binding / Branch / KeyedRange / Effect / Owner / RemoteEntry / Policy / BoundarySchema` を持つ。依存辺、所有辺、phase、必要性の理由を分け、source span と binding identity を backend 全体で共有する。state の値グラフだけを reactive IR と呼んで寿命管理を隠さない。
 
-template の branch / list / boundary は `@if` / `@for` / `@switch` / `@try` で記述する方針とする。[制御構文と最適化](control-flow.md) は Select / Each / Boundary の IR、key と lifetime、共有 row code、失敗時の費用、feature 未使用時のサイズ予算を提案する。parser / codegen への導入は後続であり、TSRX 全体への準拠や現行 runtime の対応を主張しない。
+template の branch / list / boundary は実装済みの `Show` / `For` / `Switch` / `ErrorBoundary` で記述する。[制御構文と最適化](control-flow.md) に Select / Each / Boundary の IR、key と lifetime、共有 row code、失敗時の費用、feature 未使用時のサイズ予算を記録する。旧ディレクティブは削除し、TSRX 全体への準拠は主張しない。
 
 将来の handler／effect から必要な値・計算・DOM location を逆向きに求め、client code、snapshot、marker、logical module を同じ解析から生成する。静的 HTML にしか必要でない生成コードは client から消す。必要性には原因を保持し、どの参照のために helper や slot が残ったかを `explain` へ渡す。Marko の graph と理由伝播を参考にする。([Marko architecture](https://github.com/marko-js/marko/blob/main/packages/runtime-tags/RESUMABILITY.md)、[reasons.ts](https://github.com/marko-js/marko/blob/main/packages/runtime-tags/src/translator/util/reasons.ts))
 

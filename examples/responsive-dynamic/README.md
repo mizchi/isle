@@ -2,7 +2,7 @@
 
 ## English
 
-Add up to four cards, clear the list, and toggle its style. The compiler checks every inferred list length, both finite class values, and both `@if` arms, including states absent from the initial SSR. It derives the four-item bound from the guarded update; a configuration assertion cannot waive an unbounded loop.
+Add up to four cards, clear the list, and toggle its style. The compiler checks every inferred list length, both finite class values, and both `Show` arms, including states absent from the initial SSR. It derives the four-item bound from the guarded update; a configuration assertion cannot waive an unbounded loop.
 
 ```text
 state items = [0];
@@ -21,7 +21,7 @@ The supported structure budget is32 repetitions and256 variants. Text-only state
 
 ## 日本語
 
-最大4件の追加、全削除、表示切り替えを試す。初期 SSR にない状態も含め、推論した全件数・有限な class・`@if` の両側を検査する。4件の上限は更新のガードから導く。設定値で無制限のループを成功扱いにはできない。
+最大4件の追加、全削除、表示切り替えを試す。初期 SSR にない状態も含め、推論した全件数・有限な class・`Show` の両側を検査する。4件の上限は更新のガードから導く。設定値で無制限のループを成功扱いにはできない。
 
 npm アプリでは `@isle/prototype/vite` の `isle` に[設定例](vite.config.mjs)の `layout` を渡す。幅320〜1280px × 高さ360〜900px、scrollbar は overlay の0pxと classic の15pxを宣言する。これは利用者の信頼する環境契約であり、全OSでこの太さになるという保証ではない。対応環境の実測値を追加する。thin は専用の寸法を指定する。
 

@@ -11,7 +11,7 @@ These examples demonstrate the package API. Copy the feature source and configur
 | [HTML without browser JS](ssr-only/) | Inspect the build: HTML and CSS, with no Isle runtime, snapshots or handler chunks. |
 | [Selective DOM updates](partial-updates/) | Change one value while the static heading and unrelated output keep their DOM identity. |
 | [Nested components](composition/) | Resume a child independently of its parent; project children through a pure component. |
-| [Branches, keyed lists and errors](control-flow/) | Switch branches, reorder keyed rows, then empty the list to reach @empty and synchronous @catch. |
+| [Branches, keyed lists and errors](control-flow/) | Switch branches, reorder keyed rows, then empty the list to reach the For fallback and ErrorBoundary. |
 | [Manifest-driven loading](loading/) | Inspect preload decisions in the manifest; typing activates Search while Details stays inactive. |
 | [Resource lifetime and cleanup](resources/) | Activate an owned timer and listener, remove the component, and observe one cleanup. |
 | [Lazy CSS readiness](styles/) | Load component CSS with its setup module and inspect the style seen by setup. |

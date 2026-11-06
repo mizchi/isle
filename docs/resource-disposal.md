@@ -1,6 +1,6 @@
 # unmount と所有リソースの破棄
 
-状態: 2026-11-05。`models/resource_disposal` の時相モデル、所有・破棄カーネル、モデル由来の schedule 再生に加え、Vite の `resources` 指定から component / widget の寿命への自動接続を実装した。resource / Once / `@pending` の専用 DSL と temporal type checker は未実装。
+状態: 2026-11-05。`models/resource_disposal` の時相モデル、所有・破棄カーネル、モデル由来の schedule 再生に加え、Vite の `resources` 指定から component / widget の寿命への自動接続を実装した。resource / Once / `Suspense` の専用 DSL と temporal type checker は未実装。
 
 `Once<T>` は結果を公開する回数の契約である。`Owned<T>` は解放する責任の契約であり、別の軸にする。非同期取得の結果が `Once<Owned<T>>` なら、取得済みの T ごとに解放権を一つ持ち、owner の寿命の終了で消費する。読み取り側は解放権を複製・呼び出しできない。失敗して T を取得できなかった場合は、その T の destructor を呼ばない。
 

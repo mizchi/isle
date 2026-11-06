@@ -1,72 +1,69 @@
 # Template の制御構文と最適化
 
-現在の推奨表記は [制御コンポーネント](control-components.md) の `Show` / `For` / `Switch` / `ErrorBoundary` です。以下は互換用の旧 `@` 構文と、最適化・寿命に関する設計記録です。両表記は同じ検査済み IR を使います。
+表示構造は [制御コンポーネント](control-components.md) の `Show` / `For` / `Switch` / `ErrorBoundary` で宣言します。旧ディレクティブの互換経路は削除しました。以下は現在の同期実装と、最適化・寿命・将来の resource 契約に関する設計記録です。
 
-状態: 初期の実行実装あり。`@if` / `@else if` / `@else`、`@switch`、key 必須の `@for` / `@empty`、同期描画用の `@try` / `@catch` が MoonBit parser → 型検査 → Region IR → SSR / resume まで動く。以下は全体設計を含むため、実装範囲と将来の契約を分けて読む。
+状態: 初期の実行実装あり。JavaScript の制御コンポーネント解析 → 型検査 → Region IR → SSR / resume まで動く。For の行ルートに key が必要です。以下は全体設計を含むため、実装範囲と将来の契約を分けて読む。
 
 実装済みの [fixture](../evals/scenarios/control-flow/fixture.isle) と `just control-check` で、並べ替え時の DOM 同一性、index 更新、行のハンドラ、空配列、重複 key の commit 前拒否、入れ子、失敗境界、遅延取得中の要素差し替えを検査する。1 行と 4,096 行で同じ行 factory を共有する。
 
 現時点の制約:
 
 - 値は primitive と、既存の `schema` / `view` の閉じたレコード、その配列。schema のフィールドは primitive。`readonly Item[]` と `Item[]` を受理する。row / props / derive は代入不可で、配列の変更は state への全置換で表す。
-- `@try` が捕捉するのは同期描画の prepare 失敗。`@catch (error)` の値は公開用の文字列 `Render failed`。非同期 resource / `@pending`、literal union と網羅性検査、inline 本文、構造化配列 delta は未実装。`@pending` は `E_RESOURCE_PENDING` で拒否する。
+- `ErrorBoundary` が捕捉するのは同期描画の prepare 失敗。fallback の error 引数は公開用の文字列 `Render failed`。非同期 resource / Suspense、literal union と網羅性検査、一般の TS 本文、構造化配列 delta は未実装。
 - 制御構文、または record / array の props / state を持つ component は Region backend を使い、native container を root にし、子は universal component の静的展開と通常の DOM を使う。独立 client owner、RenderFragment、schema Form、textarea / select / option はこの backend では `E_CONTROL_CONTRACT` で拒否する。既存 backend の入れ子・Form は引き続き利用できる。
 - ID と ARIA / label の参照は同じ生成 frame 内で閉じる。反復行の ID は frame ごとに名前空間を分ける。
 - 更新する block と text / attribute は依存する state から絞る。全配列の置換は key の比較に O(n) を要する。同じ key は DOM を保持し、削除後の再挿入では新しい DOM を作る。
 - 描画 factory と patch 関数を生成し、ブラウザへ template AST は送らない。DOM ハンドルは初回の走査と新規 fragment 作成時に解決する。不要な配列・boundary helper は production から除く。型検査後に定数分岐を消し、分岐を消し切れた場合は従来 backend に戻す。
 - Region の CostSummary の操作上限と page の DOM 数は、まだ `unknown` / `null` とする。明示 budget は失敗させ、0 として通さない。従来の固定 template の上限算出は継続する。active path、遷移、失敗した prepare + fallback の上限モデルは今後の実装対象。
 
-通常 Counter の生成 JS は既存出力と同一で、増分 0 bytes。`@if` だけを使う場合は keyed move / 失敗境界の helper を含めない。SSR モードでは制御構文を含む場合も JavaScript、snapshot、resume marker を出力せず、event 専用の state 初期化を評価しない。
+通常 Counter の生成 JS は既存出力と同一で、増分 0 bytes。`Show` だけを使う場合は keyed move / 失敗境界の helper を含めない。SSR モードでは制御構文を含む場合も JavaScript、snapshot、resume marker を出力せず、event 専用の state 初期化を評価しない。
 
 ## 文法を採用する範囲
 
-TSRX の template control flow の表記を参考にする。TSRX は各 block に setup statement を記述できるが、Isle は [宣言 DSL](component-declarations.md) の制約を維持する。表示構造は DSL、局所的なアルゴリズムや handler 本文は `inline(ts)` / `inline(moonbit)` に置く。TSRX 全体への準拠を主張しない。([TSRX Features](https://tsrx.dev/features), [Draft specification](https://tsrx.dev/specification))
+表示構造は Solid 風の制御コンポーネントで宣言し、[宣言 DSL](component-declarations.md) の制約を維持します。処理本体の記述言語は TypeScript を前提とします。任意の TS statement や callback を表示構造へ開放せず、コンパイラが解析できる template 式を使います。
 
-全体設計の表記案は次のとおりである。下の `Details` と `@pending` は将来の resource 契約を含む。
+全体設計の表記案は次のとおりである。下の `Details` と `Suspense` は将来の resource 契約を含む。
 
 ```text
 <section>
-  @if (expanded) {
-    @switch (mode) {
-      @case "rows": {
-        <ol>
-          @for (const product of products; key product.id) {
-            <li>{product.name}: {product.price + surcharge}</li>
-          } @empty {
-            <li>商品がありません</li>
-          }
-        </ol>
-      }
-      @case "summary": {
-        <p>{products.length} 商品</p>
-      }
-    }
-  } @else {
+  <Show when={expanded} fallback={<Fragment>
     <p>一覧は閉じています</p>
-  }
+  </Fragment>}>
+    <Switch><Match when={mode === "rows"}>
+        <ol>
+          <For each={products} fallback={<Fragment>
+            <li>商品がありません</li>
+          </Fragment>}>{(product) => <Fragment key={product.id}>
+            <li>{product.name}: {product.price + surcharge}</li>
+          </Fragment>}</For>
+        </ol>
+      </Match><Match when={mode === "summary"}>
+        <p>{products.length} 商品</p>
+      </Match></Switch>
+  </Show>
 
-  @try {
-    <Details />
-  } @pending {
+  <Suspense fallback={<Fragment>
     <p>読み込み中</p>
-  } @catch (error) {
+  </Fragment>}><ErrorBoundary fallback={(error) => <Fragment>
     <p role="alert">詳細を取得できませんでした</p>
-  }
+  </Fragment>}>
+    <Details />
+  </ErrorBoundary></Suspense>
 </section>
 ```
 
-`Details` は、明示した resource を使う client component を別途宣言する想定である。名前や `@try` から I/O を暗黙に発生させない。
+`Details` は、明示した resource を使う client component を別途宣言する想定である。名前や `ErrorBoundary` から I/O を暗黙に発生させない。
 
 | 構文 | 初期の受理範囲と契約 |
 |---|---|
-| `@if` / `@else if` / `@else` | 純粋な boolean 式。独自の truthy 規則は導入しない |
-| `@switch` / `@case` / `@default` | 閉じた primitive tag。case は literal、重複と fallthrough を禁止。閉じた union は網羅性を検査 |
-| `@for (const item of items; key item.id)` / `@empty` | 閉じた codec を持つ readonly array。安定した primitive key を必須とし、任意 Iterable / async iterator は初期範囲外 |
-| `@try` / `@pending` / `@catch` | 描画の prepare と明示 resource / factory の境界。一般の JS try statement と分ける |
+| `Show` | 純粋な boolean 式。独自の truthy 規則は導入しない |
+| `Switch` / `Match` | 順に純粋な boolean 条件を評価し、最初に一致した候補を表示する。literal tag の網羅性検査は将来の拡張 |
+| `For` / `fallback` | 閉じた codec を持つ配列。返り値のルートの key を必須とし、任意 Iterable / async iterator は初期範囲外 |
+| `ErrorBoundary` | 同期描画の prepare 境界。非同期 resource / Suspense は将来の拡張 |
 
-block 内には template と純粋な derive 宣言を置ける。通常の JS statement、state 宣言、render 中の書き込み、`return` / `break` / `continue` は置かない。state が必要なら component 直下か明示 client component に所有させる。TS 本文内の局所的な制御構文は通常の TS の意味を保つ。
+制御コンポーネントの body は template 式に制限する。通常の JS statement、state / derive 宣言、render 中の書き込み、`return` / `break` / `continue` は置かない。state と derive は component 直下で宣言する。
 
-位置が必要なら `@for (const product of products; index i; key product.id)` と宣言する。i は読み取り専用で、key の代用にはしない。
+位置が必要なら For の描画関数を `(product, i) => <Row key={product.id} ... />` とする。i は読み取り専用で、key の代用にはしない。
 
 component の root は、初期段階では現在と同様に HTML element または component tag とする。制御 block 自体は、その内側で0個以上の sibling node を持つ DOM range を表せる。各 block は lexical scope であり、loop item と catch の値を外へ流出させない。
 
@@ -80,7 +77,7 @@ component の root は、初期段階では現在と同様に HTML element ま�
 | Each | source、item codec、key 式、row の factory / patch、empty arm、サイズの条件 |
 | Boundary | protected body、pending / catch、関連 resource、失敗・中断の契約 |
 
-`@if` と `@switch` は Select に正規化できる。row や arm の見た目を一般の render 関数に渡す前に、必要な create / patch / move / dispose を決める。論理 region と source span を manifest / CostSummary に対応付ける。
+`Show` と `Switch` は Select に正規化できる。row や arm の見た目を一般の render 関数に渡す前に、必要な create / patch / move / dispose を決める。論理 region と source span を manifest / CostSummary に対応付ける。
 
 control dependency と data dependency を分ける。例えば surcharge だけを書いた操作では、products の key を比較し直したり、mode を再評価したりする必要はない。現在の arm が rows の場合に、その中で surcharge を読む binding を更新する。
 
@@ -116,19 +113,19 @@ key と DOM の対応を保持する方向は [Angular の tracking](https://ang
 
 任意の新しい配列を TS 本文から返す場合、key の列挙・検証・比較に O(n) の走査が必要になり得る。部分変更を保証したい場合には、検証できる insert / remove / move / per-key field patch を別の入力契約にする。key を指定しただけで差分の仕事量が得られるとはしない。DOM move を最小化する一般アルゴリズムも、helper の byte 数と比較して導入を判断する。
 
-## @try の範囲
+## ErrorBoundary の範囲
 
-`@try` は render の prepare、対象 factory と stylesheet の準備、明示 resource の pending / ready / error を扱う。任意の Promise を投げて意味を推測する方式は初期範囲にしない。pending は状態であり、未完了の server Promise を snapshot へ保存しない。
+`ErrorBoundary` は render の prepare、対象 factory と stylesheet の準備、明示 resource の pending / ready / error を扱う。任意の Promise を投げて意味を推測する方式は初期範囲にしない。pending は状態であり、未完了の server Promise を snapshot へ保存しない。
 
 prepare の失敗では未公開の patch / fragment を捨てて fallback を準備する。pending / catch 自体の失敗は外側へ伝える。同じ boundary が自分の fallback を再び catch してループしない。retry は明示 resource entry で revision を更新し、古い完了を拒否する。mutation RPC の自動再送はしない。
 
-event handler の例外や RPC の副作用を、lexical な `@try` が一律に捕捉・rollback する意味にはしない。認証・認可・codec は server entry に残す。server 由来の失敗を表示する場合は公開可能な error view を使い、秘密や生の stack を client へ送らない。
+event handler の例外や RPC の副作用を、lexical な `ErrorBoundary` が一律に捕捉・rollback する意味にはしない。認証・認可・codec は server entry に残す。server 由来の失敗を表示する場合は公開可能な error view を使い、秘密や生の stack を client へ送らない。
 
 任意の DOM commit 失敗や外部副作用まで巻き戻せるとは保証しない。DOM target と plan は commit 前に検証し、内部の commit 失敗は owner の無効化と error policy で扱う。SSR 専用では server の確定結果または明示 fallback を出し、browser の resource / factory 継続を生成しない。一般の streaming は別仕様とする。
 
 ## 今回の実負荷検証からの生成方針
 
-[4,096商品版](../evals/reports/heavy-render.md) では、同形 row のコードを展開し、cold commit で attribute locator を4,096回検索した。`@for` の構造を保つことで、次の backend を検討できる。
+[4,096商品版](../evals/reports/heavy-render.md) では、同形 row のコードを展開し、cold commit で attribute locator を4,096回検索した。`For` の構造を保つことで、次の backend を検討できる。
 
 ```text
 rowTemplate / createRow / patchRow: 一つの生成コード
@@ -170,11 +167,11 @@ array / key / string の上限は codec の decode と更新時に検査する�
 
 ## 実装と検証の順序
 
-1. boolean / tag 式、Region IR、`@if` / `@switch` の SSR と検査。
+1. boolean / tag 式、Region IR、`Show` / `Switch` の SSR と検査。
 2. Select の切り替え、owner lifetime、factory / CodeRef、active arm を保存した resume。
-3. 閉じた record / array codec、構造不変の `@for`、共有 row factory / patch と handle。
-4. keyed insert / remove / move、field delta と不透明な全置換の区別、`@empty`。
-5. resource revision と prepare failure を結んだ `@try` / `@pending` / `@catch`。
+3. 閉じた record / array codec、構造不変の `For`、共有 row factory / patch と handle。
+4. keyed insert / remove / move、field delta と不透明な全置換の区別、`fallback`。
+5. resource revision と prepare failure を結んだ `ErrorBoundary` / `Suspense` / `fallback`。
 
 Red は同じ arm の node identity、条件に無関係な state 更新、同じ key の reorder、重複 key の commit 前拒否、削除後の同じ key への stale 完了、SSR の active arm / key order、fallback 自身の失敗、未使用 helper の DCE に置く。Form の label / ID / ARIA は存在する経路と row の namespace を含めて検査する。control guard を付けても、現在拒否する component / derive の循環を無条件に許可しない。
 
