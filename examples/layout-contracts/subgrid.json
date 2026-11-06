@@ -1,0 +1,12 @@
+{
+  "component": "SubgridBoard",
+  "css": "./subgrid.css",
+  "viewport": { "min": 320, "max": 1280, "height": { "min": 600, "max": 1000 } },
+  "hostInset": 32,
+  "hostBlockInset": 160,
+  "boxes": {
+    ".a": { "minInlineSize": 16, "minBlockSize": 24 },
+    ".b": { "minInlineSize": 16, "minBlockSize": 24 },
+    ".peer": { "minInlineSize": 40, "minBlockSize": 24 }
+  }
+}

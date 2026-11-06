@@ -104,7 +104,7 @@ This build generates the initial HTML at build time. Request-time server actions
 | [Native form validation](examples/form/) | Try invalid input, required consent and successful submission with accessible labels. |
 | [Shared schema and server validation](examples/schema-form/) | Submit taken@example.com, correct it, then submit and reset the shared-schema form. |
 | [Explicit server action](examples/counter/) | Compare independent counters and rename a document through a validated, authorized server boundary. |
-| [CSS contract outcomes](examples/layout-contracts/) | Run verified, overflow/violated and unsupported/unknown cases using reset-aware Grid contracts. |
+| [CSS contract outcomes](examples/layout-contracts/) | Check reset-aware Grid/subgrid contracts; distinguish verified, violated and unknown. |
 | [Portable Web Components](examples/portable-widget/) | Mount independent widgets, compare shared and standalone distributions, and reject a version mismatch. |
 | [Cloudflare Workers widget](examples/worker-widget/) | Use two terminals for widget-dev and widget-host; embed fixed-size Shadow DOM widgets on another origin. |
 

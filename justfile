@@ -16,6 +16,7 @@ test-models:
     moon test models/owner --target js
     moon test models/regions --target js
     moon test models/style_resolution --target js
+    moon test models/layout_subgrid --target js
     moon test models/resource_once --target js
     moon test models/resource_disposal --target js
     moon test models/security --target js
@@ -62,7 +63,7 @@ build:
 e2e: build
     pnpm test:e2e
 
-ci: check check-types test verify eval build e2e control-check resource-binding-check loading-check style-check layout-check a11y-form a11y-schema-form examples-check critical-path-check
+ci: check check-types test verify eval build e2e control-check resource-binding-check loading-check style-check layout-check layout-subgrid-check a11y-form a11y-schema-form examples-check critical-path-check
 
 # The same SSR + counters + remote action in Isle, Qwik 1/2 RC and Preact.
 compare-build: build-compiler
@@ -273,6 +274,15 @@ layout-axes: build-compiler
 
 layout-reset: build-compiler
     node tools/isle.mjs layout evals/scenarios/layout-reset/fixture.isle evals/scenarios/layout-reset/layout.json
+
+# Shared parent tracks: exact static regions, finite MoonBit model and native geometry.
+layout-subgrid: build-compiler
+    node tools/isle.mjs layout examples/layout-contracts/subgrid.isle examples/layout-contracts/subgrid.json
+
+layout-subgrid-check: build-compiler
+    moon test models/layout_subgrid --target js --deny-warn
+    node --test tests/layout-subgrid.test.mjs tests/subgrid-model.test.mjs
+    node tools/check-subgrid.mjs
 
 # Executable violated/unknown examples and accepted counterparts; optionally select one ID.
 layout-rejections case='': build-compiler

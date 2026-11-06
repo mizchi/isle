@@ -6,6 +6,7 @@
 just layout
 just layout-axes
 just layout-reset
+just layout-subgrid
 just layout path/to/app.isle path/to/layout.json
 just layout-check
 ```
@@ -109,13 +110,49 @@ ancestor 入力は継承用であり、host の寸法を再計算する入力で
 
 - 子 element を配置する container は Grid を要求する。effective な non-none float、意図を宣言していない重なり、明示列の外への配置は違反にする。
 - 列は固定 px と `minmax(0, Nfr)`。固定列・column gap を引いた残りを fr の比で配分し、fr 合計が1未満なら残余幅を一部残す。通常の `1fr` は intrinsic minimum を持つため未対応として unknown にする。
-- 数値の `grid-column`、`start / span N`、`start / end`、正の数値 `grid-row` と sparse な通常の auto-placement を扱う。確定した row を先に配置する。暗黙の追加列、名前付き area、dense、subgrid は未対応。
+- 列・行の正の数値 line、`start / span N`、`start / end`、`span N` と sparse な通常の auto-placement を扱う。確定した row を先に配置する。確定 row には明示 column を要求する。暗黙の追加列、名前付き area、dense は未対応。
 - auto・固定 px・割合の inline/block-size、content-box / border-box、px の padding・solid border・gap を扱う。margin は0だけを許可する。p / heading 等の native な block margin は明示的な reset を要求する。CSS min-size は auto / 0、max は none に限定する。
 - row は固定 px、`minmax(0, Nfr)`、auto。implicit row は grid-auto-rows を反復する。auto row は子の自動高さを下から集約し、definite な container では余りの伸長を反映する。indefinite な fr row は max-content に対応する契約値から flex fraction を求める。
-- item の block alignment は normal / stretch、content alignment は normal / stretch / start。row span、他の alignment、intrinsic column、subgrid は未対応である。
+- item の block alignment は normal / stretch、content alignment は normal / stretch / start。row span は独立にサイズを確定できる row 間で扱う。intrinsic size の分配が必要な row span、他の alignment、intrinsic column は未対応である。
 - 折り返し条件は `white-space` と `overflow-wrap` の継承を含めて照合する。`anywhere` と `break-word` を同一視しない。
 
 CSS による通常の in-flow parent と child の関係を検査する。pure component の展開と単純な client island の root は追えるが、動的 class/id、分岐・loop・opaque children、inline style、native form control 等は unknown。初期 SSR に存在する構造だけを見て、将来の構造まで安全としない。
+
+## Subgrid の共有トラック
+
+`grid-template-columns: subgrid` と `grid-template-rows: subgrid` を扱う。子の幅でもう一度 fr を配分せず、直接の親 Grid から、配置された span に対応する **解決済みトラック列**を渡す。ローカル line は1から始まり、入れ子でも共有を維持する。CSS の `inherit` による track 定義のコピーとは区別する。
+
+```css
+.board {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr) 144px;
+  grid-template-rows: 100px minmax(0, 1fr);
+  block-size: 360px;
+  gap: 16px;
+}
+.group {
+  display: grid;
+  grid-column: 1 / span 2;
+  grid-row: 1 / span 2;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  padding: 8px;
+}
+```
+
+通常の Grid の `gap: normal` は0、subgrid の共有軸では親の使用 gap とする。省略時も normal。明示した別の gap では、親と子の gap の差の半分を内部の端へ加減し、共有境界の中央を維持する。padding と border は最初・最後のトラックから引き、入れ子の調整を積み重ねる。これらは [CSS Grid Level 2 の subgrid](https://www.w3.org/TR/css-grid-2/#subgrids)に基づく。
+
+制約は次の通り。
+
+- 親の列は既存の固定 px / `minmax(0, Nfr)`。行共有には高さを含む両軸検査を要求し、親の row は独立に確定できる固定 px または definite な高さに対する fr とする。固定 row だけなら親全体の高さは auto でもよい。
+- 子の内容を親の auto row や indefinite な fr row へ押し上げる intrinsic contribution は未実装で `U_LAYOUT_SUBGRID`。単なる最小高さの仮定で安全としない。
+- 共有する軸の子のサイズは auto を要求する。名前付き line、`repeat()`、解析境界外の親、調整後に負のトラック幅が生じる場合も unknown。非共有軸は既存の明示 Grid subset に従う。
+- 共有軸の範囲外への配置や暗黙トラックは `E_LAYOUT_SUBGRID_PLACEMENT`、意図しない重なりは `E_LAYOUT_OVERLAP`。ブラウザーが範囲外を clamp する有効な CSS でも、この検査 subset では拒否する。
+- media / 親の container 条件、reset、box-sizing は既存の条件領域ごとに解決する。subgrid 自身の `container-type: inline-size / size` は、独立 formatting context の実装差があるため unknown とし、size query container を親に置く。scrollbar gutter に関する保証境界は従来と同じ。
+
+`LayoutSummary.subgrids` に共有元の box/path、軸、親での開始 line、span、使用 gap、端の inset とトラック幅の有理数 affine 式を記録する。検査は build-only で、browser runtime と配布 JS は増えない。
+
+[ソース](../examples/layout-contracts/subgrid.isle)・[CSS](../examples/layout-contracts/subgrid.css)・[sidecar](../examples/layout-contracts/subgrid.json)を `just layout-subgrid` で実行できる。`just layout-subgrid-check` は MoonBit/veri の有限モデルと JS kernel を照合し、ブラウザーで共有 line の中央と各 box の両軸サイズを比較する。[範囲と結果](../evals/reports/layout-subgrid.md)を参照。
 
 ## Overflow の契約
 

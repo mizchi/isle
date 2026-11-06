@@ -6,6 +6,10 @@ const options: LayoutOptions = {
   boxes: { '.panel': { minInlineSize: 320, overflow: 'fit', wrap: 'anywhere' } },
 };
 const summary: LayoutSummary = analyzeLayout(ir, options);
+const subgrid = summary.subgrids[0];
+const axis: 'inline' | 'block' = subgrid.axis;
+const edge: string = subgrid.insets[0];
+void axis; void edge;
 void summary;
 analyzeLayout(ir, { ...options, reset: [{ css: 'html{box-sizing:border-box}*{box-sizing:inherit}', file: 'reset.css' }], ancestors: [{ tag: 'html' }, { tag: 'body', classes: ['host'] }] });
 analyzeLayout(ir, { ...options, block: true, viewport: { min: 400, max: 1200, height: { min: 300, max: 900 } },

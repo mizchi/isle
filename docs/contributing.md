@@ -27,6 +27,7 @@ just verify   # 有限モデル92ケースと公平な応答性 + 小さい証�
 just layout   # Grid / box model の横幅契約、media 条件と反例区間
 just layout-axes # Container query と両軸のサイズ契約、反例領域
 just layout-reset # CSS reset・box-sizing の継承・cascade layer を含む検査
+just layout-subgrid-check # 親トラック共有・MoonBit/veri・ブラウザー照合
 just layout-rejections # リジェクト14例と、それぞれの対応版を CLI で再現
 just overview-build # README の説明画像を実行可能な例から再生成
 just overview-check # 掲載コード・生成画像・事実ラベルの整合性を検査

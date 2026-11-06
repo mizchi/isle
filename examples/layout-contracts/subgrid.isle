@@ -1,0 +1,6 @@
+component SubgridBoard() {
+  <main class="board">
+    <section class="group"><div class="a">A</div><div class="b">B</div></section>
+    <aside class="peer">Peer</aside>
+  </main>
+}

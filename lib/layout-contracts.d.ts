@@ -48,6 +48,14 @@ export interface LayoutSummary {
   checks: { box: string; path: string; code: string; axis: 'inline' | 'block'; range: LayoutRange; heightRange?: LayoutRange; region?: LayoutRegion; available: LayoutAffine; required: LayoutAffine; enforced: boolean }[];
   sizes: { box: string; path: string; range: LayoutRange; inlineSize: LayoutAffine; blockSize?: LayoutAffine; boxSizing: 'border-box' | 'content-box'; boxSizingSource?: { file: string; line: number; selector: string; layer?: string; specified: string } }[];
   queries: { box: string; path: string; range: LayoutRange; name?: string; target?: string; targetPath?: string; matched: boolean }[];
+  /** Resolved shared tracks, local line numbering, effective gap and edge insets. Build-only. */
+  subgrids: LayoutSubgrid[];
+}
+export interface LayoutSubgrid {
+  box: string; path: string; axis: 'inline' | 'block';
+  parent: string; parentPath: string; startLine: number; span: number;
+  gap: string; insets: [string, string]; tracks: LayoutAffine[];
+  range: LayoutRange; heightRange?: LayoutRange; region?: LayoutRegion;
 }
 export interface LayoutAffine { coefficient: string; constant: string; heightCoefficient?: string }
 export interface LayoutRegion { vertices: { width: string; height: string }[]; constraints: (LayoutAffine & { strict: boolean })[] }

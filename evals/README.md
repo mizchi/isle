@@ -54,3 +54,5 @@
 [ダッシュボードの課題](scenarios/dashboard/brief.md) は、64項目とフォームの scope、静的な説明文、派生値、server action の境界を読み取れるかを評価します。採点は `dashboard-intent`。記述課題は別の時間変更 entry と派生表示の追加です。grader の正誤判定は回帰テストにし、参加者評価は未実施です。
 
 [初回描画のパターン](scenarios/critical-path/README.md) は、静的・部分更新・分岐・keyed list・複数 owner と TodoMVC の復元順を実行検査します。JavaScript を初回 paint 後まで遅らせ、初期 raw layout shift = 0 を要求します。旧 CSS の負例でも検出器を検証します。性能の回帰検査であり、記述の参加者評価は未実施です。
+
+[Subgrid の課題](scenarios/layout-subgrid/README.md) は、track 定義のコピーと解決済みトラックの共有、gap/inset、ローカル line、violated と unknown の違いを扱います。[実行結果](reports/layout-subgrid.md)は162構成の有限モデルとブラウザー128ケースの照合です。記述の参加者評価は未実施です。

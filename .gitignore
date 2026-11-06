@@ -17,3 +17,4 @@ playwright-report/
 .first-reader/
 .figure-check/
 .critical-path/
+.subgrid/

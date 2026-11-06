@@ -1,0 +1,49 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/isle/models/layout_subgrid"
+
+import {
+  "mizchi/veri/model_check",
+}
+
+// Values
+pub fn client(Bool) -> @model_check.Client[Configuration, Configuration, Json] raise
+
+pub fn inherit_axis(Array[Int32], Int32, Int32, Int32, Int32) -> Array[Int32]
+
+pub fn report() -> Report raise
+
+// Errors
+
+// Types and methods
+pub(all) struct AxisCase {
+  configuration : Configuration
+  doubled : Array[Int32]
+  nested_quadrupled : Array[Int32]
+} derive(ToJson)
+pub fn AxisCase::to_json(Self) -> Json
+
+pub(all) struct Configuration {
+  start : Int32
+  span : Int32
+  gap : Int32
+  before : Int32
+  after : Int32
+} derive(Eq, ToJson)
+pub fn Configuration::equal(Self, Self) -> Bool
+pub fn Configuration::not_equal(Self, Self) -> Bool
+pub fn Configuration::to_json(Self) -> Json
+
+pub(all) struct Report {
+  veri_version : String
+  complete : Bool
+  reachable_configurations : Int32
+  strict_safe : Bool
+  independent_counterexample_replayed : Bool
+  witness : Array[Json]
+  cases : Array[AxisCase]
+} derive(ToJson)
+pub fn Report::to_json(Self) -> Json
+
+// Type aliases
+
+// Traits

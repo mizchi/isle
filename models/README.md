@@ -13,6 +13,8 @@ moon test models/forms --target js
 moon test models/form_session --target js
 moon test models/verification --target js
 moon test models/permit --target js
+moon test models/layout_subgrid --target js
+moon run cmd/subgrid-model --target js
 moon run cmd/verify --target js
 moon prove models/permit
 node models/check-negative.mjs
@@ -33,6 +35,7 @@ node models/check-negative.mjs
 | style_resolution | 1 owner の cold CSS 解決。取得・準備・適用・評価・活性化・commit。30状態で順序と寿命を検査 |
 | verification | `veri/model_check/smt.exhaustive` で92ケースを実行し、得た witness を実際の `step` / `holds` で再生 |
 | permit | 純粋な 2 record store。非認可時の不変性、許可された更新、他 record を変更しない frame 条件を `moon prove` で検証 |
+| layout_subgrid | 162構成の共有トラック、gap 中央と全体幅。均等再配分する故障版の反例を再生し、JS kernel と2段の値を照合 |
 
 `cmd/verify` の report v2 は、結果・式・公平性の仮定・有限領域・探索完了・状態数・反例の操作列と状態列・循環の開始点を含む。29件の故障版に加え、公平性の仮定を外した4件と不十分な契約2件、合計35反例を含む。全てを実装バグとは扱わず、category で区別する。期待した反例の検出と再生も成功条件とし、正常処理へ到達できることも検査して全拒否の空虚な安全性を避ける。
 
