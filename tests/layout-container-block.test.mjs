@@ -118,7 +118,7 @@ test('unresolved percentage heights, unsupported query features and incomplete p
 });
 
 test('axis-specific overflow contracts require matching computed block policy', () => {
-  const opts = { ...vertical, boxes: { ...vertical.boxes, '.b': { ...vertical.boxes['.b'], overflowBlock: 'scroll' } } };
+  const opts = { ...vertical, scrollbars:[{name:'overlay',inlineSize:0,blockSize:0}],boxes: { ...vertical.boxes, '.b': { ...vertical.boxes['.b'], overflowBlock: 'scroll' } } };
   assert.ok(run(verticalCSS, opts).diagnostics.some(d => d.code === 'E_LAYOUT_OVERFLOW_POLICY' && d.axis === 'block'));
   assert.equal(run(verticalCSS + '.b { overflow-y: auto; }', opts).status, 'verified');
 });

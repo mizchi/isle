@@ -1,0 +1,50 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/isle/models/layout_dynamic"
+
+import {
+  "mizchi/veri/model_check",
+}
+
+// Values
+pub fn client(Bool, Bool) -> @model_check.Client[State, Action, Json] raise
+
+pub fn report() -> Report raise
+
+// Errors
+
+// Types and methods
+pub(all) enum Action {
+  Add
+  Clear
+  Toggle
+  Width(Int32)
+  Gutter(Int32)
+  Horizontal
+} derive(Eq)
+pub fn Action::equal(Self, Self) -> Bool
+pub fn Action::not_equal(Self, Self) -> Bool
+
+pub(all) struct Report {
+  complete : Bool
+  states : Int32
+  bounded_safe : Bool
+  gutter_safe : Bool
+  unbounded_witness : Array[Json]
+  ignored_gutter_witness : Array[Json]
+} derive(ToJson)
+pub fn Report::to_json(Self) -> Json
+
+pub(all) struct State {
+  count : Int32
+  width : Int32
+  gutter : Int32
+  horizontal : Bool
+  compact : Bool
+} derive(Eq, ToJson)
+pub fn State::equal(Self, Self) -> Bool
+pub fn State::not_equal(Self, Self) -> Bool
+pub fn State::to_json(Self) -> Json
+
+// Type aliases
+
+// Traits

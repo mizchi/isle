@@ -106,6 +106,7 @@ This build generates the initial HTML at build time. Request-time server actions
 | [Explicit server action](examples/counter/) | Compare independent counters and rename a document through a validated, authorized server boundary. |
 | [CSS contract outcomes](examples/layout-contracts/) | Check reset-aware Grid/subgrid contracts; distinguish verified, violated and unknown. |
 | [Checked responsive build](examples/responsive-checked/) | Verify delivered HTML/CSS across a width × height domain; fail builds on violations and unknowns. |
+| [Checked branches and scrollbars](examples/responsive-dynamic/) | Check every bounded list structure and declared native scrollbar geometry. |
 | [Portable Web Components](examples/portable-widget/) | Mount independent widgets, compare shared and standalone distributions, and reject a version mismatch. |
 | [Cloudflare Workers widget](examples/worker-widget/) | Use two terminals for widget-dev and widget-host; embed fixed-size Shadow DOM widgets on another origin. |
 

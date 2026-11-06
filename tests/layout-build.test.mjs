@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -105,9 +105,10 @@ test('noscript cannot introduce another stylesheet when scripting is disabled', 
   await assert.rejects(run,/E_ISLE_LAYOUT.*noscript/);
 });
 
-test('dynamic structure is not certified from one SSR snapshot', async t => {
+test('dynamic structure is certified across both structural states', async t => {
   const run = await fixture(t, {source:'export client component Four() { state show = true; <main class="row">on click { show = false; }@if(show) { <div class="cell"></div> }</main> }'});
-  await assert.rejects(run, /E_ISLE_LAYOUT.*U_LAYOUT_STRUCTURE/s);
+  const output=await run();
+  assert.equal(JSON.parse(artifact(output,'isle.layout.json').source).report.structure.variants.length,2);
 });
 
 test('checked options require one owned document and a closed height domain', () => {
@@ -160,4 +161,29 @@ test('nested stable client components remain checkable without treating snapshot
   const output = await run();
   assert.equal(JSON.parse(artifact(output,'isle.layout.json').source).status,'verified');
   assert.match(String(artifact(output,'index.html').source),/data-isle-snapshot/);
+});
+
+test('bounded dynamic regions and scrollbar proofs add no browser code',async t=>{
+  const source=await readFile(new URL('../examples/responsive-dynamic/app.isle',import.meta.url),'utf8');
+  const css=await readFile(new URL('../examples/responsive-dynamic/app.css',import.meta.url),'utf8');
+  const {layout}=await import('../examples/responsive-dynamic/vite.config.mjs');
+  const options={mounts:[{component:'DynamicBoard',props:{}}],layout};
+  const checked=await (await fixture(t,{source,css,options}))();
+  const unchecked=await (await fixture(t,{source,css,options:{...options,layout:undefined}}))();
+  const chunks=result=>result.output.filter(f=>f.type==='chunk').map(f=>[f.fileName,f.code]).sort(([a],[b])=>a.localeCompare(b));
+  assert.deepEqual(chunks(checked),chunks(unchecked));
+  const certificate=JSON.parse(artifact(checked,'isle.layout.json').source);
+  assert.equal(certificate.report.structure.complete,true);
+  assert.equal(certificate.report.structure.bounds.find(b=>b.state==='items').length.max,4);
+  assert.equal(certificate.report.scope.scrollbarProfiles.length,2);
+});
+
+test('a later HTML transform cannot change the initial snapshot used by the bound proof',async t=>{
+  const source='export client component Four(){state items=[0];<main class="row">on click {items=items.length<4 ? items.concat([items.length]):items;}@for(const item of items;key item){<div class="cell"></div>}</main>}';
+  const run=await fixture(t,{source,plugins:[{name:'change-state',transformIndexHtml:{order:'post',handler(html){
+    return html.replace(/(<script[^>]*data-isle-snapshot[^>]*>)([^<]+)(<\/script>)/,(_all,start,text,end)=>{
+      const snapshot=JSON.parse(text);snapshot[3][0]=[0,1,2,3,4];return start+JSON.stringify(snapshot)+end;
+    });
+  }}}]});
+  await assert.rejects(run,/E_ISLE_LAYOUT.*snapshot/i);
 });

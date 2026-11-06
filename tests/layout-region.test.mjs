@@ -1,7 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { q, cmp } from '../lib/layout/linear.mjs';
-import { rectangle, partition, sample, evaluate, projection } from '../lib/layout/region.mjs';
+import { rectangle, partition, sample, evaluate, projection,clip,serialize } from '../lib/layout/region.mjs';
+
+test('serialized constraints remove repeated positive scaling while preserving strict boundaries',()=>{
+  let region=rectangle({min:q(0),max:q(100)},{min:q(0),max:q(100)});
+  for(const [x,b,strict] of [[2,-20,false],[1,-10,true],[0,1,false],[4,-40,false]]) region=clip(region,{x:q(x),y:q(0),b:q(b)},strict);
+  const report=serialize(region);
+  assert.deepEqual(report.constraints,[{coefficient:'1',constant:'-10',strict:true}]);
+  for(const width of [0,10,10.5,100]) {
+    const actual=report.constraints.every(c=>Number(c.coefficient)*width+Number(c.constant)>(c.strict ? 0 : -Number.EPSILON));
+    assert.equal(actual,width>10);
+  }
+});
 
 test('convex region partitions agree with an independent 2-D integer oracle', () => {
   const domain = rectangle({ min: q(0), max: q(4) }, { min: q(0), max: q(4) });

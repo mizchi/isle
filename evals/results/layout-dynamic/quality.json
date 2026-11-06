@@ -1,0 +1,78 @@
+{
+  "document": {
+    "file": "index.html",
+    "sha256": "c1c0490b51b264a673b712babc6aa2f82261fc4f7b400555ebfaf0860eb78570"
+  },
+  "results": [
+    {
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.breakpoints",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.responsive",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    }
+  ]
+}

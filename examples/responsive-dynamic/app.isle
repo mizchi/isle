@@ -1,0 +1,19 @@
+export client component DynamicBoard() {
+  state items = [0];
+  state compact = false;
+  <main class="board">
+    <h1 class="title">Checked dynamic Grid</h1>
+    <nav class="controls" aria-label="Cards">
+      <button class="action" type="button">on click { items = items.length < 4 ? items.concat([items.length]) : items; }Add</button>
+      <button class="action" type="button">on click { items = []; }Clear</button>
+      <button class="action" type="button" aria-pressed={compact}>on click { compact = !compact; }Style</button>
+    </nav>
+    <section class="scroller" aria-label="Scrollable cards" tabindex="0">
+      @for (const item of items; key item) {
+        <div class={compact ? "tile compact" : "tile"}>Card {item}</div>
+      } @empty { <p class="empty">No cards</p> }
+    </section>
+    @if (items.length === 0) { <p class="note">Add up to four cards.</p> }
+    @else { <p class="note">Scroll to see every card.</p> }
+  </main>
+}

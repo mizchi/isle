@@ -10,6 +10,8 @@ just layout-build-quality
 
 [実装](../../lib/layout-build.mjs)・[型](../../lib/vite.d.mts)・[サンプル](../../examples/responsive-checked/)・[仕様と制約](../../docs/layout-checking.md)・[利用者の記述/読解課題](../scenarios/responsive-build/brief.md)。
 
+追記: [動的構造と scrollbar の対応](layout-dynamic.md)を追加した。以下は初期の静的 profile の実装時点の記録であり、現在の対応範囲は新しいレポートと仕様を参照。
+
 ## 確認したこと
 
 最終回帰: Node 378件、MoonBit 54件、レイアウト Playwright 13件、Pages Playwright 23件が成功。TypeScript の公開契約と `moon check --deny-warn` も成功した。build 専用21テストでは次を確認する。

@@ -17,6 +17,7 @@ test-models:
     moon test models/regions --target js
     moon test models/style_resolution --target js
     moon test models/layout_subgrid --target js
+    moon test models/layout_dynamic --target js
     moon test models/resource_once --target js
     moon test models/resource_disposal --target js
     moon test models/security --target js
@@ -63,7 +64,7 @@ build:
 e2e: build
     pnpm test:e2e
 
-ci: check check-types test verify eval build e2e control-check resource-binding-check loading-check style-check layout-check layout-subgrid-check layout-build-quality a11y-form a11y-schema-form examples-check critical-path-check
+ci: check check-types test verify eval build e2e control-check resource-binding-check loading-check style-check layout-check layout-subgrid-check layout-build-quality layout-dynamic-quality a11y-form a11y-schema-form examples-check critical-path-check
 
 # The same SSR + counters + remote action in Isle, Qwik 1/2 RC and Preact.
 compare-build: build-compiler
@@ -264,6 +265,12 @@ layout-build: build-compiler
 
 layout-build-quality: layout-build
     node tools/check-responsive-build.mjs
+
+layout-dynamic: build-compiler
+    pnpm exec vite build --config examples/responsive-dynamic/vite.config.mjs
+
+layout-dynamic-quality: layout-dynamic
+    node tools/check-responsive-build.mjs responsive-dynamic
 
 # Test-fixture geometry only, within its declared 352..1280 CSS-pixel domain.
 layout-quality: layout-check

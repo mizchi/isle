@@ -19,7 +19,7 @@ export function content(lang, base) {
     firstNote: '状態、表示、イベントと server action の境界を .isle に書きます。',
     secondNote: 'SSR の HTML、snapshot、分割された JS / CSS と manifest を生成します。',
     thirdNote: 'コードの取得と実行を分け、必要な状態を復元して動的な表示だけを更新します。',
-    examplesTitle: '読んだら、触って確かめる。', examplesLead: '小さな例から、更新・読み込み・寿命の違いを見てみましょう。', allExamples: '17例をすべて見る',
+    examplesTitle: '読んだら、触って確かめる。', examplesLead: '小さな例から、更新・読み込み・寿命の違いを見てみましょう。', allExamples: '18例をすべて見る',
   } : {
     eyebrow: 'A COMPILER-FIRST UI LANGUAGE', line1: 'HTML first.', line2: 'UI on demand.',
     lead: 'Declare state, views and event boundaries. Isle analyzes what depends on what, then ships the code your interactions need.',
@@ -30,7 +30,7 @@ export function content(lang, base) {
     firstNote: 'Write state, views, events and explicit server action boundaries in .isle.',
     secondNote: 'Generate SSR HTML, snapshots, split JS / CSS and a dependency manifest.',
     thirdNote: 'Separate fetching from execution. Restore needed state and update dynamic output.',
-    examplesTitle: 'Read it. Then try it.', examplesLead: 'Small, focused examples make updates, loading and lifetimes visible.', allExamples: 'Explore all 17 examples',
+    examplesTitle: 'Read it. Then try it.', examplesLead: 'Small, focused examples make updates, loading and lifetimes visible.', allExamples: 'Explore all 18 examples',
   };
   Object.assign(copy, { guideURL: base + prefix + 'docs/quick-start.html', examplesURL: base + prefix + 'examples/', downloadURL: base + 'downloads/isle-prototype-0.0.1.tgz' });
   const features = ja ? [

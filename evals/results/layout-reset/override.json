@@ -100,33 +100,6 @@
             "constant": "-32",
             "heightCoefficient": "1",
             "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "32",
-            "strict": true
           }
         ]
       },
@@ -196,33 +169,6 @@
             "constant": "-32",
             "heightCoefficient": "1",
             "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "32",
-            "strict": true
           }
         ]
       },
@@ -374,17 +320,6 @@
             "constant": "-32",
             "heightCoefficient": "1",
             "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -430,17 +365,6 @@
           }
         ],
         "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
           {
             "coefficient": "1",
             "constant": "-32",
@@ -619,11 +543,6 @@
             "constant": "-32",
             "heightCoefficient": "1",
             "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           }
         ]
       },
@@ -678,17 +597,6 @@
           }
         ],
         "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
           {
             "coefficient": "1",
             "constant": "-32",
@@ -764,17 +672,6 @@
             "constant": "-32",
             "heightCoefficient": "1",
             "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -838,22 +735,6 @@
             "coefficient": "0",
             "constant": "-32",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
             "strict": false
           }
         ]
@@ -920,28 +801,6 @@
             "constant": "-32",
             "heightCoefficient": "1",
             "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -996,28 +855,6 @@
           }
         ],
         "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
           {
             "coefficient": "1",
             "constant": "-32",
@@ -1092,28 +929,6 @@
             "constant": "-32",
             "heightCoefficient": "1",
             "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -1170,28 +985,6 @@
           }
         ],
         "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
           {
             "coefficient": "1",
             "constant": "-32",
@@ -1267,28 +1060,6 @@
             "constant": "-32",
             "heightCoefficient": "1",
             "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -1343,28 +1114,6 @@
           }
         ],
         "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
           {
             "coefficient": "1",
             "constant": "-32",
@@ -1458,28 +1207,6 @@
             "constant": "-32",
             "heightCoefficient": "1",
             "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -1540,28 +1267,6 @@
           }
         ],
         "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
           {
             "coefficient": "1",
             "constant": "-32",

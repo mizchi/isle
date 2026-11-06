@@ -4,7 +4,7 @@ import type { IsleMount, RenderMode } from './client-contracts.d.ts';
 import type { LoadingPolicy } from './code-contracts.d.ts';
 import type { SpeculationRules } from './speculation.mjs';
 import type { CostBudget } from './cost-contracts.d.ts';
-import type { CheckedLayoutBoxContract } from './layout-contracts.d.ts';
+import type { CheckedLayoutBoxContract, LayoutScrollbarProfile } from './layout-contracts.d.ts';
 /** Closed document profile: all author CSS is owned by this build. Unknown is an error. */
 export interface CheckedLayoutOptions {
   /** Local CSS path relative to the .isle entry. Delivered automatically. */
@@ -14,6 +14,8 @@ export interface CheckedLayoutOptions {
   viewport: { min: number; max: number; height: { min: number; max: number } };
   /** Trusted content bounds and explicit overflow policies. */
   boxes?: Record<string, CheckedLayoutBoxContract>;
+  /** Exact native scrollbar sizes for every supported target environment. */
+  scrollbars?: readonly LayoutScrollbarProfile[];
 }
 export interface WidgetBuildOptions {
   /** shared pins an exact page version; standalone embeds a private runtime. Default: shared. */

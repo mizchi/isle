@@ -26,7 +26,7 @@ Run your app's usual Vite build. A violation or unknown analysis fails the build
 
 In this checkout: `just example responsive-checked` starts the demo; `just layout-build` checks the production build; `just layout-check` also compares symbolic sizes with Chromium. Try changing `.tile` to `min-width: 160px`: the two-column layout at 320px cannot satisfy it, and the build reports a counterexample.
 
-Content bounds are trusted declarations for every allowed input and font. Pixel rounding, ink overflow and analyzer soundness are outside this result. This initial profile requires a single owned document, static structure/classes, the generated loader, and fit/clip policies. Scrollbars, arbitrary setup scripts, widgets and native controls need further adapters; unsupported features fail closed. See [scope and limits](../../docs/layout-checking.md).
+Content bounds are trusted declarations for every allowed input and font. Pixel rounding, ink overflow and analyzer soundness are outside this result. The profile requires a single owned document and the generated loader. Bounded dynamic structures and native scrollbar profiles are demonstrated in [the dynamic example](../responsive-dynamic/). Arbitrary setup scripts, widgets and unknown native controls still need adapters; unsupported features fail closed. See [scope and limits](../../docs/layout-checking.md).
 
 ## 日本語
 
@@ -38,4 +38,4 @@ npm パッケージから使う場合は `@isle/prototype/vite` の `isle` に�
 
 この checkout では `just example responsive-checked` で表示し、`just layout-build` でビルドする。`just layout-check` は解析値と Chromium の寸法も照合する。`.tile` を `min-width:160px` に変更すると、幅320pxの2列配置を満たせず、ビルドが反例を返す。
 
-内容・font のサイズ上界は利用者の信頼する宣言であり、ピクセル丸め・描画上のはみ出し・判定器の健全性の証明は含まない。最初のモードは単一の所有する document、静的な構造/class、標準 loader、fit/clip 契約に制限する。scrollbar・任意 setup script・widget・native control 等には今後 adapter が必要で、解析不能を成功扱いしない。[保証範囲](../../docs/layout-checking.md)を参照。
+内容・font のサイズ上界は利用者の信頼する宣言であり、ピクセル丸め・描画上のはみ出し・判定器の健全性の証明は含まない。単一の所有する document と標準 loader を要求する。上限のある動的構造と scrollbar profile は[動的な例](../responsive-dynamic/)を参照。任意 setup・widget・未知の native control 等には adapter が必要で、解析不能を成功扱いしない。[保証範囲](../../docs/layout-checking.md)を参照。

@@ -88,7 +88,7 @@ test('explicit numeric spans and row packing use the sum of tracks and internal 
 
 test('scroll and clipping are explicit policies, not automatic ways to hide violations', () => {
   for (const [overflow, value] of [['scroll', 'auto'], ['clip', 'clip'], ['visible', 'visible']]) {
-    const report = run({ css: css + `.body { overflow-x: ${value}; }`, boxes: {
+    const report = run({ scrollbars:[{name:'overlay',inlineSize:0,blockSize:0}],css: css + `.body { overflow-x: ${value}; }`, boxes: {
       '.side': { minInlineSize: 120 }, '.body': { overflow, wrap: 'anywhere' },
     } });
     assert.equal(report.status, 'verified', overflow);
@@ -122,7 +122,9 @@ test('unsupported CSS, external dependencies, dynamic structure and replaced ele
   ]) assert.equal(run({ css: css + extra }).status, 'unknown', extra);
   assert.equal(run({ css: css.replace('minmax(0, 1fr)', '1fr') }).status, 'unknown');
   assert.equal(run({}, source.replace('Content', '<input type="text" aria-label="Content" />')).status, 'unknown');
-  assert.equal(run({}, source.replace('Board()', 'Board(show: boolean)').replace('Content', '@if (show) { <span>Content</span> }')).status, 'unknown');
+  const dynamic=run({}, source.replace('Board()', 'Board(show: boolean)').replace('Content', '@if (show) { <span>Content</span> }'));
+  assert.equal(dynamic.structure.complete,true);
+  assert.equal(dynamic.status,'violated'); // The added child requires a Grid container.
 });
 
 test('unreachable media branches and display:none subtrees do not create spurious requirements', () => {

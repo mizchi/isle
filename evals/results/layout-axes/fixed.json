@@ -180,22 +180,6 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           }
@@ -256,22 +240,6 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           }
@@ -332,45 +300,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -430,45 +365,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -528,56 +430,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -637,56 +495,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -746,78 +560,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -877,78 +625,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -999,22 +681,6 @@
             "coefficient": "1",
             "constant": "-32",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
           },
           {
             "coefficient": "0",
@@ -1083,22 +749,6 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
@@ -1159,41 +809,9 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
@@ -1257,41 +875,9 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
@@ -1355,56 +941,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
             "strict": false
           }
         ]
@@ -1463,56 +1007,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
             "strict": false
           }
         ]
@@ -1571,73 +1073,9 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
@@ -1701,73 +1139,9 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
@@ -1942,11 +1316,6 @@
             "constant": "-32",
             "heightCoefficient": "1",
             "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           }
         ]
       },
@@ -2014,18 +1383,7 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -2085,22 +1443,6 @@
           {
             "coefficient": "1",
             "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
             "strict": false
           },
           {
@@ -2180,28 +1522,7 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
             "strict": false
           }
         ]
@@ -2271,34 +1592,7 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
@@ -2372,45 +1666,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -2480,45 +1741,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -2587,50 +1815,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -2700,56 +1890,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -2818,56 +1964,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -2936,56 +2038,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -3056,56 +2114,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -3175,56 +2189,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -3294,56 +2264,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -3412,56 +2338,7 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
@@ -3536,67 +2413,7 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
@@ -3670,78 +2487,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -3811,78 +2562,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -3951,83 +2636,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
             "strict": false
           }
         ]
@@ -4096,88 +2710,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -4246,88 +2784,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -4396,88 +2858,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -4547,88 +2933,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -4697,88 +3007,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -4847,88 +3081,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -4997,88 +3155,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -5149,88 +3231,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -5300,88 +3306,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -5450,88 +3380,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -5602,88 +3456,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -5752,88 +3530,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -5903,20 +3605,9 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5976,22 +3667,6 @@
             "coefficient": "1",
             "constant": "-32",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
           },
           {
             "coefficient": "0",
@@ -6069,30 +3744,9 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           }
         ]
       },
@@ -6160,41 +3814,9 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           }
         ]
       },
@@ -6261,41 +3883,9 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
@@ -6369,41 +3959,9 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
@@ -6476,51 +4034,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
             "strict": false
           }
         ]
@@ -6588,56 +4109,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
             "strict": false
           }
         ]
@@ -6705,56 +4184,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
             "strict": false
           }
         ]
@@ -6822,56 +4259,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
             "strict": false
           }
         ]
@@ -6939,56 +4334,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
             "strict": false
           }
         ]
@@ -7056,56 +4409,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
             "strict": false
           }
         ]
@@ -7173,56 +4484,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
             "strict": false
           }
         ]
@@ -7290,61 +4559,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
             "strict": false
           }
         ]
@@ -7413,72 +4635,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
             "strict": false
           }
         ]
@@ -7546,73 +4710,9 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
@@ -7686,73 +4786,9 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
@@ -7825,83 +4861,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
             "strict": false
           }
         ]
@@ -7969,88 +4936,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -8118,88 +5011,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -8267,88 +5086,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -8417,88 +5162,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -8566,88 +5237,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -8715,88 +5312,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -8864,88 +5387,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -9015,88 +5464,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -9165,88 +5540,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -9314,88 +5615,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -9465,88 +5692,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -9614,88 +5767,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -9782,56 +5861,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           },
           {
             "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
             "strict": false
           }
         ]
@@ -9904,88 +5939,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -10059,88 +6018,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -10214,88 +6097,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -10369,88 +6176,12 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -10522,56 +6253,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
           },
           {
             "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
             "strict": false
           }
         ]
@@ -10643,88 +6332,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -10797,88 +6412,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -10951,88 +6492,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -11105,88 +6572,14 @@
             "strict": false
           },
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "648",
             "strict": true
           },
           {
             "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
             "constant": "-120",
             "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "80",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "400",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "200",
             "strict": false
           }
         ]
@@ -11250,22 +6643,6 @@
           },
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-648",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-648",
             "strict": false
           }
@@ -11319,22 +6696,6 @@
             "coefficient": "1",
             "constant": "-32",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "-1",
-            "constant": "648",
-            "strict": true
           },
           {
             "coefficient": "0",

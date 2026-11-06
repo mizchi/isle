@@ -1,0 +1,6 @@
+Checked dynamic Grid
+Add
+Clear
+Style
+Card 0
+Scroll to see every card.

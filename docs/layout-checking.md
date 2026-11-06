@@ -11,6 +11,8 @@ just layout path/to/app.isle path/to/layout.json
 just layout-check
 just layout-build
 just layout-build-quality
+just layout-dynamic
+just layout-dynamic-quality
 ```
 
 CLI の明示的な解析に加え、Vite の `layout` オプションで配信する HTML/CSS を検査する build gate を提供する。production runtime には解析器・依存ライブラリ・検査用 metadata を import しない。CSS chunk の一般的な最適化や CSS-ready runtime とは別の build-only pass である。
@@ -42,15 +44,56 @@ isle({
 - mount は一つ、`wrapMounts:false`。HTML に SSR marker が一つあり、body の描画要素はその component の tree と一致すること。
 - html/body を viewport 全体の Grid shell として出力し、実際の class/id・reset・padding/border を含めて両軸を解析する。`hostInset` や、解析のためだけの仮の ancestor は受け取らない。
 - 幅と高さの有限区間を両方指定する。到達可能な media/container query の組み合わせを有理数の領域として検査し、違反と **unknown の両方**で production build を失敗させる。成功を少数の viewport のサンプリングで代用しない。
-- 構造と class/id は静的であること。状態で変化する `@if`/`@for` 等は現在の SSR の一状態だけから保証しない。最適化で静的に確定した分岐は対象にできる。契約を満たす text 更新は、標準の resume loader で利用できる。
+- `@if`/`@switch`/同期 `@try` の各候補、有限な class/id、上限を静的に導ける `@for` を含めて検査する。text 更新だけの状態を構造の直積に含めない。以下の動的構造の節を参照。
 - `clientEntry`、`resources`、widget 設定、追加の実行 script、未所有の client module、inline style、popover、noscript、CSP meta 等は拒否する。head・snapshot・loader の非描画要素を CSS が表示する場合も拒否する。HTTP の CSP 等、配信側の policy は所有する stylesheet の適用を許可する前提である。
-- overflow 契約は fit/clip のみ。`overflow:auto/scroll`、visible 契約による無制限の流出、scrollbar gutter は adapter 未実装のため拒否する。CLI 単体の解析では従来の scroll/visible 契約も利用できる。
+- overflow 契約は fit/clip/scroll。scrollbar は指定した native profile ごとに占有幅を差し引く。visible 契約による無制限の流出は拒否する。CLI 単体では visible 契約も利用できる。
 
 成功時に `isle.layout.json` を出力する。検査の profile、component、正確な領域・各義務・サイズ・前提、入力 CSS と配信 HTML の SHA-256 を保存する。最終 HTML の解析では、CSS が同じであること、component の native element tree と一致することも確認する。ブラウザーはレポートを取得せず、検査で JS チャンクは変化しない。static component のサンプルは JS 0。
 
 Vite/Rolldown の HTML transform 後、Isle manifest 注入後の `generateBundle` で検査する。後続 plugin・デプロイ時の HTML/CSS 書き換え、外部 CSS の後挿入等まで自動的に許可する証明ではない。配信 HTML を変えた場合は記録されたハッシュが無効になる。build toolchain と生成コードは信頼する実装に含まれる。[Vite hook の仕様](https://vite.dev/guide/api-plugin#transformindexhtml)と、HTML tree の解釈に使う [parse5](https://parse5.js.org/)を参照。
 
 `verified` は、宣言領域・CSS 部分集合・利用者の信頼する内容/font のサイズ上界に対して義務を満たしたという判定である。任意の入力や Web 全体に対する無条件の保証ではなく、browser のピクセル丸め、ink overflow、判定器の健全性の機械証明は含まない。これらの前提はレポートにも残す。[検証結果と今後の adapter](../evals/reports/layout-build.md)を参照。
+
+## 動的構造の集合を検査する
+
+[実行例](../examples/responsive-dynamic/)は、リストの追加・全削除、class の切り替え、空状態を持つ。`@if`/`@switch` の候補と同期 `@try`/`@catch` を結合し、現在の SSR に現れない構造も調べる。同じ component の有限な scalar state は繰り返し内でも同じ値として扱う。class/id は有限な文字列集合へ解決できる式を許可し、任意入力からの class 等は unknown にする。
+
+```text
+state items = [0];
+on click {
+  items = items.length < 4 ? items.concat([items.length]) : items;
+}
+```
+
+配列の初期値、immutable props、各 handler の代入を抽象解釈し、長さの区間を不動点まで保守的に結合する。literal、concat、map、filter、length 比較のガードを扱う。代入途中の値も含めて overapproximation するため、実際には到達しない候補を含むことがある。例では上限4、clear があれば下限0を導き、**0〜4の全件数**を検査する。最大件数だけの計測ではない。
+
+CLI/API には `props` を固定の初期値として渡せる。Vite は実際の mount props を自動入力する。任意の将来の props の型全体を表す契約ではない。任意コードを実行して件数を求めることもない。無制限の concat、未解決の配列、解析上限超過は `U_LAYOUT_CARDINALITY` / `U_LAYOUT_LIMIT` とし、利用者が maxItems を宣言するだけで成功扱いにはできない。現在の上限は繰り返し32件・構造256候補で、構造/profile を通じた共有 work budget も置く。上限超過で一部の候補を黙って省略しない。
+
+`structure` に候補と件数上界、各義務・診断には `variant` を保存する。全体の件数上界が未確定なら max は null。繰り返す地点のガードで有限化できる場合だけ展開する。内容/font の上界は各候補にも適用する信頼する契約のままであり、件数の静的推論と区別する。compiler が決定した native tree の集合へ初期 HTML が属することと、配信 snapshot が解析した初期値に一致することも確認する。
+
+## Native scrollbar の占有幅
+
+```js
+layout: {
+  css: './app.css',
+  viewport: { min: 320, max: 1280, height: { min: 360, max: 900 } },
+  scrollbars: [
+    { name: 'overlay', inlineSize: 0, blockSize: 0 },
+    { name: 'classic', inlineSize: 15, blockSize: 15 },
+  ],
+  boxes: { '.scroller': { overflowBlock: 'scroll' } },
+}
+```
+
+`inlineSize` は縦 scrollbar が横に消費する幅、`blockSize` は横 scrollbar が縦に消費する高さ。両軸とも正確な CSS px の値を宣言する。各 profile の幅×高さ領域を検査し、一つでも違反/unknown があれば失敗する。profile は **列挙した環境の正確な寸法という信頼する契約**であり、全OS、0〜15pxの連続範囲、任意の zoom/user 設定を保証する指定ではない。必要なら対応環境の実際の profile を追加する（最大8つ）。thin は `thinInlineSize` / `thinBlockSize` も要求する。
+
+`auto` の表示・非表示を両軸で保守的に組み合わせ、scrollbar 出現によるもう一方の軸への影響も含める。`scrollbar-gutter:stable` は縦 scrollbar の領域を先に確保し、both-edges は左右二つを差し引く。横 scrollbar の高さは別に扱う。減少した content box を Grid、割合サイズ、container query、内容の契約に渡す。content-box の padding/border と gutter も区別する。[CSS Overflow 3](https://www.w3.org/TR/css-overflow-3/#scrollbar-gutter-property) に基づく。
+
+`scrollbar-width:none` は占有0として扱える。寸法の未宣言を黙って0とは扱わない。native の太さはUA/OSに依存し、thin が auto として扱われる環境もあるため、対象環境の契約が必要になる。[CSS Scrollbars](https://www.w3.org/TR/css-scrollbars-1/#scrollbar-width) を参照。
+
+html の scrollbar は viewport へ一度だけ適用する。body の特別な overflow 伝播は現在 unknown とし、html に overflow を明示することを要求する。`html{overflow:auto}` で viewport を使うか、`html{overflow:hidden}` で body を local scroller にできる。正の gutter を持つ subgrid 自身の共有軸への inset は未対応で、親の通常 Grid を scroller にする。native button は appearance:none、display:block と box-sizing/min-size/padding/border の明示的 reset を要求し、未モデル化の UA 寸法を仮定しない。
+
+レポートの `scrollbars`、`scrollbarProfile`、content size と各構造の義務を確認できる。[240通りの実測と有限モデル](../evals/reports/layout-dynamic.md)を参照。
 
 ## 入力
 
@@ -153,7 +196,7 @@ ancestor 入力は継承用であり、host の寸法を再計算する入力で
 - item の block alignment は normal / stretch、content alignment は normal / stretch / start。row span は独立にサイズを確定できる row 間で扱う。intrinsic size の分配が必要な row span、他の alignment、intrinsic column は未対応である。
 - 折り返し条件は `white-space` と `overflow-wrap` の継承を含めて照合する。`anywhere` と `break-word` を同一視しない。
 
-CSS による通常の in-flow parent と child の関係を検査する。pure component の展開と単純な client island の root は追えるが、動的 class/id、分岐・loop・opaque children、inline style、native form control 等は unknown。初期 SSR に存在する構造だけを見て、将来の構造まで安全としない。
+CSS による通常の in-flow parent と child の関係を検査する。pure component と client island の root を追い、有限な動的 class/id・分岐・上限付き loop の集合を検査する。opaque children、inline style、reset/adapter のない native control 等は unknown。初期 SSR に存在する構造だけで将来の構造を判断しない。
 
 ## Subgrid の共有トラック
 
@@ -185,7 +228,7 @@ CSS による通常の in-flow parent と child の関係を検査する。pure 
 - 子の内容を親の auto row や indefinite な fr row へ押し上げる intrinsic contribution は未実装で `U_LAYOUT_SUBGRID`。単なる最小高さの仮定で安全としない。
 - 共有する軸の子のサイズは auto、min-size は auto / 0 を要求する。名前付き line、`repeat()`、解析境界外の親、調整後に負のトラック幅が生じる場合も unknown。非共有軸は既存の明示 Grid subset に従う。
 - 共有軸の範囲外への配置や暗黙トラックは `E_LAYOUT_SUBGRID_PLACEMENT`、意図しない重なりは `E_LAYOUT_OVERLAP`。ブラウザーが範囲外を clamp する有効な CSS でも、この検査 subset では拒否する。
-- media / 親の container 条件、reset、box-sizing は既存の条件領域ごとに解決する。subgrid 自身の `container-type: inline-size / size` は、独立 formatting context の実装差があるため unknown とし、size query container を親に置く。scrollbar gutter に関する保証境界は従来と同じ。
+- media / 親の container 条件、reset、box-sizing は既存の条件領域ごとに解決する。subgrid 自身の `container-type: inline-size / size` は、独立 formatting context の実装差があるため unknown とし、size query container を親に置く。subgrid 自身への正の scrollbar inset は unknown とし、親の通常 Grid の gutter を考慮する。
 
 `LayoutSummary.subgrids` に共有元の box/path、軸、親での開始 line、span、使用 gap、端の inset とトラック幅の有理数 affine 式を記録する。検査は build-only で、browser runtime と配布 JS は増えない。
 
@@ -202,7 +245,7 @@ CSS による通常の in-flow parent と child の関係を検査する。pure 
 | clip | computed overflow-x が hidden / clip であることを要求し、明示した切り取りを許可する |
 | visible | computed overflow-x が visible であることを要求し、明示した領域外表示を許可する |
 
-非 fit の container では、その子が割当領域を越えることも許可する。子自身の fit 契約は独立して検査する。CSS における overflow-x/y の computed value の相互作用を反映する。スクロール操作性、切り取られる情報の妥当性、focus の可視性、縦方向の scrollbar gutter は今回の保証に含めない。
+非 fit の container では、その子が割当領域を越えることも許可する。子自身の fit 契約は独立して検査する。CSS における overflow-x/y の computed value の相互作用を反映する。scrollbar の占有幅は宣言した profile に従って検査する。スクロール操作性、切り取られる情報の妥当性、focus の可視性自体はサイズの保証に含めない。
 
 ## Media と反例
 
@@ -249,7 +292,7 @@ E_LAYOUT_CONTENT .body
 
 160pxは必要条件であり、列の配分も検査する。例えば `20px 20px 20px 100px` は合計160pxでも、最初の3列へ40pxの子は収まらない。gap 8px・親 padding 12px・border 2px なら必要幅は `160 + 24 + 24 + 4 = 212px`。min-width は内容が収まることの証明ではないため、文字列には別途 content-size 契約を要求する。
 
-media と container 条件は、到達可能な領域の共通部分で評価する。4列への切替を159pxにすると `[159,160)` が違反し、160pxで切り替える版は通る。高さ条件と幅条件の組み合わせにも同様に制約をかけ、同時に成立しない条件は除外する。未対応 CSS、解析上限、未知の内容を含む場合は unknown。通常の Vite build に自動接続された保証ではなく、layout pass を明示的に実行する必要がある。
+media と container 条件は、到達可能な領域の共通部分で評価する。4列への切替を159pxにすると `[159,160)` が違反し、160pxで切り替える版は通る。高さ条件と幅条件の組み合わせにも同様に制約をかけ、同時に成立しない条件は除外する。未対応 CSS、解析上限、未知の内容を含む場合は unknown。Vite では layout オプションでこの pass を明示的に有効にする。未指定の build に保証を付与するものではない。
 
 192構成の独立した下限和の oracle、96件のブラウザー計測を[回帰テスト](../tests/layout-minimum.test.mjs)・[ブラウザー照合](../e2e/layout-minimum.spec.mjs)に置く。[要約と実測](../evals/results/layout-minimum/latest.json)・[完全な symbolic checks](../evals/results/layout-minimum/full.json.gz)は固定境界、box-sizing と条件の組み合わせを含む。これは下記の数理モデルの検査であり、判定器の実装自体の健全性証明や任意の UI の無条件保証ではない。
 
@@ -261,7 +304,7 @@ media と container 条件は、到達可能な領域の共通部分で評価す
 
 CLI は verified のときだけ exit 0。入力エラー、コンパイルエラー、violated、unknown は非0にする。解析できない幾何の CSS や未知の selector / at-rule を、装飾だと推測して無視しない。reset を含む閉じた author cascade を渡すことは呼出し側の前提であり、host の全 CSS を自動収集したという保証ではない。
 
-任意 font の glyph 幅・改行位置の自動推論、paint / ink overflow、画像、スクロールや layout の実時間、scrollbar gutter、browser の subpixel rounding はモデル外。非対応の幾何プロパティは unknown にする。実ブラウザとの完全同値性の証明でもない。
+任意 font の glyph 幅・改行位置の自動推論、paint / ink overflow、画像、スクロールや layout の実時間、未宣言の scrollbar 寸法、browser の subpixel rounding はモデル外。非対応の幾何プロパティは unknown にする。実ブラウザとの完全同値性の証明でもない。
 
 今回は静的な純粋制約の判定であり、既存 veri の時相モデルを増やして寸法を離散化する方法は採らない。有理数の領域判定、独立した1次元・2次元の bounded arithmetic oracle、browser での反例再現を組み合わせる。判定器そのものの形式的な健全性証明は未着手。既存の MoonBit / veri 92ケースは別の検査として維持する。
 

@@ -1,0 +1,66 @@
+{
+  "complete": true,
+  "states": 240,
+  "bounded_safe": true,
+  "gutter_safe": true,
+  "unbounded_witness": [
+    {
+      "count": 1,
+      "width": 95,
+      "gutter": 0,
+      "horizontal": false,
+      "compact": false
+    },
+    {
+      "count": 2,
+      "width": 95,
+      "gutter": 0,
+      "horizontal": false,
+      "compact": false
+    },
+    {
+      "count": 3,
+      "width": 95,
+      "gutter": 0,
+      "horizontal": false,
+      "compact": false
+    },
+    {
+      "count": 4,
+      "width": 95,
+      "gutter": 0,
+      "horizontal": false,
+      "compact": false
+    },
+    {
+      "count": 5,
+      "width": 95,
+      "gutter": 0,
+      "horizontal": false,
+      "compact": false
+    }
+  ],
+  "ignored_gutter_witness": [
+    {
+      "count": 1,
+      "width": 95,
+      "gutter": 0,
+      "horizontal": false,
+      "compact": false
+    },
+    {
+      "count": 1,
+      "width": 95,
+      "gutter": 15,
+      "horizontal": false,
+      "compact": false
+    },
+    {
+      "count": 1,
+      "width": 160,
+      "gutter": 15,
+      "horizontal": false,
+      "compact": false
+    }
+  ]
+}

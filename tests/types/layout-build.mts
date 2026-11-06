@@ -11,8 +11,7 @@ const height: CheckedLayoutOptions = {...layout,viewport:{min:80,max:1280}};
 const waiver: CheckedLayoutOptions = {...layout,allowUnknown:true};
 // @ts-expect-error Host sizing comes from the delivered document, not an asserted inset.
 const inset: CheckedLayoutOptions = {...layout,hostInset:0};
-// @ts-expect-error Checked documents currently model fit/clip, not scrollbar gutters.
-const scroll: CheckedLayoutOptions = {...layout,boxes:{'.copy':{overflow:'scroll'}}};
+const scroll: CheckedLayoutOptions = {...layout,boxes:{'.copy':{overflow:'scroll'}},scrollbars:[{name:'classic',inlineSize:15,blockSize:15}]};
 void height; void waiver; void inset; void scroll;
 declare const certificate: LayoutBuildCertificate;
 const status: 'verified' = certificate.status;
