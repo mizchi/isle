@@ -111,7 +111,7 @@ ancestor 入力は継承用であり、host の寸法を再計算する入力で
 - 子 element を配置する container は Grid を要求する。effective な non-none float、意図を宣言していない重なり、明示列の外への配置は違反にする。
 - 列は固定 px と `minmax(0, Nfr)`。固定列・column gap を引いた残りを fr の比で配分し、fr 合計が1未満なら残余幅を一部残す。通常の `1fr` は intrinsic minimum を持つため未対応として unknown にする。
 - 列・行の正の数値 line、`start / span N`、`start / end`、`span N` と sparse な通常の auto-placement を扱う。確定した row を先に配置する。確定 row には明示 column を要求する。暗黙の追加列、名前付き area、dense は未対応。
-- auto・固定 px・割合の inline/block-size、content-box / border-box、px の padding・solid border・gap を扱う。margin は0だけを許可する。p / heading 等の native な block margin は明示的な reset を要求する。CSS min-size は auto / 0、max は none に限定する。
+- auto・固定 px・割合の inline/block-size、content-box / border-box、px の padding・solid border・gap を扱う。margin は0だけを許可する。p / heading 等の native な block margin は明示的な reset を要求する。CSS min-inline-size / min-width は auto / 固定 px、min-block-size は auto / 0、max は none に限定する。
 - row は固定 px、`minmax(0, Nfr)`、auto。implicit row は grid-auto-rows を反復する。auto row は子の自動高さを下から集約し、definite な container では余りの伸長を反映する。indefinite な fr row は max-content に対応する契約値から flex fraction を求める。
 - item の block alignment は normal / stretch、content alignment は normal / stretch / start。row span は独立にサイズを確定できる row 間で扱う。intrinsic size の分配が必要な row span、他の alignment、intrinsic column は未対応である。
 - 折り返し条件は `white-space` と `overflow-wrap` の継承を含めて照合する。`anywhere` と `break-word` を同一視しない。
@@ -146,7 +146,7 @@ CSS による通常の in-flow parent と child の関係を検査する。pure 
 
 - 親の列は既存の固定 px / `minmax(0, Nfr)`。行共有には高さを含む両軸検査を要求し、親の row は独立に確定できる固定 px または definite な高さに対する fr とする。固定 row だけなら親全体の高さは auto でもよい。
 - 子の内容を親の auto row や indefinite な fr row へ押し上げる intrinsic contribution は未実装で `U_LAYOUT_SUBGRID`。単なる最小高さの仮定で安全としない。
-- 共有する軸の子のサイズは auto を要求する。名前付き line、`repeat()`、解析境界外の親、調整後に負のトラック幅が生じる場合も unknown。非共有軸は既存の明示 Grid subset に従う。
+- 共有する軸の子のサイズは auto、min-size は auto / 0 を要求する。名前付き line、`repeat()`、解析境界外の親、調整後に負のトラック幅が生じる場合も unknown。非共有軸は既存の明示 Grid subset に従う。
 - 共有軸の範囲外への配置や暗黙トラックは `E_LAYOUT_SUBGRID_PLACEMENT`、意図しない重なりは `E_LAYOUT_OVERLAP`。ブラウザーが範囲外を clamp する有効な CSS でも、この検査 subset では拒否する。
 - media / 親の container 条件、reset、box-sizing は既存の条件領域ごとに解決する。subgrid 自身の `container-type: inline-size / size` は、独立 formatting context の実装差があるため unknown とし、size query container を親に置く。scrollbar gutter に関する保証境界は従来と同じ。
 
@@ -194,6 +194,29 @@ E_LAYOUT_CONTENT .body
 両軸の診断は `axis`、`heightRange`、高さを含む witness、`region` を持つ。range / heightRange は各軸への射影で、直積が反例領域と一致するとは限らない。正本は region の vertices が張る閉包と strict constraints の共通部分である。`sizes` は計算したサイズ式、`queries` は選んだ target と条件成立を説明する。
 
 ## 検査結果と前提
+
+### 40px の箱を4つ並べる場合
+
+折り返さず、重ならず、全てを親の中へ収めるなら、子の外側最小幅を `m`、gap を `g` として親の content 幅には `4m + 3g` を要求する。m=40px、gap=0 なら160px。親の border-box 幅にはさらに左右の padding/border を加える。子が content-box なら、その子の padding/border も各 m に加える。
+
+```css
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)
+                         minmax(0, 1fr) minmax(0, 1fr);
+}
+.cell { min-width: 40px; }
+```
+
+固定 px の CSS 最小幅を使って、子の使用幅を計算し、割当トラックに収まることを検査する。この例は親幅 `[100, 300]` に対して違反区間 `[100, 160)` を返し、160px以上の領域は通る。親の幅を自動で広げる変換はしない。CSS は小さい親の中でも子の min-width を守ってあふれることがあり、それを検査する。
+
+160pxは必要条件であり、列の配分も検査する。例えば `20px 20px 20px 100px` は合計160pxでも、最初の3列へ40pxの子は収まらない。gap 8px・親 padding 12px・border 2px なら必要幅は `160 + 24 + 24 + 4 = 212px`。min-width は内容が収まることの証明ではないため、文字列には別途 content-size 契約を要求する。
+
+media と container 条件は、到達可能な領域の共通部分で評価する。4列への切替を159pxにすると `[159,160)` が違反し、160pxで切り替える版は通る。高さ条件と幅条件の組み合わせにも同様に制約をかけ、同時に成立しない条件は除外する。未対応 CSS、解析上限、未知の内容を含む場合は unknown。通常の Vite build に自動接続された保証ではなく、layout pass を明示的に実行する必要がある。
+
+192構成の独立した下限和の oracle、96件のブラウザー計測を[回帰テスト](../tests/layout-minimum.test.mjs)・[ブラウザー照合](../e2e/layout-minimum.spec.mjs)に置く。[要約と実測](../evals/results/layout-minimum/latest.json)・[完全な symbolic checks](../evals/results/layout-minimum/full.json.gz)は固定境界、box-sizing と条件の組み合わせを含む。これは下記の数理モデルの検査であり、判定器の実装自体の健全性証明や任意の UI の無条件保証ではない。
+
+### 結果の意味
 
 - `verified`: 宣言した幅、または幅×高さの全実数入力について、対応する数理モデル内で指定した契約を満たした。
 - `violated`: 契約違反の区間・義務、または禁止規則を検出した。

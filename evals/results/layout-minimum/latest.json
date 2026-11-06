@@ -1,0 +1,3479 @@
+{
+  "detail": "summary; full symbolic checks in full.json.gz",
+  "cases": [
+    {
+      "id": "four",
+      "status": "violated",
+      "scope": {
+        "axis": "inline",
+        "viewport": {
+          "min": 100,
+          "max": 300,
+          "minInclusive": true,
+          "maxInclusive": true,
+          "minExact": "100",
+          "maxExact": "300"
+        },
+        "hostInset": 0,
+        "closedCSS": true,
+        "browserRounding": false,
+        "blockSizing": false
+      },
+      "diagnostics": [
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/0",
+          "source": {
+            "start": 36,
+            "end": 40
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 65/2px on inline axis at viewport 130px",
+          "range": {
+            "min": 100,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "160"
+          },
+          "witness": {
+            "viewport": 130,
+            "viewportExact": "130",
+            "available": 32.5,
+            "required": 40
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/1",
+          "source": {
+            "start": 60,
+            "end": 64
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 65/2px on inline axis at viewport 130px",
+          "range": {
+            "min": 100,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "160"
+          },
+          "witness": {
+            "viewport": 130,
+            "viewportExact": "130",
+            "available": 32.5,
+            "required": 40
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/2",
+          "source": {
+            "start": 84,
+            "end": 88
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 65/2px on inline axis at viewport 130px",
+          "range": {
+            "min": 100,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "160"
+          },
+          "witness": {
+            "viewport": 130,
+            "viewportExact": "130",
+            "available": 32.5,
+            "required": 40
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/3",
+          "source": {
+            "start": 108,
+            "end": 112
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 65/2px on inline axis at viewport 130px",
+          "range": {
+            "min": 100,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "160"
+          },
+          "witness": {
+            "viewport": 130,
+            "viewportExact": "130",
+            "available": 32.5,
+            "required": 40
+          }
+        }
+      ]
+    },
+    {
+      "id": "correct-breakpoint",
+      "status": "verified",
+      "scope": {
+        "axis": "inline",
+        "viewport": {
+          "min": 100,
+          "max": 300,
+          "minInclusive": true,
+          "maxInclusive": true,
+          "minExact": "100",
+          "maxExact": "300"
+        },
+        "hostInset": 0,
+        "closedCSS": true,
+        "browserRounding": false,
+        "blockSizing": false
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "status": "violated",
+      "scope": {
+        "axis": "inline",
+        "viewport": {
+          "min": 100,
+          "max": 300,
+          "minInclusive": true,
+          "maxInclusive": true,
+          "minExact": "100",
+          "maxExact": "300"
+        },
+        "hostInset": 0,
+        "closedCSS": true,
+        "browserRounding": false,
+        "blockSizing": false
+      },
+      "diagnostics": [
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/0",
+          "source": {
+            "start": 36,
+            "end": 40
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 319/8px on inline axis at viewport 319/2px",
+          "range": {
+            "min": 159,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "159",
+            "maxExact": "160"
+          },
+          "witness": {
+            "viewport": 159.5,
+            "viewportExact": "319/2",
+            "available": 39.875,
+            "required": 40
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/1",
+          "source": {
+            "start": 60,
+            "end": 64
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 319/8px on inline axis at viewport 319/2px",
+          "range": {
+            "min": 159,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "159",
+            "maxExact": "160"
+          },
+          "witness": {
+            "viewport": 159.5,
+            "viewportExact": "319/2",
+            "available": 39.875,
+            "required": 40
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/2",
+          "source": {
+            "start": 84,
+            "end": 88
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 319/8px on inline axis at viewport 319/2px",
+          "range": {
+            "min": 159,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "159",
+            "maxExact": "160"
+          },
+          "witness": {
+            "viewport": 159.5,
+            "viewportExact": "319/2",
+            "available": 39.875,
+            "required": 40
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/3",
+          "source": {
+            "start": 108,
+            "end": 112
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 319/8px on inline axis at viewport 319/2px",
+          "range": {
+            "min": 159,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "159",
+            "maxExact": "160"
+          },
+          "witness": {
+            "viewport": 159.5,
+            "viewportExact": "319/2",
+            "available": 39.875,
+            "required": 40
+          }
+        }
+      ]
+    },
+    {
+      "id": "gap-edges",
+      "status": "violated",
+      "scope": {
+        "axis": "inline",
+        "viewport": {
+          "min": 100,
+          "max": 300,
+          "minInclusive": true,
+          "maxInclusive": true,
+          "minExact": "100",
+          "maxExact": "300"
+        },
+        "hostInset": 0,
+        "closedCSS": true,
+        "browserRounding": false,
+        "blockSizing": false
+      },
+      "diagnostics": [
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/0",
+          "source": {
+            "start": 36,
+            "end": 40
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 26px on inline axis at viewport 156px",
+          "range": {
+            "min": 100,
+            "max": 212,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "212"
+          },
+          "witness": {
+            "viewport": 156,
+            "viewportExact": "156",
+            "available": 26,
+            "required": 40
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/1",
+          "source": {
+            "start": 60,
+            "end": 64
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 26px on inline axis at viewport 156px",
+          "range": {
+            "min": 100,
+            "max": 212,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "212"
+          },
+          "witness": {
+            "viewport": 156,
+            "viewportExact": "156",
+            "available": 26,
+            "required": 40
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/2",
+          "source": {
+            "start": 84,
+            "end": 88
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 26px on inline axis at viewport 156px",
+          "range": {
+            "min": 100,
+            "max": 212,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "212"
+          },
+          "witness": {
+            "viewport": 156,
+            "viewportExact": "156",
+            "available": 26,
+            "required": 40
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/3",
+          "source": {
+            "start": 108,
+            "end": 112
+          },
+          "axis": "inline",
+          "message": ".cell requires 40px but receives 26px on inline axis at viewport 156px",
+          "range": {
+            "min": 100,
+            "max": 212,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "212"
+          },
+          "witness": {
+            "viewport": 156,
+            "viewportExact": "156",
+            "available": 26,
+            "required": 40
+          }
+        }
+      ]
+    },
+    {
+      "id": "content-box",
+      "status": "violated",
+      "scope": {
+        "axis": "inline",
+        "viewport": {
+          "min": 100,
+          "max": 300,
+          "minInclusive": true,
+          "maxInclusive": true,
+          "minExact": "100",
+          "maxExact": "300"
+        },
+        "hostInset": 0,
+        "closedCSS": true,
+        "browserRounding": false,
+        "blockSizing": false
+      },
+      "diagnostics": [
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/0",
+          "source": {
+            "start": 36,
+            "end": 40
+          },
+          "axis": "inline",
+          "message": ".cell requires 46px but receives 71/2px on inline axis at viewport 142px",
+          "range": {
+            "min": 100,
+            "max": 184,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "184"
+          },
+          "witness": {
+            "viewport": 142,
+            "viewportExact": "142",
+            "available": 35.5,
+            "required": 46
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/1",
+          "source": {
+            "start": 60,
+            "end": 64
+          },
+          "axis": "inline",
+          "message": ".cell requires 46px but receives 71/2px on inline axis at viewport 142px",
+          "range": {
+            "min": 100,
+            "max": 184,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "184"
+          },
+          "witness": {
+            "viewport": 142,
+            "viewportExact": "142",
+            "available": 35.5,
+            "required": 46
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/2",
+          "source": {
+            "start": 84,
+            "end": 88
+          },
+          "axis": "inline",
+          "message": ".cell requires 46px but receives 71/2px on inline axis at viewport 142px",
+          "range": {
+            "min": 100,
+            "max": 184,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "184"
+          },
+          "witness": {
+            "viewport": 142,
+            "viewportExact": "142",
+            "available": 35.5,
+            "required": 46
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/3",
+          "source": {
+            "start": 108,
+            "end": 112
+          },
+          "axis": "inline",
+          "message": ".cell requires 46px but receives 71/2px on inline axis at viewport 142px",
+          "range": {
+            "min": 100,
+            "max": 184,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "100",
+            "maxExact": "184"
+          },
+          "witness": {
+            "viewport": 142,
+            "viewportExact": "142",
+            "available": 35.5,
+            "required": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "combined-conditions",
+      "status": "violated",
+      "scope": {
+        "axis": "both",
+        "viewport": {
+          "min": 100,
+          "max": 300,
+          "minInclusive": true,
+          "maxInclusive": true,
+          "minExact": "100",
+          "maxExact": "300",
+          "height": {
+            "min": 300,
+            "max": 500,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "300",
+            "maxExact": "500"
+          }
+        },
+        "hostInset": 0,
+        "hostBlockInset": 0,
+        "closedCSS": true,
+        "browserRounding": false,
+        "blockSizing": true
+      },
+      "diagnostics": [
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/0",
+          "source": {
+            "start": 36,
+            "end": 40
+          },
+          "axis": "inline",
+          "message": ".cell requires 80px but receives 155/2px on inline axis at viewport 155px × 450px",
+          "range": {
+            "min": 150,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "150",
+            "maxExact": "160"
+          },
+          "heightRange": {
+            "min": 400,
+            "max": 500,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "400",
+            "maxExact": "500"
+          },
+          "region": {
+            "vertices": [
+              {
+                "width": "160",
+                "height": "500"
+              },
+              {
+                "width": "150",
+                "height": "500"
+              },
+              {
+                "width": "150",
+                "height": "400"
+              },
+              {
+                "width": "160",
+                "height": "400"
+              }
+            ],
+            "constraints": [
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "100",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "8",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "8",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "84",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "42",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              }
+            ]
+          },
+          "witness": {
+            "viewport": 155,
+            "viewportExact": "155",
+            "viewportHeight": 450,
+            "viewportHeightExact": "450",
+            "available": 77.5,
+            "required": 80
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/1",
+          "source": {
+            "start": 60,
+            "end": 64
+          },
+          "axis": "inline",
+          "message": ".cell requires 80px but receives 155/2px on inline axis at viewport 155px × 450px",
+          "range": {
+            "min": 150,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "150",
+            "maxExact": "160"
+          },
+          "heightRange": {
+            "min": 400,
+            "max": 500,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "400",
+            "maxExact": "500"
+          },
+          "region": {
+            "vertices": [
+              {
+                "width": "160",
+                "height": "500"
+              },
+              {
+                "width": "150",
+                "height": "500"
+              },
+              {
+                "width": "150",
+                "height": "400"
+              },
+              {
+                "width": "160",
+                "height": "400"
+              }
+            ],
+            "constraints": [
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "100",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "8",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "8",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "84",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "42",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "42",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              }
+            ]
+          },
+          "witness": {
+            "viewport": 155,
+            "viewportExact": "155",
+            "viewportHeight": 450,
+            "viewportHeightExact": "450",
+            "available": 77.5,
+            "required": 80
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/2",
+          "source": {
+            "start": 84,
+            "end": 88
+          },
+          "axis": "inline",
+          "message": ".cell requires 80px but receives 155/2px on inline axis at viewport 155px × 450px",
+          "range": {
+            "min": 150,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "150",
+            "maxExact": "160"
+          },
+          "heightRange": {
+            "min": 400,
+            "max": 500,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "400",
+            "maxExact": "500"
+          },
+          "region": {
+            "vertices": [
+              {
+                "width": "160",
+                "height": "500"
+              },
+              {
+                "width": "150",
+                "height": "500"
+              },
+              {
+                "width": "150",
+                "height": "400"
+              },
+              {
+                "width": "160",
+                "height": "400"
+              }
+            ],
+            "constraints": [
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "100",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "8",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "8",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "84",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "42",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "42",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "42",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              }
+            ]
+          },
+          "witness": {
+            "viewport": 155,
+            "viewportExact": "155",
+            "viewportHeight": 450,
+            "viewportHeightExact": "450",
+            "available": 77.5,
+            "required": 80
+          }
+        },
+        {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".cell",
+          "path": "Four/3",
+          "source": {
+            "start": 108,
+            "end": 112
+          },
+          "axis": "inline",
+          "message": ".cell requires 80px but receives 155/2px on inline axis at viewport 155px × 450px",
+          "range": {
+            "min": 150,
+            "max": 160,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "150",
+            "maxExact": "160"
+          },
+          "heightRange": {
+            "min": 400,
+            "max": 500,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "400",
+            "maxExact": "500"
+          },
+          "region": {
+            "vertices": [
+              {
+                "width": "160",
+                "height": "500"
+              },
+              {
+                "width": "150",
+                "height": "500"
+              },
+              {
+                "width": "150",
+                "height": "400"
+              },
+              {
+                "width": "160",
+                "height": "400"
+              }
+            ],
+            "constraints": [
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "100",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "8",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "8",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "84",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "42",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "42",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "42",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "-400",
+                "heightCoefficient": "1",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "-150",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              },
+              {
+                "coefficient": "0",
+                "constant": "80",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "42",
+                "strict": false
+              },
+              {
+                "coefficient": "-1/2",
+                "constant": "80",
+                "strict": true
+              }
+            ]
+          },
+          "witness": {
+            "viewport": 155,
+            "viewportExact": "155",
+            "viewportHeight": 450,
+            "viewportHeightExact": "450",
+            "available": 77.5,
+            "required": 80
+          }
+        }
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "id": "four",
+      "width": 100,
+      "height": 500,
+      "parentWidth": 100,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        25,
+        25,
+        25,
+        25
+      ],
+      "overflow": true
+    },
+    {
+      "id": "four",
+      "width": 149,
+      "height": 500,
+      "parentWidth": 149,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        37.25,
+        37.25,
+        37.25,
+        37.25
+      ],
+      "overflow": true
+    },
+    {
+      "id": "four",
+      "width": 150,
+      "height": 500,
+      "parentWidth": 150,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        37.5,
+        37.5,
+        37.5,
+        37.5
+      ],
+      "overflow": true
+    },
+    {
+      "id": "four",
+      "width": 159,
+      "height": 500,
+      "parentWidth": 159,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        39.75,
+        39.75,
+        39.75,
+        39.75
+      ],
+      "overflow": true
+    },
+    {
+      "id": "four",
+      "width": 160,
+      "height": 500,
+      "parentWidth": 160,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "overflow": false
+    },
+    {
+      "id": "four",
+      "width": 161,
+      "height": 500,
+      "parentWidth": 161,
+      "cellWidths": [
+        40.25,
+        40.25,
+        40.25,
+        40.25
+      ],
+      "trackWidths": [
+        40.25,
+        40.25,
+        40.25,
+        40.25
+      ],
+      "overflow": false
+    },
+    {
+      "id": "four",
+      "width": 183,
+      "height": 500,
+      "parentWidth": 183,
+      "cellWidths": [
+        45.75,
+        45.75,
+        45.75,
+        45.75
+      ],
+      "trackWidths": [
+        45.75,
+        45.75,
+        45.75,
+        45.75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "four",
+      "width": 184,
+      "height": 500,
+      "parentWidth": 184,
+      "cellWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "trackWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "overflow": false
+    },
+    {
+      "id": "four",
+      "width": 211,
+      "height": 500,
+      "parentWidth": 211,
+      "cellWidths": [
+        52.75,
+        52.75,
+        52.75,
+        52.75
+      ],
+      "trackWidths": [
+        52.75,
+        52.75,
+        52.75,
+        52.75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "four",
+      "width": 212,
+      "height": 500,
+      "parentWidth": 212,
+      "cellWidths": [
+        53,
+        53,
+        53,
+        53
+      ],
+      "trackWidths": [
+        53,
+        53,
+        53,
+        53
+      ],
+      "overflow": false
+    },
+    {
+      "id": "four",
+      "width": 213,
+      "height": 500,
+      "parentWidth": 213,
+      "cellWidths": [
+        53.25,
+        53.25,
+        53.25,
+        53.25
+      ],
+      "trackWidths": [
+        53.25,
+        53.25,
+        53.25,
+        53.25
+      ],
+      "overflow": false
+    },
+    {
+      "id": "four",
+      "width": 300,
+      "height": 500,
+      "parentWidth": 300,
+      "cellWidths": [
+        75,
+        75,
+        75,
+        75
+      ],
+      "trackWidths": [
+        75,
+        75,
+        75,
+        75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 100,
+      "height": 500,
+      "parentWidth": 100,
+      "cellWidths": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "trackWidths": [
+        50,
+        50
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 149,
+      "height": 500,
+      "parentWidth": 149,
+      "cellWidths": [
+        74.5,
+        74.5,
+        74.5,
+        74.5
+      ],
+      "trackWidths": [
+        74.5,
+        74.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 150,
+      "height": 500,
+      "parentWidth": 150,
+      "cellWidths": [
+        75,
+        75,
+        75,
+        75
+      ],
+      "trackWidths": [
+        75,
+        75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 159,
+      "height": 500,
+      "parentWidth": 159,
+      "cellWidths": [
+        79.5,
+        79.5,
+        79.5,
+        79.5
+      ],
+      "trackWidths": [
+        79.5,
+        79.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 160,
+      "height": 500,
+      "parentWidth": 160,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 161,
+      "height": 500,
+      "parentWidth": 161,
+      "cellWidths": [
+        40.25,
+        40.25,
+        40.25,
+        40.25
+      ],
+      "trackWidths": [
+        40.25,
+        40.25,
+        40.25,
+        40.25
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 183,
+      "height": 500,
+      "parentWidth": 183,
+      "cellWidths": [
+        45.75,
+        45.75,
+        45.75,
+        45.75
+      ],
+      "trackWidths": [
+        45.75,
+        45.75,
+        45.75,
+        45.75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 184,
+      "height": 500,
+      "parentWidth": 184,
+      "cellWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "trackWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 211,
+      "height": 500,
+      "parentWidth": 211,
+      "cellWidths": [
+        52.75,
+        52.75,
+        52.75,
+        52.75
+      ],
+      "trackWidths": [
+        52.75,
+        52.75,
+        52.75,
+        52.75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 212,
+      "height": 500,
+      "parentWidth": 212,
+      "cellWidths": [
+        53,
+        53,
+        53,
+        53
+      ],
+      "trackWidths": [
+        53,
+        53,
+        53,
+        53
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 213,
+      "height": 500,
+      "parentWidth": 213,
+      "cellWidths": [
+        53.25,
+        53.25,
+        53.25,
+        53.25
+      ],
+      "trackWidths": [
+        53.25,
+        53.25,
+        53.25,
+        53.25
+      ],
+      "overflow": false
+    },
+    {
+      "id": "correct-breakpoint",
+      "width": 300,
+      "height": 500,
+      "parentWidth": 300,
+      "cellWidths": [
+        75,
+        75,
+        75,
+        75
+      ],
+      "trackWidths": [
+        75,
+        75,
+        75,
+        75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 100,
+      "height": 500,
+      "parentWidth": 100,
+      "cellWidths": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "trackWidths": [
+        50,
+        50
+      ],
+      "overflow": false
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 149,
+      "height": 500,
+      "parentWidth": 149,
+      "cellWidths": [
+        74.5,
+        74.5,
+        74.5,
+        74.5
+      ],
+      "trackWidths": [
+        74.5,
+        74.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 150,
+      "height": 500,
+      "parentWidth": 150,
+      "cellWidths": [
+        75,
+        75,
+        75,
+        75
+      ],
+      "trackWidths": [
+        75,
+        75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 159,
+      "height": 500,
+      "parentWidth": 159,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        39.75,
+        39.75,
+        39.75,
+        39.75
+      ],
+      "overflow": true
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 160,
+      "height": 500,
+      "parentWidth": 160,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "overflow": false
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 161,
+      "height": 500,
+      "parentWidth": 161,
+      "cellWidths": [
+        40.25,
+        40.25,
+        40.25,
+        40.25
+      ],
+      "trackWidths": [
+        40.25,
+        40.25,
+        40.25,
+        40.25
+      ],
+      "overflow": false
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 183,
+      "height": 500,
+      "parentWidth": 183,
+      "cellWidths": [
+        45.75,
+        45.75,
+        45.75,
+        45.75
+      ],
+      "trackWidths": [
+        45.75,
+        45.75,
+        45.75,
+        45.75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 184,
+      "height": 500,
+      "parentWidth": 184,
+      "cellWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "trackWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "overflow": false
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 211,
+      "height": 500,
+      "parentWidth": 211,
+      "cellWidths": [
+        52.75,
+        52.75,
+        52.75,
+        52.75
+      ],
+      "trackWidths": [
+        52.75,
+        52.75,
+        52.75,
+        52.75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 212,
+      "height": 500,
+      "parentWidth": 212,
+      "cellWidths": [
+        53,
+        53,
+        53,
+        53
+      ],
+      "trackWidths": [
+        53,
+        53,
+        53,
+        53
+      ],
+      "overflow": false
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 213,
+      "height": 500,
+      "parentWidth": 213,
+      "cellWidths": [
+        53.25,
+        53.25,
+        53.25,
+        53.25
+      ],
+      "trackWidths": [
+        53.25,
+        53.25,
+        53.25,
+        53.25
+      ],
+      "overflow": false
+    },
+    {
+      "id": "incorrect-breakpoint",
+      "width": 300,
+      "height": 500,
+      "parentWidth": 300,
+      "cellWidths": [
+        75,
+        75,
+        75,
+        75
+      ],
+      "trackWidths": [
+        75,
+        75,
+        75,
+        75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "gap-edges",
+      "width": 100,
+      "height": 500,
+      "parentWidth": 100,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "overflow": true
+    },
+    {
+      "id": "gap-edges",
+      "width": 149,
+      "height": 500,
+      "parentWidth": 149,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        24.25,
+        24.25,
+        24.25,
+        24.25
+      ],
+      "overflow": true
+    },
+    {
+      "id": "gap-edges",
+      "width": 150,
+      "height": 500,
+      "parentWidth": 150,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        24.5,
+        24.5,
+        24.5,
+        24.5
+      ],
+      "overflow": true
+    },
+    {
+      "id": "gap-edges",
+      "width": 159,
+      "height": 500,
+      "parentWidth": 159,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        26.75,
+        26.75,
+        26.75,
+        26.75
+      ],
+      "overflow": true
+    },
+    {
+      "id": "gap-edges",
+      "width": 160,
+      "height": 500,
+      "parentWidth": 160,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        27,
+        27,
+        27,
+        27
+      ],
+      "overflow": true
+    },
+    {
+      "id": "gap-edges",
+      "width": 161,
+      "height": 500,
+      "parentWidth": 161,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        27.25,
+        27.25,
+        27.25,
+        27.25
+      ],
+      "overflow": true
+    },
+    {
+      "id": "gap-edges",
+      "width": 183,
+      "height": 500,
+      "parentWidth": 183,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        32.75,
+        32.75,
+        32.75,
+        32.75
+      ],
+      "overflow": true
+    },
+    {
+      "id": "gap-edges",
+      "width": 184,
+      "height": 500,
+      "parentWidth": 184,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        33,
+        33,
+        33,
+        33
+      ],
+      "overflow": true
+    },
+    {
+      "id": "gap-edges",
+      "width": 211,
+      "height": 500,
+      "parentWidth": 211,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        39.75,
+        39.75,
+        39.75,
+        39.75
+      ],
+      "overflow": true
+    },
+    {
+      "id": "gap-edges",
+      "width": 212,
+      "height": 500,
+      "parentWidth": 212,
+      "cellWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "trackWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "overflow": false
+    },
+    {
+      "id": "gap-edges",
+      "width": 213,
+      "height": 500,
+      "parentWidth": 213,
+      "cellWidths": [
+        40.25,
+        40.25,
+        40.25,
+        40.25
+      ],
+      "trackWidths": [
+        40.25,
+        40.25,
+        40.25,
+        40.25
+      ],
+      "overflow": false
+    },
+    {
+      "id": "gap-edges",
+      "width": 300,
+      "height": 500,
+      "parentWidth": 300,
+      "cellWidths": [
+        62,
+        62,
+        62,
+        62
+      ],
+      "trackWidths": [
+        62,
+        62,
+        62,
+        62
+      ],
+      "overflow": false
+    },
+    {
+      "id": "content-box",
+      "width": 100,
+      "height": 500,
+      "parentWidth": 100,
+      "cellWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "trackWidths": [
+        25,
+        25,
+        25,
+        25
+      ],
+      "overflow": true
+    },
+    {
+      "id": "content-box",
+      "width": 149,
+      "height": 500,
+      "parentWidth": 149,
+      "cellWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "trackWidths": [
+        37.25,
+        37.25,
+        37.25,
+        37.25
+      ],
+      "overflow": true
+    },
+    {
+      "id": "content-box",
+      "width": 150,
+      "height": 500,
+      "parentWidth": 150,
+      "cellWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "trackWidths": [
+        37.5,
+        37.5,
+        37.5,
+        37.5
+      ],
+      "overflow": true
+    },
+    {
+      "id": "content-box",
+      "width": 159,
+      "height": 500,
+      "parentWidth": 159,
+      "cellWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "trackWidths": [
+        39.75,
+        39.75,
+        39.75,
+        39.75
+      ],
+      "overflow": true
+    },
+    {
+      "id": "content-box",
+      "width": 160,
+      "height": 500,
+      "parentWidth": 160,
+      "cellWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "trackWidths": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "overflow": true
+    },
+    {
+      "id": "content-box",
+      "width": 161,
+      "height": 500,
+      "parentWidth": 161,
+      "cellWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "trackWidths": [
+        40.25,
+        40.25,
+        40.25,
+        40.25
+      ],
+      "overflow": true
+    },
+    {
+      "id": "content-box",
+      "width": 183,
+      "height": 500,
+      "parentWidth": 183,
+      "cellWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "trackWidths": [
+        45.75,
+        45.75,
+        45.75,
+        45.75
+      ],
+      "overflow": true
+    },
+    {
+      "id": "content-box",
+      "width": 184,
+      "height": 500,
+      "parentWidth": 184,
+      "cellWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "trackWidths": [
+        46,
+        46,
+        46,
+        46
+      ],
+      "overflow": false
+    },
+    {
+      "id": "content-box",
+      "width": 211,
+      "height": 500,
+      "parentWidth": 211,
+      "cellWidths": [
+        52.75,
+        52.75,
+        52.75,
+        52.75
+      ],
+      "trackWidths": [
+        52.75,
+        52.75,
+        52.75,
+        52.75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "content-box",
+      "width": 212,
+      "height": 500,
+      "parentWidth": 212,
+      "cellWidths": [
+        53,
+        53,
+        53,
+        53
+      ],
+      "trackWidths": [
+        53,
+        53,
+        53,
+        53
+      ],
+      "overflow": false
+    },
+    {
+      "id": "content-box",
+      "width": 213,
+      "height": 500,
+      "parentWidth": 213,
+      "cellWidths": [
+        53.25,
+        53.25,
+        53.25,
+        53.25
+      ],
+      "trackWidths": [
+        53.25,
+        53.25,
+        53.25,
+        53.25
+      ],
+      "overflow": false
+    },
+    {
+      "id": "content-box",
+      "width": 300,
+      "height": 500,
+      "parentWidth": 300,
+      "cellWidths": [
+        75,
+        75,
+        75,
+        75
+      ],
+      "trackWidths": [
+        75,
+        75,
+        75,
+        75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 100,
+      "height": 350,
+      "parentWidth": 100,
+      "cellWidths": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "trackWidths": [
+        50,
+        50
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 100,
+      "height": 400,
+      "parentWidth": 100,
+      "cellWidths": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "trackWidths": [
+        50,
+        50
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 100,
+      "height": 500,
+      "parentWidth": 100,
+      "cellWidths": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "trackWidths": [
+        50,
+        50
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 149,
+      "height": 350,
+      "parentWidth": 149,
+      "cellWidths": [
+        74.5,
+        74.5,
+        74.5,
+        74.5
+      ],
+      "trackWidths": [
+        74.5,
+        74.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 149,
+      "height": 400,
+      "parentWidth": 149,
+      "cellWidths": [
+        74.5,
+        74.5,
+        74.5,
+        74.5
+      ],
+      "trackWidths": [
+        74.5,
+        74.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 149,
+      "height": 500,
+      "parentWidth": 149,
+      "cellWidths": [
+        74.5,
+        74.5,
+        74.5,
+        74.5
+      ],
+      "trackWidths": [
+        74.5,
+        74.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 150,
+      "height": 350,
+      "parentWidth": 150,
+      "cellWidths": [
+        75,
+        75,
+        75,
+        75
+      ],
+      "trackWidths": [
+        75,
+        75
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 150,
+      "height": 400,
+      "parentWidth": 150,
+      "cellWidths": [
+        80,
+        80,
+        80,
+        80
+      ],
+      "trackWidths": [
+        75,
+        75
+      ],
+      "overflow": true
+    },
+    {
+      "id": "combined-conditions",
+      "width": 150,
+      "height": 500,
+      "parentWidth": 150,
+      "cellWidths": [
+        80,
+        80,
+        80,
+        80
+      ],
+      "trackWidths": [
+        75,
+        75
+      ],
+      "overflow": true
+    },
+    {
+      "id": "combined-conditions",
+      "width": 159,
+      "height": 350,
+      "parentWidth": 159,
+      "cellWidths": [
+        79.5,
+        79.5,
+        79.5,
+        79.5
+      ],
+      "trackWidths": [
+        79.5,
+        79.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 159,
+      "height": 400,
+      "parentWidth": 159,
+      "cellWidths": [
+        80,
+        80,
+        80,
+        80
+      ],
+      "trackWidths": [
+        79.5,
+        79.5
+      ],
+      "overflow": true
+    },
+    {
+      "id": "combined-conditions",
+      "width": 159,
+      "height": 500,
+      "parentWidth": 159,
+      "cellWidths": [
+        80,
+        80,
+        80,
+        80
+      ],
+      "trackWidths": [
+        79.5,
+        79.5
+      ],
+      "overflow": true
+    },
+    {
+      "id": "combined-conditions",
+      "width": 160,
+      "height": 350,
+      "parentWidth": 160,
+      "cellWidths": [
+        80,
+        80,
+        80,
+        80
+      ],
+      "trackWidths": [
+        80,
+        80
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 160,
+      "height": 400,
+      "parentWidth": 160,
+      "cellWidths": [
+        80,
+        80,
+        80,
+        80
+      ],
+      "trackWidths": [
+        80,
+        80
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 160,
+      "height": 500,
+      "parentWidth": 160,
+      "cellWidths": [
+        80,
+        80,
+        80,
+        80
+      ],
+      "trackWidths": [
+        80,
+        80
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 161,
+      "height": 350,
+      "parentWidth": 161,
+      "cellWidths": [
+        80.5,
+        80.5,
+        80.5,
+        80.5
+      ],
+      "trackWidths": [
+        80.5,
+        80.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 161,
+      "height": 400,
+      "parentWidth": 161,
+      "cellWidths": [
+        80.5,
+        80.5,
+        80.5,
+        80.5
+      ],
+      "trackWidths": [
+        80.5,
+        80.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 161,
+      "height": 500,
+      "parentWidth": 161,
+      "cellWidths": [
+        80.5,
+        80.5,
+        80.5,
+        80.5
+      ],
+      "trackWidths": [
+        80.5,
+        80.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 183,
+      "height": 350,
+      "parentWidth": 183,
+      "cellWidths": [
+        91.5,
+        91.5,
+        91.5,
+        91.5
+      ],
+      "trackWidths": [
+        91.5,
+        91.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 183,
+      "height": 400,
+      "parentWidth": 183,
+      "cellWidths": [
+        91.5,
+        91.5,
+        91.5,
+        91.5
+      ],
+      "trackWidths": [
+        91.5,
+        91.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 183,
+      "height": 500,
+      "parentWidth": 183,
+      "cellWidths": [
+        91.5,
+        91.5,
+        91.5,
+        91.5
+      ],
+      "trackWidths": [
+        91.5,
+        91.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 184,
+      "height": 350,
+      "parentWidth": 184,
+      "cellWidths": [
+        92,
+        92,
+        92,
+        92
+      ],
+      "trackWidths": [
+        92,
+        92
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 184,
+      "height": 400,
+      "parentWidth": 184,
+      "cellWidths": [
+        92,
+        92,
+        92,
+        92
+      ],
+      "trackWidths": [
+        92,
+        92
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 184,
+      "height": 500,
+      "parentWidth": 184,
+      "cellWidths": [
+        92,
+        92,
+        92,
+        92
+      ],
+      "trackWidths": [
+        92,
+        92
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 211,
+      "height": 350,
+      "parentWidth": 211,
+      "cellWidths": [
+        105.5,
+        105.5,
+        105.5,
+        105.5
+      ],
+      "trackWidths": [
+        105.5,
+        105.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 211,
+      "height": 400,
+      "parentWidth": 211,
+      "cellWidths": [
+        105.5,
+        105.5,
+        105.5,
+        105.5
+      ],
+      "trackWidths": [
+        105.5,
+        105.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 211,
+      "height": 500,
+      "parentWidth": 211,
+      "cellWidths": [
+        105.5,
+        105.5,
+        105.5,
+        105.5
+      ],
+      "trackWidths": [
+        105.5,
+        105.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 212,
+      "height": 350,
+      "parentWidth": 212,
+      "cellWidths": [
+        106,
+        106,
+        106,
+        106
+      ],
+      "trackWidths": [
+        106,
+        106
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 212,
+      "height": 400,
+      "parentWidth": 212,
+      "cellWidths": [
+        106,
+        106,
+        106,
+        106
+      ],
+      "trackWidths": [
+        106,
+        106
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 212,
+      "height": 500,
+      "parentWidth": 212,
+      "cellWidths": [
+        106,
+        106,
+        106,
+        106
+      ],
+      "trackWidths": [
+        106,
+        106
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 213,
+      "height": 350,
+      "parentWidth": 213,
+      "cellWidths": [
+        106.5,
+        106.5,
+        106.5,
+        106.5
+      ],
+      "trackWidths": [
+        106.5,
+        106.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 213,
+      "height": 400,
+      "parentWidth": 213,
+      "cellWidths": [
+        106.5,
+        106.5,
+        106.5,
+        106.5
+      ],
+      "trackWidths": [
+        106.5,
+        106.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 213,
+      "height": 500,
+      "parentWidth": 213,
+      "cellWidths": [
+        106.5,
+        106.5,
+        106.5,
+        106.5
+      ],
+      "trackWidths": [
+        106.5,
+        106.5
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 300,
+      "height": 350,
+      "parentWidth": 300,
+      "cellWidths": [
+        150,
+        150,
+        150,
+        150
+      ],
+      "trackWidths": [
+        150,
+        150
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 300,
+      "height": 400,
+      "parentWidth": 300,
+      "cellWidths": [
+        150,
+        150,
+        150,
+        150
+      ],
+      "trackWidths": [
+        150,
+        150
+      ],
+      "overflow": false
+    },
+    {
+      "id": "combined-conditions",
+      "width": 300,
+      "height": 500,
+      "parentWidth": 300,
+      "cellWidths": [
+        150,
+        150,
+        150,
+        150
+      ],
+      "trackWidths": [
+        150,
+        150
+      ],
+      "overflow": false
+    }
+  ]
+}

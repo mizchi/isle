@@ -100,7 +100,7 @@ test('subgridded axes cannot silently grow implicit tracks or overlap', () => {
 });
 
 test('orphan subgrids, line names, non-auto sizes and negative effective tracks stay unknown', () => {
-  for (const extra of ['.board { grid-template-columns: subgrid; }', '.group { grid-template-columns: subgrid [a] [b]; }', '.group { width: 100px; }', '.group { column-gap: 1000px; }', '.group { container-type:inline-size; }', '.group { container-type:size; }']) {
+  for (const extra of ['.board { grid-template-columns: subgrid; }', '.group { grid-template-columns: subgrid [a] [b]; }', '.group { width: 100px; }', '.group { min-width:40px; }', '.group { column-gap: 1000px; }', '.group { container-type:inline-size; }', '.group { container-type:size; }']) {
     assert.equal(run(extra).status, 'unknown', extra);
   }
   const empty = run('.board { grid-template-columns: subgrid; }', {}, 'component Board() { <main class="board"></main> }');
