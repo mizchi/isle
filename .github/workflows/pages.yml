@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      runner:
+        description: Hosted runner for build and publication
+        type: choice
+        default: macos-latest
+        options:
+          - macos-latest
+          - ubuntu-latest
 
 permissions:
   contents: read
@@ -14,7 +22,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner || 'macos-latest' }}
     permissions:
       contents: read
       pages: read
@@ -45,9 +53,10 @@ jobs:
       - uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: dist/site
+          include-hidden-files: true
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner || 'macos-latest' }}
     permissions:
       pages: write
       id-token: write

@@ -19,6 +19,8 @@ The catalog contains 15 examples: 10 static-host live demos, a two-instance Web 
 
 The `pages.yml` workflow builds on a push to `main`, checks links and Playwright flows on the Pages subpath, uploads `dist/site/`, then deploys with the `github-pages` environment. The repository Pages publishing source is **GitHub Actions**. See the [official custom workflow guide](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
+The default runner is macOS, matching the locally verified toolchain. Manual workflow runs can select macOS or Ubuntu; this also permits retrying on another hosted pool when allocation is delayed.
+
 ## 日本語
 
 トップページは `app.isle` で記述し、header・footer・各 section を Isle の SSR で生成する。ブラウザーで再開するのは操作可能な Counter だけ。Markdown のガイドと example のソースはビルド時に展開し、ガイドに framework JS を配信しない。
