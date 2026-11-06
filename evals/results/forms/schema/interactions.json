@@ -1,0 +1,131 @@
+{
+  "gate": "check.interactions",
+  "command": "check interactions",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 1,
+    "info": 0
+  },
+  "findings": [
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Reset\" (main>section.card>form>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Reset\" (main>section.card>form>button)"
+      }
+    }
+  ],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "map": {
+      "source": "http://127.0.0.1:52354/",
+      "elements": [
+        {
+          "index": 0,
+          "key": "textbox|Email (required)",
+          "role": "textbox",
+          "name": "Email (required)",
+          "path": "section.card>form>label>input#isle-signup:__form0_email",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true
+        },
+        {
+          "index": 1,
+          "key": "textbox|Confirm email (required)",
+          "role": "textbox",
+          "name": "Confirm email (required)",
+          "path": "section.card>form>label>input#isle-signup:__form0_confirmation",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true
+        },
+        {
+          "index": 2,
+          "key": "spinbutton|Age (required)",
+          "role": "spinbutton",
+          "name": "Age (required)",
+          "path": "section.card>form>label>input#isle-signup:__form0_age",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true
+        },
+        {
+          "index": 3,
+          "key": "checkbox|I agree (required)",
+          "role": "checkbox",
+          "name": "I agree (required)",
+          "path": "section.card>form>label>input#isle-signup:__form0_accepted",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Space",
+            "ariaDelta": {
+              "checked": [
+                "false",
+                "true"
+              ]
+            },
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 4,
+          "key": "button|Create account",
+          "role": "button",
+          "name": "Create account",
+          "path": "main>section.card>form>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": 0
+          }
+        },
+        {
+          "index": 5,
+          "key": "button|Reset",
+          "role": "button",
+          "name": "Reset",
+          "path": "main>section.card>form>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        }
+      ],
+      "capped": 0
+    },
+    "issues": [
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Reset\" (main>section.card>form>button)",
+        "message": "button \"Reset\" (main>section.card>form>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      }
+    ]
+  }
+}

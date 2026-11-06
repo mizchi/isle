@@ -1,0 +1,1345 @@
+{
+  "version": 1,
+  "pass": true,
+  "cases": [
+    {
+      "id": "float",
+      "title": "float の禁止",
+      "note": "Grid item の float を browser が無視する場合も、言語の禁止規則として検査する。",
+      "pass": true,
+      "expected": {
+        "status": "violated",
+        "code": "E_LAYOUT_FLOAT"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "violated",
+        "diagnostics": [
+          {
+            "code": "E_LAYOUT_FLOAT",
+            "severity": "error",
+            "message": "float is forbidden in checked layout",
+            "box": ".text",
+            "path": "Card/0",
+            "source": {
+              "start": 38,
+              "end": 40
+            },
+            "range": {
+              "min": 320,
+              "max": 1000,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "320",
+              "maxExact": "1000"
+            },
+            "heightRange": {
+              "min": 200,
+              "max": 600,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "200",
+              "maxExact": "600"
+            },
+            "region": {
+              "vertices": [
+                {
+                  "width": "320",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "600"
+                },
+                {
+                  "width": "320",
+                  "height": "600"
+                }
+              ],
+              "constraints": [
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                }
+              ]
+            }
+          }
+        ],
+        "matched": {
+          "code": "E_LAYOUT_FLOAT",
+          "severity": "error",
+          "message": "float is forbidden in checked layout",
+          "box": ".text",
+          "path": "Card/0",
+          "source": {
+            "start": 38,
+            "end": 40
+          },
+          "range": {
+            "min": 320,
+            "max": 1000,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "320",
+            "maxExact": "1000"
+          },
+          "heightRange": {
+            "min": 200,
+            "max": 600,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "200",
+            "maxExact": "600"
+          },
+          "region": {
+            "vertices": [
+              {
+                "width": "320",
+                "height": "200"
+              },
+              {
+                "width": "1000",
+                "height": "200"
+              },
+              {
+                "width": "1000",
+                "height": "600"
+              },
+              {
+                "width": "320",
+                "height": "600"
+              }
+            ],
+            "constraints": [
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              }
+            ]
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "flex",
+      "title": "Grid container の要求",
+      "note": "この検査対象の container は Grid で構築する。",
+      "pass": true,
+      "expected": {
+        "status": "violated",
+        "code": "E_LAYOUT_CONTAINER"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "violated",
+        "diagnostics": [
+          {
+            "code": "E_LAYOUT_CONTAINER",
+            "severity": "error",
+            "message": "Layout containers must use grid",
+            "box": ".card",
+            "path": "Card",
+            "source": {
+              "start": 19,
+              "end": 24
+            },
+            "range": {
+              "min": 320,
+              "max": 1000,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "320",
+              "maxExact": "1000"
+            },
+            "heightRange": {
+              "min": 200,
+              "max": 600,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "200",
+              "maxExact": "600"
+            },
+            "region": {
+              "vertices": [
+                {
+                  "width": "320",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "600"
+                },
+                {
+                  "width": "320",
+                  "height": "600"
+                }
+              ],
+              "constraints": []
+            }
+          }
+        ],
+        "matched": {
+          "code": "E_LAYOUT_CONTAINER",
+          "severity": "error",
+          "message": "Layout containers must use grid",
+          "box": ".card",
+          "path": "Card",
+          "source": {
+            "start": 19,
+            "end": 24
+          },
+          "range": {
+            "min": 320,
+            "max": 1000,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "320",
+            "maxExact": "1000"
+          },
+          "heightRange": {
+            "min": 200,
+            "max": 600,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "200",
+            "maxExact": "600"
+          },
+          "region": {
+            "vertices": [
+              {
+                "width": "320",
+                "height": "200"
+              },
+              {
+                "width": "1000",
+                "height": "200"
+              },
+              {
+                "width": "1000",
+                "height": "600"
+              },
+              {
+                "width": "320",
+                "height": "600"
+              }
+            ],
+            "constraints": []
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "content-box",
+      "title": "reset の上書きによる幅超過",
+      "note": "content-box の幅100%に padding が32px追加され、割当を越える。",
+      "pass": true,
+      "expected": {
+        "status": "violated",
+        "code": "E_LAYOUT_ITEM_SIZE",
+        "axis": "inline",
+        "box": ".text"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "violated",
+        "diagnostics": [
+          {
+            "code": "E_LAYOUT_ITEM_SIZE",
+            "severity": "error",
+            "box": ".text",
+            "path": "Card/0",
+            "source": {
+              "start": 38,
+              "end": 40
+            },
+            "axis": "inline",
+            "message": ".text requires 692px but receives 660px on inline axis at viewport 660px × 400px",
+            "range": {
+              "min": 320,
+              "max": 1000,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "320",
+              "maxExact": "1000"
+            },
+            "heightRange": {
+              "min": 200,
+              "max": 600,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "200",
+              "maxExact": "600"
+            },
+            "region": {
+              "vertices": [
+                {
+                  "width": "320",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "600"
+                },
+                {
+                  "width": "320",
+                  "height": "600"
+                }
+              ],
+              "constraints": [
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "56",
+                  "strict": true
+                },
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "24",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "32",
+                  "strict": true
+                }
+              ]
+            },
+            "witness": {
+              "viewport": 660,
+              "viewportExact": "660",
+              "viewportHeight": 400,
+              "viewportHeightExact": "400",
+              "available": 660,
+              "required": 692
+            }
+          }
+        ],
+        "matched": {
+          "code": "E_LAYOUT_ITEM_SIZE",
+          "severity": "error",
+          "box": ".text",
+          "path": "Card/0",
+          "source": {
+            "start": 38,
+            "end": 40
+          },
+          "axis": "inline",
+          "message": ".text requires 692px but receives 660px on inline axis at viewport 660px × 400px",
+          "range": {
+            "min": 320,
+            "max": 1000,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "320",
+            "maxExact": "1000"
+          },
+          "heightRange": {
+            "min": 200,
+            "max": 600,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "200",
+            "maxExact": "600"
+          },
+          "region": {
+            "vertices": [
+              {
+                "width": "320",
+                "height": "200"
+              },
+              {
+                "width": "1000",
+                "height": "200"
+              },
+              {
+                "width": "1000",
+                "height": "600"
+              },
+              {
+                "width": "320",
+                "height": "600"
+              }
+            ],
+            "constraints": [
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "56",
+                "strict": true
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "24",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "32",
+                "strict": true
+              }
+            ]
+          },
+          "witness": {
+            "viewport": 660,
+            "viewportExact": "660",
+            "viewportHeight": 400,
+            "viewportHeightExact": "400",
+            "available": 660,
+            "required": 692
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "block-height",
+      "title": "必要高さを満たさない row",
+      "note": "宣言した必要高さ200pxに対し、row が100pxしか提供しない。",
+      "pass": true,
+      "expected": {
+        "status": "violated",
+        "code": "E_LAYOUT_CONTENT",
+        "axis": "block",
+        "box": ".text"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "violated",
+        "diagnostics": [
+          {
+            "code": "E_LAYOUT_CONTENT",
+            "severity": "error",
+            "box": ".text",
+            "path": "Card/0",
+            "source": {
+              "start": 38,
+              "end": 40
+            },
+            "axis": "block",
+            "message": ".text requires 200px but receives 100px on block axis at viewport 660px × 400px",
+            "range": {
+              "min": 320,
+              "max": 1000,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "320",
+              "maxExact": "1000"
+            },
+            "heightRange": {
+              "min": 200,
+              "max": 600,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "200",
+              "maxExact": "600"
+            },
+            "region": {
+              "vertices": [
+                {
+                  "width": "320",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "600"
+                },
+                {
+                  "width": "320",
+                  "height": "600"
+                }
+              ],
+              "constraints": [
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "100",
+                  "strict": false
+                },
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "100",
+                  "strict": false
+                },
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "100",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "100",
+                  "strict": true
+                }
+              ]
+            },
+            "witness": {
+              "viewport": 660,
+              "viewportExact": "660",
+              "viewportHeight": 400,
+              "viewportHeightExact": "400",
+              "available": 100,
+              "required": 200
+            }
+          },
+          {
+            "code": "E_LAYOUT_CONTENT",
+            "severity": "error",
+            "box": ".text",
+            "path": "Card/0",
+            "source": {
+              "start": 38,
+              "end": 40
+            },
+            "axis": "block",
+            "message": ".text requires 200px but receives 100px on block axis at viewport 660px × 400px",
+            "range": {
+              "min": 320,
+              "max": 1000,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "320",
+              "maxExact": "1000"
+            },
+            "heightRange": {
+              "min": 200,
+              "max": 600,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "200",
+              "maxExact": "600"
+            },
+            "region": {
+              "vertices": [
+                {
+                  "width": "320",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "600"
+                },
+                {
+                  "width": "320",
+                  "height": "600"
+                }
+              ],
+              "constraints": [
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "100",
+                  "strict": false
+                },
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "100",
+                  "strict": false
+                },
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "100",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "100",
+                  "strict": true
+                }
+              ]
+            },
+            "witness": {
+              "viewport": 660,
+              "viewportExact": "660",
+              "viewportHeight": 400,
+              "viewportHeightExact": "400",
+              "available": 100,
+              "required": 200
+            }
+          }
+        ],
+        "matched": {
+          "code": "E_LAYOUT_CONTENT",
+          "severity": "error",
+          "box": ".text",
+          "path": "Card/0",
+          "source": {
+            "start": 38,
+            "end": 40
+          },
+          "axis": "block",
+          "message": ".text requires 200px but receives 100px on block axis at viewport 660px × 400px",
+          "range": {
+            "min": 320,
+            "max": 1000,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "320",
+            "maxExact": "1000"
+          },
+          "heightRange": {
+            "min": 200,
+            "max": 600,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "200",
+            "maxExact": "600"
+          },
+          "region": {
+            "vertices": [
+              {
+                "width": "320",
+                "height": "200"
+              },
+              {
+                "width": "1000",
+                "height": "200"
+              },
+              {
+                "width": "1000",
+                "height": "600"
+              },
+              {
+                "width": "320",
+                "height": "600"
+              }
+            ],
+            "constraints": [
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "100",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "100",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "100",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "100",
+                "strict": true
+              }
+            ]
+          },
+          "witness": {
+            "viewport": 660,
+            "viewportExact": "660",
+            "viewportHeight": 400,
+            "viewportHeightExact": "400",
+            "available": 100,
+            "required": 200
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "wrapping",
+      "title": "折り返し契約との矛盾",
+      "note": "wrap:anywhere の契約を保ち、CSS を一致させる。",
+      "pass": true,
+      "expected": {
+        "status": "violated",
+        "code": "E_LAYOUT_WRAP"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "violated",
+        "diagnostics": [
+          {
+            "code": "E_LAYOUT_WRAP",
+            "severity": "error",
+            "message": "Requested anywhere wrapping disagrees with CSS",
+            "box": ".text",
+            "path": "Card/0",
+            "source": {
+              "start": 38,
+              "end": 40
+            },
+            "range": {
+              "min": 320,
+              "max": 1000,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "320",
+              "maxExact": "1000"
+            },
+            "heightRange": {
+              "min": 200,
+              "max": 600,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "200",
+              "maxExact": "600"
+            },
+            "region": {
+              "vertices": [
+                {
+                  "width": "320",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "200"
+                },
+                {
+                  "width": "1000",
+                  "height": "600"
+                },
+                {
+                  "width": "320",
+                  "height": "600"
+                }
+              ],
+              "constraints": [
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "1",
+                  "constant": "0",
+                  "strict": false
+                },
+                {
+                  "coefficient": "0",
+                  "constant": "24",
+                  "strict": true
+                }
+              ]
+            }
+          }
+        ],
+        "matched": {
+          "code": "E_LAYOUT_WRAP",
+          "severity": "error",
+          "message": "Requested anywhere wrapping disagrees with CSS",
+          "box": ".text",
+          "path": "Card/0",
+          "source": {
+            "start": 38,
+            "end": 40
+          },
+          "range": {
+            "min": 320,
+            "max": 1000,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "320",
+            "maxExact": "1000"
+          },
+          "heightRange": {
+            "min": 200,
+            "max": 600,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "200",
+            "maxExact": "600"
+          },
+          "region": {
+            "vertices": [
+              {
+                "width": "320",
+                "height": "200"
+              },
+              {
+                "width": "1000",
+                "height": "200"
+              },
+              {
+                "width": "1000",
+                "height": "600"
+              },
+              {
+                "width": "320",
+                "height": "600"
+              }
+            ],
+            "constraints": [
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "1",
+                "constant": "0",
+                "strict": false
+              },
+              {
+                "coefficient": "0",
+                "constant": "24",
+                "strict": true
+              }
+            ]
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "container-breakpoint",
+      "title": "狭い区間だけ破綻する container query",
+      "note": "200px + gap16px + 本文400pxが必要。viewport には padding32px も含まれる。",
+      "pass": true,
+      "expected": {
+        "status": "violated",
+        "code": "E_LAYOUT_CONTENT",
+        "axis": "inline",
+        "box": ".b",
+        "range": {
+          "minExact": "632",
+          "maxExact": "648",
+          "minInclusive": true,
+          "maxInclusive": false
+        }
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "violated",
+        "diagnostics": [
+          {
+            "code": "E_LAYOUT_CONTENT",
+            "severity": "error",
+            "box": ".b",
+            "path": "Panel/0/1",
+            "source": {
+              "start": 83,
+              "end": 85
+            },
+            "axis": "inline",
+            "message": ".b requires 400px but receives 392px on inline axis at viewport 640px",
+            "range": {
+              "min": 632,
+              "max": 648,
+              "minInclusive": true,
+              "maxInclusive": false,
+              "minExact": "632",
+              "maxExact": "648"
+            },
+            "witness": {
+              "viewport": 640,
+              "viewportExact": "640",
+              "available": 392,
+              "required": 400
+            }
+          }
+        ],
+        "matched": {
+          "code": "E_LAYOUT_CONTENT",
+          "severity": "error",
+          "box": ".b",
+          "path": "Panel/0/1",
+          "source": {
+            "start": 83,
+            "end": 85
+          },
+          "axis": "inline",
+          "message": ".b requires 400px but receives 392px on inline axis at viewport 640px",
+          "range": {
+            "min": 632,
+            "max": 648,
+            "minInclusive": true,
+            "maxInclusive": false,
+            "minExact": "632",
+            "maxExact": "648"
+          },
+          "witness": {
+            "viewport": 640,
+            "viewportExact": "640",
+            "available": 392,
+            "required": 400
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "intrinsic-fr",
+      "title": "未対応の intrinsic minimum",
+      "note": "対応版は minmax(0,1fr)。一般の1frと常に同じ意味だとは仮定しない。",
+      "pass": true,
+      "expected": {
+        "status": "unknown",
+        "code": "U_LAYOUT_GEOMETRY"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "unknown",
+        "diagnostics": [
+          {
+            "code": "U_LAYOUT_GEOMETRY",
+            "severity": "unknown",
+            "message": "Unsupported CSS pixel length: 1fr",
+            "box": ".card",
+            "path": "Card",
+            "source": {
+              "start": 19,
+              "end": 24
+            }
+          }
+        ],
+        "matched": {
+          "code": "U_LAYOUT_GEOMETRY",
+          "severity": "unknown",
+          "message": "Unsupported CSS pixel length: 1fr",
+          "box": ".card",
+          "path": "Card",
+          "source": {
+            "start": 19,
+            "end": 24
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "css-variable",
+      "title": "値域不明の CSS variable",
+      "note": "対応版ではこの例で使う値を明示する。任意の CSS variable を解析した例ではない。",
+      "pass": true,
+      "expected": {
+        "status": "unknown",
+        "code": "U_LAYOUT_GEOMETRY"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "unknown",
+        "diagnostics": [
+          {
+            "code": "U_LAYOUT_GEOMETRY",
+            "severity": "unknown",
+            "message": "Unsupported CSS pixel length: var(--size)",
+            "box": ".text",
+            "path": "Card/0",
+            "source": {
+              "start": 38,
+              "end": 40
+            }
+          }
+        ],
+        "matched": {
+          "code": "U_LAYOUT_GEOMETRY",
+          "severity": "unknown",
+          "message": "Unsupported CSS pixel length: var(--size)",
+          "box": ".text",
+          "path": "Card/0",
+          "source": {
+            "start": 38,
+            "end": 40
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "inherit-boundary",
+      "title": "継承元の情報不足",
+      "note": "CSS を変えず、実在する html/body の祖先情報を補う。ShadowRoot へ存在しない祖先を入力しない。",
+      "pass": true,
+      "expected": {
+        "status": "unknown",
+        "code": "U_LAYOUT_GEOMETRY"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "unknown",
+        "diagnostics": [
+          {
+            "code": "U_LAYOUT_GEOMETRY",
+            "severity": "unknown",
+            "message": "Cannot resolve inherited box-sizing; provide the real ancestor chain",
+            "box": ".card",
+            "path": "Card",
+            "source": {
+              "start": 19,
+              "end": 24
+            }
+          }
+        ],
+        "matched": {
+          "code": "U_LAYOUT_GEOMETRY",
+          "severity": "unknown",
+          "message": "Cannot resolve inherited box-sizing; provide the real ancestor chain",
+          "box": ".card",
+          "path": "Card",
+          "source": {
+            "start": 19,
+            "end": 24
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "generated-content",
+      "title": "生成 pseudo box の未対応",
+      "note": "対応版は実 DOM の leaf として表す。配置や accessibility まで同値という主張ではない。",
+      "pass": true,
+      "expected": {
+        "status": "unknown",
+        "code": "U_LAYOUT_CSS"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "unknown",
+        "diagnostics": [
+          {
+            "code": "U_LAYOUT_CSS",
+            "severity": "unknown",
+            "message": "Unsupported layout property: content",
+            "css": {
+              "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/generated-content/reject/app.css",
+              "line": 2
+            }
+          }
+        ],
+        "matched": {
+          "code": "U_LAYOUT_CSS",
+          "severity": "unknown",
+          "message": "Unsupported layout property: content",
+          "css": {
+            "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/generated-content/reject/app.css",
+            "line": 2
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "nested-layer",
+      "title": "nested layer の未対応",
+      "note": "この小例を flat layer として書く。任意の layer 階層の平坦化ではない。",
+      "pass": true,
+      "expected": {
+        "status": "unknown",
+        "code": "U_LAYOUT_LAYER"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "unknown",
+        "diagnostics": [
+          {
+            "code": "U_LAYOUT_LAYER",
+            "severity": "unknown",
+            "message": "Nested or conditional layer declarations are outside the subset",
+            "css": {
+              "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/nested-layer/reject/app.css",
+              "line": 2
+            }
+          }
+        ],
+        "matched": {
+          "code": "U_LAYOUT_LAYER",
+          "severity": "unknown",
+          "message": "Nested or conditional layer declarations are outside the subset",
+          "css": {
+            "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/nested-layer/reject/app.css",
+            "line": 2
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "revert-layer",
+      "title": "layer rollback の未対応",
+      "note": "この例の意図する値を明示する。revert-layer 一般の意味保存変換ではない。",
+      "pass": true,
+      "expected": {
+        "status": "unknown",
+        "code": "U_LAYOUT_CSS"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "unknown",
+        "diagnostics": [
+          {
+            "code": "U_LAYOUT_CSS",
+            "severity": "unknown",
+            "message": "revert-layer is outside this subset",
+            "css": {
+              "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/revert-layer/reject/app.css",
+              "line": 2
+            }
+          }
+        ],
+        "matched": {
+          "code": "U_LAYOUT_CSS",
+          "severity": "unknown",
+          "message": "revert-layer is outside this subset",
+          "css": {
+            "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/revert-layer/reject/app.css",
+            "line": 2
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "missing-auto-height",
+      "title": "自動高さの契約不足",
+      "note": "対応版では呼出し側の責任で exact な intrinsicBlockSize を宣言する。",
+      "pass": true,
+      "expected": {
+        "status": "unknown",
+        "code": "U_LAYOUT_GEOMETRY"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "unknown",
+        "diagnostics": [
+          {
+            "code": "U_LAYOUT_GEOMETRY",
+            "severity": "unknown",
+            "message": "Automatic text height needs an intrinsicBlockSize contract",
+            "box": ".text",
+            "path": "Card/0",
+            "source": {
+              "start": 38,
+              "end": 40
+            }
+          }
+        ],
+        "matched": {
+          "code": "U_LAYOUT_GEOMETRY",
+          "severity": "unknown",
+          "message": "Automatic text height needs an intrinsicBlockSize contract",
+          "box": ".text",
+          "path": "Card/0",
+          "source": {
+            "start": 38,
+            "end": 40
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "percentage-height-cycle",
+      "title": "percentage と自動高さの循環",
+      "note": "対応版では親と row の definite な高さを与える。元の自動高さと同じ配置とは限らない。",
+      "pass": true,
+      "expected": {
+        "status": "unknown",
+        "code": "U_LAYOUT_GEOMETRY"
+      },
+      "reject": {
+        "exitCode": 1,
+        "status": "unknown",
+        "diagnostics": [
+          {
+            "code": "U_LAYOUT_GEOMETRY",
+            "severity": "unknown",
+            "message": "Percentage block size needs a definite containing size; intrinsic percentage cycles are not modeled",
+            "box": ".text",
+            "path": "Card/0",
+            "source": {
+              "start": 38,
+              "end": 40
+            }
+          }
+        ],
+        "matched": {
+          "code": "U_LAYOUT_GEOMETRY",
+          "severity": "unknown",
+          "message": "Percentage block size needs a definite containing size; intrinsic percentage cycles are not modeled",
+          "box": ".text",
+          "path": "Card/0",
+          "source": {
+            "start": 38,
+            "end": 40
+          }
+        }
+      },
+      "accept": {
+        "exitCode": 0,
+        "status": "verified",
+        "diagnostics": []
+      }
+    }
+  ]
+}

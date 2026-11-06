@@ -1,0 +1,97 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/isle/models/security"
+
+import {
+  "mizchi/veri/model_check",
+}
+
+// Values
+pub fn client(Policy) -> @model_check.Client[State, Event, Json] raise
+
+pub fn initial() -> State
+
+pub fn owner(Document) -> Actor
+
+pub fn step(Policy, State, Event) -> State?
+
+// Errors
+
+// Types and methods
+pub(all) enum Actor {
+  Alice
+  Bob
+} derive(Eq, ToJson)
+pub fn Actor::equal(Self, Self) -> Bool
+pub fn Actor::not_equal(Self, Self) -> Bool
+pub fn Actor::to_json(Self) -> Json
+
+pub(all) enum Document {
+  Alpha
+  Beta
+} derive(Eq, ToJson)
+pub fn Document::equal(Self, Self) -> Bool
+pub fn Document::not_equal(Self, Self) -> Bool
+pub fn Document::to_json(Self) -> Json
+
+pub(all) enum Event {
+  Receive(Actor, Actor, Document)
+  Decode
+  Authenticate
+  Authorize
+  Suspend
+  Revoke
+  CommitRequested
+  CommitOther
+  Respond
+}
+
+pub(all) struct Permit {
+  actor : Actor
+  target : Document
+} derive(Eq, ToJson)
+pub fn Permit::equal(Self, Self) -> Bool
+pub fn Permit::not_equal(Self, Self) -> Bool
+pub fn Permit::to_json(Self) -> Json
+
+pub(all) enum Phase {
+  Idle
+  Received
+  Decoded
+  Authenticated
+  Authorized
+  Suspended
+  Committed
+  Rejected
+  Responded
+} derive(Eq, ToJson)
+pub fn Phase::equal(Self, Self) -> Bool
+pub fn Phase::not_equal(Self, Self) -> Bool
+pub fn Phase::to_json(Self) -> Json
+
+pub(all) enum Policy {
+  Strict
+  TrustPayloadIdentity
+  TrustExpiredPermit
+  IgnoreResource
+} derive(Eq)
+pub fn Policy::equal(Self, Self) -> Bool
+pub fn Policy::not_equal(Self, Self) -> Bool
+
+pub(all) struct State {
+  phase : Phase
+  actual_actor : Actor
+  supplied_actor : Actor
+  authenticated_actor : Actor?
+  target : Document
+  permit : Permit?
+  revoked : Bool
+  effect_target : Document?
+  unauthorized_write : Bool
+} derive(Eq, ToJson)
+pub fn State::equal(Self, Self) -> Bool
+pub fn State::not_equal(Self, Self) -> Bool
+pub fn State::to_json(Self) -> Json
+
+// Type aliases
+
+// Traits

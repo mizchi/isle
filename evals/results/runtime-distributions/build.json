@@ -1,0 +1,120 @@
+{
+  "gzipLevel": 6,
+  "note": "Sizes of emitted JavaScript files, not a measurement of transferred or executed bytes. App assets are listed separately.",
+  "distributions": {
+    "shared": {
+      "runtime": {
+        "version": "0.0.1",
+        "mode": "shared"
+      },
+      "containsSharedRegistry": true,
+      "assets": {
+        "widget.js": {
+          "bytes": 402,
+          "gzipBytes": 263
+        },
+        "assets/ProjectForm-CloWGZLr.js": {
+          "bytes": 863,
+          "gzipBytes": 403
+        },
+        "assets/ProjectForm.__form0-B9UIlCn8.js": {
+          "bytes": 48,
+          "gzipBytes": 68
+        },
+        "assets/WorkItem-BN5U8NU9.js": {
+          "bytes": 462,
+          "gzipBytes": 225
+        },
+        "assets/WorkItem.g0-S986o2cp.js": {
+          "bytes": 68,
+          "gzipBytes": 78
+        },
+        "assets/_isle_loader-BkiOgJ8B.js": {
+          "bytes": 262,
+          "gzipBytes": 228
+        },
+        "assets/_isle_widget-engine-bridge-CugKqMaX.js": {
+          "bytes": 219,
+          "gzipBytes": 203
+        },
+        "assets/index-DKnIETPg.js": {
+          "bytes": 51,
+          "gzipBytes": 71
+        },
+        "assets/isle-resume-CTq5FqMz.js": {
+          "bytes": 828,
+          "gzipBytes": 420
+        },
+        "assets/isle-widget-engine-4sJdhu4p.js": {
+          "bytes": 17706,
+          "gzipBytes": 6808
+        },
+        "assets/isle-widget-mount-C4n5kx2w.js": {
+          "bytes": 166,
+          "gzipBytes": 155
+        },
+        "assets/isle-widget-runtime-_julWZDn.js": {
+          "bytes": 5254,
+          "gzipBytes": 2242
+        },
+        "assets/shared-runtime-DMG-kdSZ.js": {
+          "bytes": 2416,
+          "gzipBytes": 999
+        }
+      }
+    },
+    "standalone": {
+      "runtime": {
+        "version": "0.0.1",
+        "mode": "standalone"
+      },
+      "containsSharedRegistry": false,
+      "assets": {
+        "widget.js": {
+          "bytes": 5271,
+          "gzipBytes": 2240
+        },
+        "assets/ProjectForm-DcILcp7g.js": {
+          "bytes": 10465,
+          "gzipBytes": 4158
+        },
+        "assets/ProjectForm.__form0-CGJrxtjY.js": {
+          "bytes": 48,
+          "gzipBytes": 68
+        },
+        "assets/WorkItem-BN5U8NU9.js": {
+          "bytes": 462,
+          "gzipBytes": 225
+        },
+        "assets/WorkItem.g0-S986o2cp.js": {
+          "bytes": 68,
+          "gzipBytes": 78
+        },
+        "assets/_isle_loader-B4W9yD3y.js": {
+          "bytes": 3448,
+          "gzipBytes": 1579
+        },
+        "assets/index-OdeM_Ds3.js": {
+          "bytes": 51,
+          "gzipBytes": 71
+        },
+        "assets/isle-resume-CKe5So9K.js": {
+          "bytes": 4839,
+          "gzipBytes": 2197
+        },
+        "assets/isle-widget-mount-BUskHz0n.js": {
+          "bytes": 168,
+          "gzipBytes": 152
+        },
+        "assets/request-Dltj0cm7.js": {
+          "bytes": 470,
+          "gzipBytes": 361
+        },
+        "assets/runtime-identity-D5_jE62Y.js": {
+          "bytes": 656,
+          "gzipBytes": 369
+        }
+      }
+    }
+  }
+}

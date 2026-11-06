@@ -1,0 +1,196 @@
+{
+  "gate": "check.interactions",
+  "command": "check interactions",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 3,
+    "info": 0
+  },
+  "findings": [
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"戻す\" (div.children>section.counter>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"戻す\" (div.children>section.counter>div.actions>button)"
+      }
+    },
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"戻す\" (div.children>section.counter>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"戻す\" (div.children>section.counter>div.actions>button)"
+      }
+    },
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"戻す\" (section.panel>section.counter>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"戻す\" (section.panel>section.counter>div.actions>button)"
+      }
+    }
+  ],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "map": {
+      "source": "http://127.0.0.1:56989/",
+      "elements": [
+        {
+          "index": 0,
+          "key": "button|親の値を増やす",
+          "role": "button",
+          "name": "親の値を増やす",
+          "path": "main>section.panel>div>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 1,
+          "key": "button|増やす",
+          "role": "button",
+          "name": "増やす",
+          "path": "div.children>section.counter>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 2,
+          "key": "button|戻す",
+          "role": "button",
+          "name": "戻す",
+          "path": "div.children>section.counter>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 3,
+          "key": "button|増やす",
+          "role": "button",
+          "name": "増やす",
+          "path": "div.children>section.counter>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 4,
+          "key": "button|戻す",
+          "role": "button",
+          "name": "戻す",
+          "path": "div.children>section.counter>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 5,
+          "key": "button|増やす",
+          "role": "button",
+          "name": "増やす",
+          "path": "section.panel>section.counter>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 6,
+          "key": "button|戻す",
+          "role": "button",
+          "name": "戻す",
+          "path": "section.panel>section.counter>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        }
+      ],
+      "capped": 0
+    },
+    "issues": [
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"戻す\" (div.children>section.counter>div.actions>button)",
+        "message": "button \"戻す\" (div.children>section.counter>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      },
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"戻す\" (div.children>section.counter>div.actions>button)",
+        "message": "button \"戻す\" (div.children>section.counter>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      },
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"戻す\" (section.panel>section.counter>div.actions>button)",
+        "message": "button \"戻す\" (section.panel>section.counter>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      }
+    ]
+  }
+}

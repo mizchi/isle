@@ -1,0 +1,10 @@
+{
+  "floatStatus": "violated",
+  "plainFrStatus": "unknown",
+  "missingAncestorStatus": "unknown",
+  "generatedContentStatus": "unknown",
+  "unknownMeansInvalidCSS": false,
+  "allCounterpartsAreEquivalent": false,
+  "narrowingViewportCountsAsRepair": false,
+  "sourceParseFailureCountsAsLayoutRejection": false
+}

@@ -1,0 +1,17 @@
+export component Label(title: string) {
+  derive text = title + "!";
+  <p>{text}</p>
+}
+
+export server component ServerNote(message: string) {
+  <aside>{message}</aside>
+}
+
+export client component Counter(initial: number) {
+  state count = initial;
+  derive doubled = count * 2;
+  <button type="button">
+    on click increment { count += 1; }
+    {count} / {doubled}
+  </button>
+}

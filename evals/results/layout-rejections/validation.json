@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "assessedOn": "2026-11-06",
+  "passed": true,
+  "scope": "Executable examples for existing rejection behavior; no new layout-analysis capability or general rewrite-equivalence proof",
+  "checks": [
+    {
+      "command": "just ci",
+      "exitCode": 0,
+      "moonbitTests": 53,
+      "nodeTests": 294,
+      "browserTests": 123,
+      "layoutNodeTests": 46,
+      "layoutBrowserTests": 10,
+      "formalCases": 92,
+      "formalExpectedCounterexamples": 35,
+      "typeContracts": true,
+      "formA11ySuites": 2,
+      "formA11yGatesPerSuite": 8
+    },
+    {
+      "command": "just layout-rejections",
+      "exitCode": 0,
+      "cases": 14,
+      "rejected": {
+        "violated": 6,
+        "unknown": 8
+      },
+      "acceptedVerified": 14,
+      "cliExecutions": 28
+    },
+    {
+      "command": "just layout-rejections container-breakpoint",
+      "exitCode": 0
+    },
+    {
+      "command": "node tools/layout-rejections.mjs missing-case",
+      "expectedExitCode": 1,
+      "actualExitCode": 1
+    },
+    {
+      "command": "Production counter hash comparison",
+      "passed": true,
+      "artifact": "size.json"
+    }
+  ],
+  "checkerSourcesUnchanged": [
+    "lib/layout/selectors.mjs",
+    "lib/layout/css.mjs",
+    "lib/layout/input.mjs",
+    "lib/layout/engine.mjs",
+    "lib/layout-contracts.d.ts"
+  ],
+  "report": "report.json",
+  "index": "index.md",
+  "participantEvaluation": false,
+  "sourceSha256": {
+    "tools/layout-rejections.mjs": "bbc119ea2b0efa54fc7eaa9bebdec9169706b05495cb899a3a0d62d3f27cf08b",
+    "tools/layout-rejections.d.mts": "46a36638f718a508d5387698738b966711fd430236faeb207dc12e55e80448df",
+    "tools/eval.mjs": "6b358ad2ae2afbecd902a9fe95a3018eaf08ea0f44d2a0b3912b7308f9f2461a",
+    "justfile": "e328fdca363b071895f913e0951686b15d8f6431ffd74489e4b2cf8e3ac42b7a",
+    "tests/layout-rejections.test.mjs": "9a0fd3c90a532e98c25ff00dc80ae907e001241fafed2b6fa7d1362e5addfae1",
+    "tests/eval-layout-rejections.test.mjs": "bd6d921aedce506ec634f2e48db428de63493424f6fd298837a053c249ebfb5e",
+    "tests/types/layout-rejections.mts": "d6554517685db358fd9f47ef2a06a60da9540f44bd1a37a60cbe14a2c8ac4db9",
+    "evals/scenarios/layout-rejections/cases.mjs": "e8f83f88159eb3a5f5c220aac6dade056dd8936afefbc2b07bdccd64fc4ca5a9",
+    "evals/expect/layout-rejections-intent.json": "5971a62276925da46977485815230558fdaa5d4e517edb2acf872d44f4cd89c1"
+  }
+}

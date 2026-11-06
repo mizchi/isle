@@ -1,0 +1,58 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/isle/models/forms"
+
+import {
+  "mizchi/veri/model_check",
+}
+
+// Values
+pub fn client(Policy) -> @model_check.Client[State, Event, Json] raise
+
+pub fn initial() -> State
+
+pub fn step(Policy, State, Event) -> State?
+
+// Errors
+
+// Types and methods
+pub(all) enum Event {
+  EditValid
+  EditInvalid
+  Input
+  Submit
+  Load
+  DefaultAction
+  Drain
+}
+
+pub(all) enum Policy {
+  Strict
+  ReadDomAfterImport
+  LatePreventDefault
+  IgnoreValidation
+} derive(Eq)
+pub fn Policy::equal(Self, Self) -> Bool
+pub fn Policy::not_equal(Self, Self) -> Bool
+
+pub(all) struct State {
+  value : Bool
+  valid : Bool
+  fired : Bool
+  input : Bool
+  submit : Bool
+  rejected : Bool
+  ready : Bool
+  captured_value : Bool
+  captured_valid : Bool
+  prevented : Bool
+  applied : Bool
+  bad : Bool
+  navigated : Bool
+} derive(Eq, ToJson)
+pub fn State::equal(Self, Self) -> Bool
+pub fn State::not_equal(Self, Self) -> Bool
+pub fn State::to_json(Self) -> Json
+
+// Type aliases
+
+// Traits

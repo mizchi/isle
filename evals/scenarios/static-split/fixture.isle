@@ -1,0 +1,10 @@
+export client component Summary({ initial }: { initial: string }) {
+  state prefix = "Account: ";
+  state title = initial;
+  state unused = 100 * 100;
+  derive label = prefix + title + " points";
+  <section>
+    <header><h1>Static report</h1><p>This part never changes.</p></header>
+    <button>on click append { title = title + "!"; }{label}</button>
+  </section>
+}

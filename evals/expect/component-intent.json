@@ -1,0 +1,12 @@
+{
+  "labelPhase": "universal",
+  "serverNotePhase": "server",
+  "counterPhase": "client",
+  "universalInfersClient": false,
+  "universalHasSnapshot": false,
+  "propsArePositional": false,
+  "directPropsReadOnly": true,
+  "legacyEquivalent": true,
+  "destructureColonIsType": false,
+  "counterAfterClick": "6 / 12"
+}

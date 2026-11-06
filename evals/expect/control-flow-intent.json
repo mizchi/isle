@@ -1,0 +1,13 @@
+{
+  "requiresStableKey": true,
+  "sameArmRecreatesDom": false,
+  "surchargeReconcilesItems": false,
+  "surchargeUpdatesAllActivePrices": true,
+  "reorderPreservesOwner": true,
+  "opaqueReplacementAlwaysCostsOnlyChangedRows": false,
+  "duplicateKeyPolicy": "reject-before-commit",
+  "catchRollsBackRpc": false,
+  "failedTryIncludesFallbackCost": true,
+  "unusedDirectiveHelpersShip": false,
+  "resumeRepeatsSetup": false
+}

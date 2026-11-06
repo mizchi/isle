@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Grid width contract</title><style>* { box-sizing: border-box; margin: 0; }
+.board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 16px;
+  gap: 16px;
+  font-family: system-ui;
+  line-height: 1.5;
+}
+.body { display: grid; grid-template-columns: minmax(0, 1fr); }
+.copy { width: 320px; overflow-wrap: anywhere; }
+@media (min-width: 600px) {
+  .board { grid-template-columns: 240px minmax(0, 1fr); }
+}
+</style><body><main class="board"><aside class="side">Navigation</aside><section class="body"><p class="copy">A panel that needs 320 CSS pixels.</p></section></main></body></html>

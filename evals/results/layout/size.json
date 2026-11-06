@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "scope": "Ordinary production counter JavaScript compared with the preceding CSS-resolution stage; per-file gzip level 6",
+  "comparedTo": "../style-resolution/size.json",
+  "identicalJavaScript": true,
+  "deltaBytes": 0,
+  "deltaGzipBytes": 0,
+  "files": [
+    {
+      "file": "assets/Counter.h0-CxJgHqIU.js",
+      "bytes": 85,
+      "gzipBytes": 90,
+      "sha256": "d8d2a36869e8aa7d261bf878e75da6f9fc5d11514743d7c4f3750b0f12d31bb2"
+    },
+    {
+      "file": "assets/Editor.h1-WsKkkGT5.js",
+      "bytes": 127,
+      "gzipBytes": 129,
+      "sha256": "0eb0db4103f81150bfb844b4b8c6613b7428123f793d34e6358da150957b74c6"
+    },
+    {
+      "file": "assets/index-Des-UpCF.js",
+      "bytes": 1635,
+      "gzipBytes": 882,
+      "sha256": "cbcf06abc40b7db1b110e46a6566a947a19d505b7656364a5851908255aaf6cf"
+    },
+    {
+      "file": "assets/isle-resume-2rFM-Mp8.js",
+      "bytes": 4448,
+      "gzipBytes": 2149,
+      "sha256": "7f0e625db4fb450638cd87a4f112ad8f05fe08d30fdaaa74151898f69d993818"
+    }
+  ]
+}

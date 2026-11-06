@@ -1,0 +1,94 @@
+{
+  "gate": "check.interactions",
+  "command": "check interactions",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "map": {
+      "source": "http://127.0.0.1:65159/heavy-render/128/",
+      "elements": [
+        {
+          "index": 0,
+          "key": "link|128商品",
+          "role": "link",
+          "name": "128商品",
+          "path": "header>nav>a",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "declaresNoOp": true,
+          "tabReachable": true,
+          "focusIndicator": true
+        },
+        {
+          "index": 1,
+          "key": "link|1,024商品",
+          "role": "link",
+          "name": "1,024商品",
+          "path": "header>nav>a",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true
+        },
+        {
+          "index": 2,
+          "key": "link|4,096商品",
+          "role": "link",
+          "name": "4,096商品",
+          "path": "header>nav>a",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true
+        },
+        {
+          "index": 3,
+          "key": "button|確認を記録",
+          "role": "button",
+          "name": "確認を記録",
+          "path": "section.card>div.workspace>aside.audit>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 4,
+          "key": "button|表示中の商品を1個ずつ追加",
+          "role": "button",
+          "name": "表示中の商品を1個ずつ追加",
+          "path": "div.workspace>section.sheet>header.sheet-header>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        }
+      ],
+      "capped": 0
+    },
+    "issues": []
+  }
+}

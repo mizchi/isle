@@ -1,0 +1,74 @@
+schema PlanInput { id: string; hours: number min(0) max(10000) integer(); }
+view PlanView { hours: number; }
+export server action savePlan(input: PlanInput): PlanView
+  using request: RequestContext
+  authorize grant = policy.planEditor(request, input.id)
+  effects { db.write }
+{ return await plans.save(grant, input.hours); }
+
+schema ProjectInput {
+  project: string minLength(3) maxLength(64);
+  email: string minLength(3) maxLength(80) format("email");
+  confirmation: string minLength(3) sameAs(email);
+  budget: number min(100) max(100000) integer();
+  accepted: boolean equals(true);
+}
+view ProjectView { project: string; }
+export server action createProject(input: ProjectInput): ProjectView
+  using request: RequestContext
+  authorize grant = policy.projectCreator(request, input.project)
+  validate projects.available effects { db.read }
+  effects { db.write }
+{ return await projects.create(grant, input.project); }
+
+export client component WorkItem({ id, title, team, initial, rate, description }: {
+  id: string; title: string; team: string; initial: number; rate: number; description: string;
+}) {
+  state hours = initial;
+  state saved = initial;
+  state locked = false;
+  derive cost = hours * rate;
+  derive difference = hours - saved;
+  <article data-task={id} data-team={team} aria-label={title}>
+    <p class="meta">{team} · {rate} credits per hour</p>
+    <p class="description">{description}</p>
+    <div class="numbers">
+      <span>Planned hours <output data-value="hours">{hours}</output></span>
+      <span>Estimated cost <output data-value="cost">{cost}</output></span>
+      <span>Unsaved hours <output data-value="difference">{difference}</output></span>
+    </div>
+    <div class="actions">
+      <button type="button" data-action="increment" aria-label={title + " add hour"} disabled={locked}>
+        on click increment { hours += 1; }
+        Add hour
+      </button>
+      <button type="button" data-action="reset" aria-label={title + " reset draft"} disabled={locked}>
+        on click reset { hours = saved; }
+        Reset draft
+      </button>
+      <label class="check"><input type="checkbox" checked={locked}>
+        on change lock { locked = event.checked; }
+      </input>Lock plan</label>
+      <button type="button" data-action="save" aria-label={title + " save plan"} disabled={locked}>
+        on click async save { saved = (await remote savePlan({ id, hours })).hours; }
+        Save plan
+      </button>
+      <span class="saved">Saved hours <output data-value="saved">{saved}</output></span>
+    </div>
+    <details><summary>Delivery notes</summary><p>Confirm scope, accessibility checks, and operational ownership before closing this work package.</p>
+      <ul><li>Requirements reviewed with the owner.</li><li>Delivery and rollback steps documented.</li><li>Acceptance evidence attached to the project.</li></ul>
+    </details>
+  </article>
+}
+
+export client component ProjectForm() {
+  <form class="project-form" data-project-form aria-label="Create project" schema="ProjectInput" submit="createProject">
+    <label>Project name (required)<input name="project" /></label>
+    <label>Owner email (required)<input name="email" autocomplete="email" /></label>
+    <label>Confirm email (required)<input name="confirmation" /></label>
+    <label>Budget in credits (required)<input name="budget" value="400" /></label>
+    <label class="check"><input name="accepted" />I confirm the project details (required)</label>
+    <button type="submit">Create project</button>
+    <button type="reset">Reset form</button>
+  </form>
+}

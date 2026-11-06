@@ -1,0 +1,8 @@
+Form validation
+Signup
+Email (required)
+Confirm email (required)
+Age (required)
+I agree (required)
+Create account
+Reset

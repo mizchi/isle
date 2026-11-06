@@ -1,0 +1,14 @@
+@layer app {
+  .panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    padding: 16px;
+    block-size: 100%;
+    font-family: system-ui;
+    line-height: 24px;
+  }
+  .copy { inline-size: 100%; block-size: 100%; padding: 16px; overflow-wrap: anywhere; }
+}
+
+.copy { box-sizing: content-box; }

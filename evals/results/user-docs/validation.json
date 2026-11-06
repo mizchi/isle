@@ -1,0 +1,57 @@
+{
+  "source": "Markdown code blocks read directly",
+  "compiled": [
+    {
+      "snippet": 1,
+      "components": [
+        "Counter"
+      ],
+      "actions": []
+    },
+    {
+      "snippet": 2,
+      "components": [
+        "Counter"
+      ],
+      "actions": []
+    },
+    {
+      "snippet": 3,
+      "components": [
+        "Heading"
+      ],
+      "actions": []
+    },
+    {
+      "snippet": 4,
+      "components": [
+        "Editor"
+      ],
+      "actions": [
+        "renameDocument"
+      ]
+    },
+    {
+      "snippet": 5,
+      "components": [
+        "SchemaSignup"
+      ],
+      "actions": [
+        "register"
+      ]
+    }
+  ],
+  "checks": [
+    "CLI check, ssr and explain",
+    "Production Counter: 5 / 10 -> 6 / 12 -> reset, manifest chunks",
+    "Two Counter mounts keep state independent",
+    "SSR-only output has no framework scripts or snapshot markers",
+    "shared widget: cross-origin mount, increment, dimensions and pool participation",
+    "standalone widget: cross-origin mount, increment, dimensions and pool participation",
+    "Documented Editor remote action with referenced host",
+    "Schema Form: taken email rejects, valid email submits, client entry event, reset",
+    "Widget embed helper examples return matching tags and URLs"
+  ],
+  "checkedAt": "2026-11-04T12:24:14.547Z",
+  "localDocumentLinks": 81
+}

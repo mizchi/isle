@@ -1,0 +1,24 @@
+{
+  "shared": {
+    "version": "0.0.1",
+    "mode": "shared"
+  },
+  "standalone": {
+    "version": "0.0.1-fixture",
+    "mode": "standalone"
+  },
+  "sharedPool": [
+    {
+      "version": "0.0.1",
+      "abi": "isle/client/6:debug=0:profile=0",
+      "status": "ready"
+    },
+    {
+      "version": "0.0.1",
+      "abi": "isle/widget/3",
+      "status": "ready"
+    }
+  ],
+  "crossModeOwnership": true,
+  "independentState": true
+}

@@ -1,0 +1,1425 @@
+{
+  "version": 1,
+  "ok": true,
+  "status": "verified",
+  "component": "Card",
+  "scope": {
+    "axis": "both",
+    "viewport": {
+      "min": 320,
+      "max": 1000,
+      "minInclusive": true,
+      "maxInclusive": true,
+      "minExact": "320",
+      "maxExact": "1000",
+      "height": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      }
+    },
+    "hostInset": 0,
+    "hostBlockInset": 0,
+    "closedCSS": true,
+    "browserRounding": false,
+    "blockSizing": true
+  },
+  "assumptions": [
+    "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+    "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+  ],
+  "styleSources": [
+    {
+      "kind": "reset",
+      "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/block-height/accept/reset-0.css"
+    },
+    {
+      "kind": "app",
+      "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/block-height/accept/app.css"
+    }
+  ],
+  "diagnostics": [],
+  "policies": [
+    {
+      "box": ".card",
+      "path": "Card",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": []
+      }
+    },
+    {
+      "box": ".card",
+      "path": "Card",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": []
+      }
+    },
+    {
+      "box": ".text",
+      "path": "Card/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".text",
+      "path": "Card/0",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      }
+    }
+  ],
+  "checks": [
+    {
+      "box": ".card",
+      "path": "Card",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": []
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".card",
+      "path": "Card",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".card",
+      "path": "Card",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".card",
+      "path": "Card",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".text",
+      "path": "Card/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".text",
+      "path": "Card/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".text",
+      "path": "Card/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".text",
+      "path": "Card/0",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".text",
+      "path": "Card/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".text",
+      "path": "Card/0",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".text",
+      "path": "Card/0",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".card",
+      "path": "Card",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".card",
+      "path": "Card",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "enforced": true
+    }
+  ],
+  "sizes": [
+    {
+      "box": ".text",
+      "path": "Card/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/block-height/accept/reset-0.css",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".card",
+      "path": "Card",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/block-height/accept/reset-0.css",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "range": {
+        "min": 320,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "320",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "320",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "0",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "200",
+            "strict": false
+          }
+        ]
+      }
+    }
+  ],
+  "queries": []
+}

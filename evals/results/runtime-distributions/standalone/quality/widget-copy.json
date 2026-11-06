@@ -1,0 +1,28 @@
+{
+  "gate": "check.copy",
+  "command": "check copy",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://127.0.0.1:8787/standalone/",
+    "textLength": 23295,
+    "manifestLines": 5,
+    "forbidLines": 0,
+    "forbiddenLines": [],
+    "missingLines": [],
+    "revealedLines": [],
+    "invisibleLines": [],
+    "allowedInvisibleLines": [],
+    "statesExplored": 30,
+    "droppedStates": 34,
+    "placeholders": [],
+    "issues": []
+  }
+}

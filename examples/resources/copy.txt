@@ -1,0 +1,5 @@
+Resource lifetime and cleanup
+Owned session
+Activate / increment
+Not activated
+Remove component

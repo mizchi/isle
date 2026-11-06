@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "assessedOn": "2026-11-06",
+  "passed": true,
+  "scope": "Exact rational affine inline layout contracts over a closed CSS subset and explicit finite viewport domain; trusted text-width assumptions. No block-layout, CSSOM or browser-refinement proof.",
+  "checks": [
+    {
+      "command": "just ci",
+      "exitCode": 0,
+      "moonbitTests": 53,
+      "nodeTests": 265,
+      "browserTests": 117,
+      "layoutNodeTests": 17,
+      "layoutBrowserTests": 4,
+      "formalCases": 92,
+      "formalExpectedCounterexamples": 35,
+      "formA11ySuites": 2,
+      "formA11yGatesPerSuite": 8,
+      "typeContracts": true
+    },
+    {
+      "command": "just layout-quality",
+      "exitCode": 0,
+      "nodeTests": 17,
+      "browserTests": 4,
+      "tool": "vlmkit/0.24.0",
+      "viewport": {
+        "min": 352,
+        "max": 1280
+      },
+      "gates": [
+        {
+          "name": "integrity",
+          "verdict": "pass",
+          "counts": {
+            "suspect": 0,
+            "warn": 1,
+            "info": 0
+          }
+        },
+        {
+          "name": "responsive",
+          "verdict": "pass",
+          "counts": {
+            "suspect": 0,
+            "warn": 0,
+            "info": 0
+          }
+        }
+      ]
+    },
+    {
+      "command": "Production counter asset hashes compared to preceding CSS-resolution stage",
+      "passed": true,
+      "artifact": "size.json"
+    }
+  ],
+  "evidence": {
+    "positive": "fixed.json",
+    "negative": "broken.json",
+    "browserMeasurements": "browser.json",
+    "outsideDomainFailure": "responsive-outside-domain.json",
+    "screenshots": [
+      "375.png",
+      "1280.png"
+    ],
+    "readingGrader": "layout-intent",
+    "participantEvaluation": false,
+    "boundedArithmeticComparisons": 30492,
+    "universalSoundnessProof": false
+  },
+  "sourceSha256": {
+    "lib/layout.mjs": "c83d9afaf8876edb0cf465f55ce39f43a029d3999a7e55b780e0f8fd9baeeb38",
+    "lib/layout/css.mjs": "1ed187e4e7a474e6ae0c9676c41aa350f9ac605dacd815f03a102fcd59c4ac85",
+    "lib/layout/linear.mjs": "49a2332b5cf64c6336563dd5a4e072b6dd5b9eee0c0e629be79a7ccf2c3df6ff",
+    "lib/layout-contracts.d.ts": "faff57ba602d03ffc3e5cd46800e9a1975cb9505f82dcb23ab8e78874a9cf854",
+    "lib/layout.d.mts": "2539a0f341b15153e388f59d916b995f4675bfc02a0a8cf1c6f410cd80c32633",
+    "tools/isle.mjs": "e5479b3b2b2805f72413753e4ac79b6b2f376299aa9524d176887c3fac8de610",
+    "tools/eval.mjs": "1e47e292076525ba843102f070dfe5285ba8c8cc3ee1c8a2ab522be69d67fcce",
+    "justfile": "0ade9e089cff9416a78c51c23845adbc35a398681fc025db7de4b9975b51c8bd",
+    "tests/layout.test.mjs": "d3557e85db391e094275171882cd44e61936251818b0aadc0edd6542cac8591a",
+    "tests/layout-linear.test.mjs": "8b25558c6123f8c338a7759c4e6db0825d2cbbf1ff0f66fb5b4cf9f43c464c4b",
+    "tests/layout-cli.test.mjs": "2185454a32f7232dab6792dacf2c9cf2e269503eb6d0368b67bf2ff0f7e0909e",
+    "tests/eval-layout.test.mjs": "587c6a9f5770ed2b7c2750fafe4ccbc9840af2ccb472a63b1b24c6286491df99",
+    "tests/types/layout.mts": "761c6ec62a3f52a57156c639e1c840f088af897ef136b6ee0276c54a01b66b4e",
+    "e2e/layout.spec.mjs": "58cbc8d0f7fdaf0ac9d074030e14274e446f4ce0826825b9b8db996c9cd5e559",
+    "playwright.layout.config.mjs": "d77259566a19cd6b6d69772c2b8b8da9ce32ef1e93ad4d0512744c9768d4b9ce",
+    "evals/scenarios/layout/fixture.isle": "50b45eb1e5dc373cbd4f8d38330c34ad997503e0795425f80ac2e0dac058dc33",
+    "evals/scenarios/layout/layout.css": "fe78f562f225fa7f7a06958810e24378af60a856a8c67fe0181a42acfc469031",
+    "evals/scenarios/layout/layout.json": "f125d16b88c5ac79b63ffc6709e9adc40fed75e041d8d3f56059a71d83ffff8e",
+    "evals/expect/layout-intent.json": "d09467363685201d4677ec21e9d97eb91ada723125e5f03ac0fff2641dab7d39"
+  }
+}

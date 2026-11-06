@@ -1,0 +1,19 @@
+client component Counter(initial: number) {
+  state n = initial;
+  <section data-counter={initial}>
+    <button type="button" data-add={initial}>on click add { n += 1; }Add</button>
+    <output data-count={initial}>{n}</output>
+    <Child />
+  </section>
+}
+client component Child() {
+  state n = 0;
+  <button type="button" data-child="">on click add { n += 1; }{n}</button>
+}
+client component Broken() {
+  state n = 0;
+  <button type="button" data-broken="">on click add { n += 1; }{n}</button>
+}
+server component Page() {
+  <main><Counter initial={1}/><Counter initial={2}/><Broken/></main>
+}

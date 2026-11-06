@@ -1,0 +1,3 @@
+Widget publisher demo
+This page belongs to the publisher. The work planner below is a Web Component served by Cloudflare Workers.
+Following content keeps its place while the widget loads and changes.

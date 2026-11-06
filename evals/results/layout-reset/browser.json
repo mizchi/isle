@@ -1,0 +1,113 @@
+{
+  "passed": true,
+  "observations": [
+    {
+      "variant": "reset",
+      "viewport": {
+        "width": 240,
+        "height": 200
+      },
+      "boxSizing": "border-box",
+      "width": 208,
+      "height": 168,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "variant": "reset",
+      "viewport": {
+        "width": 375,
+        "height": 400
+      },
+      "boxSizing": "border-box",
+      "width": 343,
+      "height": 368,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "variant": "reset",
+      "viewport": {
+        "width": 1000,
+        "height": 600
+      },
+      "boxSizing": "border-box",
+      "width": 968,
+      "height": 568,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "variant": "override",
+      "viewport": {
+        "width": 240,
+        "height": 200
+      },
+      "boxSizing": "content-box",
+      "width": 240,
+      "height": 200,
+      "overflowX": true,
+      "overflowY": true
+    },
+    {
+      "variant": "override",
+      "viewport": {
+        "width": 375,
+        "height": 400
+      },
+      "boxSizing": "content-box",
+      "width": 375,
+      "height": 400,
+      "overflowX": true,
+      "overflowY": true
+    },
+    {
+      "variant": "override",
+      "viewport": {
+        "width": 1000,
+        "height": 600
+      },
+      "boxSizing": "content-box",
+      "width": 1000,
+      "height": 600,
+      "overflowX": true,
+      "overflowY": true
+    },
+    {
+      "variant": "important",
+      "viewport": {
+        "width": 240,
+        "height": 200
+      },
+      "boxSizing": "border-box",
+      "width": 208,
+      "height": 168,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "variant": "important",
+      "viewport": {
+        "width": 375,
+        "height": 400
+      },
+      "boxSizing": "border-box",
+      "width": 343,
+      "height": 368,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "variant": "important",
+      "viewport": {
+        "width": 1000,
+        "height": 600
+      },
+      "boxSizing": "border-box",
+      "width": 968,
+      "height": 568,
+      "overflowX": false,
+      "overflowY": false
+    }
+  ]
+}

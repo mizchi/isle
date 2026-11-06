@@ -1,0 +1,12 @@
+import { defineConfig } from 'vite';
+import preact from '@preact/preset-vite';
+import { fileURLToPath } from 'node:url';
+import { shell } from '../../dashboard/shell.mjs';
+const root = fileURLToPath(new URL('.', import.meta.url));
+export default defineConfig(({ isSsrBuild }) => ({ root, base: '/dashboard/preact/', plugins: [preact(),
+  { name: 'dashboard-shell', transformIndexHtml: { order: 'pre', handler: () => shell('<div id="app"><!--preact:ssr--></div>', '<script type="module" src="./src/dashboard/entry.client.tsx"></script>') } },
+], build: { outDir: isSsrBuild ? 'dist/dashboard/server' : '../../dist/dashboard/preact/client', emptyOutDir: true,
+  target: 'es2023', modulePreload: false, sourcemap: false,
+  ...(isSsrBuild ? { ssr: './src/dashboard/entry.ssr.tsx', rollupOptions: { output: { entryFileNames: 'entry.ssr.js' } } }
+    : { rolldownOptions: { input: `${root}/dashboard.html` } }),
+} }));

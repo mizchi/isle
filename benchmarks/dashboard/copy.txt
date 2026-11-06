@@ -1,0 +1,13 @@
+Work planning dashboard
+Create a project
+Project name (required)
+Owner email (required)
+Confirm email (required)
+Budget in credits (required)
+I confirm the project details (required)
+Filter work packages by team
+Add hour
+Reset draft
+Lock plan
+Save plan
+Delivery notes

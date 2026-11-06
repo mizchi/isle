@@ -1,0 +1,21 @@
+{
+  "gzipLevel": 6,
+  "assets": {
+    "widget.js": {
+      "bytes": 283,
+      "gzipBytes": 204
+    },
+    "assets/isle-widget-engine-ySYD1uNM.js": {
+      "bytes": 17683,
+      "gzipBytes": 6789
+    },
+    "assets/isle-widget-runtime-CKSI1Qjm.js": {
+      "bytes": 4871,
+      "gzipBytes": 2061
+    },
+    "assets/shared-runtime-Di15RONV.js": {
+      "bytes": 976,
+      "gzipBytes": 548
+    }
+  }
+}

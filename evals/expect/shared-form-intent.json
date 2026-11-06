@@ -1,0 +1,15 @@
+{
+  "schema": "Registration",
+  "action": "register",
+  "validationOwner": "action",
+  "validationRunsAfterAuthorization": true,
+  "schemasCanShareDifferentValidators": true,
+  "validationOnlyCanWrite": false,
+  "submissionRevalidates": true,
+  "uncheckedCheckbox": false,
+  "fieldValuesInComponentSnapshot": false,
+  "pendingBeforeImport": true,
+  "staleValidationApplies": false,
+  "resetRollsBackServerWrites": false,
+  "nativePostUsesServerRules": true
+}

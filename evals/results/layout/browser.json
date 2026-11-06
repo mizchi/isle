@@ -1,0 +1,101 @@
+{
+  "passed": true,
+  "samples": [
+    {
+      "name": "broken",
+      "viewport": 352,
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "name": "broken",
+      "viewport": 599,
+      "width": 567,
+      "overflow": false
+    },
+    {
+      "name": "broken",
+      "viewport": 600,
+      "width": 312,
+      "overflow": true
+    },
+    {
+      "name": "broken",
+      "viewport": 604,
+      "width": 316,
+      "overflow": true
+    },
+    {
+      "name": "broken",
+      "viewport": 607,
+      "width": 319,
+      "overflow": true
+    },
+    {
+      "name": "broken",
+      "viewport": 608,
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "name": "broken",
+      "viewport": 609,
+      "width": 321,
+      "overflow": false
+    },
+    {
+      "name": "broken",
+      "viewport": 1280,
+      "width": 992,
+      "overflow": false
+    },
+    {
+      "name": "fixed",
+      "viewport": 352,
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "name": "fixed",
+      "viewport": 599,
+      "width": 567,
+      "overflow": false
+    },
+    {
+      "name": "fixed",
+      "viewport": 600,
+      "width": 568,
+      "overflow": false
+    },
+    {
+      "name": "fixed",
+      "viewport": 604,
+      "width": 572,
+      "overflow": false
+    },
+    {
+      "name": "fixed",
+      "viewport": 607,
+      "width": 575,
+      "overflow": false
+    },
+    {
+      "name": "fixed",
+      "viewport": 608,
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "name": "fixed",
+      "viewport": 609,
+      "width": 321,
+      "overflow": false
+    },
+    {
+      "name": "fixed",
+      "viewport": 1280,
+      "width": 992,
+      "overflow": false
+    }
+  ]
+}

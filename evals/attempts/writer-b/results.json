@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "status": "passed",
+  "author": "writer-b",
+  "counter": {
+    "candidate": "evals/attempts/writer-b/counter.isle",
+    "rounds": 1,
+    "checkCalls": 1,
+    "graderCalls": 1,
+    "check": { "exitCode": 0, "ok": true, "components": ["Counter"], "actions": [] },
+    "grader": {
+      "exitCode": 0,
+      "pass": true,
+      "score": 5,
+      "total": 5,
+      "checks": [
+        { "name": "client Counter", "pass": true },
+        { "name": "button with click", "pass": true },
+        { "name": "count state and remaining derive", "pass": true },
+        { "name": "resume from 37", "pass": true },
+        { "name": "resume from 5", "pass": true }
+      ]
+    },
+    "changesAfterInitialDraft": 0,
+    "remainingAmbiguity": "課題の source 構文・挙動に残る曖昧さなし。復元形式と byte 数はガイドが source 外の事項と明示。"
+  },
+  "action": {
+    "candidate": "evals/attempts/writer-b/action.isle",
+    "rounds": 1,
+    "checkCalls": 1,
+    "graderCalls": 1,
+    "check": { "exitCode": 0, "ok": true, "components": [], "actions": ["publishNote"] },
+    "grader": {
+      "exitCode": 0,
+      "pass": true,
+      "score": 6,
+      "total": 6,
+      "checks": [
+        { "name": "input schema", "pass": true },
+        { "name": "output schema", "pass": true },
+        { "name": "boundary schemas", "pass": true },
+        { "name": "resource policy", "pass": true },
+        { "name": "effect contract", "pass": true },
+        { "name": "grant precedes mutation", "pass": true }
+      ]
+    },
+    "changesAfterInitialDraft": 0,
+    "remainingAmbiguity": "host への policy/operation 登録手順や API は未記載。ガイドが check の対象外と明示しており source 作成は妨げない。"
+  },
+  "documentationFeedback": {
+    "clarified": [
+      { "line": 46, "quote": "初期化は SSR で行い、resume 時は再実行しません。" },
+      { "line": 11, "quote": "wire input には含めない" },
+      { "line": 83, "quote": "`id` は必須の固定名ではありません。`input.noteId` 等も使えます。" },
+      { "line": 85, "quote": "`check` は policy/operation 名の構文と境界を検査し、host の実登録は調べません。" }
+    ],
+    "confused": []
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "entries": ["Editor.save"],
+  "loading": "lazy",
+  "asyncMeans": "await-in-body",
+  "captureNames": ["id", "title"],
+  "remoteAction": "renameDocument",
+  "authorization": "policy.documentEditor",
+  "stateInitializedAgain": false,
+  "restoreOnRepeat": false,
+  "runDurationIsCpuOnly": false,
+  "codeCachedMeansNetworkHit": false
+}

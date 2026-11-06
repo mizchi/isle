@@ -1,0 +1,1085 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-04T05:02:52.117Z",
+  "samples": 12,
+  "warm": 12,
+  "apiDelayMs": 20,
+  "versions": {
+    "isle": {
+      "version": "0.0.1",
+      "dependencies": {},
+      "vite": "^8.3.5"
+    },
+    "qwik": {
+      "version": null,
+      "dependencies": {
+        "@builder.io/qwik": "1.20.3"
+      },
+      "vite": "7.3.7"
+    },
+    "qwik-next": {
+      "version": null,
+      "dependencies": {
+        "@qwik.dev/core": "2.0.0-rc.4"
+      },
+      "vite": "8.3.5"
+    },
+    "preact": {
+      "version": null,
+      "dependencies": {
+        "preact": "11.1.1",
+        "preact-render-to-string": "6.8.2"
+      },
+      "vite": "8.3.5"
+    }
+  },
+  "configuration": {
+    "isle": {
+      "loading": {
+        "eager": [],
+        "preload": [
+          "WorkItem.increment",
+          "WorkItem.reset",
+          "WorkItem.lock",
+          "WorkItem.save",
+          "ProjectForm.__form0"
+        ]
+      },
+      "entries": {
+        "ProjectForm.__form0": {
+          "chunk": "assets/ProjectForm.__form0-0PZNkBuW.js",
+          "symbol": "run",
+          "loading": "preload"
+        },
+        "WorkItem.increment": {
+          "chunk": "assets/WorkItem.g0-DeH4pYvH.js",
+          "symbol": "h0",
+          "loading": "preload"
+        },
+        "WorkItem.lock": {
+          "chunk": "assets/WorkItem.g0-DeH4pYvH.js",
+          "symbol": "h2",
+          "loading": "preload"
+        },
+        "WorkItem.reset": {
+          "chunk": "assets/WorkItem.g0-DeH4pYvH.js",
+          "symbol": "h1",
+          "loading": "preload"
+        },
+        "WorkItem.save": {
+          "chunk": "assets/WorkItem.g0-DeH4pYvH.js",
+          "symbol": "h3",
+          "loading": "preload"
+        }
+      }
+    }
+  },
+  "reusedLatencySamples": false,
+  "transferSamples": 1,
+  "environment": {
+    "node": "v24.21.0",
+    "chromium": "156.0.8078.4",
+    "platform": "darwin/arm64",
+    "cpu": "Apple M5"
+  },
+  "summary": [
+    {
+      "profile": {
+        "id": "desktop",
+        "cpu": 1,
+        "latency": 0,
+        "down": -1,
+        "up": -1
+      },
+      "variants": [
+        {
+          "id": "isle",
+          "trials": 12,
+          "latencies": {
+            "cold-increment": {
+              "n": 12,
+              "median": 36.25000002980232,
+              "p95": 38.90000003576279,
+              "min": 35.10000002384186,
+              "max": 38.90000003576279
+            },
+            "warm-increment": {
+              "n": 144,
+              "median": 0.19999998807907104,
+              "p95": 0.30000001192092896,
+              "min": 0,
+              "max": 0.3999999761581421
+            },
+            "other-island": {
+              "n": 12,
+              "median": 0.30000001192092896,
+              "p95": 0.3999999761581421,
+              "min": 0.19999998807907104,
+              "max": 0.3999999761581421
+            },
+            "remote-save": {
+              "n": 12,
+              "median": 23.599999994039536,
+              "p95": 25.700000047683716,
+              "min": 21,
+              "max": 25.700000047683716
+            },
+            "cold-form-input": {
+              "n": 12,
+              "median": 1,
+              "p95": 1,
+              "min": 0.8999999761581421,
+              "max": 1
+            },
+            "form-submit": {
+              "n": 12,
+              "median": 45.09999996423721,
+              "p95": 46.09999996423721,
+              "min": 41.80000001192093,
+              "max": 46.09999996423721
+            },
+            "burst-32-islands": {
+              "n": 12,
+              "median": 0.30000001192092896,
+              "p95": 0.5,
+              "min": 0.19999998807907104,
+              "max": 0.5
+            }
+          },
+          "domContentLoaded": {
+            "n": 12,
+            "median": 6.0999999940395355,
+            "p95": 16.69999998807907,
+            "min": 5.899999976158142,
+            "max": 16.69999998807907
+          },
+          "firstContentfulPaint": {
+            "n": 12,
+            "median": 20,
+            "p95": 24,
+            "min": 20,
+            "max": 24
+          },
+          "startupLongTaskMs": {
+            "n": 12,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "transfers": [
+            {
+              "html": 8919,
+              "initialJS": 8020,
+              "allJS": 8020,
+              "auxiliary": 0,
+              "totalAssets": 16939,
+              "requestedJS": [
+                {
+                  "path": "/dashboard/isle/assets/dashboard-Cft7Vt-H.js",
+                  "bytes": 1476,
+                  "start": 3.921875
+                },
+                {
+                  "path": "/dashboard/isle/assets/isle-resume-CAdEmejI.js",
+                  "bytes": 2145,
+                  "start": 3.98876953125
+                },
+                {
+                  "path": "/dashboard/isle/assets/WorkItem.g0-DeH4pYvH.js",
+                  "bytes": 228,
+                  "start": 4.126953125
+                },
+                {
+                  "path": "/dashboard/isle/assets/ProjectForm.__form0-0PZNkBuW.js",
+                  "bytes": 4171,
+                  "start": 4.18701171875
+                }
+              ]
+            }
+          ],
+          "eventTiming": {
+            "threshold": 16,
+            "reportedEntries": 1603,
+            "note": "Auxiliary native entries; durations below the reporting threshold are not replaced by zero. These samples are not field INP."
+          }
+        },
+        {
+          "id": "qwik",
+          "trials": 12,
+          "latencies": {
+            "cold-increment": {
+              "n": 12,
+              "median": 38.700000047683716,
+              "p95": 44.30000001192093,
+              "min": 37.69999998807907,
+              "max": 44.30000001192093
+            },
+            "warm-increment": {
+              "n": 144,
+              "median": 16.19999998807907,
+              "p95": 17.899999976158142,
+              "min": 9.5,
+              "max": 18.19999998807907
+            },
+            "other-island": {
+              "n": 12,
+              "median": 16.799999952316284,
+              "p95": 18.600000023841858,
+              "min": 15.5,
+              "max": 18.600000023841858
+            },
+            "remote-save": {
+              "n": 12,
+              "median": 39.650000005960464,
+              "p95": 40.90000003576279,
+              "min": 38.10000002384186,
+              "max": 40.90000003576279
+            },
+            "cold-form-input": {
+              "n": 12,
+              "median": 1.7500000298023224,
+              "p95": 1.800000011920929,
+              "min": 1.5999999642372131,
+              "max": 1.800000011920929
+            },
+            "form-submit": {
+              "n": 12,
+              "median": 60.54999998211861,
+              "p95": 62.799999952316284,
+              "min": 56.90000003576279,
+              "max": 62.799999952316284
+            },
+            "burst-32-islands": {
+              "n": 12,
+              "median": 3.100000023841858,
+              "p95": 3.5,
+              "min": 2.5,
+              "max": 3.5
+            }
+          },
+          "domContentLoaded": {
+            "n": 12,
+            "median": 6.0999999940395355,
+            "p95": 6.200000047683716,
+            "min": 5.899999976158142,
+            "max": 6.200000047683716
+          },
+          "firstContentfulPaint": {
+            "n": 12,
+            "median": 20,
+            "p95": 24,
+            "min": 20,
+            "max": 24
+          },
+          "startupLongTaskMs": {
+            "n": 12,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "transfers": [
+            {
+              "html": 21648,
+              "initialJS": 28410,
+              "allJS": 28410,
+              "auxiliary": 207,
+              "totalAssets": 50265,
+              "requestedJS": [
+                {
+                  "path": "/dashboard/qwik/build/q-naDMFAHy.js",
+                  "bytes": 1678,
+                  "start": 4.576904296875
+                },
+                {
+                  "path": "/dashboard/qwik/build/q-9L1KKBjj.js",
+                  "bytes": 2014,
+                  "start": 4.64892578125
+                },
+                {
+                  "path": "/dashboard/qwik/build/q-CJFmz05K.js",
+                  "bytes": 19682,
+                  "start": 4.89599609375
+                },
+                {
+                  "path": "/dashboard/qwik/build/q-CS2YYE6J.js",
+                  "bytes": 1177,
+                  "start": 20.60888671875
+                },
+                {
+                  "path": "/dashboard/qwik/build/q-Q0ZMp5e8.js",
+                  "bytes": 3859,
+                  "start": 20.675048828125
+                }
+              ]
+            }
+          ],
+          "eventTiming": {
+            "threshold": 16,
+            "reportedEntries": 1633,
+            "note": "Auxiliary native entries; durations below the reporting threshold are not replaced by zero. These samples are not field INP."
+          }
+        },
+        {
+          "id": "qwik-next",
+          "trials": 12,
+          "latencies": {
+            "cold-increment": {
+              "n": 12,
+              "median": 43.25000002980232,
+              "p95": 44.69999998807907,
+              "min": 41.10000002384186,
+              "max": 44.69999998807907
+            },
+            "warm-increment": {
+              "n": 144,
+              "median": 0.19999998807907104,
+              "p95": 0.3999999761581421,
+              "min": 0.09999996423721313,
+              "max": 0.6000000238418579
+            },
+            "other-island": {
+              "n": 12,
+              "median": 16.499999970197678,
+              "p95": 17.69999998807907,
+              "min": 14.699999988079071,
+              "max": 17.69999998807907
+            },
+            "remote-save": {
+              "n": 12,
+              "median": 39.99999997019768,
+              "p95": 41.5,
+              "min": 37.19999998807907,
+              "max": 41.5
+            },
+            "cold-form-input": {
+              "n": 12,
+              "median": 2.300000011920929,
+              "p95": 2.600000023841858,
+              "min": 2.100000023841858,
+              "max": 2.600000023841858
+            },
+            "form-submit": {
+              "n": 12,
+              "median": 45,
+              "p95": 46.39999997615814,
+              "min": 43.799999952316284,
+              "max": 46.39999997615814
+            },
+            "burst-32-islands": {
+              "n": 12,
+              "median": 7.749999970197678,
+              "p95": 8.199999988079071,
+              "min": 7.100000023841858,
+              "max": 8.199999988079071
+            }
+          },
+          "domContentLoaded": {
+            "n": 12,
+            "median": 6.699999988079071,
+            "p95": 7.599999964237213,
+            "min": 6.5,
+            "max": 7.599999964237213
+          },
+          "firstContentfulPaint": {
+            "n": 12,
+            "median": 24,
+            "p95": 24,
+            "min": 20,
+            "max": 24
+          },
+          "startupLongTaskMs": {
+            "n": 12,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "transfers": [
+            {
+              "html": 37223,
+              "initialJS": 44982,
+              "allJS": 44982,
+              "auxiliary": 323,
+              "totalAssets": 82528,
+              "requestedJS": [
+                {
+                  "path": "/dashboard/qwik-next/build/q-BTUIEz9o.js",
+                  "bytes": 2414,
+                  "start": 4.69287109375
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-Dem29lbk.js",
+                  "bytes": 1897,
+                  "start": 4.757080078125
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-DPZ44QGi.js",
+                  "bytes": 33869,
+                  "start": 4.969970703125
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-DK3Fl9T5.js",
+                  "bytes": 154,
+                  "start": 38.903076171875
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-CP0d07U9.js",
+                  "bytes": 853,
+                  "start": 39.013916015625
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-BSa11x0Y.js",
+                  "bytes": 2842,
+                  "start": 39.22509765625
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-DxuQrluO.js",
+                  "bytes": 167,
+                  "start": 39.48779296875
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-wQLE88GE.js",
+                  "bytes": 127,
+                  "start": 39.317138671875
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-D9pelr0N.js",
+                  "bytes": 1049,
+                  "start": 40.26708984375
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-DIjE9WCt.js",
+                  "bytes": 133,
+                  "start": 40.017822265625
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-sAfWIU-n.js",
+                  "bytes": 131,
+                  "start": 40.118896484375
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-CfqRfj1-.js",
+                  "bytes": 124,
+                  "start": 39.3779296875
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-DVg2xI2K.js",
+                  "bytes": 1095,
+                  "start": 40.510986328125
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-BcgNyro5.js",
+                  "bytes": 127,
+                  "start": 39.714111328125
+                }
+              ]
+            }
+          ],
+          "eventTiming": {
+            "threshold": 16,
+            "reportedEntries": 1635,
+            "note": "Auxiliary native entries; durations below the reporting threshold are not replaced by zero. These samples are not field INP."
+          }
+        },
+        {
+          "id": "preact",
+          "trials": 12,
+          "latencies": {
+            "cold-increment": {
+              "n": 12,
+              "median": 0.699999988079071,
+              "p95": 0.800000011920929,
+              "min": 0.5999999642372131,
+              "max": 0.800000011920929
+            },
+            "warm-increment": {
+              "n": 144,
+              "median": 0.19999998807907104,
+              "p95": 0.30000001192092896,
+              "min": 0,
+              "max": 0.5
+            },
+            "other-island": {
+              "n": 12,
+              "median": 0.20000004768371582,
+              "p95": 0.30000001192092896,
+              "min": 0.19999998807907104,
+              "max": 0.30000001192092896
+            },
+            "remote-save": {
+              "n": 12,
+              "median": 23.450000017881393,
+              "p95": 24.100000023841858,
+              "min": 20.900000035762787,
+              "max": 24.100000023841858
+            },
+            "cold-form-input": {
+              "n": 12,
+              "median": 0.699999988079071,
+              "p95": 0.699999988079071,
+              "min": 0.5999999642372131,
+              "max": 0.699999988079071
+            },
+            "form-submit": {
+              "n": 12,
+              "median": 45.04999998211861,
+              "p95": 46.30000001192093,
+              "min": 42.30000001192093,
+              "max": 46.30000001192093
+            },
+            "burst-32-islands": {
+              "n": 12,
+              "median": 0.5999999940395355,
+              "p95": 0.6000000238418579,
+              "min": 0.3999999761581421,
+              "max": 0.6000000238418579
+            }
+          },
+          "domContentLoaded": {
+            "n": 12,
+            "median": 17.25,
+            "p95": 18.299999952316284,
+            "min": 8,
+            "max": 18.299999952316284
+          },
+          "firstContentfulPaint": {
+            "n": 12,
+            "median": 22,
+            "p95": 24,
+            "min": 20,
+            "max": 24
+          },
+          "startupLongTaskMs": {
+            "n": 12,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "transfers": [
+            {
+              "html": 5179,
+              "initialJS": 10041,
+              "allJS": 10041,
+              "auxiliary": 0,
+              "totalAssets": 15220,
+              "requestedJS": [
+                {
+                  "path": "/dashboard/preact/assets/dashboard-DeXz6uJs.js",
+                  "bytes": 10041,
+                  "start": 4.670166015625
+                }
+              ]
+            }
+          ],
+          "eventTiming": {
+            "threshold": 16,
+            "reportedEntries": 1624,
+            "note": "Auxiliary native entries; durations below the reporting threshold are not replaced by zero. These samples are not field INP."
+          }
+        }
+      ]
+    },
+    {
+      "profile": {
+        "id": "constrained",
+        "cpu": 4,
+        "latency": 80,
+        "down": 200000,
+        "up": 93750
+      },
+      "variants": [
+        {
+          "id": "isle",
+          "trials": 12,
+          "latencies": {
+            "cold-increment": {
+              "n": 12,
+              "median": 40.05000001192093,
+              "p95": 43.80000001192093,
+              "min": 38.10000002384186,
+              "max": 43.80000001192093
+            },
+            "warm-increment": {
+              "n": 144,
+              "median": 0.9000000357627869,
+              "p95": 1.4000000357627869,
+              "min": 0.09999996423721313,
+              "max": 2.399999976158142
+            },
+            "other-island": {
+              "n": 12,
+              "median": 1.0999999940395355,
+              "p95": 1.7999999523162842,
+              "min": 0.3999999761581421,
+              "max": 1.7999999523162842
+            },
+            "remote-save": {
+              "n": 12,
+              "median": 102,
+              "p95": 120.30000001192093,
+              "min": 92.30000001192093,
+              "max": 120.30000001192093
+            },
+            "cold-form-input": {
+              "n": 12,
+              "median": 4.149999976158142,
+              "p95": 5.5,
+              "min": 3.199999988079071,
+              "max": 5.5
+            },
+            "form-submit": {
+              "n": 12,
+              "median": 104.55000001192093,
+              "p95": 110,
+              "min": 88.40000003576279,
+              "max": 110
+            },
+            "burst-32-islands": {
+              "n": 12,
+              "median": 1.449999988079071,
+              "p95": 1.7000000476837158,
+              "min": 1.0999999642372131,
+              "max": 1.7000000476837158
+            }
+          },
+          "domContentLoaded": {
+            "n": 12,
+            "median": 224.7999999821186,
+            "p95": 235.5,
+            "min": 215.80000001192093,
+            "max": 235.5
+          },
+          "firstContentfulPaint": {
+            "n": 12,
+            "median": 136,
+            "p95": 144,
+            "min": 132,
+            "max": 144
+          },
+          "startupLongTaskMs": {
+            "n": 12,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "transfers": [
+            {
+              "html": 8919,
+              "initialJS": 8020,
+              "allJS": 8020,
+              "auxiliary": 0,
+              "totalAssets": 16939,
+              "requestedJS": [
+                {
+                  "path": "/dashboard/isle/assets/WorkItem.g0-DeH4pYvH.js",
+                  "bytes": 228,
+                  "start": 109.712890625
+                },
+                {
+                  "path": "/dashboard/isle/assets/dashboard-Cft7Vt-H.js",
+                  "bytes": 1476,
+                  "start": 106.682861328125
+                },
+                {
+                  "path": "/dashboard/isle/assets/isle-resume-CAdEmejI.js",
+                  "bytes": 2145,
+                  "start": 106.89111328125
+                },
+                {
+                  "path": "/dashboard/isle/assets/ProjectForm.__form0-0PZNkBuW.js",
+                  "bytes": 4171,
+                  "start": 110.522216796875
+                }
+              ]
+            }
+          ],
+          "eventTiming": {
+            "threshold": 16,
+            "reportedEntries": 1651,
+            "note": "Auxiliary native entries; durations below the reporting threshold are not replaced by zero. These samples are not field INP."
+          }
+        },
+        {
+          "id": "qwik",
+          "trials": 12,
+          "latencies": {
+            "cold-increment": {
+              "n": 12,
+              "median": 126.59999999403954,
+              "p95": 131.19999998807907,
+              "min": 124.59999996423721,
+              "max": 131.19999998807907
+            },
+            "warm-increment": {
+              "n": 144,
+              "median": 15.399999976158142,
+              "p95": 17.19999998807907,
+              "min": 9.100000023841858,
+              "max": 17.5
+            },
+            "other-island": {
+              "n": 12,
+              "median": 18.650000005960464,
+              "p95": 20.30000001192093,
+              "min": 15.699999988079071,
+              "max": 20.30000001192093
+            },
+            "remote-save": {
+              "n": 12,
+              "median": 119.0499999821186,
+              "p95": 128.19999998807907,
+              "min": 111.80000001192093,
+              "max": 128.19999998807907
+            },
+            "cold-form-input": {
+              "n": 12,
+              "median": 7.700000017881393,
+              "p95": 9.800000011920929,
+              "min": 7.100000023841858,
+              "max": 9.800000011920929
+            },
+            "form-submit": {
+              "n": 12,
+              "median": 121.4500000178814,
+              "p95": 127.89999997615814,
+              "min": 106.69999998807907,
+              "max": 127.89999997615814
+            },
+            "burst-32-islands": {
+              "n": 12,
+              "median": 10.900000035762787,
+              "p95": 11.399999976158142,
+              "min": 10.099999964237213,
+              "max": 11.399999976158142
+            }
+          },
+          "domContentLoaded": {
+            "n": 12,
+            "median": 195.25,
+            "p95": 203.69999998807907,
+            "min": 193.4000000357628,
+            "max": 203.69999998807907
+          },
+          "firstContentfulPaint": {
+            "n": 12,
+            "median": 114,
+            "p95": 124,
+            "min": 112,
+            "max": 124
+          },
+          "startupLongTaskMs": {
+            "n": 12,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "transfers": [
+            {
+              "html": 21648,
+              "initialJS": 28410,
+              "allJS": 28410,
+              "auxiliary": 207,
+              "totalAssets": 50265,
+              "requestedJS": [
+                {
+                  "path": "/dashboard/qwik/build/q-naDMFAHy.js",
+                  "bytes": 1678,
+                  "start": 111.296875
+                },
+                {
+                  "path": "/dashboard/qwik/build/q-9L1KKBjj.js",
+                  "bytes": 2014,
+                  "start": 111.43701171875
+                },
+                {
+                  "path": "/dashboard/qwik/build/q-CS2YYE6J.js",
+                  "bytes": 1177,
+                  "start": 247.350830078125
+                },
+                {
+                  "path": "/dashboard/qwik/build/q-CJFmz05K.js",
+                  "bytes": 19682,
+                  "start": 111.630859375
+                },
+                {
+                  "path": "/dashboard/qwik/build/q-Q0ZMp5e8.js",
+                  "bytes": 3859,
+                  "start": 247.430908203125
+                }
+              ]
+            }
+          ],
+          "eventTiming": {
+            "threshold": 16,
+            "reportedEntries": 1650,
+            "note": "Auxiliary native entries; durations below the reporting threshold are not replaced by zero. These samples are not field INP."
+          }
+        },
+        {
+          "id": "qwik-next",
+          "trials": 12,
+          "latencies": {
+            "cold-increment": {
+              "n": 12,
+              "median": 164.7000000178814,
+              "p95": 182.0999999642372,
+              "min": 156.5,
+              "max": 182.0999999642372
+            },
+            "warm-increment": {
+              "n": 144,
+              "median": 1.100000023841858,
+              "p95": 1.800000011920929,
+              "min": 0.10000002384185791,
+              "max": 2.400000035762787
+            },
+            "other-island": {
+              "n": 12,
+              "median": 17.25,
+              "p95": 18.399999976158142,
+              "min": 15.100000023841858,
+              "max": 18.399999976158142
+            },
+            "remote-save": {
+              "n": 12,
+              "median": 117,
+              "p95": 127.09999996423721,
+              "min": 108.19999998807907,
+              "max": 127.09999996423721
+            },
+            "cold-form-input": {
+              "n": 12,
+              "median": 10.900000005960464,
+              "p95": 12.899999976158142,
+              "min": 9.299999952316284,
+              "max": 12.899999976158142
+            },
+            "form-submit": {
+              "n": 12,
+              "median": 101.19999998807907,
+              "p95": 111.69999998807907,
+              "min": 94.80000001192093,
+              "max": 111.69999998807907
+            },
+            "burst-32-islands": {
+              "n": 12,
+              "median": 29.549999982118607,
+              "p95": 33.09999996423721,
+              "min": 27.19999998807907,
+              "max": 33.09999996423721
+            }
+          },
+          "domContentLoaded": {
+            "n": 12,
+            "median": 390.44999998807907,
+            "p95": 397.39999997615814,
+            "min": 382.39999997615814,
+            "max": 397.39999997615814
+          },
+          "firstContentfulPaint": {
+            "n": 12,
+            "median": 136,
+            "p95": 144,
+            "min": 132,
+            "max": 144
+          },
+          "startupLongTaskMs": {
+            "n": 12,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "transfers": [
+            {
+              "html": 37223,
+              "initialJS": 42280,
+              "allJS": 44982,
+              "auxiliary": 323,
+              "totalAssets": 82528,
+              "requestedJS": [
+                {
+                  "path": "/dashboard/qwik-next/build/q-BTUIEz9o.js",
+                  "bytes": 2414,
+                  "start": 114.81884765625
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-Dem29lbk.js",
+                  "bytes": 1897,
+                  "start": 114.947998046875
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-DPZ44QGi.js",
+                  "bytes": 33869,
+                  "start": 115.097900390625
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-DK3Fl9T5.js",
+                  "bytes": 154,
+                  "start": 427.998046875
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-CP0d07U9.js",
+                  "bytes": 853,
+                  "start": 428.704833984375
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-wQLE88GE.js",
+                  "bytes": 127,
+                  "start": 428.901123046875
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-CfqRfj1-.js",
+                  "bytes": 124,
+                  "start": 428.955810546875
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-BSa11x0Y.js",
+                  "bytes": 2842,
+                  "start": 428.81005859375
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-DxuQrluO.js",
+                  "bytes": 167,
+                  "start": 484.298095703125
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-BcgNyro5.js",
+                  "bytes": 127,
+                  "start": 524.345947265625
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-DIjE9WCt.js",
+                  "bytes": 133,
+                  "start": 529.85693359375
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-sAfWIU-n.js",
+                  "bytes": 131,
+                  "start": 547.709228515625
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-D9pelr0N.js",
+                  "bytes": 1049,
+                  "start": 553.31201171875
+                },
+                {
+                  "path": "/dashboard/qwik-next/build/q-DVg2xI2K.js",
+                  "bytes": 1095,
+                  "start": 566.97509765625
+                }
+              ]
+            }
+          ],
+          "eventTiming": {
+            "threshold": 16,
+            "reportedEntries": 1658,
+            "note": "Auxiliary native entries; durations below the reporting threshold are not replaced by zero. These samples are not field INP."
+          }
+        },
+        {
+          "id": "preact",
+          "trials": 12,
+          "latencies": {
+            "cold-increment": {
+              "n": 12,
+              "median": 2.8499999940395355,
+              "p95": 3.5,
+              "min": 2.400000035762787,
+              "max": 3.5
+            },
+            "warm-increment": {
+              "n": 144,
+              "median": 1,
+              "p95": 1.5,
+              "min": 0.30000001192092896,
+              "max": 1.7000000476837158
+            },
+            "other-island": {
+              "n": 12,
+              "median": 1.0499999821186066,
+              "p95": 1.399999976158142,
+              "min": 0.5,
+              "max": 1.399999976158142
+            },
+            "remote-save": {
+              "n": 12,
+              "median": 105,
+              "p95": 118.19999998807907,
+              "min": 100.79999995231628,
+              "max": 118.19999998807907
+            },
+            "cold-form-input": {
+              "n": 12,
+              "median": 2.9000000059604645,
+              "p95": 3.399999976158142,
+              "min": 2.399999976158142,
+              "max": 3.399999976158142
+            },
+            "form-submit": {
+              "n": 12,
+              "median": 99,
+              "p95": 108.80000001192093,
+              "min": 90,
+              "max": 108.80000001192093
+            },
+            "burst-32-islands": {
+              "n": 12,
+              "median": 2.0499999821186066,
+              "p95": 2.5,
+              "min": 1.5,
+              "max": 2.5
+            }
+          },
+          "domContentLoaded": {
+            "n": 12,
+            "median": 253.2000000178814,
+            "p95": 260.7999999523163,
+            "min": 243.10000002384186,
+            "max": 260.7999999523163
+          },
+          "firstContentfulPaint": {
+            "n": 12,
+            "median": 120,
+            "p95": 124,
+            "min": 116,
+            "max": 124
+          },
+          "startupLongTaskMs": {
+            "n": 12,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "transfers": [
+            {
+              "html": 5179,
+              "initialJS": 10041,
+              "allJS": 10041,
+              "auxiliary": 0,
+              "totalAssets": 15220,
+              "requestedJS": [
+                {
+                  "path": "/dashboard/preact/assets/dashboard-DeXz6uJs.js",
+                  "bytes": 10041,
+                  "start": 99.153076171875
+                }
+              ]
+            }
+          ],
+          "eventTiming": {
+            "threshold": 16,
+            "reportedEntries": 1600,
+            "note": "Auxiliary native entries; durations below the reporting threshold are not replaced by zero. These samples are not field INP."
+          }
+        }
+      ]
+    }
+  ]
+}

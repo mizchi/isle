@@ -1,0 +1,21 @@
+{
+  "widgetURL": "https://isle-widget.mizchi.workers.dev/standalone/",
+  "viewport": {
+    "width": 375,
+    "height": 1000
+  },
+  "reserved": {
+    "width": 343,
+    "height": 640,
+    "widgetTop": 198.671875,
+    "afterTop": 862.671875
+  },
+  "final": {
+    "width": 343,
+    "height": 640,
+    "widgetTop": 198.671875,
+    "afterTop": 862.671875
+  },
+  "CLS": 0,
+  "sharedPool": false
+}

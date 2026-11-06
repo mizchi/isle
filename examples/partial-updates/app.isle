@@ -1,0 +1,13 @@
+client component Dashboard() {
+  state count = 0;
+  state note = "Unchanged";
+  derive doubled = count * 2;
+  <section>
+    <h2 data-static="">This heading is static</h2>
+    <p>Count <output data-count="">{count}</output></p>
+    <p>Doubled <output data-doubled="">{doubled}</output></p>
+    <p>Independent note <output data-note="">{note}</output></p>
+    <button type="button">on click increment { count += 1; }Increment</button>
+    <button type="button">on click edit { note = "Edited"; }Edit note</button>
+  </section>
+}

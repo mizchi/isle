@@ -1,0 +1,119 @@
+{
+  "writer": "writer-a",
+  "pass": true,
+  "roundBudgetPerScenario": 3,
+  "scenarios": [
+    {
+      "scenario": "author-counter",
+      "candidate": "evals/attempts/writer-a/counter.isle",
+      "roundsUsed": 1,
+      "checkCalls": 1,
+      "graderCalls": 1,
+      "pass": true,
+      "score": 5,
+      "total": 5,
+      "rounds": [
+        {
+          "round": 1,
+          "createdLines": "counter.isle:1-9",
+          "changedLinesAfterRound": [],
+          "check": {
+            "command": "node tools/isle.mjs check evals/attempts/writer-a/counter.isle",
+            "exitCode": 0,
+            "output": { "ok": true, "components": ["Counter"], "actions": [] }
+          },
+          "grader": {
+            "command": "node tools/eval.mjs author-counter evals/attempts/writer-a/counter.isle",
+            "exitCode": 0,
+            "output": {
+              "version": 1,
+              "pass": true,
+              "reports": [
+                {
+                  "scenario": "author-counter",
+                  "pass": true,
+                  "score": 5,
+                  "total": 5,
+                  "checks": [
+                    { "name": "client Counter", "pass": true },
+                    { "name": "button with click", "pass": true },
+                    { "name": "count state and remaining derive", "pass": true },
+                    { "name": "resume from 37", "pass": true },
+                    { "name": "resume from 5", "pass": true }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "author-action",
+      "candidate": "evals/attempts/writer-a/action.isle",
+      "roundsUsed": 1,
+      "checkCalls": 1,
+      "graderCalls": 1,
+      "pass": true,
+      "score": 6,
+      "total": 6,
+      "rounds": [
+        {
+          "round": 1,
+          "createdLines": "action.isle:1-10",
+          "changedLinesAfterRound": [],
+          "check": {
+            "command": "node tools/isle.mjs check evals/attempts/writer-a/action.isle",
+            "exitCode": 0,
+            "output": { "ok": true, "components": [], "actions": ["publishNote"] }
+          },
+          "grader": {
+            "command": "node tools/eval.mjs author-action evals/attempts/writer-a/action.isle",
+            "exitCode": 0,
+            "output": {
+              "version": 1,
+              "pass": true,
+              "reports": [
+                {
+                  "scenario": "author-action",
+                  "pass": true,
+                  "score": 6,
+                  "total": 6,
+                  "checks": [
+                    { "name": "input schema", "pass": true },
+                    { "name": "output schema", "pass": true },
+                    { "name": "boundary schemas", "pass": true },
+                    { "name": "resource policy", "pass": true },
+                    { "name": "effect contract", "pass": true },
+                    { "name": "grant precedes mutation", "pass": true }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "friction": [
+    {
+      "scenario": "author-counter",
+      "guideLine": 36,
+      "quote": "通常の要素・text・`{式}`",
+      "feedback": "テンプレート内の改行・字下げを表示テキストとして保持するかの説明がない。課題の表示が空白まで厳密一致なのか判断しづらく、ガイドの例と同じ配置にした。"
+    },
+    {
+      "scenario": "author-action",
+      "guideLine": 69,
+      "quote": "policy は `qualified.policy(request, input.id)`。",
+      "feedback": "id が必須フィールド名なのか任意の resource ID field を指す例なのかが曖昧。課題を優先して input.noteId に置き換えた。"
+    },
+    {
+      "scenario": "author-action",
+      "guideLine": 69,
+      "quote": "実装する host adapter は別途登録します。",
+      "feedback": "未登録の policy/operation 名が静的検査で許可されるかが説明されていない。課題指定の名前をそのまま書き、登録実装は追加しなかった。"
+    }
+  ],
+  "unmetConstraints": []
+}

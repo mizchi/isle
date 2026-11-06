@@ -1,0 +1,489 @@
+{
+  "examples": 8,
+  "results": [
+    {
+      "example": "hello",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "hello",
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "hello",
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "hello",
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "hello",
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inert-control",
+          "severity": "warn",
+          "message": "button \"Reset\" (main>section.card>section>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+          "evidence": {
+            "element": "button \"Reset\" (main>section.card>section>button)"
+          }
+        }
+      ]
+    },
+    {
+      "example": "ssr-only",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "ssr-only",
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "ssr-only",
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "ssr-only",
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "ssr-only",
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "partial-updates",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "partial-updates",
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "partial-updates",
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "partial-updates",
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "partial-updates",
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "control-flow",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "control-flow",
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "control-flow",
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "control-flow",
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "control-flow",
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 2,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inert-control",
+          "severity": "warn",
+          "message": "button \"Show\" (main>section.card>section>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+          "evidence": {
+            "element": "button \"Show\" (main>section.card>section>button)"
+          }
+        },
+        {
+          "rule": "inert-control",
+          "severity": "warn",
+          "message": "button \"Restore rows\" (main>section.card>section>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+          "evidence": {
+            "element": "button \"Restore rows\" (main>section.card>section>button)"
+          }
+        }
+      ]
+    },
+    {
+      "example": "loading",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "loading",
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "loading",
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "loading",
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "loading",
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "resources",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "resources",
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "resources",
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "resources",
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "unprobed-handler-types",
+          "severity": "warn",
+          "message": "1 handler type(s) registered and NONE exercised: click — this gate is an inventory and presses nothing. A clean result here says the wiring exists, not that it works. Run 'check interactions --handlers' to focus and activate the controls, add '--probe-drag' for the drag surfaces, or drive the rest with a 'verify flow' script.",
+          "evidence": {
+            "element": "(page)"
+          }
+        }
+      ]
+    },
+    {
+      "example": "resources",
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "styles",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "styles",
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "styles",
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "styles",
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "styles",
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "navigation",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "navigation",
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "navigation",
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "example": "navigation",
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "no-handlers-found",
+          "severity": "warn",
+          "message": "1 visible interactive control(s) and ZERO handler registrations — no listeners, no on* attributes, no on* properties, nothing on window/document. Either the controls are inert (check interactions reports that as inert-control), or they are wired somewhere this gate cannot see, or the page genuinely needs none (links, a form that posts). This gate cannot tell which; it can only tell you that a clean result here is not evidence of anything.",
+          "evidence": {
+            "element": "(page)"
+          }
+        }
+      ]
+    },
+    {
+      "example": "navigation",
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    }
+  ]
+}

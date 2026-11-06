@@ -1,0 +1,13 @@
+predicate authorized(
+  actor : Int,
+  target : Int,
+  permit_actor : Int,
+  permit_target : Int,
+  revoked : Bool,
+) {
+  (actor == 0 || actor == 1) &&
+  actor == target &&
+  permit_actor == actor &&
+  permit_target == target &&
+  !revoked
+}

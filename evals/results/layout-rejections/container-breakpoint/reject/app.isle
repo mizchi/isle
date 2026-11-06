@@ -1,0 +1,3 @@
+component Panel() {
+  <main class="shell"><section class="panel"><p class="a">A</p><p class="b">B</p></section></main>
+}

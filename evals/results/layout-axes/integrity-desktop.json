@@ -1,0 +1,55 @@
+{
+  "gate": "check.integrity",
+  "command": "check integrity",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 1,
+    "info": 0
+  },
+  "findings": [
+    {
+      "rule": "degenerate-render",
+      "severity": "warn",
+      "message": "Near-empty render: 1 component(s), 2 text block(s), 0.45% ink. If the brief calls for a full page, most of it is missing.",
+      "viewport": 1000,
+      "evidence": {
+        "componentCount": 1,
+        "inkRatio": 0.004466,
+        "textBlocks": 2
+      }
+    }
+  ],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "evals/results/layout-axes/fixed.html",
+    "verdict": "clean",
+    "findings": [
+      {
+        "kind": "degenerate-render",
+        "severity": "warn",
+        "viewport": 1000,
+        "message": "Near-empty render: 1 component(s), 2 text block(s), 0.45% ink. If the brief calls for a full page, most of it is missing.",
+        "evidence": {
+          "componentCount": 1,
+          "inkRatio": 0.004466,
+          "textBlocks": 2
+        }
+      }
+    ],
+    "exempted": [],
+    "viewports": [
+      {
+        "width": 1000,
+        "height": 500,
+        "components": 1,
+        "inkRatio": 0.0045,
+        "textBlocks": 2
+      }
+    ],
+    "kickback": [
+      "[degenerate-render] (viewport 1000): Near-empty render: 1 component(s), 2 text block(s), 0.45% ink. If the brief calls for a full page, most of it is missing."
+    ]
+  }
+}

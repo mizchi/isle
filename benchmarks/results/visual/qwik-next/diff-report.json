@@ -1,0 +1,342 @@
+{
+  "dir": ".",
+  "baseline": "",
+  "variants": [],
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "label": "wide",
+      "reason": "standard"
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "label": "desktop",
+      "reason": "standard"
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "label": "mobile",
+      "reason": "standard"
+    }
+  ],
+  "strict": false,
+  "approvalWarnings": [],
+  "paintTree": {
+    "enabled": true,
+    "available": false,
+    "url": "ws://127.0.0.1:9222",
+    "error": "Crater BiDi unavailable at ws://127.0.0.1:9222"
+  },
+  "baselineSanity": {
+    "ok": true,
+    "warnings": [],
+    "failedRequests": []
+  },
+  "domEquivalence": [
+    {
+      "variantFile": "http://127.0.0.1:52287/qwik-next/",
+      "result": {
+        "ok": false,
+        "warnings": [
+          {
+            "code": "element-count-mismatch",
+            "message": "total element count differs by 23.1% (baseline: 26, variant: 32)",
+            "baseline": [
+              "26"
+            ],
+            "variant": [
+              "32"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "computedStyleDiff": [
+    {
+      "variantFile": "http://127.0.0.1:52287/qwik-next/",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "byProperty": [],
+        "bySelector": [],
+        "selectorsOnlyInBaseline": [],
+        "selectorsOnlyInVariant": []
+      }
+    }
+  ],
+  "computedStyleDiffPerViewport": [
+    {
+      "variantFile": "http://127.0.0.1:52287/qwik-next/",
+      "result": {
+        "totalDiffs": 0,
+        "byViewport": [
+          {
+            "viewport": "wide",
+            "count": 0
+          },
+          {
+            "viewport": "desktop",
+            "count": 0
+          },
+          {
+            "viewport": "mobile",
+            "count": 0
+          }
+        ],
+        "bySelectorProperty": [],
+        "universalPairs": [],
+        "breakpointGatedPairs": []
+      }
+    }
+  ],
+  "authoredStyleDiff": [
+    {
+      "variantFile": "http://127.0.0.1:52287/qwik-next/",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "byProperty": [],
+        "bySelector": [],
+        "selectorsOnlyInBaseline": [],
+        "selectorsOnlyInVariant": []
+      }
+    }
+  ],
+  "authoredStyleDiffPerViewport": [
+    {
+      "variantFile": "http://127.0.0.1:52287/qwik-next/",
+      "result": {
+        "totalDiffs": 0,
+        "byViewport": [
+          {
+            "viewport": "wide",
+            "count": 0
+          },
+          {
+            "viewport": "desktop",
+            "count": 0
+          },
+          {
+            "viewport": "mobile",
+            "count": 0
+          }
+        ],
+        "bySelectorProperty": [],
+        "universalPairs": [],
+        "breakpointGatedPairs": []
+      }
+    }
+  ],
+  "domPositionDiff": [
+    {
+      "variantFile": "http://127.0.0.1:52287/qwik-next/",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "pathsOnlyInBaseline": [
+          "body[0]>main[0]>div[2]>section[0]>h2[0]",
+          "body[0]>main[0]>div[2]>section[0]>button[1]"
+        ],
+        "pathsOnlyInVariant": [
+          "body[0]>main[0]>div[2]>section[0]>h2[6]",
+          "body[0]>main[0]>div[2]>section[0]>button[7]"
+        ],
+        "byProperty": [],
+        "byPath": []
+      }
+    }
+  ],
+  "domPositionDiffPerViewport": [
+    {
+      "variantFile": "http://127.0.0.1:52287/qwik-next/",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "verifiedPairs": [],
+        "byPathProperty": [],
+        "byViewport": [
+          {
+            "viewport": "desktop",
+            "count": 0
+          },
+          {
+            "viewport": "mobile",
+            "count": 0
+          },
+          {
+            "viewport": "wide",
+            "count": 0
+          }
+        ],
+        "byProperty": [],
+        "byPath": []
+      }
+    }
+  ],
+  "results": [
+    {
+      "variant": "qwik-next",
+      "variantFile": "http://127.0.0.1:52287/qwik-next/",
+      "viewport": "wide",
+      "diffRatio": 0,
+      "diffPixels": 0,
+      "totalPixels": 1296000,
+      "rawDiffRatio": 0,
+      "rawDiffPixels": 0,
+      "rawDominantCategory": "none",
+      "rawCategorySummary": "no changes",
+      "rawCategoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "approved": false,
+      "partiallyApproved": false,
+      "approvedPixels": 0,
+      "approvalReasons": [],
+      "dominantCategory": "none",
+      "categorySummary": "no changes",
+      "categoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "rawPaintTreeChangeCount": 0,
+      "rawPaintTreeSummary": "no changes",
+      "rawPaintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "paintTreeChangeCount": 0,
+      "paintTreeSummary": "no changes",
+      "paintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "approvedPaintTreeCount": 0,
+      "approvedPaintTreeReasons": [],
+      "fixCandidates": []
+    },
+    {
+      "variant": "qwik-next",
+      "variantFile": "http://127.0.0.1:52287/qwik-next/",
+      "viewport": "desktop",
+      "diffRatio": 0,
+      "diffPixels": 0,
+      "totalPixels": 1152000,
+      "rawDiffRatio": 0,
+      "rawDiffPixels": 0,
+      "rawDominantCategory": "none",
+      "rawCategorySummary": "no changes",
+      "rawCategoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "approved": false,
+      "partiallyApproved": false,
+      "approvedPixels": 0,
+      "approvalReasons": [],
+      "dominantCategory": "none",
+      "categorySummary": "no changes",
+      "categoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "rawPaintTreeChangeCount": 0,
+      "rawPaintTreeSummary": "no changes",
+      "rawPaintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "paintTreeChangeCount": 0,
+      "paintTreeSummary": "no changes",
+      "paintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "approvedPaintTreeCount": 0,
+      "approvedPaintTreeReasons": [],
+      "fixCandidates": []
+    },
+    {
+      "variant": "qwik-next",
+      "variantFile": "http://127.0.0.1:52287/qwik-next/",
+      "viewport": "mobile",
+      "diffRatio": 0,
+      "diffPixels": 0,
+      "totalPixels": 308250,
+      "rawDiffRatio": 0,
+      "rawDiffPixels": 0,
+      "rawDominantCategory": "none",
+      "rawCategorySummary": "no changes",
+      "rawCategoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "approved": false,
+      "partiallyApproved": false,
+      "approvedPixels": 0,
+      "approvalReasons": [],
+      "dominantCategory": "none",
+      "categorySummary": "no changes",
+      "categoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "rawPaintTreeChangeCount": 0,
+      "rawPaintTreeSummary": "no changes",
+      "rawPaintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "paintTreeChangeCount": 0,
+      "paintTreeSummary": "no changes",
+      "paintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "approvedPaintTreeCount": 0,
+      "approvedPaintTreeReasons": [],
+      "fixCandidates": []
+    }
+  ],
+  "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/benchmarks/results/visual/qwik-next/diff-report.json"
+}

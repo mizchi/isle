@@ -1,0 +1,74 @@
+{
+  "gate": "check.interactions",
+  "command": "check interactions",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 1,
+    "info": 0
+  },
+  "findings": [
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"17 / 34\" (main>section.card>button.control) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"17 / 34\" (main>section.card>button.control)"
+      }
+    }
+  ],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "map": {
+      "source": "http://127.0.0.1:8794/portable/",
+      "elements": [
+        {
+          "index": 0,
+          "key": "button|17 / 34",
+          "role": "button",
+          "name": "17 / 34",
+          "path": "main>section.card>button.control",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 1,
+          "key": "button|Draft",
+          "role": "button",
+          "name": "Draft",
+          "path": "main>section.card>button.control",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        }
+      ],
+      "capped": 0
+    },
+    "issues": [
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"17 / 34\" (main>section.card>button.control)",
+        "message": "button \"17 / 34\" (main>section.card>button.control) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      }
+    ]
+  }
+}

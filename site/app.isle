@@ -1,0 +1,61 @@
+schema Copy {
+  eyebrow: string; line1: string; line2: string; lead: string;
+  guide: string; explore: string; preview: string; file: string;
+  live: string; increment: string; reset: string; counterNote: string;
+  sectionTitle: string; sectionLead: string; pipeline: string;
+  first: string; second: string; third: string;
+  firstNote: string; secondNote: string; thirdNote: string;
+  examplesTitle: string; examplesLead: string; allExamples: string;
+  guideURL: string; examplesURL: string; downloadURL: string;
+}
+schema Feature { id: string; title: string; body: string; }
+schema Demo { id: string; title: string; body: string; href: string; action: string; }
+
+server component Header(home: string, docs: string, examples: string, alternate: string, language: string, docsLabel: string, examplesLabel: string) {
+  <header class="site-header"><div class="header-inner">
+    <a class="brand" href={home}><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href={docs}>{docsLabel}</a><a href={examples}>{examplesLabel}</a>
+      <a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a>
+      <a class="language-link" href={alternate}>{language}</a>
+    </nav>
+  </div></header>
+}
+
+client component LiveCounter(caption: string, increment: string, reset: string, note: string) {
+  state count = 5;
+  <section class="live-counter" aria-label="Live Isle counter">
+    <div class="demo-caption"><span class="status-dot" aria-hidden="true"></span>{caption}<span class="demo-tech">SSR → resume</span></div>
+    <div class="counter-controls"><output data-hero-count="" aria-live="polite">{count}</output><button type="button" aria-label={increment}>on click increment { count += 1; }+1</button><button class="reset-button" type="button">on click reset { count = 5; }{reset}</button></div>
+    <p class="counter-note">{note}</p>
+  </section>
+}
+
+server component Home(eyebrow: string, line1: string, line2: string, lead: string, guide: string, explore: string, preview: string, file: string, live: string, increment: string, reset: string, counterNote: string, guideURL: string, examplesURL: string, downloadURL: string, code: string) {
+    <section class="hero page-width">
+      <div class="hero-copy"><p class="eyebrow">{eyebrow}</p><h1><span>{line1}</span><span>{line2}</span></h1><p class="hero-lead">{lead}</p>
+        <div class="hero-actions"><a class="button primary" href={guideURL}>{guide}<span aria-hidden="true"> →</span></a><a class="button secondary" href={examplesURL}>{explore}<span aria-hidden="true"> ↗</span></a></div>
+        <a class="preview-download" href={downloadURL}>{preview}<span aria-hidden="true"> ↓</span></a>
+      </div>
+      <div class="hero-example"><div class="source-card"><div class="source-toolbar"><span class="window-dots" aria-hidden="true">● ● ●</span><span>Counter.isle</span><span class="source-label">{file}</span></div><pre tabindex="0"><code>{code}</code></pre></div>
+        <LiveCounter caption={live} increment={increment} reset={reset} note={counterNote} />
+      </div>
+    </section>
+}
+
+server component Sections(copy: Copy, features: Feature[], demos: Demo[]) {
+  <div class="page-sections">
+    <div class="principles"><div class="page-width principles-inner"><span>Compiler-first</span><span>ES2023 · Web standards</span><span>HTML + snapshot + split code</span></div></div>
+    <section class="page-width content-section"><div class="section-heading"><p class="eyebrow">THE IDEA</p><h2>{copy.sectionTitle}</h2><p>{copy.sectionLead}</p></div>
+      <div class="feature-grid">@for (const feature of features; key feature.id) { <article class="feature"><span class="feature-number">{feature.id}</span><h3>{feature.title}</h3><p>{feature.body}</p></article> }</div>
+    </section>
+    <section class="pipeline-section"><div class="page-width"><div class="section-heading"><p class="eyebrow">HOW IT WORKS</p><h2>{copy.pipeline}</h2></div><ol class="pipeline"><li><span class="pipeline-number">01</span><h3>{copy.first}</h3><p>{copy.firstNote}</p></li><li><span class="pipeline-number">02</span><h3>{copy.second}</h3><p>{copy.secondNote}</p></li><li><span class="pipeline-number">03</span><h3>{copy.third}</h3><p>{copy.thirdNote}</p></li></ol></div></section>
+    <section class="page-width content-section"><div class="section-heading with-action"><div><p class="eyebrow">LEARN BY DOING</p><h2>{copy.examplesTitle}</h2><p>{copy.examplesLead}</p></div><a class="text-link" href={copy.examplesURL}>{copy.allExamples}<span aria-hidden="true"> →</span></a></div>
+      <div class="example-grid">@for (const demo of demos; key demo.id) { <article class="example-card"><span class="tag live-tag">LIVE DEMO</span><h3>{demo.title}</h3><p>{demo.body}</p><a class="text-link" href={demo.href}>{demo.action}<span aria-hidden="true"> ↗</span></a></article> }</div>
+    </section>
+  </div>
+}
+
+server component Footer(home: string, docs: string, examples: string, note: string) {
+  <footer class="site-footer"><div class="page-width footer-inner"><div><a class="brand" href={home}>Isle</a><p>{note}</p></div><nav aria-label="Footer navigation"><a href={docs}>Docs</a><a href={examples}>Examples</a><a href="https://github.com/mizchi/isle">Source ↗</a></nav></div></footer>
+}

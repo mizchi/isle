@@ -1,0 +1,128 @@
+{
+  "pass": true,
+  "cases": [
+    {
+      "rows": 128,
+      "domElements": 2063,
+      "audit": {
+        "textMutations": 1,
+        "attributeMutations": 0,
+        "childListMutations": 0,
+        "bindingQueries": 0,
+        "bindingQueryMs": 0,
+        "restoredScopes": [
+          "orders/c0"
+        ]
+      },
+      "operations": [
+        {
+          "adjustment": 1,
+          "textMutations": 385,
+          "attributeMutations": 128,
+          "childListMutations": 0,
+          "bindingQueries": 128,
+          "bindingQueryMs": 0.19999998807907104,
+          "restoredScopes": [
+            "orders/c0",
+            "orders/c1"
+          ]
+        },
+        {
+          "adjustment": 2,
+          "textMutations": 385,
+          "attributeMutations": 128,
+          "childListMutations": 0,
+          "bindingQueries": 0,
+          "bindingQueryMs": 0,
+          "restoredScopes": [
+            "orders/c0",
+            "orders/c1"
+          ]
+        }
+      ],
+      "pass": true
+    },
+    {
+      "rows": 1024,
+      "domElements": 16399,
+      "audit": {
+        "textMutations": 1,
+        "attributeMutations": 0,
+        "childListMutations": 0,
+        "bindingQueries": 0,
+        "bindingQueryMs": 0,
+        "restoredScopes": [
+          "orders/c0"
+        ]
+      },
+      "operations": [
+        {
+          "adjustment": 1,
+          "textMutations": 3073,
+          "attributeMutations": 1024,
+          "childListMutations": 0,
+          "bindingQueries": 1024,
+          "bindingQueryMs": 12.29999977350235,
+          "restoredScopes": [
+            "orders/c0",
+            "orders/c1"
+          ]
+        },
+        {
+          "adjustment": 2,
+          "textMutations": 3073,
+          "attributeMutations": 1024,
+          "childListMutations": 0,
+          "bindingQueries": 0,
+          "bindingQueryMs": 0,
+          "restoredScopes": [
+            "orders/c0",
+            "orders/c1"
+          ]
+        }
+      ],
+      "pass": true
+    },
+    {
+      "rows": 4096,
+      "domElements": 65551,
+      "audit": {
+        "textMutations": 1,
+        "attributeMutations": 0,
+        "childListMutations": 0,
+        "bindingQueries": 0,
+        "bindingQueryMs": 0,
+        "restoredScopes": [
+          "orders/c0"
+        ]
+      },
+      "operations": [
+        {
+          "adjustment": 1,
+          "textMutations": 12289,
+          "attributeMutations": 4096,
+          "childListMutations": 0,
+          "bindingQueries": 4096,
+          "bindingQueryMs": 191.79999995231628,
+          "restoredScopes": [
+            "orders/c0",
+            "orders/c1"
+          ]
+        },
+        {
+          "adjustment": 2,
+          "textMutations": 12289,
+          "attributeMutations": 4096,
+          "childListMutations": 0,
+          "bindingQueries": 0,
+          "bindingQueryMs": 0,
+          "restoredScopes": [
+            "orders/c0",
+            "orders/c1"
+          ]
+        }
+      ],
+      "pass": true
+    }
+  ]
+}

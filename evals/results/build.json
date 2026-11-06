@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "description": "Single local production demo; byte baseline, not a comparative performance benchmark.",
+  "assets": [
+    {
+      "file": "index.html",
+      "bytes": 13430,
+      "gzipBytes": 2300
+    },
+    {
+      "file": "assets/isle-resume-2rFM-Mp8.js",
+      "bytes": 4448,
+      "gzipBytes": 2149
+    },
+    {
+      "file": "assets/Counter.h0-CxJgHqIU.js",
+      "bytes": 85,
+      "gzipBytes": 90
+    },
+    {
+      "file": "assets/Editor.h1-WsKkkGT5.js",
+      "bytes": 127,
+      "gzipBytes": 129
+    },
+    {
+      "file": "assets/index-Des-UpCF.js",
+      "bytes": 1635,
+      "gzipBytes": 882
+    }
+  ],
+  "loaderEntries": [
+    {
+      "id": "../../isle:resume",
+      "file": "assets/isle-resume-2rFM-Mp8.js"
+    }
+  ],
+  "dynamicEntries": [
+    {
+      "id": "../../virtual:isle-handler/Counter.h0",
+      "file": "assets/Counter.h0-CxJgHqIU.js"
+    },
+    {
+      "id": "../../virtual:isle-handler/Editor.h1",
+      "file": "assets/Editor.h1-WsKkkGT5.js"
+    }
+  ],
+  "snapshotSlots": [
+    {
+      "scope": "counter-a",
+      "fields": [
+        "count"
+      ]
+    },
+    {
+      "scope": "counter-b",
+      "fields": [
+        "count"
+      ]
+    },
+    {
+      "scope": "editor",
+      "fields": [
+        "id",
+        "title"
+      ]
+    }
+  ],
+  "serverSymbolStringsAbsent": true
+}

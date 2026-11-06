@@ -1,0 +1,103 @@
+<style>
+.isle-overview { --ink:#162b3b; --muted:#465b6a; --line:#ccd8df; --blue:#164f9e; --teal:#08665c; --amber:#865000; color:var(--ink); background:#f6f7f9; padding:32px; font:15px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; box-sizing:border-box; }
+.isle-overview * { box-sizing:border-box; }
+.isle-overview h2,.isle-overview h3,.isle-overview p { margin:0; padding:0; border:0; color:inherit; }
+.isle-overview .io-topline { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.isle-overview .io-brand { font-size:38px; line-height:1; font-weight:800; letter-spacing:-1px; }
+.isle-overview .io-status { font-size:13px; padding:2px 9px; border:1px solid #8799a6; border-radius:20px; color:var(--muted); }
+.isle-overview h2 { font-size:28px; line-height:1.5; font-weight:750; letter-spacing:-.5px; }
+.isle-overview h2 span { display:inline-block; white-space:nowrap; }
+.isle-overview .io-lead { margin-top:8px; color:var(--muted); font-size:15px; }
+.isle-overview .io-pipeline { margin-top:24px; display:grid; grid-template-columns:1.25fr 1fr 1fr; gap:12px; }
+.isle-overview .io-step { background:white; border:1px solid var(--line); border-top:4px solid var(--blue); border-radius:10px; padding:16px; min-width:0; }
+.isle-overview .io-step:nth-child(2) { border-top-color:var(--teal); }
+.isle-overview .io-step:nth-child(3) { border-top-color:var(--amber); }
+.isle-overview .io-number { display:block; font:700 12px/1.4 ui-monospace,SFMono-Regular,monospace; color:var(--muted); margin-bottom:6px; letter-spacing:1px; }
+.isle-overview h3 { font-size:18px; line-height:1.5; font-weight:750; margin-bottom:12px; }
+.isle-overview code[data-example] { display:block; white-space:pre; padding:0; background:none; font:12.5px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:-.3px; color:#164f9e; }
+.isle-overview .io-stack { display:grid; gap:8px; }
+.isle-overview .io-stack p { padding:7px 10px; background:#eff5f6; border-radius:5px; font-size:14px; }
+.isle-overview .io-small { display:block; margin-top:10px; color:var(--muted); font-size:13px; }
+.isle-overview .io-output { display:grid; gap:8px; }
+.isle-overview .io-output p { background:#fff5e5; border-radius:5px; padding:7px 10px; font-size:14px; }
+.isle-overview .io-runtime { margin-top:20px; padding:20px; background:#eaf3f1; border:1px solid #9ebdb6; border-radius:10px; }
+.isle-overview .io-runtime-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.isle-overview .io-runtime-head h3 { margin:0; font-size:18px; }
+.isle-overview .io-policy { font:600 13px/1.6 ui-monospace,SFMono-Regular,monospace; color:#08665c; }
+.isle-overview .io-timeline { display:grid; grid-template-columns:1fr 1fr 1.3fr; gap:16px; }
+.isle-overview .io-time { min-width:0; }
+.isle-overview .io-time strong { display:block; font-size:15px; margin-bottom:4px; color:#064c45; }
+.isle-overview .io-time p { font-size:14px; color:#2c514c; }
+.isle-overview .io-next { display:block; color:#48665f; font-size:12px; font-weight:700; margin-bottom:3px; }
+.isle-overview .io-important { margin-top:14px; padding-top:12px; border-top:1px solid #b3ccc6; color:#214b45; font-size:14px; font-weight:650; }
+.isle-overview .io-capabilities { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:22px; }
+.isle-overview .io-cap { min-width:0; }
+.isle-overview .io-cap h3 { margin-bottom:6px; font-size:16px; }
+.isle-overview .io-cap p { font-size:13px; color:var(--muted); }
+.isle-overview .io-cap .io-tag { display:inline-block; margin-bottom:6px; font-size:11px; color:#36516a; font-weight:700; letter-spacing:.3px; }
+.isle-overview .io-footer { margin-top:22px; padding-top:14px; border-top:1px solid var(--line); display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.isle-overview .io-footer p { font-size:12px; color:var(--muted); }
+.isle-overview .io-footer strong { display:block; color:var(--ink); font-size:13px; margin-bottom:3px; }
+@media (max-width:740px) {
+  .isle-overview { padding:22px 18px; font-size:15px; }
+  .isle-overview .io-brand { font-size:34px; }
+  .isle-overview h2 { font-size:25px; letter-spacing:0; }
+  .isle-overview .io-lead { font-size:14px; }
+  .isle-overview .io-pipeline { grid-template-columns:1fr; gap:12px; margin-top:20px; }
+  .isle-overview .io-step { padding:16px; }
+  .isle-overview code[data-example] { font-size:13px; letter-spacing:0; }
+  .isle-overview .io-runtime { padding:16px; }
+  .isle-overview .io-runtime-head { display:block; }
+  .isle-overview .io-policy { display:block; margin-top:4px; }
+  .isle-overview .io-timeline { grid-template-columns:1fr; gap:16px; }
+  .isle-overview .io-capabilities { grid-template-columns:1fr; gap:18px; }
+  .isle-overview .io-cap { padding-bottom:14px; border-bottom:1px solid var(--line); }
+  .isle-overview .io-cap p { font-size:14px; }
+  .isle-overview .io-footer { grid-template-columns:1fr; gap:14px; }
+}
+</style>
+<div class="isle-overview">
+  <div class="io-topline"><span class="io-brand">Isle</span><span class="io-status">UI language / prototype</span></div>
+  <h2><span>Declare your UI.</span> <span>Resume on interaction.</span></h2>
+  <p class="io-lead">Compile state, views and event boundaries into SSR and targeted updates.</p>
+  <div class="io-pipeline">
+    <section class="io-step">
+      <span class="io-number">01 / DECLARE</span><h3>Write .isle</h3>
+      <code data-example>client component Counter() {
+  state count = 0;
+  &lt;button type="button"&gt;
+    on click { count += 1; }
+    {count}
+  &lt;/button&gt;
+}</code>
+    </section>
+    <section class="io-step">
+      <span class="io-number">02 / COMPILE</span><h3>Separate at compile time</h3>
+      <div class="io-stack"><p>MoonBit frontend</p><p>Analyze dependencies and update targets</p><p>Vite / Rolldown</p></div>
+      <span class="io-small">Split code at event boundaries.<br>Plan preloads from dependencies and size.</span>
+    </section>
+    <section class="io-step">
+      <span class="io-number">03 / SHIP</span><h3>Ship to the browser</h3>
+      <div class="io-output"><p>HTML + snapshot</p><p>Split JS / CSS</p><p>manifest</p></div>
+      <span class="io-small">Deliver server output and the code<br>needed for interactions separately.</span>
+    </section>
+  </div>
+  <section class="io-runtime">
+    <div class="io-runtime-head"><h3>What happens in the browser</h3><span class="io-policy">auto / lazy</span></div>
+    <div class="io-timeline">
+      <div class="io-time"><span class="io-next">1</span><strong>Initial display</strong><p>Display the server HTML.<br>Do not replay component<br>initialization in the browser.</p></div>
+      <div class="io-time"><span class="io-next">2</span><strong>Code prefetch</strong><p>Fetch dependencies in parallel.<br>Fetching alone does not run setup.</p></div>
+      <div class="io-time"><span class="io-next">3 / INTERACTION</span><strong>Resume the interacted UI</strong><p>Evaluate needed code and restore state.<br>Update only dynamic output.<br>Child components resume independently.</p></div>
+    </div>
+    <p class="io-important">SSR-only pages need no Isle browser JS</p>
+  </section>
+  <div class="io-capabilities">
+    <section class="io-cap"><span class="io-tag">APP</span><h3>Form / server action</h3><p>Validate input with shared schemas.<br>Declare server and authorization boundaries.<br>Check labels and other a11y contracts.</p></section>
+    <section class="io-cap"><span class="io-tag">EMBED</span><h3>Web Components widget</h3><p>Embed with ShadowRoot and reserved size.<br>Share the exact same runtime version.<br>Or ship a standalone distribution.</p></section>
+    <section class="io-cap"><span class="io-tag">Separate CLI</span><h3>Grid / CSS checks</h3><p>Check declared size contracts.<br>Both axes, queries and resets.<br>verified / violated / unknown<br>Report outcomes and counterexamples.</p></section>
+  </div>
+  <div class="io-footer">
+    <p><strong>Check lifetimes with finite models</strong>Reference models of acquisition and disposal.<br>Compiler-to-model generation is future work.</p>
+    <p><strong>ES2023 / Web platform APIs</strong>No shipped MoonBit / Wasm runtime.<br>Arbitrary TS and inline syntax are future work.</p>
+  </div>
+</div>

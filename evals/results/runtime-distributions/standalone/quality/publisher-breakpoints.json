@@ -1,0 +1,26 @@
+{
+  "gate": "check.breakpoints",
+  "command": "check breakpoints",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://localhost:63009/",
+    "breakpoints": [],
+    "checkedValues": [],
+    "sweep": {
+      "min": 320,
+      "max": 1280,
+      "step": 25,
+      "sampledWidths": 39,
+      "overflowRanges": []
+    },
+    "issues": []
+  }
+}

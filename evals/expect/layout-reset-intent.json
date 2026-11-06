@@ -1,0 +1,12 @@
+{
+  "resetIsAppliedBeforeApp": true,
+  "boxSizingNaturallyInherited": false,
+  "inheritRequiresKnownAncestors": true,
+  "selectedComponentIsDocumentRoot": false,
+  "whereSpecificity": [0, 0, 0],
+  "earlierLayerWinsImportant": true,
+  "boxSizingUnsetValue": "content-box",
+  "generatedPseudoBoxesSupported": false,
+  "analysisInjectsBrowserReset": false,
+  "productionRuntimeAdded": false
+}

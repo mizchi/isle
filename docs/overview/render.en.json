@@ -1,0 +1,18 @@
+{
+  "sourceHash": "e314cd1ac633290b914a3037158730f7d964d1d9fae4c10887ae5b9cc8b96441",
+  "codeHash": "a1448746edda43893632cb02e6997956cb45e1a76785f0a30c5b4483b154afe5",
+  "images": [
+    {
+      "variant": "desktop",
+      "cssWidth": 1040,
+      "sha256": "98c3f8018ff10ef229c523851675323d20e1d1c7f8d9ac0f0bf85a2c5676b8d1",
+      "bytes": 359885
+    },
+    {
+      "variant": "mobile",
+      "cssWidth": 375,
+      "sha256": "77f9af6f0f6dd35726193660e27d39e98e4f56dff3131780516172ae49897006",
+      "bytes": 405787
+    }
+  ]
+}

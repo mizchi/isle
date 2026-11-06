@@ -1,0 +1,1388 @@
+{
+  "version": 1,
+  "ok": true,
+  "status": "verified",
+  "component": "ResetPanel",
+  "scope": {
+    "axis": "both",
+    "viewport": {
+      "min": 240,
+      "max": 1000,
+      "minInclusive": true,
+      "maxInclusive": true,
+      "minExact": "240",
+      "maxExact": "1000",
+      "height": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      }
+    },
+    "hostInset": 0,
+    "hostBlockInset": 0,
+    "closedCSS": true,
+    "browserRounding": false,
+    "blockSizing": true
+  },
+  "assumptions": [
+    "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+    "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+  ],
+  "styleSources": [
+    {
+      "kind": "reset",
+      "file": "reset.css"
+    },
+    {
+      "kind": "app",
+      "file": "<css>"
+    }
+  ],
+  "diagnostics": [],
+  "policies": [
+    {
+      "box": ".panel",
+      "path": "ResetPanel",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": []
+      }
+    },
+    {
+      "box": ".panel",
+      "path": "ResetPanel",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": []
+      }
+    },
+    {
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      }
+    }
+  ],
+  "checks": [
+    {
+      "box": ".panel",
+      "path": "ResetPanel",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": []
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".panel",
+      "path": "ResetPanel",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".panel",
+      "path": "ResetPanel",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "inline",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".panel",
+      "path": "ResetPanel",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "block",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-64",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-64",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-64",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-64",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-64",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-64"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-64",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-64",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "block",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-64",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-64",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "-64",
+        "heightCoefficient": "1"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "24"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".panel",
+      "path": "ResetPanel",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-64",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-64",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".panel",
+      "path": "ResetPanel",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-64",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-64",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "enforced": true
+    }
+  ],
+  "sizes": [
+    {
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "reset.css",
+        "line": 4,
+        "selector": "*",
+        "layer": "reset",
+        "specified": "inherit"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-64",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-64",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".panel",
+      "path": "ResetPanel",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "reset.css",
+        "line": 4,
+        "selector": "*",
+        "layer": "reset",
+        "specified": "inherit"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-32",
+            "heightCoefficient": "1",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-64",
+            "strict": false
+          },
+          {
+            "coefficient": "0",
+            "constant": "-64",
+            "heightCoefficient": "1",
+            "strict": false
+          }
+        ]
+      }
+    }
+  ],
+  "queries": []
+}

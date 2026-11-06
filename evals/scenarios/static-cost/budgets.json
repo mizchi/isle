@@ -1,0 +1,3 @@
+[
+  { "entry": "Board.recalculate", "metric": "textPatchCalls", "max": 8 }
+]

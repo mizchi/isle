@@ -1,0 +1,6 @@
+[
+  { "entry": "Sheet.addAll", "metric": "textPatchCalls", "max": 1000 },
+  { "entry": "Sheet.addAll", "metric": "attributePatchCalls", "max": 1000 },
+  { "entry": "Sheet.addAll", "metric": "binaryOperations", "max": 20000 },
+  { "entry": "$page", "metric": "domElements", "max": 5000 }
+]

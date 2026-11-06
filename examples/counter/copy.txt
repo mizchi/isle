@@ -1,0 +1,5 @@
+Isle prototype
+Server HTML. Resumable state. Explicit remote boundaries.
+SSR value 37
+Independent instance
+Explicit server action

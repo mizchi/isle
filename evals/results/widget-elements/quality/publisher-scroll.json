@@ -1,0 +1,53 @@
+{
+  "gate": "scan.scroll",
+  "command": "scan scroll",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://localhost:52286/",
+    "page": {
+      "viewportWidth": 1280,
+      "viewportHeight": 720,
+      "scrollWidth": 1280,
+      "scrollHeight": 911,
+      "horizontalOverflow": 0,
+      "verticalScroll": 191
+    },
+    "containers": [
+      {
+        "selector": "html > body:nth-of-type(1) > main:nth-of-type(1) > isle-widget:nth-of-type(1)",
+        "axis": "y",
+        "overflowAmountX": 0,
+        "overflowAmountY": 30313,
+        "clientWidth": 640,
+        "clientHeight": 640,
+        "bbox": {
+          "x": 206,
+          "y": 147,
+          "width": 640,
+          "height": 640
+        }
+      }
+    ],
+    "deadScrollports": [],
+    "clipped": [],
+    "visuallyHidden": 0,
+    "expectedScrollports": [
+      {
+        "id": "html-body-nth-of-type-1-main-nth-of-type-1-isle-widget-nth-of-type-1",
+        "selector": "html > body:nth-of-type(1) > main:nth-of-type(1) > isle-widget:nth-of-type(1)",
+        "axis": "y",
+        "required": true,
+        "minOverflow": 30313
+      }
+    ],
+    "issues": []
+  }
+}

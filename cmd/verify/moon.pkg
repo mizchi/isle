@@ -1,0 +1,5 @@
+import {
+  "mizchi/isle/models/verification",
+}
+
+pkgtype(kind: "executable")

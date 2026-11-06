@@ -1,0 +1,256 @@
+{
+  "gate": "check.responsive",
+  "command": "check responsive",
+  "verdict": "fail",
+  "counts": {
+    "suspect": 1,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [
+    {
+      "rule": "page-overflow-x",
+      "severity": "suspect",
+      "message": "fails at 320-334px — fails at every width from 320px up to 334px and no breakpoint bounds it — something keeps a size the viewport cannot give it. The page scrolls horizontally by 16px at 320px viewport width — caused by: p.copy (extends to x=336px: starts at 16px, 320px wide; shrinking or moving it removes 16px of the overflow).; cause: `width: 320px` — .copy in <style> in fixed.html; overriding it to `auto` clears it at 320, 327, 334px; also clears it alone: `padding: 16px` (ancestor main.board) — .board in <style> in fixed.html. Reproduce: vlmkit check responsive evals/results/layout/fixed.html --width 320 --height 900",
+      "selector": "p.copy",
+      "viewport": 320,
+      "evidence": {
+        "failure": {
+          "kind": "page-overflow-x",
+          "severity": "fail",
+          "selectors": [
+            "p.copy"
+          ],
+          "message": "The page scrolls horizontally by 16px at 320px viewport width — caused by: p.copy (extends to x=336px: starts at 16px, 320px wide; shrinking or moving it removes 16px of the overflow).",
+          "failingCases": 7,
+          "firstCase": {
+            "width": 320,
+            "height": 900,
+            "textScale": 1,
+            "colorScheme": "light",
+            "reducedMotion": "no-preference"
+          },
+          "reproduce": "vlmkit check responsive evals/results/layout/fixed.html --width 320 --height 900",
+          "shrunk": {
+            "case": {
+              "width": 320,
+              "height": 900,
+              "textScale": 1,
+              "colorScheme": "light",
+              "reducedMotion": "no-preference"
+            },
+            "steps": [],
+            "needs": [],
+            "interval": {
+              "lo": 320,
+              "hi": 334,
+              "atMin": true,
+              "atMax": false
+            },
+            "anchor": {
+              "kind": "inside-regime",
+              "diagnosis": "fails at every width from 320px up to 334px and no breakpoint bounds it — something keeps a size the viewport cannot give it"
+            },
+            "alsoFailsAt": [],
+            "attempts": 7,
+            "exhausted": false
+          },
+          "cause": {
+            "declarations": [
+              {
+                "element": "p.copy",
+                "role": "target",
+                "property": "width",
+                "value": "320px",
+                "override": "auto",
+                "rule": ".copy",
+                "media": [],
+                "sheet": "<style> in fixed.html"
+              }
+            ],
+            "alternatives": [
+              {
+                "element": "main.board",
+                "role": "ancestor",
+                "property": "padding",
+                "value": "16px",
+                "override": "0",
+                "rule": ".board",
+                "media": [],
+                "sheet": "<style> in fixed.html"
+              }
+            ],
+            "candidates": 5,
+            "attempts": 7,
+            "complete": true,
+            "holdsAt": [
+              320,
+              327,
+              334
+            ],
+            "failsAt": []
+          }
+        }
+      }
+    }
+  ],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "evals/results/layout/fixed.html",
+    "seed": 1,
+    "space": {
+      "minWidth": 320,
+      "maxWidth": 1440,
+      "minHeight": 480,
+      "maxHeight": 1000,
+      "defaultHeight": 900,
+      "textScales": [
+        1
+      ],
+      "colorSchemes": [
+        "light"
+      ],
+      "reducedMotions": [
+        "no-preference"
+      ]
+    },
+    "conditions": [
+      "(min-width: 608px)"
+    ],
+    "transitions": [
+      {
+        "width": 608,
+        "entering": [
+          "(min-width: 608px)"
+        ],
+        "leaving": []
+      }
+    ],
+    "regimes": [
+      {
+        "from": 320,
+        "to": 607,
+        "matches": [],
+        "cases": 30,
+        "failingCases": 7
+      },
+      {
+        "from": 608,
+        "to": 1440,
+        "matches": [
+          "(min-width: 608px)"
+        ],
+        "cases": 30,
+        "failingCases": 0
+      }
+    ],
+    "unvaried": [],
+    "containerQueries": 0,
+    "properties": [
+      "page-overflow-x",
+      "clipped-content",
+      "text-collision",
+      "text-clipped",
+      "container-protrusion",
+      "occluded-text",
+      "collapsed-container",
+      "text-starved"
+    ],
+    "cases": 60,
+    "failingCases": 7,
+    "failures": [
+      {
+        "kind": "page-overflow-x",
+        "severity": "fail",
+        "selectors": [
+          "p.copy"
+        ],
+        "message": "The page scrolls horizontally by 16px at 320px viewport width — caused by: p.copy (extends to x=336px: starts at 16px, 320px wide; shrinking or moving it removes 16px of the overflow).",
+        "failingCases": 7,
+        "firstCase": {
+          "width": 320,
+          "height": 900,
+          "textScale": 1,
+          "colorScheme": "light",
+          "reducedMotion": "no-preference"
+        },
+        "reproduce": "vlmkit check responsive evals/results/layout/fixed.html --width 320 --height 900",
+        "shrunk": {
+          "case": {
+            "width": 320,
+            "height": 900,
+            "textScale": 1,
+            "colorScheme": "light",
+            "reducedMotion": "no-preference"
+          },
+          "steps": [],
+          "needs": [],
+          "interval": {
+            "lo": 320,
+            "hi": 334,
+            "atMin": true,
+            "atMax": false
+          },
+          "anchor": {
+            "kind": "inside-regime",
+            "diagnosis": "fails at every width from 320px up to 334px and no breakpoint bounds it — something keeps a size the viewport cannot give it"
+          },
+          "alsoFailsAt": [],
+          "attempts": 7,
+          "exhausted": false
+        },
+        "cause": {
+          "declarations": [
+            {
+              "element": "p.copy",
+              "role": "target",
+              "property": "width",
+              "value": "320px",
+              "override": "auto",
+              "rule": ".copy",
+              "media": [],
+              "sheet": "<style> in fixed.html"
+            }
+          ],
+          "alternatives": [
+            {
+              "element": "main.board",
+              "role": "ancestor",
+              "property": "padding",
+              "value": "16px",
+              "override": "0",
+              "rule": ".board",
+              "media": [],
+              "sheet": "<style> in fixed.html"
+            }
+          ],
+          "candidates": 5,
+          "attempts": 7,
+          "complete": true,
+          "holdsAt": [
+            320,
+            327,
+            334
+          ],
+          "failsAt": []
+        }
+      }
+    ],
+    "issues": [
+      {
+        "kind": "page-overflow-x",
+        "severity": "suspect",
+        "selector": "p.copy",
+        "viewport": 320,
+        "failure": 0,
+        "message": "fails at 320-334px — fails at every width from 320px up to 334px and no breakpoint bounds it — something keeps a size the viewport cannot give it. The page scrolls horizontally by 16px at 320px viewport width — caused by: p.copy (extends to x=336px: starts at 16px, 320px wide; shrinking or moving it removes 16px of the overflow).; cause: `width: 320px` — .copy in <style> in fixed.html; overriding it to `auto` clears it at 320, 327, 334px; also clears it alone: `padding: 16px` (ancestor main.board) — .board in <style> in fixed.html. Reproduce: vlmkit check responsive evals/results/layout/fixed.html --width 320 --height 900"
+      }
+    ],
+    "timing": {
+      "partitionMs": 322,
+      "casesMs": 2003,
+      "shrinkMs": 997
+    }
+  }
+}

@@ -1,0 +1,8 @@
+component QueryPanel() {
+  <main class="shell">
+    <section class="panel">
+      <p class="toolbar">Navigation</p>
+      <section class="body"><p class="copy">Workspace: 400 by 200 CSS pixels.</p></section>
+    </section>
+  </main>
+}

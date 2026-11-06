@@ -1,0 +1,19 @@
+export client component Fields({ initial }: { initial: number }) {
+  state count = initial;
+  state busy = false;
+  <div title={count}>
+    <input aria-label="Count" value={count} disabled={busy} />
+    <button type="button">
+      on click { count += 1; busy = true; }
+      {count}
+    </button>
+  </div>
+}
+
+export client component Empty({ initial }: { initial: string }) {
+  state title = initial;
+  <button type="button">
+    on click { title = "ready"; }
+    {title} suffix
+  </button>
+}

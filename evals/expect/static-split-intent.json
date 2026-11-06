@@ -1,0 +1,10 @@
+{
+  "entry": "Summary.append",
+  "snapshotSlots": ["title"],
+  "serverStateInitializers": ["title"],
+  "resumeRoot": "button",
+  "textNodePolicy": "preserve-single-node",
+  "browserReinitializesState": false,
+  "prefixInSnapshot": false,
+  "prefixInHandler": false
+}

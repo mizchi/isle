@@ -1,0 +1,11 @@
+{
+  "pagePrefetchSelector": "a[data-isle-prefetch]",
+  "pagePrerenderSelector": "a[data-isle-prerender]",
+  "chunkLoading": "lazy",
+  "prefetchExecutesPageScripts": false,
+  "prerenderExecutesPageScripts": true,
+  "speculationResumesIslands": false,
+  "ssrRulesNeedExecutableJS": false,
+  "browserMustHonorRules": false,
+  "unsupportedBrowserCanNavigate": true
+}

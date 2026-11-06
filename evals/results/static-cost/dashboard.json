@@ -1,0 +1,2080 @@
+{
+  "version": 1,
+  "coverage": "generated-handler-operations",
+  "exclusions": [
+    "browser style/layout/paint duration",
+    "runtime internals and DOM locator traversal",
+    "network/server duration",
+    "HTTP cache and bootstrap transfer",
+    "host wrappers and metadata script elements"
+  ],
+  "components": [
+    {
+      "component": "WorkItem",
+      "schemaId": "0a4451b8c82b6624",
+      "side": "client",
+      "localElements": 25,
+      "childSites": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 5,
+        "bindingLocators": 8,
+        "childOwners": 0
+      },
+      "entries": [
+        {
+          "id": "WorkItem.increment",
+          "component": "WorkItem",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 1833,
+            "end": 1867
+          },
+          "scope": "one-owner/generated-handler",
+          "captures": [
+            "rate",
+            "hours",
+            "saved"
+          ],
+          "writes": [
+            "hours"
+          ],
+          "actions": [],
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 5,
+            "bindingLocators": 8,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 3
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 6
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 3
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 3
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          },
+          "phases": [
+            {
+              "phase": "statement:0",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            },
+            {
+              "phase": "patch",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 2
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 5
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 3
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 3
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            }
+          ],
+          "updates": [
+            {
+              "id": 0,
+              "kind": "text",
+              "dependencies": [
+                "hours"
+              ],
+              "triggeredBy": [
+                "hours"
+              ]
+            },
+            {
+              "id": 1,
+              "kind": "text",
+              "dependencies": [
+                "hours",
+                "rate"
+              ],
+              "triggeredBy": [
+                "hours"
+              ]
+            },
+            {
+              "id": 2,
+              "kind": "text",
+              "dependencies": [
+                "hours",
+                "saved"
+              ],
+              "triggeredBy": [
+                "hours"
+              ]
+            }
+          ],
+          "reasons": [
+            {
+              "from": "WorkItem.hours",
+              "to": "WorkItem.binding:0"
+            },
+            {
+              "from": "WorkItem.cost",
+              "to": "WorkItem.binding:1"
+            },
+            {
+              "from": "WorkItem.hours",
+              "to": "WorkItem.cost"
+            },
+            {
+              "from": "WorkItem.rate",
+              "to": "WorkItem.cost"
+            },
+            {
+              "from": "WorkItem.difference",
+              "to": "WorkItem.binding:2"
+            },
+            {
+              "from": "WorkItem.hours",
+              "to": "WorkItem.difference"
+            },
+            {
+              "from": "WorkItem.saved",
+              "to": "WorkItem.difference"
+            }
+          ],
+          "unknownCosts": []
+        },
+        {
+          "id": "WorkItem.reset",
+          "component": "WorkItem",
+          "event": "click",
+          "async": false,
+          "source": {
+            "start": 2012,
+            "end": 2045
+          },
+          "scope": "one-owner/generated-handler",
+          "captures": [
+            "rate",
+            "hours",
+            "saved"
+          ],
+          "writes": [
+            "hours"
+          ],
+          "actions": [],
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 5,
+            "bindingLocators": 8,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 6
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 3
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 3
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          },
+          "phases": [
+            {
+              "phase": "statement:0",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            },
+            {
+              "phase": "patch",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 2
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 5
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 3
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 3
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            }
+          ],
+          "updates": [
+            {
+              "id": 0,
+              "kind": "text",
+              "dependencies": [
+                "hours"
+              ],
+              "triggeredBy": [
+                "hours"
+              ]
+            },
+            {
+              "id": 1,
+              "kind": "text",
+              "dependencies": [
+                "hours",
+                "rate"
+              ],
+              "triggeredBy": [
+                "hours"
+              ]
+            },
+            {
+              "id": 2,
+              "kind": "text",
+              "dependencies": [
+                "hours",
+                "saved"
+              ],
+              "triggeredBy": [
+                "hours"
+              ]
+            }
+          ],
+          "reasons": [
+            {
+              "from": "WorkItem.hours",
+              "to": "WorkItem.binding:0"
+            },
+            {
+              "from": "WorkItem.cost",
+              "to": "WorkItem.binding:1"
+            },
+            {
+              "from": "WorkItem.hours",
+              "to": "WorkItem.cost"
+            },
+            {
+              "from": "WorkItem.rate",
+              "to": "WorkItem.cost"
+            },
+            {
+              "from": "WorkItem.difference",
+              "to": "WorkItem.binding:2"
+            },
+            {
+              "from": "WorkItem.hours",
+              "to": "WorkItem.difference"
+            },
+            {
+              "from": "WorkItem.saved",
+              "to": "WorkItem.difference"
+            }
+          ],
+          "unknownCosts": []
+        },
+        {
+          "id": "WorkItem.lock",
+          "component": "WorkItem",
+          "event": "change",
+          "async": false,
+          "source": {
+            "start": 2158,
+            "end": 2200
+          },
+          "scope": "one-owner/generated-handler",
+          "captures": [
+            "locked"
+          ],
+          "writes": [
+            "locked"
+          ],
+          "actions": [],
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 5,
+            "bindingLocators": 8,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 4
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 4
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          },
+          "phases": [
+            {
+              "phase": "statement:0",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            },
+            {
+              "phase": "patch",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 4
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 4
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            }
+          ],
+          "updates": [
+            {
+              "id": 3,
+              "kind": "attribute",
+              "name": "disabled",
+              "dependencies": [
+                "locked"
+              ],
+              "triggeredBy": [
+                "locked"
+              ]
+            },
+            {
+              "id": 4,
+              "kind": "attribute",
+              "name": "disabled",
+              "dependencies": [
+                "locked"
+              ],
+              "triggeredBy": [
+                "locked"
+              ]
+            },
+            {
+              "id": 5,
+              "kind": "attribute",
+              "name": "checked",
+              "dependencies": [
+                "locked"
+              ],
+              "triggeredBy": [
+                "locked"
+              ]
+            },
+            {
+              "id": 6,
+              "kind": "attribute",
+              "name": "disabled",
+              "dependencies": [
+                "locked"
+              ],
+              "triggeredBy": [
+                "locked"
+              ]
+            }
+          ],
+          "reasons": [
+            {
+              "from": "WorkItem.locked",
+              "to": "WorkItem.binding:3"
+            },
+            {
+              "from": "WorkItem.locked",
+              "to": "WorkItem.binding:4"
+            },
+            {
+              "from": "WorkItem.locked",
+              "to": "WorkItem.binding:5"
+            },
+            {
+              "from": "WorkItem.locked",
+              "to": "WorkItem.binding:6"
+            }
+          ],
+          "unknownCosts": []
+        },
+        {
+          "id": "WorkItem.save",
+          "component": "WorkItem",
+          "event": "click",
+          "async": true,
+          "source": {
+            "start": 2341,
+            "end": 2418
+          },
+          "scope": "one-owner/generated-handler",
+          "captures": [
+            "id",
+            "hours",
+            "saved"
+          ],
+          "writes": [
+            "saved"
+          ],
+          "actions": [
+            "savePlan"
+          ],
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 5,
+            "bindingLocators": 8,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 5
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          },
+          "phases": [
+            {
+              "phase": "statement:0",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 2
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            },
+            {
+              "phase": "patch",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "binaryOperations": {
+                  "kind": "upper-bound",
+                  "value": 1
+                },
+                "propertyReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "slotReads": {
+                  "kind": "upper-bound",
+                  "value": 3
+                },
+                "eventReads": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textPatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 2
+                },
+                "attributePatchCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "textConversions": {
+                  "kind": "upper-bound",
+                  "value": 2
+                },
+                "remoteCalls": {
+                  "kind": "upper-bound",
+                  "value": 0
+                },
+                "createdElements": {
+                  "kind": "upper-bound",
+                  "value": 0
+                }
+              }
+            }
+          ],
+          "updates": [
+            {
+              "id": 2,
+              "kind": "text",
+              "dependencies": [
+                "hours",
+                "saved"
+              ],
+              "triggeredBy": [
+                "saved"
+              ]
+            },
+            {
+              "id": 7,
+              "kind": "text",
+              "dependencies": [
+                "saved"
+              ],
+              "triggeredBy": [
+                "saved"
+              ]
+            }
+          ],
+          "reasons": [
+            {
+              "from": "WorkItem.difference",
+              "to": "WorkItem.binding:2"
+            },
+            {
+              "from": "WorkItem.hours",
+              "to": "WorkItem.difference"
+            },
+            {
+              "from": "WorkItem.saved",
+              "to": "WorkItem.difference"
+            },
+            {
+              "from": "WorkItem.saved",
+              "to": "WorkItem.binding:7"
+            }
+          ],
+          "unknownCosts": [
+            {
+              "code": "remote-duration",
+              "reason": "Network, server work and await duration are not statically bounded."
+            },
+            {
+              "code": "string-size",
+              "reason": "String length and string/DOM work are not bounded by operation counts."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "component": "ProjectForm",
+      "schemaId": "3209ab00495369d7",
+      "side": "client",
+      "localElements": 20,
+      "childSites": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 0,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "entries": [
+        {
+          "id": "ProjectForm.__form0",
+          "component": "ProjectForm",
+          "event": "submit",
+          "async": false,
+          "source": {
+            "start": 2939,
+            "end": 2944
+          },
+          "scope": "one-owner/generated-handler",
+          "captures": [],
+          "writes": [],
+          "actions": [
+            "createProject"
+          ],
+          "restore": {
+            "owners": 1,
+            "snapshotSlots": 0,
+            "bindingLocators": 0,
+            "childOwners": 0
+          },
+          "work": {
+            "stateWrites": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "binaryOperations": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "propertyReads": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "slotReads": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "eventReads": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "textPatchCalls": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "attributePatchCalls": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "textConversions": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "remoteCalls": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "createdElements": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            }
+          },
+          "phases": [
+            {
+              "phase": "form",
+              "sharedDerives": [],
+              "work": {
+                "stateWrites": {
+                  "kind": "unknown",
+                  "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+                },
+                "binaryOperations": {
+                  "kind": "unknown",
+                  "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+                },
+                "propertyReads": {
+                  "kind": "unknown",
+                  "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+                },
+                "slotReads": {
+                  "kind": "unknown",
+                  "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+                },
+                "eventReads": {
+                  "kind": "unknown",
+                  "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+                },
+                "textPatchCalls": {
+                  "kind": "unknown",
+                  "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+                },
+                "attributePatchCalls": {
+                  "kind": "unknown",
+                  "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+                },
+                "textConversions": {
+                  "kind": "unknown",
+                  "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+                },
+                "remoteCalls": {
+                  "kind": "unknown",
+                  "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+                },
+                "createdElements": {
+                  "kind": "unknown",
+                  "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+                }
+              }
+            }
+          ],
+          "updates": [],
+          "reasons": [],
+          "unknownCosts": [
+            {
+              "code": "form-runtime",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "WorkItem.increment",
+      "component": "WorkItem",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 1833,
+        "end": 1867
+      },
+      "scope": "one-owner/generated-handler",
+      "captures": [
+        "rate",
+        "hours",
+        "saved"
+      ],
+      "writes": [
+        "hours"
+      ],
+      "actions": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 5,
+        "bindingLocators": 8,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "binaryOperations": {
+          "kind": "upper-bound",
+          "value": 3
+        },
+        "propertyReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "slotReads": {
+          "kind": "upper-bound",
+          "value": 6
+        },
+        "eventReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textPatchCalls": {
+          "kind": "upper-bound",
+          "value": 3
+        },
+        "attributePatchCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textConversions": {
+          "kind": "upper-bound",
+          "value": 3
+        },
+        "remoteCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "createdElements": {
+          "kind": "upper-bound",
+          "value": 0
+        }
+      },
+      "phases": [
+        {
+          "phase": "statement:0",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        },
+        {
+          "phase": "patch",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 5
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 3
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 3
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "updates": [
+        {
+          "id": 0,
+          "kind": "text",
+          "dependencies": [
+            "hours"
+          ],
+          "triggeredBy": [
+            "hours"
+          ]
+        },
+        {
+          "id": 1,
+          "kind": "text",
+          "dependencies": [
+            "hours",
+            "rate"
+          ],
+          "triggeredBy": [
+            "hours"
+          ]
+        },
+        {
+          "id": 2,
+          "kind": "text",
+          "dependencies": [
+            "hours",
+            "saved"
+          ],
+          "triggeredBy": [
+            "hours"
+          ]
+        }
+      ],
+      "reasons": [
+        {
+          "from": "WorkItem.hours",
+          "to": "WorkItem.binding:0"
+        },
+        {
+          "from": "WorkItem.cost",
+          "to": "WorkItem.binding:1"
+        },
+        {
+          "from": "WorkItem.hours",
+          "to": "WorkItem.cost"
+        },
+        {
+          "from": "WorkItem.rate",
+          "to": "WorkItem.cost"
+        },
+        {
+          "from": "WorkItem.difference",
+          "to": "WorkItem.binding:2"
+        },
+        {
+          "from": "WorkItem.hours",
+          "to": "WorkItem.difference"
+        },
+        {
+          "from": "WorkItem.saved",
+          "to": "WorkItem.difference"
+        }
+      ],
+      "unknownCosts": []
+    },
+    {
+      "id": "WorkItem.reset",
+      "component": "WorkItem",
+      "event": "click",
+      "async": false,
+      "source": {
+        "start": 2012,
+        "end": 2045
+      },
+      "scope": "one-owner/generated-handler",
+      "captures": [
+        "rate",
+        "hours",
+        "saved"
+      ],
+      "writes": [
+        "hours"
+      ],
+      "actions": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 5,
+        "bindingLocators": 8,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "binaryOperations": {
+          "kind": "upper-bound",
+          "value": 2
+        },
+        "propertyReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "slotReads": {
+          "kind": "upper-bound",
+          "value": 6
+        },
+        "eventReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textPatchCalls": {
+          "kind": "upper-bound",
+          "value": 3
+        },
+        "attributePatchCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textConversions": {
+          "kind": "upper-bound",
+          "value": 3
+        },
+        "remoteCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "createdElements": {
+          "kind": "upper-bound",
+          "value": 0
+        }
+      },
+      "phases": [
+        {
+          "phase": "statement:0",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        },
+        {
+          "phase": "patch",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 5
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 3
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 3
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "updates": [
+        {
+          "id": 0,
+          "kind": "text",
+          "dependencies": [
+            "hours"
+          ],
+          "triggeredBy": [
+            "hours"
+          ]
+        },
+        {
+          "id": 1,
+          "kind": "text",
+          "dependencies": [
+            "hours",
+            "rate"
+          ],
+          "triggeredBy": [
+            "hours"
+          ]
+        },
+        {
+          "id": 2,
+          "kind": "text",
+          "dependencies": [
+            "hours",
+            "saved"
+          ],
+          "triggeredBy": [
+            "hours"
+          ]
+        }
+      ],
+      "reasons": [
+        {
+          "from": "WorkItem.hours",
+          "to": "WorkItem.binding:0"
+        },
+        {
+          "from": "WorkItem.cost",
+          "to": "WorkItem.binding:1"
+        },
+        {
+          "from": "WorkItem.hours",
+          "to": "WorkItem.cost"
+        },
+        {
+          "from": "WorkItem.rate",
+          "to": "WorkItem.cost"
+        },
+        {
+          "from": "WorkItem.difference",
+          "to": "WorkItem.binding:2"
+        },
+        {
+          "from": "WorkItem.hours",
+          "to": "WorkItem.difference"
+        },
+        {
+          "from": "WorkItem.saved",
+          "to": "WorkItem.difference"
+        }
+      ],
+      "unknownCosts": []
+    },
+    {
+      "id": "WorkItem.lock",
+      "component": "WorkItem",
+      "event": "change",
+      "async": false,
+      "source": {
+        "start": 2158,
+        "end": 2200
+      },
+      "scope": "one-owner/generated-handler",
+      "captures": [
+        "locked"
+      ],
+      "writes": [
+        "locked"
+      ],
+      "actions": [],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 5,
+        "bindingLocators": 8,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "binaryOperations": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "propertyReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "slotReads": {
+          "kind": "upper-bound",
+          "value": 4
+        },
+        "eventReads": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "textPatchCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "attributePatchCalls": {
+          "kind": "upper-bound",
+          "value": 4
+        },
+        "textConversions": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "remoteCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "createdElements": {
+          "kind": "upper-bound",
+          "value": 0
+        }
+      },
+      "phases": [
+        {
+          "phase": "statement:0",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        },
+        {
+          "phase": "patch",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 4
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 4
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "updates": [
+        {
+          "id": 3,
+          "kind": "attribute",
+          "name": "disabled",
+          "dependencies": [
+            "locked"
+          ],
+          "triggeredBy": [
+            "locked"
+          ]
+        },
+        {
+          "id": 4,
+          "kind": "attribute",
+          "name": "disabled",
+          "dependencies": [
+            "locked"
+          ],
+          "triggeredBy": [
+            "locked"
+          ]
+        },
+        {
+          "id": 5,
+          "kind": "attribute",
+          "name": "checked",
+          "dependencies": [
+            "locked"
+          ],
+          "triggeredBy": [
+            "locked"
+          ]
+        },
+        {
+          "id": 6,
+          "kind": "attribute",
+          "name": "disabled",
+          "dependencies": [
+            "locked"
+          ],
+          "triggeredBy": [
+            "locked"
+          ]
+        }
+      ],
+      "reasons": [
+        {
+          "from": "WorkItem.locked",
+          "to": "WorkItem.binding:3"
+        },
+        {
+          "from": "WorkItem.locked",
+          "to": "WorkItem.binding:4"
+        },
+        {
+          "from": "WorkItem.locked",
+          "to": "WorkItem.binding:5"
+        },
+        {
+          "from": "WorkItem.locked",
+          "to": "WorkItem.binding:6"
+        }
+      ],
+      "unknownCosts": []
+    },
+    {
+      "id": "WorkItem.save",
+      "component": "WorkItem",
+      "event": "click",
+      "async": true,
+      "source": {
+        "start": 2341,
+        "end": 2418
+      },
+      "scope": "one-owner/generated-handler",
+      "captures": [
+        "id",
+        "hours",
+        "saved"
+      ],
+      "writes": [
+        "saved"
+      ],
+      "actions": [
+        "savePlan"
+      ],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 5,
+        "bindingLocators": 8,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "binaryOperations": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "propertyReads": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "slotReads": {
+          "kind": "upper-bound",
+          "value": 5
+        },
+        "eventReads": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textPatchCalls": {
+          "kind": "upper-bound",
+          "value": 2
+        },
+        "attributePatchCalls": {
+          "kind": "upper-bound",
+          "value": 0
+        },
+        "textConversions": {
+          "kind": "upper-bound",
+          "value": 2
+        },
+        "remoteCalls": {
+          "kind": "upper-bound",
+          "value": 1
+        },
+        "createdElements": {
+          "kind": "upper-bound",
+          "value": 0
+        }
+      },
+      "phases": [
+        {
+          "phase": "statement:0",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        },
+        {
+          "phase": "patch",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "binaryOperations": {
+              "kind": "upper-bound",
+              "value": 1
+            },
+            "propertyReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "slotReads": {
+              "kind": "upper-bound",
+              "value": 3
+            },
+            "eventReads": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textPatchCalls": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "attributePatchCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "textConversions": {
+              "kind": "upper-bound",
+              "value": 2
+            },
+            "remoteCalls": {
+              "kind": "upper-bound",
+              "value": 0
+            },
+            "createdElements": {
+              "kind": "upper-bound",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "updates": [
+        {
+          "id": 2,
+          "kind": "text",
+          "dependencies": [
+            "hours",
+            "saved"
+          ],
+          "triggeredBy": [
+            "saved"
+          ]
+        },
+        {
+          "id": 7,
+          "kind": "text",
+          "dependencies": [
+            "saved"
+          ],
+          "triggeredBy": [
+            "saved"
+          ]
+        }
+      ],
+      "reasons": [
+        {
+          "from": "WorkItem.difference",
+          "to": "WorkItem.binding:2"
+        },
+        {
+          "from": "WorkItem.hours",
+          "to": "WorkItem.difference"
+        },
+        {
+          "from": "WorkItem.saved",
+          "to": "WorkItem.difference"
+        },
+        {
+          "from": "WorkItem.saved",
+          "to": "WorkItem.binding:7"
+        }
+      ],
+      "unknownCosts": [
+        {
+          "code": "remote-duration",
+          "reason": "Network, server work and await duration are not statically bounded."
+        },
+        {
+          "code": "string-size",
+          "reason": "String length and string/DOM work are not bounded by operation counts."
+        }
+      ]
+    },
+    {
+      "id": "ProjectForm.__form0",
+      "component": "ProjectForm",
+      "event": "submit",
+      "async": false,
+      "source": {
+        "start": 2939,
+        "end": 2944
+      },
+      "scope": "one-owner/generated-handler",
+      "captures": [],
+      "writes": [],
+      "actions": [
+        "createProject"
+      ],
+      "restore": {
+        "owners": 1,
+        "snapshotSlots": 0,
+        "bindingLocators": 0,
+        "childOwners": 0
+      },
+      "work": {
+        "stateWrites": {
+          "kind": "unknown",
+          "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+        },
+        "binaryOperations": {
+          "kind": "unknown",
+          "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+        },
+        "propertyReads": {
+          "kind": "unknown",
+          "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+        },
+        "slotReads": {
+          "kind": "unknown",
+          "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+        },
+        "eventReads": {
+          "kind": "unknown",
+          "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+        },
+        "textPatchCalls": {
+          "kind": "unknown",
+          "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+        },
+        "attributePatchCalls": {
+          "kind": "unknown",
+          "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+        },
+        "textConversions": {
+          "kind": "unknown",
+          "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+        },
+        "remoteCalls": {
+          "kind": "unknown",
+          "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+        },
+        "createdElements": {
+          "kind": "unknown",
+          "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+        }
+      },
+      "phases": [
+        {
+          "phase": "form",
+          "sharedDerives": [],
+          "work": {
+            "stateWrites": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "binaryOperations": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "propertyReads": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "slotReads": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "eventReads": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "textPatchCalls": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "attributePatchCalls": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "textConversions": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "remoteCalls": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            },
+            "createdElements": {
+              "kind": "unknown",
+              "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+            }
+          }
+        }
+      ],
+      "updates": [],
+      "reasons": [],
+      "unknownCosts": [
+        {
+          "code": "form-runtime",
+          "reason": "Schema form validation and DOM operations are delegated to the form runtime."
+        }
+      ]
+    }
+  ],
+  "scenario": null,
+  "planId": "4feeba8c50038d4e",
+  "budget": {
+    "ok": true,
+    "checks": []
+  },
+  "ok": true
+}

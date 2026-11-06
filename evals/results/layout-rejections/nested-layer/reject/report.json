@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "ok": false,
+  "status": "unknown",
+  "component": "Card",
+  "scope": {
+    "axis": "both",
+    "viewport": {
+      "min": 320,
+      "max": 1000,
+      "minInclusive": true,
+      "maxInclusive": true,
+      "minExact": "320",
+      "maxExact": "1000",
+      "height": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      }
+    },
+    "hostInset": 0,
+    "hostBlockInset": 0,
+    "closedCSS": true,
+    "browserRounding": false,
+    "blockSizing": true
+  },
+  "assumptions": [
+    "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+    "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+  ],
+  "styleSources": [
+    {
+      "kind": "reset",
+      "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/nested-layer/reject/reset-0.css"
+    },
+    {
+      "kind": "app",
+      "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/nested-layer/reject/app.css"
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "U_LAYOUT_LAYER",
+      "severity": "unknown",
+      "message": "Nested or conditional layer declarations are outside the subset",
+      "css": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/nested-layer/reject/app.css",
+        "line": 2
+      }
+    }
+  ],
+  "policies": [],
+  "checks": [],
+  "sizes": [],
+  "queries": []
+}

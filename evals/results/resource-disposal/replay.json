@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "expectedSchedules": 9,
+  "passed": true,
+  "results": [
+    {
+      "name": "resource-disposal/double-release",
+      "actions": [
+        "Start0",
+        "Acquire0",
+        "Unmount",
+        "BeginRelease0",
+        "BeginRelease0"
+      ],
+      "passed": true,
+      "interpretation": "External schedule replay against the corrected kernel; internal publish/release steps are automatic, not an equivalence proof.",
+      "resources": [
+        {
+          "acquired": true,
+          "releases": 1,
+          "aborts": 1,
+          "state": "disposed"
+        }
+      ],
+      "cleanupErrors": 0
+    },
+    {
+      "name": "resource-disposal/release-unacquired",
+      "actions": [
+        "Start0",
+        "Unmount",
+        "BeginRelease0"
+      ],
+      "passed": true,
+      "interpretation": "External schedule replay against the corrected kernel; internal publish/release steps are automatic, not an equivalence proof.",
+      "resources": [
+        {
+          "acquired": false,
+          "releases": 0,
+          "aborts": 1,
+          "state": "disposed"
+        }
+      ],
+      "cleanupErrors": 0
+    },
+    {
+      "name": "resource-disposal/premature-release",
+      "actions": [
+        "Start0",
+        "Acquire0",
+        "BeginRelease0"
+      ],
+      "passed": true,
+      "interpretation": "External schedule replay against the corrected kernel; internal publish/release steps are automatic, not an equivalence proof.",
+      "resources": [
+        {
+          "acquired": true,
+          "releases": 1,
+          "aborts": 1,
+          "state": "disposed"
+        }
+      ],
+      "cleanupErrors": 0
+    },
+    {
+      "name": "resource-disposal/ignore-owner",
+      "actions": [
+        "Start0",
+        "Acquire0",
+        "Unmount",
+        "Publish0"
+      ],
+      "passed": true,
+      "interpretation": "External schedule replay against the corrected kernel; internal publish/release steps are automatic, not an equivalence proof.",
+      "resources": [
+        {
+          "acquired": true,
+          "releases": 1,
+          "aborts": 1,
+          "state": "disposed"
+        }
+      ],
+      "cleanupErrors": 0
+    },
+    {
+      "name": "resource-disposal/forget-abort",
+      "actions": [
+        "Start0",
+        "Unmount"
+      ],
+      "passed": true,
+      "interpretation": "External schedule replay against the corrected kernel; internal publish/release steps are automatic, not an equivalence proof.",
+      "resources": [
+        {
+          "acquired": false,
+          "releases": 0,
+          "aborts": 1,
+          "state": "disposed"
+        }
+      ],
+      "cleanupErrors": 0
+    },
+    {
+      "name": "resource-disposal/double-abort",
+      "actions": [
+        "Start0",
+        "Unmount",
+        "Unmount"
+      ],
+      "passed": true,
+      "interpretation": "External schedule replay against the corrected kernel; internal publish/release steps are automatic, not an equivalence proof.",
+      "resources": [
+        {
+          "acquired": false,
+          "releases": 0,
+          "aborts": 1,
+          "state": "disposed"
+        }
+      ],
+      "cleanupErrors": 0
+    },
+    {
+      "name": "resource-disposal/drop-late",
+      "actions": [
+        "Unmount",
+        "Recreate",
+        "Start0",
+        "Start1",
+        "Acquire0",
+        "Publish0",
+        "Unmount",
+        "Acquire1",
+        "BeginRelease0",
+        "Unmount"
+      ],
+      "passed": true,
+      "interpretation": "External schedule replay against the corrected kernel; internal publish/release steps are automatic, not an equivalence proof.",
+      "resources": [
+        {
+          "acquired": true,
+          "releases": 1,
+          "aborts": 1,
+          "state": "disposed"
+        },
+        {
+          "acquired": true,
+          "releases": 1,
+          "aborts": 1,
+          "state": "disposed"
+        }
+      ],
+      "cleanupErrors": 0
+    },
+    {
+      "name": "resource-disposal/leak-ready",
+      "actions": [
+        "Unmount",
+        "Recreate",
+        "Start0",
+        "Start1",
+        "Acquire0",
+        "Acquire1",
+        "Publish0",
+        "Publish1",
+        "Unmount",
+        "Unmount"
+      ],
+      "passed": true,
+      "interpretation": "External schedule replay against the corrected kernel; internal publish/release steps are automatic, not an equivalence proof.",
+      "resources": [
+        {
+          "acquired": true,
+          "releases": 1,
+          "aborts": 1,
+          "state": "disposed"
+        },
+        {
+          "acquired": true,
+          "releases": 1,
+          "aborts": 1,
+          "state": "disposed"
+        }
+      ],
+      "cleanupErrors": 0
+    },
+    {
+      "name": "resource-disposal/stop-after-failure",
+      "actions": [
+        "Unmount",
+        "Recreate",
+        "Start0",
+        "Start1",
+        "Acquire0",
+        "Acquire1",
+        "Publish0",
+        "Publish1",
+        "Unmount",
+        "BeginRelease0",
+        "FailRelease0",
+        "Unmount"
+      ],
+      "passed": true,
+      "interpretation": "External schedule replay against the corrected kernel; internal publish/release steps are automatic, not an equivalence proof.",
+      "resources": [
+        {
+          "acquired": true,
+          "releases": 1,
+          "aborts": 1,
+          "state": "disposed"
+        },
+        {
+          "acquired": true,
+          "releases": 1,
+          "aborts": 1,
+          "state": "disposed"
+        }
+      ],
+      "cleanupErrors": 1
+    }
+  ]
+}

@@ -1,0 +1,365 @@
+{
+  "gate": "check.interactions",
+  "command": "check interactions",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 3,
+    "info": 0
+  },
+  "findings": [
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Show\" (section.card>section>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Show\" (section.card>section>button)"
+      }
+    },
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Restore\" (section.card>section>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Restore\" (section.card>section>button)"
+      }
+    },
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Show rows\" (section.card>section>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Show rows\" (section.card>section>button)"
+      }
+    }
+  ],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "map": {
+      "source": "http://127.0.0.1:56295/",
+      "elements": [
+        {
+          "index": 0,
+          "key": "button|Hide",
+          "role": "button",
+          "name": "Hide",
+          "path": "section.card>section>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 1,
+          "key": "button|Show",
+          "role": "button",
+          "name": "Show",
+          "path": "section.card>section>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 2,
+          "key": "button|Reverse",
+          "role": "button",
+          "name": "Reverse",
+          "path": "section.card>section>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 3,
+          "key": "button|Empty",
+          "role": "button",
+          "name": "Empty",
+          "path": "section.card>section>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 4,
+          "key": "button|Duplicate",
+          "role": "button",
+          "name": "Duplicate",
+          "path": "section.card>section>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 5,
+          "key": "button|Add",
+          "role": "button",
+          "name": "Add",
+          "path": "section.card>section>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 6,
+          "key": "button|Summary",
+          "role": "button",
+          "name": "Summary",
+          "path": "section.card>section>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 7,
+          "key": "button|Restore",
+          "role": "button",
+          "name": "Restore",
+          "path": "section.card>section>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 8,
+          "key": "button|Select",
+          "role": "button",
+          "name": "Select",
+          "path": "section>ul>li>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 9,
+          "key": "button|Select",
+          "role": "button",
+          "name": "Select",
+          "path": "section>ul>li>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 10,
+          "key": "button|Hide rows",
+          "role": "button",
+          "name": "Hide rows",
+          "path": "section.card>section>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 11,
+          "key": "button|Show rows",
+          "role": "button",
+          "name": "Show rows",
+          "path": "section.card>section>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 12,
+          "key": "button|x1",
+          "role": "button",
+          "name": "x1",
+          "path": "section.card>section>div>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 13,
+          "key": "button|x2",
+          "role": "button",
+          "name": "x2",
+          "path": "section.card>section>div>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 14,
+          "key": "button|y1",
+          "role": "button",
+          "name": "y1",
+          "path": "section.card>section>div>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 15,
+          "key": "button|y2",
+          "role": "button",
+          "name": "y2",
+          "path": "section.card>section>div>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        }
+      ],
+      "capped": 0
+    },
+    "issues": [
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Show\" (section.card>section>button)",
+        "message": "button \"Show\" (section.card>section>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      },
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Restore\" (section.card>section>button)",
+        "message": "button \"Restore\" (section.card>section>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      },
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Show rows\" (section.card>section>button)",
+        "message": "button \"Show rows\" (section.card>section>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      }
+    ]
+  }
+}

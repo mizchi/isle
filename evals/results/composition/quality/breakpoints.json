@@ -1,0 +1,51 @@
+{
+  "gate": "check.breakpoints",
+  "command": "check breakpoints",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://127.0.0.1:56989/",
+    "breakpoints": [
+      {
+        "value": 540,
+        "raw": [
+          "(width <= 540px)"
+        ],
+        "samples": [
+          {
+            "width": 539,
+            "horizontalOverflow": 0
+          },
+          {
+            "width": 540,
+            "horizontalOverflow": 0
+          },
+          {
+            "width": 541,
+            "horizontalOverflow": 0
+          }
+        ],
+        "spikes": [],
+        "gaps": []
+      }
+    ],
+    "checkedValues": [
+      540
+    ],
+    "sweep": {
+      "min": 320,
+      "max": 1280,
+      "step": 25,
+      "sampledWidths": 39,
+      "overflowRanges": []
+    },
+    "issues": []
+  }
+}

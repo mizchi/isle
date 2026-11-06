@@ -1,0 +1,23 @@
+{
+  "gate": "scan.handlers",
+  "command": "scan handlers",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "surface": {
+      "source": "http://localhost:52286/",
+      "elements": [],
+      "globals": {},
+      "totalRegistrations": 7,
+      "visibleControls": 0
+    },
+    "issues": []
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "description": "Schema responsibility refactor; byte sizes describe the local production fixtures, not general runtime performance.",
+  "verification": {
+    "command": "just ci",
+    "moonTests": 27,
+    "nodeTests": 102,
+    "e2eTests": 47,
+    "finiteCases": 27,
+    "finiteBrokenVariants": 10,
+    "a11y": [
+      {
+        "file": "evals/results/forms/summary.json",
+        "pass": true,
+        "gates": 8
+      },
+      {
+        "file": "evals/results/forms/schema/summary.json",
+        "pass": true,
+        "gates": 8
+      }
+    ]
+  },
+  "schemaFormAssets": {
+    "before": [
+      {
+        "name": "SchemaSignup.__form0-D3HF0-kK.js",
+        "bytes": 10359,
+        "gzip": 4152
+      },
+      {
+        "name": "index-CrjBKW9w.js",
+        "bytes": 3360,
+        "gzip": 1522
+      },
+      {
+        "name": "isle-resume-CMpsXckX.js",
+        "bytes": 3351,
+        "gzip": 1615
+      }
+    ],
+    "after": [
+      {
+        "name": "SchemaSignup.__form0-BFUgRjkQ.js",
+        "bytes": 10363,
+        "gzip": 4157
+      },
+      {
+        "name": "index-k3-POXM-.js",
+        "bytes": 3360,
+        "gzip": 1525
+      },
+      {
+        "name": "isle-resume-DY_MD3M5.js",
+        "bytes": 3351,
+        "gzip": 1616
+      }
+    ]
+  },
+  "comparisonInitialJS": {
+    "file": "index-9mSwWCpL.js",
+    "gzip": 698
+  },
+  "referenceAuthoring": [
+    {
+      "scenario": "author-schema-dsl",
+      "pass": true,
+      "metrics": {
+        "sourceBytes": 136,
+        "lines": 4,
+        "schemaIRBytes": 318
+      }
+    },
+    {
+      "scenario": "author-schema-ts",
+      "pass": true,
+      "metrics": {
+        "sourceBytes": 247,
+        "lines": 6,
+        "schemaIRBytes": 318
+      }
+    }
+  ],
+  "participantEvaluation": "not-run",
+  "visualInspection": "Desktop and mobile: labels and controls visible; field errors and summary readable without overlap; successful submit shows Saved. Six captured states inspected."
+}

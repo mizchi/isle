@@ -1,0 +1,16 @@
+component Card(title: string, children: RenderFragment) {
+  <section><h2>{title}</h2>{children}</section>
+}
+component Summary(value: number) { <output>{value}</output> }
+client component Counter(initial: number) {
+  state count = initial;
+  <button type="button">on click increment { count += 1; }{count}</button>
+}
+client component Parent(seed: number) {
+  state count = seed;
+  <div><button type="button">on click increment { count += 1; }Parent</button>
+    <Summary value={count} />
+    <Card title="Counters"><Counter initial={seed} /><Counter initial={seed + 10} /></Card>
+  </div>
+}
+server component Page(seed: number) { <Parent seed={seed} /> }

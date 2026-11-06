@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "pass": true,
+  "reports": [
+    {
+      "scenario": "intent",
+      "pass": true,
+      "score": 10,
+      "total": 10,
+      "checks": [
+        {
+          "name": "serverComponents",
+          "pass": true
+        },
+        {
+          "name": "clientComponents",
+          "pass": true
+        },
+        {
+          "name": "rpcActions",
+          "pass": true
+        },
+        {
+          "name": "policy",
+          "pass": true
+        },
+        {
+          "name": "authorizationTarget",
+          "pass": true
+        },
+        {
+          "name": "requestFromClient",
+          "pass": true
+        },
+        {
+          "name": "responseFields",
+          "pass": true
+        },
+        {
+          "name": "clientSetupReruns",
+          "pass": true
+        },
+        {
+          "name": "firstClick",
+          "pass": true
+        },
+        {
+          "name": "browserCanChoosePrincipal",
+          "pass": true
+        }
+      ]
+    }
+  ]
+}

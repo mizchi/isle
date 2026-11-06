@@ -1,0 +1,110 @@
+[
+  {
+    "id": "qwik",
+    "viewports": [
+      {
+        "name": "wide",
+        "rawDiffRatio": 0
+      },
+      {
+        "name": "desktop",
+        "rawDiffRatio": 0
+      },
+      {
+        "name": "mobile",
+        "rawDiffRatio": 0
+      }
+    ],
+    "computedStyleDiffs": 0,
+    "paintTree": {
+      "enabled": true,
+      "available": false,
+      "url": "ws://127.0.0.1:9222",
+      "error": "Crater BiDi unavailable at ws://127.0.0.1:9222"
+    },
+    "domWarnings": [
+      {
+        "code": "element-count-mismatch",
+        "message": "total element count differs by 23.1% (baseline: 26, variant: 32)",
+        "baseline": [
+          "26"
+        ],
+        "variant": [
+          "32"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "qwik-next",
+    "viewports": [
+      {
+        "name": "wide",
+        "rawDiffRatio": 0
+      },
+      {
+        "name": "desktop",
+        "rawDiffRatio": 0
+      },
+      {
+        "name": "mobile",
+        "rawDiffRatio": 0
+      }
+    ],
+    "computedStyleDiffs": 0,
+    "paintTree": {
+      "enabled": true,
+      "available": false,
+      "url": "ws://127.0.0.1:9222",
+      "error": "Crater BiDi unavailable at ws://127.0.0.1:9222"
+    },
+    "domWarnings": [
+      {
+        "code": "element-count-mismatch",
+        "message": "total element count differs by 23.1% (baseline: 26, variant: 32)",
+        "baseline": [
+          "26"
+        ],
+        "variant": [
+          "32"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "preact",
+    "viewports": [
+      {
+        "name": "wide",
+        "rawDiffRatio": 0
+      },
+      {
+        "name": "desktop",
+        "rawDiffRatio": 0
+      },
+      {
+        "name": "mobile",
+        "rawDiffRatio": 0
+      }
+    ],
+    "computedStyleDiffs": 0,
+    "paintTree": {
+      "enabled": true,
+      "available": false,
+      "url": "ws://127.0.0.1:9222",
+      "error": "Crater BiDi unavailable at ws://127.0.0.1:9222"
+    },
+    "domWarnings": [
+      {
+        "code": "element-count-mismatch",
+        "message": "total element count differs by 11.5% (baseline: 26, variant: 23)",
+        "baseline": [
+          "26"
+        ],
+        "variant": [
+          "23"
+        ]
+      }
+    ]
+  }
+]

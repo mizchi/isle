@@ -1,0 +1,11 @@
+{
+  "aliasSnapshotSlots": ["base", "count"],
+  "aliasClickValue": 111,
+  "frozenSnapshotSlots": ["count", "frozen", "total"],
+  "frozenAfterTwoClicks": 4,
+  "phasedSnapshotSlots": ["factor", "count"],
+  "phasedAfterOneClick": 4032,
+  "cacheCrossesWrites": false,
+  "addsRuntimeCacheSlots": false,
+  "clientReinitializesState": false
+}

@@ -1,0 +1,6 @@
+component Board() {
+  <main class="board">
+    <aside class="side">Navigation</aside>
+    <section class="body"><p class="copy">A panel that needs 320 CSS pixels.</p></section>
+  </main>
+}

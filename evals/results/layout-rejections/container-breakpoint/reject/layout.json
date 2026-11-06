@@ -1,0 +1,17 @@
+{
+  "component": "Panel",
+  "viewport": {
+    "min": 432,
+    "max": 1000
+  },
+  "boxes": {
+    ".a": {
+      "minInlineSize": 200
+    },
+    ".b": {
+      "minInlineSize": 400
+    }
+  },
+  "css": "./app.css",
+  "reset": []
+}

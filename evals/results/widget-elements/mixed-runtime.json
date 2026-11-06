@@ -1,0 +1,27 @@
+{
+  "worker": "http://127.0.0.1:8791/",
+  "runtimes": [
+    {
+      "version": "0.0.1",
+      "abi": "isle/client/6:debug=0:profile=0",
+      "status": "ready"
+    },
+    {
+      "version": "0.0.1",
+      "abi": "isle/widget/3",
+      "status": "ready"
+    }
+  ],
+  "evaluations": {
+    "transport": 1,
+    "client": 1
+  },
+  "transportURLs": [
+    "http://127.0.0.1:8793/portable/assets/isle-widget-runtime-CN3s56dF.js"
+  ],
+  "clientURLs": [
+    "http://127.0.0.1:8793/portable/assets/isle-widget-engine-Ck_SQYaz.js"
+  ],
+  "formSaved": true,
+  "separateRPCOrigins": true
+}

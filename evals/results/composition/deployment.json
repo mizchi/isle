@@ -1,0 +1,7 @@
+{
+  "provider": "https://isle-widget.mizchi.workers.dev/",
+  "version": "7747170d-4154-4b82-b520-4e9d3973e9be",
+  "clientABI": "isle/client/3:debug=0:profile=0",
+  "runtimeVersion": "0.0.1",
+  "checkedAt": "2026-11-04T17:37:32.496Z"
+}

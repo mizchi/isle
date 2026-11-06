@@ -1,0 +1,5 @@
+Selective DOM updates
+This heading is static
+Independent note
+Increment
+Edit note

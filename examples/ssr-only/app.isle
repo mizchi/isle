@@ -1,0 +1,7 @@
+component Notice(title: string, message: string) {
+  <article><h2>{title}</h2><p>{message}</p></article>
+}
+
+server component Page() {
+  <section><Notice title="HTML is enough" message="No browser initialization or handler chunks are needed." /></section>
+}

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "passed": true,
+  "scope": "Resource owner integration with loader/component/widget; not a refinement proof of arbitrary JavaScript adapters",
+  "checks": [
+    {
+      "command": "just ci",
+      "exitCode": 0,
+      "moonbitTests": 51,
+      "nodeTests": 226,
+      "browserTests": 67,
+      "controlFlowBrowserTests": 4,
+      "resourceBrowserTests": 15,
+      "formA11ySuites": 2,
+      "plainWidgetOnlyTestExcluded": 1
+    },
+    {
+      "command": "just widget-check",
+      "exitCode": 0,
+      "nodeTests": 28,
+      "browserTests": 24,
+      "workersDryRun": true
+    },
+    {
+      "command": "just resource-binding-check",
+      "exitCode": 0,
+      "nodeTests": 10,
+      "sharedResourceBrowserTests": 8,
+      "plainResourceBrowserTests": 7,
+      "plainWidgetOnlyTestExcluded": 1
+    },
+    {
+      "command": "just resource-binding-size",
+      "exitCode": 0,
+      "report": "size.json"
+    },
+    {
+      "command": "Vite development setup route and lazy preload closure smoke",
+      "exitCode": 0
+    }
+  ],
+  "formal": {
+    "passed": true,
+    "cases": 86
+  },
+  "sourceSha256": {
+    "runtime/resource-bindings.mjs": "cdc0522eb529058700e02b206770f263f522d926ac723fb14c89da4748ef1d15",
+    "runtime/resource-owner.mjs": "a93b9d9523dfde603bf5a75c4d598dec34dffbbdf0c753e6099b0954e8b32dfd",
+    "runtime/client.mjs": "a9062a1a1b3d8c61e5c32d967dcb98b3c0ffbd11d9d9a013d3505c6f4e41cbb3",
+    "runtime/loader.mjs": "034b06e13554984a5ab5b72ac1d9a7349213483d4107dcdfa229f3b2e6437bfb",
+    "lib/vite.mjs": "c4f6addb0074f779989bdb9083866825fea0b54dcaeb2fb5f6bfb4c277d63ea6",
+    "lib/client-contracts.d.ts": "a8eb6a5114e678b8c93d5019fe3cf877c476744228ea2cafc6b359e2175692c8",
+    "e2e/resource-bindings.spec.mjs": "43fc8995a6f0ef0989df6b09a78ad2c79e1521a0d04e97c035cd63049d0f0441"
+  }
+}

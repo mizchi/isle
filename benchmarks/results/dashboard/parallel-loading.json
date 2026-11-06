@@ -1,0 +1,746 @@
+{
+  "version": 1,
+  "beforeGeneratedAt": "2026-11-03T19:00:30.775Z",
+  "afterGeneratedAt": "2026-11-04T02:48:34.908Z",
+  "environment": {
+    "node": "v24.21.0",
+    "chromium": "156.0.8078.4",
+    "platform": "darwin/arm64",
+    "cpu": "Apple M5"
+  },
+  "versions": {
+    "isle": {
+      "version": "0.0.1",
+      "dependencies": {},
+      "vite": "^8.3.5"
+    },
+    "qwik": {
+      "version": null,
+      "dependencies": {
+        "@builder.io/qwik": "1.20.3"
+      },
+      "vite": "7.3.7"
+    },
+    "qwik-next": {
+      "version": null,
+      "dependencies": {
+        "@qwik.dev/core": "2.0.0-rc.4"
+      },
+      "vite": "8.3.5"
+    },
+    "preact": {
+      "version": null,
+      "dependencies": {
+        "preact": "11.1.1",
+        "preact-render-to-string": "6.8.2"
+      },
+      "vite": "8.3.5"
+    }
+  },
+  "samples": 12,
+  "warm": 12,
+  "apiDelayMs": 20,
+  "latencyTrials": 96,
+  "transferTrials": 8,
+  "reusedLatencySamples": false,
+  "profiles": [
+    {
+      "profile": {
+        "id": "desktop",
+        "cpu": 1,
+        "latency": 0,
+        "down": -1,
+        "up": -1
+      },
+      "before": {
+        "latencies": {
+          "cold-increment": {
+            "n": 12,
+            "median": 40.30000001192093,
+            "p95": 42.19999998807907,
+            "min": 38,
+            "max": 42.19999998807907
+          },
+          "warm-increment": {
+            "n": 144,
+            "median": 0.30000001192092896,
+            "p95": 0.6000000238418579,
+            "min": 0.09999996423721313,
+            "max": 0.9000000357627869
+          },
+          "other-island": {
+            "n": 12,
+            "median": 0.800000011920929,
+            "p95": 1.100000023841858,
+            "min": 0.3999999761581421,
+            "max": 1.100000023841858
+          },
+          "remote-save": {
+            "n": 12,
+            "median": 41.49999997019768,
+            "p95": 46,
+            "min": 39,
+            "max": 46
+          },
+          "cold-form-input": {
+            "n": 12,
+            "median": 4.25,
+            "p95": 5.399999976158142,
+            "min": 1.899999976158142,
+            "max": 5.399999976158142
+          },
+          "form-submit": {
+            "n": 12,
+            "median": 47.40000003576279,
+            "p95": 48.80000001192093,
+            "min": 45,
+            "max": 48.80000001192093
+          },
+          "burst-32-islands": {
+            "n": 12,
+            "median": 1.0499999821186066,
+            "p95": 1.2999999523162842,
+            "min": 0.699999988079071,
+            "max": 1.2999999523162842
+          }
+        },
+        "bytes": {
+          "html": 8827,
+          "initialJS": 1477,
+          "allJS": 8053,
+          "auxiliary": 0,
+          "totalAssets": 16880
+        },
+        "requestTimes": [
+          {
+            "iteration": 0,
+            "runtimeStart": 0.6000000238418579,
+            "runtimeEnd": 1.199999988079071,
+            "handlerStart": 36.10000002384186,
+            "handlerEnd": 37.30000001192093,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 1,
+            "runtimeStart": 0.6000000238418579,
+            "runtimeEnd": 1.100000023841858,
+            "handlerStart": 38,
+            "handlerEnd": 39.10000002384186,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 2,
+            "runtimeStart": 0.7000000476837158,
+            "runtimeEnd": 1.100000023841858,
+            "handlerStart": 40.30000001192093,
+            "handlerEnd": 41.30000001192093,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 3,
+            "runtimeStart": 0.699999988079071,
+            "runtimeEnd": 1.399999976158142,
+            "handlerStart": 40.299999952316284,
+            "handlerEnd": 41.59999996423721,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 4,
+            "runtimeStart": 0.6000000238418579,
+            "runtimeEnd": 1.199999988079071,
+            "handlerStart": 37.5,
+            "handlerEnd": 38.39999997615814,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 5,
+            "runtimeStart": 0.5999999642372131,
+            "runtimeEnd": 1.2999999523162842,
+            "handlerStart": 38.799999952316284,
+            "handlerEnd": 39.59999996423721,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 6,
+            "runtimeStart": 0.699999988079071,
+            "runtimeEnd": 1.199999988079071,
+            "handlerStart": 39,
+            "handlerEnd": 39.90000003576279,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 7,
+            "runtimeStart": 0.800000011920929,
+            "runtimeEnd": 1.300000011920929,
+            "handlerStart": 38.80000001192093,
+            "handlerEnd": 39.69999998807907,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 8,
+            "runtimeStart": 0.699999988079071,
+            "runtimeEnd": 1.199999988079071,
+            "handlerStart": 37.19999998807907,
+            "handlerEnd": 38.09999996423721,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 9,
+            "runtimeStart": 0.7999999523162842,
+            "runtimeEnd": 1.2999999523162842,
+            "handlerStart": 39,
+            "handlerEnd": 40,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 10,
+            "runtimeStart": 0.7000000476837158,
+            "runtimeEnd": 1.300000011920929,
+            "handlerStart": 37,
+            "handlerEnd": 37.80000001192093,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 11,
+            "runtimeStart": 0.6000000238418579,
+            "runtimeEnd": 1.300000011920929,
+            "handlerStart": 38.200000047683716,
+            "handlerEnd": 39.30000001192093,
+            "overlap": false,
+            "initiator": "script"
+          }
+        ]
+      },
+      "after": {
+        "latencies": {
+          "cold-increment": {
+            "n": 12,
+            "median": 39.54999998211861,
+            "p95": 43.60000002384186,
+            "min": 37.10000002384186,
+            "max": 43.60000002384186
+          },
+          "warm-increment": {
+            "n": 144,
+            "median": 0.30000001192092896,
+            "p95": 0.6000000238418579,
+            "min": 0.10000002384185791,
+            "max": 0.9000000357627869
+          },
+          "other-island": {
+            "n": 12,
+            "median": 0.7499999701976776,
+            "p95": 1.199999988079071,
+            "min": 0.3999999761581421,
+            "max": 1.199999988079071
+          },
+          "remote-save": {
+            "n": 12,
+            "median": 40.69999998807907,
+            "p95": 41.90000003576279,
+            "min": 39.60000002384186,
+            "max": 41.90000003576279
+          },
+          "cold-form-input": {
+            "n": 12,
+            "median": 4.349999964237213,
+            "p95": 5.5,
+            "min": 2.699999988079071,
+            "max": 5.5
+          },
+          "form-submit": {
+            "n": 12,
+            "median": 45.30000001192093,
+            "p95": 47.5,
+            "min": 43.80000001192093,
+            "max": 47.5
+          },
+          "burst-32-islands": {
+            "n": 12,
+            "median": 1.0999999940395355,
+            "p95": 1.399999976158142,
+            "min": 0.6000000238418579,
+            "max": 1.399999976158142
+          }
+        },
+        "bytes": {
+          "html": 9024,
+          "initialJS": 1550,
+          "allJS": 8126,
+          "auxiliary": 0,
+          "totalAssets": 17150
+        },
+        "requestTimes": [
+          {
+            "iteration": 0,
+            "runtimeStart": 0.6000000238418579,
+            "runtimeEnd": 1.2000000476837158,
+            "handlerStart": 0.6000000238418579,
+            "handlerEnd": 1.4000000357627869,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 1,
+            "runtimeStart": 0.7000000476837158,
+            "runtimeEnd": 1.7000000476837158,
+            "handlerStart": 0.800000011920929,
+            "handlerEnd": 1.7000000476837158,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 2,
+            "runtimeStart": 0.7000000476837158,
+            "runtimeEnd": 1.600000023841858,
+            "handlerStart": 0.800000011920929,
+            "handlerEnd": 1.800000011920929,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 3,
+            "runtimeStart": 0.6000000238418579,
+            "runtimeEnd": 1.5,
+            "handlerStart": 0.699999988079071,
+            "handlerEnd": 1.600000023841858,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 4,
+            "runtimeStart": 0.699999988079071,
+            "runtimeEnd": 1.9000000357627869,
+            "handlerStart": 0.800000011920929,
+            "handlerEnd": 2,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 5,
+            "runtimeStart": 0.7999999523162842,
+            "runtimeEnd": 1.5999999642372131,
+            "handlerStart": 0.7999999523162842,
+            "handlerEnd": 1.5999999642372131,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 6,
+            "runtimeStart": 0.7000000476837158,
+            "runtimeEnd": 1.4000000357627869,
+            "handlerStart": 0.800000011920929,
+            "handlerEnd": 1.600000023841858,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 7,
+            "runtimeStart": 0.699999988079071,
+            "runtimeEnd": 1.699999988079071,
+            "handlerStart": 0.699999988079071,
+            "handlerEnd": 1.800000011920929,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 8,
+            "runtimeStart": 0.7000000476837158,
+            "runtimeEnd": 1.4000000357627869,
+            "handlerStart": 0.7000000476837158,
+            "handlerEnd": 1.600000023841858,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 9,
+            "runtimeStart": 0.699999988079071,
+            "runtimeEnd": 1.5,
+            "handlerStart": 0.699999988079071,
+            "handlerEnd": 1.5999999642372131,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 10,
+            "runtimeStart": 0.7999999523162842,
+            "runtimeEnd": 1.699999988079071,
+            "handlerStart": 0.7999999523162842,
+            "handlerEnd": 1.699999988079071,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 11,
+            "runtimeStart": 0.800000011920929,
+            "runtimeEnd": 1.600000023841858,
+            "handlerStart": 0.9000000357627869,
+            "handlerEnd": 1.699999988079071,
+            "overlap": true,
+            "initiator": "script"
+          }
+        ]
+      }
+    },
+    {
+      "profile": {
+        "id": "constrained",
+        "cpu": 4,
+        "latency": 80,
+        "down": 200000,
+        "up": 93750
+      },
+      "before": {
+        "latencies": {
+          "cold-increment": {
+            "n": 12,
+            "median": 192.65000000596046,
+            "p95": 204,
+            "min": 188.30000001192093,
+            "max": 204
+          },
+          "warm-increment": {
+            "n": 144,
+            "median": 0.800000011920929,
+            "p95": 1.2999999523162842,
+            "min": 0,
+            "max": 1.300000011920929
+          },
+          "other-island": {
+            "n": 12,
+            "median": 0.9000000059604645,
+            "p95": 1.800000011920929,
+            "min": 0.5,
+            "max": 1.800000011920929
+          },
+          "remote-save": {
+            "n": 12,
+            "median": 197.55000001192093,
+            "p95": 217.5,
+            "min": 182.80000001192093,
+            "max": 217.5
+          },
+          "cold-form-input": {
+            "n": 12,
+            "median": 111.40000000596046,
+            "p95": 118,
+            "min": 107.09999996423721,
+            "max": 118
+          },
+          "form-submit": {
+            "n": 12,
+            "median": 100.30000004172325,
+            "p95": 119.89999997615814,
+            "min": 91.10000002384186,
+            "max": 119.89999997615814
+          },
+          "burst-32-islands": {
+            "n": 12,
+            "median": 1.199999988079071,
+            "p95": 1.5,
+            "min": 0.699999988079071,
+            "max": 1.5
+          }
+        },
+        "bytes": {
+          "html": 8827,
+          "initialJS": 1477,
+          "allJS": 8053,
+          "auxiliary": 0,
+          "totalAssets": 16880
+        },
+        "requestTimes": [
+          {
+            "iteration": 0,
+            "runtimeStart": 2.300000011920929,
+            "runtimeEnd": 103.69999998807907,
+            "handlerStart": 105.69999998807907,
+            "handlerEnd": 193,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 1,
+            "runtimeStart": 2.899999976158142,
+            "runtimeEnd": 104.69999998807907,
+            "handlerStart": 107,
+            "handlerEnd": 198.89999997615814,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 2,
+            "runtimeStart": 2,
+            "runtimeEnd": 104.60000002384186,
+            "handlerStart": 107.10000002384186,
+            "handlerEnd": 191.5,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 3,
+            "runtimeStart": 2.299999952316284,
+            "runtimeEnd": 96.5,
+            "handlerStart": 99,
+            "handlerEnd": 191.29999995231628,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 4,
+            "runtimeStart": 2.5,
+            "runtimeEnd": 98.80000001192093,
+            "handlerStart": 101,
+            "handlerEnd": 186.9000000357628,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 5,
+            "runtimeStart": 2.600000023841858,
+            "runtimeEnd": 102.40000003576279,
+            "handlerStart": 105.10000002384186,
+            "handlerEnd": 190,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 6,
+            "runtimeStart": 2.5,
+            "runtimeEnd": 97,
+            "handlerStart": 99.40000003576279,
+            "handlerEnd": 186.30000001192093,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 7,
+            "runtimeStart": 2.100000023841858,
+            "runtimeEnd": 97.10000002384186,
+            "handlerStart": 99.39999997615814,
+            "handlerEnd": 187.30000001192093,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 8,
+            "runtimeStart": 2.300000011920929,
+            "runtimeEnd": 102.30000001192093,
+            "handlerStart": 104.80000001192093,
+            "handlerEnd": 202.10000002384186,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 9,
+            "runtimeStart": 3.100000023841858,
+            "runtimeEnd": 104.60000002384186,
+            "handlerStart": 107.5,
+            "handlerEnd": 202.39999997615814,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 10,
+            "runtimeStart": 2.399999976158142,
+            "runtimeEnd": 102.69999998807907,
+            "handlerStart": 104.59999996423721,
+            "handlerEnd": 191,
+            "overlap": false,
+            "initiator": "script"
+          },
+          {
+            "iteration": 11,
+            "runtimeStart": 2.699999988079071,
+            "runtimeEnd": 104.5,
+            "handlerStart": 107,
+            "handlerEnd": 201.19999998807907,
+            "overlap": false,
+            "initiator": "script"
+          }
+        ]
+      },
+      "after": {
+        "latencies": {
+          "cold-increment": {
+            "n": 12,
+            "median": 107.7999999821186,
+            "p95": 113.5,
+            "min": 106.5,
+            "max": 113.5
+          },
+          "warm-increment": {
+            "n": 144,
+            "median": 0.800000011920929,
+            "p95": 1.399999976158142,
+            "min": 0.09999996423721313,
+            "max": 2.099999964237213
+          },
+          "other-island": {
+            "n": 12,
+            "median": 0.9000000059604645,
+            "p95": 1.699999988079071,
+            "min": 0.3999999761581421,
+            "max": 1.699999988079071
+          },
+          "remote-save": {
+            "n": 12,
+            "median": 184.19999998807907,
+            "p95": 192,
+            "min": 181.10000002384186,
+            "max": 192
+          },
+          "cold-form-input": {
+            "n": 12,
+            "median": 108.15000000596046,
+            "p95": 111.60000002384186,
+            "min": 103.59999996423721,
+            "max": 111.60000002384186
+          },
+          "form-submit": {
+            "n": 12,
+            "median": 93.7000000178814,
+            "p95": 95.80000001192093,
+            "min": 89.80000001192093,
+            "max": 95.80000001192093
+          },
+          "burst-32-islands": {
+            "n": 12,
+            "median": 1.3499999940395355,
+            "p95": 1.600000023841858,
+            "min": 0.800000011920929,
+            "max": 1.600000023841858
+          }
+        },
+        "bytes": {
+          "html": 9024,
+          "initialJS": 1550,
+          "allJS": 8126,
+          "auxiliary": 0,
+          "totalAssets": 17150
+        },
+        "requestTimes": [
+          {
+            "iteration": 0,
+            "runtimeStart": 2.5,
+            "runtimeEnd": 104.5,
+            "handlerStart": 3.100000023841858,
+            "handlerEnd": 97.60000002384186,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 1,
+            "runtimeStart": 3,
+            "runtimeEnd": 104.39999997615814,
+            "handlerStart": 3,
+            "handlerEnd": 97.30000001192093,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 2,
+            "runtimeStart": 2.600000023841858,
+            "runtimeEnd": 103.60000002384186,
+            "handlerStart": 2.600000023841858,
+            "handlerEnd": 97.60000002384186,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 3,
+            "runtimeStart": 2.600000023841858,
+            "runtimeEnd": 110.40000003576279,
+            "handlerStart": 2.700000047683716,
+            "handlerEnd": 104.30000001192093,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 4,
+            "runtimeStart": 2.300000011920929,
+            "runtimeEnd": 106,
+            "handlerStart": 2.600000023841858,
+            "handlerEnd": 97.69999998807907,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 5,
+            "runtimeStart": 2.200000047683716,
+            "runtimeEnd": 103.70000004768372,
+            "handlerStart": 2.200000047683716,
+            "handlerEnd": 95.80000001192093,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 6,
+            "runtimeStart": 2.899999976158142,
+            "runtimeEnd": 104.89999997615814,
+            "handlerStart": 2.899999976158142,
+            "handlerEnd": 97.80000001192093,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 7,
+            "runtimeStart": 2.399999976158142,
+            "runtimeEnd": 105,
+            "handlerStart": 3.099999964237213,
+            "handlerEnd": 97.59999996423721,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 8,
+            "runtimeStart": 2.800000011920929,
+            "runtimeEnd": 104.69999998807907,
+            "handlerStart": 2.800000011920929,
+            "handlerEnd": 97.39999997615814,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 9,
+            "runtimeStart": 2.199999988079071,
+            "runtimeEnd": 104.90000003576279,
+            "handlerStart": 2.900000035762787,
+            "handlerEnd": 97.30000001192093,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 10,
+            "runtimeStart": 2.699999988079071,
+            "runtimeEnd": 110.30000001192093,
+            "handlerStart": 2.699999988079071,
+            "handlerEnd": 103,
+            "overlap": true,
+            "initiator": "script"
+          },
+          {
+            "iteration": 11,
+            "runtimeStart": 2.800000011920929,
+            "runtimeEnd": 104.09999996423721,
+            "handlerStart": 2.899999976158142,
+            "handlerEnd": 96.80000001192093,
+            "overlap": true,
+            "initiator": "script"
+          }
+        ]
+      }
+    }
+  ]
+}

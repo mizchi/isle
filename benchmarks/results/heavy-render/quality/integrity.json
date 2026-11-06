@@ -1,0 +1,43 @@
+{
+  "gate": "check.integrity",
+  "command": "check integrity",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://127.0.0.1:65159/heavy-render/128/",
+    "verdict": "clean",
+    "findings": [],
+    "exempted": [],
+    "viewports": [
+      {
+        "width": 1280,
+        "height": 800,
+        "components": 8,
+        "inkRatio": 0.8354,
+        "textBlocks": 1292
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "components": 8,
+        "inkRatio": 0.9226,
+        "textBlocks": 1292
+      },
+      {
+        "width": 375,
+        "height": 700,
+        "components": 8,
+        "inkRatio": 0.9056,
+        "textBlocks": 1292
+      }
+    ],
+    "kickback": []
+  }
+}

@@ -1,0 +1,22 @@
+export client component Aliases({ base }: { base: number }) {
+  state copied = base;
+  state copiedAgain = copied;
+  state count = 0;
+  <button>on click add { count += base + copied + copiedAgain; }{count}</button>
+}
+
+export client component Frozen({ initial }: { initial: number }) {
+  state count = initial;
+  state frozen = count;
+  state total = 0;
+  <button>on click add { count += 1; total = frozen + count; }{total}</button>
+}
+
+export client component Phased({ factor }: { factor: number }) {
+  state count = 1;
+  derive base = count * 2 + factor;
+  <button>on click add {
+    count = base * base + base;
+    count = base * base + base;
+  }{count}</button>
+}

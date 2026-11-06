@@ -1,0 +1,24 @@
+{
+  "gate": "check.a11y.contrast",
+  "command": "check a11y contrast",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "html": "http://127.0.0.1:52299/",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "screenshot": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-contrast/127.0.0-4e5bd3cf/page.png",
+    "totalText": 6,
+    "failures": [],
+    "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-contrast/127.0.0-4e5bd3cf/report.md"
+  }
+}

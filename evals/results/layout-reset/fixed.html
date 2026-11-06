@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Reset and box sizing</title><style>html,body{height:100%}</style><style>@layer reset, app;
+@layer reset {
+  :root { box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: inherit; }
+  :where(*) { margin: 0; padding: 0; }
+}
+</style><style>@layer app {
+  .panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    padding: 16px;
+    block-size: 100%;
+    font-family: system-ui;
+    line-height: 24px;
+  }
+  .copy { inline-size: 100%; block-size: 100%; padding: 16px; overflow-wrap: anywhere; }
+}
+</style></head><body><main class="panel"><p class="copy">Reset-aware box model</p></main></body></html>

@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-04",
+  "name": "isle-widget",
+  "url": "https://isle-widget.mizchi.workers.dev/",
+  "version": "060e3b5f-94ff-4118-82b0-fa98da55cd3c",
+  "compatibilityDate": "2026-11-01",
+  "nodejsCompat": false,
+  "transport": "shared-abi-runtime",
+  "storage": "stateless-demo"
+}

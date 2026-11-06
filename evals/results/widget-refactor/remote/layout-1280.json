@@ -1,0 +1,22 @@
+{
+  "widgetURL": "https://isle-widget.mizchi.workers.dev/",
+  "viewport": {
+    "width": 1280,
+    "height": 1000
+  },
+  "reserved": {
+    "width": 640,
+    "height": 640,
+    "widgetTop": 147.484375,
+    "afterTop": 811.484375
+  },
+  "final": {
+    "width": 640,
+    "height": 640,
+    "widgetTop": 147.484375,
+    "afterTop": 811.484375
+  },
+  "CLS": 0,
+  "cookieRestriction": true,
+  "iframeCount": 0
+}

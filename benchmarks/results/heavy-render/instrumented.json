@@ -1,0 +1,180 @@
+{
+  "rows": 4096,
+  "cpu": 4,
+  "profile": true,
+  "note": "Separate instrumented pass, excluded from headline latency samples.",
+  "passes": [
+    {
+      "name": "cold",
+      "timings": [
+        {
+          "name": "isle:Sheet.addAll:loader-queue",
+          "ms": 1,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 1,
+            "phase": "loader-queue",
+            "status": "ok"
+          }
+        },
+        {
+          "name": "isle:Sheet.addAll:interaction",
+          "ms": 994.5999999642372,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 1,
+            "phase": "interaction",
+            "status": "ok"
+          }
+        },
+        {
+          "name": "isle:Sheet.addAll:runtime",
+          "ms": 17.19999998807907,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 1,
+            "phase": "runtime",
+            "status": "ok",
+            "cached": false
+          }
+        },
+        {
+          "name": "isle:Sheet.addAll:queue",
+          "ms": 0.6000000238418579,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 1,
+            "phase": "queue",
+            "status": "ok"
+          }
+        },
+        {
+          "name": "isle:Sheet.addAll:code",
+          "ms": 0.3999999761581421,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 1,
+            "phase": "code",
+            "status": "ok",
+            "url": "http://127.0.0.1:64805/heavy-render/4096-profile/assets/Sheet.addAll-DMyCyLTU.js",
+            "cached": false
+          }
+        },
+        {
+          "name": "isle:Sheet.addAll:restore",
+          "ms": 19.5,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 1,
+            "phase": "restore",
+            "status": "ok"
+          }
+        },
+        {
+          "name": "isle:Sheet.addAll:run",
+          "ms": 954.5999999642372,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 1,
+            "phase": "run",
+            "status": "ok"
+          }
+        }
+      ]
+    },
+    {
+      "name": "warm",
+      "timings": [
+        {
+          "name": "isle:Sheet.addAll:loader-queue",
+          "ms": 0,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 2,
+            "phase": "loader-queue",
+            "status": "ok"
+          }
+        },
+        {
+          "name": "isle:Sheet.addAll:runtime",
+          "ms": 0,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 2,
+            "phase": "runtime",
+            "status": "ok",
+            "cached": true
+          }
+        },
+        {
+          "name": "isle:Sheet.addAll:queue",
+          "ms": 0,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 2,
+            "phase": "queue",
+            "status": "ok"
+          }
+        },
+        {
+          "name": "isle:Sheet.addAll:code",
+          "ms": 0,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 2,
+            "phase": "code",
+            "status": "ok",
+            "url": "http://127.0.0.1:64805/heavy-render/4096-profile/assets/Sheet.addAll-DMyCyLTU.js",
+            "cached": true
+          }
+        },
+        {
+          "name": "isle:Sheet.addAll:run",
+          "ms": 35.5,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 2,
+            "phase": "run",
+            "status": "ok"
+          }
+        },
+        {
+          "name": "isle:Sheet.addAll:interaction",
+          "ms": 35.5,
+          "detail": {
+            "handlerId": "Sheet.addAll",
+            "scopeId": "orders/c1",
+            "event": "click",
+            "invocation": 2,
+            "phase": "interaction",
+            "status": "ok"
+          }
+        }
+      ]
+    }
+  ]
+}

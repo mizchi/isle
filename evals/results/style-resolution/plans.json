@@ -1,0 +1,210 @@
+{
+  "version": 1,
+  "scope": "Debug/profile fixtures, not the production size comparison",
+  "auto": {
+    "buildId": "98a6e9536f9dca2f",
+    "loading": {
+      "eager": [],
+      "preload": [
+        "A.edit"
+      ]
+    },
+    "resolution": {
+      "version": 1,
+      "strategy": "event-and-size",
+      "budgetGzipBytes": 65536,
+      "usedGzipBytes": 1869,
+      "decisions": [
+        {
+          "id": "A.$resources",
+          "requested": "auto",
+          "loading": "lazy",
+          "reason": "interaction",
+          "additionalGzipBytes": 0,
+          "modules": [
+            "/assets/A.resources-Ch5_SvlF.js"
+          ],
+          "initialBy": [
+            "A.edit"
+          ],
+          "styles": [
+            "/assets/A-az5WThTF.css"
+          ]
+        },
+        {
+          "id": "A.add",
+          "requested": "auto",
+          "loading": "lazy",
+          "reason": "interaction",
+          "additionalGzipBytes": 83,
+          "modules": [
+            "/assets/shared-runtime-DMG-kdSZ.js",
+            "/assets/_isle_widget-engine-bridge-s88TpUf7.js",
+            "/assets/isle-resume-CZ7A-ROC.js",
+            "/assets/A.resources-Ch5_SvlF.js",
+            "/assets/A.add-CHnZo6Se.js"
+          ],
+          "initialBy": [],
+          "styles": [
+            "/assets/A-az5WThTF.css"
+          ]
+        },
+        {
+          "id": "A.edit",
+          "requested": "auto",
+          "loading": "preload",
+          "reason": "input",
+          "additionalGzipBytes": 1869,
+          "modules": [
+            "/assets/shared-runtime-DMG-kdSZ.js",
+            "/assets/_isle_widget-engine-bridge-s88TpUf7.js",
+            "/assets/isle-resume-CZ7A-ROC.js",
+            "/assets/A.resources-Ch5_SvlF.js",
+            "/assets/A.edit-BY1Xs-gi.js"
+          ],
+          "initialBy": [
+            "A.edit"
+          ],
+          "styles": [
+            "/assets/A-az5WThTF.css"
+          ]
+        },
+        {
+          "id": "B.$resources",
+          "requested": "auto",
+          "loading": "lazy",
+          "reason": "interaction",
+          "additionalGzipBytes": 127,
+          "modules": [
+            "/assets/B.resources-rvbdVz6A.js"
+          ],
+          "initialBy": [],
+          "styles": [
+            "/assets/B-epdl_BKD.css"
+          ]
+        },
+        {
+          "id": "B.add",
+          "requested": "auto",
+          "loading": "lazy",
+          "reason": "interaction",
+          "additionalGzipBytes": 210,
+          "modules": [
+            "/assets/shared-runtime-DMG-kdSZ.js",
+            "/assets/_isle_widget-engine-bridge-s88TpUf7.js",
+            "/assets/isle-resume-CZ7A-ROC.js",
+            "/assets/B.resources-rvbdVz6A.js",
+            "/assets/B.add-D9asJW1r.js"
+          ],
+          "initialBy": [],
+          "styles": [
+            "/assets/B-epdl_BKD.css"
+          ]
+        },
+        {
+          "id": "isle:resume",
+          "requested": "lazy",
+          "loading": "lazy",
+          "reason": "default",
+          "additionalGzipBytes": 0,
+          "modules": [
+            "/assets/shared-runtime-DMG-kdSZ.js",
+            "/assets/_isle_widget-engine-bridge-s88TpUf7.js",
+            "/assets/isle-resume-CZ7A-ROC.js"
+          ],
+          "initialBy": [
+            "A.edit"
+          ]
+        }
+      ]
+    },
+    "styles": {
+      "assets/A-az5WThTF.css": {
+        "url": "/assets/A-az5WThTF.css",
+        "bytes": 56,
+        "gzipBytes": 74
+      },
+      "assets/B-epdl_BKD.css": {
+        "url": "/assets/B-epdl_BKD.css",
+        "bytes": 56,
+        "gzipBytes": 74
+      }
+    },
+    "chunkStyles": {
+      "assets/A.resources-Ch5_SvlF.js": {
+        "url": "/assets/A.resources-Ch5_SvlF.js",
+        "styles": [
+          "assets/A-az5WThTF.css"
+        ]
+      },
+      "assets/B.resources-rvbdVz6A.js": {
+        "url": "/assets/B.resources-rvbdVz6A.js",
+        "styles": [
+          "assets/B-epdl_BKD.css"
+        ]
+      }
+    },
+    "widget": {
+      "version": 2,
+      "runtime": {
+        "version": "0.0.1",
+        "mode": "shared"
+      },
+      "module": "../assets/isle-widget-mount-CHslhAet.js",
+      "preloadStyles": [
+        "../assets/A-az5WThTF.css"
+      ]
+    }
+  },
+  "eager": {
+    "buildId": "e2bd12cc89cf5231",
+    "loading": {
+      "eager": [
+        "A.edit",
+        "A.add",
+        "A.$resources",
+        "B.add",
+        "B.$resources"
+      ],
+      "preload": []
+    },
+    "styles": {
+      "assets/A-az5WThTF.css": {
+        "url": "/assets/A-az5WThTF.css",
+        "bytes": 56,
+        "gzipBytes": 74
+      },
+      "assets/B-epdl_BKD.css": {
+        "url": "/assets/B-epdl_BKD.css",
+        "bytes": 56,
+        "gzipBytes": 74
+      }
+    },
+    "chunkStyles": {
+      "assets/A.resources-Ch5_SvlF.js": {
+        "url": "/assets/A.resources-Ch5_SvlF.js",
+        "styles": [
+          "assets/A-az5WThTF.css"
+        ]
+      },
+      "assets/B.resources-rvbdVz6A.js": {
+        "url": "/assets/B.resources-rvbdVz6A.js",
+        "styles": [
+          "assets/B-epdl_BKD.css"
+        ]
+      }
+    },
+    "widget": {
+      "version": 2,
+      "runtime": {
+        "version": "0.0.1",
+        "mode": "shared"
+      },
+      "module": "../assets/isle-widget-mount-D8f6ymk2.js",
+      "preloadStyles": [
+        "../assets/A-az5WThTF.css",
+        "../assets/B-epdl_BKD.css"
+      ]
+    }
+  }
+}

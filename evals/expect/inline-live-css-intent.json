@@ -1,0 +1,13 @@
+{
+  "entry": "Counter.increment",
+  "inlineForcesEager": false,
+  "doubledType": "Live<Float64>",
+  "dependencyTracking": "static",
+  "writableNames": ["count"],
+  "retainedClasses": ["button"],
+  "removedClasses": ["unused"],
+  "keepHoverRule": true,
+  "keepUnusedPulse": false,
+  "ssrOnlyHasCss": true,
+  "ssrOnlyHasBrowserJs": false
+}

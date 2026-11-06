@@ -1,0 +1,12 @@
+{
+  "containerContentInset": 32,
+  "brokenViewportRange": { "min": 632, "max": 648, "maxInclusive": false },
+  "narrowMinimumHeight": 320,
+  "wideMinimumHeight": 232,
+  "querySelectsSelf": false,
+  "inlineSizeContainerSupportsHeightQuery": false,
+  "containerNamesCaseSensitive": true,
+  "intrinsicBlockSizeAutomaticallyProved": false,
+  "boundingRectangleIsAlwaysExactRegion": false,
+  "productionRuntimeAdded": false
+}

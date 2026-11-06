@@ -1,0 +1,30 @@
+{
+  "component": "Card",
+  "viewport": {
+    "min": 320,
+    "max": 1000,
+    "height": {
+      "min": 200,
+      "max": 600
+    }
+  },
+  "boxes": {
+    ".text": {
+      "minInlineSize": 100,
+      "minBlockSize": 24,
+      "intrinsicBlockSize": 24
+    }
+  },
+  "ancestors": [
+    {
+      "tag": "html"
+    },
+    {
+      "tag": "body"
+    }
+  ],
+  "css": "./app.css",
+  "reset": [
+    "./reset-0.css"
+  ]
+}

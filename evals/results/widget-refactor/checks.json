@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-04",
+  "checks": {
+    "moonTests": 27,
+    "nodeTests": 142,
+    "existingE2E": 55,
+    "widgetUnitTests": 19,
+    "widgetLocalE2E": 14,
+    "widgetRemoteE2E": 11,
+    "portableKeyboardE2E": 3,
+    "uiGates": 21
+  },
+  "limits": {
+    "formalModelsUnchanged": true,
+    "publicDemoStateless": true,
+    "shadowDomIsNotSecurityBoundary": true
+  }
+}

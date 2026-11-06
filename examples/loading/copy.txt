@@ -1,0 +1,4 @@
+Manifest-driven loading
+Search query
+Open details
+Details are still inactive

@@ -1,0 +1,75 @@
+{
+  "gate": "check.interactions",
+  "command": "check interactions",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "map": {
+      "source": "http://127.0.0.1:52299/",
+      "elements": [
+        {
+          "index": 0,
+          "key": "textbox|Email address (required)",
+          "role": "textbox",
+          "name": "Email address (required)",
+          "path": "main>section.card>form>input#isle-signup:email",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true
+        },
+        {
+          "index": 1,
+          "key": "checkbox|I agree (required)",
+          "role": "checkbox",
+          "name": "I agree (required)",
+          "path": "section.card>form>label>input",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Space",
+            "ariaDelta": {
+              "checked": [
+                "false",
+                "true"
+              ]
+            },
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 2,
+          "key": "button|Save",
+          "role": "button",
+          "name": "Save",
+          "path": "main>section.card>form>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": 0
+          }
+        }
+      ],
+      "capped": 0
+    },
+    "issues": []
+  }
+}

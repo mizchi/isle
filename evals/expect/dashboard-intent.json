@@ -1,0 +1,12 @@
+{
+  "workItems": 64,
+  "scopes": 65,
+  "planPolicy": "policy.planEditor",
+  "planTarget": "id",
+  "asyncValidationOwner": "action",
+  "descriptionInSnapshot": false,
+  "firstClickRestoresAllItems": false,
+  "nativeNotesNeedHandler": false,
+  "filterMutatesReactiveList": false,
+  "preflightReplacesSubmissionValidation": false
+}

@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-04",
+  "moonTests": 27,
+  "nodeTests": 145,
+  "widgetAndSharedUnitTests": 22,
+  "existingE2E": 55,
+  "widgetLocalE2E": 16,
+  "widgetRemoteE2E": 11,
+  "mixedPublicProviderE2E": 1,
+  "uiGates": 14,
+  "simultaneousRoots": 14,
+  "transportEvaluations": 1,
+  "clientEvaluations": 1
+}

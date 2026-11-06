@@ -1,0 +1,13 @@
+client component Editor() {
+  state title = "";
+  <section data-editor="">
+    <label>Title<input data-title="" value={title}>on input edit { title = event.value; }</input></label>
+    <button type="button" data-clear="">on click clear { title = ""; }Clear</button>
+    <output data-result="">{title}</output>
+  </section>
+}
+client component Counter() {
+  state n = 0;
+  <button type="button" data-counter="">on click add { n += 1; }{n}</button>
+}
+server component Page() { <main><Editor/><Counter/></main> }

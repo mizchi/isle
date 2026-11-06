@@ -1,0 +1,73 @@
+{
+  "gate": "check.integrity",
+  "command": "check integrity",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 1,
+    "info": 0
+  },
+  "findings": [
+    {
+      "rule": "degenerate-render",
+      "severity": "warn",
+      "message": "Near-empty render: 1 component(s), 2 text block(s), 0.21% ink. If the brief calls for a full page, most of it is missing.",
+      "viewport": 1280,
+      "evidence": {
+        "componentCount": 1,
+        "inkRatio": 0.002109375,
+        "textBlocks": 2
+      }
+    }
+  ],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "evals/results/layout/fixed.html",
+    "verdict": "clean",
+    "findings": [
+      {
+        "kind": "degenerate-render",
+        "severity": "warn",
+        "viewport": 1280,
+        "message": "Near-empty render: 1 component(s), 2 text block(s), 0.21% ink. If the brief calls for a full page, most of it is missing.",
+        "evidence": {
+          "componentCount": 1,
+          "inkRatio": 0.002109375,
+          "textBlocks": 2
+        },
+        "viewports": [
+          1280,
+          768
+        ]
+      }
+    ],
+    "exempted": [],
+    "viewports": [
+      {
+        "width": 1280,
+        "height": 800,
+        "components": 1,
+        "inkRatio": 0.0021,
+        "textBlocks": 2
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "components": 1,
+        "inkRatio": 0.0031,
+        "textBlocks": 2
+      },
+      {
+        "width": 375,
+        "height": 700,
+        "components": 1,
+        "inkRatio": 0.0082,
+        "textBlocks": 2
+      }
+    ],
+    "kickback": [
+      "[degenerate-render] (viewport 1280,768): Near-empty render: 1 component(s), 2 text block(s), 0.21% ink. If the brief calls for a full page, most of it is missing."
+    ]
+  }
+}

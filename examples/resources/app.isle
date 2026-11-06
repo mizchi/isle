@@ -1,0 +1,8 @@
+client component Session() {
+  state count = 0;
+  <section data-session="">
+    <h2>Owned session</h2>
+    <button type="button">on click increment { count += 1; }Activate / increment</button>
+    <output aria-live="polite">{count}</output>
+  </section>
+}

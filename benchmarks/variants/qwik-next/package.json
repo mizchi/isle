@@ -1,0 +1,7 @@
+{
+  "name": "@isle-bench/qwik-next",
+  "private": true,
+  "type": "module",
+  "dependencies": { "@qwik.dev/core": "2.0.0-rc.4" },
+  "devDependencies": { "vite": "8.3.5" }
+}

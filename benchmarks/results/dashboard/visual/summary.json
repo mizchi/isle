@@ -1,0 +1,103 @@
+{
+  "pass": true,
+  "gates": [
+    {
+      "name": "integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "name": "copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "name": "scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "name": "handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "name": "interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 8,
+        "info": 0
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "qwik",
+      "results": [
+        {
+          "viewport": "wide",
+          "rawDiffRatio": 0.000011186397340833546
+        },
+        {
+          "viewport": "desktop",
+          "rawDiffRatio": 0.000012584697008437739
+        },
+        {
+          "viewport": "mobile",
+          "rawDiffRatio": 0.000028175088047150148
+        }
+      ]
+    },
+    {
+      "id": "qwik-next",
+      "results": [
+        {
+          "viewport": "wide",
+          "rawDiffRatio": 0
+        },
+        {
+          "viewport": "desktop",
+          "rawDiffRatio": 0
+        },
+        {
+          "viewport": "mobile",
+          "rawDiffRatio": 0
+        }
+      ]
+    },
+    {
+      "id": "preact",
+      "results": [
+        {
+          "viewport": "wide",
+          "rawDiffRatio": 0.000011186397340833546
+        },
+        {
+          "viewport": "desktop",
+          "rawDiffRatio": 0.000012584697008437739
+        },
+        {
+          "viewport": "mobile",
+          "rawDiffRatio": 0.000028175088047150148
+        }
+      ]
+    }
+  ]
+}

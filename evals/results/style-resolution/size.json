@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "scope": "ES2023 production with diagnostics/profile disabled; per-file gzip, not network timings",
+  "variants": {
+    "without-css": {
+      "javascript": {
+        "bytes": 9752,
+        "gzipBytes": 4253,
+        "files": [
+          {
+            "file": "assets/Counter.add-D9asJW1r.js",
+            "bytes": 65,
+            "gzipBytes": 83,
+            "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+          },
+          {
+            "file": "assets/Counter.resources-Dr70KyLF.js",
+            "bytes": 33,
+            "gzipBytes": 53,
+            "sha256": "58ce14a75a487ce6b812924b279c7bfd1a032229793fd95ad9d66d8643daa14c"
+          },
+          {
+            "file": "assets/index-BmIW9Qk2.js",
+            "bytes": 1795,
+            "gzipBytes": 883,
+            "sha256": "de47ce2e40b9c0501e12e2019521372b5dbc10ea1c57cf30ec5a6f8fee6f9e8e"
+          },
+          {
+            "file": "assets/isle-resume-BdiupF-D.js",
+            "bytes": 7859,
+            "gzipBytes": 3234,
+            "sha256": "f5d452d59d728af0a9dff36812c4866b88ad15c437aadfda580b344556d3b601"
+          }
+        ]
+      },
+      "css": {
+        "bytes": 0,
+        "gzipBytes": 0,
+        "files": []
+      }
+    },
+    "with-css": {
+      "javascript": {
+        "bytes": 11811,
+        "gzipBytes": 5015,
+        "files": [
+          {
+            "file": "assets/Counter.add-D9asJW1r.js",
+            "bytes": 65,
+            "gzipBytes": 83,
+            "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+          },
+          {
+            "file": "assets/Counter.resources-D31wNgAN.js",
+            "bytes": 33,
+            "gzipBytes": 53,
+            "sha256": "58ce14a75a487ce6b812924b279c7bfd1a032229793fd95ad9d66d8643daa14c"
+          },
+          {
+            "file": "assets/index-DTfVcu2G.js",
+            "bytes": 1795,
+            "gzipBytes": 883,
+            "sha256": "10972caa298957d2ea30aa1911790e42a6ec28870dd0b8932e49b17181b5883d"
+          },
+          {
+            "file": "assets/isle-resume-DrC031sg.js",
+            "bytes": 9918,
+            "gzipBytes": 3996,
+            "sha256": "abf7fa6d2877d3a112f9a57c0a46bace0e8c9cde695872f893746cbef42be210"
+          }
+        ]
+      },
+      "css": {
+        "bytes": 24,
+        "gzipBytes": 44,
+        "files": [
+          {
+            "file": "assets/Counter-C-JlQQ80.css",
+            "bytes": 24,
+            "gzipBytes": 44,
+            "sha256": "47086884e476e0132c115c6459be215cb0e554fa7960d6b28cfa70f3ac46fd78"
+          }
+        ]
+      }
+    },
+    "ssr": {
+      "javascript": {
+        "bytes": 0,
+        "gzipBytes": 0,
+        "files": []
+      },
+      "css": {
+        "bytes": 0,
+        "gzipBytes": 0,
+        "files": []
+      }
+    }
+  },
+  "ordinaryApps": {
+    "counter": {
+      "identicalJavaScript": true,
+      "deltaBytes": 0,
+      "deltaGzipBytes": 0,
+      "files": [
+        {
+          "file": "assets/Counter.h0-CxJgHqIU.js",
+          "bytes": 85,
+          "gzipBytes": 90,
+          "sha256": "d8d2a36869e8aa7d261bf878e75da6f9fc5d11514743d7c4f3750b0f12d31bb2"
+        },
+        {
+          "file": "assets/Editor.h1-WsKkkGT5.js",
+          "bytes": 127,
+          "gzipBytes": 129,
+          "sha256": "0eb0db4103f81150bfb844b4b8c6613b7428123f793d34e6358da150957b74c6"
+        },
+        {
+          "file": "assets/index-Des-UpCF.js",
+          "bytes": 1635,
+          "gzipBytes": 882,
+          "sha256": "cbcf06abc40b7db1b110e46a6566a947a19d505b7656364a5851908255aaf6cf"
+        },
+        {
+          "file": "assets/isle-resume-2rFM-Mp8.js",
+          "bytes": 4448,
+          "gzipBytes": 2149,
+          "sha256": "7f0e625db4fb450638cd87a4f112ad8f05fe08d30fdaaa74151898f69d993818"
+        }
+      ]
+    },
+    "composition": {
+      "identicalJavaScript": true,
+      "deltaBytes": 0,
+      "deltaGzipBytes": 0,
+      "files": [
+        {
+          "file": "assets/Counter.g0-sIr0C6hm.js",
+          "bytes": 118,
+          "gzipBytes": 100,
+          "sha256": "cce365eea6521e3df2eea2c263fd39e5fe9741fca5571a8e8a38c40e232a6134"
+        },
+        {
+          "file": "assets/index-Bty9EuWx.js",
+          "bytes": 1590,
+          "gzipBytes": 837,
+          "sha256": "97e03afe4b02d40713c505170e80ae37c90d06f851828336b901d8cc93e6037f"
+        },
+        {
+          "file": "assets/isle-resume-DBDfVQ7a.js",
+          "bytes": 3717,
+          "gzipBytes": 1757,
+          "sha256": "f7855e536b576ace930e903e53468625c53689d7095e3b92a2c090089bc30e3d"
+        },
+        {
+          "file": "assets/Parent.increment-D9asJW1r.js",
+          "bytes": 65,
+          "gzipBytes": 83,
+          "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+        }
+      ]
+    },
+    "schema-form": {
+      "identicalJavaScript": true,
+      "deltaBytes": 0,
+      "deltaGzipBytes": 0,
+      "files": [
+        {
+          "file": "assets/index-CfBrw-y0.js",
+          "bytes": 3694,
+          "gzipBytes": 1679,
+          "sha256": "f779a7869157f35ef9c7f778edcb6248ac6d9d3ff88a48bb5bfb53008c7f2e4a"
+        },
+        {
+          "file": "assets/isle-resume-DeaDhBdV.js",
+          "bytes": 3374,
+          "gzipBytes": 1630,
+          "sha256": "446ce2d5f48e94356e34da98e324243c74320c4244fe8614b1a0f8b391a15e30"
+        },
+        {
+          "file": "assets/request-Dltj0cm7.js",
+          "bytes": 470,
+          "gzipBytes": 361,
+          "sha256": "1942305a51cda90b800e1f849f98d89aac08dd9fa60089cf5d4d306cbc2046e3"
+        },
+        {
+          "file": "assets/SchemaSignup.__form0-DS-SsaKg.js",
+          "bytes": 10355,
+          "gzipBytes": 4143,
+          "sha256": "c7bcf0a72cd97a69992cfcc8bcbca8719d423006db4b7df8137b0e1f80c32f9b"
+        }
+      ]
+    }
+  },
+  "cssGateDelta": {
+    "bytes": 2059,
+    "gzipBytes": 762
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "assessedOn": "2026-11-06",
+  "passed": true,
+  "scope": "Explicit ordered reset inputs and supported author cascade/UA semantics; ancestor inheritance, reset selectors, flat layers and CSS-wide keywords. No automatic browser CSS injection or general CSSOM refinement proof.",
+  "checks": [
+    {
+      "command": "just ci",
+      "exitCode": 0,
+      "moonbitTests": 53,
+      "nodeTests": 290,
+      "browserTests": 123,
+      "layoutNodeTests": 42,
+      "layoutBrowserTests": 10,
+      "formalCases": 92,
+      "formalExpectedCounterexamples": 35,
+      "typeContracts": true,
+      "formA11ySuites": 2,
+      "formA11yGatesPerSuite": 8
+    },
+    {
+      "command": "just layout-quality",
+      "exitCode": 0,
+      "tool": "vlmkit/0.24.0",
+      "viewport": {
+        "width": {
+          "min": 240,
+          "max": 1000
+        },
+        "height": {
+          "min": 200,
+          "max": 600
+        }
+      },
+      "gates": [
+        {
+          "file": "integrity-phone.json",
+          "verdict": "pass",
+          "counts": {
+            "suspect": 0,
+            "warn": 0,
+            "info": 0
+          }
+        },
+        {
+          "file": "integrity-desktop.json",
+          "verdict": "pass",
+          "counts": {
+            "suspect": 0,
+            "warn": 1,
+            "info": 0
+          }
+        },
+        {
+          "file": "responsive.json",
+          "verdict": "pass",
+          "counts": {
+            "suspect": 0,
+            "warn": 0,
+            "info": 0
+          }
+        }
+      ],
+      "retainsPreviousLayoutQualityGates": true
+    },
+    {
+      "command": "Production counter hash and gzip comparison with preceding container/block stage",
+      "passed": true,
+      "artifact": "size.json"
+    }
+  ],
+  "evidence": {
+    "positive": "reset.json",
+    "negative": "override.json",
+    "important": "important.json",
+    "browserMeasurements": "browser.json",
+    "measuredCombinations": 9,
+    "screenshots": [
+      "375x400.png",
+      "1000x600.png"
+    ],
+    "readingGrader": "layout-reset-intent",
+    "participantEvaluation": false
+  },
+  "sourceSha256": {
+    "lib/layout/selectors.mjs": "49875f6122d1c00d38cefbb66da1475c4f67a1cc10336caa7789b45c66c5d923",
+    "lib/layout/css.mjs": "926ddbfd5135a525db55d98c2066fbb2637b6868821433cce172e538a0e52366",
+    "lib/layout/input.mjs": "5286cb1ff1543a5cf655f348027c4ee85f7a6a4b7efd987240b42a9e25fccba0",
+    "lib/layout/engine.mjs": "3575ff16d57789d654c49054357728e17e1ef2fef5612c4823eea9a2a14d7244",
+    "lib/layout-contracts.d.ts": "75805318248f2a72f7bd4ff42f6329fec73786242eeee17c547701ab4962aebe",
+    "tools/isle.mjs": "0a5ac13304f0581fc0a3e3fd8866c3110f32ba4f94adc423ac59339cf0ad72af",
+    "tools/eval.mjs": "6a17a5848405652853e184d860de7616160f286d4809146ee579be60b84e3cad",
+    "justfile": "25645a5f6ec01b9b5020b262b69a3ec5782b48fd5ce907802e5eb86781859906",
+    "tests/layout-reset.test.mjs": "652e55fbbb57e426e62d46fd2c1da7c3d4b83ab97beaebcf21f8798b052a0cee",
+    "tests/layout-cli.test.mjs": "043e72bed3fb43799683a1382d914e74f4fae83dbb640161b7c1bce03879ec6d",
+    "tests/eval-layout-reset.test.mjs": "f25443ae19ea2feed8fe92e10e4d3a3e7d12e1f632b6e70edb1e60d678db0c02",
+    "tests/types/layout.mts": "d7c711d2fc8d72e46b02174bca3438abe02110aad295ba9d9a4b4ca52569be1c",
+    "e2e/layout-reset.spec.mjs": "4d61bc357ae5f071cb3cb10811a685a519663e5524d34611919a9af8933ff054",
+    "evals/scenarios/layout-reset/fixture.isle": "6bbd96af2e3295814d320c57e2ff60847e5450e919db561b5fd4ac2e02868a66",
+    "evals/scenarios/layout-reset/reset.css": "6d45b27c7391693f0a9b807f24f7f5b24ceffebebd0b18f92da9f3137637742c",
+    "evals/scenarios/layout-reset/app.css": "3f49fe473265b455e4b419bef65cfa822fd1b6ffb746474dbbfc13586994447d",
+    "evals/scenarios/layout-reset/layout.json": "d2f6f79833f425c4bf7eecec1317c9c80fa0c6f5e88be9fec038dc43aefbd0a7",
+    "evals/expect/layout-reset-intent.json": "1fc49c3225669a180646c40c5b4728c1c0e32c80b29382799fc22d292cca57a0"
+  }
+}

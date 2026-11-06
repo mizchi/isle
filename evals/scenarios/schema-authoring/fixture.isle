@@ -1,0 +1,4 @@
+schema Registration {
+  email: string minLength(3) maxLength(80) format("email");
+  accepted: boolean equals(true);
+}

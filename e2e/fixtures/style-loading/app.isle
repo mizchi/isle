@@ -1,0 +1,14 @@
+client component A(initial:number) {
+  state n = initial;
+  state title = "";
+  <section class="panel a" data-panel="a" data-index={initial}>
+    <label>Title<input value={title}>on input edit { title = event.value; }</input></label>
+    <button type="button" data-add="">on click add { n += 1; }{n}</button>
+    <output>{title}</output>
+  </section>
+}
+client component B() {
+  state n = 0;
+  <section class="panel b" data-panel="b"><button type="button" data-add="">on click add { n += 1; }{n}</button></section>
+}
+server component Page() { <main><A initial={1}/><A initial={2}/><B/></main> }

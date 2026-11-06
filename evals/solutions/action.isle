@@ -1,0 +1,9 @@
+schema PublishInput { noteId: string; body: string; }
+view PublishedView { noteId: string; body: string; }
+export server action publishNote(input: PublishInput): PublishedView
+  using request: RequestContext
+  authorize grant = policy.notePublisher(request, input.noteId)
+  effects { db.write }
+{
+  return await notes.publish(grant, input.body);
+}

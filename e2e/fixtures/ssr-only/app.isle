@@ -1,0 +1,16 @@
+export server component Heading({ title }: { title: string }) {
+  <h1>{title}</h1>
+}
+
+export client component Counter({ initial }: { initial: number }) {
+  state count = initial;
+  derive doubled = count * 2;
+  <button type="button">
+    on click { count += 1; }
+    {count} / {doubled}
+  </button>
+}
+
+export client component NoEvents({ title }: { title: string }) {
+  <p>{title}</p>
+}

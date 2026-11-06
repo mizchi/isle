@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "assessedOn": "2026-11-06",
+  "passed": true,
+  "scope": "Emitted CodeRef CSS dependencies, readiness before module evaluation/setup/commit, owner cancellation and root-local stylesheet ownership; finite model and browser regression checks, not CSSOM or compiler refinement proofs",
+  "checks": [
+    {
+      "command": "just ci",
+      "exitCode": 0,
+      "moonbitTests": 53,
+      "nodeTests": 248,
+      "browserTests": 113,
+      "existingBrowserTests": 67,
+      "controlFlowBrowserTests": 4,
+      "resourceBrowserTests": 15,
+      "automaticLoadingBrowserTests": 3,
+      "styleBrowserTests": {
+        "shared": 15,
+        "plain": 9,
+        "plainNotApplicable": 6
+      },
+      "formalCases": 92,
+      "formalExpectedCounterexamples": 35,
+      "formA11ySuites": 2,
+      "formA11yGatesPerSuite": 8
+    },
+    {
+      "command": "just widget-check",
+      "exitCode": 0,
+      "nodeTests": 29,
+      "browserTests": 24,
+      "workersDryRun": true
+    },
+    {
+      "command": "just style-check",
+      "exitCode": 0,
+      "moonbitTests": 2,
+      "nodeTests": 9,
+      "browserTests": 24
+    },
+    {
+      "command": "pnpm exec tsc -p tsconfig.contracts.json",
+      "exitCode": 0,
+      "note": "Includes the final style-resolution type fixture"
+    },
+    {
+      "command": "just style-size",
+      "exitCode": 0,
+      "sizeReport": "size.json",
+      "ordinaryAppsWithIdenticalJavaScript": 3,
+      "cssGateDeltaGzipBytes": 762,
+      "ssrCodeJavaScriptBytes": 0,
+      "ssrCodeCssBytes": 0
+    }
+  ],
+  "styleModel": [
+    {
+      "name": "style-resolution/strict",
+      "property": "safety:safe",
+      "category": "positive",
+      "passed": true,
+      "complete": true,
+      "reachableStates": 30,
+      "witnessReplayed": false
+    },
+    {
+      "name": "style-resolution/activated",
+      "property": "reachability:activated",
+      "category": "positive",
+      "passed": true,
+      "complete": true,
+      "reachableStates": 30,
+      "witnessReplayed": true
+    },
+    {
+      "name": "style-resolution/committed",
+      "property": "reachability:committed",
+      "category": "positive",
+      "passed": true,
+      "complete": true,
+      "reachableStates": 30,
+      "witnessReplayed": true
+    },
+    {
+      "name": "style-resolution/cancelled",
+      "property": "reachability:cancelled",
+      "category": "positive",
+      "passed": true,
+      "complete": true,
+      "reachableStates": 30,
+      "witnessReplayed": true
+    },
+    {
+      "name": "style-resolution/skip-css",
+      "property": "safety:safe",
+      "category": "broken-implementation",
+      "passed": true,
+      "complete": true,
+      "reachableStates": 60,
+      "witnessReplayed": true
+    },
+    {
+      "name": "style-resolution/ignore-owner",
+      "property": "safety:safe",
+      "category": "broken-implementation",
+      "passed": true,
+      "complete": true,
+      "reachableStates": 35,
+      "witnessReplayed": true
+    }
+  ],
+  "plans": "plans.json",
+  "sourceSha256": {
+    "runtime/styles.mjs": "5b091aa19c014df1bdd429b12a187770c46d72bc9ce32bd4125c00fe2f9febcb",
+    "runtime/client.mjs": "be07822d762e33eb8530904e3bb980c27e5d774bd81d2492ac16464e1f44d11b",
+    "runtime/manifest.mjs": "5c1096859ee12226544e0f7140637e480b348438cebaefeae75c3a38fce00fc3",
+    "runtime/manifest.d.mts": "2d700b9adc41f9097f5e7510ff7267211d6d9bc5a0f436cd36cf3e4ecf2ec5c6",
+    "runtime/widget-mount.mjs": "09d75de45a11165033ba38c11d776de1a48484f5160731b6962c0dd20a806a78",
+    "runtime/widget-contract.mjs": "b2ff1022bbbc859b8772ea3a9450474fd0caf6ffe6f757db49f8e2a40a46b525",
+    "runtime/widget.mjs": "98fd34c71232035a75551256f5c6f3fb90ac61212c8364622f5c51e6af717de0",
+    "lib/vite.mjs": "bfc660e6ea38e1e5a8ba65a9c01b02f12d167798bd2b85ab91176db8b0113eeb",
+    "lib/code-manifest.mjs": "2759c70b6846f312477db633e81dedf5a98af7159dc47cf58878fa75add6f3c8",
+    "lib/loading-plan.mjs": "6a55075f6f9bf7d67c10646efe379b7087864c78603c3bb3f8356fc851e9a9b0",
+    "lib/chunks.mjs": "0d1e92ade47a82f57b0c7455e23d250da9b63e38491d222967e196e92b48c3cd",
+    "lib/cost.mjs": "935f15eadaf8560adb2e417e5f3b22f0b8c6286005cf278542dff602c13f9665",
+    "lib/widget-build.mjs": "9dbe0ebc210596942380d63be6d5e5fa6e7e9ff5d9a003962ab4550e4854d182",
+    "lib/code-contracts.d.ts": "bb5949916cdbf7c503f74a9fa885ddc6a1dfc7c6fb45d842f249f5951cf5a1dc",
+    "lib/client-contracts.d.ts": "a083d076b54ab1d3cbaaa9a57ea97a2c05d34e2ae0300bcb8e6b34406d3f7793",
+    "models/style_resolution/model.mbt": "b11e7a46fd70dfe761f8c0ce8cbfff462b65bff30ef10ef04a30ff3127ea4e0e",
+    "models/style_resolution/model_wbtest.mbt": "d73f8a0640f40e7dbfd8f5115c975bb9340170299bf3697101e0f5e4fd8e0660",
+    "models/verification/verification.mbt": "3179f756b717a43bba7cf341bfda07ebb4a1034b951dc0355c306505c6a8d628",
+    "e2e/style-loading.spec.mjs": "cd943d24fbd5869e45222c6e9018a2fd0180899e45d963787f4fa44e92d110d8",
+    "e2e/widget-elements.spec.mjs": "a7306aa6188fbb3decbad87cdbda54f2f40203e326c5d93cdd6e7e691dd54220",
+    "tests/style-loading.test.mjs": "8f08931f93f42a87c45ee9b90acac3380ed1047e3e771b8982d38ee3e300f0b8",
+    "tests/style-build.test.mjs": "62eb6037c2c42efdeb679c589f5535a1e7fa8d31c9464ce7e0abc9e3ccac1361",
+    "tests/types/style-resolution.mts": "4a57fca920d893f38365a2f69caee54d1039db67f11644d3077075f0b092526a",
+    "tools/check-style-size.mjs": "a6653966765c996e13f6d36e3b619fc34e2e3c62f4b8e51033bd1d6cff985ba5"
+  }
+}

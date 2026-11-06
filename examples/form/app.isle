@@ -1,0 +1,27 @@
+export client component Signup({ initial }: { initial: string }) {
+  state email = initial;
+  state accepted = false;
+  state invalid = false;
+  state error = "";
+  state submitted = "";
+  <form aria-label="Signup">
+    on submit save { submitted = email; }
+    <label for="email">Email address (required)</label>
+    <input id="email" name="email" type="email" autocomplete="email" required
+      minlength="6" maxlength="80" value={email} aria-invalid={invalid}
+      aria-describedby="email-help email-error">
+      on input edit { email = event.value; invalid = event.invalid; error = event.validationMessage; }
+      on invalid report { invalid = event.invalid; error = event.validationMessage; }
+    </input>
+    <p id="email-help">Use your work email.</p>
+    <p id="email-error" aria-live="polite">{error}</p>
+    <label>
+      <input name="accepted" type="checkbox" checked={accepted} required>
+        on change consent { accepted = event.checked; }
+      </input>
+      I agree (required)
+    </label>
+    <button type="submit">Save</button>
+    <output aria-live="polite">{submitted}</output>
+  </form>
+}

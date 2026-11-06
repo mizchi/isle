@@ -1,0 +1,9 @@
+export client component Counter({ initial }: { initial: number }) {
+  state count: number = initial;
+  derive remaining: number = 100 - count;
+
+  <button>
+    on click { count += 3; }
+    {count} / {remaining}
+  </button>
+}

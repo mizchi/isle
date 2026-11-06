@@ -1,0 +1,5440 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-05T07:27:42.107Z",
+  "samples": 5,
+  "warm": 8,
+  "cases": [
+    {
+      "id": "128",
+      "rows": 128,
+      "profile": false,
+      "root": "benchmarks/generated/heavy-render/128",
+      "outDir": "benchmarks/dist/heavy-render/128",
+      "buildMs": 113.196542,
+      "sourceBytes": 16285,
+      "chunks": [
+        {
+          "file": "assets/Audit.check-D9asJW1r.js",
+          "bytes": 65,
+          "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+        },
+        {
+          "file": "assets/Sheet.addAll-Bbrde1T-.js",
+          "bytes": 20403,
+          "sha256": "806904ec6d41bb15a658b528e01fa2a50e69afb5d891f320094ef2ec2abd0494"
+        },
+        {
+          "file": "assets/index-C2RTBEGm.js",
+          "bytes": 1535,
+          "sha256": "c56e13fa760d6178689f880f31578cd84ab1e0b1da8fe832d82f8f74058ca6d7"
+        },
+        {
+          "file": "assets/isle-resume-BDTyYuft.js",
+          "bytes": 3753,
+          "sha256": "3bf71bed6e76961070c8fc885c56a86bb7b7052dc5ce6201284bb570f831ddf5"
+        }
+      ],
+      "static": {
+        "planId": "1c320996c1d0e512",
+        "buildId": "86787dfa04983a58",
+        "scenario": {
+          "mode": "resume",
+          "mounts": [
+            {
+              "component": "Page",
+              "mode": "resume"
+            }
+          ],
+          "domElements": 2063,
+          "resumableOwners": 2,
+          "snapshotSlots": 2,
+          "components": {
+            "Page": {
+              "instances": 1,
+              "resumableInstances": 0
+            },
+            "Audit": {
+              "instances": 1,
+              "resumableInstances": 1
+            },
+            "Sheet": {
+              "instances": 1,
+              "resumableInstances": 1
+            }
+          }
+        },
+        "entries": [
+          {
+            "id": "Audit.check",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 2
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 1,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-BDTyYuft.js",
+                "./assets/Audit.check-D9asJW1r.js"
+              ],
+              "bytes": 3818,
+              "gzipBytes": 1876,
+              "dynamicImports": [
+                "./assets/Sheet.addAll-Bbrde1T-.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          },
+          {
+            "id": "Sheet.addAll",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 2433
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 1026
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 385
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 128
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 385
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 513,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-BDTyYuft.js",
+                "./assets/Sheet.addAll-Bbrde1T-.js"
+              ],
+              "bytes": 24156,
+              "gzipBytes": 5137,
+              "dynamicImports": [
+                "./assets/Audit.check-D9asJW1r.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          }
+        ],
+        "budget": {
+          "ok": true,
+          "checks": [
+            {
+              "entry": "Sheet.addAll",
+              "metric": "textPatchCalls",
+              "max": 1000,
+              "actual": 385,
+              "status": "pass"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "attributePatchCalls",
+              "max": 1000,
+              "actual": 128,
+              "status": "pass"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "binaryOperations",
+              "max": 20000,
+              "actual": 2433,
+              "status": "pass"
+            },
+            {
+              "entry": "$page",
+              "metric": "domElements",
+              "max": 5000,
+              "actual": 2063,
+              "status": "pass"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "1024",
+      "rows": 1024,
+      "profile": false,
+      "root": "benchmarks/generated/heavy-render/1024",
+      "outDir": "benchmarks/dist/heavy-render/1024",
+      "buildMs": 327.82154199999997,
+      "sourceBytes": 116171,
+      "chunks": [
+        {
+          "file": "assets/Audit.check-D9asJW1r.js",
+          "bytes": 65,
+          "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+        },
+        {
+          "file": "assets/Sheet.addAll-DhadpzRA.js",
+          "bytes": 166994,
+          "sha256": "5187aae4f4ce0f037c95f09f2e06ccb2aabc1bd0cabede3b1b81b2e6dd7dae81"
+        },
+        {
+          "file": "assets/index-B_AgxB5N.js",
+          "bytes": 1535,
+          "sha256": "039c172067608a49accd6dc24881213a5b3fca7910d2242be74482efee92f094"
+        },
+        {
+          "file": "assets/isle-resume-D7KGr8o7.js",
+          "bytes": 3753,
+          "sha256": "ba893f54ea1e2ff6b54a40ab0eaadd3201b5dd71136a09c0475481cd85873553"
+        }
+      ],
+      "static": {
+        "planId": "04739725ce0afd33",
+        "buildId": "1dd5997255ac4264",
+        "scenario": {
+          "mode": "resume",
+          "mounts": [
+            {
+              "component": "Page",
+              "mode": "resume"
+            }
+          ],
+          "domElements": 16399,
+          "resumableOwners": 2,
+          "snapshotSlots": 2,
+          "components": {
+            "Page": {
+              "instances": 1,
+              "resumableInstances": 0
+            },
+            "Audit": {
+              "instances": 1,
+              "resumableInstances": 1
+            },
+            "Sheet": {
+              "instances": 1,
+              "resumableInstances": 1
+            }
+          }
+        },
+        "entries": [
+          {
+            "id": "Audit.check",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 2
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 1,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-D7KGr8o7.js",
+                "./assets/Audit.check-D9asJW1r.js"
+              ],
+              "bytes": 3818,
+              "gzipBytes": 1877,
+              "dynamicImports": [
+                "./assets/Sheet.addAll-DhadpzRA.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          },
+          {
+            "id": "Sheet.addAll",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 19457
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 8194
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 3073
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 1024
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 3073
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 4097,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-D7KGr8o7.js",
+                "./assets/Sheet.addAll-DhadpzRA.js"
+              ],
+              "bytes": 170747,
+              "gzipBytes": 27133,
+              "dynamicImports": [
+                "./assets/Audit.check-D9asJW1r.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          }
+        ],
+        "budget": {
+          "ok": false,
+          "checks": [
+            {
+              "entry": "Sheet.addAll",
+              "metric": "textPatchCalls",
+              "max": 1000,
+              "actual": 3073,
+              "status": "exceeded"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "attributePatchCalls",
+              "max": 1000,
+              "actual": 1024,
+              "status": "exceeded"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "binaryOperations",
+              "max": 20000,
+              "actual": 19457,
+              "status": "pass"
+            },
+            {
+              "entry": "$page",
+              "metric": "domElements",
+              "max": 5000,
+              "actual": 16399,
+              "status": "exceeded"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "4096",
+      "rows": 4096,
+      "profile": false,
+      "root": "benchmarks/generated/heavy-render/4096",
+      "outDir": "benchmarks/dist/heavy-render/4096",
+      "buildMs": 1283.721,
+      "sourceBytes": 458581,
+      "chunks": [
+        {
+          "file": "assets/Audit.check-D9asJW1r.js",
+          "bytes": 65,
+          "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+        },
+        {
+          "file": "assets/Sheet.addAll-DMyCyLTU.js",
+          "bytes": 677526,
+          "sha256": "4850ea4a632cd4eb79ea291bbe3daa5ceeaca302a8a93a07a6d1b7ef23351817"
+        },
+        {
+          "file": "assets/index-CMU5uvVD.js",
+          "bytes": 1535,
+          "sha256": "dc24d41a5c8cc3cdc9f86cc4e8f66ea913570a10546a042da23e79195c6dbf06"
+        },
+        {
+          "file": "assets/isle-resume-DqmjmVZo.js",
+          "bytes": 3753,
+          "sha256": "872964170ff1ef78935011faa717a1e81f89db6088a13d9ad60ac89132feae7c"
+        }
+      ],
+      "static": {
+        "planId": "84f62600969e3dce",
+        "buildId": "37813858fa8cb037",
+        "scenario": {
+          "mode": "resume",
+          "mounts": [
+            {
+              "component": "Page",
+              "mode": "resume"
+            }
+          ],
+          "domElements": 65551,
+          "resumableOwners": 2,
+          "snapshotSlots": 2,
+          "components": {
+            "Page": {
+              "instances": 1,
+              "resumableInstances": 0
+            },
+            "Audit": {
+              "instances": 1,
+              "resumableInstances": 1
+            },
+            "Sheet": {
+              "instances": 1,
+              "resumableInstances": 1
+            }
+          }
+        },
+        "entries": [
+          {
+            "id": "Audit.check",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 2
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 1,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-DqmjmVZo.js",
+                "./assets/Audit.check-D9asJW1r.js"
+              ],
+              "bytes": 3818,
+              "gzipBytes": 1879,
+              "dynamicImports": [
+                "./assets/Sheet.addAll-DMyCyLTU.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          },
+          {
+            "id": "Sheet.addAll",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 77825
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 32770
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 12289
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 4096
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 12289
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 16385,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-DqmjmVZo.js",
+                "./assets/Sheet.addAll-DMyCyLTU.js"
+              ],
+              "bytes": 681279,
+              "gzipBytes": 101375,
+              "dynamicImports": [
+                "./assets/Audit.check-D9asJW1r.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          }
+        ],
+        "budget": {
+          "ok": false,
+          "checks": [
+            {
+              "entry": "Sheet.addAll",
+              "metric": "textPatchCalls",
+              "max": 1000,
+              "actual": 12289,
+              "status": "exceeded"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "attributePatchCalls",
+              "max": 1000,
+              "actual": 4096,
+              "status": "exceeded"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "binaryOperations",
+              "max": 20000,
+              "actual": 77825,
+              "status": "exceeded"
+            },
+            {
+              "entry": "$page",
+              "metric": "domElements",
+              "max": 5000,
+              "actual": 65551,
+              "status": "exceeded"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "environment": {
+    "node": "v24.21.0",
+    "chromium": "156.0.8078.4",
+    "cpu": "Apple M5",
+    "platform": "darwin/arm64"
+  },
+  "summary": [
+    {
+      "profile": {
+        "id": "native",
+        "cpu": 1
+      },
+      "cases": [
+        {
+          "rows": 128,
+          "static": {
+            "planId": "1c320996c1d0e512",
+            "buildId": "86787dfa04983a58",
+            "scenario": {
+              "mode": "resume",
+              "mounts": [
+                {
+                  "component": "Page",
+                  "mode": "resume"
+                }
+              ],
+              "domElements": 2063,
+              "resumableOwners": 2,
+              "snapshotSlots": 2,
+              "components": {
+                "Page": {
+                  "instances": 1,
+                  "resumableInstances": 0
+                },
+                "Audit": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                },
+                "Sheet": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                }
+              }
+            },
+            "entries": [
+              {
+                "id": "Audit.check",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 2
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 1,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-BDTyYuft.js",
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ],
+                  "bytes": 3818,
+                  "gzipBytes": 1876,
+                  "dynamicImports": [
+                    "./assets/Sheet.addAll-Bbrde1T-.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              },
+              {
+                "id": "Sheet.addAll",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 2433
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 1026
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 385
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 128
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 385
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 513,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-BDTyYuft.js",
+                    "./assets/Sheet.addAll-Bbrde1T-.js"
+                  ],
+                  "bytes": 24156,
+                  "gzipBytes": 5137,
+                  "dynamicImports": [
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              }
+            ],
+            "budget": {
+              "ok": true,
+              "checks": [
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "textPatchCalls",
+                  "max": 1000,
+                  "actual": 385,
+                  "status": "pass"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "attributePatchCalls",
+                  "max": 1000,
+                  "actual": 128,
+                  "status": "pass"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "binaryOperations",
+                  "max": 20000,
+                  "actual": 2433,
+                  "status": "pass"
+                },
+                {
+                  "entry": "$page",
+                  "metric": "domElements",
+                  "max": 5000,
+                  "actual": 2063,
+                  "status": "pass"
+                }
+              ]
+            }
+          },
+          "latency": {
+            "cold-bulk": {
+              "n": 5,
+              "median": 18.30000001192093,
+              "p95": 19.399999976158142,
+              "min": 17,
+              "max": 19.399999976158142
+            },
+            "warm-bulk": {
+              "n": 40,
+              "median": 0.949999988079071,
+              "p95": 1.600000023841858,
+              "min": 0.2999999523162842,
+              "max": 1.7000000476837158
+            },
+            "cold-audit": {
+              "n": 5,
+              "median": 16.700000047683716,
+              "p95": 17.099999964237213,
+              "min": 16.30000001192093,
+              "max": 17.099999964237213
+            },
+            "warm-audit": {
+              "n": 40,
+              "median": 0.40000003576278687,
+              "p95": 0.6000000238418579,
+              "min": 0.19999998807907104,
+              "max": 0.699999988079071
+            }
+          },
+          "cpu": {
+            "warm-bulk": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.20350000000000013,
+                "p95": 0.3230000000000002,
+                "min": 0.0939999999999999,
+                "max": 0.3810000000000003
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 3.9400000000000044,
+                "p95": 6.3959999999999955,
+                "min": 1.7579999999999991,
+                "max": 6.712000000000002
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.06600000000000009,
+                "p95": 0.10499999999999984,
+                "min": 0.03300000000000004,
+                "max": 0.11700000000000013
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 8.755000000000006,
+                "p95": 14.593999999999996,
+                "min": 4.11199999999999,
+                "max": 15.39299999999999
+              }
+            },
+            "warm-audit": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.19249999999999995,
+                "p95": 0.3119999999999998,
+                "min": 0.07600000000000011,
+                "max": 0.3210000000000001
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 0.15149999999999886,
+                "p95": 0.1979999999999968,
+                "min": 0.07599999999999968,
+                "max": 0.2020000000000008
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.05949999999999998,
+                "p95": 0.09899999999999991,
+                "min": 0.028999999999999946,
+                "max": 0.15700000000000003
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 3.7630000000000026,
+                "p95": 6.5230000000000015,
+                "min": 1.8750000000000018,
+                "max": 7.573000000000024
+              }
+            }
+          },
+          "nativeClick": {
+            "warm-bulk": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 16,
+                "p95": 16,
+                "min": 16,
+                "max": 24
+              }
+            },
+            "warm-audit": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 16,
+                "p95": 16,
+                "min": 16,
+                "max": 24
+              }
+            }
+          },
+          "initialLongTasks": [],
+          "interactionLongTasks": [],
+          "noCostMetadataRequest": true
+        },
+        {
+          "rows": 1024,
+          "static": {
+            "planId": "04739725ce0afd33",
+            "buildId": "1dd5997255ac4264",
+            "scenario": {
+              "mode": "resume",
+              "mounts": [
+                {
+                  "component": "Page",
+                  "mode": "resume"
+                }
+              ],
+              "domElements": 16399,
+              "resumableOwners": 2,
+              "snapshotSlots": 2,
+              "components": {
+                "Page": {
+                  "instances": 1,
+                  "resumableInstances": 0
+                },
+                "Audit": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                },
+                "Sheet": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                }
+              }
+            },
+            "entries": [
+              {
+                "id": "Audit.check",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 2
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 1,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-D7KGr8o7.js",
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ],
+                  "bytes": 3818,
+                  "gzipBytes": 1877,
+                  "dynamicImports": [
+                    "./assets/Sheet.addAll-DhadpzRA.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              },
+              {
+                "id": "Sheet.addAll",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 19457
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 8194
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 3073
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 1024
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 3073
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 4097,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-D7KGr8o7.js",
+                    "./assets/Sheet.addAll-DhadpzRA.js"
+                  ],
+                  "bytes": 170747,
+                  "gzipBytes": 27133,
+                  "dynamicImports": [
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              }
+            ],
+            "budget": {
+              "ok": false,
+              "checks": [
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "textPatchCalls",
+                  "max": 1000,
+                  "actual": 3073,
+                  "status": "exceeded"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "attributePatchCalls",
+                  "max": 1000,
+                  "actual": 1024,
+                  "status": "exceeded"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "binaryOperations",
+                  "max": 20000,
+                  "actual": 19457,
+                  "status": "pass"
+                },
+                {
+                  "entry": "$page",
+                  "metric": "domElements",
+                  "max": 5000,
+                  "actual": 16399,
+                  "status": "exceeded"
+                }
+              ]
+            }
+          },
+          "latency": {
+            "cold-bulk": {
+              "n": 5,
+              "median": 36.19999998807907,
+              "p95": 36.700000047683716,
+              "min": 35.30000001192093,
+              "max": 36.700000047683716
+            },
+            "warm-bulk": {
+              "n": 40,
+              "median": 2.5,
+              "p95": 3.100000023841858,
+              "min": 1.5999999642372131,
+              "max": 3.300000011920929
+            },
+            "cold-audit": {
+              "n": 5,
+              "median": 16.899999976158142,
+              "p95": 17.30000001192093,
+              "min": 16.69999998807907,
+              "max": 17.30000001192093
+            },
+            "warm-audit": {
+              "n": 40,
+              "median": 0.30000001192092896,
+              "p95": 0.40000003576278687,
+              "min": 0.19999998807907104,
+              "max": 0.6000000238418579
+            }
+          },
+          "cpu": {
+            "warm-bulk": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.14999999999999974,
+                "p95": 0.19200000000000012,
+                "min": 0.10999999999999985,
+                "max": 0.20600000000000002
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 19.733499999999992,
+                "p95": 22.379999999999985,
+                "min": 13.377,
+                "max": 23.661000000000016
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.04850000000000036,
+                "p95": 0.07999999999999935,
+                "min": 0.034000000000000176,
+                "max": 0.11000000000000072
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 31.278000000000013,
+                "p95": 47.93599999999998,
+                "min": 21.414000000000016,
+                "max": 48.58699999999999
+              }
+            },
+            "warm-audit": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.13999999999999993,
+                "p95": 0.20699999999999993,
+                "min": 0.098,
+                "max": 0.21999999999999992
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 0.11200000000000099,
+                "p95": 0.14199999999998936,
+                "min": 0.07300000000000362,
+                "max": 0.16499999999999848
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.044000000000000206,
+                "p95": 0.06000000000000016,
+                "min": 0.028000000000000247,
+                "max": 0.08200000000000048
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 5.616999999999983,
+                "p95": 6.394999999999984,
+                "min": 4.473999999999978,
+                "max": 7.040999999999964
+              }
+            }
+          },
+          "nativeClick": {
+            "warm-bulk": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 24,
+                "p95": 32,
+                "min": 16,
+                "max": 32
+              }
+            },
+            "warm-audit": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 16,
+                "p95": 16,
+                "min": 16,
+                "max": 16
+              }
+            }
+          },
+          "initialLongTasks": [],
+          "interactionLongTasks": [],
+          "noCostMetadataRequest": true
+        },
+        {
+          "rows": 4096,
+          "static": {
+            "planId": "84f62600969e3dce",
+            "buildId": "37813858fa8cb037",
+            "scenario": {
+              "mode": "resume",
+              "mounts": [
+                {
+                  "component": "Page",
+                  "mode": "resume"
+                }
+              ],
+              "domElements": 65551,
+              "resumableOwners": 2,
+              "snapshotSlots": 2,
+              "components": {
+                "Page": {
+                  "instances": 1,
+                  "resumableInstances": 0
+                },
+                "Audit": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                },
+                "Sheet": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                }
+              }
+            },
+            "entries": [
+              {
+                "id": "Audit.check",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 2
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 1,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-DqmjmVZo.js",
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ],
+                  "bytes": 3818,
+                  "gzipBytes": 1879,
+                  "dynamicImports": [
+                    "./assets/Sheet.addAll-DMyCyLTU.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              },
+              {
+                "id": "Sheet.addAll",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 77825
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 32770
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 12289
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 4096
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 12289
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 16385,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-DqmjmVZo.js",
+                    "./assets/Sheet.addAll-DMyCyLTU.js"
+                  ],
+                  "bytes": 681279,
+                  "gzipBytes": 101375,
+                  "dynamicImports": [
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              }
+            ],
+            "budget": {
+              "ok": false,
+              "checks": [
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "textPatchCalls",
+                  "max": 1000,
+                  "actual": 12289,
+                  "status": "exceeded"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "attributePatchCalls",
+                  "max": 1000,
+                  "actual": 4096,
+                  "status": "exceeded"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "binaryOperations",
+                  "max": 20000,
+                  "actual": 77825,
+                  "status": "exceeded"
+                },
+                {
+                  "entry": "$page",
+                  "metric": "domElements",
+                  "max": 5000,
+                  "actual": 65551,
+                  "status": "exceeded"
+                }
+              ]
+            }
+          },
+          "latency": {
+            "cold-bulk": {
+              "n": 5,
+              "median": 239.19999998807907,
+              "p95": 252.69999998807907,
+              "min": 235.5,
+              "max": 252.69999998807907
+            },
+            "warm-bulk": {
+              "n": 40,
+              "median": 6.8499999940395355,
+              "p95": 10,
+              "min": 5.299999952316284,
+              "max": 10.300000011920929
+            },
+            "cold-audit": {
+              "n": 5,
+              "median": 17.30000001192093,
+              "p95": 17.599999964237213,
+              "min": 16.900000035762787,
+              "max": 17.599999964237213
+            },
+            "warm-audit": {
+              "n": 40,
+              "median": 0.20000001788139343,
+              "p95": 0.30000001192092896,
+              "min": 0.09999996423721313,
+              "max": 0.30000001192092896
+            }
+          },
+          "cpu": {
+            "warm-bulk": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.14349999999999996,
+                "p95": 0.209,
+                "min": 0.10699999999999989,
+                "max": 0.21299999999999986
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 54.03049999999999,
+                "p95": 56.07899999999999,
+                "min": 49.89699999999997,
+                "max": 57.37200000000001
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.04700000000000017,
+                "p95": 0.058000000000002494,
+                "min": 0.030999999999999778,
+                "max": 0.060999999999998555
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 84.61700000000005,
+                "p95": 89.28399999999992,
+                "min": 73.85700000000006,
+                "max": 90.47299999999991
+              }
+            },
+            "warm-audit": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.12349999999999992,
+                "p95": 0.1789999999999999,
+                "min": 0.09299999999999976,
+                "max": 0.22999999999999973
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 0.0840000000000285,
+                "p95": 0.0960000000000405,
+                "min": 0.06299999999992423,
+                "max": 0.10300000000001974
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.03399999999999931,
+                "p95": 0.04099999999999937,
+                "min": 0.023000000000002185,
+                "max": 0.04599999999999743
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 17.95550000000007,
+                "p95": 45.812000000000076,
+                "min": 12.387999999999844,
+                "max": 47.80600000000001
+              }
+            }
+          },
+          "nativeClick": {
+            "warm-bulk": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 72,
+                "p95": 80,
+                "min": 64,
+                "max": 80
+              }
+            },
+            "warm-audit": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 16,
+                "p95": 16,
+                "min": 16,
+                "max": 16
+              }
+            }
+          },
+          "initialLongTasks": [],
+          "interactionLongTasks": [
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 272.19999998807907,
+              "duration": 217,
+              "navigationId": 107,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 107,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 687.1000000238419,
+              "duration": 72,
+              "navigationId": 107,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 107,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 886.9000000357628,
+              "duration": 75,
+              "navigationId": 107,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 107,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1086.9000000357628,
+              "duration": 74,
+              "navigationId": 107,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 107,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1287,
+              "duration": 75,
+              "navigationId": 107,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 107,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1521.1000000238419,
+              "duration": 73,
+              "navigationId": 107,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 107,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1721,
+              "duration": 69,
+              "navigationId": 107,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 107,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1921.4000000357628,
+              "duration": 65,
+              "navigationId": 107,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 107,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2120,
+              "duration": 66,
+              "navigationId": 107,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 107,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 271.80000001192093,
+              "duration": 223,
+              "navigationId": 6450,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6450,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 721.3999999761581,
+              "duration": 77,
+              "navigationId": 6450,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6450,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 921.1000000238419,
+              "duration": 74,
+              "navigationId": 6450,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6450,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1121.199999988079,
+              "duration": 73,
+              "navigationId": 6450,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6450,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1321.1000000238419,
+              "duration": 75,
+              "navigationId": 6450,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6450,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1521,
+              "duration": 69,
+              "navigationId": 6450,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6450,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1721.199999988079,
+              "duration": 69,
+              "navigationId": 6450,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6450,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1921.8999999761581,
+              "duration": 69,
+              "navigationId": 6450,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6450,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2121.199999988079,
+              "duration": 69,
+              "navigationId": 6450,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6450,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 272.4000000357628,
+              "duration": 219,
+              "navigationId": 1587,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1587,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 687.9000000357628,
+              "duration": 74,
+              "navigationId": 1587,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1587,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 887.9000000357628,
+              "duration": 75,
+              "navigationId": 1587,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1587,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1088,
+              "duration": 74,
+              "navigationId": 1587,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1587,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1288.1000000238419,
+              "duration": 75,
+              "navigationId": 1587,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1587,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1487.800000011921,
+              "duration": 69,
+              "navigationId": 1587,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1587,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1688,
+              "duration": 69,
+              "navigationId": 1587,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1587,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1887.9000000357628,
+              "duration": 67,
+              "navigationId": 1587,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1587,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2088,
+              "duration": 68,
+              "navigationId": 1587,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1587,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 273,
+              "duration": 221,
+              "navigationId": 6032,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6032,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 722.2999999523163,
+              "duration": 75,
+              "navigationId": 6032,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6032,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 922.0999999642372,
+              "duration": 71,
+              "navigationId": 6032,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6032,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1122.0999999642372,
+              "duration": 75,
+              "navigationId": 6032,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6032,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1322.0999999642372,
+              "duration": 75,
+              "navigationId": 6032,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6032,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1522,
+              "duration": 70,
+              "navigationId": 6032,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6032,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1721.199999988079,
+              "duration": 69,
+              "navigationId": 6032,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6032,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1921.199999988079,
+              "duration": 68,
+              "navigationId": 6032,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6032,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2121.7999999523163,
+              "duration": 69,
+              "navigationId": 6032,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6032,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 271.10000002384186,
+              "duration": 235,
+              "navigationId": 286,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 286,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 736.9000000357628,
+              "duration": 73,
+              "navigationId": 286,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 286,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 936.6000000238419,
+              "duration": 74,
+              "navigationId": 286,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 286,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1136.6000000238419,
+              "duration": 75,
+              "navigationId": 286,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 286,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1336.800000011921,
+              "duration": 74,
+              "navigationId": 286,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 286,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1537.5,
+              "duration": 74,
+              "navigationId": 286,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 286,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1736.800000011921,
+              "duration": 68,
+              "navigationId": 286,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 286,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1936.800000011921,
+              "duration": 64,
+              "navigationId": 286,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 286,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2137.100000023842,
+              "duration": 69,
+              "navigationId": 286,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 286,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            }
+          ],
+          "noCostMetadataRequest": true
+        }
+      ]
+    },
+    {
+      "profile": {
+        "id": "cpu4",
+        "cpu": 4
+      },
+      "cases": [
+        {
+          "rows": 128,
+          "static": {
+            "planId": "1c320996c1d0e512",
+            "buildId": "86787dfa04983a58",
+            "scenario": {
+              "mode": "resume",
+              "mounts": [
+                {
+                  "component": "Page",
+                  "mode": "resume"
+                }
+              ],
+              "domElements": 2063,
+              "resumableOwners": 2,
+              "snapshotSlots": 2,
+              "components": {
+                "Page": {
+                  "instances": 1,
+                  "resumableInstances": 0
+                },
+                "Audit": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                },
+                "Sheet": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                }
+              }
+            },
+            "entries": [
+              {
+                "id": "Audit.check",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 2
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 1,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-BDTyYuft.js",
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ],
+                  "bytes": 3818,
+                  "gzipBytes": 1876,
+                  "dynamicImports": [
+                    "./assets/Sheet.addAll-Bbrde1T-.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              },
+              {
+                "id": "Sheet.addAll",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 2433
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 1026
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 385
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 128
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 385
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 513,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-BDTyYuft.js",
+                    "./assets/Sheet.addAll-Bbrde1T-.js"
+                  ],
+                  "bytes": 24156,
+                  "gzipBytes": 5137,
+                  "dynamicImports": [
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              }
+            ],
+            "budget": {
+              "ok": true,
+              "checks": [
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "textPatchCalls",
+                  "max": 1000,
+                  "actual": 385,
+                  "status": "pass"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "attributePatchCalls",
+                  "max": 1000,
+                  "actual": 128,
+                  "status": "pass"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "binaryOperations",
+                  "max": 20000,
+                  "actual": 2433,
+                  "status": "pass"
+                },
+                {
+                  "entry": "$page",
+                  "metric": "domElements",
+                  "max": 5000,
+                  "actual": 2063,
+                  "status": "pass"
+                }
+              ]
+            }
+          },
+          "latency": {
+            "cold-bulk": {
+              "n": 5,
+              "median": 22.099999964237213,
+              "p95": 25.200000047683716,
+              "min": 21.19999998807907,
+              "max": 25.200000047683716
+            },
+            "warm-bulk": {
+              "n": 40,
+              "median": 1.7999999523162842,
+              "p95": 2.399999976158142,
+              "min": 1.199999988079071,
+              "max": 2.5
+            },
+            "cold-audit": {
+              "n": 5,
+              "median": 17.899999976158142,
+              "p95": 18.899999976158142,
+              "min": 16.80000001192093,
+              "max": 18.899999976158142
+            },
+            "warm-audit": {
+              "n": 40,
+              "median": 1.0499999821186066,
+              "p95": 1.4000000357627869,
+              "min": 0.30000001192092896,
+              "max": 1.5
+            }
+          },
+          "cpu": {
+            "warm-bulk": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.13250000000000023,
+                "p95": 0.8269999999999996,
+                "min": 0.059000000000000025,
+                "max": 1.0239999999999998
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 7.5275,
+                "p95": 8.475999999999997,
+                "min": 6.128999999999996,
+                "max": 8.881
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.03549999999999994,
+                "p95": 0.6250000000000006,
+                "min": 0.023999999999999716,
+                "max": 0.7829999999999998
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 15.298999999999992,
+                "p95": 18.369999999999997,
+                "min": 13.285999999999964,
+                "max": 18.638000000000044
+              }
+            },
+            "warm-audit": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.1264999999999999,
+                "p95": 0.7049999999999998,
+                "min": 0.04599999999999917,
+                "max": 0.8399999999999996
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 0.1734999999999931,
+                "p95": 0.7660000000000028,
+                "min": 0.057999999999988616,
+                "max": 0.787999999999997
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.03300000000000004,
+                "p95": 0.6420000000000002,
+                "min": 0.02300000000000045,
+                "max": 0.6899999999999996
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 6.003000000000022,
+                "p95": 7.481999999999989,
+                "min": 4.256999999999983,
+                "max": 8.083000000000007
+              }
+            }
+          },
+          "nativeClick": {
+            "warm-bulk": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 16,
+                "p95": 16,
+                "min": 16,
+                "max": 24
+              }
+            },
+            "warm-audit": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 16,
+                "p95": 16,
+                "min": 16,
+                "max": 16
+              }
+            }
+          },
+          "initialLongTasks": [],
+          "interactionLongTasks": [],
+          "noCostMetadataRequest": true
+        },
+        {
+          "rows": 1024,
+          "static": {
+            "planId": "04739725ce0afd33",
+            "buildId": "1dd5997255ac4264",
+            "scenario": {
+              "mode": "resume",
+              "mounts": [
+                {
+                  "component": "Page",
+                  "mode": "resume"
+                }
+              ],
+              "domElements": 16399,
+              "resumableOwners": 2,
+              "snapshotSlots": 2,
+              "components": {
+                "Page": {
+                  "instances": 1,
+                  "resumableInstances": 0
+                },
+                "Audit": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                },
+                "Sheet": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                }
+              }
+            },
+            "entries": [
+              {
+                "id": "Audit.check",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 2
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 1,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-D7KGr8o7.js",
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ],
+                  "bytes": 3818,
+                  "gzipBytes": 1877,
+                  "dynamicImports": [
+                    "./assets/Sheet.addAll-DhadpzRA.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              },
+              {
+                "id": "Sheet.addAll",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 19457
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 8194
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 3073
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 1024
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 3073
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 4097,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-D7KGr8o7.js",
+                    "./assets/Sheet.addAll-DhadpzRA.js"
+                  ],
+                  "bytes": 170747,
+                  "gzipBytes": 27133,
+                  "dynamicImports": [
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              }
+            ],
+            "budget": {
+              "ok": false,
+              "checks": [
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "textPatchCalls",
+                  "max": 1000,
+                  "actual": 3073,
+                  "status": "exceeded"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "attributePatchCalls",
+                  "max": 1000,
+                  "actual": 1024,
+                  "status": "exceeded"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "binaryOperations",
+                  "max": 20000,
+                  "actual": 19457,
+                  "status": "pass"
+                },
+                {
+                  "entry": "$page",
+                  "metric": "domElements",
+                  "max": 5000,
+                  "actual": 16399,
+                  "status": "exceeded"
+                }
+              ]
+            }
+          },
+          "latency": {
+            "cold-bulk": {
+              "n": 5,
+              "median": 89.30000001192093,
+              "p95": 94.60000002384186,
+              "min": 87.19999998807907,
+              "max": 94.60000002384186
+            },
+            "warm-bulk": {
+              "n": 40,
+              "median": 6.5999999940395355,
+              "p95": 7.699999988079071,
+              "min": 5.800000011920929,
+              "max": 9.600000023841858
+            },
+            "cold-audit": {
+              "n": 5,
+              "median": 18.100000023841858,
+              "p95": 18.30000001192093,
+              "min": 17.30000001192093,
+              "max": 18.30000001192093
+            },
+            "warm-audit": {
+              "n": 40,
+              "median": 1.199999988079071,
+              "p95": 1.5,
+              "min": 0.5,
+              "max": 1.7000000476837158
+            }
+          },
+          "cpu": {
+            "warm-bulk": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.2415000000000004,
+                "p95": 0.8130000000000004,
+                "min": 0.08599999999999927,
+                "max": 1.0089999999999995
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 55.15349999999998,
+                "p95": 58.62699999999998,
+                "min": 49.80899999999999,
+                "max": 59.84299999999998
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.040000000000000105,
+                "p95": 0.7610000000000012,
+                "min": 0.027000000000002716,
+                "max": 0.784
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 85.96249999999995,
+                "p95": 92.5959999999999,
+                "min": 76.09400000000011,
+                "max": 96.75899999999993
+              }
+            },
+            "warm-audit": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.30949999999999944,
+                "p95": 0.8459999999999995,
+                "min": 0.06299999999999882,
+                "max": 1.6570000000000005
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 0.08849999999999136,
+                "p95": 0.7679999999999909,
+                "min": 0.06299999999992423,
+                "max": 0.7989999999999942
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.036500000000000074,
+                "p95": 0.38900000000000046,
+                "min": 0.025999999999998247,
+                "max": 0.7800000000000029
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 16.726000000000017,
+                "p95": 43.24899999999998,
+                "min": 12.998999999999983,
+                "max": 43.76800000000003
+              }
+            }
+          },
+          "nativeClick": {
+            "warm-bulk": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 72,
+                "p95": 80,
+                "min": 72,
+                "max": 80
+              }
+            },
+            "warm-audit": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 16,
+                "p95": 16,
+                "min": 16,
+                "max": 16
+              }
+            }
+          },
+          "initialLongTasks": [],
+          "interactionLongTasks": [
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 378,
+              "duration": 77,
+              "navigationId": 8271,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8271,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 676.8999999761581,
+              "duration": 76,
+              "navigationId": 8271,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8271,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 892.6000000238419,
+              "duration": 73,
+              "navigationId": 8271,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8271,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1093.6000000238419,
+              "duration": 74,
+              "navigationId": 8271,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8271,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1291.300000011921,
+              "duration": 77,
+              "navigationId": 8271,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8271,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1491.800000011921,
+              "duration": 72,
+              "navigationId": 8271,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8271,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1692.800000011921,
+              "duration": 75,
+              "navigationId": 8271,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8271,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1892.300000011921,
+              "duration": 75,
+              "navigationId": 8271,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8271,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2094,
+              "duration": 71,
+              "navigationId": 8271,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8271,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 358.9000000357628,
+              "duration": 70,
+              "navigationId": 5194,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5194,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 674.9000000357628,
+              "duration": 70,
+              "navigationId": 5194,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5194,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 875,
+              "duration": 69,
+              "navigationId": 5194,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5194,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1074.1000000238419,
+              "duration": 71,
+              "navigationId": 5194,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5194,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1275.1000000238419,
+              "duration": 71,
+              "navigationId": 5194,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5194,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1507.4000000357628,
+              "duration": 68,
+              "navigationId": 5194,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5194,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1707.5,
+              "duration": 71,
+              "navigationId": 5194,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5194,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1907.800000011921,
+              "duration": 66,
+              "navigationId": 5194,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5194,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2106.900000035763,
+              "duration": 66,
+              "navigationId": 5194,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5194,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 360.39999997615814,
+              "duration": 70,
+              "navigationId": 9065,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9065,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 641.0999999642372,
+              "duration": 73,
+              "navigationId": 9065,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9065,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 842.5,
+              "duration": 76,
+              "navigationId": 9065,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9065,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1042,
+              "duration": 74,
+              "navigationId": 9065,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9065,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1242.800000011921,
+              "duration": 75,
+              "navigationId": 9065,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9065,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1442.8999999761581,
+              "duration": 72,
+              "navigationId": 9065,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9065,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1642.5999999642372,
+              "duration": 70,
+              "navigationId": 9065,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9065,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1841.3999999761581,
+              "duration": 70,
+              "navigationId": 9065,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9065,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2042.5999999642372,
+              "duration": 68,
+              "navigationId": 9065,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9065,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 359.80000001192093,
+              "duration": 72,
+              "navigationId": 8452,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8452,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 675.5,
+              "duration": 71,
+              "navigationId": 8452,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8452,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 875.6999999880791,
+              "duration": 71,
+              "navigationId": 8452,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8452,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1073.8999999761581,
+              "duration": 75,
+              "navigationId": 8452,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8452,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1276.0999999642372,
+              "duration": 73,
+              "navigationId": 8452,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8452,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1474.8999999761581,
+              "duration": 73,
+              "navigationId": 8452,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8452,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1674.5999999642372,
+              "duration": 71,
+              "navigationId": 8452,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8452,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1874.0999999642372,
+              "duration": 69,
+              "navigationId": 8452,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8452,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2075.199999988079,
+              "duration": 67,
+              "navigationId": 8452,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 8452,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 378.5999999642372,
+              "duration": 77,
+              "navigationId": 6049,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6049,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 675.5,
+              "duration": 71,
+              "navigationId": 6049,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6049,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 875,
+              "duration": 69,
+              "navigationId": 6049,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6049,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1074.5999999642372,
+              "duration": 72,
+              "navigationId": 6049,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6049,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1275.2999999523163,
+              "duration": 73,
+              "navigationId": 6049,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6049,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1474.699999988079,
+              "duration": 70,
+              "navigationId": 6049,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6049,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1675.699999988079,
+              "duration": 69,
+              "navigationId": 6049,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6049,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1875.8999999761581,
+              "duration": 77,
+              "navigationId": 6049,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6049,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2092.399999976158,
+              "duration": 71,
+              "navigationId": 6049,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 6049,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            }
+          ],
+          "noCostMetadataRequest": true
+        },
+        {
+          "rows": 4096,
+          "static": {
+            "planId": "84f62600969e3dce",
+            "buildId": "37813858fa8cb037",
+            "scenario": {
+              "mode": "resume",
+              "mounts": [
+                {
+                  "component": "Page",
+                  "mode": "resume"
+                }
+              ],
+              "domElements": 65551,
+              "resumableOwners": 2,
+              "snapshotSlots": 2,
+              "components": {
+                "Page": {
+                  "instances": 1,
+                  "resumableInstances": 0
+                },
+                "Audit": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                },
+                "Sheet": {
+                  "instances": 1,
+                  "resumableInstances": 1
+                }
+              }
+            },
+            "entries": [
+              {
+                "id": "Audit.check",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 2
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 1,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-DqmjmVZo.js",
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ],
+                  "bytes": 3818,
+                  "gzipBytes": 1879,
+                  "dynamicImports": [
+                    "./assets/Sheet.addAll-DMyCyLTU.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              },
+              {
+                "id": "Sheet.addAll",
+                "work": {
+                  "stateWrites": {
+                    "kind": "upper-bound",
+                    "value": 1
+                  },
+                  "binaryOperations": {
+                    "kind": "upper-bound",
+                    "value": 77825
+                  },
+                  "propertyReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "slotReads": {
+                    "kind": "upper-bound",
+                    "value": 32770
+                  },
+                  "eventReads": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "textPatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 12289
+                  },
+                  "attributePatchCalls": {
+                    "kind": "upper-bound",
+                    "value": 4096
+                  },
+                  "textConversions": {
+                    "kind": "upper-bound",
+                    "value": 12289
+                  },
+                  "remoteCalls": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  },
+                  "createdElements": {
+                    "kind": "upper-bound",
+                    "value": 0
+                  }
+                },
+                "restore": {
+                  "owners": 1,
+                  "snapshotSlots": 1,
+                  "bindingLocators": 16385,
+                  "childOwners": 0
+                },
+                "code": {
+                  "scope": "static-code-closure",
+                  "modules": [
+                    "./assets/isle-resume-DqmjmVZo.js",
+                    "./assets/Sheet.addAll-DMyCyLTU.js"
+                  ],
+                  "bytes": 681279,
+                  "gzipBytes": 101375,
+                  "dynamicImports": [
+                    "./assets/Audit.check-D9asJW1r.js"
+                  ]
+                },
+                "instances": 1,
+                "unknownCosts": []
+              }
+            ],
+            "budget": {
+              "ok": false,
+              "checks": [
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "textPatchCalls",
+                  "max": 1000,
+                  "actual": 12289,
+                  "status": "exceeded"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "attributePatchCalls",
+                  "max": 1000,
+                  "actual": 4096,
+                  "status": "exceeded"
+                },
+                {
+                  "entry": "Sheet.addAll",
+                  "metric": "binaryOperations",
+                  "max": 20000,
+                  "actual": 77825,
+                  "status": "exceeded"
+                },
+                {
+                  "entry": "$page",
+                  "metric": "domElements",
+                  "max": 5000,
+                  "actual": 65551,
+                  "status": "exceeded"
+                }
+              ]
+            }
+          },
+          "latency": {
+            "cold-bulk": {
+              "n": 5,
+              "median": 997.1999999880791,
+              "p95": 1526.0999999642372,
+              "min": 973.6000000238419,
+              "max": 1526.0999999642372
+            },
+            "warm-bulk": {
+              "n": 40,
+              "median": 25.44999998807907,
+              "p95": 37.30000001192093,
+              "min": 22.600000023841858,
+              "max": 39.5
+            },
+            "cold-audit": {
+              "n": 5,
+              "median": 20.099999964237213,
+              "p95": 21.5,
+              "min": 19.599999964237213,
+              "max": 21.5
+            },
+            "warm-audit": {
+              "n": 40,
+              "median": 1.100000023841858,
+              "p95": 1.5999999642372131,
+              "min": 0.3999999761581421,
+              "max": 1.600000023841858
+            }
+          },
+          "cpu": {
+            "warm-bulk": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.37449999999999983,
+                "p95": 0.910000000000001,
+                "min": 0.10399999999999993,
+                "max": 1.6120000000000005
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 220.607,
+                "p95": 233.28899999999985,
+                "min": 198.92999999999984,
+                "max": 234.06899999999985
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.04950000000000093,
+                "p95": 0.5860000000000032,
+                "min": 0.03899999999999737,
+                "max": 0.8650000000000047
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 345.5060000000001,
+                "p95": 385.6479999999998,
+                "min": 308.4039999999994,
+                "max": 405.0879999999992
+              }
+            },
+            "warm-audit": {
+              "ScriptDuration": {
+                "n": 40,
+                "median": 0.14249999999999982,
+                "p95": 0.8819999999999991,
+                "min": 0.08000000000000021,
+                "max": 1.15
+              },
+              "LayoutDuration": {
+                "n": 40,
+                "median": 0.13450000000003737,
+                "p95": 0.8780000000001564,
+                "min": 0.06100000000008876,
+                "max": 0.9529999999999816
+              },
+              "RecalcStyleDuration": {
+                "n": 40,
+                "median": 0.03599999999999437,
+                "p95": 0.6229999999999986,
+                "min": 0.024999999999997247,
+                "max": 0.7769999999999999
+              },
+              "TaskDuration": {
+                "n": 40,
+                "median": 71.77049999999996,
+                "p95": 96.17599999999982,
+                "min": 50.56800000000017,
+                "max": 100.97700000000032
+              }
+            }
+          },
+          "nativeClick": {
+            "warm-bulk": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 304,
+                "p95": 320,
+                "min": 272,
+                "max": 320
+              }
+            },
+            "warm-audit": {
+              "attempts": 40,
+              "reported": 40,
+              "unreported": 0,
+              "ambiguous": 0,
+              "latency": {
+                "n": 40,
+                "median": 24,
+                "p95": 24,
+                "min": 16,
+                "max": 32
+              }
+            }
+          },
+          "initialLongTasks": [
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 711.5,
+              "duration": 166,
+              "navigationId": 5868,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5868,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 708.6999999880791,
+              "duration": 130,
+              "navigationId": 1174,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1174,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 682.3000000119209,
+              "duration": 155,
+              "navigationId": 9267,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9267,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 680.1999999880791,
+              "duration": 173,
+              "navigationId": 2512,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 2512,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 655.0999999642372,
+              "duration": 223,
+              "navigationId": 9216,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9216,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            }
+          ],
+          "interactionLongTasks": [
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1080.6000000238419,
+              "duration": 1042,
+              "navigationId": 5868,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5868,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2625.300000011921,
+              "duration": 292,
+              "navigationId": 5868,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5868,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 3125.5,
+              "duration": 305,
+              "navigationId": 5868,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5868,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 3642.100000023842,
+              "duration": 294,
+              "navigationId": 5868,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5868,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 4158.300000011921,
+              "duration": 296,
+              "navigationId": 5868,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5868,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 4641.900000035763,
+              "duration": 291,
+              "navigationId": 5868,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5868,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 5192.5,
+              "duration": 284,
+              "navigationId": 5868,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5868,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 5692.300000011921,
+              "duration": 276,
+              "navigationId": 5868,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5868,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 6159.400000035763,
+              "duration": 266,
+              "navigationId": 5868,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 5868,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1031.699999988079,
+              "duration": 976,
+              "navigationId": 1174,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1174,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2525.5,
+              "duration": 295,
+              "navigationId": 1174,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1174,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 3042.5,
+              "duration": 303,
+              "navigationId": 1174,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1174,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 3559.399999976158,
+              "duration": 299,
+              "navigationId": 1174,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1174,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 4076.099999964237,
+              "duration": 303,
+              "navigationId": 1174,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1174,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 4625.599999964237,
+              "duration": 281,
+              "navigationId": 1174,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1174,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 5125.5,
+              "duration": 272,
+              "navigationId": 1174,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1174,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 5575.299999952316,
+              "duration": 262,
+              "navigationId": 1174,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1174,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 6025.599999964237,
+              "duration": 265,
+              "navigationId": 1174,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 1174,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1029.8999999761581,
+              "duration": 953,
+              "navigationId": 9267,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9267,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2491.399999976158,
+              "duration": 292,
+              "navigationId": 9267,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9267,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2991.600000023842,
+              "duration": 313,
+              "navigationId": 9267,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9267,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 3524.399999976158,
+              "duration": 300,
+              "navigationId": 9267,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9267,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 4059,
+              "duration": 306,
+              "navigationId": 9267,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9267,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 4574.399999976158,
+              "duration": 291,
+              "navigationId": 9267,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9267,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 5141.699999988079,
+              "duration": 288,
+              "navigationId": 9267,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9267,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 5641.100000023842,
+              "duration": 280,
+              "navigationId": 9267,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9267,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 6142.100000023842,
+              "duration": 273,
+              "navigationId": 9267,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9267,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1047.8999999761581,
+              "duration": 959,
+              "navigationId": 2512,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 2512,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 2526.399999976158,
+              "duration": 297,
+              "navigationId": 2512,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 2512,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 3042.699999988079,
+              "duration": 313,
+              "navigationId": 2512,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 2512,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 3575.699999988079,
+              "duration": 305,
+              "navigationId": 2512,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 2512,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 4110,
+              "duration": 302,
+              "navigationId": 2512,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 2512,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 4624.399999976158,
+              "duration": 293,
+              "navigationId": 2512,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 2512,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 5192.799999952316,
+              "duration": 291,
+              "navigationId": 2512,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 2512,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 5708.199999988079,
+              "duration": 306,
+              "navigationId": 2512,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 2512,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 6225.799999952316,
+              "duration": 275,
+              "navigationId": 2512,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 2512,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 1100.199999988079,
+              "duration": 1505,
+              "navigationId": 9216,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9216,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 3160.199999988079,
+              "duration": 296,
+              "navigationId": 9216,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9216,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 3677,
+              "duration": 310,
+              "navigationId": 9216,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9216,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 4227.099999964237,
+              "duration": 311,
+              "navigationId": 9216,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9216,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 4776.599999964237,
+              "duration": 309,
+              "navigationId": 9216,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9216,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 5293.599999964237,
+              "duration": 299,
+              "navigationId": 9216,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9216,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 5876.699999988079,
+              "duration": 302,
+              "navigationId": 9216,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9216,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 6394.399999976158,
+              "duration": 290,
+              "navigationId": 9216,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9216,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            },
+            {
+              "name": "self",
+              "entryType": "longtask",
+              "startTime": 6893.5,
+              "duration": 273,
+              "navigationId": 9216,
+              "attribution": [
+                {
+                  "name": "unknown",
+                  "entryType": "taskattribution",
+                  "startTime": 0,
+                  "duration": 0,
+                  "navigationId": 9216,
+                  "containerType": "window",
+                  "containerSrc": "",
+                  "containerId": "",
+                  "containerName": ""
+                }
+              ]
+            }
+          ],
+          "noCostMetadataRequest": true
+        }
+      ]
+    }
+  ]
+}

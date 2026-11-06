@@ -1,0 +1,10 @@
+{
+  "component": "Board",
+  "css": "./layout.css",
+  "viewport": { "min": 352, "max": 1280 },
+  "boxes": {
+    ".side": { "minInlineSize": 120 },
+    ".body": { "minInlineSize": 320 },
+    ".copy": { "minInlineSize": 320, "wrap": "anywhere" }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "serverComponents": ["Heading"],
+  "clientComponents": ["Counter"],
+  "rpcActions": ["renameDocument"],
+  "policy": "policy.documentEditor",
+  "authorizationTarget": "input.id",
+  "requestFromClient": false,
+  "responseFields": ["id", "title"],
+  "clientSetupReruns": false,
+  "firstClick": [38, 76],
+  "browserCanChoosePrincipal": false
+}

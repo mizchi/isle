@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"]
+  },
+  "include": ["lib/**/*.d.ts", "lib/**/*.d.mts", "runtime/**/*.d.mts", "tests/types/**/*.mts", "evals/solutions/schema-ts.ts", "evals/scenarios/schema-authoring/fixture.ts"]
+}

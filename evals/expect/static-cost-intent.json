@@ -1,0 +1,11 @@
+{
+  "boardTextPatchCalls": 16,
+  "boardAttributePatchCalls": 8,
+  "childTextPatchCalls": 1,
+  "parentResumesChild": false,
+  "patchBoundIsChangedNodeCount": false,
+  "layoutTimeKnown": false,
+  "productionJSOverheadBytes": 0,
+  "codeBytesMultiplyByMountCount": false,
+  "ssrOnlyHasDomCost": true
+}

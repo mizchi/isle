@@ -1,0 +1,146 @@
+{
+  "widgetURL": "http://127.0.0.1:8787/standalone/",
+  "runtime": "standalone",
+  "gates": [
+    {
+      "surface": "publisher",
+      "name": "integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "publisher",
+      "name": "copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "publisher",
+      "name": "scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "publisher",
+      "name": "handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "publisher",
+      "name": "interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "publisher",
+      "name": "breakpoints",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "publisher",
+      "name": "responsive",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "widget",
+      "name": "integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "widget",
+      "name": "copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "widget",
+      "name": "scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "widget",
+      "name": "handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "widget",
+      "name": "interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 8,
+        "info": 0
+      }
+    },
+    {
+      "surface": "widget",
+      "name": "breakpoints",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    },
+    {
+      "surface": "widget",
+      "name": "responsive",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      }
+    }
+  ]
+}

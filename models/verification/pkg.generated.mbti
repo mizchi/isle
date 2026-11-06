@@ -1,0 +1,41 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/isle/models/verification"
+
+// Values
+pub fn run() -> Report raise
+
+// Errors
+
+// Types and methods
+pub(all) struct CaseReport {
+  name : String
+  property : String
+  formula : String
+  category : String
+  weak_fairness : Array[String]
+  witness_loop_start : Int32?
+  expected : String
+  actual : String
+  passed : Bool
+  complete : Bool
+  reachable_states : Int32
+  visited : Int32
+  witness_replayed : Bool
+  witness_actions : Array[String]
+  witness_states : Array[Json]
+} derive(ToJson)
+pub fn CaseReport::to_json(Self) -> Json
+
+pub(all) struct Report {
+  version : Int32
+  veri_version : String
+  verification_method : String
+  scope : String
+  passed : Bool
+  cases : Array[CaseReport]
+} derive(ToJson)
+pub fn Report::to_json(Self) -> Json
+
+// Type aliases
+
+// Traits

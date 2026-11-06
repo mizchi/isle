@@ -1,0 +1,4 @@
+schema Passwords {
+  password: string minLength(8) maxLength(64);
+  confirmation: string minLength(8) maxLength(64) sameAs(password);
+}

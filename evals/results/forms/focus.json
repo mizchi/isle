@@ -1,0 +1,67 @@
+{
+  "gate": "check.a11y.focus",
+  "command": "check a11y focus",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://127.0.0.1:52299/",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "screenshot": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-focus-order/127.0.0-4e5bd3cf/page.png",
+    "steps": [
+      {
+        "tabIndex": 0,
+        "path": "main>section.card>form>input#isle-signup:email",
+        "tag": "input",
+        "text": "",
+        "bbox": {
+          "x": 320,
+          "y": 204.125,
+          "width": 640,
+          "height": 47
+        },
+        "tabindexAttr": null,
+        "pinned": false
+      },
+      {
+        "tabIndex": 1,
+        "path": "main>section.card>form>label>input",
+        "tag": "input",
+        "text": "",
+        "bbox": {
+          "x": 324,
+          "y": 344.125,
+          "width": 28,
+          "height": 28
+        },
+        "tabindexAttr": null,
+        "pinned": false
+      },
+      {
+        "tabIndex": 2,
+        "path": "main>section.card>form>button",
+        "tag": "button",
+        "text": "Save",
+        "bbox": {
+          "x": 320,
+          "y": 387.125,
+          "width": 640,
+          "height": 47
+        },
+        "tabindexAttr": null,
+        "pinned": false
+      }
+    ],
+    "findings": [],
+    "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-focus-order/127.0.0-4e5bd3cf/report.md"
+  }
+}

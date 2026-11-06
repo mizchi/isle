@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "description": "Synthetic production build sizes; gzip level 6 per file, no timing claims.",
+  "rows": [
+    {
+      "name": "Decorated",
+      "snapshotSlots": [
+        "prefix",
+        "suffix",
+        "title"
+      ],
+      "snapshot": {
+        "raw": 880,
+        "gzip": 357
+      },
+      "html": {
+        "raw": 2068,
+        "gzip": 602
+      },
+      "javascript": {
+        "raw": 4689,
+        "gzip": 2415
+      },
+      "assetTotal": {
+        "raw": 6757,
+        "gzip": 3017
+      },
+      "chunks": [
+        {
+          "file": "assets/Decorated.append-DjfcqBJO.js",
+          "raw": 77,
+          "gzip": 94
+        },
+        {
+          "file": "assets/index-BPhExhY0.js",
+          "raw": 1259,
+          "gzip": 697
+        },
+        {
+          "file": "assets/isle-resume-Cq1ar7kG.js",
+          "raw": 3353,
+          "gzip": 1624
+        }
+      ]
+    },
+    {
+      "name": "AttributeOnly",
+      "snapshotSlots": [
+        "locked"
+      ],
+      "snapshot": {
+        "raw": 35,
+        "gzip": 55
+      },
+      "html": {
+        "raw": 446,
+        "gzip": 289
+      },
+      "javascript": {
+        "raw": 4946,
+        "gzip": 2504
+      },
+      "assetTotal": {
+        "raw": 5392,
+        "gzip": 2793
+      },
+      "chunks": [
+        {
+          "file": "assets/AttributeOnly.lock-C0ZNdcWw.js",
+          "raw": 84,
+          "gzip": 96
+        },
+        {
+          "file": "assets/index-B6RuhaPl.js",
+          "raw": 1259,
+          "gzip": 698
+        },
+        {
+          "file": "assets/isle-resume-DmsLwD4Q.js",
+          "raw": 3603,
+          "gzip": 1710
+        }
+      ]
+    }
+  ]
+}

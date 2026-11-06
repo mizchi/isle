@@ -1,0 +1,50 @@
+// Future resource / inline / union design fixture. Use fixture.isle for the executable synchronous subset.
+// Product is a future closed readonly record codec: id: string, name: string, price: number.
+// Details is a separately declared client component using an explicit resource.
+client component Catalog(initialProducts: readonly Product[]) {
+  state products: readonly Product[] = initialProducts;
+  state expanded: boolean = true;
+  state mode: "rows" | "summary" = "rows";
+  state surcharge: number = 0;
+
+  event raise writes(surcharge) inline(ts) {
+    return { surcharge: surcharge + 1 };
+  }
+  event toggle writes(expanded) inline(ts) {
+    return { expanded: !expanded };
+  }
+  event summarize writes(mode) inline(ts) {
+    return { mode: "summary" };
+  }
+
+  <section>
+    <button on:click={raise}>追加額を増やす</button>
+    <button on:click={toggle}>一覧の開閉</button>
+    <button on:click={summarize}>集計に切り替える</button>
+    @if (expanded) {
+      @switch (mode) {
+        @case "rows": {
+          <ol>
+            @for (const product of products; key product.id) {
+              <li>{product.name}: {product.price + surcharge}</li>
+            } @empty {
+              <li>商品がありません</li>
+            }
+          </ol>
+        }
+        @case "summary": {
+          <p>{products.length} 商品</p>
+        }
+      }
+    } @else {
+      <p>一覧は閉じています</p>
+    }
+    @try {
+      <Details />
+    } @pending {
+      <p>読み込み中</p>
+    } @catch (error) {
+      <p role="alert">詳細を取得できませんでした</p>
+    }
+  </section>
+}

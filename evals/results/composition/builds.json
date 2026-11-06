@@ -1,0 +1,48 @@
+{
+  "gzipLevel": 6,
+  "note": "Different apps; emitted file sizes are not a speed or transfer benchmark.",
+  "builds": {
+    "flat": {
+      "hasParentOwnerMetadata": false,
+      "assets": {
+        "Counter.h0-CxJgHqIU.js": {
+          "bytes": 85,
+          "gzipBytes": 90
+        },
+        "Editor.h1-WsKkkGT5.js": {
+          "bytes": 127,
+          "gzipBytes": 129
+        },
+        "index-exWziqWn.js": {
+          "bytes": 1635,
+          "gzipBytes": 880
+        },
+        "isle-resume-DGhEW-Lf.js": {
+          "bytes": 4446,
+          "gzipBytes": 2148
+        }
+      }
+    },
+    "nested": {
+      "hasParentOwnerMetadata": true,
+      "assets": {
+        "Counter.g0-sIr0C6hm.js": {
+          "bytes": 118,
+          "gzipBytes": 100
+        },
+        "Parent.increment-D9asJW1r.js": {
+          "bytes": 65,
+          "gzipBytes": 83
+        },
+        "index-BxzogZUF.js": {
+          "bytes": 1590,
+          "gzipBytes": 835
+        },
+        "isle-resume-MeXxjUiM.js": {
+          "bytes": 3719,
+          "gzipBytes": 1760
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,454 @@
+{
+  "version": 1,
+  "pass": true,
+  "reports": [
+    {
+      "scenario": "author-counter",
+      "pass": true,
+      "score": 5,
+      "total": 5,
+      "checks": [
+        {
+          "name": "client Counter",
+          "pass": true
+        },
+        {
+          "name": "button with click",
+          "pass": true
+        },
+        {
+          "name": "count state and remaining derive",
+          "pass": true
+        },
+        {
+          "name": "resume from 37",
+          "pass": true
+        },
+        {
+          "name": "resume from 5",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "scenario": "author-chunks",
+      "pass": true,
+      "score": 6,
+      "total": 6,
+      "checks": [
+        {
+          "name": "client Counter",
+          "pass": true
+        },
+        {
+          "name": "two buttons in div",
+          "pass": true
+        },
+        {
+          "name": "named event boundaries",
+          "pass": true
+        },
+        {
+          "name": "async independent from code loading",
+          "pass": true
+        },
+        {
+          "name": "increment resumes correctly",
+          "pass": true
+        },
+        {
+          "name": "decrement resumes correctly",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "scenario": "author-action",
+      "pass": true,
+      "score": 6,
+      "total": 6,
+      "checks": [
+        {
+          "name": "input schema",
+          "pass": true
+        },
+        {
+          "name": "output schema",
+          "pass": true
+        },
+        {
+          "name": "boundary schemas",
+          "pass": true
+        },
+        {
+          "name": "resource policy",
+          "pass": true
+        },
+        {
+          "name": "effect contract",
+          "pass": true
+        },
+        {
+          "name": "grant precedes mutation",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "scenario": "author-schema-dsl",
+      "pass": true,
+      "score": 4,
+      "total": 4,
+      "checks": [
+        {
+          "name": "schema name and kind",
+          "pass": true
+        },
+        {
+          "name": "ordered fields and types",
+          "pass": true
+        },
+        {
+          "name": "password constraints",
+          "pass": true
+        },
+        {
+          "name": "confirmation constraints",
+          "pass": true
+        }
+      ],
+      "metrics": {
+        "sourceBytes": 136,
+        "lines": 4,
+        "schemaIRBytes": 318
+      }
+    },
+    {
+      "scenario": "author-schema-ts",
+      "pass": true,
+      "score": 4,
+      "total": 4,
+      "checks": [
+        {
+          "name": "schema name and kind",
+          "pass": true
+        },
+        {
+          "name": "ordered fields and types",
+          "pass": true
+        },
+        {
+          "name": "password constraints",
+          "pass": true
+        },
+        {
+          "name": "confirmation constraints",
+          "pass": true
+        }
+      ],
+      "metrics": {
+        "sourceBytes": 247,
+        "lines": 6,
+        "schemaIRBytes": 318
+      }
+    },
+    {
+      "scenario": "missing policy",
+      "pass": true
+    },
+    {
+      "scenario": "forged grant",
+      "pass": true
+    },
+    {
+      "scenario": "server state",
+      "pass": true
+    },
+    {
+      "scenario": "intent fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "chunk intent fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "static split fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "computation lifetime fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "component intent fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "composition intent fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "control flow fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "static cost fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "layout fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "container/block layout fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "reset layout fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "rejection example sources compile",
+      "pass": true
+    },
+    {
+      "scenario": "form fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "shared form fixture compiles",
+      "pass": true
+    },
+    {
+      "scenario": "navigation loading fixture validates",
+      "pass": true
+    },
+    {
+      "scenario": "dashboard fixture compiles",
+      "pass": true
+    },
+    {
+      "attempt": "reader-a",
+      "scenario": "intent",
+      "pass": true,
+      "score": 10,
+      "total": 10,
+      "checks": [
+        {
+          "name": "serverComponents",
+          "pass": true
+        },
+        {
+          "name": "clientComponents",
+          "pass": true
+        },
+        {
+          "name": "rpcActions",
+          "pass": true
+        },
+        {
+          "name": "policy",
+          "pass": true
+        },
+        {
+          "name": "authorizationTarget",
+          "pass": true
+        },
+        {
+          "name": "requestFromClient",
+          "pass": true
+        },
+        {
+          "name": "responseFields",
+          "pass": true
+        },
+        {
+          "name": "clientSetupReruns",
+          "pass": true
+        },
+        {
+          "name": "firstClick",
+          "pass": true
+        },
+        {
+          "name": "browserCanChoosePrincipal",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "attempt": "reader-b",
+      "scenario": "intent",
+      "pass": true,
+      "score": 10,
+      "total": 10,
+      "checks": [
+        {
+          "name": "serverComponents",
+          "pass": true
+        },
+        {
+          "name": "clientComponents",
+          "pass": true
+        },
+        {
+          "name": "rpcActions",
+          "pass": true
+        },
+        {
+          "name": "policy",
+          "pass": true
+        },
+        {
+          "name": "authorizationTarget",
+          "pass": true
+        },
+        {
+          "name": "requestFromClient",
+          "pass": true
+        },
+        {
+          "name": "responseFields",
+          "pass": true
+        },
+        {
+          "name": "clientSetupReruns",
+          "pass": true
+        },
+        {
+          "name": "firstClick",
+          "pass": true
+        },
+        {
+          "name": "browserCanChoosePrincipal",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "attempt": "writer-a",
+      "scenario": "author-counter",
+      "pass": true,
+      "score": 5,
+      "total": 5,
+      "checks": [
+        {
+          "name": "client Counter",
+          "pass": true
+        },
+        {
+          "name": "button with click",
+          "pass": true
+        },
+        {
+          "name": "count state and remaining derive",
+          "pass": true
+        },
+        {
+          "name": "resume from 37",
+          "pass": true
+        },
+        {
+          "name": "resume from 5",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "attempt": "writer-a",
+      "scenario": "author-action",
+      "pass": true,
+      "score": 6,
+      "total": 6,
+      "checks": [
+        {
+          "name": "input schema",
+          "pass": true
+        },
+        {
+          "name": "output schema",
+          "pass": true
+        },
+        {
+          "name": "boundary schemas",
+          "pass": true
+        },
+        {
+          "name": "resource policy",
+          "pass": true
+        },
+        {
+          "name": "effect contract",
+          "pass": true
+        },
+        {
+          "name": "grant precedes mutation",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "attempt": "writer-b",
+      "scenario": "author-counter",
+      "pass": true,
+      "score": 5,
+      "total": 5,
+      "checks": [
+        {
+          "name": "client Counter",
+          "pass": true
+        },
+        {
+          "name": "button with click",
+          "pass": true
+        },
+        {
+          "name": "count state and remaining derive",
+          "pass": true
+        },
+        {
+          "name": "resume from 37",
+          "pass": true
+        },
+        {
+          "name": "resume from 5",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "attempt": "writer-b",
+      "scenario": "author-action",
+      "pass": true,
+      "score": 6,
+      "total": 6,
+      "checks": [
+        {
+          "name": "input schema",
+          "pass": true
+        },
+        {
+          "name": "output schema",
+          "pass": true
+        },
+        {
+          "name": "boundary schemas",
+          "pass": true
+        },
+        {
+          "name": "resource policy",
+          "pass": true
+        },
+        {
+          "name": "effect contract",
+          "pass": true
+        },
+        {
+          "name": "grant precedes mutation",
+          "pass": true
+        }
+      ]
+    }
+  ]
+}

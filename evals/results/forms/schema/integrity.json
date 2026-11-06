@@ -1,0 +1,43 @@
+{
+  "gate": "check.integrity",
+  "command": "check integrity",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://127.0.0.1:52354/",
+    "verdict": "clean",
+    "findings": [],
+    "exempted": [],
+    "viewports": [
+      {
+        "width": 1280,
+        "height": 800,
+        "components": 8,
+        "inkRatio": 0.0753,
+        "textBlocks": 8
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "components": 8,
+        "inkRatio": 0.1115,
+        "textBlocks": 8
+      },
+      {
+        "width": 375,
+        "height": 700,
+        "components": 8,
+        "inkRatio": 0.1672,
+        "textBlocks": 8
+      }
+    ],
+    "kickback": []
+  }
+}

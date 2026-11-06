@@ -1,0 +1,17 @@
+schema RenameInput { id: string; title: string; }
+view DocumentView { id: string; title: string; }
+export server action renameDocument(input: RenameInput): DocumentView
+  using request: RequestContext
+  authorize grant = policy.documentEditor(request, input.id)
+  effects { db.write }
+{ return await documents.rename(grant, input.title); }
+
+export client component Editor({ id, initial }: { id: string; initial: string }) {
+  state title = initial;
+  <button>
+    on click async save {
+      title = (await remote renameDocument({ id, title })).title;
+    }
+    {title}
+  </button>
+}

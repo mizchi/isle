@@ -1,0 +1,34 @@
+{
+  "before": {
+    "widget.js": {
+      "bytes": 3003,
+      "gzipBytes": 1292
+    },
+    "widget.json": {
+      "bytes": 141320,
+      "gzipBytes": 8897
+    }
+  },
+  "after": {
+    "loader": {
+      "bytes": 4839,
+      "gzipBytes": 2042
+    },
+    "descriptor": {
+      "bytes": 141345,
+      "gzipBytes": 8922
+    },
+    "portableLoader": {
+      "bytes": 4840,
+      "gzipBytes": 2047
+    },
+    "staticLoader": {
+      "bytes": 4842,
+      "gzipBytes": 2048
+    },
+    "staticDescriptor": {
+      "bytes": 684,
+      "gzipBytes": 460
+    }
+  }
+}

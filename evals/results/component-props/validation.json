@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-11-04T14:24:48.110Z",
+  "ci": {
+    "command": "just ci",
+    "moonbit": 32,
+    "node": 161,
+    "e2e": 56,
+    "modelCases": 27,
+    "brokenVariants": 10,
+    "formGates": 16
+  },
+  "widgets": {
+    "command": "just widget-check",
+    "unit": 28,
+    "e2e": 24
+  },
+  "docs": {
+    "compiledAndSSR": 6,
+    "productionCounterBrowser": true,
+    "localLinks": 91
+  },
+  "claims": {
+    "universalDoesNotInferClient": true,
+    "sameLegacyPropsContract": true,
+    "sameSnapshotSchema": true,
+    "sameGeneratedHandler": true,
+    "nestedComponents": false,
+    "participantEvaluation": false
+  }
+}

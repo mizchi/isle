@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "scope": "v0 static generated-handler operation bounds; not a time guarantee",
+  "ci": {
+    "passed": true,
+    "moonbit": 36,
+    "node": 182,
+    "e2e": 66,
+    "types": "pass",
+    "existingModels": "pass",
+    "formA11yGates": 16
+  },
+  "widgets": {
+    "passed": true,
+    "node": 28,
+    "e2e": 24
+  },
+  "costTests": 13,
+  "debugBrowserTests": 2,
+  "productionJavaScript": {
+    "fixtures": 3,
+    "unchangedHashes": true,
+    "deltaBytes": 0,
+    "deltaGzipBytes": 0
+  },
+  "participantEvaluation": "not run",
+  "costFormalProof": "not implemented",
+  "docs": {
+    "files": 8,
+    "localLinks": 62,
+    "passed": true
+  }
+}

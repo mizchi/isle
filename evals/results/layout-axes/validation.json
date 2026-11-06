@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "assessedOn": "2026-11-06",
+  "passed": true,
+  "scope": "Exact rational convex-region obligations for the closed Grid subset, container size queries and independent inline/block viewport domains; intrinsic height profiles and text bounds are trusted inputs, not font or browser refinement proofs",
+  "checks": [
+    {
+      "command": "just ci",
+      "exitCode": 0,
+      "moonbitTests": 53,
+      "nodeTests": 279,
+      "browserTests": 120,
+      "layoutNodeTests": 31,
+      "layoutBrowserTests": 7,
+      "formalCases": 92,
+      "formalExpectedCounterexamples": 35,
+      "typeContracts": true,
+      "formA11ySuites": 2,
+      "formA11yGatesPerSuite": 8
+    },
+    {
+      "command": "just layout-quality",
+      "exitCode": 0,
+      "tool": "vlmkit/0.24.0",
+      "viewport": {
+        "width": {
+          "min": 432,
+          "max": 1000
+        },
+        "height": {
+          "min": 320,
+          "max": 600
+        }
+      },
+      "gates": [
+        {
+          "file": "integrity-phone.json",
+          "verdict": "pass",
+          "counts": {
+            "suspect": 0,
+            "warn": 0,
+            "info": 0
+          }
+        },
+        {
+          "file": "integrity-desktop.json",
+          "verdict": "pass",
+          "counts": {
+            "suspect": 0,
+            "warn": 1,
+            "info": 0
+          }
+        },
+        {
+          "file": "responsive.json",
+          "verdict": "pass",
+          "counts": {
+            "suspect": 0,
+            "warn": 0,
+            "info": 0
+          }
+        }
+      ],
+      "retainsPreviousInlineQualityGates": true
+    },
+    {
+      "command": "Production counter asset hash comparison with preceding horizontal-layout stage",
+      "passed": true,
+      "artifact": "size.json"
+    }
+  ],
+  "evidence": {
+    "positive": "fixed.json",
+    "negative": "broken.json",
+    "browserMeasurements": "browser.json",
+    "browserCombinations": 42,
+    "screenshots": [
+      "480x400.png",
+      "1000x500.png"
+    ],
+    "arithmeticOracle": {
+      "inlineComparisons": 30492,
+      "planeSampleCases": 91125,
+      "planeChecksYesAndNo": true,
+      "formalSoundnessProof": false
+    },
+    "readingGrader": "layout-axes-intent",
+    "participantEvaluation": false
+  },
+  "sourceSha256": {
+    "lib/layout.mjs": "2082dedbc457c9963757f4a28c0a4fa1e1fb6ea0e53213de7412d9300fd1ed14",
+    "lib/layout/engine.mjs": "af7114a86825b9f9ade19016bcd9adc9f3a0a8f44453c22cee77eee0b0332864",
+    "lib/layout/css.mjs": "4f63a291f5e2702b3e1162a3f4dc4b740c68ba587021c045a62f485641780aef",
+    "lib/layout/input.mjs": "95cf328e5556b561cef521c7a8d044cb0db4066bbeb0ef59460f0a94847afaf0",
+    "lib/layout/grid.mjs": "9e80c608915efca79adb4a46611bb04cd06c5e718b29a6c8d7eb9d0776909ad5",
+    "lib/layout/linear.mjs": "49a2332b5cf64c6336563dd5a4e072b6dd5b9eee0c0e629be79a7ccf2c3df6ff",
+    "lib/layout/region.mjs": "356582ba0c488259daf55cf3a6c5bb9d7dc316ca7cbbdee6deba3134321aeeb4",
+    "lib/layout/conditions.mjs": "1064ba79a63f04cc8a3392a2eb27457b9eaa581407d22d0216f002eed3c3fb1c",
+    "lib/layout-contracts.d.ts": "7b9851e70e87bfd795c6db884e5acf84ddbd3d1b34b386546cd25df3c09773cb",
+    "tools/eval.mjs": "66f35c80d3c496d71eeb0f9a64054603354f6e5dc1496ebf8ef2a5588074853d",
+    "justfile": "6a1fb8508d479dc1306a53673f6153f7c3e734fe62014e9b0ccd96dbb565ebbc",
+    "tests/layout-container-block.test.mjs": "1e24e0b4f685c45efe46288d4a6af57055048e8a9eb13185dd4e2412ac987247",
+    "tests/layout-region.test.mjs": "b2198454b6c2fc6a843eb75c77f95cb039eabc6b98453d278f482027660a4c15",
+    "tests/eval-layout-axes.test.mjs": "1b7847b7b04881db970e888bcc50674843c366581561ab560a5cf9f9c84615f0",
+    "tests/types/layout.mts": "1bdf0b1791aa3f643035f933a57db7e11877995d40004ec266a7560574be57e1",
+    "e2e/layout-axes.spec.mjs": "9927e83cdb8d7d6c93a199d56e1de14109f23216034360a0f8f18acf4ee93390",
+    "playwright.layout.config.mjs": "3ff4f93f164666b30d1b87a6bc4e027169f2d596b0fbac9fdaf7e920e9dc6392",
+    "evals/scenarios/layout-axes/fixture.isle": "3790c5eff01b0804d58598fc7e76076434f013df3302ae6d59e14fff69c976bf",
+    "evals/scenarios/layout-axes/layout.css": "1ce91ef455f1e5109ba0c1648b4f3cd949ad815b4dce025b77a3c597e8973ae9",
+    "evals/scenarios/layout-axes/layout.json": "443c5536916a3768aa0845d8e9d5fc4c3d56d9dc2aa3bbf72873cc141f235eaa",
+    "evals/expect/layout-axes-intent.json": "643656f86bae2eab34f0e4c7b48b37a5d172cac0bdac54bbc4e222d11ee78715"
+  }
+}

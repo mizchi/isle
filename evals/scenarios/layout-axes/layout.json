@@ -1,0 +1,11 @@
+{
+  "component": "QueryPanel",
+  "css": "./layout.css",
+  "block": true,
+  "viewport": { "min": 432, "max": 1000, "height": { "min": 320, "max": 600 } },
+  "boxes": {
+    ".toolbar": { "minInlineSize": 120, "minBlockSize": 24, "intrinsicBlockSize": 24 },
+    ".body": { "minInlineSize": 400, "minBlockSize": 200 },
+    ".copy": { "minInlineSize": 400, "minBlockSize": 200, "wrap": "anywhere" }
+  }
+}

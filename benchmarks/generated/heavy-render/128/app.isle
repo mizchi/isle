@@ -1,0 +1,170 @@
+// Generated catalog fixture. Each row performs actual order calculations.
+component ProductRow(sku: string, baseQuantity: number, unitPrice: number, unitGrams: number, adjustment: number) {
+  derive quantity = baseQuantity + adjustment;
+  derive goods = quantity * unitPrice;
+  derive handling = quantity * 20;
+  derive subtotal = goods + handling;
+  derive packaging = quantity * 5;
+  derive cost = subtotal + packaging;
+  derive weight = quantity * unitGrams;
+  <li class="product-row" data-product={sku}>
+    <div class="cell sku"><span class="label">商品コード</span><span>{sku}</span></div>
+    <div class="cell"><span class="label">単価</span><span>¥{unitPrice}</span></div>
+    <div class="cell"><span class="label">数量</span><span data-value="quantity">{quantity}</span></div>
+    <div class="cell"><span class="label">発注額</span><span data-value="cost" data-cost={cost}>¥{cost}</span></div>
+    <div class="cell"><span class="label">重量</span><span data-value="weight">{weight} g</span></div>
+  </li>
+}
+
+client component Audit() {
+  state checks = 0;
+  <aside class="audit surface" data-audit="true">
+    <div><h3>確認メモ</h3><p>確認回数: <output data-value="checks">{checks}</output></p></div>
+    <button type="button" data-action="check">on click check { checks += 1; }確認を記録</button>
+  </aside>
+}
+
+client component Sheet(initialAdjustment: number) {
+  state adjustment = initialAdjustment;
+  derive unused = adjustment * 9999;
+  <section class="sheet surface" data-sheet="true">
+    <header class="sheet-header">
+      <div><h3>発注数量の調整</h3><p>各商品の追加数量: <output data-value="adjustment">{adjustment}</output> 個</p></div>
+      <button type="button" data-action="add-all">on click addAll { adjustment += 1; }表示中の商品を1個ずつ追加</button>
+    </header>
+    <ol class="products" data-products="true">
+      <ProductRow sku="SKU-00001" baseQuantity={1} unitPrice={100} unitGrams={50} adjustment={adjustment} />
+      <ProductRow sku="SKU-00002" baseQuantity={2} unitPrice={137} unitGrams={63} adjustment={adjustment} />
+      <ProductRow sku="SKU-00003" baseQuantity={3} unitPrice={174} unitGrams={76} adjustment={adjustment} />
+      <ProductRow sku="SKU-00004" baseQuantity={4} unitPrice={211} unitGrams={89} adjustment={adjustment} />
+      <ProductRow sku="SKU-00005" baseQuantity={5} unitPrice={248} unitGrams={102} adjustment={adjustment} />
+      <ProductRow sku="SKU-00006" baseQuantity={6} unitPrice={285} unitGrams={115} adjustment={adjustment} />
+      <ProductRow sku="SKU-00007" baseQuantity={7} unitPrice={322} unitGrams={128} adjustment={adjustment} />
+      <ProductRow sku="SKU-00008" baseQuantity={8} unitPrice={359} unitGrams={141} adjustment={adjustment} />
+      <ProductRow sku="SKU-00009" baseQuantity={9} unitPrice={396} unitGrams={154} adjustment={adjustment} />
+      <ProductRow sku="SKU-00010" baseQuantity={10} unitPrice={433} unitGrams={167} adjustment={adjustment} />
+      <ProductRow sku="SKU-00011" baseQuantity={11} unitPrice={470} unitGrams={180} adjustment={adjustment} />
+      <ProductRow sku="SKU-00012" baseQuantity={12} unitPrice={507} unitGrams={193} adjustment={adjustment} />
+      <ProductRow sku="SKU-00013" baseQuantity={1} unitPrice={544} unitGrams={206} adjustment={adjustment} />
+      <ProductRow sku="SKU-00014" baseQuantity={2} unitPrice={581} unitGrams={219} adjustment={adjustment} />
+      <ProductRow sku="SKU-00015" baseQuantity={3} unitPrice={618} unitGrams={232} adjustment={adjustment} />
+      <ProductRow sku="SKU-00016" baseQuantity={4} unitPrice={655} unitGrams={245} adjustment={adjustment} />
+      <ProductRow sku="SKU-00017" baseQuantity={5} unitPrice={692} unitGrams={258} adjustment={adjustment} />
+      <ProductRow sku="SKU-00018" baseQuantity={6} unitPrice={729} unitGrams={271} adjustment={adjustment} />
+      <ProductRow sku="SKU-00019" baseQuantity={7} unitPrice={766} unitGrams={284} adjustment={adjustment} />
+      <ProductRow sku="SKU-00020" baseQuantity={8} unitPrice={803} unitGrams={297} adjustment={adjustment} />
+      <ProductRow sku="SKU-00021" baseQuantity={9} unitPrice={840} unitGrams={310} adjustment={adjustment} />
+      <ProductRow sku="SKU-00022" baseQuantity={10} unitPrice={877} unitGrams={323} adjustment={adjustment} />
+      <ProductRow sku="SKU-00023" baseQuantity={11} unitPrice={914} unitGrams={336} adjustment={adjustment} />
+      <ProductRow sku="SKU-00024" baseQuantity={12} unitPrice={951} unitGrams={349} adjustment={adjustment} />
+      <ProductRow sku="SKU-00025" baseQuantity={1} unitPrice={988} unitGrams={362} adjustment={adjustment} />
+      <ProductRow sku="SKU-00026" baseQuantity={2} unitPrice={1025} unitGrams={375} adjustment={adjustment} />
+      <ProductRow sku="SKU-00027" baseQuantity={3} unitPrice={1062} unitGrams={388} adjustment={adjustment} />
+      <ProductRow sku="SKU-00028" baseQuantity={4} unitPrice={1099} unitGrams={401} adjustment={adjustment} />
+      <ProductRow sku="SKU-00029" baseQuantity={5} unitPrice={1136} unitGrams={414} adjustment={adjustment} />
+      <ProductRow sku="SKU-00030" baseQuantity={6} unitPrice={1173} unitGrams={427} adjustment={adjustment} />
+      <ProductRow sku="SKU-00031" baseQuantity={7} unitPrice={1210} unitGrams={440} adjustment={adjustment} />
+      <ProductRow sku="SKU-00032" baseQuantity={8} unitPrice={1247} unitGrams={453} adjustment={adjustment} />
+      <ProductRow sku="SKU-00033" baseQuantity={9} unitPrice={1284} unitGrams={466} adjustment={adjustment} />
+      <ProductRow sku="SKU-00034" baseQuantity={10} unitPrice={1321} unitGrams={479} adjustment={adjustment} />
+      <ProductRow sku="SKU-00035" baseQuantity={11} unitPrice={1358} unitGrams={492} adjustment={adjustment} />
+      <ProductRow sku="SKU-00036" baseQuantity={12} unitPrice={1395} unitGrams={505} adjustment={adjustment} />
+      <ProductRow sku="SKU-00037" baseQuantity={1} unitPrice={1432} unitGrams={518} adjustment={adjustment} />
+      <ProductRow sku="SKU-00038" baseQuantity={2} unitPrice={1469} unitGrams={531} adjustment={adjustment} />
+      <ProductRow sku="SKU-00039" baseQuantity={3} unitPrice={1506} unitGrams={544} adjustment={adjustment} />
+      <ProductRow sku="SKU-00040" baseQuantity={4} unitPrice={1543} unitGrams={557} adjustment={adjustment} />
+      <ProductRow sku="SKU-00041" baseQuantity={5} unitPrice={1580} unitGrams={570} adjustment={adjustment} />
+      <ProductRow sku="SKU-00042" baseQuantity={6} unitPrice={1617} unitGrams={583} adjustment={adjustment} />
+      <ProductRow sku="SKU-00043" baseQuantity={7} unitPrice={1654} unitGrams={596} adjustment={adjustment} />
+      <ProductRow sku="SKU-00044" baseQuantity={8} unitPrice={1691} unitGrams={609} adjustment={adjustment} />
+      <ProductRow sku="SKU-00045" baseQuantity={9} unitPrice={1728} unitGrams={622} adjustment={adjustment} />
+      <ProductRow sku="SKU-00046" baseQuantity={10} unitPrice={1765} unitGrams={635} adjustment={adjustment} />
+      <ProductRow sku="SKU-00047" baseQuantity={11} unitPrice={1802} unitGrams={648} adjustment={adjustment} />
+      <ProductRow sku="SKU-00048" baseQuantity={12} unitPrice={1839} unitGrams={661} adjustment={adjustment} />
+      <ProductRow sku="SKU-00049" baseQuantity={1} unitPrice={1876} unitGrams={674} adjustment={adjustment} />
+      <ProductRow sku="SKU-00050" baseQuantity={2} unitPrice={1913} unitGrams={687} adjustment={adjustment} />
+      <ProductRow sku="SKU-00051" baseQuantity={3} unitPrice={1950} unitGrams={700} adjustment={adjustment} />
+      <ProductRow sku="SKU-00052" baseQuantity={4} unitPrice={1987} unitGrams={713} adjustment={adjustment} />
+      <ProductRow sku="SKU-00053" baseQuantity={5} unitPrice={2024} unitGrams={726} adjustment={adjustment} />
+      <ProductRow sku="SKU-00054" baseQuantity={6} unitPrice={2061} unitGrams={739} adjustment={adjustment} />
+      <ProductRow sku="SKU-00055" baseQuantity={7} unitPrice={2098} unitGrams={752} adjustment={adjustment} />
+      <ProductRow sku="SKU-00056" baseQuantity={8} unitPrice={2135} unitGrams={765} adjustment={adjustment} />
+      <ProductRow sku="SKU-00057" baseQuantity={9} unitPrice={2172} unitGrams={778} adjustment={adjustment} />
+      <ProductRow sku="SKU-00058" baseQuantity={10} unitPrice={2209} unitGrams={791} adjustment={adjustment} />
+      <ProductRow sku="SKU-00059" baseQuantity={11} unitPrice={2246} unitGrams={804} adjustment={adjustment} />
+      <ProductRow sku="SKU-00060" baseQuantity={12} unitPrice={2283} unitGrams={817} adjustment={adjustment} />
+      <ProductRow sku="SKU-00061" baseQuantity={1} unitPrice={2320} unitGrams={830} adjustment={adjustment} />
+      <ProductRow sku="SKU-00062" baseQuantity={2} unitPrice={2357} unitGrams={843} adjustment={adjustment} />
+      <ProductRow sku="SKU-00063" baseQuantity={3} unitPrice={2394} unitGrams={856} adjustment={adjustment} />
+      <ProductRow sku="SKU-00064" baseQuantity={4} unitPrice={2431} unitGrams={869} adjustment={adjustment} />
+      <ProductRow sku="SKU-00065" baseQuantity={5} unitPrice={2468} unitGrams={882} adjustment={adjustment} />
+      <ProductRow sku="SKU-00066" baseQuantity={6} unitPrice={2505} unitGrams={895} adjustment={adjustment} />
+      <ProductRow sku="SKU-00067" baseQuantity={7} unitPrice={2542} unitGrams={908} adjustment={adjustment} />
+      <ProductRow sku="SKU-00068" baseQuantity={8} unitPrice={2579} unitGrams={921} adjustment={adjustment} />
+      <ProductRow sku="SKU-00069" baseQuantity={9} unitPrice={2616} unitGrams={934} adjustment={adjustment} />
+      <ProductRow sku="SKU-00070" baseQuantity={10} unitPrice={2653} unitGrams={947} adjustment={adjustment} />
+      <ProductRow sku="SKU-00071" baseQuantity={11} unitPrice={2690} unitGrams={960} adjustment={adjustment} />
+      <ProductRow sku="SKU-00072" baseQuantity={12} unitPrice={2727} unitGrams={973} adjustment={adjustment} />
+      <ProductRow sku="SKU-00073" baseQuantity={1} unitPrice={2764} unitGrams={986} adjustment={adjustment} />
+      <ProductRow sku="SKU-00074" baseQuantity={2} unitPrice={2801} unitGrams={999} adjustment={adjustment} />
+      <ProductRow sku="SKU-00075" baseQuantity={3} unitPrice={2838} unitGrams={1012} adjustment={adjustment} />
+      <ProductRow sku="SKU-00076" baseQuantity={4} unitPrice={2875} unitGrams={1025} adjustment={adjustment} />
+      <ProductRow sku="SKU-00077" baseQuantity={5} unitPrice={2912} unitGrams={1038} adjustment={adjustment} />
+      <ProductRow sku="SKU-00078" baseQuantity={6} unitPrice={2949} unitGrams={1051} adjustment={adjustment} />
+      <ProductRow sku="SKU-00079" baseQuantity={7} unitPrice={2986} unitGrams={1064} adjustment={adjustment} />
+      <ProductRow sku="SKU-00080" baseQuantity={8} unitPrice={3023} unitGrams={1077} adjustment={adjustment} />
+      <ProductRow sku="SKU-00081" baseQuantity={9} unitPrice={3060} unitGrams={1090} adjustment={adjustment} />
+      <ProductRow sku="SKU-00082" baseQuantity={10} unitPrice={3097} unitGrams={1103} adjustment={adjustment} />
+      <ProductRow sku="SKU-00083" baseQuantity={11} unitPrice={3134} unitGrams={1116} adjustment={adjustment} />
+      <ProductRow sku="SKU-00084" baseQuantity={12} unitPrice={3171} unitGrams={1129} adjustment={adjustment} />
+      <ProductRow sku="SKU-00085" baseQuantity={1} unitPrice={3208} unitGrams={1142} adjustment={adjustment} />
+      <ProductRow sku="SKU-00086" baseQuantity={2} unitPrice={3245} unitGrams={1155} adjustment={adjustment} />
+      <ProductRow sku="SKU-00087" baseQuantity={3} unitPrice={3282} unitGrams={1168} adjustment={adjustment} />
+      <ProductRow sku="SKU-00088" baseQuantity={4} unitPrice={3319} unitGrams={1181} adjustment={adjustment} />
+      <ProductRow sku="SKU-00089" baseQuantity={5} unitPrice={3356} unitGrams={1194} adjustment={adjustment} />
+      <ProductRow sku="SKU-00090" baseQuantity={6} unitPrice={3393} unitGrams={1207} adjustment={adjustment} />
+      <ProductRow sku="SKU-00091" baseQuantity={7} unitPrice={3430} unitGrams={1220} adjustment={adjustment} />
+      <ProductRow sku="SKU-00092" baseQuantity={8} unitPrice={3467} unitGrams={1233} adjustment={adjustment} />
+      <ProductRow sku="SKU-00093" baseQuantity={9} unitPrice={3504} unitGrams={1246} adjustment={adjustment} />
+      <ProductRow sku="SKU-00094" baseQuantity={10} unitPrice={3541} unitGrams={1259} adjustment={adjustment} />
+      <ProductRow sku="SKU-00095" baseQuantity={11} unitPrice={3578} unitGrams={1272} adjustment={adjustment} />
+      <ProductRow sku="SKU-00096" baseQuantity={12} unitPrice={3615} unitGrams={1285} adjustment={adjustment} />
+      <ProductRow sku="SKU-00097" baseQuantity={1} unitPrice={3652} unitGrams={1298} adjustment={adjustment} />
+      <ProductRow sku="SKU-00098" baseQuantity={2} unitPrice={3689} unitGrams={1311} adjustment={adjustment} />
+      <ProductRow sku="SKU-00099" baseQuantity={3} unitPrice={3726} unitGrams={1324} adjustment={adjustment} />
+      <ProductRow sku="SKU-00100" baseQuantity={4} unitPrice={3763} unitGrams={1337} adjustment={adjustment} />
+      <ProductRow sku="SKU-00101" baseQuantity={5} unitPrice={3800} unitGrams={1350} adjustment={adjustment} />
+      <ProductRow sku="SKU-00102" baseQuantity={6} unitPrice={3837} unitGrams={1363} adjustment={adjustment} />
+      <ProductRow sku="SKU-00103" baseQuantity={7} unitPrice={3874} unitGrams={1376} adjustment={adjustment} />
+      <ProductRow sku="SKU-00104" baseQuantity={8} unitPrice={3911} unitGrams={1389} adjustment={adjustment} />
+      <ProductRow sku="SKU-00105" baseQuantity={9} unitPrice={3948} unitGrams={1402} adjustment={adjustment} />
+      <ProductRow sku="SKU-00106" baseQuantity={10} unitPrice={3985} unitGrams={1415} adjustment={adjustment} />
+      <ProductRow sku="SKU-00107" baseQuantity={11} unitPrice={4022} unitGrams={1428} adjustment={adjustment} />
+      <ProductRow sku="SKU-00108" baseQuantity={12} unitPrice={4059} unitGrams={1441} adjustment={adjustment} />
+      <ProductRow sku="SKU-00109" baseQuantity={1} unitPrice={4096} unitGrams={1454} adjustment={adjustment} />
+      <ProductRow sku="SKU-00110" baseQuantity={2} unitPrice={4133} unitGrams={1467} adjustment={adjustment} />
+      <ProductRow sku="SKU-00111" baseQuantity={3} unitPrice={4170} unitGrams={1480} adjustment={adjustment} />
+      <ProductRow sku="SKU-00112" baseQuantity={4} unitPrice={4207} unitGrams={1493} adjustment={adjustment} />
+      <ProductRow sku="SKU-00113" baseQuantity={5} unitPrice={4244} unitGrams={56} adjustment={adjustment} />
+      <ProductRow sku="SKU-00114" baseQuantity={6} unitPrice={4281} unitGrams={69} adjustment={adjustment} />
+      <ProductRow sku="SKU-00115" baseQuantity={7} unitPrice={4318} unitGrams={82} adjustment={adjustment} />
+      <ProductRow sku="SKU-00116" baseQuantity={8} unitPrice={4355} unitGrams={95} adjustment={adjustment} />
+      <ProductRow sku="SKU-00117" baseQuantity={9} unitPrice={4392} unitGrams={108} adjustment={adjustment} />
+      <ProductRow sku="SKU-00118" baseQuantity={10} unitPrice={4429} unitGrams={121} adjustment={adjustment} />
+      <ProductRow sku="SKU-00119" baseQuantity={11} unitPrice={4466} unitGrams={134} adjustment={adjustment} />
+      <ProductRow sku="SKU-00120" baseQuantity={12} unitPrice={4503} unitGrams={147} adjustment={adjustment} />
+      <ProductRow sku="SKU-00121" baseQuantity={1} unitPrice={4540} unitGrams={160} adjustment={adjustment} />
+      <ProductRow sku="SKU-00122" baseQuantity={2} unitPrice={4577} unitGrams={173} adjustment={adjustment} />
+      <ProductRow sku="SKU-00123" baseQuantity={3} unitPrice={4614} unitGrams={186} adjustment={adjustment} />
+      <ProductRow sku="SKU-00124" baseQuantity={4} unitPrice={4651} unitGrams={199} adjustment={adjustment} />
+      <ProductRow sku="SKU-00125" baseQuantity={5} unitPrice={4688} unitGrams={212} adjustment={adjustment} />
+      <ProductRow sku="SKU-00126" baseQuantity={6} unitPrice={4725} unitGrams={225} adjustment={adjustment} />
+      <ProductRow sku="SKU-00127" baseQuantity={7} unitPrice={4762} unitGrams={238} adjustment={adjustment} />
+      <ProductRow sku="SKU-00128" baseQuantity={8} unitPrice={4799} unitGrams={251} adjustment={adjustment} />
+    </ol>
+  </section>
+}
+
+server component Page() {
+  <div class="workspace" data-page="orders"><Audit /><Sheet initialAdjustment={0} /></div>
+}

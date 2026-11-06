@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "ci": {
+    "moonbit": 36,
+    "node": 187,
+    "e2e": 67,
+    "types": "pass",
+    "existingModels": "pass",
+    "formA11yGates": 16
+  },
+  "targetedE2E": 1,
+  "fullCorrectness": {
+    "sizes": [
+      128,
+      1024,
+      4096
+    ],
+    "allRowsVerified": true,
+    "patchCountsMatch": true,
+    "identityPreserved": true
+  },
+  "performance": {
+    "contexts": 30,
+    "operations": 540,
+    "samplesPerCase": 5,
+    "warmPerContext": 8,
+    "profiles": [
+      1,
+      4
+    ],
+    "clock": "native event timestamp",
+    "fieldINP": false
+  },
+  "normalBuild": {
+    "noProbeCode": true,
+    "noCostMetadataFetch": true
+  },
+  "unchangedRuntime": [
+    {
+      "name": "counter",
+      "deltaBytes": 0,
+      "deltaGzipBytes": 0,
+      "unchangedHashes": true
+    },
+    {
+      "name": "composition",
+      "deltaBytes": 0,
+      "deltaGzipBytes": 0,
+      "unchangedHashes": true
+    },
+    {
+      "name": "schema-form",
+      "deltaBytes": 0,
+      "deltaGzipBytes": 0,
+      "unchangedHashes": true
+    }
+  ],
+  "cliBudgets": [
+    {
+      "rows": 128,
+      "status": 0,
+      "checks": [
+        {
+          "entry": "Sheet.addAll",
+          "metric": "textPatchCalls",
+          "max": 1000,
+          "actual": 385,
+          "status": "pass"
+        },
+        {
+          "entry": "Sheet.addAll",
+          "metric": "attributePatchCalls",
+          "max": 1000,
+          "actual": 128,
+          "status": "pass"
+        },
+        {
+          "entry": "Sheet.addAll",
+          "metric": "binaryOperations",
+          "max": 20000,
+          "actual": 2433,
+          "status": "pass"
+        },
+        {
+          "entry": "$page",
+          "metric": "domElements",
+          "max": 5000,
+          "actual": 2063,
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "rows": 1024,
+      "status": 1,
+      "checks": [
+        {
+          "entry": "Sheet.addAll",
+          "metric": "textPatchCalls",
+          "max": 1000,
+          "actual": 3073,
+          "status": "exceeded"
+        },
+        {
+          "entry": "Sheet.addAll",
+          "metric": "attributePatchCalls",
+          "max": 1000,
+          "actual": 1024,
+          "status": "exceeded"
+        },
+        {
+          "entry": "Sheet.addAll",
+          "metric": "binaryOperations",
+          "max": 20000,
+          "actual": 19457,
+          "status": "pass"
+        },
+        {
+          "entry": "$page",
+          "metric": "domElements",
+          "max": 5000,
+          "actual": 16399,
+          "status": "exceeded"
+        }
+      ]
+    },
+    {
+      "rows": 4096,
+      "status": 1,
+      "checks": [
+        {
+          "entry": "Sheet.addAll",
+          "metric": "textPatchCalls",
+          "max": 1000,
+          "actual": 12289,
+          "status": "exceeded"
+        },
+        {
+          "entry": "Sheet.addAll",
+          "metric": "attributePatchCalls",
+          "max": 1000,
+          "actual": 4096,
+          "status": "exceeded"
+        },
+        {
+          "entry": "Sheet.addAll",
+          "metric": "binaryOperations",
+          "max": 20000,
+          "actual": 77825,
+          "status": "exceeded"
+        },
+        {
+          "entry": "$page",
+          "metric": "domElements",
+          "max": 5000,
+          "actual": 65551,
+          "status": "exceeded"
+        }
+      ]
+    }
+  ],
+  "visual": {
+    "tool": "vlmkit/0.24.0",
+    "gates": 5,
+    "suspect": 0,
+    "sharedTemplateRows": 128,
+    "stressRows": 4096,
+    "viewports": [
+      1280,
+      375
+    ],
+    "reviewedViewportImages": 12
+  },
+  "costFormalProof": "not added",
+  "participantEvaluation": "not run",
+  "docs": {
+    "files": 5,
+    "localLinks": 37,
+    "pass": true
+  }
+}

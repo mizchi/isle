@@ -1,0 +1,29 @@
+schema RenameInput { id: string; title: string; }
+view DocumentView { id: string; title: string; }
+
+export server action renameDocument(input: RenameInput): DocumentView
+  using request: RequestContext
+  authorize grant = policy.documentEditor(request, input.id)
+  effects { db.write }
+{
+  return await documents.rename(grant, input.title);
+}
+
+export client component Counter({ initial }: { initial: number }) {
+  state count = initial;
+  derive doubled = count * 2;
+  <button class="control" type="button">
+    on click { count += 1; }
+    {count} / {doubled}
+  </button>
+}
+
+export client component Editor({ id, initial }: { id: string; initial: string }) {
+  state title = initial;
+  <button class="control" type="button">
+    on click async {
+      title = (await remote renameDocument({ id, title: title + "!" })).title;
+    }
+    {title}
+  </button>
+}

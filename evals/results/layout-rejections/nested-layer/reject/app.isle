@@ -1,0 +1,1 @@
+component Card() { <main class="card"><p class="text">Content</p></main> }

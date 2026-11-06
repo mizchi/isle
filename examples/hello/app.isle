@@ -1,0 +1,10 @@
+client component Counter(initial: number) {
+  state count = initial;
+  derive doubled = count * 2;
+  <section>
+    <h2>Counter</h2>
+    <output aria-live="polite">{count} / {doubled}</output>
+    <button type="button">on click increment { count += 1; }Increment</button>
+    <button type="button">on click reset { count = initial; }Reset</button>
+  </section>
+}

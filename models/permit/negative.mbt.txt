@@ -1,0 +1,7 @@
+///|
+/// Intentionally false: a permit for record 0 must not modify record 1.
+pub fn negative_control() -> Store where {
+  proof_ensure: result => result.beta == 9,
+} {
+  commit(0, 1, 0, 0, false, 3, 4, 9)
+}

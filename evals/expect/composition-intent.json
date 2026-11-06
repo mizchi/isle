@@ -1,0 +1,13 @@
+{
+  "counterInitialValues": [5, 15],
+  "propsArePositional": false,
+  "componentCallable": false,
+  "pureCardsCreateOwners": false,
+  "childrenInSnapshot": false,
+  "firstChildResumesParent": false,
+  "parentDisposeIncludesChildren": true,
+  "countersShareState": false,
+  "clientMayInstantiateServer": false,
+  "reactiveClientPropsSupported": false,
+  "componentRecursionAllowed": false
+}

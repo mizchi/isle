@@ -1,0 +1,6 @@
+@layer reset, app;
+@layer reset {
+  :root { box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: inherit; }
+  :where(*) { margin: 0; padding: 0; }
+}

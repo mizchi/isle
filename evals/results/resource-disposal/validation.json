@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "passed": true,
+  "moonTests": 51,
+  "nodeTests": 216,
+  "formalCases": 86,
+  "formalResponseCases": 16,
+  "cleanupModelStates": 1452,
+  "implementationSchedules": 9,
+  "ordinaryJavaScriptDeltaBytes": 0,
+  "ordinaryJavaScriptDeltaGzipBytes": 0,
+  "scope": "Independent cleanup kernel and reference model; resource DSL/codegen/automatic component loader integration remain unimplemented."
+}

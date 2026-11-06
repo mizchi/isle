@@ -1,0 +1,4 @@
+* {box-sizing:border-box;margin:0;}
+.shell {display:grid;grid-template-columns:minmax(0,1fr);container:Shell/inline-size;padding:16px;}
+.panel {display:grid;grid-template-columns:minmax(0,1fr);gap:16px;}
+@container Shell (width >= 600px) {.panel {grid-template-columns:200px minmax(0,1fr);}}

@@ -1,0 +1,88 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/isle/models/resource_disposal"
+
+import {
+  "mizchi/veri/model_check",
+}
+
+// Values
+pub fn client(Policy) -> @model_check.Client[State, Event, Json] raise
+
+pub fn initial() -> State
+
+pub fn release_fairness(@model_check.Client[State, Event, Json]) -> Array[Int32]
+
+pub fn step(Policy, State, Event) -> State?
+
+// Errors
+
+// Types and methods
+pub(all) enum Event {
+  Start(Int32)
+  Acquire(Int32)
+  AcquireFails(Int32)
+  Publish(Int32)
+  Unmount
+  Recreate
+  BeginRelease(Int32)
+  FinishRelease(Int32)
+  FailRelease(Int32)
+  Tick
+}
+
+pub(all) enum Phase {
+  Unused
+  Acquiring
+  Acquired
+  Published
+  AcquireFailed
+  Releasing
+  Released
+  ReleaseFailed
+} derive(Eq, ToJson)
+pub fn Phase::equal(Self, Self) -> Bool
+pub fn Phase::not_equal(Self, Self) -> Bool
+pub fn Phase::to_json(Self) -> Json
+
+pub(all) enum Policy {
+  Strict
+  DoubleRelease
+  ReleaseWithoutAcquire
+  PrematureRelease
+  IgnoreOwner
+  ForgetAbort
+  DoubleAbort
+  DropLate
+  LeakReady
+  StopAfterFailure
+} derive(Eq)
+pub fn Policy::equal(Self, Self) -> Bool
+pub fn Policy::not_equal(Self, Self) -> Bool
+
+pub(all) struct Resource {
+  phase : Phase
+  second : Bool
+  acquired : Bool
+  published : Bool
+  late : Bool
+  aborts : Int32
+  releases : Int32
+} derive(Eq, ToJson)
+pub fn Resource::equal(Self, Self) -> Bool
+pub fn Resource::not_equal(Self, Self) -> Bool
+pub fn Resource::to_json(Self) -> Json
+
+pub(all) struct State {
+  alive : Bool
+  second : Bool
+  resources : FixedArray[Resource]
+  early_release : Bool
+  invalid_publish : Bool
+} derive(Eq, ToJson)
+pub fn State::equal(Self, Self) -> Bool
+pub fn State::not_equal(Self, Self) -> Bool
+pub fn State::to_json(Self) -> Json
+
+// Type aliases
+
+// Traits

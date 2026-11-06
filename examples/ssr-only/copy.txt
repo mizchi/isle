@@ -1,0 +1,3 @@
+HTML without browser JS
+HTML is enough
+No browser initialization or handler chunks are needed.

@@ -1,0 +1,10 @@
+{
+  "twoColumnMinimumViewport": 608,
+  "brokenRange": { "min": 600, "max": 608, "maxInclusive": false },
+  "hiddenAloneSatisfiesFit": false,
+  "minInlineSizeAutomaticallyProved": false,
+  "unsupportedCSSStatus": "unknown",
+  "checksAllRealWidthsInDeclaredRange": true,
+  "provesBlockSize": false,
+  "productionLayoutRuntimeNeeded": false
+}

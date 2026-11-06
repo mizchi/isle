@@ -1,0 +1,30 @@
+{
+  "gate": "scan.scroll",
+  "command": "scan scroll",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://localhost:65274/",
+    "page": {
+      "viewportWidth": 1280,
+      "viewportHeight": 720,
+      "scrollWidth": 1280,
+      "scrollHeight": 911,
+      "horizontalOverflow": 0,
+      "verticalScroll": 191
+    },
+    "containers": [],
+    "deadScrollports": [],
+    "clipped": [],
+    "visuallyHidden": 0,
+    "expectedScrollports": [],
+    "issues": []
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "submissionEntry": "Signup.save",
+  "snapshotSlots": ["email", "accepted", "invalid", "error", "submitted"],
+  "eventValueCapturedAt": "dispatch",
+  "preventDefaultBeforeImport": true,
+  "nativeValidationWithoutJs": true,
+  "checkboxEventField": "checked",
+  "placeholderIsLabel": false,
+  "browserValidationReplacesServerChecks": false,
+  "a11yChecksProveWcag": false
+}

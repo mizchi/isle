@@ -1,0 +1,65 @@
+{
+  "gate": "check.responsive",
+  "command": "check responsive",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://localhost:52286/",
+    "seed": 1,
+    "space": {
+      "minWidth": 320,
+      "maxWidth": 1440,
+      "minHeight": 480,
+      "maxHeight": 1000,
+      "defaultHeight": 900,
+      "textScales": [
+        1
+      ],
+      "colorSchemes": [
+        "light"
+      ],
+      "reducedMotions": [
+        "no-preference"
+      ]
+    },
+    "conditions": [],
+    "transitions": [],
+    "regimes": [
+      {
+        "from": 320,
+        "to": 1440,
+        "matches": [],
+        "cases": 60,
+        "failingCases": 0
+      }
+    ],
+    "unvaried": [],
+    "containerQueries": 0,
+    "properties": [
+      "page-overflow-x",
+      "clipped-content",
+      "text-collision",
+      "text-clipped",
+      "container-protrusion",
+      "occluded-text",
+      "collapsed-container",
+      "text-starved"
+    ],
+    "cases": 60,
+    "failingCases": 0,
+    "failures": [],
+    "issues": [],
+    "timing": {
+      "partitionMs": 18,
+      "casesMs": 2002,
+      "shrinkMs": 1
+    }
+  }
+}

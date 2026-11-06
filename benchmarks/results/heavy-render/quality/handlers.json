@@ -1,0 +1,25 @@
+{
+  "gate": "scan.handlers",
+  "command": "scan handlers",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "surface": {
+      "source": "http://127.0.0.1:65159/heavy-render/128/",
+      "elements": [],
+      "globals": {
+        "document:click": 1
+      },
+      "totalRegistrations": 1,
+      "visibleControls": 5
+    },
+    "issues": []
+  }
+}

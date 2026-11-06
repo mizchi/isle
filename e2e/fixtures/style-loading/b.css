@@ -1,0 +1,2 @@
+body { --priority: b; }
+.panel.b { --phase: ready; color: rgb(180 40 20); }

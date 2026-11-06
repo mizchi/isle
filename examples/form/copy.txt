@@ -1,0 +1,6 @@
+Form validation
+Signup
+Email address (required)
+Use your work email.
+I agree (required)
+Save

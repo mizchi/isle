@@ -1,0 +1,22 @@
+{
+  "widgetURL": "http://127.0.0.1:8791/",
+  "viewport": {
+    "width": 1280,
+    "height": 1000
+  },
+  "reserved": {
+    "width": 640,
+    "height": 640,
+    "afterTop": 811.484375,
+    "frameTop": 147.484375
+  },
+  "final": {
+    "width": 640,
+    "height": 640,
+    "afterTop": 811.484375,
+    "frameTop": 147.484375
+  },
+  "parentCLS": 0,
+  "childStartupCLS": 0,
+  "cookieRestriction": true
+}

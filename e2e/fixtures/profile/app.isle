@@ -1,0 +1,14 @@
+export client component Counter({ initial }: { initial: number }) {
+  state count = initial;
+  <button>on click increment { count += 1; }{count}</button>
+}
+
+export client component Overflow({ initial }: { initial: number }) {
+  state count = initial;
+  <button>on click overflow { count += initial; }{count}</button>
+}
+
+export client component Slow({ initial }: { initial: number }) {
+  state count = initial;
+  <button>on click increment { count += 1; }{count}</button>
+}

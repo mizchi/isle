@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "vlmkit": {
+      "source": "mizchi/vlmkit",
+      "sourceType": "github",
+      "skillPath": "skills/vlmkit/SKILL.md",
+      "computedHash": "46631ec7ca52c45f43a008ef7d1177bf9e5976082336087747945a0e8d01a97a"
+    }
+  }
+}

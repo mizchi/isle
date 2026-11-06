@@ -1,0 +1,31 @@
+{
+  "gate": "scan.handlers",
+  "command": "scan handlers",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "surface": {
+      "source": "http://127.0.0.1:56529/dashboard/isle/",
+      "elements": [],
+      "globals": {
+        "document:click": 1,
+        "document:change": 1,
+        "document:input": 1,
+        "document:focusout": 1,
+        "document:invalid": 1,
+        "document:submit": 1,
+        "document:reset": 1
+      },
+      "totalRegistrations": 7,
+      "visibleControls": 332
+    },
+    "issues": []
+  }
+}

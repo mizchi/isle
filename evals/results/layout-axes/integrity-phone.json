@@ -1,0 +1,29 @@
+{
+  "gate": "check.integrity",
+  "command": "check integrity",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "evals/results/layout-axes/fixed.html",
+    "verdict": "clean",
+    "findings": [],
+    "exempted": [],
+    "viewports": [
+      {
+        "width": 480,
+        "height": 400,
+        "components": 1,
+        "inkRatio": 0.0116,
+        "textBlocks": 2
+      }
+    ],
+    "kickback": []
+  }
+}

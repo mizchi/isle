@@ -1,0 +1,59 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/isle/models/form_session"
+
+import {
+  "mizchi/veri/model_check",
+}
+
+// Values
+pub fn client(Policy) -> @model_check.Client[State, Event, Json] raise
+
+pub fn initial() -> State
+
+pub fn step(Policy, State, Event) -> State?
+
+// Errors
+
+// Types and methods
+pub(all) enum Event {
+  Edit
+  Validate
+  ValidationDone
+  Submit
+  SubmissionDone
+  Reset
+}
+
+pub(all) enum Policy {
+  Strict
+  IgnoreRevision
+  IgnoreGeneration
+  AllowDuplicate
+} derive(Eq)
+pub fn Policy::equal(Self, Self) -> Bool
+pub fn Policy::not_equal(Self, Self) -> Bool
+
+pub(all) struct State {
+  revision : Bool
+  generation : Bool
+  validation_started : Bool
+  validation_done : Bool
+  validation_revision : Bool
+  validation_generation : Bool
+  submit_started : Bool
+  submit_done : Bool
+  submit_revision : Bool
+  submit_generation : Bool
+  pending : Bool
+  dirty : Bool
+  touched : Bool
+  issues : Bool
+  bad : Bool
+} derive(Eq, ToJson)
+pub fn State::equal(Self, Self) -> Bool
+pub fn State::not_equal(Self, Self) -> Bool
+pub fn State::to_json(Self) -> Json
+
+// Type aliases
+
+// Traits

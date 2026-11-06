@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "variants": {
+    "automatic": {
+      "buildId": "f6d983709b539ddc",
+      "loading": {
+        "eager": [],
+        "preload": [
+          "Editor.edit"
+        ]
+      },
+      "resolution": {
+        "version": 1,
+        "strategy": "event-and-size",
+        "budgetGzipBytes": 8192,
+        "usedGzipBytes": 3771,
+        "decisions": [
+          {
+            "id": "Counter.add",
+            "requested": "auto",
+            "loading": "lazy",
+            "reason": "interaction",
+            "additionalGzipBytes": 83,
+            "modules": [
+              "/assets/isle-resume-C3bCIjXL.js",
+              "/assets/Counter.add-D9asJW1r.js"
+            ],
+            "initialBy": []
+          },
+          {
+            "id": "Editor.$resources",
+            "requested": "auto",
+            "loading": "lazy",
+            "reason": "interaction",
+            "additionalGzipBytes": 0,
+            "modules": [
+              "/assets/Editor.resources-VqAk5W1E.js"
+            ],
+            "initialBy": [
+              "Editor.edit"
+            ]
+          },
+          {
+            "id": "Editor.clear",
+            "requested": "auto",
+            "loading": "lazy",
+            "reason": "interaction",
+            "additionalGzipBytes": 95,
+            "modules": [
+              "/assets/isle-resume-C3bCIjXL.js",
+              "/assets/Editor.resources-VqAk5W1E.js",
+              "/assets/Editor.clear-B10XvHdw.js"
+            ],
+            "initialBy": []
+          },
+          {
+            "id": "Editor.edit",
+            "requested": "auto",
+            "loading": "preload",
+            "reason": "input",
+            "additionalGzipBytes": 3771,
+            "modules": [
+              "/assets/isle-resume-C3bCIjXL.js",
+              "/assets/Editor.resources-VqAk5W1E.js",
+              "/assets/Editor.edit-CAQJgn-n.js"
+            ],
+            "initialBy": [
+              "Editor.edit"
+            ]
+          },
+          {
+            "id": "isle:resume",
+            "requested": "lazy",
+            "loading": "lazy",
+            "reason": "default",
+            "additionalGzipBytes": 0,
+            "modules": [
+              "/assets/isle-resume-C3bCIjXL.js"
+            ],
+            "initialBy": [
+              "Editor.edit"
+            ]
+          }
+        ]
+      }
+    },
+    "limited": {
+      "buildId": "9927a042a743df53",
+      "loading": {
+        "eager": [],
+        "preload": []
+      },
+      "resolution": {
+        "version": 1,
+        "strategy": "event-and-size",
+        "budgetGzipBytes": 0,
+        "usedGzipBytes": 0,
+        "decisions": [
+          {
+            "id": "Counter.add",
+            "requested": "auto",
+            "loading": "lazy",
+            "reason": "interaction",
+            "additionalGzipBytes": 3608,
+            "modules": [
+              "/assets/isle-resume-C3bCIjXL.js",
+              "/assets/Counter.add-D9asJW1r.js"
+            ],
+            "initialBy": []
+          },
+          {
+            "id": "Editor.$resources",
+            "requested": "auto",
+            "loading": "lazy",
+            "reason": "interaction",
+            "additionalGzipBytes": 146,
+            "modules": [
+              "/assets/Editor.resources-VqAk5W1E.js"
+            ],
+            "initialBy": []
+          },
+          {
+            "id": "Editor.clear",
+            "requested": "auto",
+            "loading": "lazy",
+            "reason": "interaction",
+            "additionalGzipBytes": 3766,
+            "modules": [
+              "/assets/isle-resume-C3bCIjXL.js",
+              "/assets/Editor.resources-VqAk5W1E.js",
+              "/assets/Editor.clear-B10XvHdw.js"
+            ],
+            "initialBy": []
+          },
+          {
+            "id": "Editor.edit",
+            "requested": "auto",
+            "loading": "lazy",
+            "reason": "budget",
+            "additionalGzipBytes": 3771,
+            "modules": [
+              "/assets/isle-resume-C3bCIjXL.js",
+              "/assets/Editor.resources-VqAk5W1E.js",
+              "/assets/Editor.edit-CAQJgn-n.js"
+            ],
+            "initialBy": []
+          },
+          {
+            "id": "isle:resume",
+            "requested": "lazy",
+            "loading": "lazy",
+            "reason": "default",
+            "additionalGzipBytes": 0,
+            "modules": [
+              "/assets/isle-resume-C3bCIjXL.js"
+            ],
+            "initialBy": []
+          }
+        ]
+      }
+    }
+  }
+}

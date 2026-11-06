@@ -1,0 +1,467 @@
+{
+  "passed": true,
+  "samples": [
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 432,
+        "height": 232
+      },
+      "width": 400,
+      "height": 112,
+      "overflowX": false,
+      "overflowY": true
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 432,
+        "height": 319
+      },
+      "width": 400,
+      "height": 199,
+      "overflowX": false,
+      "overflowY": true
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 432,
+        "height": 320
+      },
+      "width": 400,
+      "height": 200,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 432,
+        "height": 450
+      },
+      "width": 400,
+      "height": 330,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 631,
+        "height": 232
+      },
+      "width": 599,
+      "height": 112,
+      "overflowX": false,
+      "overflowY": true
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 631,
+        "height": 319
+      },
+      "width": 599,
+      "height": 199,
+      "overflowX": false,
+      "overflowY": true
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 631,
+        "height": 320
+      },
+      "width": 599,
+      "height": 200,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 631,
+        "height": 450
+      },
+      "width": 599,
+      "height": 330,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 632,
+        "height": 232
+      },
+      "width": 384,
+      "height": 200,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 632,
+        "height": 319
+      },
+      "width": 384,
+      "height": 287,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 632,
+        "height": 320
+      },
+      "width": 384,
+      "height": 288,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 632,
+        "height": 450
+      },
+      "width": 384,
+      "height": 418,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 640,
+        "height": 232
+      },
+      "width": 392,
+      "height": 200,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 640,
+        "height": 319
+      },
+      "width": 392,
+      "height": 287,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 640,
+        "height": 320
+      },
+      "width": 392,
+      "height": 288,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 640,
+        "height": 450
+      },
+      "width": 392,
+      "height": 418,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 647,
+        "height": 232
+      },
+      "width": 399,
+      "height": 200,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 647,
+        "height": 319
+      },
+      "width": 399,
+      "height": 287,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 647,
+        "height": 320
+      },
+      "width": 399,
+      "height": 288,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 647,
+        "height": 450
+      },
+      "width": 399,
+      "height": 418,
+      "overflowX": true,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 648,
+        "height": 232
+      },
+      "width": 400,
+      "height": 200,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 648,
+        "height": 319
+      },
+      "width": 400,
+      "height": 287,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 648,
+        "height": 320
+      },
+      "width": 400,
+      "height": 288,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 648,
+        "height": 450
+      },
+      "width": 400,
+      "height": 418,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 1000,
+        "height": 232
+      },
+      "width": 752,
+      "height": 200,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 1000,
+        "height": 319
+      },
+      "width": 752,
+      "height": 287,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 1000,
+        "height": 320
+      },
+      "width": 752,
+      "height": 288,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "broken",
+      "viewport": {
+        "width": 1000,
+        "height": 450
+      },
+      "width": 752,
+      "height": 418,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 432,
+        "height": 320
+      },
+      "width": 400,
+      "height": 200,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 432,
+        "height": 450
+      },
+      "width": 400,
+      "height": 330,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 631,
+        "height": 320
+      },
+      "width": 599,
+      "height": 200,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 631,
+        "height": 450
+      },
+      "width": 599,
+      "height": 330,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 632,
+        "height": 320
+      },
+      "width": 600,
+      "height": 200,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 632,
+        "height": 450
+      },
+      "width": 600,
+      "height": 330,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 640,
+        "height": 320
+      },
+      "width": 608,
+      "height": 200,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 640,
+        "height": 450
+      },
+      "width": 608,
+      "height": 330,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 647,
+        "height": 320
+      },
+      "width": 615,
+      "height": 200,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 647,
+        "height": 450
+      },
+      "width": 615,
+      "height": 330,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 648,
+        "height": 320
+      },
+      "width": 400,
+      "height": 288,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 648,
+        "height": 450
+      },
+      "width": 400,
+      "height": 418,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 1000,
+        "height": 320
+      },
+      "width": 752,
+      "height": 288,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "name": "fixed",
+      "viewport": {
+        "width": 1000,
+        "height": 450
+      },
+      "width": 752,
+      "height": 418,
+      "overflowX": false,
+      "overflowY": false
+    }
+  ]
+}

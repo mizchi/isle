@@ -1,0 +1,16 @@
+client component Search() {
+  state query = "";
+  <section data-search="">
+    <label>Search query<input value={query}>on input edit { query = event.value; }</input></label>
+    <output aria-live="polite">{query}</output>
+  </section>
+}
+client component Details() {
+  state opened = false;
+  <section data-details="">
+    <button type="button">on click open { opened = true; }Open details</button>
+    @if (opened) { <p>Details resumed</p> }
+    @else { <p>Details are still inactive</p> }
+  </section>
+}
+server component Page() { <section><Search /><Details /></section> }

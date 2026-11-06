@@ -1,0 +1,401 @@
+{
+  "dir": ".",
+  "baseline": "",
+  "variants": [],
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "label": "wide",
+      "reason": "standard"
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "label": "desktop",
+      "reason": "standard"
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "label": "mobile",
+      "reason": "standard"
+    }
+  ],
+  "strict": false,
+  "approvalWarnings": [],
+  "paintTree": {
+    "enabled": false,
+    "available": false
+  },
+  "baselineSanity": {
+    "ok": true,
+    "warnings": [],
+    "failedRequests": []
+  },
+  "domEquivalence": [
+    {
+      "variantFile": "http://127.0.0.1:56529/dashboard/qwik-next/",
+      "result": {
+        "ok": true,
+        "warnings": []
+      }
+    }
+  ],
+  "computedStyleDiff": [
+    {
+      "variantFile": "http://127.0.0.1:56529/dashboard/qwik-next/",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "byProperty": [],
+        "bySelector": [],
+        "selectorsOnlyInBaseline": [
+          ".project-form>label[1]",
+          "#isle-project:__form0_project",
+          "#isle-project:__form0_project_error",
+          ".project-form>label[2]",
+          "#isle-project:__form0_email",
+          "#isle-project:__form0_email_error",
+          ".project-form>label[3]",
+          "#isle-project:__form0_confirmation",
+          "#isle-project:__form0_confirmation_error",
+          ".project-form>label[4]",
+          "#isle-project:__form0_budget",
+          "#isle-project:__form0_budget_error",
+          "#isle-project:__form0_accepted",
+          "#isle-project:__form0_accepted_error"
+        ],
+        "selectorsOnlyInVariant": [
+          ".field",
+          ".field>label[1]",
+          "#project-project",
+          "#error-project",
+          ".field>label[2]",
+          "#project-email",
+          "#error-email",
+          ".field>label[3]",
+          "#project-confirmation",
+          "#error-confirmation",
+          ".field>label[4]",
+          "#project-budget",
+          "#error-budget",
+          "#project-accepted",
+          "#error-accepted"
+        ]
+      }
+    }
+  ],
+  "computedStyleDiffPerViewport": [
+    {
+      "variantFile": "http://127.0.0.1:56529/dashboard/qwik-next/",
+      "result": {
+        "totalDiffs": 0,
+        "byViewport": [
+          {
+            "viewport": "wide",
+            "count": 0
+          },
+          {
+            "viewport": "desktop",
+            "count": 0
+          },
+          {
+            "viewport": "mobile",
+            "count": 0
+          }
+        ],
+        "bySelectorProperty": [],
+        "universalPairs": [],
+        "breakpointGatedPairs": []
+      }
+    }
+  ],
+  "authoredStyleDiff": [
+    {
+      "variantFile": "http://127.0.0.1:56529/dashboard/qwik-next/",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "byProperty": [],
+        "bySelector": [],
+        "selectorsOnlyInBaseline": [],
+        "selectorsOnlyInVariant": []
+      }
+    }
+  ],
+  "authoredStyleDiffPerViewport": [
+    {
+      "variantFile": "http://127.0.0.1:56529/dashboard/qwik-next/",
+      "result": {
+        "totalDiffs": 0,
+        "byViewport": [
+          {
+            "viewport": "wide",
+            "count": 0
+          },
+          {
+            "viewport": "desktop",
+            "count": 0
+          },
+          {
+            "viewport": "mobile",
+            "count": 0
+          }
+        ],
+        "bySelectorProperty": [],
+        "universalPairs": [],
+        "breakpointGatedPairs": []
+      }
+    }
+  ],
+  "domPositionDiff": [
+    {
+      "variantFile": "http://127.0.0.1:56529/dashboard/qwik-next/",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "pathsOnlyInBaseline": [
+          "body[0]>main[0]>div[3]>section[0]>h2[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>label[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>label[0]>input[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>p[1]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>label[2]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>label[2]>input[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>p[3]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>label[4]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>label[4]>input[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>p[5]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>label[6]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>label[6]>input[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>p[7]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>label[8]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>label[8]>input[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>p[9]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>button[10]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>button[11]",
+          "body[0]>main[0]>div[3]>section[0]>form[1]>p[13]"
+        ],
+        "pathsOnlyInVariant": [
+          "body[0]>main[0]>div[3]>section[0]>h2[6]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[0]>label[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[0]>label[0]>input[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[0]>p[1]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[1]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[1]>label[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[1]>label[0]>input[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[1]>p[1]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[2]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[2]>label[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[2]>label[0]>input[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[2]>p[1]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[3]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[3]>label[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[3]>label[0]>input[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[3]>p[1]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[4]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[4]>label[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[4]>label[0]>input[0]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>div[4]>p[1]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>button[5]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>button[6]",
+          "body[0]>main[0]>div[3]>section[0]>form[7]>p[8]"
+        ],
+        "byProperty": [],
+        "byPath": []
+      }
+    }
+  ],
+  "domPositionDiffPerViewport": [
+    {
+      "variantFile": "http://127.0.0.1:56529/dashboard/qwik-next/",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "verifiedPairs": [],
+        "byPathProperty": [],
+        "byViewport": [
+          {
+            "viewport": "desktop",
+            "count": 0
+          },
+          {
+            "viewport": "mobile",
+            "count": 0
+          },
+          {
+            "viewport": "wide",
+            "count": 0
+          }
+        ],
+        "byProperty": [],
+        "byPath": []
+      }
+    }
+  ],
+  "results": [
+    {
+      "variant": "dashboard_qwik-next",
+      "variantFile": "http://127.0.0.1:56529/dashboard/qwik-next/",
+      "viewport": "wide",
+      "diffRatio": 0,
+      "diffPixels": 0,
+      "totalPixels": 39422880,
+      "rawDiffRatio": 0,
+      "rawDiffPixels": 0,
+      "rawDominantCategory": "none",
+      "rawCategorySummary": "no changes",
+      "rawCategoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "approved": false,
+      "partiallyApproved": false,
+      "approvedPixels": 0,
+      "approvalReasons": [],
+      "dominantCategory": "none",
+      "categorySummary": "no changes",
+      "categoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "rawPaintTreeChangeCount": 0,
+      "rawPaintTreeSummary": "no changes",
+      "rawPaintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "paintTreeChangeCount": 0,
+      "paintTreeSummary": "no changes",
+      "paintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "approvedPaintTreeCount": 0,
+      "approvedPaintTreeReasons": [],
+      "fixCandidates": []
+    },
+    {
+      "variant": "dashboard_qwik-next",
+      "variantFile": "http://127.0.0.1:56529/dashboard/qwik-next/",
+      "viewport": "desktop",
+      "diffRatio": 0,
+      "diffPixels": 0,
+      "totalPixels": 35042560,
+      "rawDiffRatio": 0,
+      "rawDiffPixels": 0,
+      "rawDominantCategory": "none",
+      "rawCategorySummary": "no changes",
+      "rawCategoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "approved": false,
+      "partiallyApproved": false,
+      "approvedPixels": 0,
+      "approvalReasons": [],
+      "dominantCategory": "none",
+      "categorySummary": "no changes",
+      "categoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "rawPaintTreeChangeCount": 0,
+      "rawPaintTreeSummary": "no changes",
+      "rawPaintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "paintTreeChangeCount": 0,
+      "paintTreeSummary": "no changes",
+      "paintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "approvedPaintTreeCount": 0,
+      "approvedPaintTreeReasons": [],
+      "fixCandidates": []
+    },
+    {
+      "variant": "dashboard_qwik-next",
+      "variantFile": "http://127.0.0.1:56529/dashboard/qwik-next/",
+      "viewport": "mobile",
+      "diffRatio": 0,
+      "diffPixels": 0,
+      "totalPixels": 15652125,
+      "rawDiffRatio": 0,
+      "rawDiffPixels": 0,
+      "rawDominantCategory": "none",
+      "rawCategorySummary": "no changes",
+      "rawCategoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "approved": false,
+      "partiallyApproved": false,
+      "approvedPixels": 0,
+      "approvalReasons": [],
+      "dominantCategory": "none",
+      "categorySummary": "no changes",
+      "categoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "rawPaintTreeChangeCount": 0,
+      "rawPaintTreeSummary": "no changes",
+      "rawPaintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "paintTreeChangeCount": 0,
+      "paintTreeSummary": "no changes",
+      "paintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "approvedPaintTreeCount": 0,
+      "approvedPaintTreeReasons": [],
+      "fixCandidates": []
+    }
+  ],
+  "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/benchmarks/results/dashboard/visual/qwik-next/diff-report.json"
+}

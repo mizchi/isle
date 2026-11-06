@@ -1,0 +1,43 @@
+{
+  "name": "@isle/prototype",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "A compiler-first UI language with server rendering and resumable interactions.",
+  "repository": { "type": "git", "url": "git+https://github.com/mizchi/isle.git" },
+  "exports": {
+    "./vite": { "types": "./lib/vite.d.mts", "import": "./lib/vite.mjs" },
+    "./compiler": { "types": "./lib/compiler.d.mts", "import": "./lib/compiler.mjs" },
+    "./server": { "types": "./lib/server.d.mts", "import": "./lib/server.mjs" },
+    "./layout": { "types": "./lib/layout.d.mts", "import": "./lib/layout.mjs" },
+    "./widget": { "types": "./lib/widget.d.mts", "import": "./lib/widget.mjs" },
+    "./widget/browser": { "types": "./runtime/widget.d.mts", "import": "./runtime/widget.mjs" },
+    "./resources": { "types": "./runtime/resource-owner.d.mts", "import": "./runtime/resource-owner.mjs" }
+  },
+  "bin": { "isle": "./tools/isle.mjs" },
+  "files": ["lib/", "runtime/", "_build/js/release/build/compiler/compiler.js", "tools/isle.mjs", "README.md", "README.ja.md"],
+  "peerDependencies": { "vite": "^8.3.5" },
+  "dependencies": { "postcss": "8.5.32" },
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "prepack": "pnpm build:compiler",
+    "build:compiler": "moon build compiler --target js --release",
+    "test": "node --test tests/*.test.mjs",
+    "eval": "node tools/eval.mjs",
+    "dev": "vite --config examples/counter/vite.config.mjs",
+    "build": "pnpm build:compiler && vite build --config examples/counter/vite.config.mjs",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@mizchi/vlmkit": "0.24.0",
+    "@playwright/test": "^1.64.1",
+    "marked": "18.1.3",
+    "playwright": "1.64.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "wrangler": "4.157.0"
+  }
+}

@@ -1,0 +1,7 @@
+export client component Counter({ initial }: { initial: number }) {
+  state count = initial;
+  <div>
+    <button>on click increment { count += 1; }{count}</button>
+    <button>on click decrement { count -= 1; }{count}</button>
+  </div>
+}

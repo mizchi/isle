@@ -1,0 +1,861 @@
+{
+  "version": 1,
+  "ok": true,
+  "status": "verified",
+  "component": "Panel",
+  "scope": {
+    "axis": "inline",
+    "viewport": {
+      "min": 432,
+      "max": 1000,
+      "minInclusive": true,
+      "maxInclusive": true,
+      "minExact": "432",
+      "maxExact": "1000"
+    },
+    "hostInset": 0,
+    "closedCSS": true,
+    "browserRounding": false,
+    "blockSizing": false
+  },
+  "assumptions": [
+    "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+    "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+  ],
+  "styleSources": [
+    {
+      "kind": "app",
+      "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css"
+    }
+  ],
+  "diagnostics": [],
+  "policies": [
+    {
+      "box": ".shell",
+      "path": "Panel",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 432,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "432",
+        "maxExact": "1000"
+      }
+    },
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      }
+    },
+    {
+      "box": ".a",
+      "path": "Panel/0/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      }
+    },
+    {
+      "box": ".b",
+      "path": "Panel/0/1",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      }
+    },
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      }
+    },
+    {
+      "box": ".a",
+      "path": "Panel/0/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      }
+    },
+    {
+      "box": ".b",
+      "path": "Panel/0/1",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "box": ".shell",
+      "path": "Panel",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "432",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".shell",
+      "path": "Panel",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "432",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "inline",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "216"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".a",
+      "path": "Panel/0/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".a",
+      "path": "Panel/0/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".a",
+      "path": "Panel/0/0",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".b",
+      "path": "Panel/0/1",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".b",
+      "path": "Panel/0/1",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".b",
+      "path": "Panel/0/1",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "400"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".shell",
+      "path": "Panel",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".a",
+      "path": "Panel/0/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".a",
+      "path": "Panel/0/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".a",
+      "path": "Panel/0/0",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".b",
+      "path": "Panel/0/1",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".b",
+      "path": "Panel/0/1",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".b",
+      "path": "Panel/0/1",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "400"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".shell",
+      "path": "Panel",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "enforced": true
+    }
+  ],
+  "sizes": [
+    {
+      "box": ".a",
+      "path": "Panel/0/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      }
+    },
+    {
+      "box": ".b",
+      "path": "Panel/0/1",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      }
+    },
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      }
+    },
+    {
+      "box": ".shell",
+      "path": "Panel",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      }
+    },
+    {
+      "box": ".a",
+      "path": "Panel/0/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      }
+    },
+    {
+      "box": ".b",
+      "path": "Panel/0/1",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      }
+    },
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      }
+    },
+    {
+      "box": ".shell",
+      "path": "Panel",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      }
+    }
+  ],
+  "queries": [
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "name": "Shell",
+      "target": ".shell",
+      "targetPath": "Panel",
+      "matched": true,
+      "range": {
+        "min": 648,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "648",
+        "maxExact": "1000"
+      }
+    },
+    {
+      "box": ".panel",
+      "path": "Panel/0",
+      "name": "Shell",
+      "target": ".shell",
+      "targetPath": "Panel",
+      "matched": false,
+      "range": {
+        "min": 432,
+        "max": 648,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "432",
+        "maxExact": "648"
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "gate": "scan.scroll",
+  "command": "scan scroll",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://127.0.0.1:8787/standalone/",
+    "page": {
+      "viewportWidth": 1280,
+      "viewportHeight": 720,
+      "scrollWidth": 1280,
+      "scrollHeight": 27351,
+      "horizontalOverflow": 0,
+      "verticalScroll": 26631
+    },
+    "containers": [],
+    "deadScrollports": [],
+    "clipped": [],
+    "visuallyHidden": 0,
+    "expectedScrollports": [],
+    "issues": []
+  }
+}

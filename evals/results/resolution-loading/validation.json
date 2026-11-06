@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "passed": true,
+  "scope": "Build-time fetch-only planning; fixed event heuristic, not a global placement optimum or generated-model refinement proof",
+  "checks": [
+    {
+      "command": "just ci",
+      "exitCode": 0,
+      "moonbitTests": 51,
+      "nodeTests": 237,
+      "existingBrowserTests": 67,
+      "controlFlowBrowserTests": 4,
+      "resourceBrowserTests": 15,
+      "automaticLoadingBrowserTests": 3,
+      "formalCases": 86,
+      "formA11ySuites": 2
+    },
+    {
+      "command": "just widget-check",
+      "exitCode": 0,
+      "nodeTests": 28,
+      "browserTests": 24,
+      "workersDryRun": true
+    },
+    {
+      "command": "node --test tests/loading-plan.test.mjs tests/loading-optimizer-build.test.mjs",
+      "exitCode": 0,
+      "nodeTests": 10
+    },
+    {
+      "command": "just resource-binding-size and comparison against preceding resource-bindings assets",
+      "exitCode": 0,
+      "sizeReport": "size.json"
+    }
+  ],
+  "plans": "plans.json",
+  "sourceSha256": {
+    "lib/loading-plan.mjs": "e045ae5c7ba659f76a21c1375759dd2e1117c179f10b26316bfb01930a3d9780",
+    "lib/chunk-plan.mjs": "1f87c66da0aa564f83d7dce0bb191d39f81d4f41cc8df387f75fd014b7110f0f",
+    "lib/code-manifest.mjs": "900ceb8c7a545039567cadf3a2970ac3675a3fd9a15b19000325cf226c143871",
+    "lib/vite.mjs": "c91416e9191af34329fb81ee4d09b2b7467dc02bf372e771aac2be75513ae5c8",
+    "lib/code-contracts.d.ts": "599c02126c7db9262fdb0ef41133754c291a3f44a133e6004076528190e9e996",
+    "e2e/auto-loading.spec.mjs": "0433be09a7b25d5087fe26330edb6e25fb32bed352248b49ab064c7d48f5cef1"
+  }
+}

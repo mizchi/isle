@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "nodeTests": 197,
+  "moonTests": 36,
+  "existingE2E": 67,
+  "widgetE2E": 24,
+  "controlE2E": 4,
+  "formalCases": 31,
+  "ordinaryJavaScriptDeltaBytes": 0,
+  "ordinaryJavaScriptDeltaGzipBytes": 0,
+  "quality": {
+    "pass": true,
+    "tool": "vlmkit/0.24.0",
+    "gates": [
+      {
+        "name": "integrity",
+        "verdict": "pass",
+        "counts": {
+          "suspect": 0,
+          "warn": 0,
+          "info": 0
+        }
+      },
+      {
+        "name": "copy",
+        "verdict": "pass",
+        "counts": {
+          "suspect": 0,
+          "warn": 0,
+          "info": 0
+        }
+      },
+      {
+        "name": "scroll",
+        "verdict": "pass",
+        "counts": {
+          "suspect": 0,
+          "warn": 0,
+          "info": 0
+        }
+      },
+      {
+        "name": "handlers",
+        "verdict": "pass",
+        "counts": {
+          "suspect": 0,
+          "warn": 0,
+          "info": 0
+        }
+      },
+      {
+        "name": "interactions",
+        "verdict": "pass",
+        "counts": {
+          "suspect": 0,
+          "warn": 3,
+          "info": 0
+        }
+      }
+    ]
+  }
+}

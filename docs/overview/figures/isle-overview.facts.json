@@ -1,0 +1,13 @@
+{
+  "labels": [
+    "Isle", "UI を宣言し、操作時に再開する。", "prototype",
+    ".isle に書く", "コンパイルで分ける", "ブラウザーへ配る",
+    "MoonBit frontend", "Vite / Rolldown", "HTML + snapshot", "分割 JS / CSS", "manifest",
+    "初期表示", "コードの先読み", "操作された UI を resume", "動的な表示だけ更新",
+    "auto / lazy", "取得だけでは setup を実行しない", "SSR のみなら Isle の browser JS は不要",
+    "Form / server action", "Web Components widget", "Grid / CSS 静的検査",
+    "独立した CLI", "verified / violated / unknown", "有限モデルで寿命を検査",
+    "ES2023 / Web 標準 API", "MoonBit / Wasm runtime の配布なし"
+  ],
+  "forbidden": ["世界最速", "全体を形式証明済み", "常に JavaScript 0", "任意の TypeScript を実行", "レイアウトを完全保証"]
+}

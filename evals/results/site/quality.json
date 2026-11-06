@@ -1,0 +1,361 @@
+{
+  "base": "/isle/",
+  "results": [
+    {
+      "route": "/",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "ja/",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "examples/",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "ja/examples/",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "docs/quick-start.html",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "examples/resources/",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "demos/portable-widget/",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "reports/layout.html",
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "/",
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "/",
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "/",
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "/",
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inert-control",
+          "severity": "warn",
+          "message": "button \"Reset\" (div.hero-example>section.live-counter>div.counter-controls>button.reset-button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+          "evidence": {
+            "element": "button \"Reset\" (div.hero-example>section.live-counter>div.counter-controls>button.reset-button)"
+          }
+        }
+      ]
+    },
+    {
+      "route": "/",
+      "gate": "check.a11y.contrast",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "/",
+      "gate": "check.a11y.touch",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "/",
+      "gate": "check.a11y.focus",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 4,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "skip-row",
+          "severity": "warn",
+          "message": "Focus jumped down by 496px (from `header.site-header>div.header-inner>nav.main-nav>a.language-link` to `main#content>section.hero.page-width>div.hero-copy>div.hero-actions>a.button.primary`). Confirm no focusable element was unintentionally skipped.",
+          "evidence": {
+            "fromIndex": 5,
+            "toIndex": 6
+          }
+        },
+        {
+          "rule": "skip-row",
+          "severity": "warn",
+          "message": "Focus jumped down by 321px (from `main#content>section.hero.page-width>div.hero-example>div.source-card>pre` to `section.hero.page-width>div.hero-example>section.live-counter>div.counter-controls>button`). Confirm no focusable element was unintentionally skipped.",
+          "evidence": {
+            "fromIndex": 9,
+            "toIndex": 10
+          }
+        },
+        {
+          "rule": "skip-row",
+          "severity": "warn",
+          "message": "Focus jumped down by 1246px (from `section.hero.page-width>div.hero-example>section.live-counter>div.counter-controls>button.reset-button` to `main#content>div.page-sections>section.page-width.content-section>div.section-heading.with-action>a.text-link`). Confirm no focusable element was unintentionally skipped.",
+          "evidence": {
+            "fromIndex": 11,
+            "toIndex": 12
+          }
+        },
+        {
+          "rule": "skip-row",
+          "severity": "warn",
+          "message": "Focus jumped down by 255px (from `main#content>div.page-sections>section.page-width.content-section>div.section-heading.with-action>a.text-link` to `div.page-sections>section.page-width.content-section>div.example-grid>article.example-card>a.text-link`). Confirm no focusable element was unintentionally skipped.",
+          "evidence": {
+            "fromIndex": 12,
+            "toIndex": 13
+          }
+        }
+      ]
+    },
+    {
+      "route": "/",
+      "gate": "check.responsive",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "ja/",
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "ja/",
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "ja/",
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "ja/",
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inert-control",
+          "severity": "warn",
+          "message": "button \"戻す\" (div.hero-example>section.live-counter>div.counter-controls>button.reset-button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+          "evidence": {
+            "element": "button \"戻す\" (div.hero-example>section.live-counter>div.counter-controls>button.reset-button)"
+          }
+        }
+      ]
+    },
+    {
+      "route": "ja/",
+      "gate": "check.a11y.contrast",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "ja/",
+      "gate": "check.a11y.touch",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "route": "ja/",
+      "gate": "check.a11y.focus",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 4,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "skip-row",
+          "severity": "warn",
+          "message": "Focus jumped down by 496px (from `header.site-header>div.header-inner>nav.main-nav>a.language-link` to `main#content>section.hero.page-width>div.hero-copy>div.hero-actions>a.button.primary`). Confirm no focusable element was unintentionally skipped.",
+          "evidence": {
+            "fromIndex": 5,
+            "toIndex": 6
+          }
+        },
+        {
+          "rule": "skip-row",
+          "severity": "warn",
+          "message": "Focus jumped down by 321px (from `main#content>section.hero.page-width>div.hero-example>div.source-card>pre` to `section.hero.page-width>div.hero-example>section.live-counter>div.counter-controls>button`). Confirm no focusable element was unintentionally skipped.",
+          "evidence": {
+            "fromIndex": 9,
+            "toIndex": 10
+          }
+        },
+        {
+          "rule": "skip-row",
+          "severity": "warn",
+          "message": "Focus jumped down by 1227px (from `section.hero.page-width>div.hero-example>section.live-counter>div.counter-controls>button.reset-button` to `main#content>div.page-sections>section.page-width.content-section>div.section-heading.with-action>a.text-link`). Confirm no focusable element was unintentionally skipped.",
+          "evidence": {
+            "fromIndex": 11,
+            "toIndex": 12
+          }
+        },
+        {
+          "rule": "skip-row",
+          "severity": "warn",
+          "message": "Focus jumped down by 255px (from `main#content>div.page-sections>section.page-width.content-section>div.section-heading.with-action>a.text-link` to `div.page-sections>section.page-width.content-section>div.example-grid>article.example-card>a.text-link`). Confirm no focusable element was unintentionally skipped.",
+          "evidence": {
+            "fromIndex": 12,
+            "toIndex": 13
+          }
+        }
+      ]
+    },
+    {
+      "route": "ja/",
+      "gate": "check.responsive",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    }
+  ]
+}

@@ -1,0 +1,934 @@
+{
+  "version": 1,
+  "ok": true,
+  "status": "verified",
+  "component": "Board",
+  "scope": {
+    "axis": "inline",
+    "viewport": {
+      "min": 352,
+      "max": 1280,
+      "minInclusive": true,
+      "maxInclusive": true,
+      "minExact": "352",
+      "maxExact": "1280"
+    },
+    "hostInset": 0,
+    "closedCSS": true,
+    "browserRounding": false,
+    "blockSizing": false
+  },
+  "assumptions": [
+    "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+    "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+  ],
+  "styleSources": [
+    {
+      "kind": "app",
+      "file": "<css>"
+    }
+  ],
+  "diagnostics": [],
+  "policies": [
+    {
+      "box": ".board",
+      "path": "Board",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      }
+    },
+    {
+      "box": ".side",
+      "path": "Board/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      }
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      }
+    },
+    {
+      "box": ".copy",
+      "path": "Board/1/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      }
+    },
+    {
+      "box": ".board",
+      "path": "Board",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      }
+    },
+    {
+      "box": ".side",
+      "path": "Board/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      }
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      }
+    },
+    {
+      "box": ".copy",
+      "path": "Board/1/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "box": ".board",
+      "path": "Board",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board",
+      "path": "Board",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "256"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".side",
+      "path": "Board/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "240"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".side",
+      "path": "Board/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "240"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "240"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".side",
+      "path": "Board/0",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "240"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "120"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-288"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-288"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "Board/1/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "Board/1/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-288"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "Board/1/0",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-288"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-288"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-288"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board",
+      "path": "Board",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board",
+      "path": "Board",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board",
+      "path": "Board",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".side",
+      "path": "Board/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".side",
+      "path": "Board/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".side",
+      "path": "Board/0",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "120"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "Board/1/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "Board/1/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".copy",
+      "path": "Board/1/0",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "code": "E_LAYOUT_CONTENT",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board",
+      "path": "Board",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "enforced": true
+    }
+  ],
+  "sizes": [
+    {
+      "box": ".side",
+      "path": "Board/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<css>",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "0",
+        "constant": "240"
+      },
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      }
+    },
+    {
+      "box": ".copy",
+      "path": "Board/1/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<css>",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      }
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<css>",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-288"
+      },
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      }
+    },
+    {
+      "box": ".board",
+      "path": "Board",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<css>",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "range": {
+        "min": 608,
+        "max": 1280,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "608",
+        "maxExact": "1280"
+      }
+    },
+    {
+      "box": ".side",
+      "path": "Board/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<css>",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      }
+    },
+    {
+      "box": ".copy",
+      "path": "Board/1/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<css>",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      }
+    },
+    {
+      "box": ".body",
+      "path": "Board/1",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<css>",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      }
+    },
+    {
+      "box": ".board",
+      "path": "Board",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<css>",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "range": {
+        "min": 352,
+        "max": 608,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "352",
+        "maxExact": "608"
+      }
+    }
+  ],
+  "queries": []
+}

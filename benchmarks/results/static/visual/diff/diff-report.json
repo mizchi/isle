@@ -1,0 +1,348 @@
+{
+  "dir": ".",
+  "baseline": "benchmarks/results/static/visual/ssr.html",
+  "variants": [
+    "benchmarks/results/static/visual/resume.html"
+  ],
+  "viewports": [
+    {
+      "width": 375,
+      "height": 900,
+      "label": "mobile",
+      "reason": "standard",
+      "source": "standard"
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "label": "desktop",
+      "reason": "standard",
+      "source": "standard"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "label": "wide",
+      "reason": "standard",
+      "source": "standard"
+    }
+  ],
+  "breakpointDiscovery": {
+    "requestedBackend": "auto",
+    "backendUsed": "regex",
+    "fallbackReason": "Crater is not running at ws://127.0.0.1:9222 (optional) — breakpoints read from the pages' own @media rules",
+    "fallbackExpected": true,
+    "breakpoints": []
+  },
+  "strict": false,
+  "approvalWarnings": [],
+  "paintTree": {
+    "enabled": true,
+    "available": false,
+    "url": "ws://127.0.0.1:9222",
+    "error": "Crater BiDi unavailable at ws://127.0.0.1:9222"
+  },
+  "baselineSanity": {
+    "ok": true,
+    "warnings": [],
+    "failedRequests": []
+  },
+  "domEquivalence": [
+    {
+      "variantFile": "benchmarks/results/static/visual/resume.html",
+      "result": {
+        "ok": false,
+        "warnings": [
+          {
+            "code": "element-count-mismatch",
+            "message": "total element count differs by 10.5% (baseline: 19, variant: 21)",
+            "baseline": [
+              "19"
+            ],
+            "variant": [
+              "21"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "computedStyleDiff": [
+    {
+      "variantFile": "benchmarks/results/static/visual/resume.html",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "byProperty": [],
+        "bySelector": [],
+        "selectorsOnlyInBaseline": [],
+        "selectorsOnlyInVariant": []
+      }
+    }
+  ],
+  "computedStyleDiffPerViewport": [
+    {
+      "variantFile": "benchmarks/results/static/visual/resume.html",
+      "result": {
+        "totalDiffs": 0,
+        "byViewport": [
+          {
+            "viewport": "mobile",
+            "count": 0
+          },
+          {
+            "viewport": "desktop",
+            "count": 0
+          },
+          {
+            "viewport": "wide",
+            "count": 0
+          }
+        ],
+        "bySelectorProperty": [],
+        "universalPairs": [],
+        "breakpointGatedPairs": []
+      }
+    }
+  ],
+  "authoredStyleDiff": [
+    {
+      "variantFile": "benchmarks/results/static/visual/resume.html",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "byProperty": [],
+        "bySelector": [],
+        "selectorsOnlyInBaseline": [],
+        "selectorsOnlyInVariant": []
+      }
+    }
+  ],
+  "authoredStyleDiffPerViewport": [
+    {
+      "variantFile": "benchmarks/results/static/visual/resume.html",
+      "result": {
+        "totalDiffs": 0,
+        "byViewport": [
+          {
+            "viewport": "mobile",
+            "count": 0
+          },
+          {
+            "viewport": "desktop",
+            "count": 0
+          },
+          {
+            "viewport": "wide",
+            "count": 0
+          }
+        ],
+        "bySelectorProperty": [],
+        "universalPairs": [],
+        "breakpointGatedPairs": []
+      }
+    }
+  ],
+  "domPositionDiff": [
+    {
+      "variantFile": "benchmarks/results/static/visual/resume.html",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "pathsOnlyInBaseline": [],
+        "pathsOnlyInVariant": [],
+        "byProperty": [],
+        "byPath": []
+      }
+    }
+  ],
+  "domPositionDiffPerViewport": [
+    {
+      "variantFile": "benchmarks/results/static/visual/resume.html",
+      "result": {
+        "entries": [],
+        "totalDiffs": 0,
+        "verifiedPairs": [],
+        "byPathProperty": [],
+        "byViewport": [
+          {
+            "viewport": "desktop",
+            "count": 0
+          },
+          {
+            "viewport": "mobile",
+            "count": 0
+          },
+          {
+            "viewport": "wide",
+            "count": 0
+          }
+        ],
+        "byProperty": [],
+        "byPath": []
+      }
+    }
+  ],
+  "results": [
+    {
+      "variant": "resume",
+      "variantFile": "benchmarks/results/static/visual/resume.html",
+      "viewport": "mobile",
+      "diffRatio": 0,
+      "diffPixels": 0,
+      "totalPixels": 443625,
+      "rawDiffRatio": 0,
+      "rawDiffPixels": 0,
+      "rawDominantCategory": "none",
+      "rawCategorySummary": "no changes",
+      "rawCategoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "approved": false,
+      "partiallyApproved": false,
+      "approvedPixels": 0,
+      "approvalReasons": [],
+      "dominantCategory": "none",
+      "categorySummary": "no changes",
+      "categoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "rawPaintTreeChangeCount": 0,
+      "rawPaintTreeSummary": "no changes",
+      "rawPaintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "paintTreeChangeCount": 0,
+      "paintTreeSummary": "no changes",
+      "paintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "approvedPaintTreeCount": 0,
+      "approvedPaintTreeReasons": [],
+      "fixCandidates": []
+    },
+    {
+      "variant": "resume",
+      "variantFile": "benchmarks/results/static/visual/resume.html",
+      "viewport": "desktop",
+      "diffRatio": 0,
+      "diffPixels": 0,
+      "totalPixels": 1152000,
+      "rawDiffRatio": 0,
+      "rawDiffPixels": 0,
+      "rawDominantCategory": "none",
+      "rawCategorySummary": "no changes",
+      "rawCategoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "approved": false,
+      "partiallyApproved": false,
+      "approvedPixels": 0,
+      "approvalReasons": [],
+      "dominantCategory": "none",
+      "categorySummary": "no changes",
+      "categoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "rawPaintTreeChangeCount": 0,
+      "rawPaintTreeSummary": "no changes",
+      "rawPaintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "paintTreeChangeCount": 0,
+      "paintTreeSummary": "no changes",
+      "paintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "approvedPaintTreeCount": 0,
+      "approvedPaintTreeReasons": [],
+      "fixCandidates": []
+    },
+    {
+      "variant": "resume",
+      "variantFile": "benchmarks/results/static/visual/resume.html",
+      "viewport": "wide",
+      "diffRatio": 0,
+      "diffPixels": 0,
+      "totalPixels": 1296000,
+      "rawDiffRatio": 0,
+      "rawDiffPixels": 0,
+      "rawDominantCategory": "none",
+      "rawCategorySummary": "no changes",
+      "rawCategoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "approved": false,
+      "partiallyApproved": false,
+      "approvedPixels": 0,
+      "approvalReasons": [],
+      "dominantCategory": "none",
+      "categorySummary": "no changes",
+      "categoryCounts": {
+        "layout-shift": 0,
+        "color-change": 0,
+        "spacing": 0,
+        "typography": 0,
+        "other": 0
+      },
+      "rawPaintTreeChangeCount": 0,
+      "rawPaintTreeSummary": "no changes",
+      "rawPaintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "paintTreeChangeCount": 0,
+      "paintTreeSummary": "no changes",
+      "paintTreeCounts": {
+        "geometry": 0,
+        "paint": 0,
+        "text": 0,
+        "added": 0,
+        "removed": 0
+      },
+      "approvedPaintTreeCount": 0,
+      "approvedPaintTreeReasons": [],
+      "fixCandidates": []
+    }
+  ],
+  "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/benchmarks/results/static/visual/diff/diff-report.json"
+}

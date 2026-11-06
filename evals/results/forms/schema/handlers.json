@@ -1,0 +1,30 @@
+{
+  "gate": "scan.handlers",
+  "command": "scan handlers",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "surface": {
+      "source": "http://127.0.0.1:52354/",
+      "elements": [],
+      "globals": {
+        "document:input": 1,
+        "document:change": 1,
+        "document:focusout": 1,
+        "document:invalid": 1,
+        "document:submit": 1,
+        "document:reset": 1
+      },
+      "totalRegistrations": 6,
+      "visibleControls": 6
+    },
+    "issues": []
+  }
+}

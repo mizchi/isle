@@ -1,0 +1,5 @@
+Work planner widget
+Public demo. Changes reset when this widget reloads.
+Filter work packages by team
+Create project
+64 independent work packages. No sign-in or third-party cookies required.

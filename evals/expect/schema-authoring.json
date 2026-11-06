@@ -1,0 +1,8 @@
+{
+  "name": "Passwords",
+  "kind": "schema",
+  "fields": [
+    { "name": "password", "type": "string", "constraints": [{ "kind": "minLength", "value": 8 }, { "kind": "maxLength", "value": 64 }] },
+    { "name": "confirmation", "type": "string", "constraints": [{ "kind": "minLength", "value": 8 }, { "kind": "maxLength", "value": 64 }, { "kind": "sameAs", "field": "password" }] }
+  ]
+}

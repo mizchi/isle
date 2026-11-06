@@ -1,0 +1,38 @@
+{
+  "labels": [
+    "Isle",
+    "Declare your UI.",
+    "Resume on interaction.",
+    "prototype",
+    "Write .isle",
+    "Separate at compile time",
+    "Ship to the browser",
+    "MoonBit frontend",
+    "Vite / Rolldown",
+    "HTML + snapshot",
+    "Split JS / CSS",
+    "manifest",
+    "Initial display",
+    "Code prefetch",
+    "Resume the interacted UI",
+    "Update only dynamic output",
+    "auto / lazy",
+    "Fetching alone does not run setup",
+    "SSR-only pages need no Isle browser JS",
+    "Form / server action",
+    "Web Components widget",
+    "Grid / CSS checks",
+    "Separate CLI",
+    "verified / violated / unknown",
+    "Check lifetimes with finite models",
+    "ES2023 / Web platform APIs",
+    "No shipped MoonBit / Wasm runtime"
+  ],
+  "forbidden": [
+    "World’s fastest",
+    "Fully proven compiler",
+    "Always zero JavaScript",
+    "Runs arbitrary TypeScript",
+    "Proves all browser layouts"
+  ]
+}

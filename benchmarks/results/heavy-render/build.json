@@ -1,0 +1,931 @@
+{
+  "version": 1,
+  "budgets": [
+    {
+      "entry": "Sheet.addAll",
+      "metric": "textPatchCalls",
+      "max": 1000
+    },
+    {
+      "entry": "Sheet.addAll",
+      "metric": "attributePatchCalls",
+      "max": 1000
+    },
+    {
+      "entry": "Sheet.addAll",
+      "metric": "binaryOperations",
+      "max": 20000
+    },
+    {
+      "entry": "$page",
+      "metric": "domElements",
+      "max": 5000
+    }
+  ],
+  "cases": [
+    {
+      "id": "128",
+      "rows": 128,
+      "profile": false,
+      "root": "benchmarks/generated/heavy-render/128",
+      "outDir": "benchmarks/dist/heavy-render/128",
+      "buildMs": 113.196542,
+      "sourceBytes": 16285,
+      "chunks": [
+        {
+          "file": "assets/Audit.check-D9asJW1r.js",
+          "bytes": 65,
+          "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+        },
+        {
+          "file": "assets/Sheet.addAll-Bbrde1T-.js",
+          "bytes": 20403,
+          "sha256": "806904ec6d41bb15a658b528e01fa2a50e69afb5d891f320094ef2ec2abd0494"
+        },
+        {
+          "file": "assets/index-C2RTBEGm.js",
+          "bytes": 1535,
+          "sha256": "c56e13fa760d6178689f880f31578cd84ab1e0b1da8fe832d82f8f74058ca6d7"
+        },
+        {
+          "file": "assets/isle-resume-BDTyYuft.js",
+          "bytes": 3753,
+          "sha256": "3bf71bed6e76961070c8fc885c56a86bb7b7052dc5ce6201284bb570f831ddf5"
+        }
+      ],
+      "static": {
+        "planId": "1c320996c1d0e512",
+        "buildId": "86787dfa04983a58",
+        "scenario": {
+          "mode": "resume",
+          "mounts": [
+            {
+              "component": "Page",
+              "mode": "resume"
+            }
+          ],
+          "domElements": 2063,
+          "resumableOwners": 2,
+          "snapshotSlots": 2,
+          "components": {
+            "Page": {
+              "instances": 1,
+              "resumableInstances": 0
+            },
+            "Audit": {
+              "instances": 1,
+              "resumableInstances": 1
+            },
+            "Sheet": {
+              "instances": 1,
+              "resumableInstances": 1
+            }
+          }
+        },
+        "entries": [
+          {
+            "id": "Audit.check",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 2
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 1,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-BDTyYuft.js",
+                "./assets/Audit.check-D9asJW1r.js"
+              ],
+              "bytes": 3818,
+              "gzipBytes": 1876,
+              "dynamicImports": [
+                "./assets/Sheet.addAll-Bbrde1T-.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          },
+          {
+            "id": "Sheet.addAll",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 2433
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 1026
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 385
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 128
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 385
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 513,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-BDTyYuft.js",
+                "./assets/Sheet.addAll-Bbrde1T-.js"
+              ],
+              "bytes": 24156,
+              "gzipBytes": 5137,
+              "dynamicImports": [
+                "./assets/Audit.check-D9asJW1r.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          }
+        ],
+        "budget": {
+          "ok": true,
+          "checks": [
+            {
+              "entry": "Sheet.addAll",
+              "metric": "textPatchCalls",
+              "max": 1000,
+              "actual": 385,
+              "status": "pass"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "attributePatchCalls",
+              "max": 1000,
+              "actual": 128,
+              "status": "pass"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "binaryOperations",
+              "max": 20000,
+              "actual": 2433,
+              "status": "pass"
+            },
+            {
+              "entry": "$page",
+              "metric": "domElements",
+              "max": 5000,
+              "actual": 2063,
+              "status": "pass"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "1024",
+      "rows": 1024,
+      "profile": false,
+      "root": "benchmarks/generated/heavy-render/1024",
+      "outDir": "benchmarks/dist/heavy-render/1024",
+      "buildMs": 327.82154199999997,
+      "sourceBytes": 116171,
+      "chunks": [
+        {
+          "file": "assets/Audit.check-D9asJW1r.js",
+          "bytes": 65,
+          "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+        },
+        {
+          "file": "assets/Sheet.addAll-DhadpzRA.js",
+          "bytes": 166994,
+          "sha256": "5187aae4f4ce0f037c95f09f2e06ccb2aabc1bd0cabede3b1b81b2e6dd7dae81"
+        },
+        {
+          "file": "assets/index-B_AgxB5N.js",
+          "bytes": 1535,
+          "sha256": "039c172067608a49accd6dc24881213a5b3fca7910d2242be74482efee92f094"
+        },
+        {
+          "file": "assets/isle-resume-D7KGr8o7.js",
+          "bytes": 3753,
+          "sha256": "ba893f54ea1e2ff6b54a40ab0eaadd3201b5dd71136a09c0475481cd85873553"
+        }
+      ],
+      "static": {
+        "planId": "04739725ce0afd33",
+        "buildId": "1dd5997255ac4264",
+        "scenario": {
+          "mode": "resume",
+          "mounts": [
+            {
+              "component": "Page",
+              "mode": "resume"
+            }
+          ],
+          "domElements": 16399,
+          "resumableOwners": 2,
+          "snapshotSlots": 2,
+          "components": {
+            "Page": {
+              "instances": 1,
+              "resumableInstances": 0
+            },
+            "Audit": {
+              "instances": 1,
+              "resumableInstances": 1
+            },
+            "Sheet": {
+              "instances": 1,
+              "resumableInstances": 1
+            }
+          }
+        },
+        "entries": [
+          {
+            "id": "Audit.check",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 2
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 1,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-D7KGr8o7.js",
+                "./assets/Audit.check-D9asJW1r.js"
+              ],
+              "bytes": 3818,
+              "gzipBytes": 1877,
+              "dynamicImports": [
+                "./assets/Sheet.addAll-DhadpzRA.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          },
+          {
+            "id": "Sheet.addAll",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 19457
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 8194
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 3073
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 1024
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 3073
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 4097,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-D7KGr8o7.js",
+                "./assets/Sheet.addAll-DhadpzRA.js"
+              ],
+              "bytes": 170747,
+              "gzipBytes": 27133,
+              "dynamicImports": [
+                "./assets/Audit.check-D9asJW1r.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          }
+        ],
+        "budget": {
+          "ok": false,
+          "checks": [
+            {
+              "entry": "Sheet.addAll",
+              "metric": "textPatchCalls",
+              "max": 1000,
+              "actual": 3073,
+              "status": "exceeded"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "attributePatchCalls",
+              "max": 1000,
+              "actual": 1024,
+              "status": "exceeded"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "binaryOperations",
+              "max": 20000,
+              "actual": 19457,
+              "status": "pass"
+            },
+            {
+              "entry": "$page",
+              "metric": "domElements",
+              "max": 5000,
+              "actual": 16399,
+              "status": "exceeded"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "4096",
+      "rows": 4096,
+      "profile": false,
+      "root": "benchmarks/generated/heavy-render/4096",
+      "outDir": "benchmarks/dist/heavy-render/4096",
+      "buildMs": 1283.721,
+      "sourceBytes": 458581,
+      "chunks": [
+        {
+          "file": "assets/Audit.check-D9asJW1r.js",
+          "bytes": 65,
+          "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+        },
+        {
+          "file": "assets/Sheet.addAll-DMyCyLTU.js",
+          "bytes": 677526,
+          "sha256": "4850ea4a632cd4eb79ea291bbe3daa5ceeaca302a8a93a07a6d1b7ef23351817"
+        },
+        {
+          "file": "assets/index-CMU5uvVD.js",
+          "bytes": 1535,
+          "sha256": "dc24d41a5c8cc3cdc9f86cc4e8f66ea913570a10546a042da23e79195c6dbf06"
+        },
+        {
+          "file": "assets/isle-resume-DqmjmVZo.js",
+          "bytes": 3753,
+          "sha256": "872964170ff1ef78935011faa717a1e81f89db6088a13d9ad60ac89132feae7c"
+        }
+      ],
+      "static": {
+        "planId": "84f62600969e3dce",
+        "buildId": "37813858fa8cb037",
+        "scenario": {
+          "mode": "resume",
+          "mounts": [
+            {
+              "component": "Page",
+              "mode": "resume"
+            }
+          ],
+          "domElements": 65551,
+          "resumableOwners": 2,
+          "snapshotSlots": 2,
+          "components": {
+            "Page": {
+              "instances": 1,
+              "resumableInstances": 0
+            },
+            "Audit": {
+              "instances": 1,
+              "resumableInstances": 1
+            },
+            "Sheet": {
+              "instances": 1,
+              "resumableInstances": 1
+            }
+          }
+        },
+        "entries": [
+          {
+            "id": "Audit.check",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 2
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 1,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-DqmjmVZo.js",
+                "./assets/Audit.check-D9asJW1r.js"
+              ],
+              "bytes": 3818,
+              "gzipBytes": 1879,
+              "dynamicImports": [
+                "./assets/Sheet.addAll-DMyCyLTU.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          },
+          {
+            "id": "Sheet.addAll",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 77825
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 32770
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 12289
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 4096
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 12289
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 16385,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-DqmjmVZo.js",
+                "./assets/Sheet.addAll-DMyCyLTU.js"
+              ],
+              "bytes": 681279,
+              "gzipBytes": 101375,
+              "dynamicImports": [
+                "./assets/Audit.check-D9asJW1r.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          }
+        ],
+        "budget": {
+          "ok": false,
+          "checks": [
+            {
+              "entry": "Sheet.addAll",
+              "metric": "textPatchCalls",
+              "max": 1000,
+              "actual": 12289,
+              "status": "exceeded"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "attributePatchCalls",
+              "max": 1000,
+              "actual": 4096,
+              "status": "exceeded"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "binaryOperations",
+              "max": 20000,
+              "actual": 77825,
+              "status": "exceeded"
+            },
+            {
+              "entry": "$page",
+              "metric": "domElements",
+              "max": 5000,
+              "actual": 65551,
+              "status": "exceeded"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "4096-profile",
+      "rows": 4096,
+      "profile": true,
+      "root": "benchmarks/generated/heavy-render/4096-profile",
+      "outDir": "benchmarks/dist/heavy-render/4096-profile",
+      "buildMs": 1150.204417,
+      "sourceBytes": 458581,
+      "chunks": [
+        {
+          "file": "assets/Audit.check-D9asJW1r.js",
+          "bytes": 65,
+          "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+        },
+        {
+          "file": "assets/Sheet.addAll-DMyCyLTU.js",
+          "bytes": 677526,
+          "sha256": "4850ea4a632cd4eb79ea291bbe3daa5ceeaca302a8a93a07a6d1b7ef23351817"
+        },
+        {
+          "file": "assets/index-BWo6mrAu.js",
+          "bytes": 2187,
+          "sha256": "130557481b8a8bde0b76a6fcf9dfa70b9ed4651e934205b833c8b86b20bf3838"
+        },
+        {
+          "file": "assets/isle-resume-Lwo1OUep.js",
+          "bytes": 4158,
+          "sha256": "83b257907e49af699d26a46af56971edae6db18f910b9e415c57ff1a6124e05c"
+        }
+      ],
+      "static": {
+        "planId": "84f62600969e3dce",
+        "buildId": "8945603614228288",
+        "scenario": {
+          "mode": "resume",
+          "mounts": [
+            {
+              "component": "Page",
+              "mode": "resume"
+            }
+          ],
+          "domElements": 65551,
+          "resumableOwners": 2,
+          "snapshotSlots": 2,
+          "components": {
+            "Page": {
+              "instances": 1,
+              "resumableInstances": 0
+            },
+            "Audit": {
+              "instances": 1,
+              "resumableInstances": 1
+            },
+            "Sheet": {
+              "instances": 1,
+              "resumableInstances": 1
+            }
+          }
+        },
+        "entries": [
+          {
+            "id": "Audit.check",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 2
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 1,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-Lwo1OUep.js",
+                "./assets/Audit.check-D9asJW1r.js"
+              ],
+              "bytes": 4223,
+              "gzipBytes": 2034,
+              "dynamicImports": [
+                "./assets/Sheet.addAll-DMyCyLTU.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          },
+          {
+            "id": "Sheet.addAll",
+            "work": {
+              "stateWrites": {
+                "kind": "upper-bound",
+                "value": 1
+              },
+              "binaryOperations": {
+                "kind": "upper-bound",
+                "value": 77825
+              },
+              "propertyReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "slotReads": {
+                "kind": "upper-bound",
+                "value": 32770
+              },
+              "eventReads": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "textPatchCalls": {
+                "kind": "upper-bound",
+                "value": 12289
+              },
+              "attributePatchCalls": {
+                "kind": "upper-bound",
+                "value": 4096
+              },
+              "textConversions": {
+                "kind": "upper-bound",
+                "value": 12289
+              },
+              "remoteCalls": {
+                "kind": "upper-bound",
+                "value": 0
+              },
+              "createdElements": {
+                "kind": "upper-bound",
+                "value": 0
+              }
+            },
+            "restore": {
+              "owners": 1,
+              "snapshotSlots": 1,
+              "bindingLocators": 16385,
+              "childOwners": 0
+            },
+            "code": {
+              "scope": "static-code-closure",
+              "modules": [
+                "./assets/isle-resume-Lwo1OUep.js",
+                "./assets/Sheet.addAll-DMyCyLTU.js"
+              ],
+              "bytes": 681684,
+              "gzipBytes": 101530,
+              "dynamicImports": [
+                "./assets/Audit.check-D9asJW1r.js"
+              ]
+            },
+            "instances": 1,
+            "unknownCosts": []
+          }
+        ],
+        "budget": {
+          "ok": false,
+          "checks": [
+            {
+              "entry": "Sheet.addAll",
+              "metric": "textPatchCalls",
+              "max": 1000,
+              "actual": 12289,
+              "status": "exceeded"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "attributePatchCalls",
+              "max": 1000,
+              "actual": 4096,
+              "status": "exceeded"
+            },
+            {
+              "entry": "Sheet.addAll",
+              "metric": "binaryOperations",
+              "max": 20000,
+              "actual": 77825,
+              "status": "exceeded"
+            },
+            {
+              "entry": "$page",
+              "metric": "domElements",
+              "max": 5000,
+              "actual": 65551,
+              "status": "exceeded"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

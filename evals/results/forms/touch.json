@@ -1,0 +1,26 @@
+{
+  "gate": "check.a11y.touch",
+  "command": "check a11y touch",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://127.0.0.1:52299/",
+    "level": "AA",
+    "required": 24,
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "screenshot": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-touch/127.0.0-4e5bd3cf/page.png",
+    "inspectedCount": 3,
+    "failures": [],
+    "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-touch/127.0.0-4e5bd3cf/report.md"
+  }
+}

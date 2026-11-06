@@ -1,0 +1,26 @@
+* { box-sizing: border-box; margin: 0; }
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  block-size: 100%;
+  padding: 16px;
+  container: Shell / size;
+  font-family: system-ui;
+  line-height: 24px;
+}
+.panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 80px minmax(0, 1fr);
+  gap: 8px 16px;
+}
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+.copy { inline-size: 400px; block-size: 200px; overflow-wrap: anywhere; }
+@container Shell (width >= 616px) {
+  .panel { grid-template-columns: 200px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+}

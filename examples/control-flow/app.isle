@@ -1,0 +1,27 @@
+schema Item { id: string; title: string; }
+component Row(item: Item) { <li data-key={item.id}>{item.title}</li> }
+
+client component List(initial: Item[]) {
+  state items: Item[] = initial;
+  state visible = true;
+  state mode = "list";
+  <section>
+    <button type="button">on click hide { visible = false; }Hide</button>
+    <button type="button">on click show { visible = true; }Show</button>
+    <button type="button">on click reverse { items = [items[1], items[0]]; }Reverse rows</button>
+    <button type="button">on click empty { items = []; }Empty list</button>
+    <button type="button">on click restore { items = initial; }Restore rows</button>
+    <button type="button">on click summary { mode = "summary"; }Summary</button>
+    @if (visible) { <p data-visibility="">Visible</p> }
+    @else { <p data-visibility="">Hidden</p> }
+    @switch (mode) {
+      @case "list": { <p data-mode="">List view</p> }
+      @case "summary": { <p data-mode="">Summary view</p> }
+      @default: { <p data-mode="">Other view</p> }
+    }
+    <ul>@for (const item of items; key item.id) { <Row item={item} /> }
+    @empty { <li>No rows</li> }</ul>
+    @try { <p data-first="">First: {items[0].title}</p> }
+    @catch (error) { <p data-error="">No first row: {error}</p> }
+  </section>
+}

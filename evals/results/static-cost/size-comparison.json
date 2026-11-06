@@ -1,0 +1,173 @@
+{
+  "counter": {
+    "identicalJavaScript": true,
+    "deltaBytes": 0,
+    "deltaGzipBytes": 0,
+    "before": [
+      {
+        "file": "assets/Counter.h0-CxJgHqIU.js",
+        "bytes": 85,
+        "gzipBytes": 90,
+        "sha256": "d8d2a36869e8aa7d261bf878e75da6f9fc5d11514743d7c4f3750b0f12d31bb2"
+      },
+      {
+        "file": "assets/Editor.h1-WsKkkGT5.js",
+        "bytes": 127,
+        "gzipBytes": 129,
+        "sha256": "0eb0db4103f81150bfb844b4b8c6613b7428123f793d34e6358da150957b74c6"
+      },
+      {
+        "file": "assets/index-exWziqWn.js",
+        "bytes": 1635,
+        "gzipBytes": 880,
+        "sha256": "a3f08f3e0e9e254341a1be4ca5991387a7314e3ef402caf2bd1e5f92379e0a4e"
+      },
+      {
+        "file": "assets/isle-resume-DGhEW-Lf.js",
+        "bytes": 4446,
+        "gzipBytes": 2148,
+        "sha256": "34b89ad2f632376ba38ac42232796a99357c56ffe0e92625788572eb90e89484"
+      }
+    ],
+    "after": [
+      {
+        "file": "assets/Counter.h0-CxJgHqIU.js",
+        "bytes": 85,
+        "gzipBytes": 90,
+        "sha256": "d8d2a36869e8aa7d261bf878e75da6f9fc5d11514743d7c4f3750b0f12d31bb2"
+      },
+      {
+        "file": "assets/Editor.h1-WsKkkGT5.js",
+        "bytes": 127,
+        "gzipBytes": 129,
+        "sha256": "0eb0db4103f81150bfb844b4b8c6613b7428123f793d34e6358da150957b74c6"
+      },
+      {
+        "file": "assets/index-exWziqWn.js",
+        "bytes": 1635,
+        "gzipBytes": 880,
+        "sha256": "a3f08f3e0e9e254341a1be4ca5991387a7314e3ef402caf2bd1e5f92379e0a4e"
+      },
+      {
+        "file": "assets/isle-resume-DGhEW-Lf.js",
+        "bytes": 4446,
+        "gzipBytes": 2148,
+        "sha256": "34b89ad2f632376ba38ac42232796a99357c56ffe0e92625788572eb90e89484"
+      }
+    ]
+  },
+  "composition": {
+    "identicalJavaScript": true,
+    "deltaBytes": 0,
+    "deltaGzipBytes": 0,
+    "before": [
+      {
+        "file": "assets/Counter.g0-sIr0C6hm.js",
+        "bytes": 118,
+        "gzipBytes": 100,
+        "sha256": "cce365eea6521e3df2eea2c263fd39e5fe9741fca5571a8e8a38c40e232a6134"
+      },
+      {
+        "file": "assets/Parent.increment-D9asJW1r.js",
+        "bytes": 65,
+        "gzipBytes": 83,
+        "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+      },
+      {
+        "file": "assets/index-BxzogZUF.js",
+        "bytes": 1590,
+        "gzipBytes": 835,
+        "sha256": "e54c591e364716fcdf5b292e77c740ea7261c4ec1ec90a51aa9bd3c5a84c6ba3"
+      },
+      {
+        "file": "assets/isle-resume-MeXxjUiM.js",
+        "bytes": 3719,
+        "gzipBytes": 1760,
+        "sha256": "30306b6359bf51f12e1adb9ca9d2f4eada8c1e6594f1ec1d487b4ddcd64d578a"
+      }
+    ],
+    "after": [
+      {
+        "file": "assets/Counter.g0-sIr0C6hm.js",
+        "bytes": 118,
+        "gzipBytes": 100,
+        "sha256": "cce365eea6521e3df2eea2c263fd39e5fe9741fca5571a8e8a38c40e232a6134"
+      },
+      {
+        "file": "assets/Parent.increment-D9asJW1r.js",
+        "bytes": 65,
+        "gzipBytes": 83,
+        "sha256": "3d26ca6df3c85ef4a350598b9720bd1739f6c79157068baf63ba7cb7d64c59e1"
+      },
+      {
+        "file": "assets/index-BxzogZUF.js",
+        "bytes": 1590,
+        "gzipBytes": 835,
+        "sha256": "e54c591e364716fcdf5b292e77c740ea7261c4ec1ec90a51aa9bd3c5a84c6ba3"
+      },
+      {
+        "file": "assets/isle-resume-MeXxjUiM.js",
+        "bytes": 3719,
+        "gzipBytes": 1760,
+        "sha256": "30306b6359bf51f12e1adb9ca9d2f4eada8c1e6594f1ec1d487b4ddcd64d578a"
+      }
+    ]
+  },
+  "schema-form": {
+    "identicalJavaScript": true,
+    "deltaBytes": 0,
+    "deltaGzipBytes": 0,
+    "before": [
+      {
+        "file": "assets/SchemaSignup.__form0-DS-SsaKg.js",
+        "bytes": 10355,
+        "gzipBytes": 4143,
+        "sha256": "c7bcf0a72cd97a69992cfcc8bcbca8719d423006db4b7df8137b0e1f80c32f9b"
+      },
+      {
+        "file": "assets/index-DnJ3rugO.js",
+        "bytes": 3694,
+        "gzipBytes": 1680,
+        "sha256": "dcccaad159350b49a3f14ed643dd74724ce2fef99d4860f09f20c315a435bb49"
+      },
+      {
+        "file": "assets/isle-resume-su4_ECDI.js",
+        "bytes": 3376,
+        "gzipBytes": 1632,
+        "sha256": "7edf2e2fda641c771b3f2e089471a4358fc8f0d11675aafd500b76c13779e556"
+      },
+      {
+        "file": "assets/request-Dltj0cm7.js",
+        "bytes": 470,
+        "gzipBytes": 361,
+        "sha256": "1942305a51cda90b800e1f849f98d89aac08dd9fa60089cf5d4d306cbc2046e3"
+      }
+    ],
+    "after": [
+      {
+        "file": "assets/SchemaSignup.__form0-DS-SsaKg.js",
+        "bytes": 10355,
+        "gzipBytes": 4143,
+        "sha256": "c7bcf0a72cd97a69992cfcc8bcbca8719d423006db4b7df8137b0e1f80c32f9b"
+      },
+      {
+        "file": "assets/index-DnJ3rugO.js",
+        "bytes": 3694,
+        "gzipBytes": 1680,
+        "sha256": "dcccaad159350b49a3f14ed643dd74724ce2fef99d4860f09f20c315a435bb49"
+      },
+      {
+        "file": "assets/isle-resume-su4_ECDI.js",
+        "bytes": 3376,
+        "gzipBytes": 1632,
+        "sha256": "7edf2e2fda641c771b3f2e089471a4358fc8f0d11675aafd500b76c13779e556"
+      },
+      {
+        "file": "assets/request-Dltj0cm7.js",
+        "bytes": 470,
+        "gzipBytes": 361,
+        "sha256": "1942305a51cda90b800e1f849f98d89aac08dd9fa60089cf5d4d306cbc2046e3"
+      }
+    ]
+  }
+}

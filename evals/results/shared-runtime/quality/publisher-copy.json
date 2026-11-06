@@ -1,0 +1,28 @@
+{
+  "gate": "check.copy",
+  "command": "check copy",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://localhost:59065/",
+    "textLength": 23491,
+    "manifestLines": 3,
+    "forbidLines": 0,
+    "forbiddenLines": [],
+    "missingLines": [],
+    "revealedLines": [],
+    "invisibleLines": [],
+    "allowedInvisibleLines": [],
+    "statesExplored": 0,
+    "droppedStates": 0,
+    "placeholders": [],
+    "issues": []
+  }
+}

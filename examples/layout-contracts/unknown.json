@@ -1,0 +1,30 @@
+{
+  "component": "ResetPanel",
+  "reset": [
+    "./reset.css"
+  ],
+  "css": "./unknown.css",
+  "ancestors": [
+    {
+      "tag": "html"
+    },
+    {
+      "tag": "body"
+    }
+  ],
+  "viewport": {
+    "min": 240,
+    "max": 1000,
+    "height": {
+      "min": 200,
+      "max": 600
+    }
+  },
+  "boxes": {
+    ".copy": {
+      "minInlineSize": 100,
+      "minBlockSize": 24,
+      "wrap": "anywhere"
+    }
+  }
+}

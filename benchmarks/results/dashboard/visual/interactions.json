@@ -1,0 +1,698 @@
+{
+  "gate": "check.interactions",
+  "command": "check interactions",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 8,
+    "info": 0
+  },
+  "findings": [
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Reset form\" (div#app>section.card>form.project-form>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Reset form\" (div#app>section.card>form.project-form>button)"
+      }
+    },
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Platform work package 01 reset draft\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Platform work package 01 reset draft\" (section.card>article>div.actions>button)"
+      }
+    },
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Platform work package 01 save plan\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Platform work package 01 save plan\" (section.card>article>div.actions>button)"
+      }
+    },
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Design work package 02 reset draft\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Design work package 02 reset draft\" (section.card>article>div.actions>button)"
+      }
+    },
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Design work package 02 save plan\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Design work package 02 save plan\" (section.card>article>div.actions>button)"
+      }
+    },
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Operations work package 03 reset draft\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Operations work package 03 reset draft\" (section.card>article>div.actions>button)"
+      }
+    },
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Operations work package 03 save plan\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Operations work package 03 save plan\" (section.card>article>div.actions>button)"
+      }
+    },
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"Research work package 04 reset draft\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"Research work package 04 reset draft\" (section.card>article>div.actions>button)"
+      }
+    }
+  ],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "map": {
+      "source": "http://127.0.0.1:56529/dashboard/isle/",
+      "elements": [
+        {
+          "index": 0,
+          "key": "radio|All teams",
+          "role": "radio",
+          "name": "All teams",
+          "path": "main>fieldset>label>input#team-all",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "ArrowDown",
+            "ariaDelta": {
+              "checked": [
+                "true",
+                "false"
+              ]
+            },
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": 1
+          }
+        },
+        {
+          "index": 1,
+          "key": "radio|Platform",
+          "role": "radio",
+          "name": "Platform",
+          "path": "main>fieldset>label>input#team-0",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": false,
+          "focusIndicator": null,
+          "activation": {
+            "key": "ArrowDown",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": 2
+          }
+        },
+        {
+          "index": 2,
+          "key": "radio|Design",
+          "role": "radio",
+          "name": "Design",
+          "path": "main>fieldset>label>input#team-1",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": false,
+          "focusIndicator": null,
+          "activation": {
+            "key": "ArrowDown",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": 3
+          }
+        },
+        {
+          "index": 3,
+          "key": "radio|Operations",
+          "role": "radio",
+          "name": "Operations",
+          "path": "main>fieldset>label>input#team-2",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": false,
+          "focusIndicator": null,
+          "activation": {
+            "key": "ArrowDown",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": 4
+          }
+        },
+        {
+          "index": 4,
+          "key": "radio|Research",
+          "role": "radio",
+          "name": "Research",
+          "path": "main>fieldset>label>input#team-3",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": false,
+          "focusIndicator": null,
+          "activation": {
+            "key": "ArrowDown",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": 0
+          }
+        },
+        {
+          "index": 5,
+          "key": "textbox|Project name (required)",
+          "role": "textbox",
+          "name": "Project name (required)",
+          "path": "section.card>form.project-form>label>input#isle-project:__form0_project",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true
+        },
+        {
+          "index": 6,
+          "key": "textbox|Owner email (required)",
+          "role": "textbox",
+          "name": "Owner email (required)",
+          "path": "section.card>form.project-form>label>input#isle-project:__form0_email",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true
+        },
+        {
+          "index": 7,
+          "key": "textbox|Confirm email (required)",
+          "role": "textbox",
+          "name": "Confirm email (required)",
+          "path": "section.card>form.project-form>label>input#isle-project:__form0_confirmation",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true
+        },
+        {
+          "index": 8,
+          "key": "spinbutton|Budget in credits (required)",
+          "role": "spinbutton",
+          "name": "Budget in credits (required)",
+          "path": "section.card>form.project-form>label>input#isle-project:__form0_budget",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true
+        },
+        {
+          "index": 9,
+          "key": "checkbox|I confirm the project details (required)",
+          "role": "checkbox",
+          "name": "I confirm the project details (required)",
+          "path": "section.card>form.project-form>label.check>input#isle-project:__form0_accepted",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Space",
+            "ariaDelta": {
+              "checked": [
+                "false",
+                "true"
+              ]
+            },
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 10,
+          "key": "button|Create project",
+          "role": "button",
+          "name": "Create project",
+          "path": "div#app>section.card>form.project-form>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": 5
+          }
+        },
+        {
+          "index": 11,
+          "key": "button|Reset form",
+          "role": "button",
+          "name": "Reset form",
+          "path": "div#app>section.card>form.project-form>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 12,
+          "key": "button|Platform work package 01 add hour",
+          "role": "button",
+          "name": "Platform work package 01 add hour",
+          "path": "section.card>article>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 13,
+          "key": "button|Platform work package 01 reset draft",
+          "role": "button",
+          "name": "Platform work package 01 reset draft",
+          "path": "section.card>article>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 14,
+          "key": "checkbox|Lock plan",
+          "role": "checkbox",
+          "name": "Lock plan",
+          "path": "article>div.actions>label.check>input",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Space",
+            "ariaDelta": {
+              "checked": [
+                "false",
+                "true"
+              ]
+            },
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 15,
+          "key": "button|Platform work package 01 save plan",
+          "role": "button",
+          "name": "Platform work package 01 save plan",
+          "path": "section.card>article>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 16,
+          "key": "button|Delivery notes",
+          "role": "button",
+          "name": "Delivery notes",
+          "path": "section.card>article>details>summary",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {
+              "open": [
+                "false",
+                "true"
+              ]
+            },
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 17,
+          "key": "button|Design work package 02 add hour",
+          "role": "button",
+          "name": "Design work package 02 add hour",
+          "path": "section.card>article>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 18,
+          "key": "button|Design work package 02 reset draft",
+          "role": "button",
+          "name": "Design work package 02 reset draft",
+          "path": "section.card>article>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 19,
+          "key": "checkbox|Lock plan",
+          "role": "checkbox",
+          "name": "Lock plan",
+          "path": "article>div.actions>label.check>input",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Space",
+            "ariaDelta": {
+              "checked": [
+                "false",
+                "true"
+              ]
+            },
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 20,
+          "key": "button|Design work package 02 save plan",
+          "role": "button",
+          "name": "Design work package 02 save plan",
+          "path": "section.card>article>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 21,
+          "key": "button|Delivery notes",
+          "role": "button",
+          "name": "Delivery notes",
+          "path": "section.card>article>details>summary",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {
+              "open": [
+                "false",
+                "true"
+              ]
+            },
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 22,
+          "key": "button|Operations work package 03 add hour",
+          "role": "button",
+          "name": "Operations work package 03 add hour",
+          "path": "section.card>article>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 23,
+          "key": "button|Operations work package 03 reset draft",
+          "role": "button",
+          "name": "Operations work package 03 reset draft",
+          "path": "section.card>article>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 24,
+          "key": "checkbox|Lock plan",
+          "role": "checkbox",
+          "name": "Lock plan",
+          "path": "article>div.actions>label.check>input",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Space",
+            "ariaDelta": {
+              "checked": [
+                "false",
+                "true"
+              ]
+            },
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 25,
+          "key": "button|Operations work package 03 save plan",
+          "role": "button",
+          "name": "Operations work package 03 save plan",
+          "path": "section.card>article>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 26,
+          "key": "button|Delivery notes",
+          "role": "button",
+          "name": "Delivery notes",
+          "path": "section.card>article>details>summary",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {
+              "open": [
+                "false",
+                "true"
+              ]
+            },
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 27,
+          "key": "button|Research work package 04 add hour",
+          "role": "button",
+          "name": "Research work package 04 add hour",
+          "path": "section.card>article>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 28,
+          "key": "button|Research work package 04 reset draft",
+          "role": "button",
+          "name": "Research work package 04 reset draft",
+          "path": "section.card>article>div.actions>button",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 29,
+          "key": "checkbox|Lock plan",
+          "role": "checkbox",
+          "name": "Lock plan",
+          "path": "article>div.actions>label.check>input",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Space",
+            "ariaDelta": {
+              "checked": [
+                "false",
+                "true"
+              ]
+            },
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        }
+      ],
+      "capped": 302
+    },
+    "issues": [
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Reset form\" (div#app>section.card>form.project-form>button)",
+        "message": "button \"Reset form\" (div#app>section.card>form.project-form>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      },
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Platform work package 01 reset draft\" (section.card>article>div.actions>button)",
+        "message": "button \"Platform work package 01 reset draft\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      },
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Platform work package 01 save plan\" (section.card>article>div.actions>button)",
+        "message": "button \"Platform work package 01 save plan\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      },
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Design work package 02 reset draft\" (section.card>article>div.actions>button)",
+        "message": "button \"Design work package 02 reset draft\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      },
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Design work package 02 save plan\" (section.card>article>div.actions>button)",
+        "message": "button \"Design work package 02 save plan\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      },
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Operations work package 03 reset draft\" (section.card>article>div.actions>button)",
+        "message": "button \"Operations work package 03 reset draft\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      },
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Operations work package 03 save plan\" (section.card>article>div.actions>button)",
+        "message": "button \"Operations work package 03 save plan\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      },
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"Research work package 04 reset draft\" (section.card>article>div.actions>button)",
+        "message": "button \"Research work package 04 reset draft\" (section.card>article>div.actions>button) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      }
+    ]
+  }
+}

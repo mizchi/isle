@@ -1,0 +1,1 @@
+component Card() { <main class="card"><span class="marker">*</span><p class="text">Content</p></main> }

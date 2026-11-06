@@ -1,0 +1,29 @@
+// Design fixture. This syntax is not accepted by the v0 compiler yet.
+client component Counter {
+  props { initial: Float64; }
+  state count: Float64 = initial;
+
+  live doubled(count): Float64 = inline(ts) {
+    return count * 2;
+  }
+
+  event increment
+    reads(count)
+    writes(count)
+    inline(ts) {
+      return { count: count + 1 };
+    }
+
+  style ui = inline(css) {
+    .button { color: navy; }
+    .button:hover { color: purple; }
+    .unused { animation: unusedPulse 1s infinite; }
+    @keyframes unusedPulse { to { opacity: 0; } }
+  }
+
+  template {
+    <button class={ui.button} on:click={increment}>
+      {count} / {doubled}
+    </button>
+  }
+}

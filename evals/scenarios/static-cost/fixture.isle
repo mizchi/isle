@@ -1,0 +1,29 @@
+component Row(value: number) {
+  <output title={value}>{value} / {value * 2}</output>
+}
+
+client component Child() {
+  state count = 0;
+  <button>on click increment { count += 1; }Child: {count}</button>
+}
+
+client component Board(initial: number) {
+  state scale = initial;
+  derive projected = scale * 2 + 1;
+  <main>
+    <button>on click recalculate { scale += 1; }Recalculate</button>
+    <Row value={projected} />
+    <Row value={projected} />
+    <Row value={projected} />
+    <Row value={projected} />
+    <Row value={projected} />
+    <Row value={projected} />
+    <Row value={projected} />
+    <Row value={projected} />
+    <Child />
+  </main>
+}
+
+server component Page(initial: number) {
+  <Board initial={initial} />
+}

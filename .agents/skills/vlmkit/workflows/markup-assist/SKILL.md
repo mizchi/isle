@@ -1,0 +1,168 @@
+---
+name: markup-assist
+description: General-purpose deterministic verification for any HTML/CSS work — no API key, no reference design required, no project setup. Route by task; run the matching vlmkit gate (integrity / copy / layout / breakpoints / scroll / handlers / interactions / verify markup); read the kickback; fix; re-run to green. Use whenever you wrote or edited markup and want to know if it is actually correct — broken-page defects, copy fidelity, responsive boundaries, keyboard operability, design-target match, an app with no DOM to read (Flutter web, Android, a macOS app) — and then look at the screenshots, because the gates do not see what a page means. Works standalone in any repo via `npx vlmkit`; this is the drop-in generalist skill, distinct from the full-workflow skills (auto-markup / mock-markup / dynamic-markup).
+metadata:
+  internal: true
+---
+
+# markup-assist
+
+Deterministic gates for markup work. Each gate renders in headless
+Chromium, measures (DOM + pixel math, no VLM), and prints a
+**kickback**: a next-fix list with selector attribution. Your job is
+the loop: run → read kickback → fix the reported thing → re-run.
+
+Prereqs: Node 24+, Playwright Chromium. If `vlmkit` is not installed:
+`npm i -D @mizchi/vlmkit`, then use `npx vlmkit …`. Sources are file
+paths or URLs. Every gate supports `--json` (one envelope shape:
+`{gate, command, verdict, counts, findings, report}`), exits 1 on a
+suspect, takes `--advisory` to print and exit 0, and takes
+`--rule <gateId>/<ruleId>=off|warn|suspect` to re-tune one rule
+(`--rules` lists them). `--fail-on-suspect` is accepted and does
+nothing — failing on a suspect is the default.
+
+## Route by task
+
+**Wrote/edited a page, no reference design:**
+
+| Question | Gate |
+|---|---|
+| Is anything broken? (JS errors, empty render, failed resources, text collision/clipping/protrusion, collapsed containers, overflow, invisible text, occlusion, misalignment, unstyled page — 3 viewports) | `vlmkit check integrity page.html` |
+| Is the required copy present, exactly? | `vlmkit check copy page.html --manifest copy.txt` |
+| Does the structure match the brief? (widths, per-row counts, order, per-viewport visibility) | `vlmkit check layout page.html --contract layout.json` |
+| Tokens / theme / a11y / long-text survival | `check tokens` · `check theme` · `check a11y contrast\|touch\|focus` · `stress i18n` |
+| Is the page consistent with itself? (no tokens file needed — component styles reused, spacing on its own scale) | `vlmkit check design page.html` |
+| Does the layout read as organized? A heading drifted from the content it labels, two SIBLINGS whose edges sit a few px apart, `h2`/`h3` rendering at one size | `vlmkit check composition page.html` (complements `check design`: style reuse cannot see a margin change) |
+| What is each colour for, and does colour alone carry a meaning? A text field with no visible boundary, a link in prose with no underline | `vlmkit check color page.html` (complements `check a11y contrast`, which measures text against its background and passes both) |
+
+**Behavior:**
+
+| Question | Gate |
+|---|---|
+| Responsive boundaries exact, no overflow at any width | `vlmkit check breakpoints page.html --sweep` |
+| Nothing breaks at any width inside a regime (text starved, overflow, clipping, collisions) — shrunk to the width range, the breakpoint and the declaration | `vlmkit check responsive page.html` |
+| Scroll containers / page overflow-x inventory | `vlmkit scan scroll page.html` |
+| Sticky/fixed/snap actually behave | `vlmkit check scroll page.html` |
+| Animations visibly run, settle, respect reduced-motion | `vlmkit check animation page.html` (`--virtual-time` when motion is script-driven: rAF, GSAP, canvas, a timer carousel) |
+| Nothing flashes more than three times a second (WCAG 2.3.1, Level A, whatever the motion preference) | `vlmkit check flash page.html` — every 60fps frame of page time on the held clock; `motion-flicker` (warn) is moving content, `general-flash` / `red-flash` (suspect) is a strobe; `--strip` writes one still sheet, never an animation |
+| A video or animated GIF the page ships does not flash either (the page sweep pauses a `<video>` and reports it unmeasured) | `vlmkit check flash clip.mp4` (or `.webm`, `.gif`) — decoded with your own ffmpeg / ffprobe (vlmkit ships none), every frame at its own time, a GIF timed and looped as the browser plays it; `--display-width` is how wide it plays |
+| Does the motion LOOK broken? (a toast that vanishes into a clipping column, a menu opening under the next card, a snap-back when fill-mode is missing, a keyframe gap, the wrong easing) | `vlmkit inspect motion page.html --selector .toast [--expect-easing ease-out]` — no key: each `--selector` measured per frame, including how much of it is topmost; read the rule, then the frames it names. Text left on text at rest is `check integrity`'s `text-collision` (or `--jev`, below) |
+| Does anything break WHILE the page moves? (a card sliding over a label, text on a background that has not arrived yet) | `vlmkit check integrity page.html --timeline` — held across instants keeps its severity, a one-instant glimpse is info |
+| SEE the motion: the page at chosen instants, or what an action set moving, as numbered frames to read in order | `vlmkit check animation page.html --at 0..600/100 --frames out/f` (clock held); a `frames` step in an `inspect interact` sequence after the action; `vlmkit snapshot strip --manifest out/f/frames.json` makes one sheet — then Read it |
+| WHAT HAPPENED in a frame sequence: when something appeared, flickered for one frame, came back, settled — with times and boxes, not guesses | `vlmkit snapshot storyboard out/f/frames.json` → `SUMMARY.md` (glitch / transient / change / drift, each timed between two frames, with its box) and `sheet.png`; then Read `narrate/BRIEF.md`'s keyframes and say what each change is. A screen recording: `vlmkit scan video rec.mp4`, then the same on `rec.mp4.frames/frames.json` with `--lossy` (an H.264/VP8/VP9 recording is refused without it) |
+| Everything keyboard-operable, ARIA states transition | `vlmkit check interactions page.html` |
+| Clickable `<div>`s / pointer-only controls | `vlmkit scan handlers page.html` |
+| Drag and drop wired but unfireable (a `dragstart` source that is not draggable, a `drop` target with no `dragover`) | `vlmkit scan handlers page.html` |
+| Drag and drop that looks wired but is not (`dragover` without `preventDefault`, `dragstart` transferring nothing) | `vlmkit scan handlers page.html --probe-drag` |
+| A scripted flow reaches its post-conditions | `vlmkit verify flow page.html --flow flow.json` |
+| Can an agent that only sees a screenshot click the right thing? (a control whose own centre routes to an overlay, six rows that all read `Edit`, a target too small at the resolution the model reads) | `vlmkit check grounding page.html` |
+
+**The UI is not the DOM** (Flutter web paints a canvas, an Android app, a native macOS app, a game or WebGPU renderer).
+The DOM gates read such a page as empty or every label as 1.00:1, so judge what the platform
+announces and what its pixels show instead:
+
+| Question | Gate |
+|---|---|
+| Is every control named, reachable, legible and big enough? (Flutter web URL, an Android uiautomator dump + screencap, or a running macOS app) | `vlmkit scan a11y <url\|ui.xml> --out a11y.json` or, on a Mac, `vlmkit scan a11y --app <name> --out a11y.json` (needs Xcode CLT, Accessibility and Screen Recording for the terminal), then `vlmkit check a11y tree a11y.json` — contrast is read from the frame's pixels, never from the tree |
+| A renderer that can list what it drew (boxes, text, colours) | `--elements elements.json` on `check integrity` · `check copy` · `check color` · `check design` · `check composition` |
+
+**Against a target design:**
+
+| Question | Gate |
+|---|---|
+| Am I done? (one verdict + full kickback) | `vlmkit verify markup attempt.html --target target.png` |
+| What components are missing/extra/misordered? | `vlmkit build page target.png attempt.html` |
+| Converge one component crop | `vlmkit build component crop.png attempt.html` |
+| Normalize a @2x/@3x mock first | `vlmkit scan mock export@2x.png` |
+| Copy vs target pixels (no manifest) | `vlmkit check copy attempt.html --target target.png` → read the contact sheets with your own vision; a different reader than whoever transcribed |
+
+**Maintain:** `vlmkit heal selector page.html ".broken"` (selector
+died in a refactor) · `vlmkit diff html a.html b.html` (visual
+equivalence of two pages).
+
+**Optional, with a TypeSafe key (`TYPESAFEAI_API_KEY`):** a model's typed
+reading of the pixels — advisory, never a gate. Where a command works without
+it, add `--jev`; the commands with no other engine need only the key. Jev says
+what and where; the values (shifts, colours, easings) still come from the
+pixels and the page, so never quote a Jev answer as a measurement.
+
+| Question | Command |
+|---|---|
+| What kind of change is each diff region — text, colour, position, presence? | `vlmkit diff png a.png b.png --jev` (labels below 0.6 confidence are `uncertain`: a 1-2px shift read as colour is the usual case, so check `region.shift`) |
+| Does the motion look broken, as a person would see it? (adds text printed over text mid-motion and at rest) | `vlmkit inspect motion page.html --jev --target "the green Saved toast" --selector .toast` |
+| Does the screenshot show X / not show Y? (an error banner, a modal left open, a broken image) | `vlmkit inspect claims page.html --forbid "an error banner" --expect "the Save button"` |
+| Where is the element described in words? (a canvas UI, or to click by description in `inspect interact`) | `vlmkit inspect locate shot.png "the Save button"` (a screenshot, no DOM; in `inspect interact` a click step takes `describe` instead of `selector`) — describe a field by its label, not its placeholder |
+
+## Done condition
+
+Fix loops need a FIXED gate set decided up front. Default for a
+reference-free page build:
+
+```
+check integrity → CLEAN
+check copy --manifest → 0 missing, 0 placeholders
+scan scroll → no page-overflow-x
+scan handlers → no pointer-only suspects
+check interactions → no suspects
+(+ check breakpoints --sweep and check responsive when responsiveness is specified)
+```
+
+Re-run only the failing gate while iterating; re-run the whole set
+once before declaring done. Warns are acceptable; suspects are not.
+
+**Then look at it.** Green gates are not the end of the loop. Take
+full-page screenshots at desktop and phone width (one screen per image,
+so text stays readable) and of every state the task names — a menu
+open, an error shown, a second theme — read each one, and write down
+what is in it before deciding it is fine. A defect the eye finds is a
+defect: fix it, re-shoot, look again. In this repo's demo-site round
+(2026-09-23, six sites built by agents with every gate available) 96 of
+136 defects were found only by looking — a word stranded on its own
+line, a layout cramped at 768px, a state that did not show, a drawing
+that read as something else — against 40 found by a gate.
+
+## Rules the gates enforce (do not fight them)
+
+- **Never hide copy to pass `check copy`.** Matching is against
+  visibly rendered text; font-size:0 / opacity:0 / transparent /
+  off-screen / clipped / camouflaged / sr-only matches report as
+  `copy-invisible` with a reason class. If the requester wants hidden
+  copy accepted (e.g. sr-only), THEY pass
+  `--allow-invisible <class>` — you don't.
+- **Never ship disclosures open just for the copy gate.** Closed
+  `<details>` / unselected tabs / `aria-expanded=false` content is
+  swept automatically and passes with provenance.
+- **Don't delete required content or controls to silence a finding**
+  — fix what the kickback names.
+- Intentional patterns (sr-only, image replacement, hero overlays,
+  ellipsis) don't false integrity — they appear under `exempted`.
+- A residual is real unless the tool itself demotes it
+  (near-miss / pixel-confirmed / exempted annotations).
+
+## Reading kickbacks
+
+Kickback lines carry: the defect class, the selector, the measured
+value, and often the direction (`move it instead`, `size-delta
+caveat`). Trust the measurement over your recollection of the code;
+when a kickback surprises you, re-render and look — do not argue with
+the gate from memory. Iteration counts are recorded in
+`.vlmkit/run-ledger.jsonl`; report progress from there.
+
+## Escalation
+
+**If the tool itself fails to run** (unknown subcommand, missing
+browser, install error), STOP and report the tool failure verbatim —
+do NOT silently substitute hand-rolled screenshot scripts and then
+claim the work was "verified". A hand-rolled check covers a fraction
+of what the gates measure (the black-box validation run that added
+this rule missed 2 of 5 seeded defects that way), and a report that
+hides the fallback is worse than a report that says "the tool didn't
+run". An "Unknown check subcommand" error usually means the installed
+release predates these gates — say so and ask for an update.
+
+If a gate keeps failing after 3 honest fix attempts on the same
+finding, stop and report: the finding, your attempts, and your best
+hypothesis — a stuck loop is information, not something to hide with
+a workaround. For full-workflow builds (a mock image to reproduce, a
+motion brief, page composition from scratch) use the dedicated
+skills: `mock-markup`, `dynamic-markup`, `auto-markup`.

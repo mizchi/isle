@@ -1,0 +1,47 @@
+{
+  "pass": true,
+  "reports": [
+    {
+      "id": "isle",
+      "pass": true,
+      "checks": [
+        "SSR and native disclosure without JavaScript",
+        "code preloading matches the emitted policy and never restores task or form state",
+        "derived values, isolation, lock, remote save, reset and native filter",
+        "correlation, authorized async validation, submit, duplicate prevention and reset",
+        "SSR button identity and no browser errors",
+        "only the form and activated work package restore among 65 scopes"
+      ]
+    },
+    {
+      "id": "qwik",
+      "pass": true,
+      "checks": [
+        "SSR and native disclosure without JavaScript",
+        "derived values, isolation, lock, remote save, reset and native filter",
+        "correlation, authorized async validation, submit, duplicate prevention and reset",
+        "SSR button identity and no browser errors"
+      ]
+    },
+    {
+      "id": "qwik-next",
+      "pass": true,
+      "checks": [
+        "SSR and native disclosure without JavaScript",
+        "derived values, isolation, lock, remote save, reset and native filter",
+        "correlation, authorized async validation, submit, duplicate prevention and reset",
+        "SSR button identity and no browser errors"
+      ]
+    },
+    {
+      "id": "preact",
+      "pass": true,
+      "checks": [
+        "SSR and native disclosure without JavaScript",
+        "derived values, isolation, lock, remote save, reset and native filter",
+        "correlation, authorized async validation, submit, duplicate prevention and reset",
+        "SSR button identity and no browser errors"
+      ]
+    }
+  ]
+}
