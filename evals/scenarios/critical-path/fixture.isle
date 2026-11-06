@@ -1,0 +1,34 @@
+component StaticCard() {
+  <section data-panel=""><h2>Static HTML</h2><p>No runtime is needed.</p></section>
+}
+
+client component Scalar() {
+  state count = 0;
+  <section data-panel=""><h2>Scalar patch</h2>
+    <button type="button">on click increment { count += 1; }Increment</button>
+    <output data-count="">{count}</output>
+  </section>
+}
+
+client component Choice() {
+  state expanded = false;
+  <section data-panel=""><h2>Deferred branch</h2>
+    <button type="button">on click toggle { expanded = !expanded; }Toggle details</button>
+    <div class="reserved">
+      @if (expanded) { <p>Details occupy a reserved grid track and preserve surrounding geometry.</p> }
+      @else { <p>Ready.</p> }
+    </div>
+  </section>
+}
+
+schema Row { id: number; title: string; }
+client component Rows(initial: Row[]) {
+  state items: Row[] = initial;
+  <section data-panel=""><h2>Keyed rows</h2>
+    <button type="button">on click clear { items = []; }Clear rows</button>
+    <div class="reserved"><ul>
+      @for (const row of items; key row.id) { <li data-row={row.id}>{row.title}</li> }
+      @empty { <li>No rows.</li> }
+    </ul></div>
+  </section>
+}

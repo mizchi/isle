@@ -14,7 +14,7 @@
       "suppressed": [],
       "retuned": [],
       "report": {
-        "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "source": "http://127.0.0.1:54689/todomvc/isle/quality/",
         "verdict": "clean",
         "findings": [],
         "exempted": [],
@@ -23,21 +23,21 @@
             "width": 1280,
             "height": 800,
             "components": 8,
-            "inkRatio": 0.179,
+            "inkRatio": 0.2381,
             "textBlocks": 13
           },
           {
             "width": 768,
             "height": 900,
             "components": 8,
-            "inkRatio": 0.2652,
+            "inkRatio": 0.4323,
             "textBlocks": 13
           },
           {
             "width": 375,
             "height": 700,
             "components": 8,
-            "inkRatio": 0.4587,
+            "inkRatio": 0.5332,
             "textBlocks": 13
           }
         ],
@@ -57,7 +57,7 @@
       "suppressed": [],
       "retuned": [],
       "report": {
-        "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "source": "http://127.0.0.1:54689/todomvc/isle/quality/",
         "textLength": 249,
         "manifestLines": 10,
         "forbidLines": 0,
@@ -85,7 +85,7 @@
       "suppressed": [],
       "retuned": [],
       "report": {
-        "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "source": "http://127.0.0.1:54689/todomvc/isle/quality/",
         "page": {
           "viewportWidth": 1280,
           "viewportHeight": 720,
@@ -94,11 +94,34 @@
           "horizontalOverflow": 0,
           "verticalScroll": 0
         },
-        "containers": [],
+        "containers": [
+          {
+            "selector": "ul.todo-list",
+            "axis": "y",
+            "overflowAmountX": 0,
+            "overflowAmountY": 5,
+            "clientWidth": 548,
+            "clientHeight": 131,
+            "bbox": {
+              "x": 366,
+              "y": 276,
+              "width": 548,
+              "height": 131
+            }
+          }
+        ],
         "deadScrollports": [],
         "clipped": [],
         "visuallyHidden": 0,
-        "expectedScrollports": [],
+        "expectedScrollports": [
+          {
+            "id": "ul-todo-list",
+            "selector": "ul.todo-list",
+            "axis": "y",
+            "required": true,
+            "minOverflow": 5
+          }
+        ],
         "issues": []
       }
     },
@@ -116,7 +139,7 @@
       "retuned": [],
       "report": {
         "surface": {
-          "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+          "source": "http://127.0.0.1:54689/todomvc/isle/quality/",
           "elements": [],
           "globals": {
             "document:input": 1,
@@ -156,7 +179,7 @@
       "retuned": [],
       "report": {
         "map": {
-          "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+          "source": "http://127.0.0.1:54689/todomvc/isle/quality/",
           "elements": [
             {
               "index": 0,
@@ -357,7 +380,7 @@
       "suppressed": [],
       "retuned": [],
       "report": {
-        "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "source": "http://127.0.0.1:54689/todomvc/isle/quality/",
         "seed": 1,
         "space": {
           "minWidth": 375,
@@ -422,8 +445,8 @@
         "failures": [],
         "issues": [],
         "timing": {
-          "partitionMs": 329,
-          "casesMs": 938,
+          "partitionMs": 314,
+          "casesMs": 1055,
           "shrinkMs": 0
         }
       }
@@ -441,15 +464,15 @@
       "suppressed": [],
       "retuned": [],
       "report": {
-        "html": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "html": "http://127.0.0.1:54689/todomvc/isle/quality/",
         "viewport": {
           "width": 1280,
           "height": 900
         },
-        "screenshot": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-contrast/quality-2bf87884/page.png",
+        "screenshot": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-contrast/quality-5b788d6b/page.png",
         "totalText": 14,
         "failures": [],
-        "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-contrast/quality-2bf87884/report.md"
+        "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-contrast/quality-5b788d6b/report.md"
       }
     },
     {
@@ -465,12 +488,12 @@
       "suppressed": [],
       "retuned": [],
       "report": {
-        "source": "http://127.0.0.1:60760/todomvc/isle/quality/",
+        "source": "http://127.0.0.1:54689/todomvc/isle/quality/",
         "viewport": {
           "width": 1280,
           "height": 720
         },
-        "screenshot": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-focus-order/quality-2bf87884/page.png",
+        "screenshot": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-focus-order/quality-5b788d6b/page.png",
         "steps": [
           {
             "tabIndex": 0,
@@ -577,7 +600,7 @@
             "text": "All",
             "bbox": {
               "x": 727.546875,
-              "y": 424.78125,
+              "y": 420,
               "width": 31.015625,
               "height": 40
             },
@@ -591,7 +614,7 @@
             "text": "Active",
             "bbox": {
               "x": 762.5625,
-              "y": 424.78125,
+              "y": 420,
               "width": 53.03125,
               "height": 40
             },
@@ -605,7 +628,7 @@
             "text": "Completed",
             "bbox": {
               "x": 819.59375,
-              "y": 424.78125,
+              "y": 420,
               "width": 82.40625,
               "height": 40
             },
@@ -614,7 +637,7 @@
           }
         ],
         "findings": [],
-        "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-focus-order/quality-2bf87884/report.md"
+        "reportPath": "/Users/mz/ghq/github.com/mizchi/isle/test-results/a11y-focus-order/quality-5b788d6b/report.md"
       }
     }
   ]

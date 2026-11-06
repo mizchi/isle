@@ -16,3 +16,4 @@ playwright-report/
 .wrangler/
 .first-reader/
 .figure-check/
+.critical-path/

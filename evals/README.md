@@ -52,3 +52,5 @@
 [ページ先読みの課題](scenarios/navigation-loading/brief.md) は、Speculation Rules の prefetch / prerender と CodeRef の loading policy、snapshot の展開、SSR 専用、非対応時の動作を区別します。採点は `navigation-loading-intent`。正解と、先読みを island 再開や必須の処理と誤解した回答で grader を確認します。参加者評価は未実施です。
 
 [ダッシュボードの課題](scenarios/dashboard/brief.md) は、64項目とフォームの scope、静的な説明文、派生値、server action の境界を読み取れるかを評価します。採点は `dashboard-intent`。記述課題は別の時間変更 entry と派生表示の追加です。grader の正誤判定は回帰テストにし、参加者評価は未実施です。
+
+[初回描画のパターン](scenarios/critical-path/README.md) は、静的・部分更新・分岐・keyed list・複数 owner と TodoMVC の復元順を実行検査します。JavaScript を初回 paint 後まで遅らせ、初期 raw layout shift = 0 を要求します。旧 CSS の負例でも検出器を検証します。性能の回帰検査であり、記述の参加者評価は未実施です。

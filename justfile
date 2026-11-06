@@ -62,7 +62,7 @@ build:
 e2e: build
     pnpm test:e2e
 
-ci: check check-types test verify eval build e2e control-check resource-binding-check loading-check style-check layout-check a11y-form a11y-schema-form examples-check
+ci: check check-types test verify eval build e2e control-check resource-binding-check loading-check style-check layout-check a11y-form a11y-schema-form examples-check critical-path-check
 
 # The same SSR + counters + remote action in Isle, Qwik 1/2 RC and Preact.
 compare-build: build-compiler
@@ -103,6 +103,15 @@ todomvc-profile: todomvc-build
     NODE_ENV=production node benchmarks/todomvc/profile-build.mjs
     NODE_ENV=production node benchmarks/todomvc/profile-run.mjs
     node benchmarks/todomvc/profile-report.mjs
+
+# Paint SSR before any JavaScript; delay code/CSS and reject initial raw shifts.
+critical-path-check: todomvc-build
+    node --test tests/critical-path.test.mjs tests/region-optimization.test.mjs
+    NODE_ENV=production node benchmarks/critical-path/build.mjs
+    NODE_ENV=production node benchmarks/critical-path/run.mjs
+
+critical-path-report:
+    node benchmarks/critical-path/report.mjs
 
 # 64 work packages + validated form, four implementations, cold/warm browser timings.
 dashboard-build: build-compiler

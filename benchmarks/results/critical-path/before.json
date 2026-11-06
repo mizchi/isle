@@ -1,0 +1,19 @@
+{
+  "measuredAt": "2026-11-06T04:09:04.368Z",
+  "revision": "727d65f4d55ee59627234d7713d32cf57b3bd276",
+  "manifest": "c309e5bff9812a89",
+  "allJSGzip": 8663,
+  "firstInputAdditionalGzip": 5724,
+  "shared": {
+    "url": "/todomvc/isle/assets/TodoMVC-B1TjmQfm.js",
+    "imports": [
+      "assets/value-BfJLwyrD.js"
+    ],
+    "dynamicImports": [],
+    "bytes": 9760,
+    "gzipBytes": 3127
+  },
+  "keyboardEach": 65,
+  "inputEach": 1,
+  "evidence": "https://github.com/mizchi/isle/tree/253fe89/benchmarks/results/todomvc/profiling"
+}

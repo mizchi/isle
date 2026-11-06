@@ -11,6 +11,10 @@ export function connectTodoHost(root, framework) {
     const value = location.hash === '#/active' ? 'active' : location.hash === '#/completed' ? 'completed' : 'all';
     if (root.dataset.filter !== value) dispatch('[data-route]', value);
   }
+  // Establish the URL view before restoring rows. Separate lazy chunks can
+  // finish in any order; Isle's delivery queue keeps these updates in order.
+  // Otherwise an unfiltered list can paint before a slow route chunk arrives.
+  route();
   try {
     const saved = localStorage.getItem(key);
     if (saved && saved !== '[]') {
@@ -27,6 +31,5 @@ export function connectTodoHost(root, framework) {
   });
   observer.observe(root, { subtree: true, attributes: true, attributeFilter: ['data-todos', 'class'] });
   addEventListener('hashchange', route);
-  route();
   return () => { observer.disconnect(); removeEventListener('hashchange', route); };
 }

@@ -1,0 +1,4112 @@
+{
+  "measuredAt": "2026-11-06T04:38:15.270Z",
+  "revision": "253fe8900f0c2d61a9e462d08b82a3d305c25735",
+  "workingTree": true,
+  "browser": "Chromium 156.0.8078.4",
+  "node": "v24.21.0",
+  "platform": "darwin/arm64",
+  "scriptDelay": 650,
+  "results": [
+    {
+      "pattern": "static",
+      "width": 375,
+      "negative": false,
+      "readyTime": 532.2999999523163,
+      "fcp": 32,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 32
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 32
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 32,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        },
+        "after": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        },
+        "final": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 0,
+      "totalJS": 0,
+      "scripts": [],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "ssr-only",
+      "width": 375,
+      "negative": false,
+      "readyTime": 523.5999999642372,
+      "fcp": 16,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 16
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 16
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 16,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        },
+        "after": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        },
+        "final": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 0,
+      "totalJS": 0,
+      "scripts": [],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "scalar",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1221.1000000238419,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        },
+        "after": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        },
+        "final": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 813,
+      "totalJS": 2533,
+      "scripts": [
+        "/critical/scalar/assets/index-CRy_Q0iW.js",
+        "/critical/scalar/assets/isle-resume-Be8NMg_N.js",
+        "/critical/scalar/assets/Scalar.increment-D9asJW1r.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "branch",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1220.699999988079,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        },
+        "after": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        },
+        "final": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 828,
+      "totalJS": 4041,
+      "scripts": [
+        "/critical/branch/assets/index-BsDoEs70.js",
+        "/critical/branch/assets/isle-resume-DKJlZ7EG.js",
+        "/critical/branch/assets/Choice.toggle-CQstwM0l.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "keyed",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1221.6000000238419,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        },
+        "after": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        },
+        "final": {
+          "x": 16,
+          "y": 432.15625,
+          "width": 343,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 829,
+      "totalJS": 4837,
+      "scripts": [
+        "/critical/keyed/assets/index-m6volsCd.js",
+        "/critical/keyed/assets/value-C2JnHAx5.js",
+        "/critical/keyed/assets/isle-resume-Du37vCqO.js",
+        "/critical/keyed/assets/Rows.clear-BKXiTxE6.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "multi-owner",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1221.1000000238419,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 788.15625,
+          "width": 343,
+          "height": 18
+        },
+        "after": {
+          "x": 16,
+          "y": 788.15625,
+          "width": 343,
+          "height": 18
+        },
+        "final": {
+          "x": 16,
+          "y": 788.15625,
+          "width": 343,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 813,
+      "totalJS": 2533,
+      "scripts": [
+        "/critical/multi-owner/assets/index-CRy_Q0iW.js",
+        "/critical/multi-owner/assets/isle-resume-Be8NMg_N.js",
+        "/critical/multi-owner/assets/Scalar.increment-D9asJW1r.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "empty",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1223.699999988079,
+      "fcp": 16,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 16
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 16
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 16,
+          "size": 14535
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 1440,
+      "totalJS": 6591,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "return-one",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1887.699999988079,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 14535
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "return-many",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1888.199999988079,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 14535
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0.2065197037037037,
+        "entries": [
+          {
+            "startTime": 2001.0999999642372,
+            "value": 0.10325985185185185,
+            "hadRecentInput": true,
+            "sources": [
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 17,
+                  "y": 314.390625,
+                  "width": 341,
+                  "height": 63
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 251.390625,
+                  "width": 341,
+                  "height": 63
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 17,
+                  "y": 440.390625,
+                  "width": 341,
+                  "height": 63
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 314.390625,
+                  "width": 341,
+                  "height": 63
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 377.390625,
+                  "width": 341,
+                  "height": 63
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 440.390625,
+                  "width": 341,
+                  "height": 63
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 503.390625,
+                  "width": 341,
+                  "height": 39.609375
+                }
+              }
+            ]
+          },
+          {
+            "startTime": 2054,
+            "value": 0.10325985185185185,
+            "hadRecentInput": true,
+            "sources": [
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 17,
+                  "y": 251.390625,
+                  "width": 341,
+                  "height": 63
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 314.390625,
+                  "width": 341,
+                  "height": 63
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 17,
+                  "y": 314.390625,
+                  "width": 341,
+                  "height": 63
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 440.390625,
+                  "width": 341,
+                  "height": 63
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 17,
+                  "y": 377.390625,
+                  "width": 341,
+                  "height": 63
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 17,
+                  "y": 440.390625,
+                  "width": 341,
+                  "height": 63
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 17,
+                  "y": 503.390625,
+                  "width": 341,
+                  "height": 39.609375
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "return-heavy",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1888.3999999761581,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 14535
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6897,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "route-active",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1888,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 14535
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "route-completed",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1888.300000011921,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 14535
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "route-split",
+      "width": 375,
+      "negative": false,
+      "readyTime": 3140,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 14535
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6723,
+      "totalJS": 6723,
+      "scripts": [
+        "/todomvc-split/isle/assets/todomvc-D8M5hrwj.js",
+        "/todomvc-split/isle/assets/value-BfJLwyrD.js",
+        "/todomvc-split/isle/assets/isle-resume-Dl2R-pPz.js",
+        "/todomvc-split/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc-split/isle/assets/TodoMVC.restore-24Z_7DBf.js",
+        "/todomvc-split/isle/assets/TodoMVC.route-DyDpVqOc.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "long-title",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1871.0999999642372,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 14535
+        },
+        {
+          "startTime": 1372,
+          "size": 36023
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "invalid-storage",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1220,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 14535
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 1440,
+      "totalJS": 6591,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "blocked-storage",
+      "width": 375,
+      "negative": false,
+      "readyTime": 1221.2000000476837,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 14535
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 1440,
+      "totalJS": 6591,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "slow-css",
+      "width": 375,
+      "negative": false,
+      "readyTime": 2321.800000011921,
+      "fcp": 424,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 424
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 424
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 424,
+          "size": 14535
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 716,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "unreserved-control",
+      "width": 375,
+      "negative": true,
+      "readyTime": 1887.5,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 14535
+        }
+      ],
+      "initial": {
+        "cls": 0.04140616954732511,
+        "rawShift": 0.04140616954732511,
+        "entries": [
+          {
+            "startTime": 1377.9000000357628,
+            "value": 0.04140616954732511,
+            "hadRecentInput": false,
+            "sources": [
+              {
+                "node": "info",
+                "previousRect": {
+                  "x": 16,
+                  "y": 230.390625,
+                  "width": 343,
+                  "height": 88.390625
+                },
+                "currentRect": {
+                  "x": 16,
+                  "y": 436.390625,
+                  "width": 343,
+                  "height": 88.390625
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "final": {
+        "cls": 0.04140616954732511,
+        "rawShift": 0.04140616954732511,
+        "entries": [
+          {
+            "startTime": 1377.9000000357628,
+            "value": 0.04140616954732511,
+            "hadRecentInput": false,
+            "sources": [
+              {
+                "node": "info",
+                "previousRect": {
+                  "x": 16,
+                  "y": 230.390625,
+                  "width": 343,
+                  "height": 88.390625
+                },
+                "currentRect": {
+                  "x": 16,
+                  "y": 436.390625,
+                  "width": 343,
+                  "height": 88.390625
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "anchor": {
+        "before": {
+          "x": 16,
+          "y": 230.390625,
+          "width": 343,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 16,
+          "y": 436.390625,
+          "width": 343,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 16,
+          "y": 436.390625,
+          "width": 343,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": []
+    },
+    {
+      "pattern": "static",
+      "width": 768,
+      "negative": false,
+      "readyTime": 526,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 0,
+      "totalJS": 0,
+      "scripts": [],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "ssr-only",
+      "width": 768,
+      "negative": false,
+      "readyTime": 525.5,
+      "fcp": 20,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 20
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 20
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 20,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 0,
+      "totalJS": 0,
+      "scripts": [],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "scalar",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1220.7000000476837,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 813,
+      "totalJS": 2533,
+      "scripts": [
+        "/critical/scalar/assets/index-CRy_Q0iW.js",
+        "/critical/scalar/assets/isle-resume-Be8NMg_N.js",
+        "/critical/scalar/assets/Scalar.increment-D9asJW1r.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "branch",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1231.199999988079,
+      "fcp": 24,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 24
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 24
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 24,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 828,
+      "totalJS": 4041,
+      "scripts": [
+        "/critical/branch/assets/index-BsDoEs70.js",
+        "/critical/branch/assets/isle-resume-DKJlZ7EG.js",
+        "/critical/branch/assets/Choice.toggle-CQstwM0l.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "keyed",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1220.699999988079,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 109,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 829,
+      "totalJS": 4837,
+      "scripts": [
+        "/critical/keyed/assets/index-m6volsCd.js",
+        "/critical/keyed/assets/value-C2JnHAx5.js",
+        "/critical/keyed/assets/isle-resume-Du37vCqO.js",
+        "/critical/keyed/assets/Rows.clear-BKXiTxE6.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "multi-owner",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1220.4000000357628,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 788.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 109,
+          "y": 788.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 109,
+          "y": 788.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 813,
+      "totalJS": 2533,
+      "scripts": [
+        "/critical/multi-owner/assets/index-CRy_Q0iW.js",
+        "/critical/multi-owner/assets/isle-resume-Be8NMg_N.js",
+        "/critical/multi-owner/assets/Scalar.increment-D9asJW1r.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "empty",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1220.6000000238419,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 1440,
+      "totalJS": 6591,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "return-one",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1886.7999999523163,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "return-many",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1887,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0.1758376434702932,
+        "entries": [
+          {
+            "startTime": 1988.800000011921,
+            "value": 0.0879188217351466,
+            "hadRecentInput": true,
+            "sources": [
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 110,
+                  "y": 344.1875,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 110,
+                  "y": 275.59375,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 110,
+                  "y": 481.375,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 110,
+                  "y": 344.1875,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                },
+                "currentRect": {
+                  "x": 110,
+                  "y": 412.78125,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                },
+                "currentRect": {
+                  "x": 110,
+                  "y": 481.375,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                },
+                "currentRect": {
+                  "x": 110,
+                  "y": 549.96875,
+                  "width": 548,
+                  "height": 17.03125
+                }
+              }
+            ]
+          },
+          {
+            "startTime": 2020.800000011921,
+            "value": 0.0879188217351466,
+            "hadRecentInput": true,
+            "sources": [
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 110,
+                  "y": 275.59375,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 110,
+                  "y": 344.1875,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 110,
+                  "y": 344.1875,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 110,
+                  "y": 481.375,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 110,
+                  "y": 412.78125,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 110,
+                  "y": 481.375,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 110,
+                  "y": 549.96875,
+                  "width": 548,
+                  "height": 17.03125
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "return-heavy",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1888.199999988079,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6897,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "route-active",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1888.7000000476837,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "route-completed",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1887.5999999642372,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "route-split",
+      "width": 768,
+      "negative": false,
+      "readyTime": 3138.600000023842,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6723,
+      "totalJS": 6723,
+      "scripts": [
+        "/todomvc-split/isle/assets/todomvc-D8M5hrwj.js",
+        "/todomvc-split/isle/assets/value-BfJLwyrD.js",
+        "/todomvc-split/isle/assets/isle-resume-Dl2R-pPz.js",
+        "/todomvc-split/isle/assets/TodoMVC.restore-24Z_7DBf.js",
+        "/todomvc-split/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc-split/isle/assets/TodoMVC.route-DyDpVqOc.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "long-title",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1888.2000000476837,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        },
+        {
+          "startTime": 1388,
+          "size": 53504
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "invalid-storage",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1239.300000011921,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 1440,
+      "totalJS": 6591,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "blocked-storage",
+      "width": 768,
+      "negative": false,
+      "readyTime": 1220.5,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 1440,
+      "totalJS": 6591,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "slow-css",
+      "width": 768,
+      "negative": false,
+      "readyTime": 2321.199999988079,
+      "fcp": 424,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 424
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 424
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 424,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "unreserved-control",
+      "width": 768,
+      "negative": true,
+      "readyTime": 1887.3999999761581,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0.02857430163724923,
+        "rawShift": 0.02857430163724923,
+        "entries": [
+          {
+            "startTime": 1382,
+            "value": 0.02857430163724923,
+            "hadRecentInput": false,
+            "sources": [
+              {
+                "node": "info",
+                "previousRect": {
+                  "x": 109,
+                  "y": 254.59375,
+                  "width": 550,
+                  "height": 88.390625
+                },
+                "currentRect": {
+                  "x": 109,
+                  "y": 437.1875,
+                  "width": 550,
+                  "height": 88.390625
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "final": {
+        "cls": 0.02857430163724923,
+        "rawShift": 0.02857430163724923,
+        "entries": [
+          {
+            "startTime": 1382,
+            "value": 0.02857430163724923,
+            "hadRecentInput": false,
+            "sources": [
+              {
+                "node": "info",
+                "previousRect": {
+                  "x": 109,
+                  "y": 254.59375,
+                  "width": 550,
+                  "height": 88.390625
+                },
+                "currentRect": {
+                  "x": 109,
+                  "y": 437.1875,
+                  "width": 550,
+                  "height": 88.390625
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "anchor": {
+        "before": {
+          "x": 109,
+          "y": 254.59375,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 109,
+          "y": 437.1875,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 109,
+          "y": 437.1875,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": []
+    },
+    {
+      "pattern": "static",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 522.3000000119209,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 0,
+      "totalJS": 0,
+      "scripts": [],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "ssr-only",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 522.6999999880791,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 0,
+      "totalJS": 0,
+      "scripts": [],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "scalar",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1238,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 813,
+      "totalJS": 2533,
+      "scripts": [
+        "/critical/scalar/assets/index-CRy_Q0iW.js",
+        "/critical/scalar/assets/isle-resume-Be8NMg_N.js",
+        "/critical/scalar/assets/Scalar.increment-D9asJW1r.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "branch",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1237.5,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 828,
+      "totalJS": 4041,
+      "scripts": [
+        "/critical/branch/assets/index-BsDoEs70.js",
+        "/critical/branch/assets/isle-resume-DKJlZ7EG.js",
+        "/critical/branch/assets/Choice.toggle-CQstwM0l.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "keyed",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1238.7000000476837,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 365,
+          "y": 432.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 829,
+      "totalJS": 4837,
+      "scripts": [
+        "/critical/keyed/assets/index-m6volsCd.js",
+        "/critical/keyed/assets/value-C2JnHAx5.js",
+        "/critical/keyed/assets/isle-resume-Du37vCqO.js",
+        "/critical/keyed/assets/Rows.clear-BKXiTxE6.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "multi-owner",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1237.3999999761581,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 6636
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 788.15625,
+          "width": 550,
+          "height": 18
+        },
+        "after": {
+          "x": 365,
+          "y": 788.15625,
+          "width": 550,
+          "height": 18
+        },
+        "final": {
+          "x": 365,
+          "y": 788.15625,
+          "width": 550,
+          "height": 18
+        }
+      },
+      "identity": true,
+      "initialJS": 813,
+      "totalJS": 2533,
+      "scripts": [
+        "/critical/multi-owner/assets/index-CRy_Q0iW.js",
+        "/critical/multi-owner/assets/isle-resume-Be8NMg_N.js",
+        "/critical/multi-owner/assets/Scalar.increment-D9asJW1r.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "empty",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1237.7999999523163,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 1440,
+      "totalJS": 6591,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "return-one",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1887.6000000238419,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "return-many",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1887.5,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0.07418150583902995,
+        "entries": [
+          {
+            "startTime": 1980.1000000238419,
+            "value": 0.037090752919514976,
+            "hadRecentInput": true,
+            "sources": [
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 366,
+                  "y": 344.1875,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 366,
+                  "y": 275.59375,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 366,
+                  "y": 481.375,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 366,
+                  "y": 344.1875,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                },
+                "currentRect": {
+                  "x": 366,
+                  "y": 412.78125,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                },
+                "currentRect": {
+                  "x": 366,
+                  "y": 481.375,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                },
+                "currentRect": {
+                  "x": 366,
+                  "y": 549.96875,
+                  "width": 548,
+                  "height": 17.03125
+                }
+              }
+            ]
+          },
+          {
+            "startTime": 2003.800000011921,
+            "value": 0.037090752919514976,
+            "hadRecentInput": true,
+            "sources": [
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 366,
+                  "y": 275.59375,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 366,
+                  "y": 344.1875,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 366,
+                  "y": 344.1875,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 366,
+                  "y": 481.375,
+                  "width": 548,
+                  "height": 68.59375
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 366,
+                  "y": 412.78125,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 366,
+                  "y": 481.375,
+                  "width": 548,
+                  "height": 68.59375
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                }
+              },
+              {
+                "node": "completed",
+                "previousRect": {
+                  "x": 366,
+                  "y": 549.96875,
+                  "width": 548,
+                  "height": 17.03125
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "return-heavy",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1888,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6897,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "route-active",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1887.800000011921,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "route-completed",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1888.0999999642372,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "route-split",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 3137.400000035763,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6723,
+      "totalJS": 6723,
+      "scripts": [
+        "/todomvc-split/isle/assets/todomvc-D8M5hrwj.js",
+        "/todomvc-split/isle/assets/value-BfJLwyrD.js",
+        "/todomvc-split/isle/assets/isle-resume-Dl2R-pPz.js",
+        "/todomvc-split/isle/assets/TodoMVC.restore-24Z_7DBf.js",
+        "/todomvc-split/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc-split/isle/assets/TodoMVC.route-DyDpVqOc.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "long-title",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1888.199999988079,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        },
+        {
+          "startTime": 1388,
+          "size": 53504
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "invalid-storage",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1238.699999988079,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 1440,
+      "totalJS": 6591,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "blocked-storage",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 1238.699999988079,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 1440,
+      "totalJS": 6591,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g0-CxcYl-N5.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "slow-css",
+      "width": 1280,
+      "negative": false,
+      "readyTime": 2320.300000011921,
+      "fcp": 424,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 424
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 424
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 424,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "final": {
+        "cls": 0,
+        "rawShift": 0,
+        "entries": []
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 716,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js"
+      ],
+      "errors": [],
+      "pass": true
+    },
+    {
+      "pattern": "unreserved-control",
+      "width": 1280,
+      "negative": true,
+      "readyTime": 1888.5999999642372,
+      "fcp": 12,
+      "paints": [
+        {
+          "name": "first-paint",
+          "startTime": 12
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 12
+        }
+      ],
+      "lcp": [
+        {
+          "startTime": 12,
+          "size": 21632
+        }
+      ],
+      "initial": {
+        "cls": 0.012054783503214516,
+        "rawShift": 0.012054783503214516,
+        "entries": [
+          {
+            "startTime": 1380.8999999761581,
+            "value": 0.012054783503214516,
+            "hadRecentInput": false,
+            "sources": [
+              {
+                "node": "info",
+                "previousRect": {
+                  "x": 365,
+                  "y": 254.59375,
+                  "width": 550,
+                  "height": 88.390625
+                },
+                "currentRect": {
+                  "x": 365,
+                  "y": 437.1875,
+                  "width": 550,
+                  "height": 88.390625
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "final": {
+        "cls": 0.012054783503214516,
+        "rawShift": 0.012054783503214516,
+        "entries": [
+          {
+            "startTime": 1380.8999999761581,
+            "value": 0.012054783503214516,
+            "hadRecentInput": false,
+            "sources": [
+              {
+                "node": "info",
+                "previousRect": {
+                  "x": 365,
+                  "y": 254.59375,
+                  "width": 550,
+                  "height": 88.390625
+                },
+                "currentRect": {
+                  "x": 365,
+                  "y": 437.1875,
+                  "width": 550,
+                  "height": 88.390625
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "anchor": {
+        "before": {
+          "x": 365,
+          "y": 254.59375,
+          "width": 550,
+          "height": 88.390625
+        },
+        "after": {
+          "x": 365,
+          "y": 437.1875,
+          "width": 550,
+          "height": 88.390625
+        },
+        "final": {
+          "x": 365,
+          "y": 437.1875,
+          "width": 550,
+          "height": 88.390625
+        }
+      },
+      "identity": true,
+      "initialJS": 6543,
+      "totalJS": 6543,
+      "scripts": [
+        "/todomvc/isle/assets/todomvc-Bf2qOrRf.js",
+        "/todomvc/isle/assets/value-BfJLwyrD.js",
+        "/todomvc/isle/assets/isle-resume-CPFq-R2x.js",
+        "/todomvc/isle/assets/TodoMVC.g1-DCH_Wb_G.js",
+        "/todomvc/isle/assets/TodoMVC-BvhesOER.js"
+      ],
+      "errors": []
+    }
+  ]
+}

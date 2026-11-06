@@ -7,11 +7,14 @@ just todomvc-size     # production builds → shared correctness flow → byte s
 just todomvc-serve    # http://127.0.0.1:4332/todomvc/{isle,qwik,qwik-next,preact}/
 just todomvc-quality  # fixed UI gates for the populated Isle demo
 just todomvc-profile  # CPU profiles, traces, coverage and chunk-loading controls
+just critical-path-check # paint SSR before JS; CLS patterns with slow code/CSS
 ```
 
 The [TodoMVC application specification](https://github.com/tastejs/todomvc/blob/master/app-spec.md) supplies the behavioral requirements: add/trim/ignore blank, complete, edit with Enter/blur/Escape, remove empty edits, delete, toggle-all, clear-completed, active count, hash filters, and localStorage persistence. Keyboard activation also opens the title button. The same `flow.mjs` runs against all four implementations at desktop and phone sizes, verifies stable keyed DOM before filtering, and checks restore on reload. Empty SSR works without JavaScript; persisted data belongs to the browser and requires JavaScript.
 
 [Chunk/profile analysis](../results/todomvc/profiling/latest.md) compares the current grouping, one handler per file and auto preload. A control removes only the manifest's parallel-loading hints. Detailed V8 coverage and sampled CPU use separate trials because precise coverage disables optimized execution. Diagnostic builds and source maps use isolated outputs; an assertion verifies the production manifest stays identical. DevTools-compatible `.cpuprofile` and compressed Chrome trace files are saved under `../results/todomvc/profiling/raw/`.
+
+[Critical-path analysis](../results/critical-path/latest.md) adds static/scalar/branch/keyed/multiple-owner fixtures, slow restoration, URL filters and blocking CSS. It requires zero initial raw layout shifts and uses the previous unreserved CSS as a negative control. This common CSS reserves grid tracks even when empty; long lists scroll without moving the guide. Browser observers remain outside production code.
 
 All four use the same CSS, document shell and `examples/todomvc/host.mjs` for optional storage, native hash navigation and editor focus. The host does not render; each framework owns the list and every mutation. Fresh storage is empty. The JSON boundary validates restored shape/unique IDs before dispatch; Isle additionally checks its decoded closed type before committing. Storage exceptions and malformed previous values are ignored. Each implementation uses its own `todos-{framework}` key. Routers, RPC and backend services are unnecessary.
 

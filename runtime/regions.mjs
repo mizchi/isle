@@ -6,6 +6,11 @@ const contexts = new WeakMap();
 const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 export { escape, rowKey };
 export const rangeHTML = (id, html) => `<!--r:${id}-->${html}<!--e:${id}-->`;
+// Closed DSL values are immutable. Keep the identity check shared across tiny
+// handler chunks; actual writes still cross the transaction's checked setter.
+export function write(v, set, dirty, index, name, value) {
+  if (!Object.is(v[index], value)) { set(index, value); dirty.add(name); }
+}
 export function keyed(values, key) {
   const seen = new Set();
   return values.map((value, index) => {
