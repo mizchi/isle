@@ -11,11 +11,11 @@ schema Copy {
 schema Feature { id: string; title: string; body: string; }
 schema Demo { id: string; title: string; body: string; href: string; action: string; }
 
-server component Header(home: string, docs: string, examples: string, alternate: string, language: string, docsLabel: string, examplesLabel: string) {
+server component Header(home: string, docs: string, examples: string, playground: string, alternate: string, language: string, docsLabel: string, examplesLabel: string) {
   <header class="site-header"><div class="header-inner">
     <a class="brand" href={home}><span class="brand-mark" aria-hidden="true"></span>Isle<span class="preview-badge">preview</span></a>
     <nav class="main-nav" aria-label="Main navigation">
-      <a href={docs}>{docsLabel}</a><a href={examples}>{examplesLabel}</a>
+      <a href={docs}>{docsLabel}</a><a href={examples}>{examplesLabel}</a><a href={playground}>Playground</a>
       <a href="https://github.com/mizchi/isle">GitHub<span aria-hidden="true"> ↗</span></a>
       <a class="language-link" href={alternate}>{language}</a>
     </nav>

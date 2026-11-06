@@ -37,7 +37,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: moon update
       - run: pnpm build:compiler
-      - run: node --test tests/site.test.mjs tests/links.test.mjs
+      - run: node --test tests/site.test.mjs tests/links.test.mjs tests/browser-compiler.test.mjs tests/preview.test.mjs
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v6.0.0
@@ -48,6 +48,8 @@ jobs:
           SITE_ORIGIN: ${{ steps.pages.outputs.origin }}
       - run: node tools/check-site.mjs
       - run: pnpm exec playwright install --with-deps chromium
+      - name: Check browser compilation and sandboxed preview
+        run: pnpm exec playwright test --config playwright.playground.config.mjs
       - name: Check live examples on the project subpath
         run: pnpm exec playwright test --config playwright.site.config.mjs
       - uses: actions/upload-pages-artifact@v5.0.0

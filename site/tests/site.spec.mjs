@@ -4,6 +4,17 @@ import { liveExampleIds, siteExamples } from '../config.mjs';
 
 test.beforeAll(() => mkdir('test-results/site', { recursive: true }));
 
+test('the playground compiles and resumes on the deployed project subpath',async({page})=>{
+  await page.goto('./');await page.getByRole('link',{name:'Playground',exact:true}).click();
+  await expect(page).toHaveURL(/\/playground\/$/);
+  await expect(page.getByRole('status')).toContainText('Ready');
+  const frame=page.frameLocator('#preview');await expect(frame.locator('output')).toHaveText('5 / 10');
+  await frame.getByRole('button',{name:'Increment',exact:true}).click();
+  await expect(frame.locator('output')).toHaveText('6 / 12');
+  await page.getByRole('link',{name:'Docs',exact:true}).click();
+  await expect(page).toHaveURL(/\/docs\/quick-start.html$/);
+});
+
 test('the Isle landing page resumes its SSR counter and switches language', async ({ page }) => {
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('./');

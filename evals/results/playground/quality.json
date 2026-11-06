@@ -1,0 +1,108 @@
+{
+  "results": [
+    {
+      "gate": "check.integrity",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.copy",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "scan.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "scan.handlers",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "unprobed-handler-types",
+          "severity": "warn",
+          "message": "3 handler type(s) registered and NONE exercised: change, click, input — this gate is an inventory and presses nothing. A clean result here says the wiring exists, not that it works. Run 'check interactions --handlers' to focus and activate the controls, add '--probe-drag' for the drag surfaces, or drive the rest with a 'verify flow' script.",
+          "evidence": {
+            "element": "(page)"
+          }
+        }
+      ]
+    },
+    {
+      "gate": "check.interactions",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 3,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inert-control",
+          "severity": "warn",
+          "message": "button \"Compile\" (main>div.toolbar>button#compile) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+          "evidence": {
+            "element": "button \"Compile\" (main>div.toolbar>button#compile)"
+          }
+        },
+        {
+          "rule": "inert-control",
+          "severity": "warn",
+          "message": "button \"Reset preset\" (main>div.toolbar>button#reset) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+          "evidence": {
+            "element": "button \"Reset preset\" (main>div.toolbar>button#reset)"
+          }
+        },
+        {
+          "rule": "inert-control",
+          "severity": "warn",
+          "message": "button \"Download output\" (div.workspace>section.preview>div.output-head>button#download) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+          "evidence": {
+            "element": "button \"Download output\" (div.workspace>section.preview>div.output-head>button#download)"
+          }
+        }
+      ]
+    },
+    {
+      "gate": "check.breakpoints",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.responsive",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    }
+  ]
+}

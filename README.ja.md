@@ -4,6 +4,8 @@
 
 [ドキュメント・ライブデモ](https://mizchi.github.io/isle/ja/)
 
+[Playground を開く](https://mizchi.github.io/isle/playground/)。ブラウザー内で Isle・props・CSS を編集してコンパイルし、その場で操作できます。SSR HTML、resume 用モジュール、解析結果も確認できます。カウンター、キー付きリスト、入れ子、SSR 専用の例を用意しています。[ブラウザー API](docs/playground.md)。
+
 SSR するアプリと、外部サイトへ埋め込む Web Components を、操作時に再開する UI として作れます。`.isle` に状態・表示・イベントの境界を書くと、コンパイラが更新先を絞った DOM コードを生成し、Vite / Rolldown が配信コードを分割します。
 
 <picture>

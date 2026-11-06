@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 test('the documented package exports resolve without private implementation imports', async () => {
-  for (const path of ['vite', 'compiler', 'server', 'layout', 'widget', 'widget/browser', 'resources']) {
+  for (const path of ['vite', 'compiler', 'compiler/browser', 'preview', 'server', 'layout', 'widget', 'widget/browser', 'resources']) {
     const module = await import(`@isle/prototype/${path}`);
     assert.ok(Object.keys(module).length);
   }
@@ -36,6 +36,15 @@ test('a packed npm consumer builds the exact README app without MoonBit on PATH'
       await symlink(fileURLToPath(new URL(`../node_modules/${name}`, import.meta.url)), join(app, `node_modules/${name}`), 'dir');
     }
     await writeFile(join(app, 'package.json'), '{"name":"consumer-app","private":true,"type":"module"}');
+    await writeFile(join(app,'browser-api.mjs'), `import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {compilePreview} from '@isle/prototype/compiler/browser';
+import {previewRuntimeURL,createPreviewDocument} from '@isle/prototype/preview';
+const result=compilePreview('client component Counter(){state n=0;<button>on click {n+=1;}{n}</button>}');
+assert.ok(result.ok);const runtimeSource=await readFile(previewRuntimeURL,'utf8');
+assert.match(createPreviewDocument(result.preview,{runtimeSource}),/startPreview/);`);
+    const browserAPI=spawnSync(process.execPath,['browser-api.mjs'],{cwd:app,encoding:'utf8',env:{...process.env,PATH:'/usr/bin:/bin'}});
+    assert.equal(browserAPI.status,0,browserAPI.stderr);
     const english = await readFile(new URL('../README.md', import.meta.url), 'utf8');
     const japanese = await readFile(new URL('../README.ja.md', import.meta.url), 'utf8');
     for (const file of ['app.isle', 'index.html', 'vite.config.mjs']) {

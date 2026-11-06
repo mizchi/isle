@@ -9,6 +9,7 @@ import { prepareProgram } from '../lib/codegen.mjs';
 import { content } from './content.mjs';
 import { normalizeBase, siteExamples, sourceRoutes, sourceURL, repository, guideLinks, hashRoutes } from './config.mjs';
 import { renderMarkdown, escapeHTML as escape } from './markdown.mjs';
+import playgroundConfig from '../playground/vite.config.mjs';
 
 export const root = resolve(fileURLToPath(new URL('../', import.meta.url)));
 const read = path => readFile(resolve(root, path), 'utf8');
@@ -43,7 +44,7 @@ export async function buildSite({ base = process.env.SITE_BASE, origin = process
   const guides = lang => base + (lang === 'ja' ? 'ja/' : '') + 'docs/quick-start.html';
   const gallery = lang => base + (lang === 'ja' ? 'ja/' : '') + 'examples/';
   const header = (lang, alternate = home(lang === 'ja' ? 'en' : 'ja')) => staticRender('Header', {
-    home: home(lang), docs: guides(lang), examples: gallery(lang), alternate,
+    home: home(lang), docs: guides(lang), examples: gallery(lang), playground: base + 'playground/', alternate,
     language: lang === 'ja' ? 'English' : '日本語', docsLabel: lang === 'ja' ? 'ガイド' : 'Docs', examplesLabel: lang === 'ja' ? 'サンプル' : 'Examples',
   });
   const footer = lang => staticRender('Footer', { home: home(lang), docs: guides(lang), examples: gallery(lang),
@@ -143,6 +144,9 @@ export async function buildSite({ base = process.env.SITE_BASE, origin = process
     await page('reports/layout.html', { title: 'CSS contract reports', body: `<main id="content" class="page-width example-page"><p class="eyebrow">BUILD-TIME ANALYSIS</p><h1>Three outcomes. Explicit limits.</h1><p class="lead">Real CLI output for the declared Grid / reset contracts. Unknown is not a successful proof.</p><div class="report-grid">${reports.join('')}</div><a href="${base}examples/layout-contracts/">Read the example →</a></main>` });
     await page('reports/todomvc.html', { title: 'TodoMVC payload comparison', body: `<main id="content" class="page-width example-page doc-content">${markdown(await read('benchmarks/results/todomvc/latest.md'), 'benchmarks/results/todomvc/latest.md')}<p><a href="${base}examples/todomvc/">TodoMVC guide &amp; source →</a></p><p><a href="${base}demos/todomvc/">Open the live demo →</a></p></main>` });
     await page('404.html', { title: 'Page not found', body: `<main id="content" class="page-width example-page"><p class="eyebrow">404</p><h1>This page isn’t here.</h1><p>Find a guide or try an example.</p><div class="hero-actions"><a class="button primary" href="${home('en')}">Back to Isle →</a><a class="button secondary" href="${gallery('en')}">Explore examples</a></div></main>` });
+
+    await build({...playgroundConfig,configFile:false,base:base+'playground/',logLevel:'warn',build:{...playgroundConfig.build,outDir:resolve(out,'playground')}});
+    pages.push('playground/index.html');
 
     // Copy only source assets referenced by the rendered documents.
     for (const file of (await walk(out)).filter(file => file.endsWith('.html'))) {

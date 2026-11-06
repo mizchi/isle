@@ -212,8 +212,8 @@
           "severity": "warn",
           "message": "Focus jumped down by 496px (from `header.site-header>div.header-inner>nav.main-nav>a.language-link` to `main#content>section.hero.page-width>div.hero-copy>div.hero-actions>a.button.primary`). Confirm no focusable element was unintentionally skipped.",
           "evidence": {
-            "fromIndex": 5,
-            "toIndex": 6
+            "fromIndex": 6,
+            "toIndex": 7
           }
         },
         {
@@ -221,8 +221,8 @@
           "severity": "warn",
           "message": "Focus jumped down by 321px (from `main#content>section.hero.page-width>div.hero-example>div.source-card>pre` to `section.hero.page-width>div.hero-example>section.live-counter>div.counter-controls>button`). Confirm no focusable element was unintentionally skipped.",
           "evidence": {
-            "fromIndex": 9,
-            "toIndex": 10
+            "fromIndex": 10,
+            "toIndex": 11
           }
         },
         {
@@ -230,8 +230,8 @@
           "severity": "warn",
           "message": "Focus jumped down by 1246px (from `section.hero.page-width>div.hero-example>section.live-counter>div.counter-controls>button.reset-button` to `main#content>div.page-sections>section.page-width.content-section>div.section-heading.with-action>a.text-link`). Confirm no focusable element was unintentionally skipped.",
           "evidence": {
-            "fromIndex": 11,
-            "toIndex": 12
+            "fromIndex": 12,
+            "toIndex": 13
           }
         },
         {
@@ -239,8 +239,8 @@
           "severity": "warn",
           "message": "Focus jumped down by 255px (from `main#content>div.page-sections>section.page-width.content-section>div.section-heading.with-action>a.text-link` to `div.page-sections>section.page-width.content-section>div.example-grid>article.example-card>a.text-link`). Confirm no focusable element was unintentionally skipped.",
           "evidence": {
-            "fromIndex": 12,
-            "toIndex": 13
+            "fromIndex": 13,
+            "toIndex": 14
           }
         }
       ]
@@ -346,8 +346,8 @@
           "severity": "warn",
           "message": "Focus jumped down by 496px (from `header.site-header>div.header-inner>nav.main-nav>a.language-link` to `main#content>section.hero.page-width>div.hero-copy>div.hero-actions>a.button.primary`). Confirm no focusable element was unintentionally skipped.",
           "evidence": {
-            "fromIndex": 5,
-            "toIndex": 6
+            "fromIndex": 6,
+            "toIndex": 7
           }
         },
         {
@@ -355,8 +355,8 @@
           "severity": "warn",
           "message": "Focus jumped down by 321px (from `main#content>section.hero.page-width>div.hero-example>div.source-card>pre` to `section.hero.page-width>div.hero-example>section.live-counter>div.counter-controls>button`). Confirm no focusable element was unintentionally skipped.",
           "evidence": {
-            "fromIndex": 9,
-            "toIndex": 10
+            "fromIndex": 10,
+            "toIndex": 11
           }
         },
         {
@@ -364,8 +364,8 @@
           "severity": "warn",
           "message": "Focus jumped down by 1227px (from `section.hero.page-width>div.hero-example>section.live-counter>div.counter-controls>button.reset-button` to `main#content>div.page-sections>section.page-width.content-section>div.section-heading.with-action>a.text-link`). Confirm no focusable element was unintentionally skipped.",
           "evidence": {
-            "fromIndex": 11,
-            "toIndex": 12
+            "fromIndex": 12,
+            "toIndex": 13
           }
         },
         {
@@ -373,8 +373,8 @@
           "severity": "warn",
           "message": "Focus jumped down by 255px (from `main#content>div.page-sections>section.page-width.content-section>div.section-heading.with-action>a.text-link` to `div.page-sections>section.page-width.content-section>div.example-grid>article.example-card>a.text-link`). Confirm no focusable element was unintentionally skipped.",
           "evidence": {
-            "fromIndex": 12,
-            "toIndex": 13
+            "fromIndex": 13,
+            "toIndex": 14
           }
         }
       ]

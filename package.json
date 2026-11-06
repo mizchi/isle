@@ -8,6 +8,8 @@
   "exports": {
     "./vite": { "types": "./lib/vite.d.mts", "import": "./lib/vite.mjs" },
     "./compiler": { "types": "./lib/compiler.d.mts", "import": "./lib/compiler.mjs" },
+    "./compiler/browser": { "types": "./lib/compiler-browser.d.mts", "import": "./lib/compiler-browser.mjs" },
+    "./preview": { "types": "./lib/preview.d.mts", "import": "./lib/preview.mjs" },
     "./server": { "types": "./lib/server.d.mts", "import": "./lib/server.mjs" },
     "./layout": { "types": "./lib/layout.d.mts", "import": "./lib/layout.mjs" },
     "./widget": { "types": "./lib/widget.d.mts", "import": "./lib/widget.mjs" },
@@ -15,7 +17,7 @@
     "./resources": { "types": "./runtime/resource-owner.d.mts", "import": "./runtime/resource-owner.mjs" }
   },
   "bin": { "isle": "./tools/isle.mjs" },
-  "files": ["lib/", "runtime/", "_build/js/release/build/compiler/compiler.js", "tools/isle.mjs", "README.md", "README.ja.md"],
+  "files": ["lib/", "runtime/", "_build/js/release/build/compiler/compiler.js", "_build/browser/preview-runtime.txt", "tools/isle.mjs", "README.md", "README.ja.md"],
   "peerDependencies": { "vite": "^8.3.5" },
   "dependencies": { "postcss": "8.5.32", "parse5": "8.0.1" },
   "packageManager": "pnpm@12.11.2",
@@ -24,7 +26,7 @@
   },
   "scripts": {
     "prepack": "pnpm build:compiler",
-    "build:compiler": "moon build compiler --target js --release",
+    "build:compiler": "moon build compiler --target js --release && node tools/build-preview-runtime.mjs",
     "test": "node --test tests/*.test.mjs",
     "eval": "node tools/eval.mjs",
     "dev": "vite --config examples/counter/vite.config.mjs",

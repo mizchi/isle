@@ -1,0 +1,50 @@
+:root { font: 15px/1.6 system-ui, sans-serif; color: #233d38; background: #f7f5ef; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+header, main, footer { max-width: 1500px; margin: auto; padding: 24px 32px; }
+header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5cc; }
+a { color: #00675c; text-underline-offset: 4px; }
+.brand { font-size: 26px; font-weight: 750; text-decoration: none; }
+.brand span { font-size: 13px; font-weight: 500; margin-left: 8px; }
+nav { display: flex; gap: 24px; }
+.intro { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin: 12px 0 28px; }
+.eyebrow { font-size: 11px; letter-spacing: .13em; font-weight: 700; margin: 0 0 8px; color: #4a6259; }
+h1 { font-size: clamp(26px, 3vw, 40px); line-height: 1.2; margin: 0; letter-spacing: -.03em; }
+.intro > p { margin: 0; color: #4a6259; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-bottom: 20px; }
+label { display: block; font-size: 12px; font-weight: 650; }
+select, button, textarea { font: inherit; }
+select, button { border: 1px solid #b5c6ba; border-radius: 6px; min-height: 42px; padding: 8px 12px; background: #fffefa; color: #233d38; max-width: 100%; }
+select { display: block; width: 100%; }
+button { cursor: pointer; background: #00675c; color: white; font-weight: 600; }
+button.secondary { background: #fffefa; color: #233d38; }
+button:disabled { opacity: .6; cursor: default; }
+:focus-visible { outline: 3px solid #b36b16; outline-offset: 3px; }
+.auto { display: flex; align-items: center; gap: 6px; min-height: 42px; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.panel { background: #fffefa; border: 1px solid #bfcec2; border-radius: 10px; overflow: hidden; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px; border-bottom: 1px solid #dce2da; }
+h2 { font-size: 14px; margin: 0; }
+.panel-head span, #size { font-size: 12px; color: #4a6259; }
+textarea { display: block; width: 100%; border: 0; border-radius: 0; resize: vertical; padding: 16px; font: 13px/1.65 ui-monospace, monospace; color: #233d38; background: #fffefa; tab-size: 2; }
+#source { height: 430px; min-height: 180px; }
+.inputs { border-top: 1px solid #dce2da; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }
+.inputs > div { min-width: 0; }
+.inputs > div + div { border-left: 1px solid #dce2da; }
+.inputs label { padding: 8px 16px; background: #f1f4ed; }
+.inputs textarea { height: 180px; min-height: 100px; }
+#status { padding: 10px 16px; margin: 0; font-size: 13px; background: #edf4ed; border-bottom: 1px solid #dce2da; }
+#status[data-error] { background: #fff0e8; color: #8e301b; }
+#diagnostics { padding: 12px 16px 12px 32px; margin: 0; color: #8e301b; }
+#diagnostics button { background: transparent; border: 0; color: #8e301b; padding: 0; text-align: left; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
+iframe { display: block; width: 100%; height: 400px; border: 0; background: white; }
+.output-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 16px; border-top: 1px solid #dce2da; }
+.output-head select { width: auto; flex: 1; min-width: 0; }
+.output-head button { font-size: 12px; }
+#size { margin: 0; padding: 0 16px 8px; }
+pre { font: 12px/1.6 ui-monospace, monospace; margin: 0; padding: 16px; height: 166px; overflow: auto; background: #f1f4ed; white-space: pre-wrap; overflow-wrap: anywhere; }
+.limits, footer { font-size: 12px; color: #4a6259; }
+.limits { max-width: 1000px; margin: 20px 0 0; }
+footer { padding-top: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (max-width: 800px) { header, main, footer { padding-left: 16px; padding-right: 16px; }.intro { display: block; }.intro > p { margin-top: 16px; }.workspace { grid-template-columns: minmax(0,1fr); }.toolbar > label:not(.auto) { flex: 1 1 135px; min-width: 0; }#source { height: 330px; }nav { gap: 12px; }.inputs { grid-template-columns: minmax(0,1fr); }.inputs > div + div { border-left: 0; border-top: 1px solid #dce2da; }.inputs textarea { height: 130px; } }

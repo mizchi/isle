@@ -4,6 +4,8 @@ English · [日本語](README.ja.md)
 
 [Documentation & live demos](https://mizchi.github.io/isle/)
 
+[Open the playground](https://mizchi.github.io/isle/playground/) to edit Isle, props and CSS, run the compiler locally in your browser, and inspect SSR HTML, resume modules and analysis. Includes counters, keyed lists, nested components and SSR-only examples. [Browser API](docs/playground.md).
+
 Build server-rendered apps and embeddable Web Components with resumable interactions. Write state, views and event boundaries in `.isle`; the compiler generates targeted DOM updates and lets Vite / Rolldown split the code you ship.
 
 <picture>

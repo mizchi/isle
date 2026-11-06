@@ -362,3 +362,17 @@ site-check: site-build
 
 site-quality: site-build
     node tools/check-site-quality.mjs
+
+# Browser-only compiler and sandboxed live preview.
+playground: build-compiler
+    pnpm exec vite --config playground/vite.config.mjs
+
+playground-build: build-compiler
+    pnpm exec vite build --config playground/vite.config.mjs
+
+playground-check: build-compiler
+    node --test tests/browser-compiler.test.mjs tests/preview.test.mjs
+    pnpm exec playwright test --config playwright.playground.config.mjs
+
+playground-quality: playground-build
+    node tools/check-playground.mjs
