@@ -1,0 +1,31 @@
+{
+  "status": "verified",
+  "initialScripts": [
+    "/assets/index-DCpqw0rK.js"
+  ],
+  "scripts": [
+    "/assets/index-DCpqw0rK.js",
+    "/assets/isle-resume-BDHduyGT.js",
+    "/assets/Cell.h0-De31ghBs.js"
+  ],
+  "errors": [],
+  "boxes": [
+    {
+      "width": 160,
+      "height": 240,
+      "overflow": false
+    },
+    {
+      "width": 160,
+      "height": 240,
+      "overflow": false
+    }
+  ],
+  "independentResume": true,
+  "boundedValues": [
+    0,
+    1,
+    2,
+    3
+  ]
+}

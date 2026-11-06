@@ -4,6 +4,17 @@ import type { IsleMount, RenderMode } from './client-contracts.d.ts';
 import type { LoadingPolicy } from './code-contracts.d.ts';
 import type { SpeculationRules } from './speculation.mjs';
 import type { CostBudget } from './cost-contracts.d.ts';
+import type { CheckedLayoutBoxContract } from './layout-contracts.d.ts';
+/** Closed document profile: all author CSS is owned by this build. Unknown is an error. */
+export interface CheckedLayoutOptions {
+  /** Local CSS path relative to the .isle entry. Delivered automatically. */
+  css: string;
+  /** Ordered reset paths relative to the entry, before app CSS. */
+  reset?: readonly string[];
+  viewport: { min: number; max: number; height: { min: number; max: number } };
+  /** Trusted content bounds and explicit overflow policies. */
+  boxes?: Record<string, CheckedLayoutBoxContract>;
+}
 export interface WidgetBuildOptions {
   /** shared pins an exact page version; standalone embeds a private runtime. Default: shared. */
   runtime?: 'shared' | 'standalone';
@@ -24,6 +35,9 @@ export interface IsleOptions {
   mounts: IsleMount[];
   /** Default true renders labeled demo cards. False lets the app own its document shell. */
   wrapMounts?: boolean;
+  /** Fail production builds on layout violations or unknowns; emit isle.layout.json.
+   * Requires one mount, wrapMounts:false, generated loader, no widget/resource setup. */
+  layout?: CheckedLayoutOptions;
   mode?: RenderMode;
   /** auto (default) plans fetch-only preloads from events and final chunk sizes. */
   loading?: LoadingPolicy;

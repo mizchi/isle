@@ -1,0 +1,12 @@
+export component ResponsiveBoard() {
+  <main class="board">
+    <h1 class="title">Checked Grid</h1>
+    <section class="tiles" aria-label="Responsive tiles">
+      <div class="tile">A</div>
+      <div class="tile">B</div>
+      <div class="tile">C</div>
+      <div class="tile">D</div>
+    </section>
+    <p class="note">Resize to change columns.</p>
+  </main>
+}

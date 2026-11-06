@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
-import { liveExampleIds } from '../config.mjs';
+import { liveExampleIds, siteExamples } from '../config.mjs';
 
 test.beforeAll(() => mkdir('test-results/site', { recursive: true }));
 
@@ -34,7 +34,7 @@ for (const route of ['', 'ja/', 'examples/', 'ja/examples/', 'docs/quick-start.h
 
 test('the gallery labels server-only examples and opens a working static demo', async ({ page }) => {
   await page.goto('./examples/');
-  await expect(page.locator('.example-card')).toHaveCount(16);
+  await expect(page.locator('.example-card')).toHaveCount(siteExamples.length);
   const card = page.locator('.example-card').filter({ has: page.getByRole('heading', { name: 'Shared schema and server validation' }) });
   await expect(card).toContainText('Requires a server');
   await expect(card.getByRole('link', { name: 'Open demo' })).toHaveCount(0);

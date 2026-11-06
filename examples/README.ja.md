@@ -20,6 +20,7 @@
 | [共通 schema とサーバー検証](schema-form/) | taken@example.com の重複エラーを確認し、修正・送信・reset を試す。 |
 | [明示的な server action](counter/) | 独立した Counter と、検証・認可を経由する文書名変更を試す。 |
 | [CSS 契約の3つの結果](layout-contracts/) | reset を考慮した Grid/subgrid 契約で verified・violated・unknown を確認する。 |
+| [レスポンシブ検査付きビルド](responsive-checked/) | 配信する HTML/CSS の幅×高さ領域を検査し、違反・解析不能でビルドを失敗させる。 |
 | [ポータブルな Web Components](portable-widget/) | 複数 widget をマウントし、共有版・standalone 版・版の不一致の拒否を確認する。 |
 | [Workers からの widget 配信](worker-widget/) | widget-dev と widget-host を別 terminal で起動し、別 origin に固定サイズの Shadow DOM widget を埋め込む。 |
 

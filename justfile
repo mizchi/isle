@@ -63,7 +63,7 @@ build:
 e2e: build
     pnpm test:e2e
 
-ci: check check-types test verify eval build e2e control-check resource-binding-check loading-check style-check layout-check layout-subgrid-check a11y-form a11y-schema-form examples-check critical-path-check
+ci: check check-types test verify eval build e2e control-check resource-binding-check loading-check style-check layout-check layout-subgrid-check layout-build-quality a11y-form a11y-schema-form examples-check critical-path-check
 
 # The same SSR + counters + remote action in Isle, Qwik 1/2 RC and Preact.
 compare-build: build-compiler
@@ -257,6 +257,13 @@ layout source='evals/scenarios/layout/fixture.isle' config='evals/scenarios/layo
 layout-check: build-compiler
     node --test tests/layout*.test.mjs tests/eval-layout*.test.mjs
     pnpm exec playwright test --config playwright.layout.config.mjs
+
+# Closed production HTML/CSS; both width and height must be fully verified.
+layout-build: build-compiler
+    pnpm exec vite build --config examples/responsive-checked/vite.config.mjs
+
+layout-build-quality: layout-build
+    node tools/check-responsive-build.mjs
 
 # Test-fixture geometry only, within its declared 352..1280 CSS-pixel domain.
 layout-quality: layout-check

@@ -1,0 +1,163 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { build } from 'vite';
+import { isle } from '../lib/vite.mjs';
+
+const source = 'export component Four() { <main class="row"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></main> }';
+const css = '*{box-sizing:border-box;margin:0}.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}.cell{min-width:40px}';
+const responsive = '@media(width < 160px){.row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}';
+const viewport = { min:80, max:300, height:{ min:200, max:600 } };
+const html = '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><!--isle:ssr--></body></html>';
+const hash = value => createHash('sha256').update(value).digest('hex');
+async function fixture(t, overrides = {}) {
+  const directory = await mkdtemp(join(tmpdir(), 'isle-layout-build-'));
+  t.after(() => rm(directory, { recursive:true, force:true }));
+  await Promise.all([
+    writeFile(join(directory, 'app.isle'), overrides.source ?? source),
+    writeFile(join(directory, 'app.css'), overrides.css ?? css + responsive),
+    writeFile(join(directory, 'index.html'), overrides.html ?? html),
+    writeFile(join(directory, 'package.json'), '{"type":"module"}'),
+  ]);
+  const options = { entry:join(directory, 'app.isle'), mounts:[{component:'Four',props:{}}], wrapMounts:false,
+    layout:{css:'./app.css',viewport}, ...overrides.options };
+  return () => build({configFile:false,root:directory,base:overrides.base ?? './',logLevel:'silent',plugins:[isle(options),...(overrides.plugins ?? [])],build:{write:false}});
+}
+const artifact = (output, name) => output.output.find(item => item.fileName === name);
+
+test('checked build rejects the fractional responsive gap instead of sampling breakpoints', async t => {
+  const run = await fixture(t, {css:css + responsive.replace('160px','159px')});
+  await assert.rejects(run, error => /E_ISLE_LAYOUT/.test(error.message) && /159/.test(error.message) && /160/.test(error.message));
+});
+
+test('checked build owns delivered CSS and binds a two-axis certificate to final HTML', async t => {
+  const output = await (await fixture(t))();
+  const page = String(artifact(output, 'index.html').source);
+  const certificate = JSON.parse(artifact(output, 'isle.layout.json').source);
+  assert.equal(certificate.status, 'verified');
+  assert.equal(certificate.report.scope.axis, 'both');
+  assert.equal(certificate.report.scope.viewport.minExact, '80');
+  assert.equal(certificate.report.scope.viewport.height.maxExact, '600');
+  assert.equal(certificate.document.sha256, hash(page));
+  assert.equal(certificate.component, 'Four');
+  assert.ok(certificate.sources.every(row => !row.file.startsWith('/')), 'certificate paths are portable');
+  assert.match(page, /<style data-isle-layout="1">/);
+  assert.match(page, /min-width:40px/);
+  assert.ok(certificate.report.sizes.some(row => row.box.startsWith('html@')));
+  assert.ok(certificate.report.sizes.some(row => row.box.startsWith('body@')));
+  assert.equal(output.output.filter(item => item.type === 'chunk').length, 0, 'static checks add no browser JS');
+});
+
+test('height and container branches remain coupled in production checks', async t => {
+  const run = await fixture(t, {css:css+responsive+'.row{container:Row / inline-size;block-size:100px}@media(height >= 400px){@container Row (width >= 150px){.cell{min-width:80px}}}'});
+  await assert.rejects(run, /E_ISLE_LAYOUT.*150/s);
+});
+
+test('unsupported CSS is a build error, even in an unmatched rule', async t => {
+  const run = await fixture(t, {css:css+responsive+'.unused{float:left}'});
+  // float is parsed but an unmatched rule cannot affect geometry; unknown syntax must still fail closed.
+  const unknown = await fixture(t, {css:css+responsive+'.unused > div{display:grid}'});
+  await run();
+  await assert.rejects(unknown, /E_ISLE_LAYOUT.*unknown/s);
+});
+
+test('the real document host is checked rather than trusting a caller inset', async t => {
+  const run = await fixture(t, {css:css+responsive+'body{padding:1px}'});
+  await assert.rejects(run, /E_ISLE_LAYOUT.*E_LAYOUT_ITEM_SIZE/s);
+});
+
+for (const [name, extra] of [
+  ['external stylesheet', '<link rel="stylesheet" href="https://example.com/extra.css">'],
+  ['extra inline stylesheet', '<style>.row{width:1px}</style>'],
+  ['inline style', '<div style="width:1px"></div>'],
+  ['extra unmodeled content', '<aside>outside</aside>'],
+  ['script', '<script>document.body.style.width="1px"</script>'],
+  ['CSP that can disable the owned stylesheet', '<meta http-equiv="Content-Security-Policy" content="style-src &apos;none&apos;">'],
+]) test(`checked document rejects ${name}`, async t => {
+  const run = await fixture(t, {html:html.replace('</body>',extra+'</body>')});
+  await assert.rejects(run, /E_ISLE_LAYOUT/);
+});
+
+test('late plugin changes to owned CSS and rendered structure cannot retain verification', async t => {
+  for (const mutate of [page => page.replace('min-width:40px','min-width:400px'), page => page.replace('class="row"','class="different"'), page => page.replace('data-isle-layout="1"','data-isle-layout="1" media="print"')]) {
+    const run = await fixture(t, {plugins:[{name:'late-change',transformIndexHtml:{order:'post',handler:mutate}}]});
+    await assert.rejects(run, /E_ISLE_LAYOUT/);
+  }
+});
+
+test('an external script cannot impersonate an emitted chunk by filename', async t => {
+  const source = 'export client component Four() { state n = 0; <a class="counter" href="#">on click { n += 1; }{n}</a> }';
+  const layout = {css:'./app.css',viewport,boxes:{'.counter':{minInlineSize:40,minBlockSize:20}}};
+  const run = await fixture(t, {source,css:'*{margin:0;box-sizing:border-box}',options:{layout},plugins:[{
+    name:'external-script',transformIndexHtml:{order:'post',handler(_html,{bundle}) {
+      const chunk = Object.values(bundle).find(item => item.type === 'chunk');
+      return [{tag:'script',attrs:{type:'module',src:`https://unowned.test/${chunk.fileName}`},injectTo:'body'}];
+    }},
+  }]});
+  await assert.rejects(run,/E_ISLE_LAYOUT.*Unowned executable script/);
+});
+
+test('noscript cannot introduce another stylesheet when scripting is disabled', async t => {
+  const run = await fixture(t, {html:html.replace('</head>','<noscript><style>.row{width:1px}</style></noscript></head>')});
+  await assert.rejects(run,/E_ISLE_LAYOUT.*noscript/);
+});
+
+test('dynamic structure is not certified from one SSR snapshot', async t => {
+  const run = await fixture(t, {source:'export client component Four() { state show = true; <main class="row">on click { show = false; }@if(show) { <div class="cell"></div> }</main> }'});
+  await assert.rejects(run, /E_ISLE_LAYOUT.*U_LAYOUT_STRUCTURE/s);
+});
+
+test('checked options require one owned document and a closed height domain', () => {
+  const base = {entry:'/app.isle',mounts:[{component:'Four',props:{}}],wrapMounts:false,layout:{css:'./app.css',viewport}};
+  for (const options of [
+    {...base,wrapMounts:true}, {...base,mounts:[...base.mounts,...base.mounts]}, {...base,clientEntry:'./app.js'},
+    {...base,resources:{Four:'./setup.js'}}, {...base,widget:{}},
+    {...base,layout:{...base.layout,viewport:{min:80,max:300}}},
+    {...base,layout:{...base.layout,hostInset:0}},
+  ]) assert.throws(() => isle(options), /E_ISLE_LAYOUT/);
+});
+
+test('stable resumable text uses the same JS chunks with or without layout checks', async t => {
+  const source = 'export client component Four() { state n = 0; <a class="counter" href="#">on click { n = n < 3 ? n + 1 : 0; }{n}</a> }';
+  const layout = {css:'./app.css',viewport,boxes:{'.counter':{minInlineSize:40,minBlockSize:20}}};
+  const chunks = output => output.output.filter(item => item.type === 'chunk').map(({fileName,code}) => [fileName,code]).sort(([a],[b]) => a.localeCompare(b));
+  for (const loading of ['auto','lazy','preload','eager']) for (const base of ['./','/isle/demo/']) {
+    const checked = await (await fixture(t, {source,base,css:'*{box-sizing:border-box;margin:0}',options:{layout,loading}}))();
+    const unchecked = await (await fixture(t, {source,base,options:{layout:undefined,loading}}))();
+    assert.deepEqual(chunks(checked),chunks(unchecked), `${loading}/${base}: checking adds no JS or runtime metadata`);
+    assert.ok(chunks(checked).length > 0);
+  }
+});
+
+test('parser repairs cannot replace the template tree being proved', async t => {
+  const run = await fixture(t, {source:'export component Four() { <p class="row"><div class="cell"></div></p> }'});
+  await assert.rejects(run, /E_COMPONENT_HTML|E_ISLE_LAYOUT.*(?:tree|structure)/s);
+});
+
+test('CSS cannot render the omitted head, snapshot or loader nodes', async t => {
+  const run = await fixture(t, {css:css+responsive+'head{display:block}'});
+  await assert.rejects(run, /E_ISLE_LAYOUT.*unmodeled head/);
+});
+
+test('unmodeled scrollbar gutters and native popovers are rejected', async t => {
+  for (const extra of ['.row{overflow:auto}', '.row{overflow-y:scroll}']) {
+    const run = await fixture(t, {css:css+responsive+extra});
+    await assert.rejects(run, /E_ISLE_LAYOUT.*scrollbar/s);
+  }
+  const run = await fixture(t, {html:html.replace('<body>','<body popover="auto">')});
+  await assert.rejects(run, /E_ISLE_LAYOUT.*rendering attribute/);
+});
+
+test('nested stable client components remain checkable without treating snapshots as boxes', async t => {
+  const source = `client component Cell() { state n = 0; <a class="counter" href="#">on click { n = n < 3 ? n + 1 : 0; }{n}</a> }
+    export client component Four() { <main class="row"><Cell/><Cell/></main> }`;
+  const css = '*{margin:0;box-sizing:border-box}.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr)}';
+  const layout = {css:'./app.css',viewport,boxes:{'.counter':{minInlineSize:40,minBlockSize:20}}};
+  const run = await fixture(t, {source,css,options:{layout}});
+  const output = await run();
+  assert.equal(JSON.parse(artifact(output,'isle.layout.json').source).status,'verified');
+  assert.match(String(artifact(output,'index.html').source),/data-isle-snapshot/);
+});

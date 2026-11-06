@@ -27,7 +27,10 @@ for (const example of examples.filter(example => example.kind === 'vite')) {
     const { output } = await build({ configFile: `examples/${example.id}/vite.config.mjs`, logLevel: 'silent', build: { write: false } });
     const html = output.find(file => file.fileName === 'index.html')?.source;
     assert.ok(html && !html.includes('<!--isle:ssr-->'));
-    if (['ssr-only', 'navigation'].includes(example.id)) {
+    if (example.id === 'responsive-checked') {
+      assert.equal(output.filter(file => file.type === 'chunk').length,0);
+      assert.equal(JSON.parse(output.find(file => file.fileName === 'isle.layout.json').source).status,'verified');
+    } else if (['ssr-only', 'navigation'].includes(example.id)) {
       assert.equal(output.filter(file => file.type === 'chunk').length, 0);
       assert.doesNotMatch(html, /data-isle-|type="module"/);
     } else {

@@ -9,11 +9,48 @@ just layout-reset
 just layout-subgrid
 just layout path/to/app.isle path/to/layout.json
 just layout-check
+just layout-build
+just layout-build-quality
 ```
 
-現在は明示的な CLI pass である。Vite build の自動 gate、CSS 最適化、CSS-ready runtime への追加処理は接続していない。production runtime には解析器・依存ライブラリ・検査用 metadata を import しない。
+CLI の明示的な解析に加え、Vite の `layout` オプションで配信する HTML/CSS を検査する build gate を提供する。production runtime には解析器・依存ライブラリ・検査用 metadata を import しない。CSS chunk の一般的な最適化や CSS-ready runtime とは別の build-only pass である。
 
 [リジェクト例](layout-rejections.md)は `just layout-rejections` で、拒否されるコードと対応版を一組ずつ実行できる。
+
+## Vite build で保証範囲を閉じる
+
+アプリからは `@isle/prototype/vite` の `isle` に次のオプションを渡す。[実行例](../examples/responsive-checked/)と[設定全文](../examples/responsive-checked/vite.config.mjs)を参照。
+
+```js
+isle({
+  entry,
+  mounts: [{ component: 'App', props: {} }],
+  wrapMounts: false,
+  layout: {
+    css: './app.css',
+    reset: ['./reset.css'],
+    viewport: { min: 320, max: 1280, height: { min: 240, max: 900 } },
+    boxes: { '.copy': { minInlineSize: 200, minBlockSize: 24 } },
+  },
+})
+```
+
+`css` と `reset` は **`.isle` entry からの相対パス**である。CLI の sidecar 相対とは区別する。指定した reset→app の cascade を、所有する一つの inline stylesheet として自動配信する。コメント・不要な空白をビルド時に除去し、別の stylesheet link や style block は拒否する。CSS 内の相対 URL は配信先 HTML を基準に解決される。
+
+このモードは document を一つ所有する最初の厳格な profile であり、次を要求する。
+
+- mount は一つ、`wrapMounts:false`。HTML に SSR marker が一つあり、body の描画要素はその component の tree と一致すること。
+- html/body を viewport 全体の Grid shell として出力し、実際の class/id・reset・padding/border を含めて両軸を解析する。`hostInset` や、解析のためだけの仮の ancestor は受け取らない。
+- 幅と高さの有限区間を両方指定する。到達可能な media/container query の組み合わせを有理数の領域として検査し、違反と **unknown の両方**で production build を失敗させる。成功を少数の viewport のサンプリングで代用しない。
+- 構造と class/id は静的であること。状態で変化する `@if`/`@for` 等は現在の SSR の一状態だけから保証しない。最適化で静的に確定した分岐は対象にできる。契約を満たす text 更新は、標準の resume loader で利用できる。
+- `clientEntry`、`resources`、widget 設定、追加の実行 script、未所有の client module、inline style、popover、noscript、CSP meta 等は拒否する。head・snapshot・loader の非描画要素を CSS が表示する場合も拒否する。HTTP の CSP 等、配信側の policy は所有する stylesheet の適用を許可する前提である。
+- overflow 契約は fit/clip のみ。`overflow:auto/scroll`、visible 契約による無制限の流出、scrollbar gutter は adapter 未実装のため拒否する。CLI 単体の解析では従来の scroll/visible 契約も利用できる。
+
+成功時に `isle.layout.json` を出力する。検査の profile、component、正確な領域・各義務・サイズ・前提、入力 CSS と配信 HTML の SHA-256 を保存する。最終 HTML の解析では、CSS が同じであること、component の native element tree と一致することも確認する。ブラウザーはレポートを取得せず、検査で JS チャンクは変化しない。static component のサンプルは JS 0。
+
+Vite/Rolldown の HTML transform 後、Isle manifest 注入後の `generateBundle` で検査する。後続 plugin・デプロイ時の HTML/CSS 書き換え、外部 CSS の後挿入等まで自動的に許可する証明ではない。配信 HTML を変えた場合は記録されたハッシュが無効になる。build toolchain と生成コードは信頼する実装に含まれる。[Vite hook の仕様](https://vite.dev/guide/api-plugin#transformindexhtml)と、HTML tree の解釈に使う [parse5](https://parse5.js.org/)を参照。
+
+`verified` は、宣言領域・CSS 部分集合・利用者の信頼する内容/font のサイズ上界に対して義務を満たしたという判定である。任意の入力や Web 全体に対する無条件の保証ではなく、browser のピクセル丸め、ink overflow、判定器の健全性の機械証明は含まない。これらの前提はレポートにも残す。[検証結果と今後の adapter](../evals/reports/layout-build.md)を参照。
 
 ## 入力
 

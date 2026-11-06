@@ -25,6 +25,22 @@ export interface LayoutBoxContract {
   overflow?: 'fit' | 'scroll' | 'clip' | 'visible';
   overflowBlock?: 'fit' | 'scroll' | 'clip' | 'visible';
 }
+export interface CheckedLayoutBoxContract extends Omit<LayoutBoxContract, 'overflow' | 'overflowBlock'> {
+  overflow?: 'fit' | 'clip';
+  overflowBlock?: 'fit' | 'clip';
+}
+/** Build artifact only. This attests to the model and trusted bounds, not analyzer soundness. */
+export interface LayoutBuildCertificate {
+  version: 1;
+  status: 'verified';
+  profile: 'closed-document';
+  component: string;
+  document: { file: string; sha256: string };
+  stylesheet: { sha256: string };
+  sources: { file: string; sha256: string }[];
+  contracts: { viewport: LayoutOptions['viewport'] & { height: { min: number; max: number } }; boxes: Record<string, CheckedLayoutBoxContract> };
+  report: LayoutSummary & { ok: true; status: 'verified'; scope: LayoutSummary['scope'] & { axis: 'both'; blockSizing: true } };
+}
 export interface LayoutRange {
   min: number; max: number; minInclusive: boolean; maxInclusive: boolean;
   /** Rational values are authoritative; numeric endpoints are display approximations. */
@@ -46,7 +62,7 @@ export interface LayoutSummary {
   diagnostics: LayoutDiagnostic[];
   policies: { box: string; path: string; axis: 'inline' | 'block'; overflow: 'fit' | 'scroll' | 'clip' | 'visible'; range: LayoutRange; heightRange?: LayoutRange; region?: LayoutRegion }[];
   checks: { box: string; path: string; code: string; axis: 'inline' | 'block'; range: LayoutRange; heightRange?: LayoutRange; region?: LayoutRegion; available: LayoutAffine; required: LayoutAffine; enforced: boolean }[];
-  sizes: { box: string; path: string; range: LayoutRange; inlineSize: LayoutAffine; blockSize?: LayoutAffine; boxSizing: 'border-box' | 'content-box'; boxSizingSource?: { file: string; line: number; selector: string; layer?: string; specified: string } }[];
+  sizes: { box: string; path: string; range: LayoutRange; heightRange?: LayoutRange; region?: LayoutRegion; inlineSize: LayoutAffine; blockSize?: LayoutAffine; boxSizing: 'border-box' | 'content-box'; boxSizingSource?: { file: string; line: number; selector: string; layer?: string; specified: string } }[];
   queries: { box: string; path: string; range: LayoutRange; name?: string; target?: string; targetPath?: string; matched: boolean }[];
   /** Resolved shared tracks, local line numbering, effective gap and edge insets. Build-only. */
   subgrids: LayoutSubgrid[];

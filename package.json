@@ -17,7 +17,7 @@
   "bin": { "isle": "./tools/isle.mjs" },
   "files": ["lib/", "runtime/", "_build/js/release/build/compiler/compiler.js", "tools/isle.mjs", "README.md", "README.ja.md"],
   "peerDependencies": { "vite": "^8.3.5" },
-  "dependencies": { "postcss": "8.5.32" },
+  "dependencies": { "postcss": "8.5.32", "parse5": "8.0.1" },
   "packageManager": "pnpm@12.11.2",
   "engines": {
     "node": ">=24"

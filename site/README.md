@@ -15,7 +15,7 @@ just site-quality
 
 Open <http://127.0.0.1:4330/isle/>. `SITE_BASE=/ node tools/build-site.mjs` supports a root deployment; the default is the project Pages path `/isle/`. The output is `dist/site/`.
 
-The catalog contains 16 examples: 11 static-host live demos, a two-instance Web Components demo, a build-time CSS report, and server-required examples with source and run instructions. No RPC endpoint is simulated on Pages. The build creates a current preview npm archive for download.
+The catalog contains 17 examples: 12 static-host live demos, a two-instance Web Components demo, a build-time CSS report, and server-required examples with source and run instructions. No RPC endpoint is simulated on Pages. The build creates a current preview npm archive for download.
 
 The `pages.yml` workflow builds on a push to `main`, checks links and Playwright flows on the Pages subpath, uploads `dist/site/`, then deploys with the `github-pages` environment. The repository Pages publishing source is **GitHub Actions**. See the [official custom workflow guide](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 

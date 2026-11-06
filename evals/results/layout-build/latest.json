@@ -1,0 +1,1190 @@
+{
+  "status": "verified",
+  "scope": {
+    "axis": "both",
+    "viewport": {
+      "min": 320,
+      "max": 1280,
+      "minInclusive": true,
+      "maxInclusive": true,
+      "minExact": "320",
+      "maxExact": "1280",
+      "height": {
+        "min": 240,
+        "max": 900,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "900"
+      }
+    },
+    "hostInset": 0,
+    "hostBlockInset": 0,
+    "closedCSS": true,
+    "browserRounding": false,
+    "blockSizing": true
+  },
+  "sampleCount": 18,
+  "payload": {
+    "html": 1467,
+    "htmlGzip": 652,
+    "javascript": 0,
+    "reportFetched": false
+  },
+  "scripts": [],
+  "errors": [],
+  "samples": [
+    {
+      "width": 320,
+      "height": 240,
+      "boxes": {
+        "html": [
+          {
+            "width": 320,
+            "height": 240
+          }
+        ],
+        "body": [
+          {
+            "width": 320,
+            "height": 240
+          }
+        ],
+        ".board": [
+          {
+            "width": 320,
+            "height": 240
+          }
+        ],
+        ".title": [
+          {
+            "width": 288,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 288,
+            "height": 128
+          }
+        ],
+        ".tile": [
+          {
+            "width": 140,
+            "height": 60
+          },
+          {
+            "width": 140,
+            "height": 60
+          },
+          {
+            "width": 140,
+            "height": 60
+          },
+          {
+            "width": 140,
+            "height": 60
+          }
+        ],
+        ".note": [
+          {
+            "width": 288,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 320,
+      "height": 400,
+      "boxes": {
+        "html": [
+          {
+            "width": 320,
+            "height": 400
+          }
+        ],
+        "body": [
+          {
+            "width": 320,
+            "height": 400
+          }
+        ],
+        ".board": [
+          {
+            "width": 320,
+            "height": 400
+          }
+        ],
+        ".title": [
+          {
+            "width": 288,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 288,
+            "height": 288
+          }
+        ],
+        ".tile": [
+          {
+            "width": 140,
+            "height": 140
+          },
+          {
+            "width": 140,
+            "height": 140
+          },
+          {
+            "width": 140,
+            "height": 140
+          },
+          {
+            "width": 140,
+            "height": 140
+          }
+        ],
+        ".note": [
+          {
+            "width": 288,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 320,
+      "height": 900,
+      "boxes": {
+        "html": [
+          {
+            "width": 320,
+            "height": 900
+          }
+        ],
+        "body": [
+          {
+            "width": 320,
+            "height": 900
+          }
+        ],
+        ".board": [
+          {
+            "width": 320,
+            "height": 900
+          }
+        ],
+        ".title": [
+          {
+            "width": 288,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 288,
+            "height": 788
+          }
+        ],
+        ".tile": [
+          {
+            "width": 140,
+            "height": 390
+          },
+          {
+            "width": 140,
+            "height": 390
+          },
+          {
+            "width": 140,
+            "height": 390
+          },
+          {
+            "width": 140,
+            "height": 390
+          }
+        ],
+        ".note": [
+          {
+            "width": 288,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 375,
+      "height": 240,
+      "boxes": {
+        "html": [
+          {
+            "width": 375,
+            "height": 240
+          }
+        ],
+        "body": [
+          {
+            "width": 375,
+            "height": 240
+          }
+        ],
+        ".board": [
+          {
+            "width": 375,
+            "height": 240
+          }
+        ],
+        ".title": [
+          {
+            "width": 343,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 343,
+            "height": 128
+          }
+        ],
+        ".tile": [
+          {
+            "width": 167.5,
+            "height": 60
+          },
+          {
+            "width": 167.5,
+            "height": 60
+          },
+          {
+            "width": 167.5,
+            "height": 60
+          },
+          {
+            "width": 167.5,
+            "height": 60
+          }
+        ],
+        ".note": [
+          {
+            "width": 343,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 375,
+      "height": 400,
+      "boxes": {
+        "html": [
+          {
+            "width": 375,
+            "height": 400
+          }
+        ],
+        "body": [
+          {
+            "width": 375,
+            "height": 400
+          }
+        ],
+        ".board": [
+          {
+            "width": 375,
+            "height": 400
+          }
+        ],
+        ".title": [
+          {
+            "width": 343,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 343,
+            "height": 288
+          }
+        ],
+        ".tile": [
+          {
+            "width": 167.5,
+            "height": 140
+          },
+          {
+            "width": 167.5,
+            "height": 140
+          },
+          {
+            "width": 167.5,
+            "height": 140
+          },
+          {
+            "width": 167.5,
+            "height": 140
+          }
+        ],
+        ".note": [
+          {
+            "width": 343,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 375,
+      "height": 900,
+      "boxes": {
+        "html": [
+          {
+            "width": 375,
+            "height": 900
+          }
+        ],
+        "body": [
+          {
+            "width": 375,
+            "height": 900
+          }
+        ],
+        ".board": [
+          {
+            "width": 375,
+            "height": 900
+          }
+        ],
+        ".title": [
+          {
+            "width": 343,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 343,
+            "height": 788
+          }
+        ],
+        ".tile": [
+          {
+            "width": 167.5,
+            "height": 390
+          },
+          {
+            "width": 167.5,
+            "height": 390
+          },
+          {
+            "width": 167.5,
+            "height": 390
+          },
+          {
+            "width": 167.5,
+            "height": 390
+          }
+        ],
+        ".note": [
+          {
+            "width": 343,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 639,
+      "height": 240,
+      "boxes": {
+        "html": [
+          {
+            "width": 639,
+            "height": 240
+          }
+        ],
+        "body": [
+          {
+            "width": 639,
+            "height": 240
+          }
+        ],
+        ".board": [
+          {
+            "width": 639,
+            "height": 240
+          }
+        ],
+        ".title": [
+          {
+            "width": 607,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 607,
+            "height": 128
+          }
+        ],
+        ".tile": [
+          {
+            "width": 299.5,
+            "height": 60
+          },
+          {
+            "width": 299.5,
+            "height": 60
+          },
+          {
+            "width": 299.5,
+            "height": 60
+          },
+          {
+            "width": 299.5,
+            "height": 60
+          }
+        ],
+        ".note": [
+          {
+            "width": 607,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 639,
+      "height": 400,
+      "boxes": {
+        "html": [
+          {
+            "width": 639,
+            "height": 400
+          }
+        ],
+        "body": [
+          {
+            "width": 639,
+            "height": 400
+          }
+        ],
+        ".board": [
+          {
+            "width": 639,
+            "height": 400
+          }
+        ],
+        ".title": [
+          {
+            "width": 607,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 607,
+            "height": 288
+          }
+        ],
+        ".tile": [
+          {
+            "width": 299.5,
+            "height": 140
+          },
+          {
+            "width": 299.5,
+            "height": 140
+          },
+          {
+            "width": 299.5,
+            "height": 140
+          },
+          {
+            "width": 299.5,
+            "height": 140
+          }
+        ],
+        ".note": [
+          {
+            "width": 607,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 639,
+      "height": 900,
+      "boxes": {
+        "html": [
+          {
+            "width": 639,
+            "height": 900
+          }
+        ],
+        "body": [
+          {
+            "width": 639,
+            "height": 900
+          }
+        ],
+        ".board": [
+          {
+            "width": 639,
+            "height": 900
+          }
+        ],
+        ".title": [
+          {
+            "width": 607,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 607,
+            "height": 788
+          }
+        ],
+        ".tile": [
+          {
+            "width": 299.5,
+            "height": 390
+          },
+          {
+            "width": 299.5,
+            "height": 390
+          },
+          {
+            "width": 299.5,
+            "height": 390
+          },
+          {
+            "width": 299.5,
+            "height": 390
+          }
+        ],
+        ".note": [
+          {
+            "width": 607,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 640,
+      "height": 240,
+      "boxes": {
+        "html": [
+          {
+            "width": 640,
+            "height": 240
+          }
+        ],
+        "body": [
+          {
+            "width": 640,
+            "height": 240
+          }
+        ],
+        ".board": [
+          {
+            "width": 640,
+            "height": 240
+          }
+        ],
+        ".title": [
+          {
+            "width": 608,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 608,
+            "height": 128
+          }
+        ],
+        ".tile": [
+          {
+            "width": 146,
+            "height": 128
+          },
+          {
+            "width": 146,
+            "height": 128
+          },
+          {
+            "width": 146,
+            "height": 128
+          },
+          {
+            "width": 146,
+            "height": 128
+          }
+        ],
+        ".note": [
+          {
+            "width": 608,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 640,
+      "height": 400,
+      "boxes": {
+        "html": [
+          {
+            "width": 640,
+            "height": 400
+          }
+        ],
+        "body": [
+          {
+            "width": 640,
+            "height": 400
+          }
+        ],
+        ".board": [
+          {
+            "width": 640,
+            "height": 400
+          }
+        ],
+        ".title": [
+          {
+            "width": 608,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 608,
+            "height": 288
+          }
+        ],
+        ".tile": [
+          {
+            "width": 146,
+            "height": 288
+          },
+          {
+            "width": 146,
+            "height": 288
+          },
+          {
+            "width": 146,
+            "height": 288
+          },
+          {
+            "width": 146,
+            "height": 288
+          }
+        ],
+        ".note": [
+          {
+            "width": 608,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 640,
+      "height": 900,
+      "boxes": {
+        "html": [
+          {
+            "width": 640,
+            "height": 900
+          }
+        ],
+        "body": [
+          {
+            "width": 640,
+            "height": 900
+          }
+        ],
+        ".board": [
+          {
+            "width": 640,
+            "height": 900
+          }
+        ],
+        ".title": [
+          {
+            "width": 608,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 608,
+            "height": 788
+          }
+        ],
+        ".tile": [
+          {
+            "width": 146,
+            "height": 788
+          },
+          {
+            "width": 146,
+            "height": 788
+          },
+          {
+            "width": 146,
+            "height": 788
+          },
+          {
+            "width": 146,
+            "height": 788
+          }
+        ],
+        ".note": [
+          {
+            "width": 608,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 641,
+      "height": 240,
+      "boxes": {
+        "html": [
+          {
+            "width": 641,
+            "height": 240
+          }
+        ],
+        "body": [
+          {
+            "width": 641,
+            "height": 240
+          }
+        ],
+        ".board": [
+          {
+            "width": 641,
+            "height": 240
+          }
+        ],
+        ".title": [
+          {
+            "width": 609,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 609,
+            "height": 128
+          }
+        ],
+        ".tile": [
+          {
+            "width": 146.25,
+            "height": 128
+          },
+          {
+            "width": 146.25,
+            "height": 128
+          },
+          {
+            "width": 146.25,
+            "height": 128
+          },
+          {
+            "width": 146.25,
+            "height": 128
+          }
+        ],
+        ".note": [
+          {
+            "width": 609,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 641,
+      "height": 400,
+      "boxes": {
+        "html": [
+          {
+            "width": 641,
+            "height": 400
+          }
+        ],
+        "body": [
+          {
+            "width": 641,
+            "height": 400
+          }
+        ],
+        ".board": [
+          {
+            "width": 641,
+            "height": 400
+          }
+        ],
+        ".title": [
+          {
+            "width": 609,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 609,
+            "height": 288
+          }
+        ],
+        ".tile": [
+          {
+            "width": 146.25,
+            "height": 288
+          },
+          {
+            "width": 146.25,
+            "height": 288
+          },
+          {
+            "width": 146.25,
+            "height": 288
+          },
+          {
+            "width": 146.25,
+            "height": 288
+          }
+        ],
+        ".note": [
+          {
+            "width": 609,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 641,
+      "height": 900,
+      "boxes": {
+        "html": [
+          {
+            "width": 641,
+            "height": 900
+          }
+        ],
+        "body": [
+          {
+            "width": 641,
+            "height": 900
+          }
+        ],
+        ".board": [
+          {
+            "width": 641,
+            "height": 900
+          }
+        ],
+        ".title": [
+          {
+            "width": 609,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 609,
+            "height": 788
+          }
+        ],
+        ".tile": [
+          {
+            "width": 146.25,
+            "height": 788
+          },
+          {
+            "width": 146.25,
+            "height": 788
+          },
+          {
+            "width": 146.25,
+            "height": 788
+          },
+          {
+            "width": 146.25,
+            "height": 788
+          }
+        ],
+        ".note": [
+          {
+            "width": 609,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 1280,
+      "height": 240,
+      "boxes": {
+        "html": [
+          {
+            "width": 1280,
+            "height": 240
+          }
+        ],
+        "body": [
+          {
+            "width": 1280,
+            "height": 240
+          }
+        ],
+        ".board": [
+          {
+            "width": 1280,
+            "height": 240
+          }
+        ],
+        ".title": [
+          {
+            "width": 1248,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 1248,
+            "height": 128
+          }
+        ],
+        ".tile": [
+          {
+            "width": 306,
+            "height": 128
+          },
+          {
+            "width": 306,
+            "height": 128
+          },
+          {
+            "width": 306,
+            "height": 128
+          },
+          {
+            "width": 306,
+            "height": 128
+          }
+        ],
+        ".note": [
+          {
+            "width": 1248,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 1280,
+      "height": 400,
+      "boxes": {
+        "html": [
+          {
+            "width": 1280,
+            "height": 400
+          }
+        ],
+        "body": [
+          {
+            "width": 1280,
+            "height": 400
+          }
+        ],
+        ".board": [
+          {
+            "width": 1280,
+            "height": 400
+          }
+        ],
+        ".title": [
+          {
+            "width": 1248,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 1248,
+            "height": 288
+          }
+        ],
+        ".tile": [
+          {
+            "width": 306,
+            "height": 288
+          },
+          {
+            "width": 306,
+            "height": 288
+          },
+          {
+            "width": 306,
+            "height": 288
+          },
+          {
+            "width": 306,
+            "height": 288
+          }
+        ],
+        ".note": [
+          {
+            "width": 1248,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "boxes": {
+        "html": [
+          {
+            "width": 1280,
+            "height": 900
+          }
+        ],
+        "body": [
+          {
+            "width": 1280,
+            "height": 900
+          }
+        ],
+        ".board": [
+          {
+            "width": 1280,
+            "height": 900
+          }
+        ],
+        ".title": [
+          {
+            "width": 1248,
+            "height": 32
+          }
+        ],
+        ".tiles": [
+          {
+            "width": 1248,
+            "height": 788
+          }
+        ],
+        ".tile": [
+          {
+            "width": 306,
+            "height": 788
+          },
+          {
+            "width": 306,
+            "height": 788
+          },
+          {
+            "width": 306,
+            "height": 788
+          },
+          {
+            "width": 306,
+            "height": 788
+          }
+        ],
+        ".note": [
+          {
+            "width": 1248,
+            "height": 24
+          }
+        ]
+      },
+      "shifts": [],
+      "overflowX": false,
+      "overflowY": false,
+      "css": "border-box"
+    }
+  ]
+}

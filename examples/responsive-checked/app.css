@@ -1,0 +1,20 @@
+html { background: #f6f8fa; color: #142b3b; font-family: system-ui, sans-serif; }
+.board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 32px minmax(0, 1fr) 24px;
+  padding: 16px;
+  gap: 12px;
+}
+.title { font-size: 20px; line-height: 26px; }
+.tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 8px;
+}
+.tile { min-width: 40px; padding: 8px; border: 1px solid #345; border-radius: 8px; background: #dceaf4; font-size: 20px; line-height: 24px; }
+.note { font-size: 12px; line-height: 18px; }
+@media (width < 640px) {
+  .tiles { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
+}
