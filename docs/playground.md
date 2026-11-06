@@ -36,7 +36,7 @@ worker.onmessage = ({ data: { result } }) => {
 };
 worker.postMessage({
   id: 1,
-  source: 'client component Counter() { state n = 0; <button>on click { n += 1; }{n}</button> }',
+  source: 'client component Counter() { state n = 0; event add(e: EventSnapshot<MouseEvent>) { n += 1; } <button on:click={add}>{n}</button> }',
   options: { component: 'Counter', props: {}, mode: 'resume' },
 });
 ```
@@ -54,6 +54,10 @@ worker.postMessage({
 プレビューは生成 ESM を Blob にして読み込み、prepared-handler registry で接続します。初回操作までは snapshot の復元を行いません。SSR 専用のプレビューには bootstrap もランタイムも入りません。通常配信向けの resolver、ランタイム、schema fingerprint は変更しません。
 
 Playground の modules 数と bytes は論理的な生成ソースの値です。Vite / Rolldown の最終チャンク数、minify / gzip 後のサイズ、production の CSS 最適化結果ではありません。サーバー action を含むプログラムには `E_PREVIEW_HOST` を返します。外部 CSS・画像・ネットワークに依存するリソースやページ遷移は、このプレビューでは実行できません。
+
+## イベントを試す
+
+すべての対話型プリセットは `event` 宣言と `on:click` 属性を使います。Events は明示した snapshot 引数から入力値・キーを読み、`.preventDefault` を遅延処理の前に実行します。Fragments は `(event) => select(event, item.id)` で row の値を型付きで渡します。本文に `inline(ts)` は不要です。対応する式・型と制限は [イベント宣言](events.md) を参照してください。
 
 ## 開発
 

@@ -70,7 +70,7 @@ export const setup: ClientResourceSetup = ({ root, owner }) => {
 
 setup は `VideoPanel.$resources` / symbol `setup` の CodeRef として manifest に載り、component の各 handler の `requires` へ入る。初回操作では handler と setup を並列取得する。`lazy` / `preload` / `eager` に従いコードを取得・評価しても、setup の実行は対象 instance の resume まで遅延する。cleanup は取得側 module の依存として先に読み込み、unmount 時の import に依存しない。
 
-SSR 専用 mount は resource module を解決・出力しない。resource を使わない通常の production build は owner カーネル・監視・公開 API を dead code elimination で除去する。共有 widget engine は、最初の app の機能削減が後続 app を壊さないよう resource 機能を含む。snapshot ABI は v2 のまま、registry の位置6へ schema ID → setup CodeRef を追加した。現在の共有 engine は CSS-ready を含む `isle/client/6` である。
+SSR 専用 mount は resource module を解決・出力しない。resource を使わない通常の production build は owner カーネル・監視・公開 API を dead code elimination で除去する。共有 widget engine は、最初の app の機能削減が後続 app を壊さないよう resource 機能を含む。snapshot ABI は v2 のまま、registry の位置6へ schema ID → setup CodeRef を追加した。現在の共有 engine は CSS-ready を含む `isle/client/7` である。
 
 実行例は [resource-bindings fixture](../e2e/fixtures/resource-bindings/vite.config.mjs)、検証は `just resource-binding-check`。
 

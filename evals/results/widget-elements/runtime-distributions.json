@@ -10,7 +10,7 @@
   "sharedPool": [
     {
       "version": "0.0.1",
-      "abi": "isle/client/6:debug=0:profile=0",
+      "abi": "isle/client/7:debug=0:profile=0",
       "status": "ready"
     },
     {

@@ -35,11 +35,13 @@ After a registry release, the first command becomes `pnpm add @isle/prototype`. 
 client component Counter(initial: number) {
   state count = initial;
   derive doubled = count * 2;
+  event increment(event: EventSnapshot<MouseEvent>) { count += 1; }
+  event reset(event: EventSnapshot<MouseEvent>) { count = initial; }
   <section>
     <h2>Counter</h2>
     <output aria-live="polite">{count} / {doubled}</output>
-    <button type="button">on click increment { count += 1; }Increment</button>
-    <button type="button">on click reset { count = initial; }Reset</button>
+    <button type="button" on:click={increment}>Increment</button>
+    <button type="button" on:click={reset}>Reset</button>
   </section>
 }
 ```
@@ -117,6 +119,7 @@ This build generates the initial HTML at build time. Request-time server actions
 ## Choose the boundaries
 
 - `component Label(title: string)` declares a pure component usable on either side. Add `client` for state/events or `server` to restrict rendering to the server.
+- [`event` and `on:click`](docs/events.md) declare typed event inputs and DOM bindings. Add `.preventDefault` for synchronous cancellation before lazy loading; bodies need no `inline(ts)`.
 - [`Show`, `For`, `Switch` / `Match` and `ErrorBoundary`](docs/control-components.md) compile to selective updates. Put each row's `key` on its returned root, or a `Fragment` for multiple roots. Props passed into a client component are immutable initial values.
 - Server actions declare schemas, authorization and effects. Provide your authentication, policies and operations through a server host. Static hosting alone does not execute actions.
 - `resources` connects an ordinary setup module to an interactive component's lifetime. CSS imported by that module is prepared before setup; removal disposes owned resources.

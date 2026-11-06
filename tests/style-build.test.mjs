@@ -40,12 +40,12 @@ test('CSS-as-text has no stylesheet gate; SSR emits no resource CSS',async()=>{
   assert.equal(ssr.filter(row=>row.type==='chunk'||row.fileName.endsWith('.css')).length,0);
 });
 
-test('widget style metadata uses descriptor-relative paths and shared engine ABI 6',async()=>{
+test('widget style metadata uses descriptor-relative paths and shared engine ABI 7',async()=>{
   const output=await bundle({loading:'preload',widget:{descriptorFile:'embed/descriptor.json',loaderFile:'embed/loader.js'}});
   const descriptor=JSON.parse(output.find(row=>row.fileName==='embed/descriptor.json').source);
   assert.match(descriptor.html,/href="\.\.\/assets\/[^\"]+\.css"/);
   assert.equal(descriptor.preloadStyles.length,1);assert.match(descriptor.preloadStyles[0],/^\.\.\/assets\/.+\.css$/);
-  assert.match(output.filter(row=>row.type==='chunk').map(row=>row.code).join('\n'),/isle\/client\/6:/);
+  assert.match(output.filter(row=>row.type==='chunk').map(row=>row.code).join('\n'),/isle\/client\/7:/);
 });
 
 test('a monolithic CSS bundle is rejected for CodeRef styles instead of losing its dependency',async()=>{

@@ -1,8 +1,8 @@
 export const code = `client component Counter() {
   state count = 5;
+  event increment(event: EventSnapshot<MouseEvent>) { count += 1; }
 
-  <button type="button">
-    on click increment { count += 1; }
+  <button type="button" on:click={increment}>
     {count}
   </button>
 }`;

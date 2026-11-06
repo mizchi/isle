@@ -5,13 +5,19 @@ client component List(initial: Item[]) {
   state items: Item[] = initial;
   state visible = true;
   state mode = "list";
+  event hide(event: EventSnapshot<MouseEvent>) { visible = false; }
+  event show(event: EventSnapshot<MouseEvent>) { visible = true; }
+  event reverse(event: EventSnapshot<MouseEvent>) { items = [items[1], items[0]]; }
+  event empty(event: EventSnapshot<MouseEvent>) { items = []; }
+  event restore(event: EventSnapshot<MouseEvent>) { items = initial; }
+  event summary(event: EventSnapshot<MouseEvent>) { mode = "summary"; }
   <section>
-    <button type="button">on click hide { visible = false; }Hide</button>
-    <button type="button">on click show { visible = true; }Show</button>
-    <button type="button">on click reverse { items = [items[1], items[0]]; }Reverse rows</button>
-    <button type="button">on click empty { items = []; }Empty list</button>
-    <button type="button">on click restore { items = initial; }Restore rows</button>
-    <button type="button">on click summary { mode = "summary"; }Summary</button>
+    <button type="button" on:click={hide}>Hide</button>
+    <button type="button" on:click={show}>Show</button>
+    <button type="button" on:click={reverse}>Reverse rows</button>
+    <button type="button" on:click={empty}>Empty list</button>
+    <button type="button" on:click={restore}>Restore rows</button>
+    <button type="button" on:click={summary}>Summary</button>
     <Show when={visible} fallback={<p data-visibility="">Hidden</p>}>
       <p data-visibility="">Visible</p>
     </Show>

@@ -1,0 +1,16 @@
+schema Item { id: string; title: string; }
+client component Picker(items: Item[]) {
+  state query = "";
+  state selected = "none";
+  derive visible = items.filter(item => query === "" || item.title === query);
+  event edit(e: EventSnapshot<InputEvent>) { query = e.value; }
+  event choose(e: EventSnapshot<MouseEvent>, id: string) { selected = id; }
+  <section>
+    <label for="query">Exact title</label>
+    <input id="query" type="text" on:input={edit} />
+    <output aria-live="polite">{selected}</output>
+    <ul><For each={visible} fallback={<li>No results</li>}>{(item) =>
+      <li key={item.id}><button type="button" on:click.preventDefault={(e) => choose(e, item.id)}>{item.title}</button></li>
+    }</For></ul>
+  </section>
+}

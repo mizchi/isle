@@ -1,5 +1,41 @@
 import {test,expect} from '@playwright/test';
 const preview=page=>page.frameLocator('#preview');
+test('event declarations cancel synchronously before resume and expose typed snapshots',async({page})=>{
+  await page.goto('/');await page.locator('#preset').selectOption('events');
+  await expect(page.getByRole('status')).toContainText('Ready');
+  const frame=preview(page);
+  await expect(page.locator('#source')).toHaveValue(/event edit\(event: EventSnapshot<InputEvent>\)/);
+  await expect(page.locator('#metrics')).toContainText('0 restored');
+  const delivery=await frame.getByRole('button',{name:'Cancel default'}).evaluate(button=>{
+    const event=new MouseEvent('click',{bubbles:true,cancelable:true});
+    const result=button.dispatchEvent(event);
+    return {result,cancelled:event.defaultPrevented,immediate:document.querySelector('[data-clicks]').textContent};
+  });
+  expect(delivery).toEqual({result:false,cancelled:true,immediate:'0'});
+  await expect(frame.locator('[data-clicks]')).toHaveText('1');
+  await frame.getByLabel('Message').fill('Explicit snapshot');
+  await expect(frame.locator('[data-message]')).toHaveText('Explicit snapshot');
+  await frame.getByLabel('Message').press('Enter');
+  await expect(frame.locator('[data-key]')).toHaveText('Enter');
+  await page.locator('#source').fill((await page.locator('#source').inputValue()).replace('clicks += 1;', 'event.preventDefault();'));
+  await expect(page.locator('#diagnostics')).toContainText('E_EVENT_PHASE');
+  await page.getByRole('button',{name:'Reset preset'}).click();
+  await expect(page.getByRole('status')).toContainText('Ready');
+  await page.locator('#mode').selectOption('ssr');
+  await expect(page.getByRole('status')).toContainText('Ready');
+  expect(await page.locator('#preview').getAttribute('srcdoc')).not.toMatch(/<script|data-isle-|on:click/);
+});
+
+test('new fragment rows retain event argument bindings and synchronous policies',async({page})=>{
+  await page.goto('/');await page.locator('#preset').selectOption('fragments');
+  await expect(page.getByRole('status')).toContainText('Ready');
+  await page.locator('#source').fill((await page.locator('#source').inputValue()).replace('on:click={(event)', 'on:click.preventDefault={(event)'));
+  const frame=preview(page);
+  await expect(page.getByRole('status')).toContainText('Ready');
+  await frame.getByRole('button',{name:'Replace first key'}).click();
+  const cancelled=await frame.getByRole('button',{name:'Replacement',exact:true}).evaluate(button=>!button.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
+  expect(cancelled).toBe(true);await expect(frame.locator('[data-selected]')).toHaveText('c');
+});
 test('compiles locally, resumes on interaction, edits props and reports errors',async({page})=>{
   await page.goto('/');
   await expect(page.getByRole('status')).toContainText('Ready');
@@ -163,4 +199,11 @@ for(const width of [390,1440]) test(`editor, preview and error state remain usab
   await page.locator('#preset').selectOption('fragments');await expect(preview(page).locator('[data-row]')).toHaveCount(2);
   await page.locator('#preview').screenshot({path:testInfo.outputPath('fragments-preview.png')});
   await page.screenshot({path:testInfo.outputPath('fragments.png'),fullPage:true});
+  await page.locator('#preset').selectOption('events');
+  await expect(preview(page).getByLabel('Message')).toBeVisible();
+  await preview(page).getByLabel('Message').fill('Snapshot');
+  await expect(preview(page).locator('[data-message]')).toHaveText('Snapshot');
+  await expect(preview(page).locator('[data-clicks]')).toBeInViewport();
+  await page.locator('#preview').screenshot({path:testInfo.outputPath('events-preview.png')});
+  await page.screenshot({path:testInfo.outputPath('events.png'),fullPage:true});
 });

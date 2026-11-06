@@ -9,6 +9,7 @@ const LAZY_CODE = typeof __ISLE_LAZY_CODE__ === 'undefined' || __ISLE_LAZY_CODE_
 const NESTED = typeof __ISLE_NESTED__ === 'undefined' || __ISLE_NESTED__;
 const RESOURCES = typeof __ISLE_RESOURCES__ === 'undefined' || __ISLE_RESOURCES__;
 const REGIONS = typeof __ISLE_REGIONS__ === 'undefined' || __ISLE_REGIONS__;
+const EVENT_POLICY = typeof __ISLE_EVENT_POLICY__ === 'undefined' || __ISLE_EVENT_POLICY__;
 const documents = new WeakMap();
 
 /** Register delegated events without importing the runtime or reading snapshots. */
@@ -37,9 +38,11 @@ export function loadIslands(root, load, events, options = {}) {
     const target = event.target?.nodeType === 1 ? event.target : event.target?.parentElement;
     const element = target?.closest(`[data-isle-on-${event.type}]`);
     if (!element) return;
-    const [id, handler] = element.getAttribute(`data-isle-on-${event.type}`).split('|'), root = roots.get(id);
+    const entry = element.getAttribute(`data-isle-on-${event.type}`).split('|');
+    const [id, handler] = entry, root = roots.get(id);
     const alive = () => !closed && !disposed.has(id) && root?.isConnected && root.contains(element);
     if (!alive()) return;
+    if (EVENT_POLICY && entry[2] === 'p') event.preventDefault();
     const schemaForm = SCHEMA_FORMS && element.hasAttribute('data-isle-form');
     if (schemaForm && event.type === 'invalid') event.preventDefault();
     if (FORMS && event.type === 'submit') {

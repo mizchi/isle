@@ -21,7 +21,7 @@ export type Expression =
   | { kind: 'remote'; name: string; fields: { name: string; value: Expression }[] };
 export interface Statement { target: string; op: '=' | '+=' | '-='; value: Expression }
 export interface FormContract { schema: { name: string; fields: Field[] }; output: { name: string; fields: Field[] }; action: string; asyncValidation: boolean; events: string[] }
-export interface Handler { id: string; event: 'click' | 'input' | 'change' | 'submit' | 'invalid' | 'keydown' | 'dblclick' | 'focusout'; async: boolean; source: SourceSpan; statements: Statement[]; form?: FormContract }
+export interface Handler { id: string; event: 'click' | 'input' | 'change' | 'submit' | 'invalid' | 'keydown' | 'dblclick' | 'focusout'; async: boolean; source: SourceSpan; declaration?: string; binding?: SourceSpan; preventDefault?: true; statements: Statement[]; form?: FormContract }
 export type WireValue = Primitive | readonly WireValue[] | { readonly [key: string]: WireValue };
 export type ValueType = 'number' | 'string' | 'boolean' | { array: ValueType } | { record: Record<string, ValueType> };
 export type ComponentField = Omit<Field, 'type'> & { type: string };

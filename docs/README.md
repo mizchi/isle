@@ -14,6 +14,7 @@ Isle は、サーバーで生成した HTML を表示し、操作された UI �
 ## 構文と機能の詳細
 
 - [構文リファレンス](prototype-guide.md)：props、state、derive、HTML、イベント、明示 RPC。
+- [イベント宣言](events.md)：`event` と `on:click`、明示的な snapshot 引数、同期キャンセル、row の値の受け渡し。
 - [Form とアクセシビリティ](forms.md)：入力制約、非同期検証、エラー、pending、reset。
 - [チャンクとプロファイル](chunk-profiling.md)：イベント名、manifest、User Timing。
 - [静的な負荷予測](static-profiling.md)：入口ごとの仕事量、更新の波及、debug 情報、性能 budget。

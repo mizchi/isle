@@ -6,6 +6,10 @@ body { margin: 0; padding: 24px; font: 16px/1.6 system-ui; color: #193c39; backg
 section { padding: 12px; border: 1px solid #cad9d1; border-radius: 10px; margin-bottom: 16px; }
 h2, h3 { margin-top: 0; }
 output { display: block; font-size: 28px; }
+p { margin: 10px 0; }
+p > output { display: inline; font-size: inherit; font-weight: 600; }
+label { margin-right: 8px; }
+input { font: inherit; width: 18ch; max-width: 100%; padding: 4px 8px; border: 1px solid #adc4ba; border-radius: 4px; }
 button { font: inherit; padding: 8px 14px; margin: 4px; border: 1px solid #adc4ba; border-radius: 6px; background: #e7f2ec; color: #193c39; cursor: pointer; }
 ul { padding-left: 24px; }`;
 export const presets={
@@ -14,12 +18,29 @@ export const presets={
   fragments:{label:'Fragments · keyed groups',source:fragments,props:{initial:[{id:'a',title:'First'},{id:'b',title:'Second'}]}},
   nested:{label:'Nested · independent owners',props:{seed:1},source:`client component Counter(label: string, initial: number) {
   state count = initial;
+  event increment(event: EventSnapshot<MouseEvent>) { count += 1; }
   <section><h3>{label}</h3><output aria-live="polite">{count}</output>
-    <button type="button">on click increment { count += 1; }Increment</button>
+    <button type="button" on:click={increment}>Increment</button>
   </section>
 }
 server component Page(seed: number) {
   <main><h2>Independent owners</h2><Counter label="First" initial={seed} /><Counter label="Second" initial={seed + 10} /></main>
+}`},
+  events:{label:'Events · snapshots & synchronous cancellation',props:{},source:`client component Events() {
+  state text = "";
+  state key = "none";
+  state clicks = 0;
+  event edit(event: EventSnapshot<InputEvent>) { text = event.value; }
+  event press(event: EventSnapshot<KeyboardEvent>) { key = event.key; }
+  event cancel(event: EventSnapshot<MouseEvent>) { clicks += 1; }
+  <section><h2>Explicit event boundaries</h2>
+    <label for="message">Message</label>
+    <input id="message" type="text" on:input={edit} on:keydown={press} />
+    <p>Message: <output data-message="">{text}</output></p>
+    <p>Last key: <output data-key="">{key}</output></p>
+    <button type="button" on:click.preventDefault={cancel}>Cancel default</button>
+    <p>Clicks: <output data-clicks="">{clicks}</output></p>
+  </section>
 }`},
   static:{label:'Static · server rendering',props:{name:'Browser'},source:`server component Greeting(name: string) {
   <section><h2>Hello, {name}.</h2><p>Server rendering runs locally. No runtime is needed for this component.</p></section>

@@ -3,16 +3,21 @@ schema Item { id: string; title: string; }
 client component FragmentRows(initial: Item[]) {
   state items: Item[] = initial;
   state selected = "none";
+  event reverse(event: EventSnapshot<MouseEvent>) { items = [items[1], items[0]]; }
+  event replace(event: EventSnapshot<MouseEvent>) { items = [{ id: "c", title: "Replacement" }, items[1]]; }
+  event clear(event: EventSnapshot<MouseEvent>) { items = []; }
+  event restore(event: EventSnapshot<MouseEvent>) { items = initial; }
+  event select(event: EventSnapshot<MouseEvent>, id: string) { selected = id; }
   <section>
     <h2>Keyed fragments</h2>
-    <button type="button">on click reverse { items = [items[1], items[0]]; }Reverse groups</button>
-    <button type="button">on click replace { items = [{ id: "c", title: "Replacement" }, items[1]]; }Replace first key</button>
-    <button type="button">on click clear { items = []; }Clear groups</button>
-    <button type="button">on click restore { items = initial; }Restore groups</button>
+    <button type="button" on:click={reverse}>Reverse groups</button>
+    <button type="button" on:click={replace}>Replace first key</button>
+    <button type="button" on:click={clear}>Clear groups</button>
+    <button type="button" on:click={restore}>Restore groups</button>
     <p>Selected: <output data-selected="" aria-live="polite">{selected}</output></p>
     <ul><For each={items} fallback={<li>No groups</li>}>
       {(item) => <Fragment key={item.id}>
-        <li data-row={item.id}><button type="button">on click select { selected = item.id; }{item.title}</button></li>
+        <li data-row={item.id}><button type="button" on:click={(event) => select(event, item.id)}>{item.title}</button></li>
         <li data-detail={item.id}>Details: {item.title}</li>
       </Fragment>}
     </For></ul>

@@ -12,6 +12,10 @@ test('the playground compiles and resumes on the deployed project subpath',async
   await frame.getByRole('button',{name:'Increment',exact:true}).click();
   await expect(frame.locator('output')).toHaveText('6 / 12');
   await page.locator('#preset').selectOption('list');await expect(frame.locator('li')).toHaveCount(2);
+  await page.locator('#preset').selectOption('events');
+  await expect(frame.getByRole('button',{name:'Cancel default'})).toBeVisible();
+  expect(await frame.getByRole('button',{name:'Cancel default'}).evaluate(button=>!button.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})))).toBe(true);
+  await expect(frame.locator('[data-clicks]')).toHaveText('1');
   await page.locator('#source').fill('component C(){<main>@if(true){<p>Removed</p>}</main>}');
   await expect(page.getByRole('status')).toContainText('Compile error');
   await expect(page.locator('#diagnostics')).toContainText('E_CONTROL_REMOVED');

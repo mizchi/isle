@@ -35,11 +35,13 @@ pnpm add -D vite@^8.3.5
 client component Counter(initial: number) {
   state count = initial;
   derive doubled = count * 2;
+  event increment(event: EventSnapshot<MouseEvent>) { count += 1; }
+  event reset(event: EventSnapshot<MouseEvent>) { count = initial; }
   <section>
     <h2>Counter</h2>
     <output aria-live="polite">{count} / {doubled}</output>
-    <button type="button">on click increment { count += 1; }Increment</button>
-    <button type="button">on click reset { count = initial; }Reset</button>
+    <button type="button" on:click={increment}>Increment</button>
+    <button type="button" on:click={reset}>Reset</button>
   </section>
 }
 ```
@@ -117,6 +119,7 @@ export default defineConfig({
 ## 境界を選ぶ
 
 - `component Label(title: string)` は server/client 共通の純粋な component です。状態・イベントを使う場合は `client`、server に限定する場合は `server` を付けます。
+- [`event` と `on:click`](docs/events.md) で型付きの入力と DOM への接続を宣言します。`.preventDefault` は遅延読み込み前に実行され、本文に `inline(ts)` は不要です。
 - [`Show`・`For`・`Switch` / `Match`・`ErrorBoundary`](docs/control-components.md) で構造を保って部分更新します。行のルート、または複数要素をまとめる `Fragment` に `key` を指定します。client component の props は不変の初期値です。
 - server action には schema・認可・effect を宣言します。実認証・policy・operation は利用側の server host に実装し、静的配信とは別に接続します。
 - `resources` で通常の setup module を component の寿命に接続します。import した CSS は setup の前に準備され、削除時には所有リソースを破棄します。

@@ -62,7 +62,7 @@ export server component Heading(title: string) {
 }
 ```
 
-server component は HTML と props の描画に使います。`state` やイベントは置けません。client component も初期表示は SSR され、操作に必要なコードだけがブラウザーへ渡ります。
+server component は HTML と props の描画に使います。`state` や [イベント宣言](events.md) は置けません。client component も初期表示は SSR され、操作に必要なコードだけがブラウザーへ渡ります。
 
 イベントを持つコンポーネントを HTML のみで出力したい場合は、`isle()` に `mode: 'ssr'` を指定します。個別の mount にも同じ指定ができます。以下はオプションの抜粋です。
 

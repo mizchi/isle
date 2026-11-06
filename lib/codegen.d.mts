@@ -24,6 +24,7 @@ export interface GeneratedComponent {
   bindings: { id: number; kind: 'text' | 'attribute'; name?: string; dependencies: string[];
     range?: { prefix: number; suffix: number } }[];
   handlers: { id: string; event: string; async: boolean; source?: SourceSpan; remote: boolean;
+    declaration?: string; binding?: SourceSpan; preventDefault?: true;
     form?: FormContract;
     computations: { phase: string; derives: string[] }[];
     actions: string[]; captures: number[]; captureNames: string[]; writes: string[]; symbol: 'run'; code: string }[];
