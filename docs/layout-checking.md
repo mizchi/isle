@@ -1,5 +1,7 @@
 # Grid とボックスモデルの静的検査
 
+テンプレートの [scoped CSS と Z3](inline-css.md) に対応した。Vite のチェック付きビルドは抽出した制約を Z3 Wasm でも検査し、結果を証明書の `proof` に記録する。playground は専用 Worker で同じモデルを検査する。以下の geometry/cascade 解析器自体の正しさを Z3 が証明する、という意味ではない。
+
 2026-11-06。Grid と親子のサイズ契約を検査する compiler adapter を実装した。横方向に加え、container size query と明示した高さ契約による縦方向を扱う。標準 CSS を PostCSS で解析し、MoonBit frontend が composition を展開した template IR から box tree を作る。component / handler を browser で実行せずに解析する。
 
 ```sh

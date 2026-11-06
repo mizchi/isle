@@ -1,0 +1,10 @@
+component Four() {
+  <main class="row" aria-label="Four boxes">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 40px; }
+      .cell { min-width: 40px; height: 40px; border: 1px solid #357166; background: #c6e9db; }
+    </style>
+    <div class="cell" /><div class="cell" /><div class="cell" /><div class="cell" />
+  </main>
+}

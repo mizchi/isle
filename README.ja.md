@@ -120,6 +120,7 @@ export default defineConfig({
 
 - `component Label(title: string)` は server/client 共通の純粋な component です。状態・イベントを使う場合は `client`、server に限定する場合は `server` を付けます。
 - [`event` と `on:click`](docs/events.md) で型付きの入力と DOM への接続を宣言します。`.preventDefault` は遅延読み込み前に実行され、本文に `inline(ts)` は不要です。
+- [テンプレート内 CSS](docs/inline-css.md) は静的な `<style>` をスコープします。チェック付きビルドは宣言した幅・高さ範囲を Z3 で検査し、playground は Z3 Wasm を必要時に読み込みます。
 - [`Show`・`For`・`Switch` / `Match`・`ErrorBoundary`](docs/control-components.md) で構造を保って部分更新します。行のルート、または複数要素をまとめる `Fragment` に `key` を指定します。client component の props は不変の初期値です。
 - server action には schema・認可・effect を宣言します。実認証・policy・operation は利用側の server host に実装し、静的配信とは別に接続します。
 - `resources` で通常の setup module を component の寿命に接続します。import した CSS は setup の前に準備され、削除時には所有リソースを破棄します。

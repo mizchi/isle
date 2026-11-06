@@ -6,3 +6,6 @@ Live preview
 Inspect output
 Download output
 No compilation server
+Verify layout · Z3
+Layout contract · JSON
+Layout not checked.

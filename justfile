@@ -376,8 +376,13 @@ playground-build: build-compiler
     pnpm exec vite build --config playground/vite.config.mjs
 
 playground-check: build-compiler
-    node --test tests/browser-compiler.test.mjs tests/preview.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs
+    node --test tests/browser-compiler.test.mjs tests/preview.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs
     pnpm exec playwright test --config playwright.playground.config.mjs
 
 playground-quality: playground-build
     node tools/check-playground.mjs
+
+# Static component styles and the independent Z3 layout reference.
+inline-css-check: build-compiler
+    node --test tests/inline-css*.test.mjs tests/layout-z3.test.mjs
+    pnpm exec vite build --config examples/inline-css/vite.config.mjs

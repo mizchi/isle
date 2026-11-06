@@ -30,7 +30,7 @@ export interface GeneratedComponent {
     actions: string[]; captures: number[]; captureNames: string[]; writes: string[]; symbol: 'run'; code: string }[];
 }
 export interface RenderOptions { scopeId?: string; mode?: RenderMode }
-export interface RenderedComponent { html: string; snapshot: ResumeSnapshot | null; snapshotHtml: string }
+export interface RenderedComponent { html: string; snapshot: ResumeSnapshot | null; snapshotHtml: string;styles?:(import('./contracts.d.ts').ScopedStyle & {component:string})[] }
 export interface PreparedComponent {
   generate(): GeneratedComponent;
   cost(): ComponentCost;

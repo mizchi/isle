@@ -9,6 +9,7 @@
       <label>Component<select id="component" aria-label="Component"></select></label>
       <label>Render mode<select id="mode"><option value="resume">Resume</option><option value="ssr">SSR only</option></select></label>
       <label class="auto"><input id="auto" type="checkbox" checked>Auto-run</label>
+      <label class="auto"><input id="verify-layout" type="checkbox">Verify layout · Z3</label>
       <button id="compile" type="button">Compile</button><button id="reset" type="button" class="secondary">Reset preset</button>
     </div>
     <div class="workspace">
@@ -16,13 +17,15 @@
         <div class="panel-head"><h2>Source</h2><span>⌘ / Ctrl + Enter</span></div>
         <label class="sr-only" for="source">Isle source</label><textarea id="source" spellcheck="false" wrap="off"></textarea>
         <div class="inputs"><div><label for="props">Props · JSON</label><textarea id="props" spellcheck="false"></textarea></div><div><label for="css">CSS</label><textarea id="css" spellcheck="false"></textarea></div></div>
+        <div class="layout-contract"><label for="layout">Layout contract · JSON</label><textarea id="layout" spellcheck="false" aria-describedby="layout-help"></textarea><p id="layout-help">Width and height intervals in CSS pixels. Optional trusted text bounds and scrollbar profiles.</p></div>
       </section>
       <section class="preview panel" aria-label="Preview and compiler output">
         <div class="panel-head"><h2>Live preview</h2><span id="metrics">0 restored islands</span></div>
         <p id="status" role="status" aria-live="polite">Starting compiler…</p>
+        <p id="layout-status" aria-live="polite">Layout not checked.</p>
         <ul id="diagnostics" aria-label="Diagnostics" hidden></ul>
         <iframe id="preview" title="Compiled Isle preview" sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer" width="640" height="400"></iframe>
-        <div class="output-head"><label for="output-kind">Inspect output</label><select id="output-kind"><option value="html">HTML & snapshot</option><option value="modules">Generated modules</option><option value="analysis">Analysis</option><option value="ir">IR</option></select><button id="download" type="button" class="secondary" disabled>Download output</button></div>
+        <div class="output-head"><label for="output-kind">Inspect output</label><select id="output-kind"><option value="html">HTML & snapshot</option><option value="modules">Generated modules</option><option value="styles">Compiled CSS</option><option value="layout">Layout proof</option><option value="smt">SMT-LIB constraints</option><option value="analysis">Analysis</option><option value="ir">IR</option></select><button id="download" type="button" class="secondary" disabled>Download output</button></div>
         <p id="size">Waiting for compilation.</p><pre id="output" tabindex="0" aria-label="Generated output"></pre>
       </section>
     </div>

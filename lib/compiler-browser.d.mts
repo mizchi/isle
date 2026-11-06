@@ -10,6 +10,7 @@ export interface PreviewArtifact {
   entries:Record<string,{module:string;symbol:string;captures:number[]}>;
   schemas:Record<string,import('./contracts.d.ts').ValueType[]>;
   events:string[];
+  styles?:(import('./contracts.d.ts').ScopedStyle & {component:string})[];
 }
 export type PreviewCompileResult = {ok:true;ir:ProgramIR;explanation:ProgramExplanation;preview:PreviewArtifact} |
   {ok:false;stage:'compile'|'render';diagnostics:Diagnostic[];ir?:ProgramIR};

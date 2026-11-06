@@ -41,6 +41,7 @@ export interface LayoutStructure {
 }
 /** Build artifact only. This attests to the model and trusted bounds, not analyzer soundness. */
 export interface LayoutBuildCertificate {
+  proof:import('./layout-z3.mjs').LayoutProof;
   version: 1;
   status: 'verified';
   profile: 'closed-document';

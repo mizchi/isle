@@ -33,6 +33,12 @@ textarea { display: block; width: 100%; border: 0; border-radius: 0; resize: ver
 .inputs > div + div { border-left: 1px solid #dce2da; }
 .inputs label { padding: 8px 16px; background: #f1f4ed; }
 .inputs textarea { height: 180px; min-height: 100px; }
+.layout-contract { border-top: 1px solid #dce2da; }
+.layout-contract label { padding: 8px 16px; background: #f1f4ed; }
+.layout-contract textarea { height: 140px; min-height: 100px; }
+#layout-help { margin: 0; padding: 0 16px 12px; font-size: 12px; color: #4a6259; }
+#layout-status { margin: 0; padding: 8px 16px; min-height: 76px; font-size: 12px; overflow-wrap: anywhere; border-bottom: 1px solid #dce2da; background: #f1f4ed; }
+#layout-status[data-state="violated"], #layout-status[data-state="unknown"] { background: #fff0e8; color: #8e301b; }
 #status { padding: 10px 16px; margin: 0; font-size: 13px; background: #edf4ed; border-bottom: 1px solid #dce2da; }
 #status[data-error] { background: #fff0e8; color: #8e301b; }
 #diagnostics { padding: 12px 16px 12px 32px; margin: 0; color: #8e301b; }

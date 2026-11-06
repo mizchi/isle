@@ -1,5 +1,7 @@
 # Prototype verification models
 
+[CSS layout の Z3 仕様](css_layout/README.md) を追加した。これは公式 Z3 Wasm を使う別の検査であり、既存の `veri/model_check/smt.exhaustive` による有限状態の全探索とは区別する。
+
 依存は `mizchi/veri@0.2.1`。モデルは不変な状態と有限の入力を持ち、UI / DOM / HTTP / bundler の実装から独立している。
 
 ## 実行

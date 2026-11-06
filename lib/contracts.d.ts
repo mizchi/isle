@@ -39,6 +39,8 @@ export type TemplateNode =
   | { kind: 'element'; tag: string; source?: SourceSpan; attributes: { name: string; value: Expression }[]; children: TemplateNode[]; handlers: Handler[];
     form?: FormContract; formField?: string; formError?: string; formSummary?: boolean; formStatus?: boolean };
 export interface Component {
+  /** Static, owned CSS. Erased from executable component code. */
+  style?: ScopedStyle;
   /** universal is the pure subset usable in either phase; it never infers client behavior. */
   name: string; side: 'server' | 'client' | 'universal'; props: ComponentField[];
   /** Source children: RenderFragment was erased into a lexical slot. */
@@ -53,6 +55,7 @@ export interface Action {
   validation: { name: string; effects: ['db.read'] } | null;
   call: { name: string; args: ({ kind: 'grant' } | { kind: 'input'; field: string })[] };
 }
+export interface ScopedStyle { id:string;scope:string;css:string;sources:SourceSpan[] }
 export interface ProgramIR {
   version: 1; components: Component[];
   schemas: Schema[];

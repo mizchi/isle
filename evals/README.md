@@ -58,3 +58,5 @@
 [Subgrid の課題](scenarios/layout-subgrid/README.md) は、track 定義のコピーと解決済みトラックの共有、gap/inset、ローカル line、violated と unknown の違いを扱います。[実行結果](reports/layout-subgrid.md)は162構成の有限モデルとブラウザー128ケースの照合です。記述の参加者評価は未実施です。
 
 [イベント宣言の課題](scenarios/event-declarations/brief.md) は、型付き snapshot、同期キャンセル、明示的な row 引数、宣言と接続のスコープを読み分けます。コンパイラ・出力・ブラウザの受入検査があり、記述の参加者評価と自動読解 grader は未実施です。
+
+[Inline CSS と Z3 の課題](scenarios/inline-css/brief.md) は、box-sizing、親子の必要幅、両軸の範囲、responsive 境界、Unknown と UNSAT の違いを読み分けます。独立 SMT 仕様との同値性、壊した仕様、Chromium での反例再現を自動検査し、参加者評価は未実施です。

@@ -8,7 +8,7 @@ import type { CheckedLayoutBoxContract, LayoutScrollbarProfile } from './layout-
 /** Closed document profile: all author CSS is owned by this build. Unknown is an error. */
 export interface CheckedLayoutOptions {
   /** Local CSS path relative to the .isle entry. Delivered automatically. */
-  css: string;
+  css?: string;
   /** Ordered reset paths relative to the entry, before app CSS. */
   reset?: readonly string[];
   viewport: { min: number; max: number; height: { min: number; max: number } };

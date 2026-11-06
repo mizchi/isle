@@ -1,0 +1,15 @@
+client component StyledCounter() {
+  state count = 0;
+  event increment(e: EventSnapshot<MouseEvent>) { count += 1; }
+  <button type="button" data-styled-child="" on:click={increment}>
+    <style>button { color: #b3261e; font-weight: 700; }</style>
+    Child {count}
+  </button>
+}
+server component Page() {
+  <main>
+    <style>button { color: #1747a6; }</style>
+    <button type="button" data-styled-parent="">Parent</button>
+    <StyledCounter />
+  </main>
+}
