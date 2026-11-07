@@ -6,6 +6,8 @@
 
 Auto-run は 250ms の debounce で動きます。無効にした場合は Compile または Cmd / Ctrl + Enter で実行します。Inspect output で HTML と snapshot、生成モジュール、解析結果、IR を確認でき、Download output でソース・props・CSS とプレビューの成果物を JSON 保存できます。入力を変更すると古いプレビューを破棄し、古いコンパイル結果やプレビューからの通知は反映しません。
 
+Source・Props・CSS・Layout contract の editor は textarea に装飾用のハイライトを重ねます。Isle の宣言・型・タグ・埋め込み CSS、CSS、JSON を字句単位で色分けし、未完成の入力もそのまま表示します。折り返さず、縦横スクロールと高さのリサイズに追従します。選択・undo・カーソル移動は textarea の標準動作です。IME の変換中と forced-colors 表示では通常の文字表示へ切り替えます。構文の正しさはハイライトとは独立してコンパイラが判定します。
+
 ## npm パッケージから使う
 
 コンパイラ本体は MoonBit の JavaScript ESM 出力です。ブラウザー版と Node 版は同じ frontend、依存解析、コード生成を使い、Node 版にだけ `compileFile` があります。ブラウザー版には Node 組み込みモジュールもコンパイルサーバーも必要ありません。アプリのコードと同じ Worker に置くことを推奨します。

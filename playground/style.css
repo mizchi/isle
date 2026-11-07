@@ -27,6 +27,27 @@ button:disabled { opacity: .6; cursor: default; }
 h2 { font-size: 14px; margin: 0; }
 .panel-head span, #size { font-size: 12px; color: #4a6259; }
 textarea { display: block; width: 100%; border: 0; border-radius: 0; resize: vertical; padding: 16px; font: 13px/1.65 ui-monospace, monospace; color: #233d38; background: #fffefa; tab-size: 2; }
+.code-editor { position: relative; isolation: isolate; min-width: 0; background: #fffefa; }
+.code-editor textarea, .code-editor__content { margin: 0; padding: 16px; font: 13px/1.65 ui-monospace, monospace; font-kerning: none; font-variant-ligatures: none; letter-spacing: normal; word-spacing: normal; tab-size: 2; text-align: left; text-indent: 0; text-transform: none; direction: ltr; unicode-bidi: plaintext; white-space: pre; overflow-wrap: normal; word-break: normal; }
+.code-editor > textarea { position: relative; z-index: 1; background: transparent; color: transparent; -webkit-text-fill-color: transparent; caret-color: #233d38; }
+.code-editor > textarea::selection { background: #b5d8d180; color: transparent; -webkit-text-fill-color: transparent; }
+.code-editor > .code-editor__highlight { position: absolute; z-index: 0; top: 0; left: 0; margin: 0; padding: 0; border: 0; overflow: hidden; pointer-events: none; background: transparent; color: #233d38; white-space: pre; }
+.code-editor__content { display: block; width: max-content; min-width: 100%; }
+/* A zero-width final glyph gives a trailing newline its native empty line. */
+.code-editor__content::after { content: '\200b'; }
+.syntax-token--keyword { color: #7542a3; }
+.syntax-token--tag, .syntax-token--selector { color: #00675c; }
+.syntax-token--string { color: #30683d; }
+.syntax-token--number { color: #94501f; }
+.syntax-token--attribute, .syntax-token--property { color: #8c3d3d; }
+.syntax-token--type, .syntax-token--function, .syntax-token--at-rule { color: #175c85; }
+.syntax-token--comment { color: #66736e; }
+.code-editor[data-composing] > textarea { color: #233d38; -webkit-text-fill-color: currentColor; }
+.code-editor[data-composing] > .code-editor__highlight { visibility: hidden; }
+@media (forced-colors: active) {
+  .code-editor > textarea { color: CanvasText; -webkit-text-fill-color: CanvasText; caret-color: auto; background: Canvas; }
+  .code-editor > .code-editor__highlight { display: none; }
+}
 #source { height: 430px; min-height: 180px; }
 .inputs { border-top: 1px solid #dce2da; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }
 .inputs > div { min-width: 0; }

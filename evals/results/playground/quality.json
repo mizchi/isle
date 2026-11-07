@@ -5,10 +5,32 @@
       "verdict": "pass",
       "counts": {
         "suspect": 0,
-        "warn": 0,
+        "warn": 3,
         "info": 0
       },
-      "findings": []
+      "findings": [
+        {
+          "rule": "clipped-content",
+          "severity": "warn",
+          "message": "section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1) clips 222px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+          "selector": "section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1)",
+          "viewport": 375
+        },
+        {
+          "rule": "clipped-content",
+          "severity": "warn",
+          "message": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1) clips 908px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+          "selector": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1)",
+          "viewport": 1280
+        },
+        {
+          "rule": "clipped-content",
+          "severity": "warn",
+          "message": "div.layout-contract > div:nth-of-type(1) > pre:nth-of-type(1) clips 106px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+          "selector": "div.layout-contract > div:nth-of-type(1) > pre:nth-of-type(1)",
+          "viewport": 1280
+        }
+      ]
     },
     {
       "gate": "check.copy",
@@ -25,10 +47,23 @@
       "verdict": "pass",
       "counts": {
         "suspect": 0,
-        "warn": 0,
+        "warn": 2,
         "info": 0
       },
-      "findings": []
+      "findings": [
+        {
+          "rule": "clipped-content",
+          "severity": "warn",
+          "message": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1) clips 908px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+          "selector": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1)"
+        },
+        {
+          "rule": "clipped-content",
+          "severity": "warn",
+          "message": "div.layout-contract > div:nth-of-type(1) > pre:nth-of-type(1) clips 106px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+          "selector": "div.layout-contract > div:nth-of-type(1) > pre:nth-of-type(1)"
+        }
+      ]
     },
     {
       "gate": "scan.handlers",
@@ -42,7 +77,7 @@
         {
           "rule": "unprobed-handler-types",
           "severity": "warn",
-          "message": "3 handler type(s) registered and NONE exercised: change, click, input — this gate is an inventory and presses nothing. A clean result here says the wiring exists, not that it works. Run 'check interactions --handlers' to focus and activate the controls, add '--probe-drag' for the drag surfaces, or drive the rest with a 'verify flow' script.",
+          "message": "6 handler type(s) registered and NONE exercised: change, click, compositionend, compositionstart, input, scroll — this gate is an inventory and presses nothing. A clean result here says the wiring exists, not that it works. Run 'check interactions --handlers' to focus and activate the controls, add '--probe-drag' for the drag surfaces, or drive the rest with a 'verify flow' script.",
           "evidence": {
             "element": "(page)"
           }
@@ -96,6 +131,211 @@
     },
     {
       "gate": "check.responsive",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 2,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "clipped-content",
+          "severity": "warn",
+          "message": "fails at 320-1440px — fails at every width tested (320-1440px): not a breakpoint defect — the page is broken at any size (+1 more failing in the same cases). div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1) clips 979px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.; cause: `width: 286px` — style attribute + `height: 130px` — style attribute; overriding them to `auto` / `auto` clears it at 320, 880, 1440px. Reproduce: vlmkit check responsive http://127.0.0.1:60074/ --width 320 --height 900",
+          "selector": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1)",
+          "viewport": 320,
+          "evidence": {
+            "failure": {
+              "kind": "clipped-content",
+              "severity": "warn",
+              "selectors": [
+                "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1)",
+                "div.layout-contract > div:nth-of-type(1) > pre:nth-of-type(1)"
+              ],
+              "message": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1) clips 979px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+              "failingCases": 60,
+              "firstCase": {
+                "width": 320,
+                "height": 900,
+                "textScale": 1,
+                "colorScheme": "light",
+                "reducedMotion": "no-preference"
+              },
+              "reproduce": "vlmkit check responsive http://127.0.0.1:60074/ --width 320 --height 900",
+              "shrunk": {
+                "case": {
+                  "width": 320,
+                  "height": 900,
+                  "textScale": 1,
+                  "colorScheme": "light",
+                  "reducedMotion": "no-preference"
+                },
+                "steps": [],
+                "needs": [],
+                "interval": {
+                  "lo": 320,
+                  "hi": 1440,
+                  "atMin": true,
+                  "atMax": true
+                },
+                "anchor": {
+                  "kind": "every-width",
+                  "diagnosis": "fails at every width tested (320-1440px): not a breakpoint defect — the page is broken at any size"
+                },
+                "alsoFailsAt": [],
+                "attempts": 11,
+                "exhausted": false
+              },
+              "cause": {
+                "declarations": [
+                  {
+                    "element": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1)",
+                    "role": "target",
+                    "property": "width",
+                    "value": "286px",
+                    "override": "auto",
+                    "rule": "style attribute",
+                    "media": [],
+                    "sheet": "inline"
+                  },
+                  {
+                    "element": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1)",
+                    "role": "target",
+                    "property": "height",
+                    "value": "130px",
+                    "override": "auto",
+                    "rule": "style attribute",
+                    "media": [],
+                    "sheet": "inline"
+                  }
+                ],
+                "alternatives": [],
+                "candidates": 9,
+                "attempts": 17,
+                "complete": true,
+                "holdsAt": [
+                  320,
+                  880,
+                  1440
+                ],
+                "failsAt": []
+              }
+            }
+          }
+        },
+        {
+          "rule": "clipped-content",
+          "severity": "warn",
+          "message": "fails at 320-1182px — fails at every width from 320px up to 1182px and no breakpoint bounds it — something keeps a size the viewport cannot give it. section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1) clips 277px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.; cause: `width: 286px` — style attribute; overriding it to `auto` clears it at 320, 751, 1182px. Reproduce: vlmkit check responsive http://127.0.0.1:60074/ --width 320 --height 900",
+          "selector": "section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1)",
+          "viewport": 320,
+          "evidence": {
+            "failure": {
+              "kind": "clipped-content",
+              "severity": "warn",
+              "selectors": [
+                "section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1)"
+              ],
+              "message": "section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1) clips 277px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+              "failingCases": 35,
+              "firstCase": {
+                "width": 320,
+                "height": 900,
+                "textScale": 1,
+                "colorScheme": "light",
+                "reducedMotion": "no-preference"
+              },
+              "reproduce": "vlmkit check responsive http://127.0.0.1:60074/ --width 320 --height 900",
+              "shrunk": {
+                "case": {
+                  "width": 320,
+                  "height": 900,
+                  "textScale": 1,
+                  "colorScheme": "light",
+                  "reducedMotion": "no-preference"
+                },
+                "steps": [],
+                "needs": [],
+                "interval": {
+                  "lo": 320,
+                  "hi": 1182,
+                  "atMin": true,
+                  "atMax": false
+                },
+                "anchor": {
+                  "kind": "inside-regime",
+                  "diagnosis": "fails at every width from 320px up to 1182px and no breakpoint bounds it — something keeps a size the viewport cannot give it"
+                },
+                "alsoFailsAt": [],
+                "attempts": 19,
+                "exhausted": false
+              },
+              "cause": {
+                "declarations": [
+                  {
+                    "element": "section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1)",
+                    "role": "target",
+                    "property": "width",
+                    "value": "286px",
+                    "override": "auto",
+                    "rule": "style attribute",
+                    "media": [],
+                    "sheet": "inline"
+                  }
+                ],
+                "alternatives": [],
+                "candidates": 14,
+                "attempts": 16,
+                "complete": true,
+                "holdsAt": [
+                  320,
+                  751,
+                  1182
+                ],
+                "failsAt": []
+              }
+            }
+          }
+        },
+        {
+          "rule": "untested-media-feature",
+          "severity": "info",
+          "message": "(forced-colors) is not varied — 1 condition(s) using it were measured only as headless Chromium reports it: (forced-colors: active)"
+        }
+      ]
+    },
+    {
+      "gate": "check.scroll",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.a11y.contrast",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.animation",
+      "verdict": "pass",
+      "counts": {
+        "suspect": 0,
+        "warn": 0,
+        "info": 0
+      },
+      "findings": []
+    },
+    {
+      "gate": "check.motion",
       "verdict": "pass",
       "counts": {
         "suspect": 0,

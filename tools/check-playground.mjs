@@ -9,6 +9,7 @@ assert.ok(['playground','control-flow'].includes(target),'Unknown UI quality tar
 const directory=target==='playground' ? 'playground' : 'examples/control-flow';
 const resultsDirectory=target==='playground' ? 'evals/results/playground' : 'evals/results/control-components';
 const gates=[['check','integrity'],['check','copy','--manifest',`${directory}/copy.txt`],['scan','scroll'],['scan','handlers'],['check','interactions'],['check','breakpoints','--sweep'],['check','responsive','--min-width','320','--max-width','1440']];
+if(target==='playground') gates.push(['check','scroll'],['check','a11y','contrast'],['check','animation'],['check','motion']);
 const server=await preview({configFile:`${directory}/vite.config.mjs`,logLevel:'silent',preview:{host:'127.0.0.1',port:0,strictPort:false}});
 const url=`http://127.0.0.1:${server.httpServer.address().port}/`;
 const binary=fileURLToPath(new URL('../node_modules/.bin/vlmkit',import.meta.url)),results=[];

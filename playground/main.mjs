@@ -1,9 +1,11 @@
 import {mountPreview,previewRuntimeURL} from '@isle/prototype/preview';
 import {presets,defaultCSS,defaultLayout} from './presets.mjs';
 import {createLayoutChecker,isolationSessionKey} from './layout-checker.mjs';
+import {mountEditor} from './editor.mjs';
 
 const ids=['preset','component','mode','auto','compile','reset','source','props','css','layout','verify-layout','layout-status','status','diagnostics','preview','metrics','output-kind','output','size','download'];
 const ui=Object.fromEntries(ids.map(id=>[id,document.getElementById(id)]));
+const editors=Object.entries({source:'isle',props:'json',css:'css',layout:'json'}).map(([id,language])=>mountEditor(ui[id],language));
 let worker,busy=false,sequence=0,timer,deadline,artifact,result,token,runtimeSource;
 let restored;
 try {restored=JSON.parse(sessionStorage.getItem(isolationSessionKey));sessionStorage.removeItem(isolationSessionKey);} catch {}
@@ -72,6 +74,7 @@ async function receive({data}) {
   } catch(error) {if(data.id===sequence) status('Preview error: '+error.message,true);}
 }
 function compile() {
+  editors.forEach(editor=>editor.refresh());
   invalidate();diagnostics([]);
   let props;
   try {props=JSON.parse(ui.props.value);if(!props || Array.isArray(props) || typeof props!=='object') throw new Error('Props must be a JSON object.');}
