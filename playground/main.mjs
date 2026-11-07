@@ -93,7 +93,12 @@ function compile() {
   },5000);
 }
 function schedule() {invalidate();status(ui.auto.checked ? 'Waiting for edits…' : 'Changed · press Compile');if(ui.auto.checked) timer=setTimeout(compile,250);}
-function reset() {const preset=presets[ui.preset.value];ui.source.value=preset.source;ui.props.value=JSON.stringify(preset.props,null,2);ui.css.value=preset.css ?? defaultCSS;ui.layout.value=JSON.stringify(preset.layout ?? defaultLayout,null,2);ui['verify-layout'].checked=Boolean(preset.layout);ui.component.replaceChildren();compile();}
+function reset() {
+  const preset=presets[ui.preset.value];
+  ui.source.value=preset.source;ui.props.value=JSON.stringify(preset.props,null,2);ui.css.value=preset.css ?? defaultCSS;ui.layout.value=JSON.stringify(preset.layout ?? defaultLayout,null,2);
+  for(const id of ['source','props','css','layout']) {ui[id].setSelectionRange(0,0);ui[id].scrollLeft=ui[id].scrollTop=0;}
+  ui['verify-layout'].checked=Boolean(preset.layout);ui.component.replaceChildren();compile();
+}
 for(const [id,preset] of Object.entries(presets)) ui.preset.add(new Option(preset.label,id));
 for(const id of ['source','props','css','layout']) ui[id].addEventListener('input',schedule);
 for(const id of ['component','mode']) ui[id].addEventListener('change',compile);

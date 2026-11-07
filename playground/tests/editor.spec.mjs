@@ -67,6 +67,10 @@ for(const width of [390,1440]) test(`overlay editors preserve native geometry th
     await input.hover();await page.mouse.wheel(61,73);
     await expect.poll(async()=>{const g=await geometry();return g.x>83 && g.y>97 && g.tx===-g.x && g.ty===-g.y;}).toBe(true);
   }
+  await page.locator('#reset').click();await expect(page.getByRole('status')).toContainText('Ready');
+  for(const id of ['source','props','css','layout']) {
+    await expect.poll(()=>page.locator('#'+id).evaluate(input=>[input.scrollLeft,input.scrollTop,input.selectionStart,input.selectionEnd])).toEqual([0,0,0,0]);
+  }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 

@@ -141,7 +141,7 @@
         {
           "rule": "clipped-content",
           "severity": "warn",
-          "message": "fails at 320-1440px — fails at every width tested (320-1440px): not a breakpoint defect — the page is broken at any size (+1 more failing in the same cases). div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1) clips 979px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.; cause: `width: 286px` — style attribute + `height: 130px` — style attribute; overriding them to `auto` / `auto` clears it at 320, 880, 1440px. Reproduce: vlmkit check responsive http://127.0.0.1:60074/ --width 320 --height 900",
+          "message": "fails at 320-1440px — fails at every width tested (320-1440px): not a breakpoint defect — the page is broken at any size (+1 more failing in the same cases). div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1) clips 979px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.; cause: `width: 286px` — style attribute + `height: 130px` — style attribute; overriding them to `auto` / `auto` clears it at 320, 880, 1440px. Reproduce: vlmkit check responsive http://127.0.0.1:60669/ --width 320 --height 900",
           "selector": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1)",
           "viewport": 320,
           "evidence": {
@@ -161,7 +161,7 @@
                 "colorScheme": "light",
                 "reducedMotion": "no-preference"
               },
-              "reproduce": "vlmkit check responsive http://127.0.0.1:60074/ --width 320 --height 900",
+              "reproduce": "vlmkit check responsive http://127.0.0.1:60669/ --width 320 --height 900",
               "shrunk": {
                 "case": {
                   "width": 320,
@@ -226,7 +226,7 @@
         {
           "rule": "clipped-content",
           "severity": "warn",
-          "message": "fails at 320-1182px — fails at every width from 320px up to 1182px and no breakpoint bounds it — something keeps a size the viewport cannot give it. section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1) clips 277px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.; cause: `width: 286px` — style attribute; overriding it to `auto` clears it at 320, 751, 1182px. Reproduce: vlmkit check responsive http://127.0.0.1:60074/ --width 320 --height 900",
+          "message": "fails at 320-1182px — fails at every width from 320px up to 1182px and no breakpoint bounds it — something keeps a size the viewport cannot give it. section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1) clips 277px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.; cause: `width: 286px` — style attribute; overriding it to `auto` clears it at 320, 751, 1182px. Reproduce: vlmkit check responsive http://127.0.0.1:60669/ --width 320 --height 900",
           "selector": "section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1)",
           "viewport": 320,
           "evidence": {
@@ -245,7 +245,7 @@
                 "colorScheme": "light",
                 "reducedMotion": "no-preference"
               },
-              "reproduce": "vlmkit check responsive http://127.0.0.1:60074/ --width 320 --height 900",
+              "reproduce": "vlmkit check responsive http://127.0.0.1:60669/ --width 320 --height 900",
               "shrunk": {
                 "case": {
                   "width": 320,
