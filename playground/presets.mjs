@@ -3,6 +3,7 @@ import list from '../examples/control-flow/app.isle?raw';
 import fragments from '../examples/control-flow/fragments.isle?raw';
 import inlineCSS from '../examples/inline-css/app.isle?raw';
 import styledCounter from '../examples/inline-css/counter.isle?raw';
+import variableLayout from '../examples/inline-css/variables.isle?raw';
 export const defaultLayout={viewport:{min:160,max:640,height:{min:80,max:640}}};
 const layoutCSS='html,body { margin: 0; padding: 0; }';
 export const defaultCSS=`* { box-sizing: border-box; }
@@ -22,6 +23,7 @@ export const presets={
   layout:{label:'Inline CSS · Z3 layout proof',source:inlineCSS,props:{},css:layoutCSS,layout:defaultLayout},
   layoutBroken:{label:'Inline CSS · overflow witness',source:inlineCSS,props:{},css:layoutCSS,layout:{viewport:{min:120,max:640,height:{min:80,max:640}}}},
   layoutResponsive:{label:'Inline CSS · responsive proof',source:inlineCSS.replace('    </style>','      @media (width < 160px) { .row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }\n    </style>'),props:{},css:layoutCSS,layout:{viewport:{min:80,max:640,height:{min:80,max:640}}}},
+  layoutVariables:{label:'CSS variables · responsive proof',source:variableLayout,props:{},css:layoutCSS,layout:{viewport:{min:80,max:640,height:{min:80,max:640}}}},
   list:{label:'List · branches & keyed regions',source:list,props:{initial:[{id:'a',title:'First'},{id:'b',title:'Second'}]}},
   fragments:{label:'Fragments · keyed groups',source:fragments,props:{initial:[{id:'a',title:'First'},{id:'b',title:'Second'}]}},
   nested:{label:'Nested · independent owners',props:{seed:1},source:`client component Counter(label: string, initial: number) {

@@ -4,6 +4,8 @@
 
 通常版は columns=4, rows=1、responsive 版は幅160px未満で columns=2, rows=2 です。`layout_bad` は、その幅・高さに収まらない条件を表します。テストは、この述語と CSS から生成した全違反条件の排他的論理和が UNSAT になることを確認します。最小幅を41pxへ壊した仕様では SAT になり、比較が実際に違いを検出することも確認します。
 
+`examples/inline-css/variables.isle` から解決する `var()` 版も同じ独立仕様へ照合します。変数の抽出器自体の一般的な証明ではなく、継承・循環等は別の境界値テストと Chromium oracle でも検査します。fallback 経由の循環は、仕様世代による差を考慮して Unknown にする profile です。
+
 ```sh
 node --test tests/layout-z3.test.mjs
 just playground-check

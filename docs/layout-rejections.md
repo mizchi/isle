@@ -27,7 +27,7 @@ just layout evals/results/layout-rejections/content-box/reject/app.isle \
 | wrapping | wrap:anywhere と white-space:nowrap | E_LAYOUT_WRAP | CSS と契約を一致させる |
 | container-breakpoint | 616px必要なのに600pxから二列 | E_LAYOUT_CONTENT | 616pxから切り替える |
 | intrinsic-fr | intrinsic minimum を持つ1fr | U_LAYOUT_GEOMETRY | この例を minmax(0,1fr) で書く |
-| css-variable | 値域不明の var(--size) | U_LAYOUT_GEOMETRY | この例の値320pxを明示する |
+| css-variable | 継承元・値が不明の var(--size) | U_LAYOUT_VARIABLE | この例の値320pxを明示する。定義済みの変数は静的解決できる |
 | inherit-boundary | inherit の祖先情報が不足 | U_LAYOUT_GEOMETRY | 実在する html/body を入力する |
 | generated-content | content で pseudo box を生成 | U_LAYOUT_CSS | 実 DOM の leaf として記述する |
 | nested-layer | layer の階層 | U_LAYOUT_LAYER | 小例を flat layer で記述する |

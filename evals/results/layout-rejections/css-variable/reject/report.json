@@ -30,7 +30,8 @@
   "assumptions": [
     "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
     "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
-    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract.",
+    "Custom properties are unregistered; unknown external inheritance and cycles through fallback references prevent verification when used by geometry."
   ],
   "styleSources": [
     {
@@ -44,9 +45,13 @@
   ],
   "diagnostics": [
     {
-      "code": "U_LAYOUT_GEOMETRY",
+      "code": "U_LAYOUT_VARIABLE",
       "severity": "unknown",
-      "message": "Unsupported CSS pixel length: var(--size)",
+      "message": "Cannot resolve inherited --size; provide the real ancestor chain starting at html",
+      "css": {
+        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/css-variable/reject/app.css",
+        "line": 2
+      },
       "box": ".text",
       "path": "Card/0",
       "source": {
@@ -241,11 +246,6 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
           }
         ]
       },
@@ -261,5 +261,6 @@
     }
   ],
   "sizes": [],
-  "queries": []
+  "queries": [],
+  "subgrids": []
 }

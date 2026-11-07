@@ -11,7 +11,7 @@
 |PASS|[wrapping](wrapping/reject/app.css)|violated|[E_LAYOUT_WRAP](wrapping/reject/report.json)|[verified](wrapping/accept/app.css)|
 |PASS|[container-breakpoint](container-breakpoint/reject/app.css)|violated|[E_LAYOUT_CONTENT](container-breakpoint/reject/report.json)|[verified](container-breakpoint/accept/app.css)|
 |PASS|[intrinsic-fr](intrinsic-fr/reject/app.css)|unknown|[U_LAYOUT_GEOMETRY](intrinsic-fr/reject/report.json)|[verified](intrinsic-fr/accept/app.css)|
-|PASS|[css-variable](css-variable/reject/app.css)|unknown|[U_LAYOUT_GEOMETRY](css-variable/reject/report.json)|[verified](css-variable/accept/app.css)|
+|PASS|[css-variable](css-variable/reject/app.css)|unknown|[U_LAYOUT_VARIABLE](css-variable/reject/report.json)|[verified](css-variable/accept/app.css)|
 |PASS|[inherit-boundary](inherit-boundary/reject/app.css)|unknown|[U_LAYOUT_GEOMETRY](inherit-boundary/reject/report.json)|[verified](inherit-boundary/accept/app.css)|
 |PASS|[generated-content](generated-content/reject/app.css)|unknown|[U_LAYOUT_CSS](generated-content/reject/report.json)|[verified](generated-content/accept/app.css)|
 |PASS|[nested-layer](nested-layer/reject/app.css)|unknown|[U_LAYOUT_LAYER](nested-layer/reject/report.json)|[verified](nested-layer/accept/app.css)|
@@ -63,7 +63,7 @@ wrap:anywhere の契約を保ち、CSS を一致させる。
 
 ## 値域不明の CSS variable
 
-対応版ではこの例で使う値を明示する。任意の CSS variable を解析した例ではない。
+未解決の継承元を推測しない。対応版は値を明示する。有限に解決できる var() は解析可能。
 
 入力: [source](css-variable/reject/app.isle)、[設定](css-variable/reject/layout.json)。対応版: [source](css-variable/accept/app.isle)、[設定](css-variable/accept/layout.json)。
 

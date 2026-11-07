@@ -94,6 +94,21 @@ test('a partial analyzer model can never become verified just because Z3 returns
   assert.equal(result.complete,false);
 });
 
+test('resolved CSS variables agree with the independent responsive SMT specification',async()=>{
+  const source=await readFile(new URL('../examples/inline-css/variables.isle',import.meta.url),'utf8');
+  const spec=await readFile(new URL('../models/css_layout/contract.smt2',import.meta.url),'utf8');
+  for(const broken of [false,true]) {
+    const report=analyzeLayout(requireIR(compile(broken ? source.replace('--cell: 40px','--cell: 41px') : source)),{css:'',viewport:{min:80,max:640,height:{min:20,max:640}}});
+    const model=createLayoutModel(report);assert.equal(model.complete,true,JSON.stringify(report.diagnostics));
+    const actual='(or '+model.obligations.map(o=>`(and ${o.domain} ${o.failure})`).join(' ')+')';
+    const ctx=new api.Context('variables_reference'),solver=new ctx.Solver();
+    try {
+      solver.fromString(model.domain+spec+`\n(assert (xor ${actual} (layout_bad width height (ite (< width 160) 2 4) (ite (< width 160) 2 1))))`);
+      assert.equal(await solver.check(),broken ? 'sat' : 'unsat');
+    } finally {solver.release();}
+  }
+});
+
 test('structural CSS policies are part of the model rather than a numeric-only proof',async()=>{
   const result=await verifyLayoutModel(run(css+'.cell{float:left}',{min:160,max:640}),api);
   assert.equal(result.status,'violated');assert.equal(result.solver.result,'sat');

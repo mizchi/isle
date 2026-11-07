@@ -1055,20 +1055,24 @@
     {
       "id": "css-variable",
       "title": "値域不明の CSS variable",
-      "note": "対応版ではこの例で使う値を明示する。任意の CSS variable を解析した例ではない。",
+      "note": "未解決の継承元を推測しない。対応版は値を明示する。有限に解決できる var() は解析可能。",
       "pass": true,
       "expected": {
         "status": "unknown",
-        "code": "U_LAYOUT_GEOMETRY"
+        "code": "U_LAYOUT_VARIABLE"
       },
       "reject": {
         "exitCode": 1,
         "status": "unknown",
         "diagnostics": [
           {
-            "code": "U_LAYOUT_GEOMETRY",
+            "code": "U_LAYOUT_VARIABLE",
             "severity": "unknown",
-            "message": "Unsupported CSS pixel length: var(--size)",
+            "message": "Cannot resolve inherited --size; provide the real ancestor chain starting at html",
+            "css": {
+              "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/css-variable/reject/app.css",
+              "line": 2
+            },
             "box": ".text",
             "path": "Card/0",
             "source": {
@@ -1078,9 +1082,13 @@
           }
         ],
         "matched": {
-          "code": "U_LAYOUT_GEOMETRY",
+          "code": "U_LAYOUT_VARIABLE",
           "severity": "unknown",
-          "message": "Unsupported CSS pixel length: var(--size)",
+          "message": "Cannot resolve inherited --size; provide the real ancestor chain starting at html",
+          "css": {
+            "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/css-variable/reject/app.css",
+            "line": 2
+          },
           "box": ".text",
           "path": "Card/0",
           "source": {

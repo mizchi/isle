@@ -27,6 +27,7 @@ selector は `:is(.cell).i_<hash>` のように所有者を限定します。親
 - **Inline CSS · Z3 layout proof**：幅160–640px、高さ80–640pxで反例なし。
 - **Inline CSS · overflow witness**：最小幅120pxへ下げ、40pxの箱4つが収まらない反例を取得。
 - **Inline CSS · responsive proof**：幅160px未満で2列へ切り替え、幅80pxから検査。
+- **CSS variables · responsive proof**：`--cell` と `--columns` の継承・media 内の上書きも検査。[変数の意味論と制限](css-variables.md)。
 
 **Verify layout · Z3** を有効にすると、Layout contract の JSON と CSS を専用 Worker へ渡します。compiler Worker とアプリの opaque iframe は分離したままです。通常の Counter を開くだけでは solver を読み込みません。
 

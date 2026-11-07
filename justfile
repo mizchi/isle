@@ -376,7 +376,7 @@ playground-build: build-compiler
     pnpm exec vite build --config playground/vite.config.mjs
 
 playground-check: build-compiler
-    node --test tests/browser-compiler.test.mjs tests/preview.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs tests/playground-editor.test.mjs
+    node --test tests/browser-compiler.test.mjs tests/preview.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs tests/layout-variables.test.mjs tests/playground-editor.test.mjs
     pnpm exec playwright test --config playwright.playground.config.mjs
 
 playground-quality: playground-build

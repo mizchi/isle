@@ -9,4 +9,6 @@ pnpm exec vite --config examples/inline-css/vite.config.mjs
 
 Change the contract minimum from 160 to 120: the production build fails. In the [playground](https://mizchi.github.io/isle/playground/), select Inline CSS to inspect the UNSAT proof, overflow witness and responsive version. See [the guide](../../docs/inline-css.md) for the profile and assumptions.
 
+[variables.isle](variables.isle) uses inherited `--cell` and responsive `--columns` values. Select **CSS variables · responsive proof** in the playground. The checked build keeps native CSS variables and emits no resolver JavaScript. [Semantics and limits](../../docs/css-variables.md).
+
 4つの等幅 track に、最小幅40px・高さ40pxの箱を配置します。`<style>` を component 単位にスコープし、静的 CSS として配信します。production build は宣言した幅・高さ範囲を Z3 で検査し、証明書を生成します。最小幅を120pxに変更するとビルドは失敗します。playground では反例と responsive 修正版を比較できます。

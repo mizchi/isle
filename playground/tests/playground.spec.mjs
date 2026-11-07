@@ -1,5 +1,19 @@
 import {test,expect} from '@playwright/test';
 const preview=page=>page.frameLocator('#preview');
+test('CSS variables reach Z3 Wasm with inherited values, cycle diagnostics and fallback recovery',async({page})=>{
+  await page.goto('/');await page.locator('#preset').selectOption('layoutVariables');
+  await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});
+  await expect(page.locator('#layout-status')).toContainText('UNSAT');
+  await expect(preview(page).locator('.cell')).toHaveCount(4);
+  const source=await page.locator('#source').inputValue();
+  await page.locator('#source').fill(source.replace('--cell: 40px','--cell: 41px'));
+  await expect(page.locator('#layout-status')).toContainText('Violated');
+  await page.locator('#source').fill(source.replace('--cell: 40px','--cell: var(--cell)'));
+  await expect(page.locator('#layout-status')).toContainText('Unknown');
+  await expect(page.locator('#layout-status')).toContainText('cycle');
+  await page.locator('#source').fill(source.replace('--cell: 40px','--cell: var(--cell)').replace('min-width: var(--cell)','min-width: var(--cell, 40px)'));
+  await expect(page.locator('#layout-status')).toContainText('Verified');
+});
 test('owned inline CSS stays separate across server/client components after resume',async({page})=>{
   await page.goto('/');await page.locator('#preset').selectOption('styled');
   const frame=preview(page),child=frame.locator('[data-styled-child]'),parent=frame.locator('[data-styled-parent]');

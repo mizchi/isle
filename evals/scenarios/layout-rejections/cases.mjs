@@ -83,8 +83,8 @@ export const cases = [
   {
     id: 'css-variable', title: '値域不明の CSS variable',
     reject: cardExample('.text {width:var(--size);}'), accept: cardExample('.text {width:320px;}'),
-    expected: expected('unknown', 'U_LAYOUT_GEOMETRY'),
-    note: '対応版ではこの例で使う値を明示する。任意の CSS variable を解析した例ではない。',
+    expected: expected('unknown', 'U_LAYOUT_VARIABLE'),
+    note: '未解決の継承元を推測しない。対応版は値を明示する。有限に解決できる var() は解析可能。',
   },
   {
     id: 'inherit-boundary', title: '継承元の情報不足',
