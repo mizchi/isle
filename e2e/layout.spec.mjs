@@ -79,3 +79,18 @@ test('fr totals below one match browser partial free-space allocation', async ({
   await page.setContent(document(stylesheet));
   expect(await page.locator('.body').evaluate(el => el.getBoundingClientRect().width)).toBe(234);
 });
+
+test('invalid margin shorthand is ignored by the browser and cannot pass the layout gate',async({page})=>{
+  const ir=requireIR(compile('component Panel(){<main class="panel"><p class="copy">Content</p></main>}'));
+  const stylesheet='*{box-sizing:border-box}.panel{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:24px;block-size:24px}.copy{block-size:24px;margin:0 0 0 0 0}';
+  const options={viewport:{min:320,max:320,height:{min:24,max:24}},boxes:{'.copy':{minInlineSize:100,minBlockSize:24}}};
+  expect(analyzeLayout(ir,{...options,css:stylesheet}).status).toBe('unknown');
+  await page.setContent(`<style>body{margin:0}${stylesheet}</style><main class="panel"><p class="copy">Content</p></main>`);
+  expect(await page.locator('.copy').evaluate(node=>getComputedStyle(node).marginTop)).toBe('16px');
+  expect(await page.locator('.panel').evaluate(node=>node.scrollHeight>node.clientHeight)).toBe(true);
+  const fixed=stylesheet.replace('margin:0 0 0 0 0','margin:0');
+  expect(analyzeLayout(ir,{...options,css:fixed}).status).toBe('verified');
+  await page.setContent(`<style>body{margin:0}${fixed}</style><main class="panel"><p class="copy">Content</p></main>`);
+  expect(await page.locator('.copy').evaluate(node=>getComputedStyle(node).marginTop)).toBe('0px');
+  expect(await page.locator('.panel').evaluate(node=>node.scrollHeight>node.clientHeight)).toBe(false);
+});
