@@ -9,8 +9,11 @@ import {declaredLayoutOptions} from '../lib/layout-declarations.mjs';
 import {verifyDeclaredLayouts} from '../lib/layout-contract-node.mjs';
 import { resolve, dirname } from 'node:path';
 const [command, file, ...args] = process.argv.slice(2);
-if (!file || !['check', 'explain', 'emit', 'ssr', 'chunks', 'dependencies', 'cost', 'layout'].includes(command)) {
-  console.error('Usage: node tools/isle.mjs check|explain|emit|ssr <file.isle> [component] [props-json]\n       node tools/isle.mjs chunks <isle.manifest.json>\n       node tools/isle.mjs dependencies <graph.json>\n       node tools/isle.mjs cost <file.isle|isle.cost.json> [budgets.json]\n       node tools/isle.mjs layout <file.isle> [environment.json]');
+const usage = 'Usage: isle check|explain|emit|ssr <file.isle> [component] [props-json]\n       isle chunks <isle.manifest.json>\n       isle dependencies <graph.json>\n       isle cost <file.isle|isle.cost.json> [budgets.json]\n       isle layout <file.isle> [environment.json]';
+if (process.argv.slice(2).some(arg => ['--help', '-h'].includes(arg))) {
+  console.log(usage);
+} else if (!file || !['check', 'explain', 'emit', 'ssr', 'chunks', 'dependencies', 'cost', 'layout'].includes(command)) {
+  console.error(usage);
   process.exitCode = 2;
 } else {
   try {
