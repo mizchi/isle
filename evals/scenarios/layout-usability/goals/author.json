@@ -1,0 +1,17 @@
+{
+  "component": "ReviewQueue",
+  "viewport": {"min": 320, "max": 960, "height": {"min": 640, "max": 960}},
+  "columns": [{"width": 320, "count": 1}, {"width": 599, "count": 1}, {"width": 600, "count": 2}, {"width": 960, "count": 2}],
+  "initial": {"ids": ["a", "b", "c"], "total": 3, "open": 2},
+  "steps": [
+    {"click": "Open", "ids": ["a", "c"], "total": 3, "open": 2},
+    {"toggle": "a", "ids": ["c"], "total": 3, "open": 1},
+    {"click": "Done", "ids": ["a", "b"], "total": 3, "open": 1},
+    {"click": "Add review", "ids": ["a", "b"], "total": 4, "open": 2},
+    {"click": "All", "ids": ["a", "b", "c", "d"], "total": 4, "open": 2},
+    {"click": "Add review", "ids": ["a", "b", "c", "d"], "total": 4, "open": 2},
+    {"toggle": "d", "ids": ["a", "b", "c", "d"], "total": 4, "open": 1, "preserveRoot": true}
+  ],
+  "forbiddenPayload": ["z3", ".wasm"],
+  "ssrJavaScriptChunks": 0
+}

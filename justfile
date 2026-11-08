@@ -393,3 +393,7 @@ playground-quality: playground-build
 inline-css-check: build-compiler
     node --test tests/inline-css*.test.mjs tests/layout-z3.test.mjs
     pnpm exec vite build --config examples/inline-css/vite.config.mjs
+
+# Independently grade a docs-only npm consumer built by a fresh agent.
+layout-usability-grade scenario directory:
+    node tools/grade-layout-usability.mjs {{quote(scenario)}} {{quote(directory)}}

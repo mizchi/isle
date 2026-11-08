@@ -1,0 +1,10 @@
+{
+  "component": "Board",
+  "viewport": {"min": 320, "max": 960, "height": {"min": 640, "max": 960}},
+  "tileMinimum": {"inline": 180, "block": 100},
+  "padding": 16,
+  "gap": 16,
+  "tileCount": 4,
+  "columns": [{"width": 320, "count": 1}, {"width": 399, "count": 1}, {"width": 400, "count": 1}, {"width": 407, "count": 1}, {"width": 408, "count": 2}, {"width": 960, "count": 2}],
+  "ssrJavaScriptChunks": 0
+}
