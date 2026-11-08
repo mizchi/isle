@@ -69,6 +69,8 @@ client component Details(user: User) {
 | `W_UNOBSERVED_UPDATE` | 効果のあるイベント内で、一部だけ除去される代入 |
 | `W_UNOBSERVED_EVENT` | 効果がなく除去されるイベント、またはどこにも接続されない宣言 |
 
+同じ宣言の全ての接続が消える場合は宣言へ1回だけ警告する。一部の接続だけが消え、別の接続は同期キャンセルなどを保持する場合は、消える`on:`属性を指す。
+
 初期HTMLだけに使う値や、例外・外部効果を保持するために必要な値は対象にしない。readonly recordの一部をsnapshotから除くだけでも警告しない。専用client entry、resource setup、子ownerなどのopaque境界では、内部の観測性を断定しない。未接続のevent宣言はその場合も警告する。定数畳込み前の検査済みプログラムを保守的に解析するため、全ての到達不能コードを検出するunused lintではない。
 
 `compile(source)`はwarningがあっても`ok: true`で、`diagnostics`へ`severity: "warning"`、code、hint、UTF-16のソース範囲を返す。成功時の`diagnostics`が空とは限らないため、成功判定には`ok`を使う。`requireIR`はwarningで失敗しない。`compilePreview`もwarningを返し、renderエラー時にはエラーの後ろに残す。

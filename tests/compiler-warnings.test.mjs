@@ -57,6 +57,14 @@ test('named events warn once across bindings and unused declarations remain type
   assert.equal(invalid.ok,false);assert.ok(invalid.diagnostics[0].code.startsWith('E_'));
 });
 
+test('a removed binding points to its attribute when another binding retains synchronous cancellation',()=>{
+  const source='client component C(){state n=0;event idle(e:EventSnapshot<MouseEvent>){n+=1;}<main><button on:click={idle}>Idle</button><button on:click.preventDefault={idle}>Cancel</button></main>}';
+  const result=compile(source),warning=result.diagnostics.find(d=>d.code==='W_UNOBSERVED_EVENT');
+  assert.equal(result.ok,true);assert.match(warning.message,/Binding of event/);
+  assert.equal(source.slice(warning.start,warning.end).trim(),'on:click={idle}');
+  assert.match(warning.hint,/Remove this binding/);
+});
+
 test('preview preserves warnings on successful static output and render failures',()=>{
   const source='client component C(unused:string){state n=0;<button>on click idle{n+=1;}Idle</button>}';
   const preview=compilePreview(source,{props:{unused:'checked'}});
