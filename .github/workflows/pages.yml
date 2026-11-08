@@ -33,7 +33,12 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      - uses: hustcer/setup-moonbit@v1.25
+      - name: Install MoonBit
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --location --retry 3 --output "$RUNNER_TEMP/install-moonbit.sh" https://cli.moonbitlang.com/install/unix.sh
+          bash "$RUNNER_TEMP/install-moonbit.sh"
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
       - run: pnpm install --frozen-lockfile
       - run: moon update
       - run: pnpm build:compiler
