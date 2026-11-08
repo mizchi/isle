@@ -16,6 +16,7 @@ async function bundle(source, options = {}) {
   try {
     const entry = join(directory, 'app.isle');
     await writeFile(entry, source);
+    await writeFile(join(directory, 'client.mjs'), "import {boot} from 'virtual:isle-loader';boot();");
     await writeFile(join(directory, 'index.html'), '<!doctype html><html><head></head><body><!--isle:ssr--></body></html>');
     const result = await build({ configFile: false, root: directory, base: './', logLevel: 'silent',
       plugins: [isle({ entry, diagnostics: false, profile: false,
@@ -45,6 +46,20 @@ test('selection-only apps erase keyed and failure-boundary helpers; SSR controls
   const ssr = await bundle(source('<Show when={n > 0}><p>{n}</p></Show>'), { mode: 'ssr' });
   assert.equal(ssr.filter(item => item.type === 'chunk').length, 0);
   assert.doesNotMatch(ssr.find(item => item.fileName === 'index.html').source, /data-isle-|<!--[rte]:/);
+});
+
+test('an unobserved event becomes static HTML with no runtime, snapshot or handler chunks',async()=>{
+  const output=await bundle('client component C(initial:number){state n=initial;<button type="button">on click add{n+=1;}Click</button>}');
+  assert.deepEqual(output.filter(item=>item.type==='chunk'),[]);
+  const html=output.find(item=>item.fileName==='index.html').source;
+  assert.match(html,/>Click<\/button>/);assert.doesNotMatch(html,/data-isle-on|data-isle-snapshot|type="module"/);
+});
+
+test('a custom client entry preserves activation that external controller code may observe',async()=>{
+  const output=await bundle('client component C(initial:number){state n=initial;<button type="button">on click activate{n+=1;}Activate</button>}',{clientEntry:'./client.mjs'});
+  const manifest=JSON.parse(output.find(item=>item.fileName==='isle.manifest.json').source);
+  assert.ok(manifest.references['C.activate']);
+  assert.match(output.find(item=>item.fileName==='index.html').source,/data-isle-on-click/);
 });
 
 test('server-only region edits preserve emitted JavaScript and initializer props stay out of snapshots',async()=>{

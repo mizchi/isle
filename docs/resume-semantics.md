@@ -1,6 +1,6 @@
 # Qwikから移植する意味論と、Isleを使う理由
 
-状態: 2026-11-08。通常templateとregionで共通の依存解決・値phase IR、regionの不要snapshot削除を実装した。guard付きconsumerの共通IR、入口ごとのregion capture、`live`引数などは後続の設計提案である。
+状態: 2026-11-08。通常templateとregionで共通の依存解決・値phase IR、regionの不要snapshot削除を実装した。[観測されない入口の除去・片方向の分岐・readonly recordのprojection](semantic-optimizer.md)も利用できる。guard付きconsumerの共通IR、入口ごとのregion capture、`live`引数などは後続の設計提案である。
 
 Isleの中心的な価値を、**状態の所有者・純粋な計算・入力・寿命が明示されたUIから、必要な取得・復元・更新だけを行うプログラムを生成し、その条件を検査できること**に置く。不要な値の保持を両backendで削減し始めた段階で、guardやcomponent境界まで同じ保証を提供できていない。
 

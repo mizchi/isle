@@ -65,10 +65,10 @@ test('flat and region backends share phase contracts; server-only headings and s
       event toggle(e:EventSnapshot<MouseEvent>){open=!open;}
       <main><h1>{title}</h1><button on:click={add}>{n}</button><button on:click={toggle}>Toggle</button>${branch}</main>}`);
     const generated=definition.generate(),fields=names(generated.fields);
-    assert.deepEqual(fields,branch?['panel','n','open']:['n','open']);
+    assert.deepEqual(fields,branch?['panel','n','open']:['n']);
     const props={seed:7,title:'Server heading',panel:'Future panel',unused:'x'.repeat(65536)},large=definition.render(props),small=definition.render({...props,unused:''});
     assert.equal(large.snapshotHtml,small.snapshotHtml);
-    assert.deepEqual(large.snapshot[3],branch?['Future panel',7,false]:[7,false]);
+    assert.deepEqual(large.snapshot[3],branch?['Future panel',7,false]:[7]);
     assert.match(large.html,/Server heading/);assert.doesNotMatch(large.html,/Future panel/);
     const phases=Object.fromEntries(generated.analysis.valuePhases.map(value=>[value.name,value.phase]));
     assert.equal(phases.seed,'server');assert.equal(phases.title,'server');assert.equal(phases.unused,'unused');

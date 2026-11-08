@@ -1,0 +1,18 @@
+schema User { name: string; biography: string; }
+
+client component Details(summary: string, user: User) {
+  state opened = false;
+  event open(e: EventSnapshot<MouseEvent>) { opened = true; }
+  <section>
+    <button type="button" data-test="open" on:click={open}>Open</button>
+    <Show when={opened} fallback={<p data-test="summary">{summary}</p>}>
+      <p data-test="name">{user.name}</p>
+    </Show>
+  </section>
+}
+
+client component Idle() {
+  state count = 0;
+  event increment(e: EventSnapshot<MouseEvent>) { count += 1; }
+  <button type="button" data-test="idle" on:click={increment}>No visible effect</button>
+}

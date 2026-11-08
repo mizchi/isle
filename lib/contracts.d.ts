@@ -40,6 +40,8 @@ export type TemplateNode =
   | { kind: 'element'; tag: string; source?: SourceSpan;layoutContracts?:ComponentLayout[]; attributes: { name: string; value: Expression }[]; children: TemplateNode[]; handlers: Handler[];
     form?: FormContract; formField?: string; formError?: string; formSummary?: boolean; formStatus?: boolean };
 export interface Component {
+  /** Build-only observer boundary; external setup can observe an otherwise dead entry. */
+  optimizationBarrier?:'resource-setup'|'client-entry';
   /** Compile-only input requirements and guarantees, with authored source positions. */
   layout?:ComponentLayout;
   /** Static, owned CSS. Erased from executable component code. */

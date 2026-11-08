@@ -409,6 +409,12 @@ resume-phases-check: build-compiler check-types
     node --test tests/resume-phases.test.mjs tests/control-flow*.test.mjs tests/region-optimization.test.mjs tests/static-split.test.mjs
     pnpm exec playwright test --config playwright.control-flow.config.mjs
 
+# Observability, one-way arm factories and primitive readonly captures; no new runtime.
+semantic-optimizer-check: build-compiler check-types
+    node --test tests/semantic-optimizer.test.mjs tests/control-flow-build.test.mjs tests/resource-binding-build.test.mjs
+    pnpm exec playwright test --config playwright.control-flow.config.mjs
+    node tools/eval-semantic-optimizer.mjs
+
 # Independently grade a docs-only npm consumer built by a fresh agent.
 layout-usability-grade scenario directory:
     node tools/grade-layout-usability.mjs {{quote(scenario)}} {{quote(directory)}}

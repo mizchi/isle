@@ -103,6 +103,7 @@ test('wide pure composition scales patch bounds while independent owners stay se
       client component Board() { state n = 1; derive value = n * 2 + 1;
         <main><button>on click update { n += 1; }Update</button>${'<Row value={value} />'.repeat(rows)}</main> }`;
     const report = analyzeCosts(ir(source)), entry = report.entries[0];
+    if(rows===0) {assert.deepEqual(report.entries,[],'an unobserved counter has no runtime entry');continue;}
     assert.equal(bound(entry, 'textPatchCalls'), rows * 2);
     assert.equal(bound(entry, 'attributePatchCalls'), rows);
     assert.equal(bound(entry, 'createdElements'), 0);

@@ -3,6 +3,9 @@ import type { RenderMode, ResumeSnapshot, IsleMount } from './client-contracts.d
 import type { ComponentCost } from './cost-contracts.d.ts';
 
 export interface StaticAnalysis {
+  observability:import('./observability.mjs').ObservabilityReport;
+  monotonicFactories?:{state:string;arm:number;block:number}[];
+  recordProjections?:import('./record-captures.mjs').RecordProjection[];
   /** Compile-only classification; never included in the client registry. */
   valuePhases:import('./resume-plan.mjs').ValuePhase[];
   folded: string[];

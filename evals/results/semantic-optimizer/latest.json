@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "baseline": "same checked program with opaque-observer barrier; not an older release or Qwik",
+  "units": "UTF-8 bytes; generated JS before bundling, excludes shared runtime; not transfer sizes or timings",
+  "rows": [
+    {
+      "component": "Details",
+      "sameInitialHTML": true,
+      "before": {
+        "snapshotJsonBytes": 131140,
+        "generatedModuleBytes": 1160,
+        "snapshotFields": [
+          "summary",
+          "user",
+          "opened"
+        ],
+        "entries": [
+          "Details.open"
+        ],
+        "factories": 2
+      },
+      "after": {
+        "snapshotJsonBytes": 41,
+        "generatedModuleBytes": 959,
+        "snapshotFields": [
+          "user.name",
+          "opened"
+        ],
+        "entries": [
+          "Details.open"
+        ],
+        "factories": 1
+      }
+    },
+    {
+      "component": "Idle",
+      "sameInitialHTML": true,
+      "before": {
+        "snapshotJsonBytes": 31,
+        "generatedModuleBytes": 54,
+        "snapshotFields": [
+          "count"
+        ],
+        "entries": [
+          "Idle.increment"
+        ],
+        "factories": 0
+      },
+      "after": {
+        "snapshotJsonBytes": 0,
+        "generatedModuleBytes": 0,
+        "snapshotFields": [],
+        "entries": [],
+        "factories": 0
+      }
+    }
+  ]
+}

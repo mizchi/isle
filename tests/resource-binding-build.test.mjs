@@ -33,6 +33,14 @@ test('resource setup is a lazy CodeRef dependency of every component handler', a
   assert.match(html, /data-isle-code="Counter.add"/);
 });
 
+test('external resource setup preserves an otherwise unobserved activation entry',async()=>{
+  const output=await bundle('resume','lazy',{},'client component Counter(initial:number){state n=initial;<button>on click activate{n+=1;}Activate</button>}');
+  const manifest=JSON.parse(output.find(item=>item.fileName==='isle.manifest.json').source);
+  assert.ok(manifest.references['Counter.activate']);
+  assert.ok(manifest.references['Counter.activate'].requires.includes('Counter.$resources'));
+  assert.match(output.find(item=>item.fileName==='index.html').source,/data-isle-on-click/);
+});
+
 test('SSR-only omits setup and cleanup code even when a resource module is configured', async () => {
   const output = await bundle('ssr','lazy',{resources:{Counter:'./not-emitted-or-read.mjs'}});
   assert.equal(output.filter(item=>item.type==='chunk').length,0);
