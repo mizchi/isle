@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-08 — CSS shorthand audit
+
+- Reject invalid margin arity before it can produce a zero-margin layout proof, including values resolved through CSS variables. Preserve an actual Chromium overflow witness and its corrected counterpart.
+- Audit supported shorthand cascade against Chromium; document that overwrite-intent lint and font/background reset detection remain outside the layout checker. [Scope and results](docs/css-shorthands.md).
+
 ## 2026-11-08 — lexical parent events in universal children
 
 - Resolve EVAL-04 with existing `children: RenderFragment`: project parent-owned buttons through universal region templates, preserving scope and client ownership boundaries.

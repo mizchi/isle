@@ -1,0 +1,127 @@
+{
+  "commit": "727aac4",
+  "phase": "before margin arity fix",
+  "samples": [
+    {
+      "id": "padding-reset",
+      "css": "padding-left:24px;padding:0;",
+      "symbolic": {
+        "padding-left": "0"
+      },
+      "native": {
+        "padding-left": "0px"
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "padding-override",
+      "css": "padding:0;padding-left:24px;",
+      "symbolic": {
+        "padding-left": "24px"
+      },
+      "native": {
+        "padding-left": "24px"
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "logical-reset",
+      "css": "padding-inline-start:24px;padding:0;",
+      "symbolic": {
+        "padding-left": "0"
+      },
+      "native": {
+        "padding-left": "0px"
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "gap-reset",
+      "css": "column-gap:20px;gap:4px;",
+      "symbolic": {
+        "row-gap": "4px",
+        "column-gap": "4px"
+      },
+      "native": {
+        "row-gap": "4px",
+        "column-gap": "4px"
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "border-reset",
+      "css": "border:4px solid red;border:0;",
+      "symbolic": {
+        "border-left": "0"
+      },
+      "native": {
+        "border-left": "0px"
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "container-reset",
+      "css": "container-type:inline-size;container:Panel;",
+      "symbolic": {
+        "container-type": "normal",
+        "container-name": "Panel"
+      },
+      "native": {
+        "container-type": "normal",
+        "container-name": "Panel"
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "important",
+      "css": "padding-left:24px!important;padding:0;",
+      "symbolic": {
+        "padding-left": "24px"
+      },
+      "native": {
+        "padding-left": "24px"
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "font-reset",
+      "css": "font-weight:700;font:16px sans-serif;",
+      "symbolic": {
+        "font-weight": "<not modeled>"
+      },
+      "native": {
+        "font-weight": "400"
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "grid-reset",
+      "css": "display:grid;grid-auto-rows:40px;grid:100px / 1fr;",
+      "symbolic": {
+        "grid-auto-rows": "40px"
+      },
+      "native": {
+        "grid-auto-rows": "auto"
+      },
+      "diagnostics": [
+        [
+          "U_LAYOUT_CSS",
+          "Unsupported layout property: grid",
+          1,
+          "grid-reset.css"
+        ]
+      ]
+    },
+    {
+      "id": "invalid-margin",
+      "css": "margin:0 0 0 0 0;",
+      "symbolic": {
+        "margin-top": "0"
+      },
+      "native": {
+        "margin-top": "16px"
+      },
+      "diagnostics": []
+    }
+  ]
+}

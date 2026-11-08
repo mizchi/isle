@@ -124,6 +124,8 @@ html の scrollbar は viewport へ一度だけ適用する。body の特別な 
 
 text leaf の fit 検査にはこの幅契約が必要。契約の selector は、型名・class・id の複合 selector に限定する。同じ box へ複数契約が一致した場合や、一つも一致しない契約は入力エラーにする。
 
+[略記と上書きの対応範囲](css-shorthands.md)も参照してください。最終カスケードを検査する機能と、意図しない上書きを警告するlintは区別しています。
+
 ## CSS reset と継承
 
 reset を暗黙の border-box として仮定せず、実際に使う CSS を先行する author stylesheet として与える。CLI の `reset` は sidecar 相対のファイルパス配列で、配列順→`css` の順に解析する。
