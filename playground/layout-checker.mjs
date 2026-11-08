@@ -1,10 +1,13 @@
 export const isolationSessionKey='isle.playground.isolation.v1';
+import {hasLayoutDeclarations} from '../lib/layout-declarations.mjs';
 
 /** No solver work shares the compiler Worker or the opaque application frame. */
 export function createLayoutChecker({enabled,editor,status,getSession,onResult,isolationAttempted=false}) {
   let worker,latest,deadline,result,isolationPending;
   const show=(text,kind='pending')=>{status.textContent=text;status.dataset.state=kind;};
   function invalidate(message) {
+    enabled.disabled=false;
+    enabled.title='';
     latest=undefined;result=undefined;clearTimeout(deadline);
     if(!enabled.checked) {worker?.terminate();worker=undefined;}
     show(message ?? (enabled.checked ? 'Waiting for layout check…' : 'Layout not checked.'),'pending');
@@ -38,6 +41,9 @@ export function createLayoutChecker({enabled,editor,status,getSession,onResult,i
     instance.onerror=()=>{if(instance===worker) {clearTimeout(deadline);worker.terminate();worker=undefined;show('Unknown · Z3 Worker failed. Compile to retry.','unknown');}};
   }
   async function check(id,compiled,{props,css}) {
+    const declared=hasLayoutDeclarations(compiled.ir,compiled.preview.component);
+    enabled.disabled=declared;if(declared) enabled.checked=true;
+    enabled.title=declared ? 'Required by the source layout declaration' : '';
     if(!enabled.checked) return;
     latest=id;let contract;
     try {

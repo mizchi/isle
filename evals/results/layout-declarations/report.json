@@ -1,0 +1,129 @@
+{
+  "passed": true,
+  "scenarios": [
+    {
+      "name": "declared-grid",
+      "status": "verified",
+      "exit": 0,
+      "diagnostics": [],
+      "declarations": [
+        {
+          "status": "verified",
+          "instance": {
+            "path": "Four"
+          },
+          "solver": {
+            "engine": "z3-wasm",
+            "version": "5.3.3",
+            "result": "unsat"
+          }
+        }
+      ]
+    },
+    {
+      "name": "minimum-41px",
+      "status": "violated",
+      "exit": 1,
+      "diagnostics": [
+        "E_LAYOUT_ITEM_SIZE",
+        "E_LAYOUT_ITEM_SIZE",
+        "E_LAYOUT_ITEM_SIZE",
+        "E_LAYOUT_ITEM_SIZE"
+      ],
+      "declarations": [
+        {
+          "status": "violated",
+          "instance": {
+            "path": "Four"
+          },
+          "solver": {
+            "engine": "z3-wasm",
+            "version": "5.3.3",
+            "result": "sat"
+          },
+          "witness": {
+            "code": "E_LAYOUT_FIT",
+            "box": ".cell.i_a07ea741f357",
+            "path": "Four/0",
+            "axis": "inline",
+            "viewport": 160,
+            "viewportExact": "160",
+            "viewportHeight": 40,
+            "viewportHeightExact": "40",
+            "available": 40,
+            "required": 41
+          }
+        }
+      ]
+    },
+    {
+      "name": "fitting-css-invalid-input",
+      "status": "violated",
+      "exit": 1,
+      "diagnostics": [],
+      "declarations": [
+        {
+          "status": "violated",
+          "instance": {
+            "path": "Four"
+          },
+          "solver": {
+            "engine": "z3-wasm",
+            "version": "5.3.3",
+            "result": "sat"
+          },
+          "witness": {
+            "code": "E_LAYOUT_CHILD_REQUIRES",
+            "box": ".row.i_1d328586a2d2",
+            "path": "Four",
+            "axis": "inline",
+            "viewport": 120,
+            "viewportExact": "120",
+            "viewportHeight": 160,
+            "viewportHeightExact": "160",
+            "available": 120,
+            "required": 160
+          }
+        }
+      ]
+    },
+    {
+      "name": "unknown-variable",
+      "status": "unknown",
+      "exit": 1,
+      "diagnostics": [
+        "U_LAYOUT_VARIABLE"
+      ],
+      "declarations": [
+        {
+          "status": "unknown",
+          "instance": {
+            "path": "Four"
+          },
+          "solver": {
+            "engine": "z3-wasm",
+            "version": "5.3.3",
+            "result": "sat"
+          },
+          "witness": {
+            "code": "U_LAYOUT_COVERAGE",
+            "box": ".row.i_61c18e5a9706",
+            "path": "Four",
+            "viewport": 160,
+            "viewportExact": "160",
+            "viewportHeight": 40,
+            "viewportHeightExact": "40"
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid-profile",
+      "status": "compile-error",
+      "exit": 1,
+      "diagnostics": [
+        "E_LAYOUT_PROFILE"
+      ]
+    }
+  ]
+}

@@ -1,5 +1,28 @@
 import {test,expect} from '@playwright/test';
 const preview=page=>page.frameLocator('#preview');
+test('source layout declarations run mandatory checks and reject invalid actual allocations',async({page})=>{
+  await page.goto('/');await page.locator('#preset').selectOption('layoutDeclared');
+  await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});
+  await expect(page.locator('#verify-layout')).toBeChecked();await expect(page.locator('#verify-layout')).toBeDisabled();
+  await expect(preview(page).locator('.cell')).toHaveCount(4);
+  const source=await page.locator('#source').inputValue();
+  await page.locator('#output-kind').selectOption('layout');
+  await expect(page.locator('#output')).toContainText('"declarations"');
+  await page.locator('#source').fill(source.replace('repeat(4,','repeat(1,'));
+  await page.locator('#layout').fill('{"viewport":{"min":120,"max":640,"height":{"min":160,"max":640}}}');
+  await expect(page.locator('#layout-status')).toContainText('Violated');
+  await expect(page.locator('#layout-status')).toContainText('E_LAYOUT_CHILD_REQUIRES');
+  await page.locator('#output-kind').selectOption('smt');
+  await expect(page.locator('#output')).toContainText('Declared Four');
+  await page.locator('#source').fill(source);await page.locator('#layout').fill('{}');
+  await expect(page.locator('#layout-status')).toContainText('Verified');
+  await page.locator('#source').fill(source.replace('SafeGrid','AnyCSS'));
+  await expect(page.locator('#diagnostics')).toContainText('E_LAYOUT_PROFILE');
+  await page.locator('#source').fill(source.replace(/  layout SafeGrid \{[\s\S]*?\n  \}\n/,''));
+  await expect(page.locator('#verify-layout')).toBeEnabled();
+  await page.locator('#verify-layout').uncheck();
+  await expect(page.locator('#layout-status')).toContainText('not checked');
+});
 test('CSS variables reach Z3 Wasm with inherited values, cycle diagnostics and fallback recovery',async({page})=>{
   await page.goto('/');await page.locator('#preset').selectOption('layoutVariables');
   await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});

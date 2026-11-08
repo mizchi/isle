@@ -19,6 +19,7 @@ client component Counter(initial: number) {
 | `state` | 保存する値と初期式 | owner、初期化の依存、snapshot の配置 |
 | `derive` | 副作用のない計算 | 静的依存、循環検出、必要な再計算 |
 | `event` | 明示した入力と state の代入 | capture、write、action、CodeRef |
+| `layout SafeGrid` | 割当領域の requires とレイアウトの ensures | 独立した契約 IR、native box への接続、配布範囲での適合性検査 |
 | `on:click` などの属性 | DOM 要素と宣言した入口の接続 | 型検査、row の環境、同期キャンセル |
 | template のタグ | HTML、制御領域、子 component | 静的 HTML、DOM 更新先、独立した owner |
 

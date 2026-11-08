@@ -5,6 +5,7 @@ import {tokenize} from '../playground/highlight.mjs';
 test('Isle highlighting preserves source and distinguishes DSL, types, tags and embedded CSS',()=>{
   const source=`client component Counter(initial: number) {
   // <style> inside a comment is not a stylesheet
+  layout SafeGrid { requires { inline-size: 40px..640px; block-size: 40px..640px; } ensures { overflow-inline: fit; overflow-block: fit; } }
   state count = initial;
   event increment(e: EventSnapshot<MouseEvent>) { count += 1; }
   <button class="counter" on:click={increment}>
@@ -15,7 +16,7 @@ test('Isle highlighting preserves source and distinguishes DSL, types, tags and 
   const tokens=tokenize(source,'isle');
   assert.equal(tokens.map(t=>t.text).join(''),source);
   const has=(kind,text)=>tokens.some(t=>t.kind===kind && t.text===text);
-  for(const word of ['client','component','state','event']) assert.ok(has('keyword',word),word);
+  for(const word of ['client','component','layout','requires','ensures','state','event']) assert.ok(has('keyword',word),word);
   assert.ok(has('type','MouseEvent'));assert.ok(!has('tag','<MouseEvent'));
   assert.ok(has('tag','<button'));assert.ok(has('attribute','on:click'));
   assert.ok(has('property','color'));assert.ok(has('number','40px'));assert.ok(has('at-rule','@media'));

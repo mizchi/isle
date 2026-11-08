@@ -24,7 +24,8 @@ function spawn() {
 function inspect() {
   const kind=ui['output-kind'].value;
   if(['layout','smt','styles'].includes(kind)) {
-    ui.output.textContent=kind==='styles' ? artifact?.styles?.map(style=>style.css).join('\n') || '// No scoped styles.' : kind==='smt' ? layoutChecker.result?.model.smt2+'\n(check-sat)\n' : JSON.stringify(layoutChecker.result?.verification ?? {status:'not checked'},null,2);
+    const checked=layoutChecker.result;
+    ui.output.textContent=kind==='styles' ? artifact?.styles?.map(style=>style.css).join('\n') || '// No scoped styles.' : kind==='smt' ? checked?.constraints ?? checked?.model.smt2+'\n(check-sat)\n' : JSON.stringify(checked ? {...checked.verification,...(checked.declarations ? {declarations:checked.declarations} : {})} : {status:'not checked'},null,2);
     if(ui.output.textContent.startsWith('undefined')) ui.output.textContent='Enable layout verification to generate constraints.';
     return;
   }

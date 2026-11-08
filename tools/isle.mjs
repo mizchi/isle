@@ -5,27 +5,34 @@ import { readFile } from 'node:fs/promises';
 import { describeChunks } from '../lib/chunks.mjs';
 import { analyzeCosts, checkCostBudgets } from '../lib/cost.mjs';
 import { analyzeLayout } from '../lib/layout.mjs';
+import {declaredLayoutOptions} from '../lib/layout-declarations.mjs';
+import {verifyDeclaredLayouts} from '../lib/layout-contract-node.mjs';
 import { resolve, dirname } from 'node:path';
 const [command, file, ...args] = process.argv.slice(2);
 if (!file || !['check', 'explain', 'emit', 'ssr', 'chunks', 'dependencies', 'cost', 'layout'].includes(command)) {
-  console.error('Usage: node tools/isle.mjs check|explain|emit|ssr <file.isle> [component] [props-json]\n       node tools/isle.mjs chunks <isle.manifest.json>\n       node tools/isle.mjs dependencies <graph.json>\n       node tools/isle.mjs cost <file.isle|isle.cost.json> [budgets.json]\n       node tools/isle.mjs layout <file.isle> <layout.json>');
+  console.error('Usage: node tools/isle.mjs check|explain|emit|ssr <file.isle> [component] [props-json]\n       node tools/isle.mjs chunks <isle.manifest.json>\n       node tools/isle.mjs dependencies <graph.json>\n       node tools/isle.mjs cost <file.isle|isle.cost.json> [budgets.json]\n       node tools/isle.mjs layout <file.isle> [environment.json]');
   process.exitCode = 2;
 } else {
   try {
     if (command === 'layout') {
-      if (!args[0]) throw new Error('A layout sidecar is required');
       const result = await compileFile(file);
       if (!result.ok) { console.log(JSON.stringify(result, null, 2)); process.exitCode = 1; }
       else {
-        const options = JSON.parse(await readFile(args[0], 'utf8'));
-        if (typeof options.css !== 'string') throw new Error('layout.json needs a CSS file path');
-        const cssFile = resolve(dirname(resolve(args[0])), options.css);
+        const options = JSON.parse(args[0] ? await readFile(args[0], 'utf8') : '{}');
+        if (options.css!==undefined && (typeof options.css !== 'string' || !options.css)) throw new Error('layout.json needs a nonempty CSS file path');
+        const directory=dirname(resolve(args[0] ?? file)),cssFile=options.css ? resolve(directory,options.css) : '<inline>';
         if (options.reset !== undefined && (!Array.isArray(options.reset) || options.reset.some(file => typeof file !== 'string'))) throw new Error('layout.json reset must be an ordered array of CSS file paths');
         const reset = await Promise.all((options.reset ?? []).map(async file => {
-          const path = resolve(dirname(resolve(args[0])), file);
+          const path = resolve(directory, file);
           return { file: path, css: await readFile(path, 'utf8') };
         }));
-        const report = analyzeLayout(result.ir, { ...options, reset, cssFile, css: await readFile(cssFile, 'utf8') });
+        const report = analyzeLayout(result.ir, declaredLayoutOptions(result.ir,{ ...options, reset, cssFile, css: options.css ? await readFile(cssFile, 'utf8') : '' }));
+        if(report.layoutBindings?.length) {
+          report.declarations=await verifyDeclaredLayouts(report);
+          if(report.declarations.some(p=>p.status==='unknown')) report.status='unknown';
+          else if(report.status!=='unknown' && report.declarations.some(p=>p.status==='violated')) report.status='violated';
+          report.ok=report.status==='verified';
+        }
         console.log(JSON.stringify(report, null, 2)); if (!report.ok) process.exitCode = 1;
       }
     } else if (command === 'cost') {

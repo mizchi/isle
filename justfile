@@ -266,9 +266,10 @@ layout-check: build-compiler
 
 # Independent contracts, extracted CSS facts, coverage and native counterexamples.
 layout-contract-check: build-compiler check-types
-    node --test tests/layout-contract.test.mjs
+    node --test tests/layout-contract.test.mjs tests/layout-syntax*.test.mjs tests/layout-declaration-build.test.mjs
     pnpm exec playwright test --config playwright.layout.config.mjs e2e/layout-contract.spec.mjs
     node examples/layout-contracts/check-contract.mjs
+    node tools/isle.mjs layout examples/layout-contracts/declared.isle
 
 # Closed production HTML/CSS; both width and height must be fully verified.
 layout-build: build-compiler
@@ -382,7 +383,7 @@ playground-build: build-compiler
     pnpm exec vite build --config playground/vite.config.mjs
 
 playground-check: build-compiler
-    node --test tests/browser-compiler.test.mjs tests/preview.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs tests/layout-variables.test.mjs tests/playground-editor.test.mjs
+    node --test tests/browser-compiler.test.mjs tests/preview.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs tests/layout-variables.test.mjs tests/layout-syntax.test.mjs tests/playground-editor.test.mjs
     pnpm exec playwright test --config playwright.playground.config.mjs
 
 playground-quality: playground-build

@@ -28,12 +28,15 @@ selector は `:is(.cell).i_<hash>` のように所有者を限定します。親
 - **Inline CSS · overflow witness**：最小幅120pxへ下げ、40pxの箱4つが収まらない反例を取得。
 - **Inline CSS · responsive proof**：幅160px未満で2列へ切り替え、幅80pxから検査。
 - **CSS variables · responsive proof**：`--cell` と `--columns` の継承・media 内の上書きも検査。[変数の意味論と制限](css-variables.md)。
+- **Declared layout · SafeGrid contract**：component 内の `layout SafeGrid` を検査し、親からの割当と宣言の範囲を照合。[文法と意味論](layout-contract-language.md)。
 
 **Verify layout · Z3** を有効にすると、Layout contract の JSON と CSS を専用 Worker へ渡します。compiler Worker とアプリの opaque iframe は分離したままです。通常の Counter を開くだけでは solver を読み込みません。
 
 Inspect output で **Compiled CSS**、**Layout proof**、**SMT-LIB constraints** を選べます。反例には viewport、箱、軸、必要サイズと割り当てサイズを含めます。プレビューは違反の調査にも使えるため、コンパイル・描画の Ready とレイアウトの検証結果は別に表示します。
 
 ## production build で制約する
+
+component 本文に `layout SafeGrid { requires { ... } }` があれば、Vite は検査付きビルドを自動で有効にします。root の宣言を既定の viewport 範囲にし、親子の要求も検査します。`wrapMounts:false` と一つの mount を指定します。[宣言付きの実行例](../examples/layout-contracts/declared.isle)と[適合性検査](layout-contract-language.md#ソース宣言と配布環境)を参照してください。
 
 Vite のチェック付きビルドでは、配信する HTML/CSS とモデルを照合し、Z3 の結果まで確認します。CSS をすべて `<style>` に置く場合、空の外部 CSS ファイルは不要です。
 

@@ -37,7 +37,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: moon update
       - run: pnpm build:compiler
-      - run: node --test tests/site.test.mjs tests/links.test.mjs tests/browser-compiler.test.mjs tests/preview.test.mjs tests/control-components.test.mjs tests/removed-control-syntax.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs tests/layout-variables.test.mjs tests/layout-contract.test.mjs tests/playground-editor.test.mjs
+      - run: node --test tests/site.test.mjs tests/links.test.mjs tests/browser-compiler.test.mjs tests/preview.test.mjs tests/control-components.test.mjs tests/removed-control-syntax.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs tests/layout-variables.test.mjs tests/layout-contract.test.mjs tests/layout-syntax*.test.mjs tests/layout-declaration-build.test.mjs tests/playground-editor.test.mjs
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v6.0.0

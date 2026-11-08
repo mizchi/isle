@@ -51,6 +51,7 @@ export interface LayoutBuildCertificate {
   sources: { file: string; sha256: string }[];
   contracts: { viewport: LayoutOptions['viewport'] & { height: { min: number; max: number } }; boxes: Record<string, CheckedLayoutBoxContract>; scrollbars?:readonly LayoutScrollbarProfile[] };
   report: LayoutSummary & { ok: true; status: 'verified'; scope: LayoutSummary['scope'] & { axis: 'both'; blockSizing: true } };
+  declarations?:import('./layout-contract.mjs').ContractProof[];
 }
 export interface LayoutRange {
   min: number; max: number; minInclusive: boolean; maxInclusive: boolean;
@@ -68,6 +69,7 @@ export interface LayoutDiagnostic {
 }
 export interface LayoutScenarioIdentity { variant?:number; scrollbarProfile?:string }
 export interface LayoutSummary {
+  layoutBindings?:(LayoutScenarioIdentity & {path:string;declaration:import('./contracts.d.ts').ComponentLayout})[];
   structure?: LayoutStructure;
   scrollbars?: {box:string;path:string;inlineSize:number;blockSize:number;viewport:boolean;variant?:number;scrollbarProfile?:string;range:LayoutRange;heightRange?:LayoutRange;region?:LayoutRegion}[];
   version: 1; ok: boolean; status: 'verified' | 'violated' | 'unknown'; component: string;

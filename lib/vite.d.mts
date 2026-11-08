@@ -38,7 +38,8 @@ export interface IsleOptions {
   /** Default true renders labeled demo cards. False lets the app own its document shell. */
   wrapMounts?: boolean;
   /** Fail production builds on layout violations or unknowns; emit isle.layout.json.
-   * Requires one mount, wrapMounts:false, generated loader, no widget/resource setup. */
+   * Requires one mount, wrapMounts:false, generated loader, no widget/resource setup.
+   * A reachable source layout declaration enables this gate automatically. */
   layout?: CheckedLayoutOptions;
   mode?: RenderMode;
   /** auto (default) plans fetch-only preloads from events and final chunk sizes. */

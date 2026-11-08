@@ -1,14 +1,16 @@
 # ブラウザーコンパイラと Playground
 
-[テンプレート内 CSS と Z3](inline-css.md) に対応しています。Inline CSS プリセットで、scoped な `<style>`、SAT の反例、responsive 修正版を比較できます。Layout contract に幅・高さを指定し、Verify layout · Z3 で検査します。solver はコンパイラ・プレビューとは別の Worker 内で実行します。
+[テンプレート内 CSS と Z3](inline-css.md) に対応しています。Inline CSS プリセットで、scoped な `<style>`、SAT の反例、responsive 修正版を比較できます。Layout environment に配布対象の幅・高さ等を指定し、Verify layout · Z3 で検査します。solver はコンパイラ・プレビューとは別の Worker 内で実行します。
 
 [Playground](https://mizchi.github.io/isle/playground/) では `.isle`、props の JSON、CSS を編集し、ブラウザー内でコンパイルして実際に操作できます。Counter、Show / For によるリスト、Fragment の key でまとめる複数要素の行、入れ子の独立した owner、静的な server component のプリセットがあります。[制御コンポーネント](control-components.md)の仕様も参照してください。Component と Resume / SSR only を選択でき、コンパイル失敗時には診断をクリックしてソース位置へ移動できます。
 
 Auto-run は 250ms の debounce で動きます。無効にした場合は Compile または Cmd / Ctrl + Enter で実行します。Inspect output で HTML と snapshot、生成モジュール、解析結果、IR を確認でき、Download output でソース・props・CSS とプレビューの成果物を JSON 保存できます。入力を変更すると古いプレビューを破棄し、古いコンパイル結果やプレビューからの通知は反映しません。
 
-Source・Props・CSS・Layout contract の editor は textarea に装飾用のハイライトを重ねます。Isle の宣言・型・タグ・埋め込み CSS、CSS、JSON を字句単位で色分けし、未完成の入力もそのまま表示します。折り返さず、縦横スクロールと高さのリサイズに追従します。選択・undo・カーソル移動は textarea の標準動作です。IME の変換中と forced-colors 表示では通常の文字表示へ切り替えます。構文の正しさはハイライトとは独立してコンパイラが判定します。
+Source・Props・CSS・Layout environment の editor は textarea に装飾用のハイライトを重ねます。Isle の宣言・型・タグ・埋め込み CSS、CSS、JSON を字句単位で色分けし、未完成の入力もそのまま表示します。折り返さず、縦横スクロールと高さのリサイズに追従します。選択・undo・カーソル移動は textarea の標準動作です。IME の変換中と forced-colors 表示では通常の文字表示へ切り替えます。構文の正しさはハイライトとは独立してコンパイラが判定します。
 
 プリセット切り替えと Reset preset はカーソル・スクロールを先頭へ戻します。通常の入力や Compile は現在の位置を保ちます。
+
+**Declared layout · SafeGrid contract** は component 本文の `layout SafeGrid` を検査します。宣言がある間は検査を必須とし、環境の `{}` は root 宣言の既定区間を使います。実際の親の割当が requires を満たすかも検査します。[文法と意味論](layout-contract-language.md)を参照してください。
 
 ## npm パッケージから使う
 
@@ -71,7 +73,7 @@ Playground の modules 数と bytes は論理的な生成ソースの値です�
 just playground          # http://localhost:4334
 just playground-check    # API + actual browser operations
 just playground-build    # dist/playground
-just playground-quality  # fixed seven UI quality gates
+just playground-quality  # fixed UI quality gates
 just site-build          # includes /isle/playground/ for GitHub Pages
 ```
 

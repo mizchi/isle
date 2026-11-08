@@ -1,6 +1,8 @@
 import {init} from 'z3-solver/build/browser.js';
 import {analyzeLayout} from '../lib/layout.mjs';
 import {createLayoutModel,verifyLayoutModel} from '../lib/layout-z3.mjs';
+import {createLayoutIR,createDeclaredObligations,verifyObligationIR} from '../lib/layout-contract.mjs';
+import {declaredLayoutOptions} from '../lib/layout-declarations.mjs';
 
 let initialized,pending,running=false;
 const api=()=>initialized ??= (async()=>{
@@ -17,10 +19,17 @@ async function drain() {
     try {
       self.postMessage({id,progress:'Loading Z3 Wasm…'});
       const solver=await api();
-      const report=analyzeLayout(ir,options),model=createLayoutModel(report);
+      const report=analyzeLayout(ir,declaredLayoutOptions(ir,options)),model=createLayoutModel(report);
       self.postMessage({id,progress:`Checking ${model.obligations.length} layout obligations…`});
-      const verification=await verifyLayoutModel(model,solver);
-      self.postMessage({id,result:{report,model,verification}});
+      let verification=await verifyLayoutModel(model,solver);
+      const declarations=[],scripts=[`; CSS implementation\n${model.smt2}\n(check-sat)\n`];
+      for(const obligation of report.layoutBindings?.length ? createDeclaredObligations(createLayoutIR(report)) : []) {
+        const proof=await verifyObligationIR(obligation,solver);declarations.push(proof);
+        for(const [phase,m] of [['coverage',obligation.coverage],['conformance',obligation.model]]) scripts.push(`; Declared ${proof.contract.component} at ${proof.instance.path}: ${phase}\n${m.smt2}\n(check-sat)\n`);
+      }
+      const failed=declarations.find(p=>p.status==='unknown') ?? declarations.find(p=>p.status==='violated');
+      if(failed && (verification.status==='verified' || failed.status==='unknown')) verification=failed.proof;
+      self.postMessage({id,result:{report,model,verification,...(declarations.length ? {declarations,constraints:scripts.join('\n(reset)\n')} : {})}});
     } catch(error) {self.postMessage({id,error:String(error.message)});}
   }} finally {running=false;}
 }

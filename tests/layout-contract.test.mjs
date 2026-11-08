@@ -101,6 +101,7 @@ test('Fit is checked against geometry facts, and an empty or altered IR grammar 
   assert.throws(()=>createObligationIR(contract(),{...l,cases:[],boxes:[],presence:[],checks:[]}),/case/i);
   const c=contract();
   assert.throws(()=>createObligationIR({...c,profile:{...c.profile,boxSizing:'content-box'}},l),/ContractIR/);
+  assert.throws(()=>createObligationIR(c,l,{instance:true}),/options/);
 });
 
 test('solver failure and an empty serialized input domain cannot become success',async()=>{

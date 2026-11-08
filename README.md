@@ -121,6 +121,7 @@ This build generates the initial HTML at build time. Request-time server actions
 - `component Label(title: string)` declares a pure component usable on either side. Add `client` for state/events or `server` to restrict rendering to the server.
 - [`event` and `on:click`](docs/events.md) declare typed event inputs and DOM bindings. Add `.preventDefault` for synchronous cancellation before lazy loading; bodies need no `inline(ts)`.
 - [Template CSS](docs/inline-css.md) uses static, scoped `<style>` blocks. Checked builds use Z3 to reject layout violations within declared width/height ranges; the playground runs Z3 Wasm on demand. [CSS variables](docs/css-variables.md) resolve statically within the checked subset.
+- [`layout SafeGrid`](docs/layout-contract-language.md) declares component input ranges and fit guarantees. Vite, the CLI and the playground check actual allocations against them; declarations add no application runtime.
 - [`Show`, `For`, `Switch` / `Match` and `ErrorBoundary`](docs/control-components.md) compile to selective updates. Put each row's `key` on its returned root, or a `Fragment` for multiple roots. Props passed into a client component are immutable initial values.
 - Server actions declare schemas, authorization and effects. Provide your authentication, policies and operations through a server host. Static hosting alone does not execute actions.
 - `resources` connects an ordinary setup module to an interactive component's lifetime. CSS imported by that module is prepared before setup; removal disposes owned resources.
@@ -139,6 +140,7 @@ Browser output targets ES2023 and native DOM / ESM / fetch. It ships no MoonBit/
 | `@isle/prototype/widget` / `widget/browser` | Render an embed tag / use the browser widget API |
 | `@isle/prototype/layout` | Analyze declared CSS/Grid contracts |
 | `@isle/prototype/layout/z3` / `layout/z3/node` | Verify layout models with Z3 in a Worker / Node; return proofs or counterexamples |
+| `@isle/prototype/layout/contracts` / `layout/contracts/node` | Separate contracts, CSS facts and conformance obligations; check declared instances |
 | `@isle/prototype/resources` | Resource-owner APIs and types |
 | `pnpm exec isle` | Inspect source, manifests, cost budgets and layout contracts |
 

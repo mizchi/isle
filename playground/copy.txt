@@ -7,5 +7,5 @@ Inspect output
 Download output
 No compilation server
 Verify layout · Z3
-Layout contract · JSON
+Layout environment · JSON
 Layout not checked.

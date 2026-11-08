@@ -134,6 +134,6 @@ CSS 解決は [models/style_resolution](../models/style_resolution/model.mbt)で
 
 ## Grid と連続寸法の契約
 
-[ContractIR・LayoutIR・ObligationIR](layout-contract-language.md) と `models/layout_contract` は、宣言した入力範囲と CSS 抽出の範囲を分離した追加検査です。条件領域の被覆を先に確認し、子の必要な割当・入力範囲の互換性・独立仕様との XOR を Z3 で検査します。component の `layout` 文法と、一般の抽出の健全性・合成定理の証明は未実装です。
+[ContractIR・LayoutIR・ObligationIR](layout-contract-language.md) と `models/layout_contract` は、宣言した入力範囲と CSS 抽出の範囲を分離した追加検査です。条件領域の被覆を先に確認し、子の必要な割当・入力範囲の互換性・独立仕様との XOR を Z3 で検査します。component の `layout SafeGrid` を Vite・CLI・playground へ接続しました。一般の抽出の健全性・合成定理の証明は未実装です。
 
 [Grid / container / 両軸の静的検査](layout-checking.md)は、有理数の affine 式と凸領域の切り出しを使う独立した compiler adapter である。幅・高さを少数のサンプルに離散化して veri の時相モデルへ入れる方法は採らない。bounded な1次元・2次元の独立 oracle、故障版の browser 再現、正例の全宣言領域での義務判定を組み合わせる。判定器の健全性や browser への refinement は未証明であり、font / 自動高さの summary は caller の trusted 契約とする。既存92ケースの件数はこの追加で変えない。

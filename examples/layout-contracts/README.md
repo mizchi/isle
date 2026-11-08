@@ -36,6 +36,10 @@ node tools/isle.mjs layout examples/layout-contracts/app.isle examples/layout-co
 
 ## Independent contracts / 契約と実装を分離して検査する
 
+[declared.isle](declared.isle) writes `layout SafeGrid` inside the component. Run `node tools/isle.mjs layout examples/layout-contracts/declared.isle` without a sidecar. Vite enables the checked document gate automatically for a single unwrapped mount. Source contracts also run in the playground's **Declared layout · SafeGrid contract** preset.
+
+component 内に宣言を書く例です。サイドカーを省略して CLI で検査でき、Vite・playground でも自動的に検査します。実際の割当が requires を満たすかも照合します。
+
 `node examples/layout-contracts/check-contract.mjs` checks [contract.isle](contract.isle) against a separate ContractIR. The four-cell and responsive cases verify; an 8px gap and stronger child requirements produce witnesses. Coverage is checked before conformance. See [the specification and API](../../docs/layout-contract-language.md).
 
 4箱と responsive は Verified、gap 8px と子48pxの要求は Violated です。被覆と適合を別々に検査します。[形式仕様と API](../../docs/layout-contract-language.md)を参照してください。

@@ -121,6 +121,7 @@ export default defineConfig({
 - `component Label(title: string)` は server/client 共通の純粋な component です。状態・イベントを使う場合は `client`、server に限定する場合は `server` を付けます。
 - [`event` と `on:click`](docs/events.md) で型付きの入力と DOM への接続を宣言します。`.preventDefault` は遅延読み込み前に実行され、本文に `inline(ts)` は不要です。
 - [テンプレート内 CSS](docs/inline-css.md) は静的な `<style>` をスコープします。チェック付きビルドは宣言した幅・高さ範囲を Z3 で検査し、playground は Z3 Wasm を必要時に読み込みます。[CSS 変数](docs/css-variables.md)も検査対象の部分集合で静的解決します。
+- [`layout SafeGrid`](docs/layout-contract-language.md) で component の入力範囲と fit 保証を宣言します。Vite・CLI・playground が実際の割当を検査し、アプリのランタイムには追加しません。
 - [`Show`・`For`・`Switch` / `Match`・`ErrorBoundary`](docs/control-components.md) で構造を保って部分更新します。行のルート、または複数要素をまとめる `Fragment` に `key` を指定します。client component の props は不変の初期値です。
 - server action には schema・認可・effect を宣言します。実認証・policy・operation は利用側の server host に実装し、静的配信とは別に接続します。
 - `resources` で通常の setup module を component の寿命に接続します。import した CSS は setup の前に準備され、削除時には所有リソースを破棄します。
@@ -139,6 +140,7 @@ export default defineConfig({
 | `@isle/prototype/widget` / `widget/browser` | 埋め込みタグの生成 / browser widget API |
 | `@isle/prototype/layout` | 宣言した CSS / Grid 契約の解析 |
 | `@isle/prototype/layout/z3` / `layout/z3/node` | Worker / Node で Z3 検査を行い、証明結果か反例を返す |
+| `@isle/prototype/layout/contracts` / `layout/contracts/node` | 契約・CSS の事実・証明義務を分離し、宣言した instance を検査 |
 | `@isle/prototype/resources` | resource owner の API と型 |
 | `pnpm exec isle` | source・manifest・cost budget・layout 契約の検査 |
 

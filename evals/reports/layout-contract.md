@@ -3,7 +3,8 @@
 Source: [the contract specification](../../docs/layout-contract-language.md),
 the independent [SMT reference](../../models/layout_contract/contract.smt2),
 and native Chromium geometry. The accepted design separates ContractIR,
-LayoutIR and ObligationIR; `layout` source syntax is still a proposal.
+LayoutIR and ObligationIR. Source declaration integration is recorded separately
+in [layout-declarations.md](layout-declarations.md).
 
 Machine checks:
 

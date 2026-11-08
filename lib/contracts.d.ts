@@ -25,6 +25,7 @@ export interface Handler { id: string; event: 'click' | 'input' | 'change' | 'su
 export type WireValue = Primitive | readonly WireValue[] | { readonly [key: string]: WireValue };
 export type ValueType = 'number' | 'string' | 'boolean' | { array: ValueType } | { record: Record<string, ValueType> };
 export type ComponentField = Omit<Field, 'type'> & { type: string };
+export interface ComponentLayout {contract:import('./layout-contract.mjs').ContractIR;source:SourceSpan}
 export type ValueField = Omit<Field, 'type'> & { type: ValueType };
 export type TemplateNode =
   | { kind: 'select'; cases: { test: Expression; children: TemplateNode[] }[]; fallback: TemplateNode[]; source: SourceSpan }
@@ -35,10 +36,12 @@ export type TemplateNode =
   /** An opaque, lexical render fragment. Never a wire value or state slot. */
   | { kind: 'slot' }
   /** Lowered client call; its props are invariant in the parent owner. */
-  | { kind: 'island'; component: string; site: string; props: { name: string; value: Expression }[]; children: TemplateNode[]; source?: SourceSpan }
-  | { kind: 'element'; tag: string; source?: SourceSpan; attributes: { name: string; value: Expression }[]; children: TemplateNode[]; handlers: Handler[];
+  | { kind: 'island'; component: string; site: string; props: { name: string; value: Expression }[]; children: TemplateNode[]; source?: SourceSpan;layoutContracts?:ComponentLayout[] }
+  | { kind: 'element'; tag: string; source?: SourceSpan;layoutContracts?:ComponentLayout[]; attributes: { name: string; value: Expression }[]; children: TemplateNode[]; handlers: Handler[];
     form?: FormContract; formField?: string; formError?: string; formSummary?: boolean; formStatus?: boolean };
 export interface Component {
+  /** Compile-only input requirements and guarantees, with authored source positions. */
+  layout?:ComponentLayout;
   /** Static, owned CSS. Erased from executable component code. */
   style?: ScopedStyle;
   /** universal is the pure subset usable in either phase; it never infers client behavior. */
