@@ -86,12 +86,25 @@ export client component Counter(initial: number) {
 - props は `Counter(initial: number)` の形で宣言する読み取り専用の名前付き値です。複数は `Editor(id: string, title: string)`。引数なしは `Counter()`。
 - `state` は mutable な保存対象候補です。初期化は SSR で行い、resume 時は再実行しません。
 - `derive` は純粋な式です。依存は解析され、循環を拒否します。
-- 型は `number/string/boolean`。式は literal、変数、括弧、`+ - * /`。型注釈を省略した state は初期値から推論します。
+- 基礎型は `number/string/boolean`。primitive stateの型注釈は初期値から推論できます。record literalやrecord配列のstateには、宣言したschema/viewの型注釈が必要です。閉じた配列・recordと対応する式は後述の制御構文の節を参照してください。
 - template は一つの HTML root。通常の要素・text・`{式}`、`class/id/title/type/name/value/role/aria-*/data-*` などの属性を使えます。`data-isle-*` は予約です。
 - `a` の `href` は不変な string とし、relative / HTTP(S) / mailto / tel を使えます。危険な scheme と制御文字を拒否し、props の URL は SSR 時にも検査します。client の制御領域内では literal なリンク先に限定します。
 - 空白だけの text fragment（改行・字下げ等）は出力しません。文字を含む text は原文を保持し、通常の HTML の空白規則で表示します。式の間の ` / ` も保持します。表示上の改行には `<br>` 等を使います。`pre` の厳密な whitespace-preserving 仕様は未確定です。
 - `on click increment { ... }` は親要素の event handler と遅延チャンクの境界です。名前は省略でき、`on click { ... }` も使えます。`=`、`+=`、`-=` で state を変更します。props と derive は書換不可です。
 - 同期 handler の中の state 更新が終わったら、影響する binding を生成済みコードで更新します。
+
+record配列は次のようにschemaと注釈を付けます。`state reviews = [{...}];` の形では
+recordの型が決まらず `E_TYPE: Record literals require a declared type` になります。
+
+```text
+schema Review { id: string; title: string; done: boolean; }
+client component TypedReviews() {
+  state reviews: Review[] = [{ id: "a", title: "Read proposal", done: false }];
+  <output>{reviews.length}</output>
+}
+```
+
+[SafeGrid・内容寸法・button resetを含む完結例](lexical-review.md)も参照してください。
 
 `on click async save { ... }` の `async` は本文の await を表します。名前・分割・計測の詳細は [チャンクとプロファイル](chunk-profiling.md) を参照してください。
 

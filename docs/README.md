@@ -9,6 +9,7 @@ Isle は、サーバーで生成した HTML を表示し、操作された UI �
 | パッケージを導入し、自分の Counter を作る | [はじめる](getting-started.md) |
 | 状態・server action・フォーム・読み込み方針を指定する | [アプリを書く](application-guide.md) |
 | 親子の component、children、独立した再開を使う | [コンポーネントを組み合わせる](composition.md) |
+| 親所有の行操作とSafeGridを一つのアプリで試す | [npm用の完結例](lexical-review.md) |
 | 別サイトへ埋め込む、shared / standalone を選ぶ | [widget を使う](widgets.md) |
 
 ## 構文と機能の詳細

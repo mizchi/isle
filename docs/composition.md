@@ -178,3 +178,5 @@ JavaScript chunkを出しません。
 
 [SafeGrid と親所有の行操作を組み合わせた実行例](../examples/lexical-events/README.md)は
 列の切替、content-size bounds、button resetを含みます。
+
+4ファイルをそのままアプリへ置ける[npm用の完結例](lexical-review.md)も用意しています。

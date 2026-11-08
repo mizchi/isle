@@ -401,6 +401,7 @@ layout-usability-grade scenario directory:
 
 # Lexically project parent buttons through universal children; no callback runtime.
 lexical-events-check: build-compiler
+    node tools/write-lexical-guide.mjs --check
     node --test tests/lexical-events*.test.mjs
     pnpm exec playwright test --config playwright.lexical-events.config.mjs
 

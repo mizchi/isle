@@ -56,7 +56,9 @@ jobs:
       - name: Check browser compilation and sandboxed preview
         run: pnpm exec playwright test --config playwright.playground.config.mjs
       - name: Check lexical parent event projection
-        run: pnpm exec playwright test --config playwright.lexical-events.config.mjs
+        run: |
+          node tools/write-lexical-guide.mjs --check
+          pnpm exec playwright test --config playwright.lexical-events.config.mjs
       - name: Check live examples on the project subpath
         run: pnpm exec playwright test --config playwright.site.config.mjs
       - uses: actions/upload-pages-artifact@v5.0.0
