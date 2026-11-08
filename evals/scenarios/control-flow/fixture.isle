@@ -1,6 +1,6 @@
 
 schema Item { id: string; value: number; }
-component Row(item: Item, index: number) { <li data-key={item.id}>Row <span>{index}</span>, value <output>{item.value}</output></li> }
+component Row(item: Item, index: number, children: RenderFragment) { <li data-key={item.id}>Row <span>{index}</span>, value <output>{item.value}</output>{children}</li> }
 client component Controls(initial: Item[]) {
   state items: Item[] = initial;
   state visible = true;
@@ -24,9 +24,8 @@ client component Controls(initial: Item[]) {
     </Switch>
     <ul><For each={items} fallback={<li data-test="empty-message">Empty</li>}>
       {(item, i) => <Fragment key={item.id}>
-        <Row item={item} index={i} />
+        <Row item={item} index={i}><button type="button" data-item={item.id}>on click select { offset = item.value; }Select</button></Row>
         <li><small>Total <output data-price={item.id}>{item.value + offset}</output></small></li>
-        <li><button type="button" data-item={item.id}>on click select { offset = item.value; }Select</button></li>
       </Fragment>}
     </For></ul>
     <ErrorBoundary fallback={(error) => <p data-test="error">{error}</p>}>

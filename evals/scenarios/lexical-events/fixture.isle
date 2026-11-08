@@ -1,0 +1,17 @@
+schema Review { id:string; title:string; done:boolean; }
+component ReviewCard(id:string,title:string,done:boolean,children:RenderFragment) {
+  <article data-review={id}><h2>{title}</h2><p>{done ? "Done" : "Open"}</p>{children}</article>
+}
+client component Reviews() {
+  state reviews:Review[]=[{id:"a",title:"Read proposal",done:false},{id:"b",title:"Check constraints",done:true}];
+  state clicks=0;
+  event toggle(e:EventSnapshot<MouseEvent>,id:string) {
+    reviews=reviews.map(review=>review.id===id ? {id:review.id,title:review.title,done:!review.done} : review);
+    clicks+=1;
+  }
+  <main><output aria-label="Clicks">{clicks}</output><For each={reviews}>{(review)=>
+    <ReviewCard key={review.id} id={review.id} title={review.title} done={review.done}>
+      <button type="button" on:click={(e)=>toggle(e,review.id)}>Toggle</button>
+    </ReviewCard>
+  }</For></main>
+}
