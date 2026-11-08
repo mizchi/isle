@@ -160,7 +160,7 @@ export async function buildSite({ base = process.env.SITE_BASE, origin = process
         const to = resolve(out, 'source', path); await mkdir(dirname(to), { recursive: true }); await copyFile(from, to);
       }
     }
-    const packed = spawnSync('pnpm', ['pack', '--ignore-scripts', '--pack-destination', temporary], { cwd: root, encoding: 'utf8' });
+    const packed = spawnSync('pnpm', ['pack', '--config.ignore-scripts=true', '--pack-destination', temporary], { cwd: root, encoding: 'utf8' });
     if (packed.status !== 0) throw new Error(packed.stderr || packed.stdout);
     const archive = (await readdir(temporary)).find(file => file.endsWith('.tgz'));
     await mkdir(resolve(out, 'downloads'), { recursive: true }); await copyFile(resolve(temporary, archive), resolve(out, 'downloads', archive));
