@@ -7,7 +7,7 @@ export function hasFragment(content, hash, routes = []) {
   const id = decodeURIComponent(hash.slice(1));
   return content.includes(`id="${id}"`) || content.includes(`name="${id}"`) || routes.includes(hash);
 }
-export const liveExampleIds = ['todomvc', 'hello', 'ssr-only', 'partial-updates', 'composition', 'control-flow', 'lexical-events', 'loading', 'resources', 'styles', 'navigation', 'form', 'responsive-checked', 'responsive-dynamic'];
+export const liveExampleIds = ['async-map','todomvc', 'hello', 'ssr-only', 'partial-updates', 'composition', 'control-flow', 'lexical-events', 'loading', 'resources', 'styles', 'navigation', 'form', 'responsive-checked', 'responsive-dynamic'];
 export const siteExamples = examples.map(example => ({ ...example,
   availability: liveExampleIds.includes(example.id) ? 'live' : example.id === 'portable-widget' ? 'widget' : example.kind === 'layout' ? 'report' : 'server',
 }));

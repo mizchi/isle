@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-08T17:16:16.683Z",
+  "conditions": {
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dataLatencyMs": 180,
+    "places": 36,
+    "interpretation": "One controlled local diagnostic; not a framework speed comparison. CPU sampling is a separate pan/detail phase after the initial timing. gzip is summed per emitted file, not measured HTTP transfer."
+  },
+  "build": {
+    "htmlBytes": 6240,
+    "snapshotJsonBytes": 217,
+    "allJavaScript": {
+      "files": [
+        "assets/Explorer.g0-D2ECQNxL.js",
+        "assets/Explorer.resources-CrRMmHn7.js",
+        "assets/index-BbgI-ZlF.js",
+        "assets/isle-resume-CDP9v-sc.js",
+        "assets/detail-view-YPbnXfd-.js",
+        "assets/value-C2JnHAx5.js"
+      ],
+      "raw": 34299,
+      "gzip": 14116
+    },
+    "initialJavaScript": {
+      "files": [
+        "assets/index-BbgI-ZlF.js"
+      ],
+      "raw": 2081,
+      "gzip": 1015
+    },
+    "afterActivateJavaScript": {
+      "files": [
+        "assets/index-BbgI-ZlF.js",
+        "assets/value-C2JnHAx5.js",
+        "assets/isle-resume-CDP9v-sc.js",
+        "assets/Explorer.resources-CrRMmHn7.js",
+        "assets/Explorer.g0-D2ECQNxL.js"
+      ],
+      "raw": 33176,
+      "gzip": 13578
+    },
+    "afterDetailsJavaScript": {
+      "files": [
+        "assets/index-BbgI-ZlF.js",
+        "assets/value-C2JnHAx5.js",
+        "assets/isle-resume-CDP9v-sc.js",
+        "assets/Explorer.resources-CrRMmHn7.js",
+        "assets/Explorer.g0-D2ECQNxL.js",
+        "assets/detail-view-YPbnXfd-.js"
+      ],
+      "raw": 34299,
+      "gzip": 14116
+    },
+    "ssrJavaScriptFiles": 0,
+    "ssrHasSnapshot": false
+  },
+  "browser": {
+    "initialRequests": [
+      "/",
+      "/assets/index-BbgI-ZlF.js",
+      "/assets/index-BImu6F9O.css",
+      "/assets/neighborhood-yIk2MHGf.svg"
+    ],
+    "initialPayload": {
+      "files": [
+        "index.html",
+        "assets/index-BbgI-ZlF.js",
+        "assets/index-BImu6F9O.css",
+        "assets/neighborhood-yIk2MHGf.svg"
+      ],
+      "raw": 34617,
+      "gzip": 7161
+    },
+    "initialRawCLS": 0,
+    "rawCLSAfterResume": 0,
+    "clickToDataReadyMs": 196,
+    "pan": {
+      "pointerMoves": 24,
+      "draws": 26,
+      "unrelatedDOMAttributeWrites": 0,
+      "requestsDuringDrag": 0,
+      "requestsAfterRelease": 1,
+      "additionalJavaScriptFiles": []
+    },
+    "detailViewLoaded": true,
+    "externalRequests": [],
+    "errors": []
+  },
+  "sourceLines": {
+    "app.isle": 49,
+    "model.mjs": 89,
+    "transport.mjs": 29,
+    "renderer.mjs": 31,
+    "setup.mjs": 134,
+    "detail-view.mjs": 16
+  },
+  "compilerManagedState": [
+    "query",
+    "category",
+    "started",
+    "categories"
+  ],
+  "adapterManagedState": [
+    "viewport",
+    "results",
+    "selection",
+    "details",
+    "saved",
+    "task generations"
+  ],
+  "authoringFindings": [
+    {
+      "id": "typed-record-array-derive",
+      "accepted": false,
+      "diagnostics": [
+        {
+          "code": "E_TYPE",
+          "message": "Record literals require a declared type",
+          "start": 4086,
+          "end": 4086,
+          "hint": "Annotate the state or pass the record to a typed prop.",
+          "file": "",
+          "cycle": [],
+          "related": []
+        }
+      ]
+    }
+  ],
+  "cpu": {
+    "phase": "pan and first details, including diagnostic observer/automation overhead; 1ms-scale sampling, short functions may receive no samples",
+    "idleMs": 929.9109999999985,
+    "sources": [
+      {
+        "source": "Other JS/native",
+        "ms": 67.92800000000001
+      },
+      {
+        "source": "Explorer.resources-CrRMmHn7.js",
+        "ms": 6.311999999999999
+      }
+    ]
+  }
+}

@@ -1,6 +1,7 @@
 /** @typedef {{id: string, kind: 'vite' | 'layout' | 'widget', port?: number, title: string, ja: string, observe: string, observeJa: string, run: string, check: string}} Example */
 /** @type {readonly Example[]} */
 export const examples = Object.freeze([
+  {id:'async-map',kind:'vite',port:4342,title:'Async local map',ja:'非同期ローカル地図',observe:'Pan and zoom a local map; race search and details, retry failures and dispose pending work.',observeJa:'地図を移動・ズームし、検索と詳細の応答逆転・失敗・再試行・破棄を検査する。',run:'just example async-map',check:'just async-map-check'},
   { id: 'todomvc', kind: 'vite', port: 4331, title: 'TodoMVC', ja: 'TodoMVC', observe: 'Add, edit, filter and persist a keyed list; compare production bytes with Qwik and Preact.', observeJa: 'key 付きリストの追加・編集・絞り込み・保存と、Qwik・Preact との配信サイズ比較。', run: 'just example todomvc', check: 'just todomvc-check' },
   { id: 'hello', kind: 'vite', port: 4320, title: 'Minimal counter', ja: '最小の Counter', observe: 'Increment and reset a server-rendered value.', observeJa: 'SSR した値を増やし、初期値へ戻す。', run: 'just example hello', check: 'just examples-check' },
   { id: 'ssr-only', kind: 'vite', port: 4321, title: 'HTML without browser JS', ja: 'ブラウザー JS のない SSR', observe: 'Inspect the build: HTML and CSS, with no Isle runtime, snapshots or handler chunks.', observeJa: 'ビルドに Isle runtime・snapshot・handler chunk が含まれないことを確認する。', run: 'just example ssr-only', check: 'just examples-check' },

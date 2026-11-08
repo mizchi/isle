@@ -95,6 +95,7 @@ export default defineConfig({
 
 | 試す機能 | 操作と確認 |
 | --- | --- |
+| [非同期ローカル地図](examples/async-map/) | 移動・ピンチ・検索・詳細取得を試し、中止・遅延チャンク・DSLとadapterの境界を評価する。 |
 | [TodoMVC](examples/todomvc/) | Todo の追加・編集・絞り込み・保存と、Qwik・Preact との production サイズ比較。 |
 | [最小の Counter](examples/hello/) | SSR した値を増やし、初期値へ戻す。 |
 | [ブラウザー JS のない SSR](examples/ssr-only/) | ビルドに Isle runtime・snapshot・handler chunk が含まれないことを確認する。 |

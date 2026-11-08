@@ -11,6 +11,7 @@ Isle は、サーバーで生成した HTML を表示し、操作された UI �
 | 親子の component、children、独立した再開を使う | [コンポーネントを組み合わせる](composition.md) |
 | 親所有の行操作とSafeGridを一つのアプリで試す | [npm用の完結例](lexical-review.md) |
 | 別サイトへ埋め込む、shared / standalone を選ぶ | [widget を使う](widgets.md) |
+| 複雑な非同期UIを試し、DSLとadapterの境界を調べる | [ローカル地図の実験](async-map-experiment.md) |
 
 ## 構文と機能の詳細
 

@@ -6,6 +6,7 @@
 
 | 試す機能 | 操作と確認 |
 | --- | --- |
+| [非同期ローカル地図](async-map/) | 移動・ピンチ・検索・詳細取得で、古い結果・再試行・取得中のunmountを検査する。 |
 | [TodoMVC](todomvc/) | Todo の追加・編集・絞り込み・保存と、Qwik・Preact との production サイズ比較。 |
 | [最小の Counter](hello/) | SSR した値を増やし、初期値へ戻す。 |
 | [ブラウザー JS のない SSR](ssr-only/) | ビルドに Isle runtime・snapshot・handler chunk が含まれないことを確認する。 |

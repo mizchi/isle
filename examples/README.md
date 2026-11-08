@@ -6,6 +6,7 @@ These examples demonstrate the package API. Copy the feature source and configur
 
 | Feature | Try and observe |
 | --- | --- |
+| [Async local map](async-map/) | Pan, pinch, search and load details; test stale results, retry and unmount while requests are pending. |
 | [TodoMVC](todomvc/) | Add, edit, filter and persist todos; compare production sizes with Qwik and Preact. |
 | [Minimal counter](hello/) | Increment and reset a server-rendered value. |
 | [HTML without browser JS](ssr-only/) | Inspect the build: HTML and CSS, with no Isle runtime, snapshots or handler chunks. |

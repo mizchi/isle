@@ -33,13 +33,14 @@ test('declarative widgets resolve a relative source against their document base'
 });
 
 test('live examples are static-host compatible and server examples do not advertise broken RPC demos', () => {
-  assert.equal(siteExamples.length, 19);
+  assert.equal(siteExamples.length, 20);
   assert.equal(siteExamples.find(example => example.id === 'schema-form').availability, 'server');
   assert.equal(siteExamples.find(example => example.id === 'counter').availability, 'server');
   assert.equal(siteExamples.find(example => example.id === 'lexical-events').availability, 'live');
   assert.equal(siteExamples.find(example => example.id === 'layout-contracts').availability, 'report');
   assert.equal(siteExamples.find(example => example.id === 'portable-widget').availability, 'widget');
-  assert.equal(siteExamples.filter(example => example.availability === 'live').length, 14);
+  assert.equal(siteExamples.find(example=>example.id==='async-map').availability,'live');
+  assert.equal(siteExamples.filter(example => example.availability === 'live').length, 15);
 });
 
 test('Markdown links and raw picture assets resolve within the deployed subpath', () => {

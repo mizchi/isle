@@ -95,6 +95,7 @@ This build generates the initial HTML at build time. Request-time server actions
 
 | Feature | Try and observe |
 | --- | --- |
+| [Async local map](examples/async-map/) | Pan, pinch, search and load details; inspect cancellation, lazy chunks and the current DSL/adapter boundary. |
 | [TodoMVC](examples/todomvc/) | Add, edit, filter and persist todos; compare production sizes with Qwik and Preact. |
 | [Minimal counter](examples/hello/) | Increment and reset a server-rendered value. |
 | [HTML without browser JS](examples/ssr-only/) | Inspect the build: HTML and CSS, with no Isle runtime, snapshots or handler chunks. |

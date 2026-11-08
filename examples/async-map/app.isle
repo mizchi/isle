@@ -1,0 +1,49 @@
+schema Category {id:string;label:string;}
+client component Explorer() {
+  state query = "";
+  state category = "all";
+  state started = false;
+  state categories: Category[] = [
+    {id:"all",label:"Explore all"},{id:"cafe",label:"Coffee"},{id:"food",label:"Good food"},
+    {id:"park",label:"Parks"},{id:"museum",label:"Art + culture"}
+  ];
+  event activate(e: EventSnapshot<MouseEvent>) { started = true; }
+  event search(e: EventSnapshot<InputEvent>) { query = e.value; started = true; }
+  event filter(e: EventSnapshot<MouseEvent>, value: string) { category = value; started = true; }
+  <main class="explorer" data-map-app="" data-query={query} data-category={category} data-started={started}>
+    <header class="app-header">
+      <div class="brand"><span class="brand-mark">h.</span><div><h1>Harbor</h1><p>LOCAL EXPLORER</p></div></div>
+      <p class="header-note">A little closer to somewhere new.</p>
+      <a href="https://github.com/mizchi/isle/tree/main/examples/async-map">About this experiment</a>
+    </header>
+    <section class="discovery" aria-label="Find places">
+      <div class="discovery-heading"><p class="eyebrow">YOUR NEXT GOOD FIND</p><h2>Take the scenic route.</h2><p>Coffee, green corners, and a few places you haven’t met yet.</p></div>
+      <label class="search-field"><span>Search this neighborhood</span><input type="search" placeholder="Try coffee, garden, or museum" value={query} maxlength="80" on:input={search}/></label>
+      <div class="filters" role="group" aria-label="Place categories">
+        <For each={categories}>{(item) => <button key={item.id} type="button" aria-pressed={category === item.id} on:click={(e) => filter(e, item.id)}>{item.label}</button>}</For>
+      </div>
+    </section>
+    <div class="workspace">
+      <section class="map-panel" aria-label="Harbor neighborhood map">
+        <div class="map-surface" data-map-surface="" role="group" aria-label="Map canvas"/>
+        <div class="map-heading"><span class="live-dot"/><span>HARBOR DISTRICT</span><span class="map-coordinate" data-map-coordinate="">Local map · 1.00×</span></div>
+        <Show when={!started}><div class="map-intro"><p class="eyebrow">MAKE YOURSELF A LOCAL</p><h2>A neighborhood<br/>worth wandering.</h2><p>Move around, zoom in, and find your next stop.</p><button type="button" class="primary" on:click={activate}>Start exploring <span aria-hidden="true">↗</span></button></div></Show>
+        <div class="map-controls" role="group" aria-label="Map controls">
+          <button type="button" data-map-command="zoom-in" aria-label="Zoom in" disabled={true}>+</button>
+          <button type="button" data-map-command="zoom-out" aria-label="Zoom out" disabled={true}>−</button>
+          <button type="button" data-map-command="reset" aria-label="Reset map view" disabled={true}>⌂</button>
+        </div>
+        <div class="map-help">Drag to move · Scroll to zoom · Arrow keys supported</div>
+        <aside class="place-detail" data-map-detail="" aria-label="Place details" hidden={true}/>
+      </section>
+      <section class="results-panel" aria-label="Nearby places">
+        <header class="results-heading"><div><p class="eyebrow">A FEW LOCAL FAVORITES</p><h2>In the neighborhood</h2></div><span class="result-count" data-map-count="">—</span></header>
+        <p class="results-status" data-map-status="" role="status" aria-live="polite">The map is ready when you are.</p>
+        <div class="result-list" data-map-results="" aria-busy="false"><div class="empty-state"><span class="empty-mark" aria-hidden="true">↗</span><h3>Find your kind of place.</h3><p>Start exploring to discover what’s nearby. No account, no API key.</p></div></div>
+        <button type="button" class="retry-button" data-map-command="retry" hidden={true}>Try searching again</button>
+        <footer class="results-footer"><span class="live-dot"/>Fictional places. Real interactions.</footer>
+      </section>
+    </div>
+    <footer class="app-footer"><p>Made for wandering, built with Isle.</p><p>Local map and data · No third-party requests</p></footer>
+  </main>
+}

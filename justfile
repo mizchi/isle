@@ -3,6 +3,20 @@ set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 default:
     @just --list
 
+# Local interactive map: independent async channels, owned Canvas and lazy details.
+async-map-build: build-compiler
+    pnpm exec vite build --config examples/async-map/vite.config.mjs
+
+async-map-check: build-compiler check-types
+    node --test tests/async-map*.test.mjs
+    pnpm exec playwright test --config playwright.async-map.config.mjs
+
+async-map-eval: async-map-check
+    node tools/eval-async-map.mjs
+
+async-map-quality: async-map-build
+    node tools/check-async-map-quality.mjs
+
 build-compiler:
     pnpm build:compiler
 

@@ -45,6 +45,8 @@ jobs:
       - run: node --test tests/site.test.mjs tests/links.test.mjs tests/browser-compiler.test.mjs tests/preview.test.mjs tests/control-components.test.mjs tests/removed-control-syntax.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/lexical-events*.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs tests/layout-shorthand.test.mjs tests/css-writes.test.mjs tests/resume-semantics-audit.test.mjs tests/resume-phases.test.mjs tests/control-flow*.test.mjs tests/region-optimization.test.mjs tests/layout-variables.test.mjs tests/layout-contract.test.mjs tests/layout-syntax*.test.mjs tests/layout-declaration-build.test.mjs tests/playground-editor.test.mjs
       - name: Check semantic optimizer boundaries
         run: node --test tests/semantic-optimizer.test.mjs tests/compiler-warnings.test.mjs tests/resource-binding-build.test.mjs
+      - name: Check async local map state and static build
+        run: node --test tests/async-map*.test.mjs
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v6.0.0
@@ -65,6 +67,8 @@ jobs:
           pnpm exec playwright test --config playwright.lexical-events.config.mjs
       - name: Check live examples on the project subpath
         run: pnpm exec playwright test --config playwright.site.config.mjs
+      - name: Check async map interactions and teardown
+        run: pnpm exec playwright test --config playwright.async-map.config.mjs
       - uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: dist/site
