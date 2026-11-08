@@ -17,7 +17,7 @@ test('the documented package exports resolve without private implementation impo
 test('a packed npm consumer builds the exact README app without MoonBit on PATH', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'isle-npm-consumer-'));
   try {
-    const packed = spawnSync('pnpm', ['pack', '--ignore-scripts', '--pack-destination', directory], { encoding: 'utf8' });
+    const packed = spawnSync('pnpm', ['pack', '--config.ignore-scripts=true', '--pack-destination', directory], { encoding: 'utf8' });
     assert.equal(packed.status, 0, packed.stderr || packed.stdout);
     const archive = (await readdir(directory)).find(name => name.endsWith('.tgz'));
     assert.ok(archive);

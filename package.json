@@ -24,7 +24,7 @@
   "files": ["lib/", "runtime/", "_build/js/release/build/compiler/compiler.js", "_build/browser/preview-runtime.txt", "tools/isle.mjs", "README.md", "README.ja.md"],
   "peerDependencies": { "vite": "^8.3.5" },
   "dependencies": { "postcss": "8.5.32", "parse5": "8.0.1", "css-tree": "3.2.1", "z3-solver": "5.3.3" },
-  "packageManager": "pnpm@12.11.2",
+  "packageManager": "pnpm@12.18.0",
   "engines": {
     "node": ">=24"
   },
