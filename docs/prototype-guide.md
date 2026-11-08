@@ -21,14 +21,16 @@ UI 言語は TypeScript の式・型を基にした専用構文です。分岐�
 
 ## 検査する
 
-Node 24+、pnpm、MoonBit が必要です。プロジェクトで `pnpm install`、`just build-compiler` の後に実行します。
+npm パッケージを導入したアプリでは Node.js 24+ と pnpm を使います。コンパイル済み frontend が同梱されるため、MoonBit のインストールや compiler の checkout は不要です。[導入手順](getting-started.md)に従ってパッケージと Vite を追加した後に実行します。
 
 ```sh
-node tools/isle.mjs check path/to/example.isle
-node tools/isle.mjs explain path/to/example.isle
-node tools/isle.mjs emit path/to/example.isle Counter
-node tools/isle.mjs ssr path/to/example.isle Counter '{"initial":37}'
+pnpm exec isle check path/to/example.isle
+pnpm exec isle explain path/to/example.isle
+pnpm exec isle emit path/to/example.isle Counter
+pnpm exec isle ssr path/to/example.isle Counter '{"initial":37}'
 ```
+
+compiler 自体をソースから変更する場合の MoonBit / Z3 と `just build-compiler` は[開発手順](contributing.md)を参照してください。
 
 失敗時は exit 1 と `diagnostics` を返します。`start/end` は原文の UTF-16 offset、`code` は安定した診断種別、`hint` は次に直す箇所です。文法はまだ変更します。
 
@@ -95,7 +97,7 @@ export client component Counter(initial: number) {
 
 derive の自己参照や間接循環は `E_DERIVE_CYCLE` になります。例えば `derive a = b + 1; derive b = a + 1;` は、`Counter.a -> Counter.b -> Counter.a` という閉じた経路を返します。`start/end` は循環を閉じる参照の UTF-16 位置、`cycle` は経路、`related` は各宣言の位置です。template から未使用でも、最適化前に検査します。forward reference や共有する依存は循環でなければ許可され、依存先を先に評価する順序になります。
 
-parser から独立した graph の検査には `checkDependencies(graph)` と `node tools/isle.mjs dependencies graph.json` を使えます。詳細は [設計 §2.4](design.md#24-循環参照の検出と診断) を参照してください。
+parser から独立した graph の検査には `checkDependencies(graph)` と `pnpm exec isle dependencies graph.json` を使えます。詳細は [設計 §2.4](design.md#24-循環参照の検出と診断) を参照してください。
 
 コンパイル時に確定する不変 state は定数伝播し、HTML の固定文字列を snapshot / handler に重複して入れません。文字列の一部だけが変わる場合も Text node は一つに保ち、可変範囲を更新します。再開用 root は全イベント・更新先を含む最小の祖先になり、component の root element と異なる場合があります。`explain` の analysis で保存 slot・初期化・文字範囲・DOM root を確認できます。[チューニングと測定](runtime-size.md)を参照してください。
 
