@@ -1,0 +1,168 @@
+{
+  "gate": "check.interactions",
+  "command": "check interactions",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 1,
+    "info": 0
+  },
+  "findings": [
+    {
+      "rule": "inert-control",
+      "severity": "warn",
+      "message": "button \"All\" (main.queue>div.filters>button.action) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe.",
+      "evidence": {
+        "element": "button \"All\" (main.queue>div.filters>button.action)"
+      }
+    }
+  ],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "map": {
+      "source": "http://127.0.0.1:58450/",
+      "elements": [
+        {
+          "index": 0,
+          "key": "button|All",
+          "role": "button",
+          "name": "All",
+          "path": "main.queue>div.filters>button.action",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 1,
+          "key": "button|Open",
+          "role": "button",
+          "name": "Open",
+          "path": "main.queue>div.filters>button.action",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 2,
+          "key": "button|Done",
+          "role": "button",
+          "name": "Done",
+          "path": "main.queue>div.filters>button.action",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 3,
+          "key": "button|Add review",
+          "role": "button",
+          "name": "Add review",
+          "path": "main.queue>button.action",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": true,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 4,
+          "key": "button|Toggle",
+          "role": "button",
+          "name": "Toggle",
+          "path": "main.queue>div.cards>article.card>button.toggle",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 5,
+          "key": "button|Toggle",
+          "role": "button",
+          "name": "Toggle",
+          "path": "main.queue>div.cards>article.card>button.toggle",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        },
+        {
+          "index": 6,
+          "key": "button|Toggle",
+          "role": "button",
+          "name": "Toggle",
+          "path": "main.queue>div.cards>article.card>button.toggle",
+          "hasAriaExpanded": false,
+          "hasPopup": false,
+          "tabReachable": true,
+          "focusIndicator": true,
+          "activation": {
+            "key": "Enter",
+            "ariaDelta": {},
+            "liveRegionChanged": true,
+            "controlsBecameVisible": null,
+            "layoutChanged": false,
+            "focusMovedTo": null
+          }
+        }
+      ],
+      "capped": 0
+    },
+    "issues": [
+      {
+        "kind": "inert-control",
+        "severity": "warn",
+        "element": "button \"All\" (main.queue>div.filters>button.action)",
+        "message": "button \"All\" (main.queue>div.filters>button.action) shows no observable response to Enter — no ARIA change, no layout change. Dead control, or its response is outside this probe."
+      }
+    ]
+  }
+}

@@ -1,0 +1,77 @@
+schema Review { id: string; title: string; done: boolean; }
+
+component ReviewCard(id: string, title: string, done: boolean, children: RenderFragment) {
+  layout SafeGrid {
+    requires { inline-size: 160px..960px; block-size: 96px..960px; }
+    ensures { overflow-inline: fit; overflow-block: fit; }
+  }
+  <article class="card" data-review={id}>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .card { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 24px 16px 32px; gap: 3px; block-size: 96px; padding: 8px; border: 1px solid #9ca3af; background: #ffffff; }
+      .title { font: 16px/24px system-ui; overflow-wrap: anywhere; }
+      .status { font: 14px/16px system-ui; }
+    </style>
+    <h2 class="title">{title}</h2>
+    <p class="status">{done ? "Done" : "Open"}</p>
+    {children}
+  </article>
+}
+
+client component ReviewQueue() {
+  state reviews: Review[] = [
+    { id: "a", title: "Read proposal", done: false },
+    { id: "b", title: "Check constraints", done: true },
+    { id: "c", title: "Ship demo", done: false }
+  ];
+  state filter = "all";
+  derive visible = reviews.filter(review => filter === "all" || (filter === "done" ? review.done : !review.done));
+  derive openCount = reviews.filter(review => !review.done).length;
+  event showAll(e: EventSnapshot<MouseEvent>) { filter = "all"; }
+  event showOpen(e: EventSnapshot<MouseEvent>) { filter = "open"; }
+  event showDone(e: EventSnapshot<MouseEvent>) { filter = "done"; }
+  event addReview(e: EventSnapshot<MouseEvent>) {
+    reviews = reviews.length < 4 ? reviews.concat([{ id: "d", title: "New review", done: false }]) : reviews;
+  }
+  event toggleReview(e: EventSnapshot<MouseEvent>, id: string) {
+    reviews = reviews.map(review => review.id === id ? { id: review.id, title: review.title, done: !review.done } : review);
+  }
+  layout SafeGrid {
+    requires { inline-size: 320px..960px; block-size: 640px..960px; }
+    ensures { overflow-inline: fit; overflow-block: fit; }
+  }
+  <main class="queue">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .queue { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 32px 40px 24px 40px minmax(0, 1fr); gap: 8px; inline-size: 100%; block-size: 100%; padding: 16px; background: #f8fafc; color: #111827; }
+      .heading { font: 22px/32px system-ui; }
+      .filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 40px; gap: 8px; }
+      .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: 24px; gap: 8px; }
+      .stat { display: grid; grid-template-columns: minmax(0, 1fr) 24px; grid-template-rows: 24px; gap: 4px; }
+      .stat-label { font: 14px/24px system-ui; }
+      .count { font: 14px/24px system-ui; }
+      .action { appearance: none; display: block; box-sizing: border-box; min-width: 0; min-height: 0; padding: 0; border: 1px solid #9ca3af; block-size: 40px; font: 14px/38px system-ui; background: #ffffff; }
+      .cards { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 96px; gap: 8px; align-content: start; }
+      .toggle { appearance: none; display: block; box-sizing: border-box; min-width: 0; min-height: 0; padding: 0; border: 1px solid #9ca3af; block-size: 32px; font: 14px/30px system-ui; background: #f1f5f9; }
+      @media (min-width: 600px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+    <h1 class="heading">Review queue</h1>
+    <div class="filters">
+      <button class="action" type="button" on:click={showAll}>All</button>
+      <button class="action" type="button" on:click={showOpen}>Open</button>
+      <button class="action" type="button" on:click={showDone}>Done</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="stat-label">Total reviews</span><output class="count" aria-label="Total reviews">{reviews.length}</output></div>
+      <div class="stat"><span class="stat-label">Open reviews</span><output class="count" aria-label="Open reviews">{openCount}</output></div>
+    </div>
+    <button class="action" type="button" on:click={addReview}>Add review</button>
+    <div class="cards">
+      <For each={visible}>{(review) =>
+        <ReviewCard key={review.id} id={review.id} title={review.title} done={review.done}>
+          <button class="toggle" type="button" on:click={(e) => toggleReview(e, review.id)}>Toggle</button>
+        </ReviewCard>
+      }</For>
+    </div>
+  </main>
+}

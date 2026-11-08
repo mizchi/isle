@@ -186,4 +186,4 @@ MoonBit/veri の有限モデル、`moon prove` の小さい契約、browser の�
 
 配列は `Item[]` / `readonly Item[]`、レコードは既存 schema / view で型を付けます。`state items: Item[] = initial;`、`items = [items[1], items[0]];`、空配列 `[]`、文脈で型が決まるレコード literal を扱います。行と index は readonly。key は行だけに依存する string または safe integer とし、重複は state / DOM の commit 前に拒否します。
 
-実行できる例は [control-flow/fixture.isle](../evals/scenarios/control-flow/fixture.isle)。独立 client owner、schema Form、RenderFragment などに関する現在の制約と、resource / `Suspense` の未実装範囲は [制御構文の契約](control-flow.md)を参照してください。
+実行できる例は [control-flow/fixture.isle](../evals/scenarios/control-flow/fixture.isle)。独立 client owner、schema Form、実行時の client slot などに関する現在の制約と、resource / `Suspense` の未実装範囲は [制御構文の契約](control-flow.md)を参照してください。

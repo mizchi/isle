@@ -4,8 +4,8 @@
 
 出典: author-v1 `report.md`。通常の7操作とroot保持は受入検査を通るが、クリック対象が広すぎる。この副作用はagent自身の追加Playwright検査で確認された。
 
-状態: 未修正、次の機能候補の最優先。反復を持つownerではRenderFragment投影が未対応で、JSON propsに任意の関数を通す契約もない。既存の制限を回避するDOM eventの手書きは追加しない。
+状態: 修正済み。既存の `children: RenderFragment` を条件式・反復を持つuniversalな子でも静的に展開する。親が書いたボタンだけへイベントを接続し、親のstateとrow captureを保持する。JSON propsへ任意の関数を通す機能は追加しない。
 
-検討する契約: universal 子へ渡すイベント参照をコンパイラがインライン展開し、親ownerとimmutable row keyを保持する。別client owner・server境界・snapshotへの関数混入を拒否する。任意関数propsの解放ではなく、型付けされたevent capabilityか限定的な描画slotを比較する。
+検討した契約: universal 子へ渡すイベント参照をコンパイラがインライン展開し、親ownerとimmutable row keyを保持する。別client owner・server境界・snapshotへの関数混入を拒否する。任意関数propsの解放ではなく、型付けされたevent capabilityか限定的な描画slotを比較する。
 
-次の受入条件: Toggleのみ親stateを一回更新、見出し/カード余白クリックは更新しない、Forのkeyとrootを保持、resume時の追加共通runtimeなし、SSR JavaScript 0。現在のgraderの成功条件には見出しクリックは含まれないため、passを完全なアプリUXの保証とは解釈しない。
+受入条件: Toggleのみ親stateを一回更新、見出し/カード余白クリックは更新しない、Forのkeyとrootを保持、resume時の追加共通runtimeなし、SSR JavaScript 0。元のgraderには見出しクリックが含まれていなかった。追加した `--event-scope` では旧wrapperの実装を拒否し、投影したボタンの実装を受理する。[実行例](../../examples/lexical-events/README.md)と[回帰シナリオ](../../evals/scenarios/lexical-events/README.md)を保存した。

@@ -123,6 +123,14 @@ for (const id of liveExampleIds) {
       await page.getByRole('button', { name: 'Activate style' }).click();
       await expect(page.locator('.lazy-card')).toHaveAttribute('data-style-at-setup', 'ready');
     }
+    if (id === 'lexical-events') {
+      const card=page.locator('[data-review="a"]');
+      await card.getByRole('heading').click();
+      await expect(page.getByLabel('Open reviews',{exact:true})).toHaveText('2');
+      await card.getByRole('button',{name:'Toggle',exact:true}).click();
+      await expect(card.locator('p')).toHaveText('Done');
+      await expect(page.getByLabel('Open reviews',{exact:true})).toHaveText('1');
+    }
     if (id === 'navigation') { await page.getByRole('link', { name: 'Next page', exact: true }).click(); await expect(page.locator('h1')).toHaveText('Destination page'); }
     expect(errors).toEqual([]); expect(failed).toEqual([]);
   });

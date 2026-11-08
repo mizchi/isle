@@ -101,6 +101,7 @@ This build generates the initial HTML at build time. Request-time server actions
 | [Selective DOM updates](examples/partial-updates/) | Change one value while the static heading and unrelated output keep their DOM identity. |
 | [Nested components](examples/composition/) | Resume a child independently of its parent; project children through a pure component. |
 | [Branches, keyed lists and errors](examples/control-flow/) | Switch branches, reorder keyed rows, then empty the list to reach the For fallback and ErrorBoundary. |
+| [Parent-owned card actions](examples/lexical-events/) | Place a parent button inside a universal keyed card; heading clicks stay inert. |
 | [Manifest-driven loading](examples/loading/) | Inspect preload decisions in the manifest; typing activates Search while Details stays inactive. |
 | [Resource lifetime and cleanup](examples/resources/) | Activate an owned timer and listener, remove the component, and observe one cleanup. |
 | [Lazy CSS readiness](examples/styles/) | Load component CSS with its setup module and inspect the style seen by setup. |
@@ -150,7 +151,7 @@ The feature examples are bilingual. Detailed guides are currently in Japanese: [
 
 Isle is a prototype with a constrained expression/type subset, not an arbitrary TypeScript runtime. `inline(ts/moonbit/css)`, Content Mappers, general async server rendering and class-level CSS elimination are not implemented. The schema subset includes closed records/arrays for supported control flow.
 
-Passing parent-owned events or `RenderFragment` content into universal children inside `For` is currently unsupported. The [consumer evaluation reports](docs/reports/README.md) record observed authoring gaps and fixes.
+Parent-owned buttons can be projected into universal children inside `For` with `children: RenderFragment`; headings and padding receive no click handler. [Try the example](examples/lexical-events/). Passing mutable content/events across an independent client owner remains unsupported.
 
 CSS checks apply to declared size, wrapping and overflow contracts and return `verified`, `violated` or `unknown`; they do not prove arbitrary browser layout. Finite lifecycle/security models are independent reference models. Compiler-to-model generation and a proof of the whole compiler/runtime/browser are future work. Demo server hosts use fixed principals and in-memory data.
 

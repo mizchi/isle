@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {compile,requireIR} from '../lib/compiler.mjs';
+import {compilePreview} from '../lib/compiler-browser.mjs';
 import {prepareProgram} from '../lib/codegen.mjs';
 import {readFile} from 'node:fs/promises';
 import {childrenOf} from '../lib/template.mjs';
@@ -16,6 +17,8 @@ test('parent-owned buttons project through conditional universal children inside
   assert.deepEqual(generated.handlers.map(h=>h.id),['Reviews.toggle']);
   assert.deepEqual(generated.fields.map(f=>f.name),['reviews','clicks']);
   assert.deepEqual(program.reachable('Reviews'),['Reviews']);
+  const preview=compilePreview(source);
+  assert.equal(preview.ok,true,JSON.stringify(preview.diagnostics));
   const resume=program.render('Reviews',{});
   assert.equal((resume.html.match(/data-isle-root=/g) ?? []).length,1);
   assert.equal((resume.html.match(/data-isle-on-click=/g) ?? []).length,2);

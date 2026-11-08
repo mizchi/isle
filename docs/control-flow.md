@@ -10,7 +10,7 @@
 
 - 値は primitive と、既存の `schema` / `view` の閉じたレコード、その配列。schema のフィールドは primitive。`readonly Item[]` と `Item[]` を受理する。row / props / derive は代入不可で、配列の変更は state への全置換で表す。
 - `ErrorBoundary` が捕捉するのは同期描画の prepare 失敗。fallback の error 引数は公開用の文字列 `Render failed`。非同期 resource / Suspense、literal union と網羅性検査、一般の TS 本文、構造化配列 delta は未実装。
-- 制御構文、または record / array の props / state を持つ component は Region backend を使い、native container を root にし、子は universal component の静的展開と通常の DOM を使う。独立 client owner、RenderFragment、schema Form、textarea / select / option はこの backend では `E_CONTROL_CONTRACT` で拒否する。既存 backend の入れ子・Form は引き続き利用できる。
+- 制御構文、または record / array の props / state を持つ component は Region backend を使い、native container を root にし、子は universal component の静的展開と通常の DOM を使う。universal な子への RenderFragment はコンパイル時に展開し、呼び出し元が所有するイベントも保持する。独立 client owner、実行時の client slot、schema Form、textarea / select / option はこの backend では `E_CONTROL_CONTRACT` で拒否する。既存 backend の入れ子・Form は引き続き利用できる。
 - ID と ARIA / label の参照は同じ生成 frame 内で閉じる。反復行の ID は frame ごとに名前空間を分ける。
 - 更新する block と text / attribute は依存する state から絞る。全配列の置換は key の比較に O(n) を要する。同じ key は DOM を保持し、削除後の再挿入では新しい DOM を作る。
 - 描画 factory と patch 関数を生成し、ブラウザへ template AST は送らない。DOM ハンドルは初回の走査と新規 fragment 作成時に解決する。不要な配列・boundary helper は production から除く。型検査後に定数分岐を消し、分岐を消し切れた場合は従来 backend に戻す。

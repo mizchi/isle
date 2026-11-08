@@ -70,7 +70,7 @@ Fragment は解析時に取り除き、複数ノードを一つの行として�
 
 - For の children とエラーの function fallback はインラインの template 式に制限します。statement body、外部 render 関数、動的な component 選択は受理しません。
 - component 自体には一つの native container root が必要です。root を直接 Show / For / Fragment にする場合は、section などで包みます。
-- Region backend の既存の制約を引き継ぎます。独立 client owner、RenderFragment の投影、schema Form、textarea / select / option は反復・分岐を持つ owner では未対応です。純粋な universal component の静的展開は使えます。
+- Region backend の既存の制約を引き継ぎます。独立 client owner、実行時に slot を受け取る client、schema Form、textarea / select / option は反復・分岐を持つ owner では未対応です。universal な子への RenderFragment は静的に展開でき、親のボタン・イベントも渡せます。[合成の例](composition.md#for-内で親のボタンを子へ配置する)を参照してください。
 - 型検査の後に定数分岐を除去し、動的な値・属性・構造だけの更新を生成します。レイアウト検査には全 branch / fallback と、証明できる全反復回数を渡します。SSR 専用では snapshot、動的属性、クライアント JS を出しません。
 - 制御構文は制御コンポーネント表記だけを受理します。旧 `@` ディレクティブは `E_CONTROL_REMOVED` で拒否し、診断に移行先を示します。文字列やコメント、メールアドレス中の `@` は通常のデータです。
 

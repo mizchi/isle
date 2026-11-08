@@ -59,6 +59,13 @@ client component List(items: Item[]) {
 
 追加引数は不変の props・row の値へのパス、literal、これらの配列・record に限定します。可変 state、state に依存する derive、計算・index・JSON decode などの式は接続用引数に置けません。値の再評価や例外の順序を通常の引数評価と食い違わせないための制限です。可変な owner の値は本文から読み、計算も本文に置きます。本文のコレクション callback が同名のローカル変数を持つ場合は、コンパイラが変数を区別します。
 
+## universal な子の中へ接続する
+
+`For` 内の子へ操作を置く場合は、親が書いたボタンを `children: RenderFragment` で
+投影します。親の click wrapper に子全体を入れる必要はありません。
+[合成のコード例](composition.md#for-内で親のボタンを子へ配置する)と
+[実行例](../examples/lexical-events/README.md)を参照してください。
+
 ## 同期のキャンセルと遅延処理
 
 ```text

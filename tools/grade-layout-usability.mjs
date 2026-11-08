@@ -12,9 +12,10 @@ import {chromium} from 'playwright';
 
 const run = promisify(execFile);
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const [scenario, directory] = process.argv.slice(2);
-if (!['author', 'diagnosis'].includes(scenario) || !directory) {
-  console.error('Usage: node tools/grade-layout-usability.mjs author|diagnosis <consumer-directory>');
+const [scenario, directory, ...flags] = process.argv.slice(2);
+const eventScope = flags.includes('--event-scope');
+if (!['author', 'diagnosis'].includes(scenario) || !directory || flags.some(flag=>flag!=='--event-scope') || eventScope && scenario!=='author') {
+  console.error('Usage: node tools/grade-layout-usability.mjs author|diagnosis <consumer-directory> [--event-scope]');
   process.exit(2);
 }
 const root = resolve(directory);
@@ -141,6 +142,15 @@ try {
     stage = 'resume-interactions';
     await page.goto(url);
     await eventually(page, goal.initial);
+    if (eventScope) {
+      const card = page.locator('[data-review="a"]'), heading = card.getByRole('heading');
+      check(await heading.evaluate(node => node.closest('[data-isle-on-click]') === null), 'A card heading must not dispatch an ancestor click handler');
+      check(await card.evaluate(node => node.closest('[data-isle-on-click]') === null), 'Card padding must not dispatch a click handler');
+      await heading.click();
+      await card.click({position:{x:2,y:2}});
+      await eventually(page, goal.initial);
+      result.metrics.eventScope = {inertHeadingAndPadding:true};
+    }
     for (const [id,title,status] of [['a','Read proposal','Open'],['b','Check constraints','Done'],['c','Ship demo','Open']]) {
       const text = await page.locator(`[data-review="${id}"]`).textContent();
       check(text.includes(title) && text.includes(status), `Initial content of ${id}`);

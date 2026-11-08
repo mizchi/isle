@@ -143,3 +143,38 @@ Form は同じ client owner 内で control を構成します。純粋な compon
 Flow の optional/default/rest、renaming、ref、renders 型、props spread、dynamic component、list / branch は今回の対象に含みません。従来の TS 分割代入表記は互換用に残し、ドキュメントでは個別の名前付き引数を基本にします。
 
 [ユーザーガイド](README.md) · [構文リファレンス](prototype-guide.md) · [チャンクと計測](chunk-profiling.md)
+
+
+## For 内で親のボタンを子へ配置する
+
+親が書いたボタンを universal な子の `children` へ渡します。子は配置と表示を担当し、
+イベントは親の state と行の値を参照します。子が条件式・分岐・反復を持つ場合も静的に展開します。
+
+```text
+component ReviewCard(title: string, done: boolean, children: RenderFragment) {
+  <article><h2>{title}</h2><p>{done ? "Done" : "Open"}</p>{children}</article>
+}
+client component Reviews(items: string[]) {
+  state selected = "none";
+  event choose(e: EventSnapshot<MouseEvent>, id: string) { selected = id; }
+  <main><output>{selected}</output><For each={items}>{(id) =>
+    <ReviewCard key={id} title={id} done={false}>
+      <button type="button" on:click={(e) => choose(e, id)}>Choose</button>
+    </ReviewCard>
+  }</For></main>
+}
+```
+
+見出しと余白に handler は付きません。ボタンの `on:click` だけが親のイベントへ接続され、
+関数や fragment が snapshot に入ることもありません。親子でループや callback の変数名が
+一致しても、コンパイラが名前を区別して呼び出し元の値を保持します。投影した要素のCSSも呼び出し元のscopeを使うため、ボタンのstyleとresetは親に記述します。
+別の client owner へ
+親のイベントや可変値を渡す制限は維持します。Region backend の client が実行時に
+opaque slot を受け取る機能、任意の callback props は含みません。
+
+`{children}` の記述位置は一箇所です。子の反復内に置いた場合は各行へ展開されます。
+未指定時は空として描画します。SSR専用ビルドはボタンのHTMLを残し、イベント参照・snapshot・
+JavaScript chunkを出しません。
+
+[SafeGrid と親所有の行操作を組み合わせた実行例](../examples/lexical-events/README.md)は
+列の切替、content-size bounds、button resetを含みます。

@@ -209,8 +209,9 @@ widget-portable-dev: widget-portable-build
 
 # Typed template regions, key identity, selective patches and render failure boundaries.
 control-check: build-compiler
-    node --test tests/control-components.test.mjs tests/control-flow*.test.mjs tests/removed-control-syntax.test.mjs
+    node --test tests/control-components.test.mjs tests/control-flow*.test.mjs tests/lexical-events*.test.mjs tests/removed-control-syntax.test.mjs
     pnpm exec playwright test --config playwright.control-flow.config.mjs
+    pnpm exec playwright test --config playwright.lexical-events.config.mjs
 
 # Fixed DOM/keyboard gates and desktop/phone states for the executable control-flow fixture.
 control-quality: build-compiler
@@ -397,3 +398,11 @@ inline-css-check: build-compiler
 # Independently grade a docs-only npm consumer built by a fresh agent.
 layout-usability-grade scenario directory:
     node tools/grade-layout-usability.mjs {{quote(scenario)}} {{quote(directory)}}
+
+# Lexically project parent buttons through universal children; no callback runtime.
+lexical-events-check: build-compiler
+    node --test tests/lexical-events*.test.mjs
+    pnpm exec playwright test --config playwright.lexical-events.config.mjs
+
+lexical-events-quality: build-compiler
+    node tools/check-lexical-events.mjs

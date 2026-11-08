@@ -101,6 +101,7 @@ export default defineConfig({
 | [動的な表示だけ更新](examples/partial-updates/) | 一つの値を変更し、静的見出しと無関係な出力の DOM が保持されることを確かめる。 |
 | [入れ子と children](examples/composition/) | 親と子を独立に再開し、純粋 component の children を表示する。 |
 | [分岐・key 付きリスト・例外](examples/control-flow/) | 分岐を切り替え、key 付き行を並べ替え、空配列で For の fallback と ErrorBoundary を確認する。 |
+| [子へ配置する親のイベント](examples/lexical-events/) | universalなカードへ親のボタンを投影し、見出しクリックでは更新しない。 |
 | [manifest による読み込み](examples/loading/) | manifest の先読み判断を調べ、入力時には Search だけが活性化することを確認する。 |
 | [リソースの寿命と破棄](examples/resources/) | 所有された timer と listener を活性化し、component を削除して一度だけ破棄されることを見る。 |
 | [遅延 CSS と準備完了](examples/styles/) | setup module と CSS を読み込み、setup から見える適用済み style を調べる。 |
@@ -150,7 +151,7 @@ export default defineConfig({
 
 制約付きの式・型を持つ prototype であり、任意の TypeScript を実行する言語ではありません。`inline(ts/moonbit/css)`、Content Mapper、一般の async server render、class 単位の CSS DCE は未実装です。対応する制御構文では閉じた record / array を使えます。
 
-`For` 内の universal な子へ、親が所有するイベントや `RenderFragment` を渡すことは未対応です。[利用者評価の記録](docs/reports/README.md)に、実際に見つかった記述上の課題と修正を残しています。
+`For` 内の universal な子へ、親が書いたボタンを `children: RenderFragment` で投影できます。見出しや余白には click handler が付きません。[実行例](examples/lexical-events/)で確認できます。別の client owner を越えて可変な内容や親イベントを渡す制限は維持します。
 
 CSS 検査は宣言したサイズ・折り返し・overflow の契約を扱い、`verified`・`violated`・`unknown` を返します。任意の browser layout の証明ではありません。寿命・security の有限モデルは独立した参照モデルで、compiler からのモデル生成や compiler / runtime / browser 全体の証明は今後の機能です。デモの server host は固定 principal とメモリー内のデータを使います。
 

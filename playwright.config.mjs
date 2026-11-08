@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 export default defineConfig({
-  testDir: './e2e', testIgnore: ['**/widget*.spec.mjs', '**/control-flow.spec.mjs', '**/resource-bindings.spec.mjs', '**/auto-loading.spec.mjs', '**/style-loading.spec.mjs', '**/layout*.spec.mjs'], fullyParallel: false, workers: 1,
+  testDir: './e2e', testIgnore: ['**/lexical-events.spec.mjs', '**/widget*.spec.mjs', '**/control-flow.spec.mjs', '**/resource-bindings.spec.mjs', '**/auto-loading.spec.mjs', '**/style-loading.spec.mjs', '**/layout*.spec.mjs'], fullyParallel: false, workers: 1,
   use: { browserName: 'chromium', headless: true },
   webServer: [
     { command: 'pnpm dev', url: 'http://127.0.0.1:4173', reuseExistingServer: !process.env.CI },

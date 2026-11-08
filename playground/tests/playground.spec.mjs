@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import {readFile} from 'node:fs/promises';
 const preview=page=>page.frameLocator('#preview');
 test('source layout declarations run mandatory checks and reject invalid actual allocations',async({page})=>{
   await page.goto('/');await page.locator('#preset').selectOption('layoutDeclared');
@@ -300,4 +301,22 @@ for(const width of [390,1440]) test(`editor, preview and error state remain usab
   await page.locator('#preview').scrollIntoViewIfNeeded();
   await page.locator('#preview').screenshot({path:testInfo.outputPath('layout-unknown-preview.png')});
   await page.screenshot({path:testInfo.outputPath('layout-unknown.png')});
+});
+
+
+test('browser compilation keeps projected parent events on the native button only',async({page})=>{
+  const source=await readFile(new URL('../../evals/scenarios/lexical-events/fixture.isle',import.meta.url),'utf8');
+  await page.goto('/');await expect(page.getByRole('status')).toContainText('Ready');
+  await page.locator('#props').fill('{}');await page.locator('#source').fill(source);
+  const frame=preview(page),card=frame.locator('[data-review="a"]');
+  await expect(frame.getByLabel('Clicks',{exact:true})).toHaveText('0');
+  await card.evaluate(node=>{window.originalCard=node;});
+  await card.getByRole('heading').click();
+  await expect(frame.getByLabel('Clicks',{exact:true})).toHaveText('0');
+  await expect(page.locator('#metrics')).toContainText('0 restored');
+  await card.getByRole('button',{name:'Toggle',exact:true}).click();
+  await expect(frame.getByLabel('Clicks',{exact:true})).toHaveText('1');
+  await expect(card.locator('p')).toHaveText('Done');
+  expect(await card.evaluate(node=>node===window.originalCard)).toBe(true);
+  expect(await page.locator('#preview').getAttribute('srcdoc')).not.toMatch(/<ReviewCard\b|RenderFragment/);
 });
