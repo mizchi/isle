@@ -1,4 +1,5 @@
 ///|
+#derive(ToJson)
 pub(all) struct CaseReport {
   name : String
   property : String
@@ -15,12 +16,13 @@ pub(all) struct CaseReport {
   witness_replayed : Bool
   witness_actions : Array[String]
   witness_states : Array[Json]
-} derive(ToJson)
+}
 
 ///|
 pub extend CaseReport with ToJson::{to_json}
 
 ///|
+#derive(ToJson)
 pub(all) struct Report {
   version : Int32
   veri_version : String
@@ -28,7 +30,7 @@ pub(all) struct Report {
   scope : String
   passed : Bool
   cases : Array[CaseReport]
-} derive(ToJson)
+}
 
 ///|
 pub extend Report with ToJson::{to_json}

@@ -3,10 +3,11 @@ package "mizchi/isle/models/security"
 
 import {
   "mizchi/veri/model_check",
+  "moonbitlang/core/json",
 }
 
 // Values
-pub fn client(Policy) -> @model_check.Client[State, Event, Json] raise
+pub fn client(Policy) -> @model_check.Client[State, Event, @json.Json] raise
 
 pub fn initial() -> State
 
@@ -17,21 +18,23 @@ pub fn step(Policy, State, Event) -> State?
 // Errors
 
 // Types and methods
+#derive(Eq, @json.ToJson)
 pub(all) enum Actor {
   Alice
   Bob
-} derive(Eq, ToJson)
+}
 pub fn Actor::equal(Self, Self) -> Bool
 pub fn Actor::not_equal(Self, Self) -> Bool
-pub fn Actor::to_json(Self) -> Json
+pub fn Actor::to_json(Self) -> @json.Json
 
+#derive(Eq, @json.ToJson)
 pub(all) enum Document {
   Alpha
   Beta
-} derive(Eq, ToJson)
+}
 pub fn Document::equal(Self, Self) -> Bool
 pub fn Document::not_equal(Self, Self) -> Bool
-pub fn Document::to_json(Self) -> Json
+pub fn Document::to_json(Self) -> @json.Json
 
 pub(all) enum Event {
   Receive(Actor, Actor, Document)
@@ -45,14 +48,16 @@ pub(all) enum Event {
   Respond
 }
 
+#derive(Eq, @json.ToJson)
 pub(all) struct Permit {
   actor : Actor
   target : Document
-} derive(Eq, ToJson)
+}
 pub fn Permit::equal(Self, Self) -> Bool
 pub fn Permit::not_equal(Self, Self) -> Bool
-pub fn Permit::to_json(Self) -> Json
+pub fn Permit::to_json(Self) -> @json.Json
 
+#derive(Eq, @json.ToJson)
 pub(all) enum Phase {
   Idle
   Received
@@ -63,20 +68,22 @@ pub(all) enum Phase {
   Committed
   Rejected
   Responded
-} derive(Eq, ToJson)
+}
 pub fn Phase::equal(Self, Self) -> Bool
 pub fn Phase::not_equal(Self, Self) -> Bool
-pub fn Phase::to_json(Self) -> Json
+pub fn Phase::to_json(Self) -> @json.Json
 
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   TrustPayloadIdentity
   TrustExpiredPermit
   IgnoreResource
-} derive(Eq)
+}
 pub fn Policy::equal(Self, Self) -> Bool
 pub fn Policy::not_equal(Self, Self) -> Bool
 
+#derive(Eq, @json.ToJson)
 pub(all) struct State {
   phase : Phase
   actual_actor : Actor
@@ -87,10 +94,10 @@ pub(all) struct State {
   revoked : Bool
   effect_target : Document?
   unauthorized_write : Bool
-} derive(Eq, ToJson)
+}
 pub fn State::equal(Self, Self) -> Bool
 pub fn State::not_equal(Self, Self) -> Bool
-pub fn State::to_json(Self) -> Json
+pub fn State::to_json(Self) -> @json.Json
 
 // Type aliases
 

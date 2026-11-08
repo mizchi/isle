@@ -1,11 +1,12 @@
 ///|
 /// Independent resources may publish in different transactions.
 /// This model permits that schedule; it does not require all implementations to avoid batching.
+#derive(Eq, ToJson)
 pub(all) struct PairState {
   left : Int32
   right : Int32
   commits : Int32
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend PairState with Eq::{equal, not_equal}

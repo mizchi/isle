@@ -1,11 +1,12 @@
 ///|
+#derive(Eq, ToJson)
 pub(all) struct State {
   count : Int32
   width : Int32
   gutter : Int32
   horizontal : Bool
   compact : Bool
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend State with Eq::{equal, not_equal}
@@ -14,6 +15,7 @@ pub extend State with Eq::{equal, not_equal}
 pub extend State with ToJson::{to_json}
 
 ///|
+#derive(Eq)
 pub(all) enum Action {
   Add
   Clear
@@ -21,7 +23,7 @@ pub(all) enum Action {
   Width(Int32)
   Gutter(Int32)
   Horizontal
-} derive(Eq)
+}
 
 ///|
 pub extend Action with Eq::{equal, not_equal}
@@ -98,6 +100,7 @@ pub fn client(
 }
 
 ///|
+#derive(ToJson)
 pub(all) struct Report {
   complete : Bool
   states : Int32
@@ -105,7 +108,7 @@ pub(all) struct Report {
   gutter_safe : Bool
   unbounded_witness : Array[Json]
   ignored_gutter_witness : Array[Json]
-} derive(ToJson)
+}
 
 ///|
 pub extend Report with ToJson::{to_json}

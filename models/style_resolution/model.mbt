@@ -1,14 +1,16 @@
 ///|
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   SkipCSS
   IgnoreOwner
-} derive(Eq)
+}
 
 ///|
 pub extend Policy with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq)
 pub(all) enum Event {
   FetchCode
   FetchCSS
@@ -19,12 +21,13 @@ pub(all) enum Event {
   Unmount
   Activate
   Commit
-} derive(Eq)
+}
 
 ///|
 pub extend Event with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) struct State {
   code_fetched : Bool
   css_fetched : Bool
@@ -37,7 +40,7 @@ pub(all) struct State {
   committed : Bool
   early : Bool
   stale : Bool
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend State with Eq::{equal, not_equal}

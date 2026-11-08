@@ -1,10 +1,11 @@
 ///|
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   IgnoreRevision
   IgnoreGeneration
   AllowDuplicate
-} derive(Eq)
+}
 
 ///|
 pub extend Policy with Eq::{equal, not_equal}
@@ -20,6 +21,7 @@ pub(all) enum Event {
 }
 
 ///|
+#derive(Eq, ToJson)
 pub(all) struct State {
   revision : Bool
   generation : Bool
@@ -36,7 +38,7 @@ pub(all) struct State {
   touched : Bool
   issues : Bool
   bad : Bool
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend State with Eq::{equal, not_equal}

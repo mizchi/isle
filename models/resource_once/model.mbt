@@ -1,4 +1,5 @@
 ///|
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   DuplicateStart
@@ -8,25 +9,27 @@ pub(all) enum Policy {
   RestartSnapshot
   DropReadable
   LoseCompletion
-} derive(Eq)
+}
 
 ///|
 pub extend Policy with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq)
 pub(all) enum Scenario {
   Cold
   SSRReady
-} derive(Eq)
+}
 
 ///|
 pub extend Scenario with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) enum Generation {
   First
   Second
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Generation with Eq::{equal, not_equal}
@@ -36,12 +39,13 @@ pub extend Generation with ToJson::{to_json}
 
 ///|
 /// Three observable payloads plus an invalid freed-payload marker.
+#derive(Eq, ToJson)
 pub(all) enum Value {
   Seed
   Left
   Right
   Missing
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Value with Eq::{equal, not_equal}
@@ -50,13 +54,14 @@ pub extend Value with Eq::{equal, not_equal}
 pub extend Value with ToJson::{to_json}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) enum Phase {
   Dormant
   Pending
   Ready(Value)
   Failed
   Disposed
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Phase with Eq::{equal, not_equal}
@@ -65,10 +70,11 @@ pub extend Phase with Eq::{equal, not_equal}
 pub extend Phase with ToJson::{to_json}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) enum Outcome {
   Success(Value)
   Failure
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Outcome with Eq::{equal, not_equal}
@@ -78,12 +84,13 @@ pub extend Outcome with ToJson::{to_json}
 
 ///|
 /// The producer and delivery are distinct asynchronous steps.
+#derive(Eq, ToJson)
 pub(all) enum Job {
   Unused
   Running(Generation)
   Completed(Generation, Outcome)
   Delivered(Generation, Outcome)
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Job with Eq::{equal, not_equal}
@@ -111,6 +118,7 @@ pub(all) enum Event {
 /// One resource, two owner lifetimes and two in-flight tickets in total.
 /// Counters saturate at two; two is the first violating value, never a wraparound.
 /// The violation bits are history monitors, not runtime data structures.
+#derive(Eq, ToJson)
 pub(all) struct State {
   alive : Bool
   generation : Generation
@@ -122,7 +130,7 @@ pub(all) struct State {
   invalid_commit : Bool
   terminal_changed : Bool
   continuation : Bool
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend State with Eq::{equal, not_equal}

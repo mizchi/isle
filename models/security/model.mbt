@@ -1,8 +1,9 @@
 ///|
+#derive(Eq, ToJson)
 pub(all) enum Actor {
   Alice
   Bob
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Actor with Eq::{equal, not_equal}
@@ -11,10 +12,11 @@ pub extend Actor with Eq::{equal, not_equal}
 pub extend Actor with ToJson::{to_json}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) enum Document {
   Alpha
   Beta
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Document with Eq::{equal, not_equal}
@@ -23,6 +25,7 @@ pub extend Document with Eq::{equal, not_equal}
 pub extend Document with ToJson::{to_json}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) enum Phase {
   Idle
   Received
@@ -33,7 +36,7 @@ pub(all) enum Phase {
   Committed
   Rejected
   Responded
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Phase with Eq::{equal, not_equal}
@@ -42,21 +45,23 @@ pub extend Phase with Eq::{equal, not_equal}
 pub extend Phase with ToJson::{to_json}
 
 ///|
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   TrustPayloadIdentity
   TrustExpiredPermit
   IgnoreResource
-} derive(Eq)
+}
 
 ///|
 pub extend Policy with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) struct Permit {
   actor : Actor
   target : Document
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Permit with Eq::{equal, not_equal}
@@ -65,6 +70,7 @@ pub extend Permit with Eq::{equal, not_equal}
 pub extend Permit with ToJson::{to_json}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) struct State {
   phase : Phase
   actual_actor : Actor
@@ -75,7 +81,7 @@ pub(all) struct State {
   revoked : Bool
   effect_target : Document?
   unauthorized_write : Bool
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend State with Eq::{equal, not_equal}

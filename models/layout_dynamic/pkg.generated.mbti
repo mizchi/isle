@@ -3,16 +3,18 @@ package "mizchi/isle/models/layout_dynamic"
 
 import {
   "mizchi/veri/model_check",
+  "moonbitlang/core/json",
 }
 
 // Values
-pub fn client(Bool, Bool) -> @model_check.Client[State, Action, Json] raise
+pub fn client(Bool, Bool) -> @model_check.Client[State, Action, @json.Json] raise
 
 pub fn report() -> Report raise
 
 // Errors
 
 // Types and methods
+#derive(Eq)
 pub(all) enum Action {
   Add
   Clear
@@ -20,30 +22,32 @@ pub(all) enum Action {
   Width(Int32)
   Gutter(Int32)
   Horizontal
-} derive(Eq)
+}
 pub fn Action::equal(Self, Self) -> Bool
 pub fn Action::not_equal(Self, Self) -> Bool
 
+#derive(@json.ToJson)
 pub(all) struct Report {
   complete : Bool
   states : Int32
   bounded_safe : Bool
   gutter_safe : Bool
-  unbounded_witness : Array[Json]
-  ignored_gutter_witness : Array[Json]
-} derive(ToJson)
-pub fn Report::to_json(Self) -> Json
+  unbounded_witness : Array[@json.Json]
+  ignored_gutter_witness : Array[@json.Json]
+}
+pub fn Report::to_json(Self) -> @json.Json
 
+#derive(Eq, @json.ToJson)
 pub(all) struct State {
   count : Int32
   width : Int32
   gutter : Int32
   horizontal : Bool
   compact : Bool
-} derive(Eq, ToJson)
+}
 pub fn State::equal(Self, Self) -> Bool
 pub fn State::not_equal(Self, Self) -> Bool
-pub fn State::to_json(Self) -> Json
+pub fn State::to_json(Self) -> @json.Json
 
 // Type aliases
 

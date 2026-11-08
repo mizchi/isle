@@ -11,10 +11,11 @@ pub fn commit(Int32, Int32, Int32, Int32, Bool, Int32, Int32, Int32) -> Store
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct Store {
   alpha : Int32
   beta : Int32
-} derive(Eq, @debug.Debug)
+}
 pub fn Store::equal(Self, Self) -> Bool
 pub fn Store::not_equal(Self, Self) -> Bool
 pub fn Store::to_repr(Self) -> @debug.Repr

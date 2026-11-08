@@ -1,11 +1,12 @@
 ///|
+#derive(Eq, ToJson)
 pub(all) struct Configuration {
   start : Int32
   span : Int32
   gap : Int32
   before : Int32
   after : Int32
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Configuration with Eq::{equal, not_equal}
@@ -118,16 +119,18 @@ pub fn client(
 }
 
 ///|
+#derive(ToJson)
 pub(all) struct AxisCase {
   configuration : Configuration
   doubled : Array[Int32]
   nested_quadrupled : Array[Int32]
-} derive(ToJson)
+}
 
 ///|
 pub extend AxisCase with ToJson::{to_json}
 
 ///|
+#derive(ToJson)
 pub(all) struct Report {
   veri_version : String
   complete : Bool
@@ -136,7 +139,7 @@ pub(all) struct Report {
   independent_counterexample_replayed : Bool
   witness : Array[Json]
   cases : Array[AxisCase]
-} derive(ToJson)
+}
 
 ///|
 pub extend Report with ToJson::{to_json}

@@ -1,26 +1,29 @@
 ///|
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   KeyOnly
-} derive(Eq)
+}
 
 ///|
 pub extend Policy with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq)
 pub(all) enum Event {
   Dispatch
   Remove
   Reinsert
   Move
   Drain
-} derive(Eq)
+}
 
 ///|
 pub extend Event with Eq::{equal, not_equal}
 
 ///|
 /// All actions leave the parent owner alive; only one keyed row changes lifetime.
+#derive(Eq, ToJson)
 pub(all) struct State {
   present : Bool
   second : Bool
@@ -31,7 +34,7 @@ pub(all) struct State {
   applied : Bool
   cancelled : Bool
   stale : Bool
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend State with Eq::{equal, not_equal}

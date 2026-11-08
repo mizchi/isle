@@ -1,6 +1,7 @@
 // A closed syntax prototype. Offsets are UTF-16 code units.
 
 ///|
+#derive(ToJson)
 priv struct Diagnostic {
   code : String
   message : String
@@ -10,18 +11,19 @@ priv struct Diagnostic {
   file : String
   cycle : Array[String]
   related : Array[RelatedDiagnostic]
-} derive(ToJson)
+}
 
 ///|
 extend Diagnostic with ToJson::{to_json}
 
 ///|
+#derive(ToJson)
 priv struct RelatedDiagnostic {
   message : String
   file : String
   start : Int32
   end : Int32
-} derive(ToJson)
+}
 
 ///|
 priv suberror CompileError {

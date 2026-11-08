@@ -1,8 +1,9 @@
 ///|
+#derive(Eq, ToJson)
 pub(all) enum Generation {
   First
   Second
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Generation with Eq::{equal, not_equal}
@@ -11,13 +12,14 @@ pub extend Generation with Eq::{equal, not_equal}
 pub extend Generation with ToJson::{to_json}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) enum Delivery {
   Idle
   Waiting(Generation)
   Applied
   Cancelled
   Failed
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Delivery with Eq::{equal, not_equal}
@@ -26,12 +28,13 @@ pub extend Delivery with Eq::{equal, not_equal}
 pub extend Delivery with ToJson::{to_json}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) enum Chunk {
   Dormant
   Loading
   Ready
   Unavailable
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Chunk with Eq::{equal, not_equal}
@@ -40,10 +43,11 @@ pub extend Chunk with Eq::{equal, not_equal}
 pub extend Chunk with ToJson::{to_json}
 
 ///|
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   MissingGeneration
-} derive(Eq)
+}
 
 ///|
 pub extend Policy with Eq::{equal, not_equal}
@@ -60,13 +64,14 @@ pub(all) enum Event {
 
 ///|
 /// One logical scope ID, two distinct lifetimes, one event, one lazy chunk.
+#derive(Eq, ToJson)
 pub(all) struct State {
   alive : Bool
   generation : Generation
   delivery : Delivery
   chunk : Chunk
   stale_write : Bool
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend State with Eq::{equal, not_equal}

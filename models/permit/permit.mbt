@@ -1,8 +1,9 @@
 ///|
+#derive(Eq, Debug)
 pub(all) struct Store {
   alpha : Int32
   beta : Int32
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Store with Eq::{equal, not_equal}

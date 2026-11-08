@@ -3,10 +3,11 @@ package "mizchi/isle/models/form_session"
 
 import {
   "mizchi/veri/model_check",
+  "moonbitlang/core/json",
 }
 
 // Values
-pub fn client(Policy) -> @model_check.Client[State, Event, Json] raise
+pub fn client(Policy) -> @model_check.Client[State, Event, @json.Json] raise
 
 pub fn initial() -> State
 
@@ -24,15 +25,17 @@ pub(all) enum Event {
   Reset
 }
 
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   IgnoreRevision
   IgnoreGeneration
   AllowDuplicate
-} derive(Eq)
+}
 pub fn Policy::equal(Self, Self) -> Bool
 pub fn Policy::not_equal(Self, Self) -> Bool
 
+#derive(Eq, @json.ToJson)
 pub(all) struct State {
   revision : Bool
   generation : Bool
@@ -49,10 +52,10 @@ pub(all) struct State {
   touched : Bool
   issues : Bool
   bad : Bool
-} derive(Eq, ToJson)
+}
 pub fn State::equal(Self, Self) -> Bool
 pub fn State::not_equal(Self, Self) -> Bool
-pub fn State::to_json(Self) -> Json
+pub fn State::to_json(Self) -> @json.Json
 
 // Type aliases
 

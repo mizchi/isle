@@ -3,14 +3,15 @@ package "mizchi/isle/models/resource_disposal"
 
 import {
   "mizchi/veri/model_check",
+  "moonbitlang/core/json",
 }
 
 // Values
-pub fn client(Policy) -> @model_check.Client[State, Event, Json] raise
+pub fn client(Policy) -> @model_check.Client[State, Event, @json.Json] raise
 
 pub fn initial() -> State
 
-pub fn release_fairness(@model_check.Client[State, Event, Json]) -> Array[Int32]
+pub fn release_fairness(@model_check.Client[State, Event, @json.Json]) -> Array[Int32]
 
 pub fn step(Policy, State, Event) -> State?
 
@@ -30,6 +31,7 @@ pub(all) enum Event {
   Tick
 }
 
+#derive(Eq, @json.ToJson)
 pub(all) enum Phase {
   Unused
   Acquiring
@@ -39,11 +41,12 @@ pub(all) enum Phase {
   Releasing
   Released
   ReleaseFailed
-} derive(Eq, ToJson)
+}
 pub fn Phase::equal(Self, Self) -> Bool
 pub fn Phase::not_equal(Self, Self) -> Bool
-pub fn Phase::to_json(Self) -> Json
+pub fn Phase::to_json(Self) -> @json.Json
 
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   DoubleRelease
@@ -55,10 +58,11 @@ pub(all) enum Policy {
   DropLate
   LeakReady
   StopAfterFailure
-} derive(Eq)
+}
 pub fn Policy::equal(Self, Self) -> Bool
 pub fn Policy::not_equal(Self, Self) -> Bool
 
+#derive(Eq, @json.ToJson)
 pub(all) struct Resource {
   phase : Phase
   second : Bool
@@ -67,21 +71,22 @@ pub(all) struct Resource {
   late : Bool
   aborts : Int32
   releases : Int32
-} derive(Eq, ToJson)
+}
 pub fn Resource::equal(Self, Self) -> Bool
 pub fn Resource::not_equal(Self, Self) -> Bool
-pub fn Resource::to_json(Self) -> Json
+pub fn Resource::to_json(Self) -> @json.Json
 
+#derive(Eq, @json.ToJson)
 pub(all) struct State {
   alive : Bool
   second : Bool
   resources : FixedArray[Resource]
   early_release : Bool
   invalid_publish : Bool
-} derive(Eq, ToJson)
+}
 pub fn State::equal(Self, Self) -> Bool
 pub fn State::not_equal(Self, Self) -> Bool
-pub fn State::to_json(Self) -> Json
+pub fn State::to_json(Self) -> @json.Json
 
 // Type aliases
 

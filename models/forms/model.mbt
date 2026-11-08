@@ -1,10 +1,11 @@
 ///|
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   ReadDomAfterImport
   LatePreventDefault
   IgnoreValidation
-} derive(Eq)
+}
 
 ///|
 pub extend Policy with Eq::{equal, not_equal}
@@ -21,6 +22,7 @@ pub(all) enum Event {
 }
 
 ///|
+#derive(Eq, ToJson)
 pub(all) struct State {
   value : Bool
   valid : Bool
@@ -35,7 +37,7 @@ pub(all) struct State {
   applied : Bool
   bad : Bool
   navigated : Bool
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend State with Eq::{equal, not_equal}

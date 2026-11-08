@@ -3,10 +3,11 @@ package "mizchi/isle/models/owner"
 
 import {
   "mizchi/veri/model_check",
+  "moonbitlang/core/json",
 }
 
 // Values
-pub fn client(Policy) -> @model_check.Client[State, Event, Json] raise
+pub fn client(Policy) -> @model_check.Client[State, Event, @json.Json] raise
 
 pub fn initial() -> State
 
@@ -15,26 +16,28 @@ pub fn step(Policy, State, Event) -> State?
 // Errors
 
 // Types and methods
+#derive(Eq, @json.ToJson)
 pub(all) enum Chunk {
   Dormant
   Loading
   Ready
   Unavailable
-} derive(Eq, ToJson)
+}
 pub fn Chunk::equal(Self, Self) -> Bool
 pub fn Chunk::not_equal(Self, Self) -> Bool
-pub fn Chunk::to_json(Self) -> Json
+pub fn Chunk::to_json(Self) -> @json.Json
 
+#derive(Eq, @json.ToJson)
 pub(all) enum Delivery {
   Idle
   Waiting(Generation)
   Applied
   Cancelled
   Failed
-} derive(Eq, ToJson)
+}
 pub fn Delivery::equal(Self, Self) -> Bool
 pub fn Delivery::not_equal(Self, Self) -> Bool
-pub fn Delivery::to_json(Self) -> Json
+pub fn Delivery::to_json(Self) -> @json.Json
 
 pub(all) enum Event {
   Dispatch
@@ -45,31 +48,34 @@ pub(all) enum Event {
   Drain
 }
 
+#derive(Eq, @json.ToJson)
 pub(all) enum Generation {
   First
   Second
-} derive(Eq, ToJson)
+}
 pub fn Generation::equal(Self, Self) -> Bool
 pub fn Generation::not_equal(Self, Self) -> Bool
-pub fn Generation::to_json(Self) -> Json
+pub fn Generation::to_json(Self) -> @json.Json
 
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   MissingGeneration
-} derive(Eq)
+}
 pub fn Policy::equal(Self, Self) -> Bool
 pub fn Policy::not_equal(Self, Self) -> Bool
 
+#derive(Eq, @json.ToJson)
 pub(all) struct State {
   alive : Bool
   generation : Generation
   delivery : Delivery
   chunk : Chunk
   stale_write : Bool
-} derive(Eq, ToJson)
+}
 pub fn State::equal(Self, Self) -> Bool
 pub fn State::not_equal(Self, Self) -> Bool
-pub fn State::to_json(Self) -> Json
+pub fn State::to_json(Self) -> @json.Json
 
 // Type aliases
 

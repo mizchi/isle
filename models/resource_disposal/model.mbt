@@ -1,4 +1,5 @@
 ///|
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   DoubleRelease
@@ -10,12 +11,13 @@ pub(all) enum Policy {
   DropLate
   LeakReady
   StopAfterFailure
-} derive(Eq)
+}
 
 ///|
 pub extend Policy with Eq::{equal, not_equal}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) enum Phase {
   Unused
   Acquiring
@@ -25,7 +27,7 @@ pub(all) enum Phase {
   Releasing
   Released
   ReleaseFailed
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Phase with Eq::{equal, not_equal}
@@ -34,6 +36,7 @@ pub extend Phase with Eq::{equal, not_equal}
 pub extend Phase with ToJson::{to_json}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) struct Resource {
   phase : Phase
   second : Bool
@@ -42,7 +45,7 @@ pub(all) struct Resource {
   late : Bool
   aborts : Int32
   releases : Int32
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend Resource with Eq::{equal, not_equal}
@@ -51,13 +54,14 @@ pub extend Resource with Eq::{equal, not_equal}
 pub extend Resource with ToJson::{to_json}
 
 ///|
+#derive(Eq, ToJson)
 pub(all) struct State {
   alive : Bool
   second : Bool
   resources : FixedArray[Resource]
   early_release : Bool
   invalid_publish : Bool
-} derive(Eq, ToJson)
+}
 
 ///|
 pub extend State with Eq::{equal, not_equal}

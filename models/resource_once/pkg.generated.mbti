@@ -3,16 +3,17 @@ package "mizchi/isle/models/resource_once"
 
 import {
   "mizchi/veri/model_check",
+  "moonbitlang/core/json",
 }
 
 // Values
-pub fn client(Policy, Scenario) -> @model_check.Client[State, Event, Json] raise
+pub fn client(Policy, Scenario) -> @model_check.Client[State, Event, @json.Json] raise
 
 pub fn initial(Scenario) -> State
 
-pub fn pair_client() -> @model_check.Client[PairState, PairEvent, Json] raise
+pub fn pair_client() -> @model_check.Client[PairState, PairEvent, @json.Json] raise
 
-pub fn producer_fairness(@model_check.Client[State, Event, Json]) -> Array[Int32]
+pub fn producer_fairness(@model_check.Client[State, Event, @json.Json]) -> Array[Int32]
 
 pub fn step(Policy, State, Event) -> State?
 
@@ -34,31 +35,34 @@ pub(all) enum Event {
   Tick
 }
 
+#derive(Eq, @json.ToJson)
 pub(all) enum Generation {
   First
   Second
-} derive(Eq, ToJson)
+}
 pub fn Generation::equal(Self, Self) -> Bool
 pub fn Generation::not_equal(Self, Self) -> Bool
-pub fn Generation::to_json(Self) -> Json
+pub fn Generation::to_json(Self) -> @json.Json
 
+#derive(Eq, @json.ToJson)
 pub(all) enum Job {
   Unused
   Running(Generation)
   Completed(Generation, Outcome)
   Delivered(Generation, Outcome)
-} derive(Eq, ToJson)
+}
 pub fn Job::equal(Self, Self) -> Bool
 pub fn Job::not_equal(Self, Self) -> Bool
-pub fn Job::to_json(Self) -> Json
+pub fn Job::to_json(Self) -> @json.Json
 
+#derive(Eq, @json.ToJson)
 pub(all) enum Outcome {
   Success(Value)
   Failure
-} derive(Eq, ToJson)
+}
 pub fn Outcome::equal(Self, Self) -> Bool
 pub fn Outcome::not_equal(Self, Self) -> Bool
-pub fn Outcome::to_json(Self) -> Json
+pub fn Outcome::to_json(Self) -> @json.Json
 
 pub(all) enum PairEvent {
   LeftCompletes
@@ -66,26 +70,29 @@ pub(all) enum PairEvent {
   PairTick
 }
 
+#derive(Eq, @json.ToJson)
 pub(all) struct PairState {
   left : Int32
   right : Int32
   commits : Int32
-} derive(Eq, ToJson)
+}
 pub fn PairState::equal(Self, Self) -> Bool
 pub fn PairState::not_equal(Self, Self) -> Bool
-pub fn PairState::to_json(Self) -> Json
+pub fn PairState::to_json(Self) -> @json.Json
 
+#derive(Eq, @json.ToJson)
 pub(all) enum Phase {
   Dormant
   Pending
   Ready(Value)
   Failed
   Disposed
-} derive(Eq, ToJson)
+}
 pub fn Phase::equal(Self, Self) -> Bool
 pub fn Phase::not_equal(Self, Self) -> Bool
-pub fn Phase::to_json(Self) -> Json
+pub fn Phase::to_json(Self) -> @json.Json
 
+#derive(Eq)
 pub(all) enum Policy {
   Strict
   DuplicateStart
@@ -95,17 +102,19 @@ pub(all) enum Policy {
   RestartSnapshot
   DropReadable
   LoseCompletion
-} derive(Eq)
+}
 pub fn Policy::equal(Self, Self) -> Bool
 pub fn Policy::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub(all) enum Scenario {
   Cold
   SSRReady
-} derive(Eq)
+}
 pub fn Scenario::equal(Self, Self) -> Bool
 pub fn Scenario::not_equal(Self, Self) -> Bool
 
+#derive(Eq, @json.ToJson)
 pub(all) struct State {
   alive : Bool
   generation : Generation
@@ -117,20 +126,21 @@ pub(all) struct State {
   invalid_commit : Bool
   terminal_changed : Bool
   continuation : Bool
-} derive(Eq, ToJson)
+}
 pub fn State::equal(Self, Self) -> Bool
 pub fn State::not_equal(Self, Self) -> Bool
-pub fn State::to_json(Self) -> Json
+pub fn State::to_json(Self) -> @json.Json
 
+#derive(Eq, @json.ToJson)
 pub(all) enum Value {
   Seed
   Left
   Right
   Missing
-} derive(Eq, ToJson)
+}
 pub fn Value::equal(Self, Self) -> Bool
 pub fn Value::not_equal(Self, Self) -> Bool
-pub fn Value::to_json(Self) -> Json
+pub fn Value::to_json(Self) -> @json.Json
 
 // Type aliases
 
