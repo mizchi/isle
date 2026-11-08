@@ -63,7 +63,10 @@ export interface LayoutDiagnostic {
   code: string; severity: 'error' | 'unknown'; message: string;
   box?: string; path?: string; range?: LayoutRange;
   axis?: 'inline' | 'block'; heightRange?: LayoutRange; region?: LayoutRegion;
-  css?: { file: string; line: number };
+  css?: { file: string; line: number; column?: number };
+  hint?: string;
+  related?: { message:string; css:{file:string;line:number;column?:number} }[];
+  conflict?: {properties:[string,string];longhands:string[]};
   source?: import('./contracts.d.ts').SourceSpan;
   witness?: { viewport: number; viewportExact: string; viewportHeight?: number; viewportHeightExact?: string; available: number; required: number };
 }

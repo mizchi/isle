@@ -17,6 +17,8 @@ component Four() {
 
 CSS の波括弧、文字列、`@media` / `@container` は template 式として解釈しません。CSS 内の state 補間、要素の `style` 属性、条件分岐内の `<style>`、CSS nesting、`@import` / `@font-face` / `@keyframes` は初版の対象外です。class を動的にする場合は string を返す式を使います。
 
+同じルール内で `padding` と `padding-left`、`font` と `font-weight` などが干渉すると `E_CSS_SHORTHAND_CONFLICT` で拒否します。省略した下位プロパティのリセットも検出します。独立したlonghandを使うか、意図的な上書きを別ルールに分けます。[対応する略記と検査範囲](css-shorthands.md)。
+
 selector は `:is(.cell).i_<hash>` のように所有者を限定します。親の CSS は子 component の内部へ広がりません。pure component の展開、client owner の入れ子、For の行にも同じスコープを保ちます。未到達 component の CSS は除去し、同じ component を複数配置しても stylesheet を重複させません。component 内の未使用 rule の一般的な除去は未対応です。
 
 ## Playground

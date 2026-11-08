@@ -64,6 +64,19 @@ test('unsupported CSS is a build error, even in an unmatched rule', async t => {
   await assert.rejects(unknown, /E_ISLE_LAYOUT.*unknown/s);
 });
 
+test('checked builds reject shorthand conflicts before solving, including paint-only resets',async t=>{
+  for(const declarations of ['padding-left:0;\n  padding:0','font-weight:700;\n  font:16px sans-serif','border-image-source:none;\n  border:0']) {
+    const run=await fixture(t,{css:css+responsive+'\n.unused {\n  '+declarations+';\n}'});
+    await assert.rejects(run,error=>{
+      assert.match(error.message,/E_CSS_SHORTHAND_CONFLICT/);
+      assert.match(error.message,/app\.css:4:3/);
+      assert.match(error.message,/app\.css:3:3/);
+      assert.match(error.message,/separate rule/);
+      return true;
+    });
+  }
+});
+
 test('the real document host is checked rather than trusting a caller inset', async t => {
   const run = await fixture(t, {css:css+responsive+'body{padding:1px}'});
   await assert.rejects(run, /E_ISLE_LAYOUT.*E_LAYOUT_ITEM_SIZE/s);

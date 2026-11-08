@@ -1,19 +1,10 @@
-# CSS略記と上書きの扱い
+# CSS略記と上書きの検査
 
-現在の検査は、対応する略記をレイアウト上の要素プロパティへ展開し、最終的なカスケード結果を検査する。上書きが発生したこと自体を禁止・警告するlintは未実装。
+同じCSSルールで、略記と別のプロパティが同じlonghandに書き込む場合、`E_CSS_SHORTHAND_CONFLICT` で拒否する。テンプレートの `<style>` はNode・ブラウザーの両コンパイラで常に検査する。`layout.css` / `layout.reset` はレイアウト検査付きビルド、CLI、`analyzeLayout` で検査する。検査対象外の通常の外部CSSへ、この制約を自動適用するものではない。
 
-CSSの略記は、省略した下位プロパティも初期値へ戻す場合がある。[CSS Cascade §3](https://www.w3.org/TR/css-cascade-5/#shorthand)の規則を踏まえ、単に同名の宣言を比較するだけでは干渉を判定できない。
+検査器はビルド時だけ動作し、生成アプリにparser・solver・監視処理を追加しない。
 
-| 対象 | 現在の扱い |
-|---|---|
-| padding / margin と対応する論理プロパティ | 対応する辺へ展開して優先順位を計算。paddingは対応するpx値、marginは0とinherit/initial/unset/revertに制限 |
-| gap / overflow | 各軸へ展開。overflowのcomputed-value上の軸間干渉も計算 |
-| border / border-inline / border-block | 対応する幅の部分集合を計算。個別のstyle/width等の未対応宣言はunknown |
-| container | name/typeへ展開。type省略時のnormalへのリセットも反映 |
-| grid / grid-template / place-items等 | 未対応の略記はunknown。検査付きbuildは失敗 |
-| font / background等の装飾 | 上書き検査の対象外。font/内容の寸法は呼出し元の信頼する契約に依存 |
-
-例えば次の宣言は左paddingを0へ戻す。解析器も0として扱うが、意図しない上書きだったかは判定しない。
+## 拒否する例
 
 ```css
 .box {
@@ -22,22 +13,76 @@ CSSの略記は、省略した下位プロパティも初期値へ戻す場合�
 }
 ```
 
-順序を逆にすれば左だけ24pxになる。`!important`、specificity、対応するlayer、media/container条件も優先順位へ反映する。対応する略記に `var()` がある場合は、勝った宣言を環境ごとに解決する。
+`padding` は左辺にも書き込む。順序を逆にしても、値が同じでも拒否する。`!important`、`var()`、`initial` / `unset` / `revert` による例外はない。値を評価する前にプロパティの書き込み先を比較する。
 
-`font-weight:700; font:16px sans-serif` はブラウザーではweightを400へ戻すが、この意図の干渉は現在検出しない。fontの実寸を自動的に証明した結果としてlayoutのverifiedを解釈してはならない。
+```css
+.box {
+  font-weight: 700;
+  font: 16px sans-serif;
+}
+```
 
-## 2026-11-08の監査と修正
+後の `font` は省略されたweightを通常値へ戻す。`border` と `border-image-source` のように、略記で指定できずリセットだけされる下位プロパティも検出する。[CSS Cascadeの略記規則](https://www.w3.org/TR/css-cascade-5/#shorthand)、[fontの明示設定・暗黙リセット・独立プロパティ](https://www.w3.org/TR/css-fonts-4/#font-prop)を参照。
 
-Chromiumと解析器で10ケースを照合した。paddingの順序・論理属性、gap、border、container、importantの対応7ケースは一致。fontは未モデル化、gridはunknown。無効な `margin:0 0 0 0 0` を0として受理する穴が一件見つかった。
+診断には両方のプロパティ名と共通のlonghandを含める。`.isle` では後の宣言のsource spanと、前の宣言の `related` spanを返す。Playgroundはクリックで後の宣言を選択し、前の宣言の行・列も表示する。外部CSSでは両方のファイル・行・列を返し、CLI summaryとViteのビルドエラーにも表示する。
 
-ブラウザーは無効な宣言を無視し、pのUA marginが残る。以前の解析器はそれを0としてverifiedを返していた。今回、通常marginは1〜4、inline/block略記は1〜2、各辺は1値だけを受け付けるよう修正した。CSS変数の解決後も同じ検査を使う。無効な値はunknownとし、検査付きbuildを失敗させる。[Box Model](https://www.w3.org/TR/css-box-4/#margin-shorthand)・[Logical Properties](https://www.w3.org/TR/css-logical-1/#margin-properties)の文法に対応する。
+## 意図的なカスケードを書く
 
-- [解析器の回帰テスト](../tests/layout-shorthand.test.mjs)
-- [ブラウザー上の反例と修正版の検査](../e2e/layout.spec.mjs)
-- [修正前の照合結果](../evals/results/css-shorthands/audit-before.json)
+独立したlonghandを使うか、意図的な上書きを別のルールに分ける。
 
-## 意図しない干渉を防ぐための次の設計
+```css
+.box {
+  padding-inline: 16px;
+  padding-block: 8px;
+  font: 16px/1.5 sans-serif;
+}
+.box { font-weight: 700; }
+```
 
-未実装の候補は、各宣言に「書き込むlonghandの集合」を持たせる検査。省略時のリセットも集合へ含め、条件が重なる二つの宣言が同じlonghandへ書く場合は、元のプロパティ・ファイル・行と上書き先を示す。
+reset→component、別selector、別stylesheet、`@media` / `@container` / `@layer` 内の別ルールによる上書きを許可する。同じプロパティを繰り返す通常のCSS fallbackも許可する。これは別ルール間の競合がないという保証ではない。レイアウト検査は、それらをカスケードした最終的なサイズも検査する。
 
-reset→componentやresponsiveの上書きは意図的にも使うため、全重複を禁止する仕様にはまだしていない。対応subset内のstrict policyと、明示的に許可するoverrideの契約を分けて検討する。Z3が検査する前のCSS正規化と、記述上の干渉lintは別の責務である。
+[受理するcomponent](../examples/inline-css/shorthands.isle)と[拒否するcomponent](../examples/inline-css/rejected/shorthand.isle)を、そのままPlaygroundへ貼って試せる。
+
+## 書き込み先のモデル
+
+宣言 `d` の正規化名を `P(d)`、書字方向 `m` でのlonghand集合を `W(d,m)` とする。同一ルールの宣言対に次が成立すると拒否する。
+
+```text
+P(a) != P(b)
+AND (a または b が対応する略記)
+AND exists m: W(a,m) ∩ W(b,m) != ∅
+```
+
+通常のプロパティ名は小文字化しCSS escapeを復号する。`grid-gap` と `gap`、`font-stretch` と `font-width` などのaliasも揃える。custom propertyは大文字小文字を区別し、値内のトークンを宣言として扱わない。
+
+物理・論理プロパティはhorizontal/vertical/sideways・ltr/rtlの6つの辺の対応で比較する。`padding-inline` と `padding-top` は縦書きで競合し得るので拒否する。`padding-inline` と `padding-block` はどの対応でも独立なので許可する。この方針はルール内の `writing-mode` の値に依存しない保守的な検査であり、レイアウトの数値モデルの書字方向の範囲は広げない。
+
+`all` はcustom property・`direction`・`unicode-bidi` を除くプロパティと競合する。将来の未知のプロパティも例外にしない。通常の略記では次の明示的なメタデータを使用する。
+
+| 略記の系列 | 書き込み先 |
+|---|---|
+| padding / margin / inset / scroll-padding / scroll-margin | 物理4辺、inline/blockの2辺 |
+| border とwidth/style/color、物理・論理各辺 | 対応する幅・style・色。border全体はborder-imageの全下位プロパティもリセット |
+| border-image / border-radius | imageの5属性 / 四隅。border全体とradiusは独立 |
+| gap / overflow / container / outline | 各軸 / nameとtype / width・style・color。outline-offsetは独立 |
+| background、background-position/repeat | 色・image・位置・size・repeat・origin・clip・attachment |
+| font / font-variant / font-synthesis | 明示・暗黙リセット対象。font-paletteとfont-synthesisはfont全体から独立 |
+| grid / grid-template / grid-area / grid-row / grid-column | template・auto配置・開始/終了line |
+| place-items/self/content、flex/flow | 対応する配置 / grow・shrink・basis / direction・wrap |
+| columns / column-rule / list-style | 対応する下位プロパティ |
+| text-decoration / text-emphasis | 対応する下位プロパティ |
+| transition / animation / animation-range | 対応する下位プロパティとanimationのtimeline/rangeリセット |
+
+新しい略記・vendor拡張は、メタデータ追加前には一般の名前として扱う。任意のCSS全体の非干渉証明ではない。略記検査を通っても、レイアウトモデルが未対応の `grid` 等は引き続きUnknownになる。fontや文字の実寸は呼出し元の信頼する契約に依存する。
+
+## カスケードの検査と区別する
+
+書き込み先の重複検査は値・優先順位・Z3から独立した記述方針である。サイズの検査はその後に行う。対応する略記を展開し、`!important`、specificity、layer、media/container、CSS変数を考慮した最終的なサイズを検査する。
+
+marginの値にも制約がある。通常の略記は1〜4値、inline/blockは1〜2値、各辺は1値に制限する。無効な `margin:0 0 0 0 0` はUnknownとなり、検査付きbuildを失敗させる。[Box Model](https://www.w3.org/TR/css-box-4/#margin-shorthand)・[Logical Properties](https://www.w3.org/TR/css-logical-1/#margin-properties)の文法に対応する。[修正前のブラウザー照合](../evals/results/css-shorthands/audit-before.json)も保存している。
+
+```sh
+just css-writes-check
+```
+
+[書き込み先・source span・外部CSSのテスト](../tests/css-writes.test.mjs)、[カスケードの回帰テスト](../tests/layout-shorthand.test.mjs)、[ブラウザーのmargin反例](../e2e/layout.spec.mjs)で検証する。

@@ -93,7 +93,7 @@ test('ancestor media states, all resets and native margin inheritance remain exp
   const report = run({ ancestors, reset: [{ css: inheritedReset + '@media (width < 400px) {html {box-sizing:content-box;}}' }] });
   const failed = report.diagnostics.find(d => d.code === 'E_LAYOUT_ITEM_SIZE');
   assert.equal(failed.range.min, 320); assert.equal(failed.range.max, 400); assert.equal(failed.range.maxInclusive, false);
-  assert.equal(run({ reset: [{ css: inheritedReset }], ancestors, css: '.panel {display:grid;grid-template-columns:minmax(0,1fr);} .copy {all:unset;width:100%;padding:16px;}' }).status, 'violated');
+  assert.equal(run({ reset: [{ css: inheritedReset }], ancestors, css: '.panel {display:grid;grid-template-columns:minmax(0,1fr);} .copy {all:unset;} .copy {width:100%;padding:16px;}' }).status, 'violated');
   assert.equal(run({ reset: [{ css: inheritedReset.replace('margin:0;', '') }], ancestors, css: app + '.panel {margin:inherit;}' }).status, 'unknown');
   assert.equal(run({ reset: [{ css: '@layer {* {box-sizing:border-box;}}' }] }).status, 'verified');
   assert.equal(run({ reset: [{ css: inheritedReset }], ancestors, css: app + 'body {display:none;}' }).status, 'unknown');

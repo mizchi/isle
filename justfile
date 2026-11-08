@@ -384,7 +384,7 @@ playground-build: build-compiler
     pnpm exec vite build --config playground/vite.config.mjs
 
 playground-check: build-compiler
-    node --test tests/browser-compiler.test.mjs tests/preview.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs tests/layout-variables.test.mjs tests/layout-syntax.test.mjs tests/playground-editor.test.mjs
+    node --test tests/browser-compiler.test.mjs tests/preview.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs tests/layout-variables.test.mjs tests/css-writes.test.mjs tests/layout-syntax.test.mjs tests/playground-editor.test.mjs
     pnpm exec playwright test --config playwright.playground.config.mjs
 
 playground-quality: playground-build
@@ -392,8 +392,13 @@ playground-quality: playground-build
 
 # Static component styles and the independent Z3 layout reference.
 inline-css-check: build-compiler
-    node --test tests/inline-css*.test.mjs tests/layout-z3.test.mjs
+    node --test tests/inline-css*.test.mjs tests/css-writes.test.mjs tests/layout-z3.test.mjs
     pnpm exec vite build --config examples/inline-css/vite.config.mjs
+
+# Same-rule shorthand writes, source locations and explicit cascade boundaries.
+css-writes-check: build-compiler check-types
+    node --test tests/css-writes.test.mjs tests/layout-shorthand.test.mjs tests/layout-build.test.mjs tests/inline-css*.test.mjs tests/style-build.test.mjs
+    pnpm exec playwright test --config playwright.playground.config.mjs --grep 'shorthand conflicts'
 
 # Independently grade a docs-only npm consumer built by a fresh agent.
 layout-usability-grade scenario directory:

@@ -1,6 +1,22 @@
 import {test,expect} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 const preview=page=>page.frameLocator('#preview');
+test('shorthand conflicts point to both declarations and explicit overrides remain native CSS',async({page})=>{
+  const requests=[];page.on('request',request=>requests.push(request.url()));
+  await page.goto('/');await expect(page.getByRole('status')).toContainText('Ready');
+  await page.locator('#props').fill('{}');
+  const source='component C(){<main class="box"><style>\n.box {\n  font-weight:700;\n  font:16px sans-serif;\n}\n</style>Text</main>}';
+  await page.locator('#source').fill(source);
+  await expect(page.locator('#diagnostics')).toContainText('E_CSS_SHORTHAND_CONFLICT');
+  await expect(page.locator('#diagnostics')).toContainText('4:3');
+  await expect(page.locator('#diagnostics')).toContainText('Earlier declaration at 3:3');
+  await page.locator('#diagnostics button').click();
+  expect(await page.locator('#source').evaluate(el=>el.value.slice(el.selectionStart,el.selectionEnd))).toBe('font:16px sans-serif');
+  await page.locator('#source').fill('component C(){<main class="box"><style>.box{font:16px sans-serif}.box{font-weight:700}</style>Text</main>}');
+  await expect(page.getByRole('status')).toContainText('Ready');
+  await expect(preview(page).locator('.box')).toHaveCSS('font-weight','700');
+  expect(requests.filter(url=>url.endsWith('.wasm'))).toEqual([]);
+});
 test('source layout declarations run mandatory checks and reject invalid actual allocations',async({page})=>{
   await page.goto('/');await page.locator('#preset').selectOption('layoutDeclared');
   await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});

@@ -1,0 +1,14 @@
+component Shorthands() {
+  <main class="box">
+    <style>
+      .box {
+        padding-inline: 16px;
+        padding-block: 8px;
+        font: 16px/1.5 sans-serif;
+        background: #eef;
+      }
+      .box { font-weight: 700; }
+    </style>
+    Explicit font override; independent padding axes.
+  </main>
+}

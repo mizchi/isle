@@ -31,6 +31,8 @@ test('Vite CSS edges reach CodeRefs and an optional readiness gate',async()=>{
   assert.match(html,/data-isle-styles="1"/);assert.match(html,/as="style"/);
   const javascript=output.filter(row=>row.type==='chunk').map(row=>row.code).join('\n');
   assert.match(javascript,/Stylesheet unavailable/);assert.doesNotMatch(javascript,/__ISLE_CSS__/);
+  for(const chunk of output.filter(row=>row.type==='chunk'))
+    assert.ok(!Object.keys(chunk.modules).some(id=>/css-writes|css-tree|postcss|layout\/css/.test(id)),'CSS analysis stays out of application chunks');
 });
 
 test('CSS-as-text has no stylesheet gate; SSR emits no resource CSS',async()=>{

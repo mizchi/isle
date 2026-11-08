@@ -23,7 +23,7 @@ test('custom-property cascade preserves layers, important order and explicit def
   status(run('.row{--cell:40px}.cell{--cell:initial;min-width:var(--cell,80px)}'),'violated');
   // Losing pending shorthands must not trigger resolution, and winning longhands remain local.
   status(run('.row{--cell:40px}.cell{padding:var(--missing);padding:0}'),'verified');
-  status(run('.row{--cell:40px;--insets:0 8px}.cell{box-sizing:content-box;width:100%;padding:var(--insets);padding-left:0}'),'violated');
+  status(run('.row{--cell:40px;--insets:0 8px}.cell{box-sizing:content-box;width:100%;padding:var(--insets)}.cell{padding-left:0}'),'violated');
 });
 
 test('nested and empty fallbacks work, while external inherited values stay unknown',()=>{

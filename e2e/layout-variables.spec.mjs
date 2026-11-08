@@ -25,7 +25,7 @@ test('custom-property cascade and substitution match native computed geometry',a
     ['substituted inherit','.row{--cell:40px}.cell{--cell:var(--missing,inherit)}','verified',40],
     ['substituted initial','.row{--cell:80px}.cell{--cell:var(--missing,initial);min-width:var(--cell,40px)}','verified',40],
     ['important layers','@layer a,b;@layer a{.row{--cell:40px!important}}@layer b{.row{--cell:80px!important}}.row{--cell:80px!important}','verified',40],
-    ['all leaves custom properties','.row{--cell:40px}.cell{all:initial;min-width:var(--cell)}','verified',40],
+    ['all leaves custom properties','.row{--cell:40px}.cell{all:initial}.cell{min-width:var(--cell)}','verified',40],
   ];
   await page.setViewportSize({width:160,height:300});
   for(const [name,css,status,width] of cases) {

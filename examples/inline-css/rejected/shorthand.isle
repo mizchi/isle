@@ -1,0 +1,11 @@
+component RejectedShorthand() {
+  <main class="box">
+    <style>
+      .box {
+        font-weight: 700;
+        font: 16px/1.5 sans-serif;
+      }
+    </style>
+    The font shorthand would silently reset weight to normal.
+  </main>
+}
