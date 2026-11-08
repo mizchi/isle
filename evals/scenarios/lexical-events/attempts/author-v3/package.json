@@ -1,0 +1,17 @@
+{
+  "name": "review-queue-consumer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "build:ssr": "vite build --mode ssr",
+    "test": "playwright test"
+  },
+  "dependencies": {
+    "@isle/prototype": "file:/tmp/isle-lexical-author-v3/isle-prototype-0.0.1.tgz"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "vite": "8.3.5"
+  }
+}

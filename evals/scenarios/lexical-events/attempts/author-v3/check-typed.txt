@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "components": [
+    "ReviewCard",
+    "ReviewQueue"
+  ],
+  "actions": []
+}

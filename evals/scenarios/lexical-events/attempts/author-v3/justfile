@@ -1,0 +1,8 @@
+build:
+    pnpm exec vite build
+
+ssr:
+    pnpm exec vite build --mode ssr
+
+test:
+    pnpm exec playwright test

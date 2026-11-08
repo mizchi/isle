@@ -79,3 +79,21 @@ test('receiver error binders cannot capture a caller prop or its projected event
   assert.match(rendered.html,/<p>Render failed<\/p>/);
   assert.match(rendered.html,/data-caller="caller"/);
 });
+
+test('projected async entries retain row captures and the explicit authorized server action',async()=>{
+  const action=(await readFile(new URL('../examples/counter/app.isle',import.meta.url),'utf8')).split('export client component')[0];
+  const text=`${action}
+    component Card(title:string,children:RenderFragment){<article><h2>{title.trim()}</h2>{children}</article>}
+    client component Editor(ids:string[],initial:string){state title=initial;
+      async event save(e:EventSnapshot<MouseEvent>,id:string){title=(await remote renameDocument({id,title:title+"!"})).title;}
+      <main><For each={ids}>{(id)=><Card key={id} title={title}>
+        <button type="button" on:click={(e)=>save(e,id)}>Save</button>
+      </Card>}</For></main>
+    }`;
+  const ir=requireIR(compile(text)),handler=prepareProgram(ir).get('Editor').generate().handlers[0];
+  assert.equal(handler.id,'Editor.save');
+  assert.equal(handler.async,true);
+  assert.deepEqual(handler.actions,['renameDocument']);
+  assert.equal(ir.actions[0].policy.name,'policy.documentEditor');
+  assert.deepEqual(handler.writes,['title']);
+});

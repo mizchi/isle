@@ -1,0 +1,11 @@
+{
+  "frameworkCommit": "9427ca3",
+  "packageSha256": "d668b01539c07f8981ae65dd41b2ed0cf9a3891357f134140e01219d11ff3fa6",
+  "validBlindRun": true,
+  "graderInvocations": 1,
+  "scope": "Public inputs physically isolated; stronger --event-scope goal. No prior attempts or implementation.",
+  "frameworkCheckCalls": 2,
+  "directBuildCalls": 2,
+  "playwrightCalls": 2,
+  "note": "The Playwright Red run deliberately left toggle unimplemented; the type error was an actual authoring failure. EVAL-07 docs were added after this run and have not been independently re-evaluated."
+}

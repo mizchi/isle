@@ -1,0 +1,15 @@
+{
+  "ok": false,
+  "diagnostics": [
+    {
+      "code": "E_TYPE",
+      "message": "Record literals require a declared type",
+      "start": 4132,
+      "end": 4132,
+      "hint": "Annotate the state or pass the record to a typed prop.",
+      "file": "",
+      "cycle": [],
+      "related": []
+    }
+  ]
+}

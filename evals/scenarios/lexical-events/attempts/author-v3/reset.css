@@ -1,0 +1,3 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); inline-size: 100%; block-size: 100%; overflow: hidden; }
+body { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); inline-size: 100%; block-size: 100%; font: 16px/20px system-ui; background: #f4f6fb; color: #17213a; }

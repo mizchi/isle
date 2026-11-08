@@ -1,0 +1,39 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 spec/reviews.spec.mjs:22:1 › parent owns filtering, row operations and stable keyed nodes (5.3s)
+
+
+  1) spec/reviews.spec.mjs:22:1 › parent owns filtering, row operations and stable keyed nodes ─────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[data-review]')
+    Expected: 1
+    Received: 2
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('[data-review]') with timeout 5000ms
+      - waiting for locator('[data-review]')
+        14 × locator resolved to 2 elements
+           - unexpected value "2"
+
+
+      36 |   expect(await ids()).toEqual(['a', 'c']);
+      37 |   await page.locator('[data-review="a"]').getByRole('button', { name: 'Toggle' }).click();
+    > 38 |   await expect(page.locator('[data-review]')).toHaveCount(1);
+         |                                               ^
+      39 |   expect(await ids()).toEqual(['c']);
+      40 |   await counts(3, 1);
+      41 |   await page.getByRole('button', { name: 'Done', exact: true }).click();
+        at /private/tmp/isle-lexical-author-v3/app/spec/reviews.spec.mjs:38:47
+
+    Error Context: test-results/reviews-parent-owns-filter-78d90-ions-and-stable-keyed-nodes/error-context.md
+
+    Error Context: test-results/reviews-parent-owns-filter-78d90-ions-and-stable-keyed-nodes/error-context.md
+
+  1 failed
+    spec/reviews.spec.mjs:22:1 › parent owns filtering, row operations and stable keyed nodes ──────
+(node:20939) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

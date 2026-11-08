@@ -1,0 +1,17 @@
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 25 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             6.65 kB │ gzip:  1.57 kB
+dist/isle.manifest.json                     8.38 kB │ gzip:  1.04 kB
+dist/isle.cost.json                        32.28 kB │ gzip:  1.97 kB
+dist/isle.layout.json                   2,423.04 kB │ gzip: 42.75 kB
+dist/assets/ReviewQueue.g1-CuetZy9U.js      0.40 kB │ gzip:  0.24 kB
+dist/assets/ReviewQueue.g0-fOo_ik5l.js      0.48 kB │ gzip:  0.21 kB
+dist/assets/value-C2JnHAx5.js               0.82 kB │ gzip:  0.42 kB
+dist/assets/index-D_Y1UECq.js               1.54 kB │ gzip:  0.83 kB
+dist/assets/isle-resume-CT07Lkzl.js         3.43 kB │ gzip:  1.58 kB
+dist/assets/ReviewQueue-DkSeaE3Z.js         5.10 kB │ gzip:  2.22 kB
+
+✓ built in 982ms
