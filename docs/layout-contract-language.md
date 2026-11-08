@@ -168,3 +168,28 @@ API の `createObligationIR(parent, implementation, { children })` の children 
 ```sh
 just layout-contract-check
 ```
+
+## CLI で診断を読む
+
+```sh
+pnpm exec isle --help
+pnpm exec isle layout app.isle environment.json --summary
+pnpm exec isle layout app.isle environment.json --json > layout-report.json
+```
+
+`--summary` は status、配布区間、宣言instanceの検証件数、違反のファイル・行・列、
+instance path、不正になる区間を表示します。同じ違反はまとめます。
+`unknown` も失敗として終了します。自動処理との互換性のため、無指定時と
+`--json` は完全な JSON を返します。CSS の診断位置は CSS の出典、要素の位置は
+テンプレート上の位置です。原因となる親 grid / media 宣言までの説明は未対応です。
+
+複数 component を含むファイルでは `environment.json` の `component` で配布rootを
+指定します。省略時の対象はファイルの最初の component です。
+
+```json
+{"component":"Board","viewport":{"min":320,"max":960,"height":{"min":640,"max":960}}}
+```
+
+`requires` は親から受け取る領域の条件です。`verified` は所有する CSS、コンテンツ寸法の
+信頼済み上限、対応するレイアウト部分集合を仮定した結果です。画素丸めや ink overflow、
+未申告の外部 CSS まで保証するものではありません。

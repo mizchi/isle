@@ -8,8 +8,10 @@ import { analyzeLayout } from '../lib/layout.mjs';
 import {declaredLayoutOptions} from '../lib/layout-declarations.mjs';
 import {verifyDeclaredLayouts} from '../lib/layout-contract-node.mjs';
 import { resolve, dirname } from 'node:path';
-const [command, file, ...args] = process.argv.slice(2);
-const usage = 'Usage: isle check|explain|emit|ssr <file.isle> [component] [props-json]\n       isle chunks <isle.manifest.json>\n       isle dependencies <graph.json>\n       isle cost <file.isle|isle.cost.json> [budgets.json]\n       isle layout <file.isle> [environment.json]';
+import {formatLayoutSummary} from '../lib/layout-summary.mjs';
+const argv = process.argv.slice(2), summary = argv.includes('--summary');
+const [command, file, ...args] = argv.filter(arg => !['--summary','--json'].includes(arg));
+const usage = 'Usage: isle check|explain|emit|ssr <file.isle> [component] [props-json]\n       isle chunks <isle.manifest.json>\n       isle dependencies <graph.json>\n       isle cost <file.isle|isle.cost.json> [budgets.json]\n       isle layout <file.isle> [environment.json] [--summary|--json]';
 if (process.argv.slice(2).some(arg => ['--help', '-h'].includes(arg))) {
   console.log(usage);
 } else if (!file || !['check', 'explain', 'emit', 'ssr', 'chunks', 'dependencies', 'cost', 'layout'].includes(command)) {
@@ -18,8 +20,9 @@ if (process.argv.slice(2).some(arg => ['--help', '-h'].includes(arg))) {
 } else {
   try {
     if (command === 'layout') {
+      const output = async report => console.log(summary ? formatLayoutSummary(report,{file,source:await readFile(file,'utf8')}) : JSON.stringify(report,null,2));
       const result = await compileFile(file);
-      if (!result.ok) { console.log(JSON.stringify(result, null, 2)); process.exitCode = 1; }
+      if (!result.ok) { await output(result); process.exitCode = 1; }
       else {
         const options = JSON.parse(args[0] ? await readFile(args[0], 'utf8') : '{}');
         if (options.css!==undefined && (typeof options.css !== 'string' || !options.css)) throw new Error('layout.json needs a nonempty CSS file path');
@@ -36,7 +39,7 @@ if (process.argv.slice(2).some(arg => ['--help', '-h'].includes(arg))) {
           else if(report.status!=='unknown' && report.declarations.some(p=>p.status==='violated')) report.status='violated';
           report.ok=report.status==='verified';
         }
-        console.log(JSON.stringify(report, null, 2)); if (!report.ok) process.exitCode = 1;
+        await output(report); if (!report.ok) process.exitCode = 1;
       }
     } else if (command === 'cost') {
       const budgets = args[0] ? JSON.parse(await readFile(args[0], 'utf8')) : [];
