@@ -161,3 +161,18 @@ DOM/HTTP から独立した [FormSession API](../runtime/form-session.d.mts) と
 3. DB 側の atomic 制約・idempotency と実認証 adapter。UI の pending だけで代替しません。
 
 primitive event 版の native reset は、任意の手書き state と自動同期しません。上の reset 契約は schema Form が所有する control に適用します。
+
+## 計算結果へのラベル
+
+`output` と `button` も HTML 標準の labelable 要素です。`output` の表示名を
+通常の `label` で付けられます。ID と参照は同じ mount にスコープ化されます。
+
+```text
+component ReviewCount(total: number) {
+  <div><label for="total">Total reviews</label><output id="total">{total}</output></div>
+}
+```
+
+[HTML Standard の labelable 要素](https://html.spec.whatwg.org/multipage/forms.html#category-label)
+に従います。hidden input は対象にできず、一つの wrapping label に複数の
+labelable 要素を入れることもできません。

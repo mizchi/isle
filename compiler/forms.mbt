@@ -253,11 +253,16 @@ fn has_label_text(node : Node) -> Bool {
 }
 
 ///|
+fn is_labelable(tag : String, attrs : Array[Attribute]) -> Bool {
+  ["button", "output", "input", "textarea", "select"].contains(tag) &&
+  !(tag == "input" && literal_attribute(attrs, "type") == Some("hidden"))
+}
+
+///|
 fn labelable_count(node : Node) -> Int32 {
   match node {
     Element(tag, attrs, children, _, _) => {
-      let own = if ["input", "textarea", "select"].contains(tag) &&
-        literal_attribute(attrs, "type") != Some("hidden") {
+      let own = if is_labelable(tag, attrs) {
         1
       } else {
         0
@@ -376,19 +381,18 @@ fn check_accessibility(root : Node, p : Parser) -> Unit raise CompileError {
               p.fail_at(
                 "E_A11Y_REFERENCE",
                 "label for requires one control ID",
-                "Associate label with one input, textarea or select.",
+                "Associate label with one labelable element, such as input, output or button.",
                 start,
                 tag.length() + 1,
               )
             }
             match ids.get(tokens[0]) {
               Some(Element(target, target_attrs, _, _, _)) =>
-                if !["input", "textarea", "select"].contains(target) ||
-                  literal_attribute(target_attrs, "type") == Some("hidden") {
+                if !is_labelable(target, target_attrs) {
                   p.fail_at(
                     "E_A11Y_REFERENCE",
                     "Label target is not a labelable control",
-                    "Reference a visible input, textarea or select.",
+                    "Reference a labelable element; hidden inputs cannot be labelled.",
                     start,
                     tag.length() + 1,
                   )

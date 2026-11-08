@@ -119,3 +119,19 @@ test('wrapping labels, named references and hidden inputs are accepted', () => {
     '<div><span id="name">Name</span><input aria-labelledby="\tname\n" /></div>',
   ]) assert.equal(compile(`export client component Good() { ${template} }`).ok, true, template);
 });
+
+test('native output and button labels compile and keep mount-local references', () => {
+  const component = input(`component Summary() {
+    <div><label for="total">Total reviews</label><output id="total">3</output>
+      <label for="save">Save review</label><button id="save" type="button">Save</button>
+      <label>Open reviews<output>2</output></label>
+    </div>
+  }`);
+  const html = renderComponent(component, {}, {scopeId:'summary',mode:'ssr'}).html;
+  assert.match(html, /for="isle-summary:total"/);
+  assert.match(html, /<output id="isle-summary:total">3<\/output>/);
+  const bad = compile('component Bad() { <label>Summary<output>1</output><button type="button">Save</button></label> }');
+  assert.equal(bad.ok, false);
+  assert.equal(bad.diagnostics[0].code, 'E_A11Y_LABEL');
+  assert.equal(compile('component Bad() { <div><label for="token">Token</label><input id="token" type="hidden" /></div> }').ok, false);
+});
