@@ -1,3 +1,4 @@
+import { createResourceChannels } from './resource-channels.mjs';
 import { createResourceBindings } from './resource-bindings.mjs';
 import { createStyleGate } from './styles.mjs';
 import { validValue } from './value.mjs';
@@ -12,6 +13,7 @@ const TEXT_RANGES = typeof __ISLE_TEXT_RANGES__ === 'undefined' || __ISLE_TEXT_R
 const REMOTE = typeof __ISLE_REMOTE__ === 'undefined' || __ISLE_REMOTE__;
 const FORMS = typeof __ISLE_FORMS__ === 'undefined' || __ISLE_FORMS__;
 const EAGER_CODE = typeof __ISLE_EAGER_CODE__ === 'undefined' || __ISLE_EAGER_CODE__;
+const CHANNELS = typeof __ISLE_CHANNELS__ === 'undefined' || __ISLE_CHANNELS__;
 const RESOURCES = typeof __ISLE_RESOURCES__ === 'undefined' || __ISLE_RESOURCES__;
 const CSS = typeof __ISLE_CSS__ === 'undefined' || __ISLE_CSS__;
 const REGIONS = typeof __ISLE_REGIONS__ === 'undefined' || __ISLE_REGIONS__;
@@ -49,7 +51,7 @@ export function resume(root, registry, options = {}) {
   const resolver = createCodeResolver(baseURL);
   const styles = CSS ? createStyleGate(root) : undefined;
   const styleRoot = CSS ? root : undefined;
-  const records = new Map(), modules = new Map();
+  const records = new Map(), modules = new Map(), channels = CHANNELS ? new Map() : undefined;
   const metrics = DEBUG ? suppliedMetrics ?? { restores: 0, loads: 0, completed: 0, cancelled: 0, errors: 0 } : undefined;
   const snapshots = new Map();
   for (const node of root.querySelectorAll('[data-isle-snapshot]')) {
@@ -67,7 +69,7 @@ export function resume(root, registry, options = {}) {
   const resourceBindings = RESOURCES ? createResourceBindings(root,
     new Map([...records].map(([id, record]) => [id, [record._node, NESTED ? record._parent : null]])), registry[6],
     ref => resolver.resolve(ref), id => { const record = records.get(id); return !!record?._alive && record._node.isConnected && root.contains(record._node); },
-    id => controller.dispose(id), onError) : undefined;
+    id => controller.dispose(id), onError, CHANNELS ? id => ({channel:name=>getChannels(id).get(name)}) : undefined) : undefined;
   const live = (record, generation) => record._alive && record._generation === generation && record._node.isConnected;
   function restore(record, id) {
     if (record._scope) return record._scope;
@@ -143,6 +145,29 @@ export function resume(root, registry, options = {}) {
     record._scope = scope;
     return scope;
   }
+  function getChannels(id) {
+    if(channels.has(id)) return channels.get(id);
+    const record=records.get(id),scope=restore(record,id),generation=record._generation;
+    const manager=createResourceChannels(resourceBindings.get(id),registry[7]?.[scope.schema]??[],()=>scope._values,
+      handler=>{
+        if(!modules.has(handler)){
+          const ready=EAGER_CODE&&prepared&&Object.hasOwn(prepared,handler);
+          if(ready&&typeof prepared[handler]!=='function')throw new Error('I9');
+          if(DEBUG)metrics.loads++;
+          modules.set(handler,(ready?Promise.resolve(prepared[handler]):resolver.resolve(handlers[handler])).catch(error=>{modules.delete(handler);throw error;}));
+        }
+        return modules.get(handler);
+      },(run,data,guard,handler)=>{
+        const task=record._queue.then(async()=>{
+          const valid=()=>guard()&&live(record,generation)&&root.contains(record._node);
+          if(!valid())return false;
+          const committed=await runTransaction(scope,run,{type:'resource',data,element:record._node},valid,handlers[handler][2]);
+          if(committed)manager.notify();return committed;
+        });
+        record._queue=task.catch(onError);return task;
+      },onError);
+    channels.set(id,manager);return manager;
+  }
   function dispatch(root, element, id, handlerId, payload) {
     const record = records.get(id), ref = Object.hasOwn(handlers, handlerId) && handlers[handlerId];
     if (!record?._alive || !ref || record._node !== root || !root.contains(element)) {
@@ -193,6 +218,7 @@ export function resume(root, registry, options = {}) {
           undefined, committed => committed ? 'ok' : 'cancelled');
         timing.finish(committed ? 'ok' : 'cancelled');
       } else committed = await runTransaction(restore(record, id), run, payload, CSS ? () => live(record, generation) && styleRoot.contains(root) && root.contains(element) : REGIONS ? () => live(record, generation) && root.contains(element) : () => live(record, generation), ref[2]);
+      if (CHANNELS && committed) channels.get(id)?.notify();
       if (DEBUG) { if (committed) metrics.completed++; else metrics.cancelled++; }
     }).catch(error => { if (PROFILE) timing?.finish('error'); if (DEBUG) metrics.errors++; onError(error); });
   }
@@ -227,7 +253,17 @@ export function resume(root, registry, options = {}) {
         if (NESTED) for (const [child, value] of records) if (value._parent === id) controller.dispose(child);
       }
     },
-    async settled() { await Promise.all([...records.values()].map(record => record._queue)); if (RESOURCES) await resourceBindings.settled(); },
+    async settled() {
+      if(CHANNELS) for(;;){
+        const queues=[...records.values()].map(record=>record._queue);
+        await Promise.all(queues);
+        await Promise.all([...channels.values()].map(manager=>manager.settled()));
+        if(RESOURCES)await resourceBindings.settled();
+        if([...records.values()].every((record,index)=>record._queue===queues[index]))return;
+      }
+      await Promise.all([...records.values()].map(record=>record._queue));
+      if(RESOURCES)await resourceBindings.settled();
+    },
     close() {
       if (RESOURCES) {
         for (const record of records.values()) if (record._alive) { record._alive = false; record._generation++; }

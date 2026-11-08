@@ -6,6 +6,8 @@ export type Expression =
   | { kind: 'string'; value: string }
   | { kind: 'boolean'; value: boolean }
   | { kind: 'name'; name: string }
+  /** Compiler-only validated resource input. */
+  | { kind:'message'; field:string }
   | { kind: 'event'; field: 'value' | 'checked' | 'invalid' | 'validationMessage' | 'key' }
   | { kind: 'conditional'; test: Expression; yes: Expression; no: Expression }
   | { kind: 'method'; object: Expression; method: 'trim' | 'concat'; args: Expression[] }
@@ -21,7 +23,7 @@ export type Expression =
   | { kind: 'remote'; name: string; fields: { name: string; value: Expression }[] };
 export interface Statement { target: string; op: '=' | '+=' | '-='; value: Expression; source?:SourceSpan }
 export interface FormContract { schema: { name: string; fields: Field[] }; output: { name: string; fields: Field[] }; action: string; asyncValidation: boolean; events: string[] }
-export interface Handler { id: string; event: 'click' | 'input' | 'change' | 'submit' | 'invalid' | 'keydown' | 'dblclick' | 'focusout'; async: boolean; source: SourceSpan; declaration?: string; binding?: SourceSpan; preventDefault?: true; statements: Statement[]; form?: FormContract }
+export interface Handler { id: string; event: 'click' | 'input' | 'change' | 'submit' | 'invalid' | 'keydown' | 'dblclick' | 'focusout' | 'resource'; channel?:{name:string;keys:string[];parameters:{name:string;type:string}[]}; async: boolean; source: SourceSpan; declaration?: string; binding?: SourceSpan; preventDefault?: true; statements: Statement[]; form?: FormContract }
 export type WireValue = Primitive | readonly WireValue[] | { readonly [key: string]: WireValue };
 export type ValueType = 'number' | 'string' | 'boolean' | { array: ValueType } | { record: Record<string, ValueType> };
 export type ComponentField = Omit<Field, 'type'> & { type: string; source?:SourceSpan };

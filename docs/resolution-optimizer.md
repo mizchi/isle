@@ -44,7 +44,7 @@ development は最終 gzip サイズが未確定なので、auto 候補を保守
 
 ## 説明と検証
 
-`isle.manifest.json` の `resolution` は strategy、budget、追加 bytes、各境界の要求・結果・理由・依存 URL を保存する。`initialBy` は、その境界の物理 module を初期取得する entry ID を示す。例えば resource 自体が lazy でも、input handler の依存として取得されることを区別できる。`just chunks` も同じ判断を返す。実行時 registry は従来の CodeRef のままで、ブラウザへ planner や費用表を import しない。snapshot / registry は同じ形式を保ち、CSS 対応の共有 engine は ABI 7、transport は ABI 3にする。
+`isle.manifest.json` の `resolution` は strategy、budget、追加 bytes、各境界の要求・結果・理由・依存 URL を保存する。`initialBy` は、その境界の物理 module を初期取得する entry ID を示す。例えば resource 自体が lazy でも、input handler の依存として取得されることを区別できる。`just chunks` も同じ判断を返す。実行時 registry は従来の CodeRef のままで、ブラウザへ planner や費用表を import しない。snapshot v2とCodeRefの3要素tupleを保つ。resource channelのplanはregistryのoptionalな位置7へ置き、共有engineはABI 8、transportはABI 3にする。
 
 ```sh
 just loading-check

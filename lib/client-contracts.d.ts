@@ -23,6 +23,7 @@ export interface ProfileDetail {
 }
 export type EventPayload = { type: string; value?: string; checked?: boolean; invalid?: boolean; validationMessage?: string;
   /** Captured synchronously at the keyboard entry, before lazy code loading. */ key?: string;
+  /** Validated and detached resource message; never captured from a DOM event. */ data?:Record<string,WireValue>;
   /** Internal schema-form dispatch, never part of the wire snapshot. */ form?: import('../runtime/form-events.mjs').CapturedFormEvent;
   /** Internal asynchronous framework error hook. */ reportError?: (error: Error) => void;
   /** Internal source-control identity; never serialized or exposed to source expressions. */ element?: Element;
@@ -32,16 +33,35 @@ export type EventPayload = { type: string; value?: string; checked?: boolean; in
 /** Positional ABI: lexical parameter names can be independently mangled in every chunk. */
 export type RunHandler = (values: WireValue[], set: SetSlot, text: TextPatch | undefined,
   attribute: AttributePatch | undefined, remote: Remote | undefined, event: EventPayload) => void | Promise<void>;
-export interface ClientResourceContext { readonly root: HTMLElement; readonly owner: ResourceOwner; readonly id: string }
+export interface ResourceChannelPlan {name:string;keys:[name:string,slot:number][];input:ValueType;handler:string}
+export interface ResourceTask<Key,Input> {
+ readonly key:Readonly<Key>; readonly owner:ResourceOwner; readonly signal:AbortSignal;
+ /** False after supersession/disposal; rejects invalid input or failed code/DOM preparation. */
+ publish(input:Input):Promise<boolean>;
+}
+export interface ResourceChannel<Key,Input> {
+ subscribe(callback:(task:ResourceTask<Key,Input>)=>undefined):()=>void;
+ refresh():void;
+}
+export interface ClientResourceContext {
+ readonly root: HTMLElement; readonly owner: ResourceOwner; readonly id: string;
+ /** Available for resource declarations. Type arguments are manual; publish checks the compiled closed schema. */
+ channel?<Key,Input>(name:string):ResourceChannel<Key,Input>;
+}
+/** A setup for a component that declares resource channels. */
+export interface ClientChannelContext extends ClientResourceContext {
+ channel<Key,Input>(name:string):ResourceChannel<Key,Input>;
+}
 /** Synchronous registration only; async work belongs to owner.acquire. */
-export type ClientResourceSetup = (context: ClientResourceContext) => undefined;
+export type ClientResourceSetup<Context extends ClientResourceContext=ClientResourceContext> = (context: Context) => undefined;
 export interface ClientResourceModule { setup: ClientResourceSetup }
 export type ClientRegistry = [schemas: Record<string, ValueType[]>, events: string[],
   handlers: Record<string, CodeRef<RunHandler>>, actions: string[], baseURL: string,
   /** Production eager entries only. Compiled callable references, never serialized state. */
   prepared?: Record<string, RunHandler> | null,
   /** Lazy setup entries indexed by validated component snapshot schema. */
-  resources?: Record<string, CodeRef<ClientResourceSetup>>];
+  resources?: Record<string, CodeRef<ClientResourceSetup>>,
+  channels?:Record<string,ResourceChannelPlan[]>];
 export interface ResumeMetrics { restores: number; loads: number; completed: number; cancelled: number; errors: number }
 export type ResumeRoot = Document | ShadowRoot;
 export interface LoaderOptions extends RequestOptions { onError?: (error: Error) => void }

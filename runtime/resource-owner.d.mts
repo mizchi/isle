@@ -27,3 +27,5 @@ export interface ResourceOwner {
   settled(): Promise<void>;
 }
 export function createResourceOwner(options?: ResourceOwnerOptions): ResourceOwner;
+
+export type {ClientResourceContext,ClientChannelContext,ClientResourceSetup,ResourceTask,ResourceChannel} from '../lib/client-contracts.d.ts';

@@ -2,7 +2,7 @@ import { createResourceOwner } from './resource-owner.mjs';
 const PROFILE = typeof __ISLE_PROFILE__ !== 'undefined' && __ISLE_PROFILE__;
 
 /** Optional connection between decoded component owners, lazy setup code and native removal. */
-export function createResourceBindings(root, nodes, entries, resolve, isLive, dispose, onError) {
+export function createResourceBindings(root, nodes, entries, resolve, isLive, dispose, onError, contextFor) {
   const owners = new Map(), initialized = new Set(), modules = new Map(), pending = new Set();
   let observer, closed = false;
   const check = id => { if (closed || !nodes.has(id) || !isLive(id)) throw new Error('Resource component disposed'); };
@@ -33,7 +33,7 @@ export function createResourceBindings(root, nodes, entries, resolve, isLive, di
     check(id); initialized.add(id);
     const owner = get(id);
     try {
-      const context = { root: nodes.get(id)[0], owner, id };
+      const context = { root: nodes.get(id)[0], owner, id, ...contextFor?.(id) };
       const result = PROFILE && timing ? timing.sync('resource-setup', () => setup(context)) : setup(context);
       if (result !== undefined) {
         // A rejected async setup must never become an unhandled promise. Its work is

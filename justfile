@@ -8,7 +8,7 @@ async-map-build: build-compiler
     pnpm exec vite build --config examples/async-map/vite.config.mjs
 
 async-map-check: build-compiler check-types
-    node --test tests/async-map*.test.mjs
+    node --test tests/async-map*.test.mjs tests/resource-channels.test.mjs
     pnpm exec playwright test --config playwright.async-map.config.mjs
 
 async-map-eval: async-map-check

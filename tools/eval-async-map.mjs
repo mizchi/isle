@@ -63,7 +63,7 @@ try {
     browser:{initialRequests,initialPayload:initialPayload(initialRequests),initialRawCLS:initialCLS,rawCLSAfterResume:ready.cls,clickToDataReadyMs:ready.clickToDataReadyMs,
       pan:{pointerMoves:24,draws:after.draws-before.draws,unrelatedDOMAttributeWrites:dataWrites,requestsDuringDrag:during-before.requests,requestsAfterRelease:after.requests-before.requests,additionalJavaScriptFiles:afterPan.files.filter(file=>!active.files.includes(file))},
       detailViewLoaded:detail.files.some(file=>file.includes('detail-view')),externalRequests:requests.filter(url=>new URL(url).origin!==origin),errors},
-    sourceLines,compilerManagedState:['query','category','started','categories'],adapterManagedState:['viewport','results','selection','details','saved','task generations'],
+    sourceLines,compilerManagedState:['query','category','started','categories','rows','phase','error','selected'],adapterManagedState:['viewport','details','saved','SDK model cache and request generations'],resourceChannelManaged:['query/category key epochs','receiver code arrival','publication sequence','owner revocation'],
     authoringFindings:[{id:'typed-record-array-derive',accepted:deriveCase.ok,diagnostics:deriveCase.diagnostics}],
     cpu:{phase:'pan and first details, including diagnostic observer/automation overhead; 1ms-scale sampling, short functions may receive no samples',idleMs:idle,sources:[...cpu].map(([source,ms])=>({source,ms})).sort((a,b)=>b.ms-a.ms)}};
   assert.equal(report.browser.initialRawCLS,0);assert.equal(report.browser.rawCLSAfterResume,0);assert.deepEqual(errors,[]);assert.deepEqual(report.browser.externalRequests,[]);

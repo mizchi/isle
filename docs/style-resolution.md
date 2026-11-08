@@ -68,7 +68,7 @@ manifest の `chunks[*].styles` は CSS asset のファイル名を持ち、`sty
 
 HTML の stylesheet metadata は template に入れる。widget は descriptor-relative な URL を持ち、SDK が descriptor 自身を base として扱う。`preloadStyles` は provider 内の CSS 取得ヒントであり、host document への適用ではない。root の準備ゲートは `Symbol.for('isle.style.gate/1')` によって、別 bundle の SDK と engine からも共有する。
 
-transport は `isle/widget/3`、共有 engine は `isle/client/7`、Custom Element の登録印も v3 にする。旧 transport / engine と混在させず、最初の静的 widget が後続の CSS 対応を欠落させないようにする。descriptor の wire version は2、snapshot は2、registry は従来の位置 ABI のままである。
+transport は `isle/widget/3`、共有 engine は `isle/client/8`、Custom Element の登録印も v3 にする。旧 transport / engine と混在させず、最初の静的 widget が後続の CSS 対応を欠落させないようにする。descriptor の wire version は2、snapshot は2、CodeRefの3要素tupleを保つ。resource channelを使う場合はregistryのoptionalな位置7にplanを追加する。
 
 CSS capability は CodeRef の静的 module graph を読み終えてから決め、AST の define pass と最終 minify で未使用経路を除去する。判定できなかった CSS 依存が最終 chunk に残る場合は build error にする。共有 widget の transport / engine は完全な CSS 機能を持つ。
 

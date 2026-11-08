@@ -46,7 +46,7 @@ jobs:
       - name: Check semantic optimizer boundaries
         run: node --test tests/semantic-optimizer.test.mjs tests/compiler-warnings.test.mjs tests/resource-binding-build.test.mjs
       - name: Check async local map state and static build
-        run: node --test tests/async-map*.test.mjs
+        run: node --test tests/async-map*.test.mjs tests/resource-channels.test.mjs
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v6.0.0

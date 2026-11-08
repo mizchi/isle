@@ -2,15 +2,18 @@ import {createMapSession} from './model.mjs';
 import {createLocalTransport} from './transport.mjs';
 import {createRenderer} from './renderer.mjs';
 
-/** Trusted SDK adapter. Its three empty DOM subtrees are never patched by Isle. */
-export function setup({root,owner}) {
-  const document=root.ownerDocument,stage=root.querySelector('[data-map-surface]'),results=root.querySelector('[data-map-results]'),detail=root.querySelector('[data-map-detail]');
-  const status=root.querySelector('[data-map-status]'),count=root.querySelector('[data-map-count]'),coordinate=root.querySelector('[data-map-coordinate]'),retry=root.querySelector('[data-map-command="retry"]');
+/** @param {import('@isle/prototype/resources').ClientChannelContext} context
+ * Trusted SDK adapter. Canvas and optional detail DOM belong to the adapter; result rows belong to Isle. */
+export function setup({root,owner,channel}) {
+  const document=root.ownerDocument,stage=root.querySelector('[data-map-surface]'),detail=root.querySelector('[data-map-detail]');
+  const coordinate=root.querySelector('[data-map-coordinate]');
+  /** @type {import('@isle/prototype/resources').ResourceChannel<{query:string,category:import('./model.mjs').Category},{places:readonly import('./model.mjs').Place[],status:string,message:string,selection:string}>} */
+  const results=channel('results');
   const canvas=document.createElement('canvas');canvas.tabIndex=0;canvas.setAttribute('aria-label','Interactive neighborhood map. Arrow keys move, plus and minus zoom, Home resets, Escape closes details.');stage.append(canvas);
   owner.own(canvas,value=>value.remove());
-  const image=new Image(),renderer=createRenderer(canvas,image),cards=new Map(),pointers=new Map();
+  const image=new Image(),renderer=createRenderer(canvas,image),pointers=new Map();
   owner.own(image,value=>{value.src='';});
-  let frame=0,timer=0,draws=0,dragDistance=0,detailView,detailLoad,lastData,lastPlaces,lastSelected,lastSaved,lastDetail,lastDetailPhase,lastDetailError;
+  let frame=0,timer=0,draws=0,dragDistance=0,detailView,detailLoad,currentTask,lastPublished,lastData,lastSelected,lastSaved,lastDetail,lastDetailPhase,lastDetailError;
   const alive=()=>!owner.disposed&&root.isConnected;
   const text=(node,value)=>{if(node.textContent!==value)node.textContent=value;};
   const make=(tag,css,value='')=>{const node=document.createElement(tag);node.className=css;node.textContent=value;return node;};
@@ -32,32 +35,15 @@ export function setup({root,owner}) {
       button.type='button';button.dataset.mapCommand='reload-details-code';detail.replaceChildren(message,button);
     });
   }
-  function renderCards(state){
-    if(state.places!==lastPlaces){
-      const ids=new Set(state.places.map(place=>place.id));for(const id of cards.keys())if(!ids.has(id))cards.delete(id);
-      const nodes=state.places.map((place,index)=>{
-        if(!cards.has(place.id)){
-          const button=make('button','place-card'),number=make('span','place-number'),copy=make('span','place-copy'),title=make('strong',''),category=make('small',''),rating=make('span','place-rating');
-          button.type='button';button.dataset.place=place.id;copy.append(title,category);button.append(number,copy,rating);cards.set(place.id,{button,number,title,category,rating});
-        }
-        const card=cards.get(place.id);text(card.number,String(index+1));text(card.title,place.name);text(card.category,`${place.category==='cafe'?'Coffee':place.category==='food'?'Food':place.category==='park'?'Park':'Art + culture'} · Harbor`);text(card.rating,`★ ${place.rating.toFixed(1)}`);
-        return card.button;
-      });
-      if(!nodes.length){const empty=make('div','empty-state'),title=make('h3','','A quieter corner.'),message=make('p','','No places here yet. Try another category, a different search, or a wider view.');empty.append(title,message);nodes.push(empty);}
-      if(nodes.length!==results.children.length||nodes.some((node,i)=>results.children[i]!==node))results.replaceChildren(...nodes);
-    }
-    if(state.places!==lastPlaces||state.selected!==lastSelected)for(const [id,card]of cards)card.button.setAttribute('aria-pressed',String(id===state.selected));
-  }
   function renderData(state){
     if(!alive()||state.disposed)return;
     if(lastData&&['places','phase','error','selected','detail','detailPhase','detailError','saved','stats'].every(key=>state[key]===lastData[key])){queueDraw();return;}
     lastData=state;
-    root.dataset.mapPhase=state.phase;root.dataset.mapIssued=String(state.stats.issued);root.dataset.mapPublished=String(state.stats.published);root.dataset.mapAborted=String(state.stats.aborted);
+    if(currentTask&&(!lastPublished||['places','phase','error','selected'].some(key=>state[key]!==lastPublished[key]))){
+      lastPublished=state;void currentTask.publish({places:state.places,status:state.phase,message:state.error,selection:state.selected}).catch(error=>console.error(error));
+    }
+    root.dataset.mapIssued=String(state.stats.issued);root.dataset.mapPublished=String(state.stats.published);root.dataset.mapAborted=String(state.stats.aborted);
     root.dataset.mapDetailPhase=state.detailPhase;root.dataset.mapSelected=state.selected;
-    results.setAttribute('aria-busy',String(state.phase==='loading'));retry.hidden=state.phase!=='error';
-    text(status,state.phase==='idle'?'The map is ready when you are.':state.phase==='loading'?'Finding nearby places…':state.phase==='error'?`${state.error} Your previous results are kept.`:`${state.places.length} places to make a day of it.`);
-    text(count,state.phase==='idle'?'—':String(state.places.length));
-    if(state.phase!=='idle')renderCards(state);
     detail.hidden=!state.selected;
     if(state.selected){
       loadDetailView();
@@ -67,23 +53,21 @@ export function setup({root,owner}) {
         if(focus)detail.querySelector(`[data-map-command="${focus}"]`)?.focus({preventScroll:true});
       }else if(!detailView&&!detail.children.length)detail.append(make('p','detail-description','Opening place details…'));
     }
-    lastPlaces=state.places;lastSelected=state.selected;lastSaved=state.saved;lastDetail=state.detail;lastDetailPhase=state.detailPhase;lastDetailError=state.detailError;queueDraw();
+    lastSelected=state.selected;lastSaved=state.saved;lastDetail=state.detail;lastDetailPhase=state.detailPhase;lastDetailError=state.detailError;queueDraw();
   }
   const transport=createLocalTransport({placesURL:new URL('./data/places.json',import.meta.url),detailsURL:new URL('./data/details.json',import.meta.url)});
-  const session=createMapSession({...transport,onChange:renderData});
+  const session=createMapSession({...transport,search:(params,signal)=>transport.search(params,AbortSignal.any([signal,currentTask.signal])),onChange:renderData});
   owner.own(session,async value=>{value.dispose();await value.settled();});
   owner.own(null,()=>{
-    cancelAnimationFrame(frame);clearTimeout(timer);pointers.clear();cards.clear();
+    cancelAnimationFrame(frame);clearTimeout(timer);pointers.clear();
     root.dataset.mapDisposed='true';root.dataset.mapCleanups=String(Number(root.dataset.mapCleanups??0)+1);
   });
   const listen=(target,type,handler,options={})=>target.addEventListener(type,handler,{...options,signal:owner.signal});
   image.addEventListener('load',queueDraw,{signal:owner.signal});image.src=new URL('./data/neighborhood.svg',import.meta.url).href;
-  function resize(){if(!alive())return;const width=stage.clientWidth,height=stage.clientHeight;if(width&&height&&(width!==session.state.view.width||height!==session.state.view.height)){session.resize(width,height);if(session.state.phase!=='idle')void session.refresh();}}
+  function resize(){if(!alive())return;const width=stage.clientWidth,height=stage.clientHeight;if(width&&height&&(width!==session.state.view.width||height!==session.state.view.height)){session.resize(width,height);if(session.state.phase!=='idle')void results.refresh();}}
   const observer=new ResizeObserver(resize);owner.own(observer,value=>value.disconnect());observer.observe(stage);resize();
-  const attributes=new MutationObserver(()=>{if(alive()){clearTimeout(timer);void session.search(root.dataset.query,root.dataset.category);}});
-  attributes.observe(root,{attributes:true,attributeFilter:['data-query','data-category']});owner.own(attributes,value=>value.disconnect());
   root.querySelectorAll('[data-map-command]').forEach(button=>{button.disabled=false;});
-  const refreshLater=()=>{clearTimeout(timer);timer=setTimeout(()=>{if(alive())void session.refresh();},160);};
+  const refreshLater=()=>{clearTimeout(timer);timer=setTimeout(()=>{if(alive())void results.refresh();},160);};
   const point=event=>{const box=canvas.getBoundingClientRect();return {x:event.clientX-box.left,y:event.clientY-box.top};};
   listen(canvas,'pointerdown',event=>{
     if(event.button!==0||pointers.size>=2)return;canvas.focus({preventScroll:true});canvas.setPointerCapture(event.pointerId);pointers.set(event.pointerId,point(event));dragDistance=0;canvas.dataset.dragging='true';
@@ -121,8 +105,8 @@ export function setup({root,owner}) {
     if(command==='zoom-in')session.zoom(1.25);
     else if(command==='zoom-out')session.zoom(1/1.25);
     else if(command==='reset')session.reset();
-    else if(command==='retry'){void session.refresh();return;}
-    else if(command==='close-details'){const id=session.state.selected;session.closeDetails();cards.get(id)?.button.focus({preventScroll:true});return;}
+    else if(command==='retry'){void results.refresh();return;}
+    else if(command==='close-details'){const id=session.state.selected;session.closeDetails();[...root.querySelectorAll('.place-card')].find(button=>button.dataset.place===id)?.focus({preventScroll:true});return;}
     else if(command==='save'){session.toggleSaved(button.dataset.place);return;}
     else if(command==='retry-details'){void session.select(session.state.selected);return;}
     else if(command==='reload-details-code'){detail.replaceChildren();loadDetailView();return;}
@@ -130,5 +114,6 @@ export function setup({root,owner}) {
     else return;
     refreshLater();
   });
-  root.dataset.mapActive='true';void session.search(root.dataset.query,root.dataset.category);
+  root.dataset.mapActive='true';
+  results.subscribe(task=>{currentTask=task;lastPublished=undefined;clearTimeout(timer);void session.search(task.key.query,task.key.category);});
 }

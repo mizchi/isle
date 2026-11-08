@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-08T17:16:16.683Z",
+  "generatedAt": "2026-11-08T18:00:21.730Z",
   "conditions": {
     "viewport": {
       "width": 1440,
@@ -11,49 +11,57 @@
     "interpretation": "One controlled local diagnostic; not a framework speed comparison. CPU sampling is a separate pan/detail phase after the initial timing. gzip is summed per emitted file, not measured HTTP transfer."
   },
   "build": {
-    "htmlBytes": 6240,
-    "snapshotJsonBytes": 217,
+    "htmlBytes": 7101,
+    "snapshotJsonBytes": 233,
     "allJavaScript": {
       "files": [
-        "assets/Explorer.g0-D2ECQNxL.js",
-        "assets/Explorer.resources-CrRMmHn7.js",
-        "assets/index-BbgI-ZlF.js",
-        "assets/isle-resume-CDP9v-sc.js",
+        "assets/Explorer.activate-CTpUldkO.js",
+        "assets/Explorer.filter-Dluw4CbP.js",
+        "assets/Explorer.resources-v35nm77G.js",
+        "assets/Explorer.results-B61MKEr6.js",
+        "assets/Explorer.search-BsmW9Kxt.js",
+        "assets/index-Cpo42WxL.js",
+        "assets/isle-resume-B1mNpFax.js",
+        "assets/Explorer-BBTsdd_d.js",
         "assets/detail-view-YPbnXfd-.js",
         "assets/value-C2JnHAx5.js"
       ],
-      "raw": 34299,
-      "gzip": 14116
+      "raw": 38937,
+      "gzip": 15985
     },
     "initialJavaScript": {
       "files": [
-        "assets/index-BbgI-ZlF.js"
+        "assets/index-Cpo42WxL.js"
       ],
       "raw": 2081,
-      "gzip": 1015
+      "gzip": 1016
     },
     "afterActivateJavaScript": {
       "files": [
-        "assets/index-BbgI-ZlF.js",
+        "assets/index-Cpo42WxL.js",
         "assets/value-C2JnHAx5.js",
-        "assets/isle-resume-CDP9v-sc.js",
-        "assets/Explorer.resources-CrRMmHn7.js",
-        "assets/Explorer.g0-D2ECQNxL.js"
+        "assets/isle-resume-B1mNpFax.js",
+        "assets/Explorer.resources-v35nm77G.js",
+        "assets/Explorer-BBTsdd_d.js",
+        "assets/Explorer.activate-CTpUldkO.js",
+        "assets/Explorer.results-B61MKEr6.js"
       ],
-      "raw": 33176,
-      "gzip": 13578
+      "raw": 37271,
+      "gzip": 15000
     },
     "afterDetailsJavaScript": {
       "files": [
-        "assets/index-BbgI-ZlF.js",
+        "assets/index-Cpo42WxL.js",
         "assets/value-C2JnHAx5.js",
-        "assets/isle-resume-CDP9v-sc.js",
-        "assets/Explorer.resources-CrRMmHn7.js",
-        "assets/Explorer.g0-D2ECQNxL.js",
+        "assets/isle-resume-B1mNpFax.js",
+        "assets/Explorer.resources-v35nm77G.js",
+        "assets/Explorer-BBTsdd_d.js",
+        "assets/Explorer.activate-CTpUldkO.js",
+        "assets/Explorer.results-B61MKEr6.js",
         "assets/detail-view-YPbnXfd-.js"
       ],
-      "raw": 34299,
-      "gzip": 14116
+      "raw": 38394,
+      "gzip": 15538
     },
     "ssrJavaScriptFiles": 0,
     "ssrHasSnapshot": false
@@ -61,23 +69,23 @@
   "browser": {
     "initialRequests": [
       "/",
-      "/assets/index-BbgI-ZlF.js",
+      "/assets/index-Cpo42WxL.js",
       "/assets/index-BImu6F9O.css",
       "/assets/neighborhood-yIk2MHGf.svg"
     ],
     "initialPayload": {
       "files": [
         "index.html",
-        "assets/index-BbgI-ZlF.js",
+        "assets/index-Cpo42WxL.js",
         "assets/index-BImu6F9O.css",
         "assets/neighborhood-yIk2MHGf.svg"
       ],
-      "raw": 34617,
-      "gzip": 7161
+      "raw": 35478,
+      "gzip": 7310
     },
     "initialRawCLS": 0,
     "rawCLSAfterResume": 0,
-    "clickToDataReadyMs": 196,
+    "clickToDataReadyMs": 200.70000004768372,
     "pan": {
       "pointerMoves": 24,
       "draws": 26,
@@ -91,26 +99,34 @@
     "errors": []
   },
   "sourceLines": {
-    "app.isle": 49,
+    "app.isle": 64,
     "model.mjs": 89,
     "transport.mjs": 29,
     "renderer.mjs": 31,
-    "setup.mjs": 134,
+    "setup.mjs": 119,
     "detail-view.mjs": 16
   },
   "compilerManagedState": [
     "query",
     "category",
     "started",
-    "categories"
+    "categories",
+    "rows",
+    "phase",
+    "error",
+    "selected"
   ],
   "adapterManagedState": [
     "viewport",
-    "results",
-    "selection",
     "details",
     "saved",
-    "task generations"
+    "SDK model cache and request generations"
+  ],
+  "resourceChannelManaged": [
+    "query/category key epochs",
+    "receiver code arrival",
+    "publication sequence",
+    "owner revocation"
   ],
   "authoringFindings": [
     {
@@ -120,8 +136,8 @@
         {
           "code": "E_TYPE",
           "message": "Record literals require a declared type",
-          "start": 4086,
-          "end": 4086,
+          "start": 5738,
+          "end": 5738,
           "hint": "Annotate the state or pass the record to a typed prop.",
           "file": "",
           "cycle": [],
@@ -132,15 +148,23 @@
   ],
   "cpu": {
     "phase": "pan and first details, including diagnostic observer/automation overhead; 1ms-scale sampling, short functions may receive no samples",
-    "idleMs": 929.9109999999985,
+    "idleMs": 929.9769999999976,
     "sources": [
       {
         "source": "Other JS/native",
-        "ms": 67.92800000000001
+        "ms": 64.078
       },
       {
-        "source": "Explorer.resources-CrRMmHn7.js",
-        "ms": 6.311999999999999
+        "source": "Explorer.resources-v35nm77G.js",
+        "ms": 3.801
+      },
+      {
+        "source": "isle-resume-B1mNpFax.js",
+        "ms": 1.271
+      },
+      {
+        "source": "Explorer-BBTsdd_d.js",
+        "ms": 1.265
       }
     ]
   }

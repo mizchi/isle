@@ -70,7 +70,7 @@ export const setup: ClientResourceSetup = ({ root, owner }) => {
 
 setup は `VideoPanel.$resources` / symbol `setup` の CodeRef として manifest に載り、component の各 handler の `requires` へ入る。初回操作では handler と setup を並列取得する。`lazy` / `preload` / `eager` に従いコードを取得・評価しても、setup の実行は対象 instance の resume まで遅延する。cleanup は取得側 module の依存として先に読み込み、unmount 時の import に依存しない。
 
-SSR 専用 mount は resource module を解決・出力しない。resource を使わない通常の production build は owner カーネル・監視・公開 API を dead code elimination で除去する。共有 widget engine は、最初の app の機能削減が後続 app を壊さないよう resource 機能を含む。snapshot ABI は v2 のまま、registry の位置6へ schema ID → setup CodeRef を追加した。現在の共有 engine は CSS-ready を含む `isle/client/7` である。
+SSR 専用 mount は resource module を解決・出力しない。resource を使わない通常の production build は owner カーネル・監視・公開 API を dead code elimination で除去する。共有 widget engine は、最初の app の機能削減が後続 app を壊さないよう resource 機能を含む。snapshot ABI は v2 のまま、registry の位置6へ schema ID → setup CodeRef を追加した。現在の共有 engine は CSS-ready を含む `isle/client/8` である。
 
 実行例は [resource-bindings fixture](../e2e/fixtures/resource-bindings/vite.config.mjs)、検証は `just resource-binding-check`。
 
@@ -168,3 +168,5 @@ client component VideoPanel(deviceId: string) {
 これは未実装の DSL 案。camera を取得する module は、取得開始前に release 関数も用意する。cleanup chunk を unmount 時に初めて import し、取得失敗によって destructor が不在になる設計にはしない。compiler は owner の終了経路へ release を結び付け、取得処理と合わせて依存として chunk manifest に載せる。
 
 `Owned<MediaStream>` のような client の生リソースは snapshot に載せない。server の DB connection 等は server の request / streaming の寿命に属し、client の unmount へ移送しない。scope ID の再利用でも解放責任を新しい owner へ付け替えない。component の DOM move は寿命の終了と区別し、mount adapter が確定した unmount を通知する。
+
+非同期の結果をDSL stateへ戻す場合は、[resource channel](resource-channels.md)で入力型・key・task世代を宣言する。registryの位置7にそのplanを追加し、channelを使わない通常のbuildからは管理コードを除去する。

@@ -37,6 +37,6 @@ export function resolveSourcePath(source, target) { return posix.normalize(posix
 export const guideLinks = [
   ['docs/quick-start.html', 'Quick start'], ['ja/docs/composition.html', 'Components'],
   ['ja/docs/control-components.html', 'Control flow'], ['ja/docs/events.html', 'Events'], ['ja/docs/forms.html', 'Forms & validation'],
-  ['ja/docs/resolution-optimizer.html', 'Loading & manifests'], ['ja/docs/resource-disposal.html', 'Resource lifetime'],
+  ['ja/docs/resolution-optimizer.html', 'Loading & manifests'], ['ja/docs/resource-disposal.html', 'Resource lifetime'], ['ja/docs/resource-channels.html', 'Async results'],
   ['ja/docs/widgets.html', 'Web Components'], ['ja/docs/layout-checking.html', 'CSS contracts'],
 ];

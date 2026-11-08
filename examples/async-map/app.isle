@@ -1,4 +1,5 @@
 schema Category {id:string;label:string;}
+schema Place {id:string;name:string;category:string;x:number;y:number;rating:number;address:string;description:string;}
 client component Explorer() {
   state query = "";
   state category = "all";
@@ -7,10 +8,20 @@ client component Explorer() {
     {id:"all",label:"Explore all"},{id:"cafe",label:"Coffee"},{id:"food",label:"Good food"},
     {id:"park",label:"Parks"},{id:"museum",label:"Art + culture"}
   ];
-  event activate(e: EventSnapshot<MouseEvent>) { started = true; }
-  event search(e: EventSnapshot<InputEvent>) { query = e.value; started = true; }
-  event filter(e: EventSnapshot<MouseEvent>, value: string) { category = value; started = true; }
-  <main class="explorer" data-map-app="" data-query={query} data-category={category} data-started={started}>
+  state rows: Place[] = [];
+  state phase = "idle";
+  state error = "";
+  state selected = "";
+  resource results(query, category) {
+    receive(places: Place[], status: string, message: string, selection: string) {
+      rows = places; phase = status; error = message; selected = selection;
+    }
+  }
+  derive statusText = phase === "idle" ? "The map is ready when you are." : phase === "loading" ? "Finding nearby places…" : phase === "error" ? error + " Your previous results are kept." : JSON.stringify(rows.length) + " places to make a day of it.";
+  event activate(e: EventSnapshot<MouseEvent>) { started = true; phase = "loading"; }
+  event search(e: EventSnapshot<InputEvent>) { phase = query === e.value ? phase : "loading"; query = e.value; started = true; }
+  event filter(e: EventSnapshot<MouseEvent>, value: string) { phase = category === value ? phase : "loading"; category = value; started = true; }
+  <main class="explorer" data-map-app="" data-map-phase={phase} data-query={query} data-category={category} data-started={started}>
     <header class="app-header">
       <div class="brand"><span class="brand-mark">h.</span><div><h1>Harbor</h1><p>LOCAL EXPLORER</p></div></div>
       <p class="header-note">A little closer to somewhere new.</p>
@@ -37,10 +48,14 @@ client component Explorer() {
         <aside class="place-detail" data-map-detail="" aria-label="Place details" hidden={true}/>
       </section>
       <section class="results-panel" aria-label="Nearby places">
-        <header class="results-heading"><div><p class="eyebrow">A FEW LOCAL FAVORITES</p><h2>In the neighborhood</h2></div><span class="result-count" data-map-count="">—</span></header>
-        <p class="results-status" data-map-status="" role="status" aria-live="polite">The map is ready when you are.</p>
-        <div class="result-list" data-map-results="" aria-busy="false"><div class="empty-state"><span class="empty-mark" aria-hidden="true">↗</span><h3>Find your kind of place.</h3><p>Start exploring to discover what’s nearby. No account, no API key.</p></div></div>
-        <button type="button" class="retry-button" data-map-command="retry" hidden={true}>Try searching again</button>
+        <header class="results-heading"><div><p class="eyebrow">A FEW LOCAL FAVORITES</p><h2>In the neighborhood</h2></div><span class="result-count" data-map-count="">{phase === "idle" ? "—" : JSON.stringify(rows.length)}</span></header>
+        <p class="results-status" data-map-status="" role="status" aria-live="polite">{statusText}</p>
+        <div class="result-list" data-map-results="" aria-busy={phase === "loading"}>
+          <Show when={phase === "idle"}><div class="empty-state"><span class="empty-mark" aria-hidden="true">↗</span><h3>Find your kind of place.</h3><p>Start exploring to discover what’s nearby. No account, no API key.</p></div></Show>
+          <For each={rows}>{(place, index) => <button key={place.id} type="button" class="place-card" data-place={place.id} aria-pressed={place.id === selected}><span class="place-number">{index + 1}</span><span class="place-copy"><strong>{place.name}</strong><small>{place.category === "cafe" ? "Coffee" : place.category === "food" ? "Food" : place.category === "park" ? "Park" : "Art + culture"} · Harbor</small></span><span class="place-rating">★ {place.rating}</span></button>}</For>
+          <Show when={phase !== "idle" && phase !== "loading" && rows.length === 0}><div class="empty-state"><h3>A quieter corner.</h3><p>No places here yet. Try another category, a different search, or a wider view.</p></div></Show>
+        </div>
+        <button type="button" class="retry-button" data-map-command="retry" hidden={phase !== "error"}>Try searching again</button>
         <footer class="results-footer"><span class="live-dot"/>Fictional places. Real interactions.</footer>
       </section>
     </div>

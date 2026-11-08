@@ -64,7 +64,15 @@ test('unknown component and invalid resource entry configurations fail at build 
 test('unused resource capability disappears from the app graph',async()=>{
   const output=await bundle('resume','lazy',{resources:{}});
   const javascript=output.filter(item=>item.type==='chunk').map(item=>item.code).join('\n');
-  assert.doesNotMatch(javascript,/Resource component disposed|Resource owner disposed|Resource setup must be synchronous|MutationObserver|\.resources\(/);
+  assert.doesNotMatch(javascript,/Resource component disposed|Resource owner disposed|Resource setup must be synchronous|MutationObserver|Unknown resource channel|Invalid resource input|\.resources\(/);
   const manifest=JSON.parse(output.find(item=>item.fileName==='isle.manifest.json').source);
   assert.equal(Object.values(manifest.references).some(entry=>entry.kind==='resource'),false);
+});
+
+test('unused resource channels disappear even from a resource-capable app',async()=>{
+ const output=await bundle();
+ assert.doesNotMatch(output.filter(item=>item.type==='chunk').map(item=>item.code).join('\n'),/Unknown resource channel|Invalid resource input|Resource subscriptions/);
+});
+test('a resource declaration requires an explicit setup provider in a resume build',async()=>{
+ await assert.rejects(bundle('resume','lazy',{resources:{}},'client component Counter(initial:number){state n=initial;resource result(){receive(value:number){n=value;}}<div>{n}</div>}'),/Resource channels require a setup entry/);
 });

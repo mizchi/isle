@@ -100,7 +100,7 @@ flowchart LR
 ```
 
 - `isle/widget/3` は Custom Element / imperative mount の transport。descriptor-relative な CSS と `preloadStyles`、eager CSS の準備に対応する。descriptor の wire version は2のまま。
-- `isle/client/7:debug=0:profile=0` は loader / resume / Form / 入れ子の owner 管理、閉じた構造化値、region commit bridge、resource setup と自動破棄、CSS-ready の適用ゲートと同期イベントキャンセルを持つ UI エンジン。共有 widget ビルドは機能一式を含め、最初の小さなアプリの機能削減を他のアプリへ持ち込まない。
+- `isle/client/8:debug=0:profile=0` は loader / resume / Form / 入れ子の owner 管理、閉じた構造化値、region commit bridge、resource setup と自動破棄、CSS-ready の適用ゲートと同期イベントキャンセルを持つ UI エンジン。共有 widget ビルドは機能一式を含め、最初の小さなアプリの機能削減を他のアプリへ持ち込まない。
 - state、registry、action transport、event listener は root ごとに分離する。一つの close は別 root や共通エンジンを閉じない。
 - 版は文字列の完全一致。semver range は使わず、patch の違いも拒否する。同じ family の ABI、diagnostics / profile の異なる variant も拒否する。SDK は vendor の取得・タグ定義より前に必要な版・ABI をまとめて確保する。
 - 不一致はその SDK の初期化を失敗させる。すでに動いている widget は維持し、別 runtime への自動切り替えは行わない。

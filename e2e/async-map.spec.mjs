@@ -109,3 +109,38 @@ test('two maps share code but keep queries, results and disposal independent',as
   await b.getByRole('button',{name:'Zoom in'}).click();await expect.poll(async()=>Number(await b.getAttribute('data-map-zoom'))).toBeGreaterThan(1);
   expect(before).toBeGreaterThan(0);await expect(b).not.toHaveAttribute('data-map-disposed');
 });
+
+test('search stays editable while the resource receiver code is cold; only the latest result commits',async({page})=>{
+  let release,seen;const held=new Promise(resolve=>{release=resolve;}),requested=new Promise(resolve=>{seen=resolve;});const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.route('**/Explorer.results-*.js',async route=>{seen();await held;await route.continue();});
+  await page.goto('/');await page.getByRole('button',{name:'Start exploring'}).click();await requested;
+  await page.getByRole('searchbox').fill('coffee');await expect(app(page)).toHaveAttribute('data-query','coffee');
+  await page.getByRole('searchbox').fill('museum');await expect(app(page)).toHaveAttribute('data-query','museum');
+  // Data arrives while the receiver module is still held, without blocking owner events.
+  await expect.poll(async()=>Number(await app(page).getAttribute('data-map-published'))).toBeGreaterThan(0);
+  await expect(app(page)).toHaveAttribute('data-map-phase','loading');await expect(page.locator('.place-card')).toHaveCount(0);
+  release();await expect(app(page)).toHaveAttribute('data-map-phase','ready');
+  expect((await page.locator('.place-copy small').allTextContents()).every(text=>text.startsWith('Art + culture'))).toBe(true);
+  expect(await page.locator('.place-card').count()).toBeGreaterThan(0);expect(errors).toEqual([]);
+});
+
+test('unmount while resource receiver code is loading cannot publish into a detached map',async({page})=>{
+  let release,seen;const held=new Promise(resolve=>{release=resolve;}),requested=new Promise(resolve=>{seen=resolve;});const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.route('**/Explorer.results-*.js',async route=>{seen();await held;await route.continue();});
+  await page.goto('/');await page.getByRole('button',{name:'Start exploring'}).click();await requested;
+  await page.evaluate(()=>{window.removedMap=document.querySelector('[data-map-app]');window.removedMap.remove();});
+  await expect.poll(()=>page.evaluate(()=>window.removedMap.dataset.mapDisposed)).toBe('true');
+  const before=await page.evaluate(()=>window.removedMap.innerHTML);
+  const response=page.waitForResponse('**/Explorer.results-*.js');release();await response;
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  expect(await page.evaluate(()=>window.removedMap.innerHTML)).toBe(before);expect(errors).toEqual([]);
+});
+
+test('repeating an unchanged category or input does not leave the map loading',async({page})=>{
+  await activate(page);const parks=page.getByRole('button',{name:'Parks',exact:true});
+  await parks.click();await expect(app(page)).toHaveAttribute('data-category','park');await expect(app(page)).toHaveAttribute('data-map-phase','ready');
+  const issued=await app(page).getAttribute('data-map-issued');await parks.click();
+  await expect(app(page)).toHaveAttribute('data-map-phase','ready');
+  await page.getByRole('searchbox').dispatchEvent('input');
+  await expect(app(page)).toHaveAttribute('data-map-phase','ready');await expect(app(page)).toHaveAttribute('data-map-issued',issued);
+});

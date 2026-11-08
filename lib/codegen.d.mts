@@ -20,6 +20,7 @@ export interface StaticAnalysis {
   resumeRoot: { tag: string; depth: number };
 }
 export interface GeneratedComponent {
+  channels?:import('./client-contracts.d.ts').ResourceChannelPlan[];
   name: string;
   schemaId: string;
   fields: ValueField[];
