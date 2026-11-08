@@ -438,6 +438,8 @@ fn Parser::primitive_field(
   constraints~ : Bool = false,
   render_fragment~ : Bool = false,
 ) -> Field raise CompileError {
+  self.space()
+  let start = self.pos
   let name = self.ident()
   let optional = self.eat("?")
   if optional {
@@ -459,7 +461,7 @@ fn Parser::primitive_field(
     )
   }
   let rules = if constraints { self.constraints(ty) } else { [] }
-  { name, ty, optional, constraints: rules, }
+  { name, start, end: start + name.length(), ty, optional, constraints: rules, }
 }
 
 ///|
@@ -593,6 +595,8 @@ fn Parser::handler(
   self.need("{")
   let statements : Array[Statement] = []
   while !self.eat("}") {
+    self.space()
+    let start = self.pos
     let target = self.ident()
     let op = if self.eat("+=") {
       "+="
@@ -604,7 +608,7 @@ fn Parser::handler(
     }
     let value = self.expr()
     self.need(";")
-    statements.push({ target, op, value, })
+    statements.push({ target, start, end: self.pos, op, value, })
   }
   let id = if name == "" { "h" + self.handler_id.to_string() } else { name }
   self.handler_id += 1
@@ -779,8 +783,12 @@ fn Parser::template_block(
 }
 
 // Private control transport emitted by the JS frontend, not authored syntax.
+
 ///|
-fn Parser::generated_control(self : Parser, side : String) -> Node raise CompileError {
+fn Parser::generated_control(
+  self : Parser,
+  side : String,
+) -> Node raise CompileError {
   self.space()
   let start = self.pos
   self.need("\u001f")
@@ -820,7 +828,11 @@ fn Parser::generated_control(self : Parser, side : String) -> Node raise Compile
     let key = self.expr()
     self.need(")")
     let body = self.template_block(side)
-    let empty = if self.eat("\u001fempty") { self.template_block(side) } else { [] }
+    let empty = if self.eat("\u001fempty") {
+      self.template_block(side)
+    } else {
+      []
+    }
     Each(item, index, source, key, body, empty, start)
   } else if self.word("try") {
     let body = self.template_block(side)
@@ -857,12 +869,14 @@ fn Parser::component(
           "E_COMPONENT_STATE", "Universal components cannot own mutable state", "Declare an explicit client component to use state.",
         )
       }
+      self.space()
+      let start = self.pos
       let name = self.ident()
       let ty = if self.eat(":") { self.type_name() } else { "" }
       self.need("=")
       let initial = self.expr()
       self.need(";")
-      states.push({ name, ty, initial, })
+      states.push({ name, start, end: start + name.length(), ty, initial, })
     } else if self.word("derive") {
       self.space()
       let start = self.pos

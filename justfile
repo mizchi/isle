@@ -411,7 +411,7 @@ resume-phases-check: build-compiler check-types
 
 # Observability, one-way arm factories and primitive readonly captures; no new runtime.
 semantic-optimizer-check: build-compiler check-types
-    node --test tests/semantic-optimizer.test.mjs tests/control-flow-build.test.mjs tests/resource-binding-build.test.mjs
+    node --test tests/semantic-optimizer.test.mjs tests/compiler-warnings.test.mjs tests/control-flow-build.test.mjs tests/resource-binding-build.test.mjs
     pnpm exec playwright test --config playwright.control-flow.config.mjs
     node tools/eval-semantic-optimizer.mjs
 

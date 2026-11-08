@@ -203,8 +203,20 @@ test "direct props normalize to the existing primitive object contract" {
       field(field(direct, "ir"), "components"),
       field(field(legacy, "ir"), "components"),
     ) {
-    (Array(a), Array(b)) =>
-      assert_eq(field(a[0], "props"), field(b[0], "props"))
+    (Array(a), Array(b)) => {
+      match (field(a[0], "props"), field(b[0], "props")) {
+        (Array(direct), Array(legacy)) => {
+          assert_eq(direct.length(), legacy.length())
+          for i = 0; i < direct.length(); i = i + 1 {
+            for key in ["name", "type", "optional"] {
+              assert_eq(field(direct[i], key), field(legacy[i], key))
+            }
+            assert_true(field(direct[i], "source") != field(legacy[i], "source"))
+          }
+        }
+        _ => abort("expected props")
+      }
+    }
     _ => abort("expected components")
   }
 }

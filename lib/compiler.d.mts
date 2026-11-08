@@ -1,4 +1,4 @@
-import type { Action, Component, CompileResult, DependencyCheckResult, DependencyGraph, ProgramIR } from './contracts.d.ts';
+import type { Action, Component, CompileResult, CompileOptions, DependencyCheckResult, DependencyGraph, ProgramIR } from './contracts.d.ts';
 import type { GeneratedComponent, StaticAnalysis } from './codegen.mjs';
 import type { ComponentCost } from './cost-contracts.d.ts';
 export type * from './contracts.d.ts';
@@ -33,8 +33,8 @@ export interface ProgramExplanation {
   components: ComponentExplanation[];
   boundaries: BoundaryExplanation[];
 }
-export function compile(source: string): CompileResult;
-export function compileFile(path: string): Promise<CompileResult>;
+export function compile(source: string,options?:CompileOptions): CompileResult;
+export function compileFile(path: string,options?:CompileOptions): Promise<CompileResult>;
 export function checkDependencies(graph: DependencyGraph): DependencyCheckResult;
 export function requireIR(result: CompileResult): ProgramIR;
 export function explain(ir: ProgramIR): ProgramExplanation;

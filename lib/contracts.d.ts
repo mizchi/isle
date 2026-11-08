@@ -19,12 +19,12 @@ export type Expression =
   | { kind: 'not'; value: Expression }
   | { kind: 'property'; object: Expression; key: string }
   | { kind: 'remote'; name: string; fields: { name: string; value: Expression }[] };
-export interface Statement { target: string; op: '=' | '+=' | '-='; value: Expression }
+export interface Statement { target: string; op: '=' | '+=' | '-='; value: Expression; source?:SourceSpan }
 export interface FormContract { schema: { name: string; fields: Field[] }; output: { name: string; fields: Field[] }; action: string; asyncValidation: boolean; events: string[] }
 export interface Handler { id: string; event: 'click' | 'input' | 'change' | 'submit' | 'invalid' | 'keydown' | 'dblclick' | 'focusout'; async: boolean; source: SourceSpan; declaration?: string; binding?: SourceSpan; preventDefault?: true; statements: Statement[]; form?: FormContract }
 export type WireValue = Primitive | readonly WireValue[] | { readonly [key: string]: WireValue };
 export type ValueType = 'number' | 'string' | 'boolean' | { array: ValueType } | { record: Record<string, ValueType> };
-export type ComponentField = Omit<Field, 'type'> & { type: string };
+export type ComponentField = Omit<Field, 'type'> & { type: string; source?:SourceSpan };
 export interface ComponentLayout {contract:import('./layout-contract.mjs').ContractIR;source:SourceSpan}
 export type ValueField = Omit<Field, 'type'> & { type: ValueType };
 export type TemplateNode =
@@ -41,7 +41,9 @@ export type TemplateNode =
     form?: FormContract; formField?: string; formError?: string; formSummary?: boolean; formStatus?: boolean };
 export interface Component {
   /** Build-only observer boundary; external setup can observe an otherwise dead entry. */
-  optimizationBarrier?:'resource-setup'|'client-entry';
+  optimizationBarrier?:'resource-setup'|'client-entry'|'external-observer';
+  /** Checked event declarations with no attribute binding; compile-only locations. */
+  unboundEvents?:{name:string;source:SourceSpan}[];
   /** Compile-only input requirements and guarantees, with authored source positions. */
   layout?:ComponentLayout;
   /** Static, owned CSS. Erased from executable component code. */
@@ -51,7 +53,7 @@ export interface Component {
   /** Source children: RenderFragment was erased into a lexical slot. */
   children?: true;
   states: (ComponentField & { initial: Expression })[];
-  derives: { name: string; value: Expression }[]; root: TemplateNode;
+  derives: { name: string; value: Expression; source?:SourceSpan }[]; root: TemplateNode;
 }
 export interface Action {
   name: string; inputSchema: string; outputSchema: string;
@@ -69,6 +71,8 @@ export interface ProgramIR {
 export interface DiagnosticLocation extends SourceSpan { file?: string }
 export interface RelatedDiagnostic extends DiagnosticLocation { message: string }
 export interface Diagnostic extends DiagnosticLocation {
+  /** Legacy error diagnostics omit severity. Warnings always declare it. */
+  severity?:'error'|'warning';
   code: string; message: string; hint: string;
   /** Closed witness path, including the repeated first ID. Empty for non-cycle diagnostics. */
   cycle?: string[];
@@ -80,7 +84,9 @@ export interface DependencyGraph {
   nodes: { id: string; source: DiagnosticLocation; dependencies: { id: string; source: DiagnosticLocation }[] }[];
 }
 export type DependencyCheckResult = { ok: true; order: string[]; diagnostics: [] } | { ok: false; diagnostics: Diagnostic[] };
-export type CompileResult = { ok: true; ir: ProgramIR; diagnostics: [] } | { ok: false; diagnostics: Diagnostic[] };
+export interface WarningDiagnostic extends Diagnostic {severity:'warning'}
+export interface CompileOptions {/** Opaque integrations can observe activation or owner state. true covers every client owner. */externalObservers?:true|readonly string[]}
+export type CompileResult = { ok: true; ir: ProgramIR; diagnostics: WarningDiagnostic[] } | { ok: false; diagnostics: Diagnostic[] };
 export interface Principal { readonly subject: string; readonly tenant: string }
 export interface Permit extends Principal { readonly target: Primitive; readonly operation: string }
 export interface OperationContext { context: Principal; permit: Permit; args: (Primitive | Permit)[]; prepared?: unknown }

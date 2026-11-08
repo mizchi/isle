@@ -59,6 +59,34 @@ client component Details(user: User) {
 
 ## 再現と結果
 
+### コンパイル警告
+
+観測されないコードには、ビルドを止めずに次のwarningを出す。
+
+| code | 対象 |
+|---|---|
+| `W_UNOBSERVED_VALUE` | UI・残る処理・初期化の依存から読まれないprop、state、derive |
+| `W_UNOBSERVED_UPDATE` | 効果のあるイベント内で、一部だけ除去される代入 |
+| `W_UNOBSERVED_EVENT` | 効果がなく除去されるイベント、またはどこにも接続されない宣言 |
+
+初期HTMLだけに使う値や、例外・外部効果を保持するために必要な値は対象にしない。readonly recordの一部をsnapshotから除くだけでも警告しない。専用client entry、resource setup、子ownerなどのopaque境界では、内部の観測性を断定しない。未接続のevent宣言はその場合も警告する。定数畳込み前の検査済みプログラムを保守的に解析するため、全ての到達不能コードを検出するunused lintではない。
+
+`compile(source)`はwarningがあっても`ok: true`で、`diagnostics`へ`severity: "warning"`、code、hint、UTF-16のソース範囲を返す。成功時の`diagnostics`が空とは限らないため、成功判定には`ok`を使う。`requireIR`はwarningで失敗しない。`compilePreview`もwarningを返し、renderエラー時にはエラーの後ろに残す。
+
+```js
+const result = compile(source);
+if (result.ok) {
+  for (const warning of result.diagnostics) console.warn(warning);
+  // result.ir can be built even when warnings were emitted.
+}
+```
+
+CLIの`check` / `explain` / `emit` / `ssr` / `cost` / `layout`はstderrへ位置付きのwarningを出し、warningだけでは終了コードを失敗にしない。`check`のJSONにもdiagnosticsが入る。Viteのdev/buildでも表示し、playgroundではReadyを保ったまま警告一覧と件数を表示する。一覧の項目から編集箇所へ移動できる。
+
+コンパイラAPIを独自のopaqueな連携に使う場合は、`compile(source, {externalObservers: ['Counter']})`でそのownerを保守的に扱う。`true`は全てのclient ownerを対象にする。これは単なるwarning抑止ではなく、イベント除去などの最適化も止める。Viteの`resources` / `clientEntry`は自動で接続する。
+
+### 実行とサイズ
+
 ```sh
 just semantic-optimizer-check
 node tools/isle.mjs explain examples/semantic-optimizer/app.isle

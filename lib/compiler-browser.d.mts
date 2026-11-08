@@ -1,4 +1,4 @@
-import type {ProgramIR,Diagnostic,WireValue} from './contracts.d.ts';
+import type {ProgramIR,Diagnostic,WarningDiagnostic,WireValue} from './contracts.d.ts';
 import type {ProgramExplanation} from './compiler.mjs';
 export {compile,checkDependencies,requireIR,explain} from './compiler.mjs';
 export type {ProgramExplanation,ComponentExplanation,BoundaryExplanation} from './compiler.mjs';
@@ -12,6 +12,6 @@ export interface PreviewArtifact {
   events:string[];
   styles?:(import('./contracts.d.ts').ScopedStyle & {component:string})[];
 }
-export type PreviewCompileResult = {ok:true;ir:ProgramIR;explanation:ProgramExplanation;preview:PreviewArtifact} |
+export type PreviewCompileResult = {ok:true;ir:ProgramIR;diagnostics:WarningDiagnostic[];explanation:ProgramExplanation;preview:PreviewArtifact} |
   {ok:false;stage:'compile'|'render';diagnostics:Diagnostic[];ir?:ProgramIR};
 export function compilePreview(source:string,options?:PreviewOptions):PreviewCompileResult;

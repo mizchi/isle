@@ -9,9 +9,18 @@ import {declaredLayoutOptions} from '../lib/layout-declarations.mjs';
 import {verifyDeclaredLayouts} from '../lib/layout-contract-node.mjs';
 import { resolve, dirname } from 'node:path';
 import {formatLayoutSummary} from '../lib/layout-summary.mjs';
+import {formatWarning} from '../lib/compiler-warnings.mjs';
 const argv = process.argv.slice(2), summary = argv.includes('--summary');
 const [command, file, ...args] = argv.filter(arg => !['--summary','--json'].includes(arg));
 const usage = 'Usage: isle check|explain|emit|ssr <file.isle> [component] [props-json]\n       isle chunks <isle.manifest.json>\n       isle dependencies <graph.json>\n       isle cost <file.isle|isle.cost.json> [budgets.json]\n       isle layout <file.isle> [environment.json] [--summary|--json]';
+async function compileInput() {
+  const result=await compileFile(file);
+  if(result.ok&&result.diagnostics.length) {
+    const source=await readFile(file,'utf8');
+    result.diagnostics.forEach(warning=>console.error(formatWarning(warning,source,file)));
+  }
+  return result;
+}
 if (process.argv.slice(2).some(arg => ['--help', '-h'].includes(arg))) {
   console.log(usage);
 } else if (!file || !['check', 'explain', 'emit', 'ssr', 'chunks', 'dependencies', 'cost', 'layout'].includes(command)) {
@@ -21,7 +30,7 @@ if (process.argv.slice(2).some(arg => ['--help', '-h'].includes(arg))) {
   try {
     if (command === 'layout') {
       const output = async report => console.log(summary ? formatLayoutSummary(report,{file,source:await readFile(file,'utf8')}) : JSON.stringify(report,null,2));
-      const result = await compileFile(file);
+      const result = await compileInput();
       if (!result.ok) { await output(result); process.exitCode = 1; }
       else {
         const options = JSON.parse(args[0] ? await readFile(args[0], 'utf8') : '{}');
@@ -51,7 +60,7 @@ if (process.argv.slice(2).some(arg => ['--help', '-h'].includes(arg))) {
         report.budget = checkCostBudgets(report, limits);
         report.ok = report.budget.ok;
       } else {
-        const result = await compileFile(file);
+        const result = await compileInput();
         if (!result.ok) { console.log(JSON.stringify(result, null, 2)); process.exitCode = 1; }
         else report = analyzeCosts(result.ir, { budgets });
       }
@@ -63,10 +72,10 @@ if (process.argv.slice(2).some(arg => ['--help', '-h'].includes(arg))) {
     } else if (command === 'chunks') {
       console.log(JSON.stringify(describeChunks(JSON.parse(await readFile(file, 'utf8'))), null, 2));
     } else {
-      const result = await compileFile(file);
+      const result = await compileInput();
       if (!result.ok) {
         console.log(JSON.stringify(result, null, 2)); process.exitCode = 1;
-      } else if (command === 'check') console.log(JSON.stringify({ ok: true, components: result.ir.components.map(c => c.name), actions: result.ir.actions.map(a => a.name) }, null, 2));
+      } else if (command === 'check') console.log(JSON.stringify({ ok: true, components: result.ir.components.map(c => c.name), actions: result.ir.actions.map(a => a.name),diagnostics:result.diagnostics }, null, 2));
       else if (command === 'explain') console.log(JSON.stringify(explain(result.ir), null, 2));
       else {
         const component = result.ir.components.find(c => c.name === args[0]) ?? result.ir.components[0];

@@ -1,6 +1,28 @@
 import {test,expect} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 const preview=page=>page.frameLocator('#preview');
+test('warnings remain visible on successful compilation and navigate to the unused declaration',async({page})=>{
+  await page.goto('/');await expect(page.getByRole('status')).toContainText('Ready');
+  await page.locator('#auto').uncheck();await page.locator('#props').fill('{}');
+  const source='client component C(){\n state count=0;\n event idle(e:EventSnapshot<MouseEvent>){count+=1;}\n <button type="button" on:click={idle}>Idle</button>\n}';
+  await page.locator('#source').fill(source);await page.locator('#compile').click();
+  await expect(page.getByRole('status')).toContainText('Ready');
+  await expect(page.locator('#diagnostics')).toContainText('warning · W_UNOBSERVED_VALUE');
+  await expect(page.locator('#diagnostics')).toContainText('W_UNOBSERVED_EVENT');
+  await expect(preview(page).getByRole('button',{name:'Idle'})).toBeVisible();
+  await expect(preview(page).locator('[data-isle-snapshot]')).toHaveCount(0);
+  await page.locator('#diagnostics button').filter({hasText:'W_UNOBSERVED_VALUE'}).click();
+  expect(await page.locator('#source').evaluate(el=>el.value.slice(el.selectionStart,el.selectionEnd))).toBe('count');
+  for(const width of [390,1440]) {
+    await page.setViewportSize({width,height:960});
+    await page.screenshot({path:test.info().outputPath(`warnings-${width}.png`),fullPage:true});
+  }
+  await page.locator('#source').fill(source.replace('>Idle</button>','>{count}</button>'));await page.locator('#compile').click();
+  await expect(page.locator('#diagnostics')).toBeHidden();
+  await expect(preview(page).getByRole('button',{name:'0',exact:true})).toBeVisible();
+  await preview(page).getByRole('button',{name:'0',exact:true}).click();
+  await expect(preview(page).getByRole('button',{name:'1',exact:true})).toBeVisible();
+});
 test('shorthand conflicts point to both declarations and explicit overrides remain native CSS',async({page})=>{
   const requests=[];page.on('request',request=>requests.push(request.url()));
   await page.goto('/');await expect(page.getByRole('status')).toContainText('Ready');

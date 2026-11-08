@@ -48,7 +48,9 @@ test('direct typed props and legacy destructuring produce the same runtime contr
   const body = ' { state count = initial; derive label = title + "!"; <button>on click reset { count = initial; }{label}{count}{enabled}</button> }';
   const [direct, legacy] = ['(initial: number, title: string, enabled: boolean,)', '({ initial, title, enabled }: { initial: number; title: string; enabled: boolean })']
     .map(props => requireIR(compile(`export client component Counter${props}${body}`)).components[0]);
-  assert.deepEqual(direct.props, legacy.props);
+  const contract=fields=>fields.map(({source,...field})=>field);
+  assert.deepEqual(contract(direct.props),contract(legacy.props));
+  assert.notDeepEqual(direct.props[0].source,legacy.props[0].source,'authored locations are debug metadata');
   const props = { enabled: false, title: '<safe>', initial: 5 };
   assert.deepEqual(renderComponent(direct, props), renderComponent(legacy, props));
   const a = generateComponent(direct), b = generateComponent(legacy);

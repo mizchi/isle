@@ -58,6 +58,8 @@ priv enum Expr {
 ///|
 priv struct Field {
   name : String
+  start : Int32
+  end : Int32
   ty : String
   optional : Bool
   constraints : Array[Constraint]
@@ -66,6 +68,8 @@ priv struct Field {
 ///|
 priv struct StateDecl {
   name : String
+  start : Int32
+  end : Int32
   ty : String
   initial : Expr
 }
@@ -82,6 +86,8 @@ priv struct Derived {
 ///|
 priv struct Statement {
   target : String
+  start : Int32
+  end : Int32
   op : String
   value : Expr
 }

@@ -19,6 +19,14 @@ fn string_json(value : String) -> Json {
 }
 
 ///|
+fn source_json(start : Int32, end : Int32) -> Json {
+  obj([
+    ("start", Json::number(start.to_double())),
+    ("end", Json::number(end.to_double())),
+  ])
+}
+
+///|
 fn[T] json_array(values : Array[T], f : (T) -> Json) -> Json {
   Json::array(values.map(f))
 }
@@ -111,7 +119,7 @@ fn Expr::json(self : Expr) -> Json {
 }
 
 ///|
-fn Field::json(self : Field) -> Json {
+fn Field::json(self : Field, located~ : Bool = false) -> Json {
   let fields = [
     ("name", string_json(self.name)),
     ("type", string_json(self.ty)),
@@ -119,6 +127,9 @@ fn Field::json(self : Field) -> Json {
   ]
   if !self.constraints.is_empty() {
     fields.push(("constraints", json_array(self.constraints, r => r.json())))
+  }
+  if located {
+    fields.push(("source", source_json(self.start, self.end)))
   }
   obj(fields)
 }
@@ -238,6 +249,7 @@ fn Node::json(self : Node) -> Json {
                 json_array(h.statements, s => {
                   obj([
                     ("target", string_json(s.target)),
+                    ("source", source_json(s.start, s.end)),
                     ("op", string_json(s.op)),
                     ("value", s.value.json()),
                   ])
@@ -255,12 +267,13 @@ fn Component::json(self : Component) -> Json {
   obj([
     ("name", string_json(self.name)),
     ("side", string_json(self.side)),
-    ("props", json_array(self.props, f => f.json())),
+    ("props", json_array(self.props, f => f.json(located=true))),
     (
       "states",
       json_array(self.states, s => {
         obj([
           ("name", string_json(s.name)),
+          ("source", source_json(s.start, s.end)),
           ("type", string_json(s.ty)),
           ("initial", s.initial.json()),
         ])
@@ -269,7 +282,11 @@ fn Component::json(self : Component) -> Json {
     (
       "derives",
       json_array(self.derives, d => {
-        obj([("name", string_json(d.name)), ("value", d.value.json())])
+        obj([
+          ("name", string_json(d.name)),
+          ("source", source_json(d.start, d.end)),
+          ("value", d.value.json()),
+        ])
       }),
     ),
     ("root", self.root.json()),

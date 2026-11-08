@@ -16,6 +16,7 @@ const layoutChecker=createLayoutChecker({enabled:ui['verify-layout'],editor:ui.l
 });
 const bytes=value=>new TextEncoder().encode(value).length;
 const status=(text,error=false)=>{ui.status.textContent=text;ui.status.toggleAttribute('data-error',error);};
+const ready=text=>{const count=result?.diagnostics.filter(d=>d.severity==='warning').length??0;status(text+(count?` · ${count} warnings`:''));};
 function spawn() {
   const instance=worker=new Worker(new URL('./compiler.worker.mjs',import.meta.url),{type:'module'});
   instance.onmessage=event=>{if(instance!==worker) return;busy=false;clearTimeout(deadline);receive(event);};
@@ -43,7 +44,8 @@ function diagnostics(items) {
     const offset=Math.max(0,Math.min(ui.source.value.length,item.start ?? 0));
     const prefix=ui.source.value.slice(0,offset),line=prefix.split('\n').length,col=prefix.length-prefix.lastIndexOf('\n');
     const button=document.createElement('button'),li=document.createElement('li');
-    button.type='button';button.textContent=`${item.code} · ${line}:${col} · ${item.message}${item.hint ? ' — '+item.hint : ''}`;
+    li.dataset.severity=item.severity??'error';
+    button.type='button';button.textContent=`${item.severity==='warning'?'warning · ':''}${item.code} · ${line}:${col} · ${item.message}${item.hint ? ' — '+item.hint : ''}`;
     button.onclick=()=>{ui.source.focus();ui.source.setSelectionRange(offset,Math.max(offset+1,item.end ?? offset+1));};li.append(button);ui.diagnostics.append(li);
   }
 }
@@ -60,7 +62,7 @@ async function receive({data}) {
     ui.component.value=compiled.ok ? compiled.preview.component : selected;
   }
   if(!compiled.ok) {layoutChecker.invalidate('Layout not checked: compilation failed.');diagnostics(compiled.diagnostics);status(compiled.stage==='compile' ? 'Compile error' : 'Preview error',true);return;}
-  diagnostics([]);result=compiled;artifact=compiled.preview;inspect();
+  diagnostics(compiled.diagnostics);result=compiled;artifact=compiled.preview;inspect();
   ui.size.textContent=`${bytes(artifact.html+artifact.snapshotHtml).toLocaleString()} HTML bytes · ${artifact.modules.length} logical modules · ${artifact.modules.reduce((n,m)=>n+bytes(m.code),0).toLocaleString()} module source bytes${artifact.styles?.length ? ' · '+artifact.styles.reduce((n,s)=>n+bytes(s.css),0).toLocaleString()+' scoped CSS bytes' : ''}`;
   ui.download.disabled=false;status('Preparing preview…');
   layoutChecker.check(data.id,compiled,{props:JSON.parse(ui.props.value),css:ui.css.value});
@@ -70,7 +72,7 @@ async function receive({data}) {
     }
     if(data.id!==sequence) return;
     const current=artifact;
-    ui.preview.onload=()=>{if(current===artifact && !current.events.length) status('Ready · SSR, no client runtime');};
+    ui.preview.onload=()=>{if(current===artifact && !current.events.length) ready('Ready · SSR, no client runtime');};
     token=mountPreview(ui.preview,current,{css:ui.css.value,runtimeSource});
   } catch(error) {if(data.id===sequence) status('Preview error: '+error.message,true);}
 }
@@ -110,7 +112,7 @@ document.addEventListener('keydown',event=>{if(event.key==='Enter' && (event.met
 window.addEventListener('message',event=>{
   const data=event.data;
   if(event.source!==ui.preview.contentWindow || !token || data?.channel!=='isle-preview' || data.token!==token) return;
-  if(data.type==='ready') status('Ready · resume on interaction');
+  if(data.type==='ready') ready('Ready · resume on interaction');
   if(data.type==='error' && typeof data.message==='string') status('Runtime error: '+data.message.slice(0,1000),true);
   if(data.type==='notice' && typeof data.message==='string') status(data.message.slice(0,1000));
   if(['ready','metrics'].includes(data.type) && Number.isSafeInteger(data.metrics?.restores)) ui.metrics.textContent=`${data.metrics.restores} restored islands`;
