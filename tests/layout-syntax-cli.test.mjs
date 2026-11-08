@@ -38,6 +38,8 @@ test('consumer summary groups repeated layout failures with source locations and
     assert.match(result.stdout, /app\.isle:\d+:\d+/);
     assert.match(result.stdout, /Board\/0, Board\/1, Board\/2, Board\/3/);
     assert.equal((result.stdout.match(/E_LAYOUT_ITEM_SIZE/g) ?? []).length, 1);
+    assert.doesNotMatch(result.stdout, /Board inline allocation: requires 180px/);
+    assert.match(result.stdout, /checked contracts: Board at Board, Tile at Board\/0/);
     assert.ok(result.stdout.length < 5000, `Summary grew to ${result.stdout.length} characters`);
     const json = run(file, config, '--json');
     assert.equal(JSON.parse(json.stdout).status, 'violated');
