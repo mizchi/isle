@@ -1,0 +1,14 @@
+{
+  "name": "isle-diagnosis-consumer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@isle/prototype": "file:/tmp/isle-usability-v1/isle-prototype-0.0.1.tgz"
+  },
+  "devDependencies": {
+    "vite": "8.3.5"
+  }
+}

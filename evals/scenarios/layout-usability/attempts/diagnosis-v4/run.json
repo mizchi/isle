@@ -1,0 +1,9 @@
+{
+  "scenario": "diagnosis",
+  "version": 4,
+  "frameworkCommit": "d81a465",
+  "packageSha256": "f697a67c33993dc2b0bc8938ebcb4cccaebd1a669d6ca26ba85898425fcd699c",
+  "validBlindRun": true,
+  "graderInvocations": 1,
+  "notes": "Public inputs physically staged without reports or issue drafts; npm package identical to v3"
+}

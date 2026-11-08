@@ -1,0 +1,5 @@
+Usage: node tools/isle.mjs check|explain|emit|ssr <file.isle> [component] [props-json]
+       node tools/isle.mjs chunks <isle.manifest.json>
+       node tools/isle.mjs dependencies <graph.json>
+       node tools/isle.mjs cost <file.isle|isle.cost.json> [budgets.json]
+       node tools/isle.mjs layout <file.isle> [environment.json]

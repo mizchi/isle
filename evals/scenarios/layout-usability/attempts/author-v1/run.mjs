@@ -1,0 +1,12 @@
+import { spawnSync } from 'node:child_process';
+import { appendFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+const [label, command, ...args] = process.argv.slice(2);
+if (!command) throw new Error('usage: node run.mjs label command [args...]');
+mkdirSync('outputs', { recursive: true });
+const result = spawnSync(command, args, { cwd: import.meta.dirname, encoding: 'utf8', env: process.env });
+const output = (result.stdout ?? '') + (result.stderr ?? '') + (result.error ? String(result.error) : '');
+writeFileSync(`outputs/${label}.txt`, output);
+if (result.status !== 0 && !existsSync('first-failure.txt')) writeFileSync('first-failure.txt', output);
+appendFileSync('log.jsonl', JSON.stringify({ time: new Date().toISOString(), kind: 'command', label, command: [command, ...args], exit: result.status, output: `outputs/${label}.txt` }) + '\n');
+process.stdout.write(output);
+process.exitCode = result.status ?? 1;

@@ -1,0 +1,48 @@
+{
+  "scenario": "author",
+  "pass": true,
+  "stages": [
+    "source",
+    "production-build",
+    "browser-layout",
+    "resume-interactions",
+    "ssr-build"
+  ],
+  "metrics": {
+    "layout": {
+      "status": "verified",
+      "declarations": 5
+    },
+    "resume": {
+      "javascriptChunks": 6,
+      "javascriptBytes": 11909,
+      "javascriptGzipBytes": 5567,
+      "htmlBytes": 6826
+    },
+    "columns": [
+      {
+        "width": 320,
+        "count": 1
+      },
+      {
+        "width": 599,
+        "count": 1
+      },
+      {
+        "width": 600,
+        "count": 2
+      },
+      {
+        "width": 960,
+        "count": 2
+      }
+    ],
+    "interactions": 7,
+    "ssr": {
+      "javascriptChunks": 0,
+      "javascriptBytes": 0,
+      "javascriptGzipBytes": 0,
+      "htmlBytes": 4189
+    }
+  }
+}

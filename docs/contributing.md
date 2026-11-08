@@ -8,7 +8,7 @@ The documentation/demo site is built with Isle too: see [site](../site/README.md
 
 ## 試す
 
-Node.js 24+、pnpm、MoonBit が必要です。検証に Z3 も使います。確認済み compiler は moonc v0.10.19+97801ee1b、形式モデルの依存は mizchi/veri 0.2.1。
+Node.js 24+、pnpm、MoonBit が必要です。検証に Z3 も使います。確認済み compiler は moonc v0.10.20+65efd5b93、形式モデルの依存は mizchi/veri 0.2.1。
 
 ```sh
 pnpm install

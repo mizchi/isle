@@ -1,0 +1,11 @@
+{
+  "scenario": "diagnosis",
+  "version": 1,
+  "frameworkCommit": "2a995d5",
+  "packageSha256": "7335f60ade8f2882986c74a23ee43f7427dbcdabd9e06f5f954f99e47a82c4ff",
+  "readPolicy": "public docs and npm package only; no framework implementation or prior attempts",
+  "graderInvocations": 1,
+  "reportedRounds": 2,
+  "notes": "diagnosis counted its own failed editing script as an additional round; grader invocations remain one",
+  "validBlindRun": true
+}

@@ -1,0 +1,29 @@
+{
+  "name": "diagnosis-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "layout": "isle layout app.isle environment.json --summary"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.18.0",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.18.0",
+  "type": "module",
+  "dependencies": {
+    "@isle/prototype": "file:/tmp/isle-usability-v2/isle-prototype-0.0.1.tgz"
+  },
+  "devDependencies": {
+    "vite": "8.3.5"
+  }
+}

@@ -1,0 +1,15 @@
+{"type": "setup", "round": 0, "command": "public文書の列挙・閲覧、READMEに従ってconsumerファイルを作成しbroken.isleを未編集でコピー", "exitCode": 0, "nextEditSignal": "pnpm add ./isle-prototype-0.0.1.tgz"}
+{"type":"command","command":["node","--version"],"exitCode":0,"stdout":"command-02.stdout.txt","stderr":"command-02.stderr.txt","nextEditSignal":null}
+{"type":"command","command":["pnpm","--version"],"exitCode":0,"stdout":"command-03.stdout.txt","stderr":"command-03.stderr.txt","nextEditSignal":null}
+{"type":"command","command":["pnpm","add","/tmp/isle-usability-v4/isle-prototype-0.0.1.tgz"],"exitCode":0,"stdout":"command-04.stdout.txt","stderr":"command-04.stderr.txt","nextEditSignal":null}
+{"type":"command","command":["pnpm","add","-D","vite@8.3.5"],"exitCode":0,"stdout":"command-05.stdout.txt","stderr":"command-05.stderr.txt","nextEditSignal":null}
+{"type":"command","command":["pnpm","exec","isle","--help"],"exitCode":0,"stdout":"command-06.stdout.txt","stderr":"command-06.stderr.txt","nextEditSignal":null}
+{"type":"command","command":["pnpm","exec","isle","layout","app.isle","environment.json","--summary"],"exitCode":1,"stdout":"command-07.stdout.txt","stderr":"command-07.stderr.txt","nextEditSignal":null}
+{"type": "interpretation", "round": 0, "meaning": "requiresは親からの割当条件。Tileの180px要求に対し幅400pxでは176pxしか割当がない。Boardのfit検査とTileのrequires検査が同じtile箱を報告しておりBoard自体の必要幅180pxではない。四枚すべてが不足。違反範囲[400,408)から安全な二列境界408pxを推論する。二列の必要幅=2×180+gap16+padding32=408。", "nextEditSignal": "  width [400, 408)px; height [640, 960]px"}
+{"type":"command","command":["pnpm","exec","isle","layout","app.isle","environment.json","--json"],"exitCode":1,"stdout":"command-09.stdout.txt","stderr":"command-09.stderr.txt","nextEditSignal":null}
+{"type":"command","command":["pnpm","exec","vite","build"],"exitCode":1,"stdout":"command-10.stdout.txt","stderr":"command-10.stderr.txt","nextEditSignal":null}
+{"type": "edit", "round": 1, "files": ["app.isle"], "change": "media閾値のみ400px→408px。requires、ensures既定、CSS最小寸法、padding、gap、native root、カード数、配布区間は保持。", "nextEditSignal": "  width [400, 408)px; height [640, 960]px", "supportingSignal": "E_LAYOUT_ITEM_SIZE: .tile.i_cd08a864373a requires 180px but receives 178px on inline axis at viewport 404px × 800px"}
+{"type":"command","command":["pnpm","exec","isle","layout","app.isle","environment.json","--summary"],"exitCode":0,"stdout":"command-12.stdout.txt","stderr":"command-12.stderr.txt","nextEditSignal":null}
+{"type":"command","command":["pnpm","exec","vite","build"],"exitCode":0,"stdout":"command-13.stdout.txt","stderr":"command-13.stderr.txt","nextEditSignal":null}
+{"type":"command","command":["node","/Users/mz/ghq/github.com/mizchi/isle/tools/grade-layout-usability.mjs","diagnosis","/tmp/isle-usability-v4/diagnosis-app"],"exitCode":0,"stdout":"command-14.stdout.txt","stderr":"command-14.stderr.txt","nextEditSignal":null}
+{"type": "round-end", "round": 1, "acceptance": true, "graderExitCode": 0, "nextEditSignal": null, "reason": "受入合格につき編集・検査を終了。", "counts": {"rounds": 1, "manualCLI": 4, "manualBuilds": 2, "graderCalls": 1, "reportCharacters": 833, "acceptance": true}}

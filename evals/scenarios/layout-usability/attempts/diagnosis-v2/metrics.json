@@ -1,0 +1,64 @@
+{
+  "rounds": 1,
+  "sourceEdits": 1,
+  "layoutCliAttempts": 3,
+  "helpAttempts": 1,
+  "viteBuildAttempts": 2,
+  "viteBuildFailures": 1,
+  "graderAttempts": 1,
+  "reportCharacters": 777,
+  "grader": {
+    "scenario": "diagnosis",
+    "pass": true,
+    "stages": [
+      "source",
+      "production-build",
+      "browser-layout",
+      "ssr-build"
+    ],
+    "metrics": {
+      "layout": {
+        "status": "verified",
+        "declarations": 5
+      },
+      "resume": {
+        "javascriptChunks": 0,
+        "javascriptBytes": 0,
+        "javascriptGzipBytes": 0,
+        "htmlBytes": 1274
+      },
+      "columns": [
+        {
+          "width": 320,
+          "count": 1
+        },
+        {
+          "width": 399,
+          "count": 1
+        },
+        {
+          "width": 400,
+          "count": 1
+        },
+        {
+          "width": 407,
+          "count": 1
+        },
+        {
+          "width": 408,
+          "count": 2
+        },
+        {
+          "width": 960,
+          "count": 2
+        }
+      ],
+      "ssr": {
+        "javascriptChunks": 0,
+        "javascriptBytes": 0,
+        "javascriptGzipBytes": 0,
+        "htmlBytes": 1274
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+schema Review { id: string; title: string; done: boolean; }
+
+client component ReviewQueue() {
+  layout SafeGrid {
+    requires { inline-size: 320px..960px; block-size: 640px..960px; }
+    ensures { overflow-inline: fit; overflow-block: fit; }
+  }
+  state reviews: Review[] = [
+    { id: "a", title: "Read proposal", done: false },
+    { id: "b", title: "Check constraints", done: true },
+    { id: "c", title: "Ship demo", done: false }
+  ];
+  state filter = "all";
+  derive visible = reviews.filter(review => filter === "all" || (filter === "done" ? review.done : !review.done));
+  derive openCount = reviews.filter(review => !review.done).length;
+  event all(e: EventSnapshot<MouseEvent>) { filter = "all"; }
+  event open(e: EventSnapshot<MouseEvent>) { filter = "open"; }
+  event done(e: EventSnapshot<MouseEvent>) { filter = "done"; }
+  event add(e: EventSnapshot<MouseEvent>) {
+    reviews = reviews.length < 4 ? reviews.concat([{ id: "d", title: "New review", done: false }]) : reviews;
+  }
+  event toggle(e: EventSnapshot<MouseEvent>, id: string) {
+    reviews = reviews.map(review => review.id === id ? { id: review.id, title: review.title, done: !review.done } : review);
+  }
+  <main class="queue">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .queue { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 24px 32px 24px minmax(0, 1fr); inline-size: 100%; block-size: 100%; padding: 12px; gap: 8px; background: #f1f5f9; color: #0f172a; font: 14px/20px system-ui; }
+      .heading { font: 600 20px/24px system-ui; }
+      .controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: 32px; gap: 6px; }
+      .filter, .add { appearance: none; display: block; box-sizing: border-box; min-inline-size: 0; min-block-size: 0; padding: 0; border: 1px solid #64748b; font: 14px/14px system-ui; background: white; color: #0f172a; overflow-wrap: anywhere; }
+      .metrics { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: 24px; gap: 8px; }
+      .stat { display: block; font: 16px/24px system-ui; }
+      .reviews { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 112px; gap: 8px; align-content: start; }
+      .review-slot { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 112px; block-size: 112px; }
+      @media (min-width: 600px) { .reviews { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+    </style>
+    <h1 class="heading">Review queue</h1>
+    <nav class="controls" aria-label="Review filters">
+      <button class="filter" type="button" on:click={all}>All</button>
+      <button class="filter" type="button" on:click={open}>Open</button>
+      <button class="filter" type="button" on:click={done}>Done</button>
+      <button class="add" type="button" on:click={add}>Add review</button>
+    </nav>
+    <div class="metrics">
+      <output class="stat" aria-label="Total reviews">{reviews.length}</output>
+      <output class="stat" aria-label="Open reviews">{openCount}</output>
+    </div>
+    <section class="reviews" aria-label="Reviews">
+      <For each={visible}>{(review) =>
+        <div class="review-slot" key={review.id} on:click={(e) => toggle(e, review.id)}>
+          <ReviewCard id={review.id} title={review.title} done={review.done} />
+        </div>
+      }</For>
+    </section>
+  </main>
+}
+
+component ReviewCard(id: string, title: string, done: boolean) {
+  layout SafeGrid {
+    requires { inline-size: 160px..960px; block-size: 96px..960px; }
+    ensures { overflow-inline: fit; overflow-block: fit; }
+  }
+  <article class="card" data-review={id}>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .card { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 20px 20px 32px; gap: 4px; align-content: start; inline-size: 100%; block-size: 112px; min-inline-size: 160px; padding: 8px; border: 1px solid #94a3b8; background: white; color: #0f172a; }
+      .title { font: 600 14px/20px system-ui; overflow-wrap: anywhere; }
+      .status { font: 14px/20px system-ui; }
+      .toggle { appearance: none; display: block; box-sizing: border-box; min-inline-size: 0; min-block-size: 0; padding: 0; border: 1px solid #64748b; font: 14px/20px system-ui; background: #e2e8f0; color: #0f172a; }
+    </style>
+    <h2 class="title">{title}</h2>
+    <p class="status">{done ? "Done" : "Open"}</p>
+    <button class="toggle" type="button">Toggle</button>
+  </article>
+}

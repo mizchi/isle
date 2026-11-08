@@ -150,6 +150,8 @@ The feature examples are bilingual. Detailed guides are currently in Japanese: [
 
 Isle is a prototype with a constrained expression/type subset, not an arbitrary TypeScript runtime. `inline(ts/moonbit/css)`, Content Mappers, general async server rendering and class-level CSS elimination are not implemented. The schema subset includes closed records/arrays for supported control flow.
 
+Passing parent-owned events or `RenderFragment` content into universal children inside `For` is currently unsupported. The [consumer evaluation reports](docs/reports/README.md) record observed authoring gaps and fixes.
+
 CSS checks apply to declared size, wrapping and overflow contracts and return `verified`, `violated` or `unknown`; they do not prove arbitrary browser layout. Finite lifecycle/security models are independent reference models. Compiler-to-model generation and a proof of the whole compiler/runtime/browser are future work. Demo server hosts use fixed principals and in-memory data.
 
 [Contributor setup and checks](docs/contributing.md) · [Design](docs/design.md) · [Models](models/README.md) · [Benchmarks](benchmarks/README.md) · [Authoring evaluations](evals/README.md)

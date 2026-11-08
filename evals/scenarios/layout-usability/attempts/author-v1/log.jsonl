@@ -1,0 +1,31 @@
+{"kind":"environment","command":["node","--version"],"exit":0,"output":"v24.21.0"}
+{"kind":"environment","command":["pnpm","--version"],"exit":0,"output":"12.11.2"}
+{"kind":"reading","signal":"requires は親が提供する **割当領域** の条件です。CSS 宣言ではなく、viewport の範囲とも区別します。","source":"docs/layout-contract-language.md","inference":"ReviewQueueは配布domain全体、ReviewCardは親の行からの幅160以上・高さ96以上を要求する。ensuresはCSSではなくfitの検査要求。"}
+{"kind":"reading","signal":"native button は appearance:none、display:block と box-sizing/min-size/padding/border の明示的 reset を要求し、未モデル化の UA 寸法を仮定しない。","source":"docs/layout-checking.md","nextAction":"検査用resetと明示的Grid行を用意する。"}
+{"kind":"reading","signal":"無指定の component は props・純粋な derive・HTML の範囲に制約します。client の state / on や server 専用の処理を、呼び出しによって暗黙に取り込むことはありません。","source":"docs/composition.md","inference":"pure childにcallback propを渡す方法がないため親rowでclickを受ける。ボタンに直接bindingを置けない不便さを残す。"}
+{"time":"2026-11-08T10:17:32.574Z","kind":"command","label":"install","command":["pnpm","install"],"exit":0,"output":"outputs/install.txt"}
+{"time":"2026-11-08T10:17:36.434Z","kind":"command","label":"cli-help","command":["pnpm","exec","isle","--help"],"exit":2,"output":"outputs/cli-help.txt"}
+{"time":"2026-11-08T10:18:24.338Z","kind":"command","label":"initial-check","command":["pnpm","exec","isle","check","app.isle"],"exit":0,"output":"outputs/initial-check.txt"}
+{"time":"2026-11-08T10:18:29.469Z","kind":"command","label":"initial-build","command":["pnpm","exec","vite","build"],"exit":0,"output":"outputs/initial-build.txt"}
+{"time":"2026-11-08T10:18:49.104Z","kind":"command","label":"install-playwright","command":["pnpm","add","-D","playwright@1.64.1"],"exit":0,"output":"outputs/install-playwright.txt"}
+{"time":"2026-11-08T10:18:50.393Z","kind":"command","label":"initial-ssr-build","command":["pnpm","exec","vite","build","--mode","ssr"],"exit":0,"output":"outputs/initial-ssr-build.txt"}
+{"time":"2026-11-08T10:19:26.912Z","kind":"command","label":"browser-check","command":["node","browser-check.mjs"],"exit":0,"output":"outputs/browser-check.txt"}
+{"kind":"edit","round":1,"files":["app.isle","index.html","reset.css","vite.config.mjs","justfile"],"signal":"component 本文に `layout SafeGrid { requires { ... } }` があれば、Vite は検査付きビルドを自動で有効にします。","source":"docs/inline-css.md","nextAction":"rootとpure childでCSSを所有し、resetとfinite viewportを明示してCLI check・buildを実行する。"}
+{"kind":"edit","round":1,"files":["browser-check.mjs"],"signal":"同じ key の移動は行の DOM を保持します。key の変更・削除は行の寿命を終了し、再挿入時には新しい行を作ります。","source":"docs/control-components.md","nextAction":"公開goalsの7操作、DOM identity、breakpoint geometry、SSR生成fileを通常Playwright APIで確認する。"}
+{"kind":"observation","round":1,"signal":"✓ built in 970ms","output":"outputs/initial-build.txt","result":"resume build成功。layout certificate 2462.07kBで短いproof要約なし。"}
+{"kind":"observation","round":1,"signal":"\"preserveRoot\": true","output":"outputs/browser-check.txt","result":"goals全7操作、4件上限、DOM保持、320/599/600/960で1/1/2/2列、SSR JS/Wasm 0成功。独立graderはまだ準備待ち。"}
+{"kind":"edit","round":1,"files":["app.isle","vite.config.mjs"],"signal":"Two labelled outputs, `Total reviews` and `Open reviews`, expose numeric counts.","source":"evals/scenarios/layout-usability/author-brief.md","observation":"Playwright screenshotではaria-labelだけの数値が視覚的に説明不足だった。","nextAction":"visible labelとoutputを明示接続し、必要幅96pxを宣言。buildと操作を再確認する。"}
+{"time":"2026-11-08T10:21:01.670Z","kind":"command","label":"visible-label-check","command":["pnpm","exec","isle","check","app.isle"],"exit":1,"output":"outputs/visible-label-check.txt"}
+{"time":"2026-11-08T10:21:01.966Z","kind":"command","label":"visible-label-build","command":["pnpm","exec","vite","build"],"exit":1,"output":"outputs/visible-label-build.txt"}
+{"time":"2026-11-08T10:21:02.166Z","kind":"command","label":"visible-label-ssr-build","command":["pnpm","exec","vite","build","--mode","ssr"],"exit":1,"output":"outputs/visible-label-ssr-build.txt"}
+{"time":"2026-11-08T10:21:03.014Z","kind":"command","label":"visible-label-browser","command":["node","browser-check.mjs"],"exit":0,"output":"outputs/visible-label-browser.txt"}
+{"kind":"edit","round":1,"files":["app.isle"],"signal":"Reference a visible input, textarea or select.","diagnostic":"E_A11Y_REFERENCE: Label target is not a labelable control","output":"outputs/visible-label-check.txt","nextAction":"outputのvisible labelをspanに変更し、aria-labelでaccessible nameを維持する。失敗後の古いdistを見たvisible-label-browserの成功は無効として再確認する。"}
+{"time":"2026-11-08T10:21:31.660Z","kind":"command","label":"span-label-check","command":["pnpm","exec","isle","check","app.isle"],"exit":0,"output":"outputs/span-label-check.txt"}
+{"time":"2026-11-08T10:21:33.038Z","kind":"command","label":"span-label-build","command":["pnpm","exec","vite","build"],"exit":0,"output":"outputs/span-label-build.txt"}
+{"time":"2026-11-08T10:21:34.287Z","kind":"command","label":"span-label-ssr-build","command":["pnpm","exec","vite","build","--mode","ssr"],"exit":0,"output":"outputs/span-label-ssr-build.txt"}
+{"time":"2026-11-08T10:21:35.130Z","kind":"command","label":"span-label-browser","command":["node","browser-check.mjs"],"exit":0,"output":"outputs/span-label-browser.txt"}
+{"kind":"edit","round":1,"files":["browser-check.mjs"],"signal":"現行ローダーは最寄りの接続一つに配送します。","source":"docs/events.md","nextAction":"親rowのbubble接続によりtitle clickでもtoggleする懸念を通常browserで確認する。"}
+{"time":"2026-11-08T10:21:59.606Z","kind":"command","label":"delegation-browser","command":["node","browser-check.mjs"],"exit":0,"output":"outputs/delegation-browser.txt"}
+{"kind":"verification","round":1,"source":"dist/isle.layout.json","result":{"status":"verified","proof":"verified","complete":true,"solver":"unsat"},"nextAction":"独立graderの利用可能連絡後に受入round1を実行する。"}
+{"time":"2026-11-08T10:22:53.629Z","kind":"command","label":"acceptance-round-1","command":["node","/Users/mz/ghq/github.com/mizchi/isle/tools/grade-layout-usability.mjs","author","/tmp/isle-usability-v1/author-app"],"exit":0,"output":"outputs/acceptance-round-1.txt"}
+{"kind":"round","round":1,"command":["node","/Users/mz/ghq/github.com/mizchi/isle/tools/grade-layout-usability.mjs","author","/tmp/isle-usability-v1/author-app"],"result":"pass","signal":"\"pass\": true","output":"outputs/acceptance-round-1.txt","nextAction":"受入成功のためアプリ編集と確認を終了。report.mdへ成功・失敗・残る摩擦を記録。"}

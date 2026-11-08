@@ -1,0 +1,9 @@
+{
+  "scenario": "author",
+  "version": 2,
+  "frameworkCommit": "794617a",
+  "packageSha256": "7e5b0d02f6589533926ec561a38db64a1aa88cb8e512362c37aa87f520d13358",
+  "validBlindRun": true,
+  "graderInvocations": 1,
+  "notes": "Public docs and npm package only; no implementation or prior attempts"
+}

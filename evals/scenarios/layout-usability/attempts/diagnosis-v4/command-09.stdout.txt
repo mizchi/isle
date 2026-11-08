@@ -1,0 +1,8490 @@
+{
+  "version": 1,
+  "ok": false,
+  "status": "violated",
+  "component": "Board",
+  "scope": {
+    "axis": "both",
+    "viewport": {
+      "min": 320,
+      "max": 960,
+      "minInclusive": true,
+      "maxInclusive": true,
+      "minExact": "320",
+      "maxExact": "960",
+      "height": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      }
+    },
+    "hostInset": 0,
+    "hostBlockInset": 0,
+    "closedCSS": true,
+    "browserRounding": false,
+    "blockSizing": true
+  },
+  "assumptions": [
+    "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+    "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+  ],
+  "styleSources": [
+    {
+      "kind": "app",
+      "file": "<inline>"
+    },
+    {
+      "kind": "app",
+      "file": "<inline:Tile>"
+    },
+    {
+      "kind": "app",
+      "file": "<inline:Board>"
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "severity": "error",
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "source": {
+        "start": 115,
+        "end": 116
+      },
+      "axis": "inline",
+      "message": ".tile.i_cd08a864373a requires 180px but receives 178px on inline axis at viewport 404px × 800px",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "witness": {
+        "viewport": 404,
+        "viewportExact": "404",
+        "viewportHeight": 800,
+        "viewportHeightExact": "800",
+        "available": 178,
+        "required": 180
+      }
+    },
+    {
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "severity": "error",
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "source": {
+        "start": 115,
+        "end": 116
+      },
+      "axis": "inline",
+      "message": ".tile.i_cd08a864373a requires 180px but receives 178px on inline axis at viewport 404px × 800px",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "witness": {
+        "viewport": 404,
+        "viewportExact": "404",
+        "viewportHeight": 800,
+        "viewportHeightExact": "800",
+        "available": 178,
+        "required": 180
+      }
+    },
+    {
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "severity": "error",
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "source": {
+        "start": 115,
+        "end": 116
+      },
+      "axis": "inline",
+      "message": ".tile.i_cd08a864373a requires 180px but receives 178px on inline axis at viewport 404px × 800px",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "witness": {
+        "viewport": 404,
+        "viewportExact": "404",
+        "viewportHeight": 800,
+        "viewportHeightExact": "800",
+        "available": 178,
+        "required": 180
+      }
+    },
+    {
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "severity": "error",
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "source": {
+        "start": 115,
+        "end": 116
+      },
+      "axis": "inline",
+      "message": ".tile.i_cd08a864373a requires 180px but receives 178px on inline axis at viewport 404px × 800px",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "witness": {
+        "viewport": 404,
+        "viewportExact": "404",
+        "viewportHeight": 800,
+        "viewportHeightExact": "800",
+        "available": 178,
+        "required": 180
+      }
+    }
+  ],
+  "policies": [
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          }
+        ]
+      }
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 400,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "400",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 400,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "400",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 400,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "400",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 400,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "400",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "axis": "inline",
+      "overflow": "fit",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "axis": "block",
+      "overflow": "fit",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      }
+    }
+  ],
+  "checks": [
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "448"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "448"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "480"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 400,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "400",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "32"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "inline",
+      "range": {
+        "min": 400,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "400",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "16"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_TRACKS",
+      "axis": "block",
+      "range": {
+        "min": 400,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "400",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "216"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "216"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "inline",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_BOX_EDGES",
+      "axis": "block",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "2"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "248"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "inline",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "required": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "enforced": true
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "code": "E_LAYOUT_ITEM_SIZE",
+      "axis": "block",
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      },
+      "available": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "required": {
+        "coefficient": "0",
+        "constant": "248"
+      },
+      "enforced": true
+    }
+  ],
+  "sizes": [
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-34"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-34"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-34"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-34"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Board>",
+        "line": 1,
+        "selector": ":is(*).i_482b23bea630",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "480"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "448"
+      },
+      "range": {
+        "min": 320,
+        "max": 400,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "320",
+        "maxExact": "400"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "320",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          },
+          {
+            "width": "320",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "-1",
+            "constant": "400",
+            "strict": true
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-212",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-34",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "contentInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-26"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/0",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "contentInlineSize": {
+        "coefficient": "0",
+        "constant": "178"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "contentInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-26"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/1",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "contentInlineSize": {
+        "coefficient": "0",
+        "constant": "178"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "contentInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-26"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/2",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "contentInlineSize": {
+        "coefficient": "0",
+        "constant": "178"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "contentInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-26"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".tile.i_cd08a864373a",
+      "path": "Board/3",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Tile>",
+        "line": 1,
+        "selector": ":is(*).i_cd08a864373a",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1/2",
+        "constant": "-24"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "inlineSize": {
+        "coefficient": "0",
+        "constant": "180"
+      },
+      "contentInlineSize": {
+        "coefficient": "0",
+        "constant": "178"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "98"
+      },
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      }
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Board>",
+        "line": 1,
+        "selector": ":is(*).i_482b23bea630",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "248"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "216"
+      },
+      "range": {
+        "min": 408,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "408",
+        "maxExact": "960"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "640"
+          },
+          {
+            "width": "960",
+            "height": "960"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-408",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-52",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".board.i_482b23bea630",
+      "path": "Board",
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<inline:Board>",
+        "line": 1,
+        "selector": ":is(*).i_482b23bea630",
+        "specified": "border-box"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "248"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "216"
+      },
+      "range": {
+        "min": 400,
+        "max": 408,
+        "minInclusive": true,
+        "maxInclusive": false,
+        "minExact": "400",
+        "maxExact": "408"
+      },
+      "heightRange": {
+        "min": 640,
+        "max": 960,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "640",
+        "maxExact": "960"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "400",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "640"
+          },
+          {
+            "width": "408",
+            "height": "960"
+          },
+          {
+            "width": "400",
+            "height": "960"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-400",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-32",
+            "strict": false
+          },
+          {
+            "coefficient": "1",
+            "constant": "-48",
+            "strict": false
+          },
+          {
+            "coefficient": "-1",
+            "constant": "408",
+            "strict": true
+          }
+        ]
+      }
+    }
+  ],
+  "queries": [],
+  "subgrids": [],
+  "layoutBindings": [
+    {
+      "path": "Board",
+      "declaration": {
+        "contract": {
+          "version": 1,
+          "kind": "contract",
+          "component": "Board",
+          "profile": {
+            "id": "safe-grid/1",
+            "containers": "grid",
+            "positioning": "in-flow",
+            "boxSizing": "border-box",
+            "geometry": "piecewise-affine",
+            "overflowPolicies": [
+              "fit"
+            ]
+          },
+          "requires": {
+            "inlineSize": {
+              "min": 320,
+              "max": 960,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "320",
+              "maxExact": "960"
+            },
+            "blockSize": {
+              "min": 640,
+              "max": 960,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "640",
+              "maxExact": "960"
+            }
+          },
+          "ensures": {
+            "inline": "fit",
+            "block": "fit"
+          }
+        },
+        "source": {
+          "start": 366,
+          "end": 457
+        }
+      }
+    },
+    {
+      "path": "Board/0",
+      "declaration": {
+        "contract": {
+          "version": 1,
+          "kind": "contract",
+          "component": "Tile",
+          "profile": {
+            "id": "safe-grid/1",
+            "containers": "grid",
+            "positioning": "in-flow",
+            "boxSizing": "border-box",
+            "geometry": "piecewise-affine",
+            "overflowPolicies": [
+              "fit"
+            ]
+          },
+          "requires": {
+            "inlineSize": {
+              "min": 180,
+              "max": 960,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "180",
+              "maxExact": "960"
+            },
+            "blockSize": {
+              "min": 100,
+              "max": 960,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "100",
+              "maxExact": "960"
+            }
+          },
+          "ensures": {
+            "inline": "fit",
+            "block": "fit"
+          }
+        },
+        "source": {
+          "start": 21,
+          "end": 112
+        }
+      }
+    },
+    {
+      "path": "Board/1",
+      "declaration": {
+        "contract": {
+          "version": 1,
+          "kind": "contract",
+          "component": "Tile",
+          "profile": {
+            "id": "safe-grid/1",
+            "containers": "grid",
+            "positioning": "in-flow",
+            "boxSizing": "border-box",
+            "geometry": "piecewise-affine",
+            "overflowPolicies": [
+              "fit"
+            ]
+          },
+          "requires": {
+            "inlineSize": {
+              "min": 180,
+              "max": 960,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "180",
+              "maxExact": "960"
+            },
+            "blockSize": {
+              "min": 100,
+              "max": 960,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "100",
+              "maxExact": "960"
+            }
+          },
+          "ensures": {
+            "inline": "fit",
+            "block": "fit"
+          }
+        },
+        "source": {
+          "start": 21,
+          "end": 112
+        }
+      }
+    },
+    {
+      "path": "Board/2",
+      "declaration": {
+        "contract": {
+          "version": 1,
+          "kind": "contract",
+          "component": "Tile",
+          "profile": {
+            "id": "safe-grid/1",
+            "containers": "grid",
+            "positioning": "in-flow",
+            "boxSizing": "border-box",
+            "geometry": "piecewise-affine",
+            "overflowPolicies": [
+              "fit"
+            ]
+          },
+          "requires": {
+            "inlineSize": {
+              "min": 180,
+              "max": 960,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "180",
+              "maxExact": "960"
+            },
+            "blockSize": {
+              "min": 100,
+              "max": 960,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "100",
+              "maxExact": "960"
+            }
+          },
+          "ensures": {
+            "inline": "fit",
+            "block": "fit"
+          }
+        },
+        "source": {
+          "start": 21,
+          "end": 112
+        }
+      }
+    },
+    {
+      "path": "Board/3",
+      "declaration": {
+        "contract": {
+          "version": 1,
+          "kind": "contract",
+          "component": "Tile",
+          "profile": {
+            "id": "safe-grid/1",
+            "containers": "grid",
+            "positioning": "in-flow",
+            "boxSizing": "border-box",
+            "geometry": "piecewise-affine",
+            "overflowPolicies": [
+              "fit"
+            ]
+          },
+          "requires": {
+            "inlineSize": {
+              "min": 180,
+              "max": 960,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "180",
+              "maxExact": "960"
+            },
+            "blockSize": {
+              "min": 100,
+              "max": 960,
+              "minInclusive": true,
+              "maxInclusive": true,
+              "minExact": "100",
+              "maxExact": "960"
+            }
+          },
+          "ensures": {
+            "inline": "fit",
+            "block": "fit"
+          }
+        },
+        "source": {
+          "start": 21,
+          "end": 112
+        }
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "version": 1,
+      "status": "violated",
+      "operation": "conformance",
+      "contract": {
+        "version": 1,
+        "kind": "contract",
+        "component": "Board",
+        "profile": {
+          "id": "safe-grid/1",
+          "containers": "grid",
+          "positioning": "in-flow",
+          "boxSizing": "border-box",
+          "geometry": "piecewise-affine",
+          "overflowPolicies": [
+            "fit"
+          ]
+        },
+        "requires": {
+          "inlineSize": {
+            "min": 320,
+            "max": 960,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "320",
+            "maxExact": "960"
+          },
+          "blockSize": {
+            "min": 640,
+            "max": 960,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "640",
+            "maxExact": "960"
+          }
+        },
+        "ensures": {
+          "inline": "fit",
+          "block": "fit"
+        }
+      },
+      "instance": {
+        "path": "Board"
+      },
+      "coverage": {
+        "version": 1,
+        "component": "Board",
+        "complete": true,
+        "assumptions": [
+          "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+          "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+          "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+        ],
+        "solver": {
+          "engine": "z3-wasm",
+          "version": "5.3.3",
+          "result": "unsat"
+        },
+        "diagnostics": [],
+        "status": "verified"
+      },
+      "proof": {
+        "version": 1,
+        "component": "Board",
+        "complete": true,
+        "assumptions": [
+          "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+          "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+          "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+        ],
+        "solver": {
+          "engine": "z3-wasm",
+          "version": "5.3.3",
+          "result": "sat"
+        },
+        "diagnostics": [],
+        "status": "violated",
+        "witness": {
+          "code": "E_LAYOUT_FIT",
+          "box": ".tile.i_cd08a864373a",
+          "path": "Board/0",
+          "axis": "inline",
+          "viewport": 400,
+          "viewportExact": "400",
+          "viewportHeight": 640,
+          "viewportHeightExact": "640",
+          "available": 176,
+          "required": 180
+        }
+      }
+    },
+    {
+      "version": 1,
+      "status": "violated",
+      "operation": "conformance",
+      "contract": {
+        "version": 1,
+        "kind": "contract",
+        "component": "Tile",
+        "profile": {
+          "id": "safe-grid/1",
+          "containers": "grid",
+          "positioning": "in-flow",
+          "boxSizing": "border-box",
+          "geometry": "piecewise-affine",
+          "overflowPolicies": [
+            "fit"
+          ]
+        },
+        "requires": {
+          "inlineSize": {
+            "min": 180,
+            "max": 960,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "180",
+            "maxExact": "960"
+          },
+          "blockSize": {
+            "min": 100,
+            "max": 960,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "100",
+            "maxExact": "960"
+          }
+        },
+        "ensures": {
+          "inline": "fit",
+          "block": "fit"
+        }
+      },
+      "instance": {
+        "path": "Board/0"
+      },
+      "coverage": {
+        "version": 1,
+        "component": "Tile",
+        "complete": true,
+        "assumptions": [
+          "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+          "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+          "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+        ],
+        "solver": {
+          "engine": "z3-wasm",
+          "version": "5.3.3",
+          "result": "unsat"
+        },
+        "diagnostics": [],
+        "status": "verified"
+      },
+      "proof": {
+        "version": 1,
+        "component": "Tile",
+        "complete": true,
+        "assumptions": [
+          "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+          "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+          "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+        ],
+        "solver": {
+          "engine": "z3-wasm",
+          "version": "5.3.3",
+          "result": "sat"
+        },
+        "diagnostics": [],
+        "status": "violated",
+        "witness": {
+          "code": "E_LAYOUT_FIT",
+          "box": ".tile.i_cd08a864373a",
+          "path": "Board/0",
+          "axis": "inline",
+          "viewport": 400,
+          "viewportExact": "400",
+          "viewportHeight": 640,
+          "viewportHeightExact": "640",
+          "available": 176,
+          "required": 180
+        }
+      }
+    },
+    {
+      "version": 1,
+      "status": "violated",
+      "operation": "conformance",
+      "contract": {
+        "version": 1,
+        "kind": "contract",
+        "component": "Tile",
+        "profile": {
+          "id": "safe-grid/1",
+          "containers": "grid",
+          "positioning": "in-flow",
+          "boxSizing": "border-box",
+          "geometry": "piecewise-affine",
+          "overflowPolicies": [
+            "fit"
+          ]
+        },
+        "requires": {
+          "inlineSize": {
+            "min": 180,
+            "max": 960,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "180",
+            "maxExact": "960"
+          },
+          "blockSize": {
+            "min": 100,
+            "max": 960,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "100",
+            "maxExact": "960"
+          }
+        },
+        "ensures": {
+          "inline": "fit",
+          "block": "fit"
+        }
+      },
+      "instance": {
+        "path": "Board/1"
+      },
+      "coverage": {
+        "version": 1,
+        "component": "Tile",
+        "complete": true,
+        "assumptions": [
+          "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+          "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+          "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+        ],
+        "solver": {
+          "engine": "z3-wasm",
+          "version": "5.3.3",
+          "result": "unsat"
+        },
+        "diagnostics": [],
+        "status": "verified"
+      },
+      "proof": {
+        "version": 1,
+        "component": "Tile",
+        "complete": true,
+        "assumptions": [
+          "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+          "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+          "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+        ],
+        "solver": {
+          "engine": "z3-wasm",
+          "version": "5.3.3",
+          "result": "sat"
+        },
+        "diagnostics": [],
+        "status": "violated",
+        "witness": {
+          "code": "E_LAYOUT_CHILD_REQUIRES",
+          "box": ".tile.i_cd08a864373a",
+          "path": "Board/1",
+          "axis": "inline",
+          "viewport": 400,
+          "viewportExact": "400",
+          "viewportHeight": 640,
+          "viewportHeightExact": "640",
+          "available": 176,
+          "required": 180
+        }
+      }
+    },
+    {
+      "version": 1,
+      "status": "violated",
+      "operation": "conformance",
+      "contract": {
+        "version": 1,
+        "kind": "contract",
+        "component": "Tile",
+        "profile": {
+          "id": "safe-grid/1",
+          "containers": "grid",
+          "positioning": "in-flow",
+          "boxSizing": "border-box",
+          "geometry": "piecewise-affine",
+          "overflowPolicies": [
+            "fit"
+          ]
+        },
+        "requires": {
+          "inlineSize": {
+            "min": 180,
+            "max": 960,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "180",
+            "maxExact": "960"
+          },
+          "blockSize": {
+            "min": 100,
+            "max": 960,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "100",
+            "maxExact": "960"
+          }
+        },
+        "ensures": {
+          "inline": "fit",
+          "block": "fit"
+        }
+      },
+      "instance": {
+        "path": "Board/2"
+      },
+      "coverage": {
+        "version": 1,
+        "component": "Tile",
+        "complete": true,
+        "assumptions": [
+          "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+          "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+          "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+        ],
+        "solver": {
+          "engine": "z3-wasm",
+          "version": "5.3.3",
+          "result": "unsat"
+        },
+        "diagnostics": [],
+        "status": "verified"
+      },
+      "proof": {
+        "version": 1,
+        "component": "Tile",
+        "complete": true,
+        "assumptions": [
+          "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+          "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+          "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+        ],
+        "solver": {
+          "engine": "z3-wasm",
+          "version": "5.3.3",
+          "result": "sat"
+        },
+        "diagnostics": [],
+        "status": "violated",
+        "witness": {
+          "code": "E_LAYOUT_CHILD_REQUIRES",
+          "box": ".tile.i_cd08a864373a",
+          "path": "Board/2",
+          "axis": "inline",
+          "viewport": 400,
+          "viewportExact": "400",
+          "viewportHeight": 640,
+          "viewportHeightExact": "640",
+          "available": 176,
+          "required": 180
+        }
+      }
+    },
+    {
+      "version": 1,
+      "status": "violated",
+      "operation": "conformance",
+      "contract": {
+        "version": 1,
+        "kind": "contract",
+        "component": "Tile",
+        "profile": {
+          "id": "safe-grid/1",
+          "containers": "grid",
+          "positioning": "in-flow",
+          "boxSizing": "border-box",
+          "geometry": "piecewise-affine",
+          "overflowPolicies": [
+            "fit"
+          ]
+        },
+        "requires": {
+          "inlineSize": {
+            "min": 180,
+            "max": 960,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "180",
+            "maxExact": "960"
+          },
+          "blockSize": {
+            "min": 100,
+            "max": 960,
+            "minInclusive": true,
+            "maxInclusive": true,
+            "minExact": "100",
+            "maxExact": "960"
+          }
+        },
+        "ensures": {
+          "inline": "fit",
+          "block": "fit"
+        }
+      },
+      "instance": {
+        "path": "Board/3"
+      },
+      "coverage": {
+        "version": 1,
+        "component": "Tile",
+        "complete": true,
+        "assumptions": [
+          "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+          "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+          "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+        ],
+        "solver": {
+          "engine": "z3-wasm",
+          "version": "5.3.3",
+          "result": "unsat"
+        },
+        "diagnostics": [],
+        "status": "verified"
+      },
+      "proof": {
+        "version": 1,
+        "component": "Tile",
+        "complete": true,
+        "assumptions": [
+          "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
+          "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
+          "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+        ],
+        "solver": {
+          "engine": "z3-wasm",
+          "version": "5.3.3",
+          "result": "sat"
+        },
+        "diagnostics": [],
+        "status": "violated",
+        "witness": {
+          "code": "E_LAYOUT_CHILD_REQUIRES",
+          "box": ".tile.i_cd08a864373a",
+          "path": "Board/3",
+          "axis": "inline",
+          "viewport": 400,
+          "viewportExact": "400",
+          "viewportHeight": 640,
+          "viewportHeightExact": "640",
+          "available": 176,
+          "required": 180
+        }
+      }
+    }
+  ]
+}

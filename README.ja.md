@@ -150,6 +150,8 @@ export default defineConfig({
 
 制約付きの式・型を持つ prototype であり、任意の TypeScript を実行する言語ではありません。`inline(ts/moonbit/css)`、Content Mapper、一般の async server render、class 単位の CSS DCE は未実装です。対応する制御構文では閉じた record / array を使えます。
 
+`For` 内の universal な子へ、親が所有するイベントや `RenderFragment` を渡すことは未対応です。[利用者評価の記録](docs/reports/README.md)に、実際に見つかった記述上の課題と修正を残しています。
+
 CSS 検査は宣言したサイズ・折り返し・overflow の契約を扱い、`verified`・`violated`・`unknown` を返します。任意の browser layout の証明ではありません。寿命・security の有限モデルは独立した参照モデルで、compiler からのモデル生成や compiler / runtime / browser 全体の証明は今後の機能です。デモの server host は固定 principal とメモリー内のデータを使います。
 
 [開発者向けセットアップと検査](docs/contributing.md)・[設計](docs/design.md)・[形式モデル](models/README.md)・[ベンチマーク](benchmarks/README.md)・[記述評価](evals/README.md)

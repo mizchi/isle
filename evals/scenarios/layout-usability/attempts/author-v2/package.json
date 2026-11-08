@@ -1,0 +1,20 @@
+{
+  "name": "isle-review-queue-author-eval",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@12.11.2",
+  "dependencies": {
+    "@isle/prototype": "file:/tmp/isle-usability-v2/isle-prototype-0.0.1.tgz"
+  },
+  "devDependencies": {
+    "vite": "8.3.5"
+  }
+}

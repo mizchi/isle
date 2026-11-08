@@ -1,0 +1,14 @@
+Layout Board: violated
+Deployment: width [320, 960]px; height [640, 960]px
+Declared instances: 5 violated
+E_LAYOUT_ITEM_SIZE: .tile.i_cd08a864373a requires 180px but receives 178px on inline axis at viewport 404px × 800px
+  at app.isle:5:3; instances: Board/0, Board/1, Board/2, Board/3
+  width [400, 408)px; height [640, 960]px
+E_LAYOUT_FIT: Board inline allocation: requires 180px but receives 176px at viewport 400px × 640px
+  at app.isle; instances: Board
+E_LAYOUT_FIT: Tile inline allocation: requires 180px but receives 176px at viewport 400px × 640px
+  at app.isle; instances: Board/0
+E_LAYOUT_CHILD_REQUIRES: Tile inline allocation: requires 180px but receives 176px at viewport 400px × 640px
+  at app.isle; instances: Board/1, Board/2, Board/3
+Scope: closed CSS and trusted content-size bounds; excludes ink overflow and browser pixel rounding.
+Full report: use --json (default).

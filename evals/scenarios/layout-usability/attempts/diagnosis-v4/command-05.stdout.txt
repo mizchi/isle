@@ -1,0 +1,14 @@
+Progress: resolved 0, reused 1, downloaded 0, added 0
+✓ Lockfile passes supply-chain policies (verified 4s ago)
+Packages: +2 -2
+++--
+Progress: resolved 2, reused 24, downloaded 0, added 2, done
+
+dependencies:
+- @isle/prototype file:../../../../tmp/isle-usability-v4/isle-prototype-0.0.1.tgz(vite@8.3.6)
++ @isle/prototype 0.0.1
+
+devDependencies:
++ vite 8.3.5
+
+Done in 61ms using pnpm v12.11.2

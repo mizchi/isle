@@ -1,0 +1,15 @@
+{
+  "ok": false,
+  "diagnostics": [
+    {
+      "code": "E_A11Y_REFERENCE",
+      "message": "Label target is not a labelable control",
+      "start": 3935,
+      "end": 3960,
+      "hint": "Reference a visible input, textarea or select.",
+      "file": "",
+      "cycle": [],
+      "related": []
+    }
+  ]
+}

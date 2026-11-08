@@ -1,0 +1,12 @@
+Progress: resolved 0, reused 1, downloaded 0, added 0
+Packages are cloned from the content-addressable store to the virtual store.
+  Content-addressable store is at: /Users/mz/Library/pnpm/store/v11
+  Virtual store is at:             node_modules/.pnpm
+Packages: +24
+++++++++++++++++++++++++
+Progress: resolved 24, reused 23, downloaded 1, added 24, done
+
+dependencies:
++ @isle/prototype 0.0.1
+
+Done in 151ms using pnpm v12.11.2

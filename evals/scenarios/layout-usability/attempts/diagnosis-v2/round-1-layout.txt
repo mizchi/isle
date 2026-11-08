@@ -1,0 +1,5 @@
+Layout Board: verified
+Deployment: width [320, 960]px; height [640, 960]px
+Declared instances: 5 verified
+Scope: closed CSS and trusted content-size bounds; excludes ink overflow and browser pixel rounding.
+Full report: use --json (default).

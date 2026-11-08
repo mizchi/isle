@@ -1,0 +1,24 @@
+component Tile() {
+  layout SafeGrid {
+    requires { inline-size: 180px..960px; block-size: 100px..960px; }
+  }
+  <article class="tile">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .tile { min-inline-size: 180px; block-size: 100px; background: #c6e9db; border: 1px solid #357166; }
+    </style>
+  </article>
+}
+component Board() {
+  layout SafeGrid {
+    requires { inline-size: 320px..960px; block-size: 640px..960px; }
+  }
+  <main class="board">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 100px; padding: 16px; gap: 16px; }
+      @media (width < 400px) { .board { grid-template-columns: minmax(0, 1fr); } }
+    </style>
+    <Tile /><Tile /><Tile /><Tile />
+  </main>
+}
