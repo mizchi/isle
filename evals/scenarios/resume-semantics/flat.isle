@@ -1,0 +1,5 @@
+client component Demo(unused: string) {
+  state n = 0;
+  event add(e: EventSnapshot<MouseEvent>) { n += 1; }
+  <button type="button" on:click={add}>{n}</button>
+}

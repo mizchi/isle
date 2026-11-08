@@ -55,6 +55,8 @@ Node は予算、共有依存、手動指定、サイズ不明、将来 dynamic 
 
 ## 次の段階
 
+Qwik 2との照合と生成物の監査を踏まえ、[resume意味論の実装順](resume-semantics.md)を具体化した。通常templateとregionで依存・capture・phaseのIRを揃え、guard付きconsumer、regionのCodeRef分割、read-only live入力へ進む。現行regionの全field captureなど、未達の条件は `just resume-semantics-audit` で再現する。
+
 採用した方向性は、型付き状態・遷移、effect / capability、競合方針と scope、差分 collection、操作と accessibility の契約、外部 DOM の所有境界、IR からのモデル抽出である。最初に状態・遷移と task scope の意味を定義し、その IR を実行コードと検証へ接続する。
 
 - **解決の制約グラフ**: export / capture / setup / handler / CSS-ready / commit の前後関係を生成し、並列に準備できる依存を compiler がまとめる。既存の JS 実行順からこの IR への対応も検査する。

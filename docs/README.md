@@ -17,6 +17,7 @@ Isle は、サーバーで生成した HTML を表示し、操作された UI �
 - [構文リファレンス](prototype-guide.md)：props、state、derive、HTML、イベント、明示 RPC。
 - [イベント宣言](events.md)：`event` と `on:click`、明示的な snapshot 引数、同期キャンセル、row の値の受け渡し。
 - [テンプレート内 CSS と Z3](inline-css.md)：scoped な `<style>`、SMT 制約、反例、playground の Z3 Wasm。
+- [Qwikから移植するresume意味論](resume-semantics.md)：専用言語の根拠、現行の不足を測るeval、依存IR・live入力・局所復元の実装順。
 - [CSS略記と上書き](css-shorthands.md)：同一ルールのstrict検査、暗黙リセット、意図的なoverride、対応するカスケード。
 - [CSS 変数の解析](css-variables.md)：`var()`、継承・カスケード、循環、fallback と移植性の制約。
 - [レイアウト契約の形式化](layout-contract-language.md)：ContractIR・LayoutIR・ObligationIR、被覆と適合、親子の要求。

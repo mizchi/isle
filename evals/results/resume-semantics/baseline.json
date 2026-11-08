@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "input": {
+    "unusedStringBytes": 65536
+  },
+  "units": "UTF-8 bytes of JSON.stringify(snapshot) and unbundled generated JS; not transfer bytes",
+  "targetsMet": false,
+  "cases": [
+    {
+      "id": "flat",
+      "accepted": true,
+      "snapshotSlots": [
+        "n"
+      ],
+      "emptySnapshotBytes": 31,
+      "snapshotBytes": 31,
+      "unusedPayloadGrowth": 0,
+      "entries": [
+        {
+          "id": "Demo.add",
+          "captures": [
+            "n"
+          ],
+          "generatedBytes": 85
+        }
+      ],
+      "regionModuleBytes": 0,
+      "checks": [
+        {
+          "id": "unused-input-elision",
+          "met": true
+        },
+        {
+          "id": "entry-local-capture",
+          "met": true
+        }
+      ]
+    },
+    {
+      "id": "regions",
+      "accepted": true,
+      "snapshotSlots": [
+        "unused",
+        "n",
+        "open"
+      ],
+      "emptySnapshotBytes": 40,
+      "snapshotBytes": 65576,
+      "unusedPayloadGrowth": 65536,
+      "entries": [
+        {
+          "id": "Demo.add",
+          "captures": [
+            "unused",
+            "n",
+            "open"
+          ],
+          "generatedBytes": 259
+        },
+        {
+          "id": "Demo.toggle",
+          "captures": [
+            "unused",
+            "n",
+            "open"
+          ],
+          "generatedBytes": 261
+        }
+      ],
+      "regionModuleBytes": 786,
+      "checks": [
+        {
+          "id": "unused-input-elision",
+          "met": false
+        },
+        {
+          "id": "entry-local-capture",
+          "met": false
+        }
+      ]
+    },
+    {
+      "id": "reactive-props",
+      "accepted": false,
+      "diagnostics": [
+        {
+          "code": "E_COMPONENT_CAPTURE",
+          "message": "Mutable parent values or parent event handlers cannot cross a client owner boundary",
+          "hint": "Pass immutable initial props and static render fragments. Use a universal child for live parent bindings.",
+          "start": 355,
+          "end": 361
+        }
+      ],
+      "checks": [
+        {
+          "id": "cross-owner-live-input",
+          "met": false
+        }
+      ]
+    }
+  ]
+}

@@ -400,6 +400,11 @@ css-writes-check: build-compiler check-types
     node --test tests/css-writes.test.mjs tests/layout-shorthand.test.mjs tests/layout-build.test.mjs tests/inline-css*.test.mjs tests/style-build.test.mjs
     pnpm exec playwright test --config playwright.playground.config.mjs --grep 'shorthand conflicts'
 
+# Observe implemented and missing resume optimizations; --require-targets is the future acceptance gate.
+resume-semantics-audit: build-compiler
+    node --test tests/resume-semantics-audit.test.mjs
+    node tools/audit-resume-semantics.mjs
+
 # Independently grade a docs-only npm consumer built by a fresh agent.
 layout-usability-grade scenario directory:
     node tools/grade-layout-usability.mjs {{quote(scenario)}} {{quote(directory)}}

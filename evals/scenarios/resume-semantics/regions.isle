@@ -1,0 +1,11 @@
+client component Demo(unused: string) {
+  state n = 0;
+  state open = false;
+  event add(e: EventSnapshot<MouseEvent>) { n += 1; }
+  event toggle(e: EventSnapshot<MouseEvent>) { open = !open; }
+  <main>
+    <button type="button" on:click={add}>{n}</button>
+    <button type="button" on:click={toggle}>Toggle</button>
+    <Show when={open}><p>Future branch</p></Show>
+  </main>
+}
