@@ -1,0 +1,24 @@
+schema Item { id: string; title: string; }
+client component Phases(initial: number, heading: string, initialItems: Item[], panel: string, suffix: string, errorLabel: string, unused: string) {
+  state n = initial;
+  state open = false;
+  state items: Item[] = initialItems;
+  state dead: string = initialItems[99].title;
+  event increment(e: EventSnapshot<MouseEvent>) { n += 1; }
+  event reveal(e: EventSnapshot<MouseEvent>) {
+    open = true;
+    items = [{ id: "a", title: "Alpha" }];
+  }
+  event clear(e: EventSnapshot<MouseEvent>) { items = []; }
+  <main>
+    <h1>{heading}</h1>
+    <button type="button" data-test="increment" on:click={increment}>{n}</button>
+    <button type="button" data-test="reveal" on:click={reveal}>Reveal</button>
+    <button type="button" data-test="clear" on:click={clear}>Clear</button>
+    <Show when={open}><p data-test="panel">{panel}</p></Show>
+    <ul><For each={items}>{(item) => <li key={item.id} data-test="row">{item.title + suffix}</li>}</For></ul>
+    <ErrorBoundary fallback={(error) => <p data-test="fallback">{errorLabel}</p>}>
+      <p data-test="first">{items[0].title}</p>
+    </ErrorBoundary>
+  </main>
+}

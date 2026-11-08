@@ -42,7 +42,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: moon update
       - run: pnpm build:compiler
-      - run: node --test tests/site.test.mjs tests/links.test.mjs tests/browser-compiler.test.mjs tests/preview.test.mjs tests/control-components.test.mjs tests/removed-control-syntax.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/lexical-events*.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs tests/layout-shorthand.test.mjs tests/css-writes.test.mjs tests/resume-semantics-audit.test.mjs tests/layout-variables.test.mjs tests/layout-contract.test.mjs tests/layout-syntax*.test.mjs tests/layout-declaration-build.test.mjs tests/playground-editor.test.mjs
+      - run: node --test tests/site.test.mjs tests/links.test.mjs tests/browser-compiler.test.mjs tests/preview.test.mjs tests/control-components.test.mjs tests/removed-control-syntax.test.mjs tests/event-declarations.test.mjs tests/event-policy-build.test.mjs tests/lexical-events*.test.mjs tests/inline-css*.test.mjs tests/layout-z3.test.mjs tests/layout-shorthand.test.mjs tests/css-writes.test.mjs tests/resume-semantics-audit.test.mjs tests/resume-phases.test.mjs tests/control-flow*.test.mjs tests/region-optimization.test.mjs tests/layout-variables.test.mjs tests/layout-contract.test.mjs tests/layout-syntax*.test.mjs tests/layout-declaration-build.test.mjs tests/playground-editor.test.mjs
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v6.0.0
@@ -55,6 +55,8 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Check browser compilation and sandboxed preview
         run: pnpm exec playwright test --config playwright.playground.config.mjs
+      - name: Check generated regions and compact phase snapshots
+        run: pnpm exec playwright test --config playwright.control-flow.config.mjs
       - name: Check lexical parent event projection
         run: |
           node tools/write-lexical-guide.mjs --check

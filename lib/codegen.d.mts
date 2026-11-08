@@ -3,6 +3,8 @@ import type { RenderMode, ResumeSnapshot, IsleMount } from './client-contracts.d
 import type { ComponentCost } from './cost-contracts.d.ts';
 
 export interface StaticAnalysis {
+  /** Compile-only classification; never included in the client registry. */
+  valuePhases:import('./resume-plan.mjs').ValuePhase[];
   folded: string[];
   aliases: { name: string; source: string }[];
   serverStates: string[];

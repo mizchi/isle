@@ -47,6 +47,17 @@ test('selection-only apps erase keyed and failure-boundary helpers; SSR controls
   assert.doesNotMatch(ssr.find(item => item.fileName === 'index.html').source, /data-isle-|<!--[rte]:/);
 });
 
+test('server-only region edits preserve emitted JavaScript and initializer props stay out of snapshots',async()=>{
+  const input=`client component C(initial:number){state n=initial;state open=false;
+    event add(e:EventSnapshot<MouseEvent>){n+=1;}event toggle(e:EventSnapshot<MouseEvent>){open=!open;}
+    <main><h1>Server heading</h1><button on:click={add}>{n}</button><button on:click={toggle}>Toggle</button><Show when={open}><p>{n}</p></Show></main>}`;
+  const before=await bundle(input),after=await bundle(input.replace('Server heading','Another heading').replace('state n=initial','state n=initial+1'));
+  const scripts=output=>output.filter(item=>item.type==='chunk').map(chunk=>[chunk.fileName,chunk.code]).sort();
+  assert.deepEqual(scripts(after),scripts(before));
+  assert.notEqual(before.find(item=>item.fileName==='index.html').source,after.find(item=>item.fileName==='index.html').source);
+  for(const chunk of before.filter(item=>item.type==='chunk')) assert.ok(!Object.keys(chunk.modules).some(id=>/resume-plan|region-codegen/.test(id)));
+});
+
 test('one row factory serves 4,096 rows, and unrelated writes skip the list', () => {
   const ir = requireIR(compile(`client component C(xs: number[]) { state n=0; <div><button>on click add {n+=1;}{n}</button><ul><For each={xs}>{(x) => <Fragment key={x}><li>{x}</li></Fragment>}</For></ul></div> }`));
   const program = prepareProgram(ir), compiled = program.get('C').generate();

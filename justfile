@@ -402,8 +402,12 @@ css-writes-check: build-compiler check-types
 
 # Observe implemented and missing resume optimizations; --require-targets is the future acceptance gate.
 resume-semantics-audit: build-compiler
-    node --test tests/resume-semantics-audit.test.mjs
+    node --test tests/resume-semantics-audit.test.mjs tests/resume-phases.test.mjs
     node tools/audit-resume-semantics.mjs
+
+resume-phases-check: build-compiler check-types
+    node --test tests/resume-phases.test.mjs tests/control-flow*.test.mjs tests/region-optimization.test.mjs tests/static-split.test.mjs
+    pnpm exec playwright test --config playwright.control-flow.config.mjs
 
 # Independently grade a docs-only npm consumer built by a fresh agent.
 layout-usability-grade scenario directory:

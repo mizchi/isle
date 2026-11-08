@@ -26,7 +26,7 @@ export async function auditResumeSemantics() {
     const entries=generated.handlers.map(handler=>({id:handler.id,captures:handler.captureNames,generatedBytes:Buffer.byteLength(handler.code)}));
     const unusedPayloadGrowth=snapshotBytes-emptySnapshotBytes;
     const primary=entries.find(entry=>entry.id==='Demo.add');
-    cases.push({id,accepted:true,snapshotSlots:generated.analysis.snapshotSlots,emptySnapshotBytes,snapshotBytes,unusedPayloadGrowth,entries,
+    cases.push({id,accepted:true,snapshotSlots:generated.analysis.snapshotSlots,valuePhases:generated.analysis.valuePhases,emptySnapshotBytes,snapshotBytes,unusedPayloadGrowth,entries,
       regionModuleBytes:generated.regions ? Buffer.byteLength(generated.regions.code) : 0,
       checks:[{id:'unused-input-elision',met:unusedPayloadGrowth===0},
         {id:'entry-local-capture',met:primary.captures.length===1&&primary.captures[0]==='n'}]});

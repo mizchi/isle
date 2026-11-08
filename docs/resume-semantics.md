@@ -1,8 +1,8 @@
 # Qwikから移植する意味論と、Isleを使う理由
 
-状態: 2026-11-08の設計提案。現在の実装と、次に実装する意味論を区別する。`live`引数など、この文書で「提案」と記す構文は未実装である。
+状態: 2026-11-08。通常templateとregionで共通の依存解決・値phase IR、regionの不要snapshot削除を実装した。guard付きconsumerの共通IR、入口ごとのregion capture、`live`引数などは後続の設計提案である。
 
-Isleの中心的な価値を、**状態の所有者・純粋な計算・入力・寿命が明示されたUIから、必要な取得・復元・更新だけを行うプログラムを生成し、その条件を検査できること**に置く。現状は通常テンプレートでの最適化が先行し、制御構造やcomponent境界まで同じ保証を提供できていない。
+Isleの中心的な価値を、**状態の所有者・純粋な計算・入力・寿命が明示されたUIから、必要な取得・復元・更新だけを行うプログラムを生成し、その条件を検査できること**に置く。不要な値の保持を両backendで削減し始めた段階で、guardやcomponent境界まで同じ保証を提供できていない。
 
 ## TSを使う場合との差
 
@@ -47,7 +47,9 @@ Qwik 2の[computed実装](https://github.com/QwikDev/qwik/blob/e1fc74f386a1812a3
 
 サイズは `JSON.stringify(snapshot)` のUTF-8 bytesであり、gzipやネットワーク転送量ではない。両componentのUI全体は同一ではない。未使用入力の増分は、それぞれ同じcomponentに空文字と大きい文字列を渡して比較するため、追加されたToggleやShowでは説明できない。
 
-通常経路は[codegen](../lib/codegen.mjs)でcaptureを絞る。一方、[region codegen](../lib/region-codegen.mjs)は全props/stateをfieldsへ入れ、すべてのhandlerへ全fieldsを渡す。またownerのregion factory一式を同じmoduleに生成し、各handlerが静的importする。閉じた分岐を実行しないことと、そのコードを取得しないことは現状では異なる。
+これは修正前の観測である。現在は両backendが[共通のphase plan](../lib/resume-plan.mjs)を使う。regionのsnapshotは空文字・64KiBのどちらでも **37 bytes** で、増分は **0** になった。[修正後の観測](../evals/results/resume-semantics/value-phases.json)を保存している。
+
+regionの全handlerへ渡す値は、owner内で再開後にも必要なfieldsまで削減した。incrementのcaptureは現在 `n, open` で、`n` だけへの局所化は未達である。ownerのregion factory一式は依然同じmoduleに生成し、各handlerが静的importする。閉じた分岐を実行しないことと、そのコードを取得しないことは現状では異なる。
 
 親のstateをclient子へ渡す[再現例](../evals/scenarios/resume-semantics/reactive-props.isle)は `E_COMPONENT_CAPTURE` になる。これは既存のimmutable prop契約どおりだが、Qwikのような独立したclient同士の連携には足りない。
 
@@ -55,7 +57,15 @@ Qwik 2の[computed実装](https://github.com/QwikDev/qwik/blob/e1fc74f386a1812a3
 
 ## 最初に揃えるIR
 
-通常templateとregionの両方から、次を同じ契約へ下げる。これは新しい文法を要求しない。
+実装済みの `ValuePhasePlan` は、deriveを展開した読取り集合、初期化の依存閉包、snapshot fields、resume用/SSR-only用のstate初期化集合、各値の `owner` と `phase` を持つ。`phase` は `server` / `resume` / `unused` の3種。通常templateとregionで同じ計画器を使い、`explain` の `analysis.valuePhases` から読める。mountのSSR-only指定は別に判定し、その出力へsnapshotは追加しない。
+
+regionではSSR用のslot配置とbrowser用のslot配置も分離した。たとえば `state n = initial` の `initial` はSSRで型検査・初期化に使い、再開後に読まなければsnapshotへ保存しない。初回のrootにしか存在しないreadonlyな見出しも同様に扱う。将来生成するShowのarm、Forの行、ErrorBoundaryのfallbackが読む値は保持する。未使用propも入力契約の型検査は通す必要がある。
+
+regionのschema指紋はfields、実際のpatch/factoryコード、handlerの意味から計算する。再開後の計画が変わらないSSR専用の見出し・初期化式だけの編集では、配信JavaScriptは同一になる。handlerやpatchが変われば指紋も変わり、古いsnapshotとの混在を拒否する。汎用runtimeやsnapshotのwire ABIは追加・変更しない。
+
+[回帰テスト](../tests/resume-phases.test.mjs)では3状態の全初期化DAGと全read集合の16,384ケースで、最適化後の初期化が必要な値を保存することを参照評価器と比較する。初期化を一つ欠いた壊れた計画が検出されることも確認する。この有限検査はcompiler全体の証明ではない。[browserテスト](../e2e/resume-phases.spec.mjs)では、未表示arm、空listからの行生成、エラーからの復帰、複数mountを確認する。解析器はアプリのchunkへ入らない。
+
+次に、通常templateとregionの両方から以下の全体IRへ広げる。新しい文法を要求しない。
 
 ```text
 Value   = { owner, type, phase, readPaths, writeSites, lifetime }
@@ -124,7 +134,7 @@ async derive/taskには、key、read version、ownerの生存、再計算・結�
 
 ## 実装順と合格条件
 
-1. **通常/region共通の依存・capture・phase IR**。Showを足しても未使用64KiB入力のsnapshot増分0、incrementのcaptureはnだけ。初期化専用入力と再開後の値を分ける。
+1. **通常/region共通の依存・capture・phase IR**。依存解決と値phaseは実装済み。Showを足しても未使用64KiB入力のsnapshot増分0、初期化専用入力と再開後の値の分離は達成。incrementのcaptureをnだけに絞るため、guard/入口単位のIRへ進む。
 2. **guard付きconsumerとregionのCodeRef分割**。閉じた大きいpanelの状態・factoryが通常操作で不要。開いた瞬間には必要依存を並列取得し、keyed rowの追加・移動・削除が正しく動く。
 3. **read-only live入力とowner間の伝播**。親だけ・子だけ・同じ子を複数mount・休眠中の子・unmount直後を検査。初期化回数、関係ないhandlerの取得数は0増分を要求する。
 4. **需要に応じたderiveとasync version意味論**。diamond、非表示branch、逆順に完了するrequestを比較。pureな計算の共有と外部effectを区別する。
