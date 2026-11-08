@@ -264,6 +264,12 @@ layout-check: build-compiler
     node --test tests/layout*.test.mjs tests/eval-layout*.test.mjs
     pnpm exec playwright test --config playwright.layout.config.mjs
 
+# Independent contracts, extracted CSS facts, coverage and native counterexamples.
+layout-contract-check: build-compiler check-types
+    node --test tests/layout-contract.test.mjs
+    pnpm exec playwright test --config playwright.layout.config.mjs e2e/layout-contract.spec.mjs
+    node examples/layout-contracts/check-contract.mjs
+
 # Closed production HTML/CSS; both width and height must be fully verified.
 layout-build: build-compiler
     pnpm exec vite build --config examples/responsive-checked/vite.config.mjs

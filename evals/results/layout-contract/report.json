@@ -1,0 +1,69 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "name": "four",
+      "status": "verified",
+      "coverage": "verified",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "unsat"
+      }
+    },
+    {
+      "name": "gap",
+      "status": "violated",
+      "coverage": "verified",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "sat"
+      },
+      "witness": {
+        "code": "E_LAYOUT_FIT",
+        "box": ".cell.i_1bfa0566baa9",
+        "path": "Four/3",
+        "axis": "inline",
+        "viewport": 160,
+        "viewportExact": "160",
+        "viewportHeight": 40,
+        "viewportHeightExact": "40",
+        "available": 34,
+        "required": 40
+      }
+    },
+    {
+      "name": "responsive",
+      "status": "verified",
+      "coverage": "verified",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "unsat"
+      }
+    },
+    {
+      "name": "child-requires",
+      "status": "violated",
+      "coverage": "verified",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "sat"
+      },
+      "witness": {
+        "code": "E_LAYOUT_CHILD_REQUIRES",
+        "box": ".cell.i_f559b20b808c",
+        "path": "Four/3",
+        "axis": "inline",
+        "viewport": 160,
+        "viewportExact": "160",
+        "viewportHeight": 40,
+        "viewportHeightExact": "40",
+        "available": 40,
+        "required": 48
+      }
+    }
+  ]
+}

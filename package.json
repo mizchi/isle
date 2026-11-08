@@ -14,6 +14,8 @@
     "./layout": { "types": "./lib/layout.d.mts", "import": "./lib/layout.mjs" },
     "./layout/z3": { "types": "./lib/layout-z3.d.mts", "import": "./lib/layout-z3.mjs" },
     "./layout/z3/node": { "types": "./lib/layout-z3-node.d.mts", "import": "./lib/layout-z3-node.mjs" },
+    "./layout/contracts": { "types": "./lib/layout-contract.d.mts", "import": "./lib/layout-contract.mjs" },
+    "./layout/contracts/node": { "types": "./lib/layout-contract-node.d.mts", "import": "./lib/layout-contract-node.mjs" },
     "./widget": { "types": "./lib/widget.d.mts", "import": "./lib/widget.mjs" },
     "./widget/browser": { "types": "./runtime/widget.d.mts", "import": "./runtime/widget.mjs" },
     "./resources": { "types": "./runtime/resource-owner.d.mts", "import": "./runtime/resource-owner.mjs" }

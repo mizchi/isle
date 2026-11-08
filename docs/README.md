@@ -17,6 +17,7 @@ Isle は、サーバーで生成した HTML を表示し、操作された UI �
 - [イベント宣言](events.md)：`event` と `on:click`、明示的な snapshot 引数、同期キャンセル、row の値の受け渡し。
 - [テンプレート内 CSS と Z3](inline-css.md)：scoped な `<style>`、SMT 制約、反例、playground の Z3 Wasm。
 - [CSS 変数の解析](css-variables.md)：`var()`、継承・カスケード、循環、fallback と移植性の制約。
+- [レイアウト契約の形式化](layout-contract-language.md)：ContractIR・LayoutIR・ObligationIR、被覆と適合、親子の要求。
 - [Form とアクセシビリティ](forms.md)：入力制約、非同期検証、エラー、pending、reset。
 - [チャンクとプロファイル](chunk-profiling.md)：イベント名、manifest、User Timing。
 - [静的な負荷予測](static-profiling.md)：入口ごとの仕事量、更新の波及、debug 情報、性能 budget。

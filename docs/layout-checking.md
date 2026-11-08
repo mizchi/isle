@@ -4,6 +4,8 @@
 
 [CSS 変数の静的解決](css-variables.md)にも対応する。継承と条件ごとに `var()` を解決し、未解決値・不明な外部継承・fallback 経由の循環を使った geometry は成功扱いしない。
 
+[レイアウト契約の形式化](layout-contract-language.md)では、component の要求と保証を CSS 由来の配置から分離し、独立した API で被覆と適合を検査する。
+
 2026-11-06。Grid と親子のサイズ契約を検査する compiler adapter を実装した。横方向に加え、container size query と明示した高さ契約による縦方向を扱う。標準 CSS を PostCSS で解析し、MoonBit frontend が composition を展開した template IR から box tree を作る。component / handler を browser で実行せずに解析する。
 
 ```sh
