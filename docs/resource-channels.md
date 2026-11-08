@@ -57,7 +57,7 @@ export function setup({channel}: ClientChannelContext) {
 
 1. keyの変更がcommitされたら、旧taskの能力を無効化し、旧task ownerをdisposeしてabortを通知する。その後、新しいkeyでcallbackを呼ぶ。
 2. `refresh()`はkeyが同じでも新しいtaskを作る。viewport変更や再試行から利用できる。
-3. `publish`は入力を検査・copyしてから受信コードを解決する。コード取得中はownerのイベントqueueを占有しない。
+3. `publish`は入力を検査・copyしてから受信コードを解決する。深くfreeze済みの値は、前に検査した切り離したコピーを再利用できる。コード取得中はownerのイベントqueueを占有しない。
 4. コード到着後に生存・task世代・publication順を再検査し、同期のstate/DOM更新だけをownerのqueueへ入れる。commit直前にも検査する。
 5. supersede・unmount・unsubscribe後のpublishは`false`で完了する。不正な入力やコード取得・更新の失敗はrejectする。
 
@@ -86,4 +86,20 @@ registryの位置7にschema ID→channel planを追加した。snapshotはv2、C
 
 [検査](../tests/resource-channels.test.mjs)には、応答・コードの逆転、ABA、入力copy、失効後のpublish、複数owner、cleanup、3結果の完了順6通り×破棄位置4通りの有限検査がある。[ブラウザ検査](../e2e/async-map.spec.mjs)では受信コードを止めたまま入力を変更し、unmount後にもコードを到着させる。これは有限の回帰検査であり、時相論理による完全な証明ではない。
 
-残る課題はadapter型の生成、ownerをまたぐread-only live入力、opaque DOM所有契約、field単位の差分publish。地図のCanvas・詳細DOM・SDKモデル内のcacheと要求世代はadapter側に残っている。
+## 変更のない配列を再利用する
+
+メッセージ自体は引き続き全fieldを要求する。部分メッセージや新しい文法は追加しない。配列・recordが子要素までfreezeされている場合は、検査済みの切り離したコピーをowner内で再利用する。コピーもfreezeし、受信側から後続の結果を壊せないようにする。元の値をstateへ直接渡す仕組みではない。
+
+```ts
+const places = Object.freeze(data.map(place => Object.freeze({id:place.id, name:place.name})));
+await task.publish({places, status:'ready'});
+await task.publish({places, status:'refreshing'});
+```
+
+この例では2回目の`places`が同じコピーを指す。生成済みのsetterが同一値への書込みを省くため、statusだけの変更からForのkeyを再照合する必要がなくなる。選択だけが変わる場合は、選択に依存するbindingだけを更新する。
+
+浅いfreezeでは可変の子要素を再利用しない。通常の可変配列は既存の検査と`structuredClone`の経路で毎回copyする。objectのJSON property順序を保ち、cacheは元の値とコンパイル済みの型の両方で区別する。弱い参照のcacheはowner/channel内で閉じる。古いtaskの棄却、最新メッセージの採用、snapshot/CodeRef ABIは変えない。
+
+primitiveだけのchannelと、channelを使わない通常のproduction buildからはこのcodecを除去する。共有widget engineは後続のアプリにも対応するためcodecを含む。型付きの境界からForの更新までの[地図での測定](async-map-experiment.md)と、[可変・浅いfreeze・deep freezeの比較](../evals/results/async-map/input-sharing.json)を用意した。
+
+残る課題はadapter型の生成、ownerをまたぐread-only live入力、opaque DOM所有契約、部分メッセージの契約。地図のCanvas・詳細DOM・SDKモデル内のcacheと要求世代はadapter側に残っている。

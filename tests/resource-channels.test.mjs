@@ -153,3 +153,23 @@ test('revocation cleanup may dispose the owner or refresh reentrantly without st
  const next=harness();await Promise.resolve();next.tasks[0].owner.own(null,()=>next.channel.refresh());
  next.channel.refresh();assert.equal(next.tasks.length,2);assert.equal(next.tasks[1].signal.aborted,false);next.owner.dispose();
 });
+
+test('unchanged deeply frozen input retains a detached immutable snapshot across publications and task refresh',async()=>{
+ const h=harness();await Promise.resolve();const items=Object.freeze(['stable']);
+ await h.tasks[0].publish({items});const first=h.commits[0].items;
+ assert.notEqual(first,items);assert.equal(Object.isFrozen(first),true);
+ await h.tasks[0].publish({items});assert.equal(h.commits[1].items,first);
+ h.channel.refresh();await h.tasks[1].publish({items});assert.equal(h.commits[2].items,first);
+ h.owner.dispose();
+});
+test('a shallow freeze never caches mutable descendants and a consumer cannot poison retained snapshots',async()=>{
+ const owner=createResourceOwner(),messages=[],tasks=[];
+ const channels=createResourceChannels(owner,[{name:'r',keys:[],input:{record:{items:{array:{record:{name:'string'}}}}},handler:'r'}],()=>[],async()=>()=>{},async(run,data)=>{messages.push(data);return true;},()=>{});
+ channels.get('r').subscribe(task=>{tasks.push(task);});await Promise.resolve();
+ const row={name:'first'},items=Object.freeze([row]);
+ await tasks[0].publish({items});row.name='second';await tasks[0].publish({items});
+ assert.equal(messages[0].items[0].name,'first');assert.equal(messages[1].items[0].name,'second');assert.notEqual(messages[0].items,messages[1].items);
+ Object.freeze(row);await tasks[0].publish({items});const cached=messages[2].items;
+ assert.throws(()=>{cached[0].name='poison';},TypeError);assert.throws(()=>{cached.push({name:'poison'});},TypeError);
+ await tasks[0].publish({items});assert.equal(messages[3].items,cached);assert.equal(cached[0].name,'second');owner.dispose();
+});

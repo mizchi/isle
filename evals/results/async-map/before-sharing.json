@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-08T19:35:33.812Z",
+  "conditions": {
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "dataLatencyMs": 180,
+    "places": 36,
+    "interpretation": "One controlled local diagnostic; not a framework speed comparison. CPU sampling is a separate pan/detail phase after the initial timing. gzip is summed per emitted file, not measured HTTP transfer."
+  },
+  "build": {
+    "htmlBytes": 7101,
+    "snapshotJsonBytes": 233,
+    "allJavaScript": {
+      "files": [
+        "assets/Explorer.activate-CTpUldkO.js",
+        "assets/Explorer.filter-Dluw4CbP.js",
+        "assets/Explorer.resources-v35nm77G.js",
+        "assets/Explorer.results-B61MKEr6.js",
+        "assets/Explorer.search-BsmW9Kxt.js",
+        "assets/index-Cpo42WxL.js",
+        "assets/isle-resume-B1mNpFax.js",
+        "assets/Explorer-BBTsdd_d.js",
+        "assets/detail-view-YPbnXfd-.js",
+        "assets/value-C2JnHAx5.js"
+      ],
+      "raw": 38937,
+      "gzip": 15985
+    },
+    "initialJavaScript": {
+      "files": [
+        "assets/index-Cpo42WxL.js"
+      ],
+      "raw": 2081,
+      "gzip": 1016
+    },
+    "afterActivateJavaScript": {
+      "files": [
+        "assets/index-Cpo42WxL.js",
+        "assets/value-C2JnHAx5.js",
+        "assets/isle-resume-B1mNpFax.js",
+        "assets/Explorer.resources-v35nm77G.js",
+        "assets/Explorer-BBTsdd_d.js",
+        "assets/Explorer.activate-CTpUldkO.js",
+        "assets/Explorer.results-B61MKEr6.js"
+      ],
+      "raw": 37271,
+      "gzip": 15000
+    },
+    "afterDetailsJavaScript": {
+      "files": [
+        "assets/index-Cpo42WxL.js",
+        "assets/value-C2JnHAx5.js",
+        "assets/isle-resume-B1mNpFax.js",
+        "assets/Explorer.resources-v35nm77G.js",
+        "assets/Explorer-BBTsdd_d.js",
+        "assets/Explorer.activate-CTpUldkO.js",
+        "assets/Explorer.results-B61MKEr6.js",
+        "assets/detail-view-YPbnXfd-.js"
+      ],
+      "raw": 38394,
+      "gzip": 15538
+    },
+    "ssrJavaScriptFiles": 0,
+    "ssrHasSnapshot": false
+  },
+  "browser": {
+    "initialRequests": [
+      "/",
+      "/assets/index-Cpo42WxL.js",
+      "/assets/index-BImu6F9O.css",
+      "/assets/neighborhood-yIk2MHGf.svg"
+    ],
+    "initialPayload": {
+      "files": [
+        "index.html",
+        "assets/index-Cpo42WxL.js",
+        "assets/index-BImu6F9O.css",
+        "assets/neighborhood-yIk2MHGf.svg"
+      ],
+      "raw": 35478,
+      "gzip": 7310
+    },
+    "initialRawCLS": 0,
+    "rawCLSAfterResume": 0,
+    "clickToDataReadyMs": 199.89999997615814,
+    "pan": {
+      "pointerMoves": 24,
+      "draws": 26,
+      "unrelatedDOMAttributeWrites": 0,
+      "requestsDuringDrag": 0,
+      "requestsAfterRelease": 1,
+      "additionalJavaScriptFiles": []
+    },
+    "selection": {
+      "rows": 36,
+      "unchangedRowAttributeReads": 36
+    },
+    "detailViewLoaded": true,
+    "externalRequests": [],
+    "errors": []
+  },
+  "sourceLines": {
+    "app.isle": 64,
+    "model.mjs": 89,
+    "transport.mjs": 29,
+    "renderer.mjs": 31,
+    "setup.mjs": 119,
+    "detail-view.mjs": 16
+  },
+  "compilerManagedState": [
+    "query",
+    "category",
+    "started",
+    "categories",
+    "rows",
+    "phase",
+    "error",
+    "selected"
+  ],
+  "adapterManagedState": [
+    "viewport",
+    "details",
+    "saved",
+    "SDK model cache and request generations"
+  ],
+  "resourceChannelManaged": [
+    "query/category key epochs",
+    "receiver code arrival",
+    "publication sequence",
+    "owner revocation"
+  ],
+  "authoringFindings": [
+    {
+      "id": "typed-record-array-derive",
+      "accepted": false,
+      "diagnostics": [
+        {
+          "code": "E_TYPE",
+          "message": "Record literals require a declared type",
+          "start": 5738,
+          "end": 5738,
+          "hint": "Annotate the state or pass the record to a typed prop.",
+          "file": "",
+          "cycle": [],
+          "related": []
+        }
+      ]
+    }
+  ],
+  "cpu": {
+    "phase": "pan and first details, including diagnostic observer/automation overhead; 1ms-scale sampling, short functions may receive no samples",
+    "idleMs": 925.3799999999992,
+    "sources": [
+      {
+        "source": "Other JS/native",
+        "ms": 103.03000000000002
+      },
+      {
+        "source": "Explorer.resources-v35nm77G.js",
+        "ms": 10.373000000000001
+      },
+      {
+        "source": "Explorer-BBTsdd_d.js",
+        "ms": 1.256
+      }
+    ]
+  }
+}

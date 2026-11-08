@@ -13,3 +13,5 @@ just async-map-quality
 Accept only current live-channel results. Preserve old rows on errors, keep controls editable, and release each owner's resources once. Record initial/active/details code separately, first-paint shifts, requests during/after drag, and how much logic stays outside the DSL.
 
 [The report](../../../docs/async-map-experiment.md) documents current limitations. Node/browser and bounded schedule checks have run; no independent authoring/reading participant study or automatic intent grader has run. Single local diagnostic timings are not framework performance comparisons. The resource receiver now checks closed input and owner/epoch/publication at commit; adapter TypeScript types remain manual. SDK request/cache logic and opaque DOM ownership are still outside compiler analysis.
+
+For status-only and selection updates, preserve the detached identity of deeply frozen result rows. Count unchanged row attribute reads and keep keyed DOM nodes. Mutable or shallowly frozen data must stay isolated; compare all three input modes and retain the code-size cost in the report. Full messages and publication ordering remain unchanged.

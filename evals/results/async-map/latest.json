@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-08T18:00:21.730Z",
+  "generatedAt": "2026-11-08T20:02:54.728Z",
   "conditions": {
     "viewport": {
       "width": 1440,
@@ -20,48 +20,48 @@
         "assets/Explorer.resources-v35nm77G.js",
         "assets/Explorer.results-B61MKEr6.js",
         "assets/Explorer.search-BsmW9Kxt.js",
-        "assets/index-Cpo42WxL.js",
-        "assets/isle-resume-B1mNpFax.js",
+        "assets/index-B_uVTB7n.js",
+        "assets/isle-resume-BGEY1GlQ.js",
         "assets/Explorer-BBTsdd_d.js",
         "assets/detail-view-YPbnXfd-.js",
         "assets/value-C2JnHAx5.js"
       ],
-      "raw": 38937,
-      "gzip": 15985
+      "raw": 40076,
+      "gzip": 16403
     },
     "initialJavaScript": {
       "files": [
-        "assets/index-Cpo42WxL.js"
+        "assets/index-B_uVTB7n.js"
       ],
       "raw": 2081,
-      "gzip": 1016
+      "gzip": 1017
     },
     "afterActivateJavaScript": {
       "files": [
-        "assets/index-Cpo42WxL.js",
+        "assets/index-B_uVTB7n.js",
         "assets/value-C2JnHAx5.js",
-        "assets/isle-resume-B1mNpFax.js",
+        "assets/isle-resume-BGEY1GlQ.js",
         "assets/Explorer.resources-v35nm77G.js",
         "assets/Explorer-BBTsdd_d.js",
         "assets/Explorer.activate-CTpUldkO.js",
         "assets/Explorer.results-B61MKEr6.js"
       ],
-      "raw": 37271,
-      "gzip": 15000
+      "raw": 38410,
+      "gzip": 15418
     },
     "afterDetailsJavaScript": {
       "files": [
-        "assets/index-Cpo42WxL.js",
+        "assets/index-B_uVTB7n.js",
         "assets/value-C2JnHAx5.js",
-        "assets/isle-resume-B1mNpFax.js",
+        "assets/isle-resume-BGEY1GlQ.js",
         "assets/Explorer.resources-v35nm77G.js",
         "assets/Explorer-BBTsdd_d.js",
         "assets/Explorer.activate-CTpUldkO.js",
         "assets/Explorer.results-B61MKEr6.js",
         "assets/detail-view-YPbnXfd-.js"
       ],
-      "raw": 38394,
-      "gzip": 15538
+      "raw": 39533,
+      "gzip": 15956
     },
     "ssrJavaScriptFiles": 0,
     "ssrHasSnapshot": false
@@ -69,23 +69,23 @@
   "browser": {
     "initialRequests": [
       "/",
-      "/assets/index-Cpo42WxL.js",
+      "/assets/index-B_uVTB7n.js",
       "/assets/index-BImu6F9O.css",
       "/assets/neighborhood-yIk2MHGf.svg"
     ],
     "initialPayload": {
       "files": [
         "index.html",
-        "assets/index-Cpo42WxL.js",
+        "assets/index-B_uVTB7n.js",
         "assets/index-BImu6F9O.css",
         "assets/neighborhood-yIk2MHGf.svg"
       ],
       "raw": 35478,
-      "gzip": 7310
+      "gzip": 7312
     },
     "initialRawCLS": 0,
     "rawCLSAfterResume": 0,
-    "clickToDataReadyMs": 200.70000004768372,
+    "clickToDataReadyMs": 206.70000004768372,
     "pan": {
       "pointerMoves": 24,
       "draws": 26,
@@ -93,6 +93,10 @@
       "requestsDuringDrag": 0,
       "requestsAfterRelease": 1,
       "additionalJavaScriptFiles": []
+    },
+    "selection": {
+      "rows": 36,
+      "unchangedRowAttributeReads": 0
     },
     "detailViewLoaded": true,
     "externalRequests": [],
@@ -148,23 +152,27 @@
   ],
   "cpu": {
     "phase": "pan and first details, including diagnostic observer/automation overhead; 1ms-scale sampling, short functions may receive no samples",
-    "idleMs": 929.9769999999976,
+    "idleMs": 930.3679999999976,
     "sources": [
       {
         "source": "Other JS/native",
-        "ms": 64.078
+        "ms": 109.783
       },
       {
         "source": "Explorer.resources-v35nm77G.js",
-        "ms": 3.801
+        "ms": 9.806000000000001
       },
       {
-        "source": "isle-resume-B1mNpFax.js",
-        "ms": 1.271
+        "source": "isle-resume-BGEY1GlQ.js",
+        "ms": 6.319
       },
       {
         "source": "Explorer-BBTsdd_d.js",
-        "ms": 1.265
+        "ms": 2.508
+      },
+      {
+        "source": "detail-view-YPbnXfd-.js",
+        "ms": 1.291
       }
     ]
   }

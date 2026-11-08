@@ -42,7 +42,10 @@ try {
   await page.mouse.up();await page.waitForFunction(n=>{const root=document.querySelector('[data-map-app]');return root.dataset.mapPhase==='ready'&&Number(root.dataset.mapIssued)>n;},before.requests);
   const after=await page.locator('[data-map-app]').evaluate(root=>({draws:Number(root.dataset.mapDraws),requests:Number(root.dataset.mapIssued)})),afterPan=sizes(scripts());
   assert.deepEqual(afterPan.files,active.files);
+  const selectionRows=await page.locator('.place-card').count();
+  await page.evaluate(()=>{window.mapAudit.rowDataReads=0;const get=Element.prototype.getAttribute;window.mapAudit.restoreReads=()=>{Element.prototype.getAttribute=get;};Element.prototype.getAttribute=function(name){if(name==='data-place'&&this.matches('.place-card'))window.mapAudit.rowDataReads++;return get.call(this,name);};});
   await page.locator('.place-card').first().click();await page.locator('.place-detail h3').waitFor();await page.locator('.detail-save').waitFor();
+  const selection=await page.evaluate(rows=>{window.mapAudit.restoreReads();return {rows,unchangedRowAttributeReads:window.mapAudit.rowDataReads};},selectionRows);
   const detail=sizes(scripts()),profile=(await cdp.send('Profiler.stop')).profile;
   const nodes=new Map(profile.nodes.map(node=>[node.id,node])),parents=new Map();profile.nodes.forEach(node=>node.children?.forEach(id=>parents.set(id,node.id)));
   const cpu=new Map();let idle=0;
@@ -62,7 +65,7 @@ try {
       ssrJavaScriptFiles:ssr.filter(item=>item.type==='chunk').length,ssrHasSnapshot:/data-isle-snapshot/.test(ssr.find(item=>item.fileName==='index.html').source)},
     browser:{initialRequests,initialPayload:initialPayload(initialRequests),initialRawCLS:initialCLS,rawCLSAfterResume:ready.cls,clickToDataReadyMs:ready.clickToDataReadyMs,
       pan:{pointerMoves:24,draws:after.draws-before.draws,unrelatedDOMAttributeWrites:dataWrites,requestsDuringDrag:during-before.requests,requestsAfterRelease:after.requests-before.requests,additionalJavaScriptFiles:afterPan.files.filter(file=>!active.files.includes(file))},
-      detailViewLoaded:detail.files.some(file=>file.includes('detail-view')),externalRequests:requests.filter(url=>new URL(url).origin!==origin),errors},
+      selection,detailViewLoaded:detail.files.some(file=>file.includes('detail-view')),externalRequests:requests.filter(url=>new URL(url).origin!==origin),errors},
     sourceLines,compilerManagedState:['query','category','started','categories','rows','phase','error','selected'],adapterManagedState:['viewport','details','saved','SDK model cache and request generations'],resourceChannelManaged:['query/category key epochs','receiver code arrival','publication sequence','owner revocation'],
     authoringFindings:[{id:'typed-record-array-derive',accepted:deriveCase.ok,diagnostics:deriveCase.diagnostics}],
     cpu:{phase:'pan and first details, including diagnostic observer/automation overhead; 1ms-scale sampling, short functions may receive no samples',idleMs:idle,sources:[...cpu].map(([source,ms])=>({source,ms})).sort((a,b)=>b.ms-a.ms)}};
@@ -70,5 +73,5 @@ try {
   assert.equal(report.build.ssrJavaScriptFiles,0);assert.equal(report.build.ssrHasSnapshot,false);
   const resultDirectory=new URL('../evals/results/async-map/',import.meta.url);await mkdir(resultDirectory,{recursive:true});await writeFile(new URL('latest.json',resultDirectory),JSON.stringify(report,null,2)+'\n');
   await mkdir('test-results/async-map-profile',{recursive:true});await writeFile('test-results/async-map-profile/pan-details.cpuprofile',JSON.stringify(profile));
-  console.log(JSON.stringify({snapshot:report.build.snapshotJsonBytes,initialJS:initial,activatedJS:active,detailsJS:detail,pan:report.browser.pan,cls:ready.cls,readyMs:ready.clickToDataReadyMs,cpu:report.cpu,sourceLines},null,2));
+  console.log(JSON.stringify({snapshot:report.build.snapshotJsonBytes,initialJS:initial,activatedJS:active,detailsJS:detail,pan:report.browser.pan,selection:report.browser.selection,cls:ready.cls,readyMs:ready.clickToDataReadyMs,cpu:report.cpu,sourceLines},null,2));
 } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}

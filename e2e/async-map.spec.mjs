@@ -144,3 +144,24 @@ test('repeating an unchanged category or input does not leave the map loading',a
   await page.getByRole('searchbox').dispatchEvent('input');
   await expect(app(page)).toHaveAttribute('data-map-phase','ready');await expect(app(page)).toHaveAttribute('data-map-issued',issued);
 });
+
+test('selection updates skip unchanged row data while preserving keyed nodes',async({page})=>{
+ await activate(page);const cards=page.locator('.place-card');
+ await cards.first().evaluate(node=>{window.originalPlace=node;window.rowDataReads=0;const get=Element.prototype.getAttribute;window.restoreRowReads=()=>{Element.prototype.getAttribute=get;};Element.prototype.getAttribute=function(name){if(name==='data-place'&&this.matches('.place-card'))window.rowDataReads++;return get.call(this,name);};});
+ await cards.first().click();await expect(cards.first()).toHaveAttribute('aria-pressed','true');
+ await expect(app(page)).toHaveAttribute('data-map-detail-phase','ready');await expect(page.locator('.detail-save')).toBeVisible();
+ const reads=await page.evaluate(()=>{window.restoreRowReads();return window.rowDataReads;});
+ expect(await cards.first().evaluate(node=>node===window.originalPlace)).toBe(true);expect(reads).toBe(0);
+});
+
+test('pending status keeps prior rows without visiting their bindings',async({page})=>{
+ await activate(page);let release,seen;const held=new Promise(resolve=>{release=resolve;}),requested=new Promise(resolve=>{seen=resolve;});
+ await page.route('**/*places-*.json*',async route=>{seen();await held;await route.continue();});
+ await page.evaluate(()=>{window.pendingRowReads=0;const get=Element.prototype.getAttribute;window.restorePendingReads=()=>{Element.prototype.getAttribute=get;};Element.prototype.getAttribute=function(name){if(['data-place','aria-pressed'].includes(name)&&this.matches('.place-card'))window.pendingRowReads++;return get.call(this,name);};});
+ try{
+  const count=await page.locator('.place-card').count();await page.getByRole('button',{name:'Reset map view'}).click();await requested;
+  await expect(app(page)).toHaveAttribute('data-map-phase','loading');
+  expect(await page.evaluate(()=>window.pendingRowReads)).toBe(0);expect(await page.locator('.place-card').count()).toBe(count);
+ }finally{await page.evaluate(()=>window.restorePendingReads());release();}
+ await expect(app(page)).toHaveAttribute('data-map-phase','ready');
+});

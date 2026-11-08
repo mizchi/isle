@@ -8,11 +8,15 @@ async-map-build: build-compiler
     pnpm exec vite build --config examples/async-map/vite.config.mjs
 
 async-map-check: build-compiler check-types
-    node --test tests/async-map*.test.mjs tests/resource-channels.test.mjs
+    node --test tests/async-map*.test.mjs tests/resource-channels.test.mjs tests/resource-input.test.mjs
     pnpm exec playwright test --config playwright.async-map.config.mjs
 
 async-map-eval: async-map-check
     node tools/eval-async-map.mjs
+
+# Measure complete resource messages with mutable, shallow and deeply frozen rows.
+async-map-input-eval:
+    node tools/eval-resource-input.mjs
 
 async-map-quality: async-map-build
     node tools/check-async-map-quality.mjs

@@ -76,3 +76,12 @@ test('unused resource channels disappear even from a resource-capable app',async
 test('a resource declaration requires an explicit setup provider in a resume build',async()=>{
  await assert.rejects(bundle('resume','lazy',{resources:{}},'client component Counter(initial:number){state n=initial;resource result(){receive(value:number){n=value;}}<div>{n}</div>}'),/Resource channels require a setup entry/);
 });
+
+test('primitive-only resource channels erase the structured sharing codec',async()=>{
+ const output=await bundle('resume','lazy',{},'client component Counter(initial:number){state n=initial;resource result(){receive(value:number){n=value;}}<div>{n}</div>}');
+ assert.doesNotMatch(output.filter(item=>item.type==='chunk').map(item=>item.code).join('\n'),/getOwnPropertyDescriptors|\.isFrozen\(/);
+});
+test('structured resource channels include the immutable snapshot codec',async()=>{
+ const output=await bundle('resume','lazy',{},'schema Row{id:string;}client component Counter(initial:number){state rows:Row[]=[];resource result(){receive(value:Row[]){rows=value;}}<div>{rows.length}</div>}');
+ assert.match(output.filter(item=>item.type==='chunk').map(item=>item.code).join('\n'),/getOwnPropertyDescriptors/);
+});

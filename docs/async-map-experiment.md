@@ -55,6 +55,7 @@ abortを要求しただけでは、相手が停止するとは限らない。テ
 just async-map-check
 just async-map-eval
 just async-map-quality
+just async-map-input-eval
 ```
 
 [機械測定の結果](../evals/results/async-map/latest.json)に、HTML / snapshot、初期・開始後・詳細表示後の累積JS、実際の要求、raw CLS、入力からデータ採用までの時間、ドラッグ中/終了後の要求数、ソース行数を保存する。gzipはlevel 6でファイルごとに圧縮した合計で、HTTP転送量そのものではない。要求されなかったmanifest・cost reportは初期JSに足さない。
@@ -62,14 +63,14 @@ just async-map-quality
 | 指標 | 観測 |
 |---|---:|
 | 初期JSのgzip合計 | 約1.0 KB |
-| 地図開始後の累積JS gzip合計 | 約15.0 KB |
-| 詳細表示後の累積JS gzip合計 | 約15.5 KB |
+| 地図開始後の累積JS gzip合計 | 約15.4 KB |
+| 詳細表示後の累積JS gzip合計 | 約16.0 KB |
 | snapshot JSON | 233 bytes |
 | 初期表示・初回resumeのraw CLS | 0 |
 | ドラッグ中 / 終了後の検索要求 | 0 / 1 |
 | panに伴う追加JS | 0 files |
 
-KBは1,000 bytes。JSにはIsleのloader/runtime、アプリのadapter・モデル・viewを含む。HTML/CSS/SVG/JSONは別で、初期に実際に要求された全ファイルのgzip合計は約7.3 KB。正確なbytesは`browser.initialPayload`へ記録する。sourceはDSL 64行、モデル・transport・renderer・setup・詳細viewが合計284行。前版（commit `3ece3fc`）の開始後は13,578 bytes、詳細表示後14,116 bytes、snapshotは217 bytesだった。型検査・世代管理・生成された結果UIにより開始後のJSは約1.4 KB増えた。初期loaderは約1.0 KB（今回1,016 bytes）を維持し、channelを使わない通常のproduction buildではchannel管理を除去する。
+KBは1,000 bytes。JSにはIsleのloader/runtime、アプリのadapter・モデル・viewを含む。HTML/CSS/SVG/JSONは別で、初期に実際に要求された全ファイルのgzip合計は約7.3 KB。正確なbytesは`browser.initialPayload`へ記録する。sourceはDSL 64行、モデル・transport・renderer・setup・詳細viewが合計284行。前版（commit `3ece3fc`）の開始後は13,578 bytes、詳細表示後14,116 bytes、snapshotは217 bytesだった。typed resourceを追加した`9d78974`では開始後15,000 bytesになった。今回のimmutable入力共有はさらに418 bytesを加え、15,418 bytesになった。初期loaderは約1.0 KB（今回1,017 bytes）で、channelを使わない通常のproduction buildではchannel管理を除去する。
 
 viewportだけが変わる経路では、検索状態・行のARIA属性を更新しない。ブラウザの回帰検査で、12回のpointer moveに伴う不要な属性書込み24回を検出し、0に削減した。Canvasの描画と結果DOMの更新を分離したadapter内の改善であり、compilerが生成した最適化ではない。
 
@@ -79,9 +80,27 @@ viewportだけが変わる経路では、検索状態・行のARIA属性を更�
 
 画面品質はvlmkitのintegrity、copy、scroll、handlers、interactions、contrast、breakpoints、responsiveを検査し、[結果](../evals/results/async-map/quality.json)を保存する。390pxと1440pxの初期・開始後・詳細のloading/ready表示も目視確認した。Gridとサイズ確保を使うが、Canvasと外部DOMを含む画面全体のlayoutをZ3で証明したとは扱わない。
 
+## 結果配列の共有
+
+メッセージ自体は全fieldを渡すまま、深くfreezeされた変更のない値を、検査済みの切り離したコピーとして再利用する。地図のモデルは既に結果配列と各recordをfreezeしているため、DSLやadapterへ追加の注釈は不要だった。
+
+同じ結果配列を使うと、生成setterがrowsへの同一値の代入を省く。loading/errorだけの変更ならForを走査せず、選択変更では既存frameの選択bindingを更新する。古い配列を再検査・copyしてkeyを再照合する必要はない。[変更前の測定](../evals/results/async-map/before-sharing.json)と[現在の測定](../evals/results/async-map/latest.json)で、36件から1件を選んだときの変更のない`data-place`属性の参照が36回→0回になった。nodeのidentityと選択のARIA更新は維持している。
+
+`browser.selection.unchangedRowAttributeReads`は、DOMの`getAttribute`を一時的に計装した観測で、全JS処理数や描画時間ではない。検索中の状態だけが変わる検査では、行のdata属性・選択属性の参照がともに0になる。受信body自体や選択に依存するbindingの処理を全部省いたわけではない。
+
+通常の可変配列には従来のvalidationとnative `structuredClone`を使い、浅いfreezeをdeep freezeと誤認しない。共有したコピーもfreezeし、mutableな原本や受信側の変更からcacheを保護する。cacheはowner/channelごとに元の値と型で区別し、元の値には弱い参照を使う。
+
+[入力コピーのマイクロベンチ](../evals/results/async-map/input-sharing.json)は、可変・浅いfreeze・deep freezeの36件/1,000件を比較する。2経路を各測定ペアで交互に実行し、cacheが空の最初のcopyとwarmup後100回×5組を記録する。元データの生成とfreeze、ネットワーク、受信handler、DOM更新は含めない。
+
+36件のdeep freezeでは、warm時のvalidation/copy中央値が約0.030ms→約0.001msだった。一方、初回は約0.030ms→約0.06msで、共有を証明してcacheを作るコストがある。可変配列は約0.029ms、浅いfreezeは約0.031ms→0.035msだった。結果は1回のローカル測定で、JSエンジンや負荷によって変動する。フレームワーク全体の速度やcold engineの比較とは扱わない。
+
+cacheを型単位にまとめ、行ごとのMap本体生成を除いた。JavaScriptのcache用Map/WeakMapコンストラクタを数えると、36件と1,000件のどちらも初回は計3個、同じ入力の再公開では0個だった。cache entry・DTO copy・native内部の割当てやGC、heap bytesを数えた結果ではない。
+
+このcodecはstructuredなresource入力があるbuildだけへ出力する。primitiveだけのchannelと、resource channelを使わない通常のbuildからは除去する。共有widget engineは後続のアプリにも対応するため機能を含む。snapshot・CodeRef・engineのABIは変更していない。
+
 ## 残る境界
 
-typed resource結果の入口と、Forでの結果描画まで実装した。adapterのTS型は手動で、DSLからの型生成はまだない。SDKモデル側の結果mirror、検索・詳細の要求世代、cacheも残っている。今回のreceiverは結果全体をcopyするため、選択だけの変更でもrowsを渡し直す。field単位の差分publishと型生成は次の改善候補になる。
+typed resource結果の入口と、Forでの結果描画まで実装した。adapterのTS型は手動で、DSLからの型生成はまだない。SDKモデル側の結果mirror、検索・詳細の要求世代、cacheも残っている。receiverへは結果全体を渡すが、深くfreeze済みのrowsは再利用する。部分メッセージやreceiver内の計算単位でのmemo化は未対応で、型生成と合わせて次の改善候補になる。
 
 opaque DOM領域の所有契約と、owner間のread-only live入力も未実装。検索・地図・詳細を別のclient ownerへ分ける段階で必要になる。高頻度のviewport描画はadapterへ残し、低頻度のcamera/selection変更だけをtypedな入口へ渡す。
 

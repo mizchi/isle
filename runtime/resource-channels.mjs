@@ -1,10 +1,13 @@
 import {validValue} from './value.mjs';
+import {createResourceInput} from './resource-input.mjs';
+const OBJECTS=typeof __ISLE_RESOURCE_OBJECTS__==='undefined'||__ISLE_RESOURCE_OBJECTS__;
 
 /** Local async capabilities. No task identity or callback enters the wire snapshot. */
 export function createResourceChannels(owner,plans,read,load,commit,onError) {
   const entries=new Map(),pending=new Set();
   const report=error=>{try{onError(error);}catch{}};
   for(const plan of plans) {
+    const snapshot=OBJECTS?createResourceInput():undefined;
     let subscriber,key,taskOwner,epoch=0,sequence=0;
     const active=(version,publication)=>!owner.disposed&&!taskOwner?.disposed&&epoch===version&&sequence===publication;
     const keys=()=>plan.keys.map(([,slot])=>read()[slot]);
@@ -17,8 +20,8 @@ export function createResourceChannels(owner,plans,read,load,commit,onError) {
       const task=Object.freeze({key:Object.freeze(Object.fromEntries(plan.keys.map(([name],i)=>[name,next[i]]))),owner:localOwner,signal:localOwner.signal,
         async publish(input) {
           if(owner.disposed||localOwner.disposed||version!==epoch)return false;
-          if(!validValue(plan.input,input))throw new Error('Invalid resource input');
-          const data=structuredClone(input),publication=++sequence,guard=()=>active(version,publication);
+          if(!OBJECTS&&!validValue(plan.input,input))throw new Error('Invalid resource input');
+          const data=OBJECTS?snapshot(plan.input,input):structuredClone(input),publication=++sequence,guard=()=>active(version,publication);
           const work=(async()=>{const run=await load(plan.handler);return guard()?commit(run,data,guard,plan.handler):false;})();
           pending.add(work);try{return await work;}finally{pending.delete(work);}
         }});

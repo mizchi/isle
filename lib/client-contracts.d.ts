@@ -36,7 +36,8 @@ export type RunHandler = (values: WireValue[], set: SetSlot, text: TextPatch | u
 export interface ResourceChannelPlan {name:string;keys:[name:string,slot:number][];input:ValueType;handler:string}
 export interface ResourceTask<Key,Input> {
  readonly key:Readonly<Key>; readonly owner:ResourceOwner; readonly signal:AbortSignal;
- /** False after supersession/disposal; rejects invalid input or failed code/DOM preparation. */
+ /** False after supersession/disposal; rejects invalid input or failed code/DOM preparation.
+  * Deeply frozen subtrees can reuse detached snapshots. Mutable values are copied. */
  publish(input:Input):Promise<boolean>;
 }
 export interface ResourceChannel<Key,Input> {
