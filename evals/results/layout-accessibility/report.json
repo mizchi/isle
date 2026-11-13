@@ -35,7 +35,10 @@
     "landmark-name",
     "role-valid",
     "interactive-role-focusable",
-    "link-in-text-block"
+    "link-in-text-block",
+    "table-headers",
+    "td-headers",
+    "fieldset-name"
   ],
   "scope": "Static accessibility rules vs the browser (AX tree names, hit testing, focus, rects, computed colors; vlmkit a11y contrast at 1280).",
   "cases": [
@@ -188,6 +191,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -334,6 +352,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -493,6 +526,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -646,6 +694,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -796,6 +859,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -940,6 +1018,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -1095,6 +1188,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1241,6 +1349,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -1400,6 +1523,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1553,6 +1691,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -1703,6 +1856,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1847,6 +2015,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -2006,6 +2189,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2156,6 +2354,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -2321,6 +2534,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2477,6 +2705,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -2634,6 +2877,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2782,6 +3040,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -2943,6 +3216,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3095,6 +3383,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -3256,6 +3559,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3408,6 +3726,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -3591,6 +3924,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3765,6 +4113,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -3922,6 +4285,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4070,6 +4448,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -4227,6 +4620,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4375,6 +4783,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -4530,6 +4953,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4676,6 +5114,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -4851,6 +5304,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5017,6 +5485,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -5180,6 +5663,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5334,6 +5832,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -5495,6 +6008,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5650,6 +6178,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -5802,6 +6345,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5948,6 +6506,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -6104,6 +6677,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6251,6 +6839,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -6411,6 +7014,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6562,6 +7180,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -6721,6 +7354,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6871,6 +7519,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -7034,6 +7697,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7188,6 +7866,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -7369,6 +8062,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7541,6 +8249,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -7719,6 +8442,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7888,6 +8626,21 @@
           []
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -8059,6 +8812,21 @@
           [],
           [],
           []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8221,6 +8989,21 @@
           ]
         ],
         "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
           [],
           [],
           []
@@ -8400,6 +9183,21 @@
           [
             "Page/1/1"
           ]
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8572,6 +9370,386 @@
           ],
           [
             "Page/1/1"
+          ]
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "tables-and-fieldsets",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/0",
+            "Page/1"
+          ]
+        ],
+        "td-headers": [
+          [
+            "Page/0/1/0/0"
+          ],
+          [
+            "Page/0/1/0/0"
+          ],
+          [
+            "Page/0/1/0/0"
+          ]
+        ],
+        "fieldset-name": [
+          [
+            "Page/2"
+          ],
+          [
+            "Page/2"
+          ],
+          [
+            "Page/2"
+          ]
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/0",
+            "Page/1"
+          ]
+        ],
+        "td-headers": [
+          [
+            "Page/0/1/0/0"
+          ],
+          [
+            "Page/0/1/0/0"
+          ],
+          [
+            "Page/0/1/0/0"
+          ]
+        ],
+        "fieldset-name": [
+          [
+            "Page/2"
+          ],
+          [
+            "Page/2"
+          ],
+          [
+            "Page/2"
           ]
         ]
       }

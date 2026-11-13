@@ -248,6 +248,13 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
   // Lists: UA margins and the start padding for markers; li defaults to display: list-item (unsupported).
   if(['ul', 'ol'].includes(box.tag)) { values['margin-top']='ua'; values['margin-bottom']='ua'; values['padding-left']='ua'; }
   if(box.tag==='li') values.display='list-item';
+  // Tables keep their UA table-* display (unsupported) until the author restyles them; th is bold and centred.
+  const tableDisplay = {table: 'table', caption: 'table-caption', thead: 'table-header-group', tbody: 'table-row-group', tfoot: 'table-footer-group', tr: 'table-row', th: 'table-cell', td: 'table-cell'};
+  if (tableDisplay[box.tag]) values.display = tableDisplay[box.tag];
+  if (box.tag === 'th') { values['font-weight'] = 'ua'; values['text-align'] = 'ua'; }
+  // fieldset/legend: UA border, padding, margin and min-inline-size until reset.
+  if (box.tag === 'fieldset') { for (const side of ['left', 'right', 'top', 'bottom']) { values[`padding-${side}`] = 'ua'; values[`border-${side}`] = 'ua'; } values['margin-left'] = 'ua'; values['margin-right'] = 'ua'; values['min-inline-size'] = 'ua'; }
+  if (box.tag === 'legend') { values['padding-left'] = 'ua'; values['padding-right'] = 'ua'; }
   if(['button', 'input', 'select', 'textarea'].includes(box.tag)) {
     for(const side of ['left','right','top','bottom']) {values[`padding-${side}`]='ua';values[`border-${side}`]='ua';}
     for(const key of ['display','box-sizing','min-inline-size','min-block-size']) values[key]='ua';

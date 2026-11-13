@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -484,4 +484,43 @@ test('inline content: contrast and names per inline element, the inline target-s
 test('inline content that would change the measured text is Unknown', () => {
   for (const extra of ['.k { color: #0645ad; display: inline-block; }', '.k { color: #0645ad; padding: 0 4px; }', '.k { color: #0645ad; position: relative; }'])
     assert.equal(run(para([link()]), paraCSS(extra), {boxes: pb}).status, 'unknown', extra);
+});
+
+// Tables restyled with grid/contents, and fieldsets.
+const table = (cells, extra = {}) => ({tag: 'table', classes: ['t'], ...extra, children: [
+  {tag: 'thead', classes: ['h'], children: [{tag: 'tr', classes: ['r'], children: [{tag: 'th', classes: ['c'], text: true, id: 'h1'}]}]},
+  {tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r2'], children: cells}]}]});
+const tableCSS = extra => `.t { display: grid; grid-template-columns: 100px; grid-auto-rows: 24px; background: #fff; color: #000; }\n.h, .b, .r, .r2 { display: contents; }\n.c, .d { display: block; font-size: 16px; font-weight: 700; text-align: left; line-height: 20px; }\n${extra}`;
+const tb = {'.c': {minInlineSize: 1, intrinsicBlockSize: 20}, '.d': {minInlineSize: 1, intrinsicBlockSize: 20}};
+const cell = (extra = {}) => ({tag: 'td', classes: ['d'], text: true, ...extra});
+
+test('table-headers: headers hidden by CSS leave the data cells without headers there', () => {
+  assert.equal(run(table([cell()]), tableCSS(''), {boxes: tb}).status, 'verified');
+  const narrow = run(table([cell()]), tableCSS('@media (width < 600px) { .c { display: none; } }'), {boxes: tb});
+  const [finding] = find(narrow, 'E_A11Y_TABLE_HEADERS');
+  assert.equal(finding.box, '.t');
+  assert.equal(finding.range.maxExact, '600');
+  // UA table display stays Unknown until restyled.
+  assert.equal(run(table([cell()]), '.c, .d { font-weight: 700; text-align: left; }\n', {boxes: tb}).status, 'unknown');
+});
+
+test('td headers must reference th cells of the same table; a table without th is a warning', () => {
+  assert.deepEqual(find(run(table([cell({headers: ['h1', 'nope']})]), tableCSS(''), {boxes: tb}), 'E_A11Y_TABLE_HEADERS_REF').map(d => d.reference), ['nope']);
+  const bare = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r2'], children: [cell()]}]}]};
+  const db = {'.d': tb['.d']};
+  assert.ok(run(bare, tableCSS(''), {boxes: db}).accessibility.warnings.some(w => w.code === 'W_A11Y_TABLE_HEADERS'));
+  assert.equal(run({...bare, role: 'presentation'}, tableCSS(''), {boxes: db}).accessibility.warnings.filter(w => w.code === 'W_A11Y_TABLE_HEADERS').length, 0);
+});
+
+test('fieldset: UA edges and a rendered legend are Unknown; a group without a legend is a warning', () => {
+  const radio = cls => ({tag: 'input', classes: [cls], inputType: 'radio', inputName: 'x', focusable: true, named: true});
+  const css = '.fs { display: grid; grid-template-columns: 30px 30px; grid-template-rows: 30px; margin: 0; padding: 0; border: 0; min-inline-size: 0; background: #fff; color: #000; }\n.lg { display: block; padding: 0; font-size: 16px; line-height: 20px; }\n.a, .b { appearance: none; display: block; inline-size: 30px; block-size: 30px; padding: 0; border: 0; min-width: 0; min-height: 0; }\n';
+  const set = (children, extra = {}) => ({tag: 'fieldset', classes: ['fs'], children, ...extra});
+  assert.ok(run(set([radio('a'), radio('b')]), css).accessibility.warnings.some(w => w.code === 'W_A11Y_FIELDSET_NAME'));
+  assert.equal(run(set([radio('a'), radio('b')]), css.replace('margin: 0; padding: 0; border: 0; ', '')).status, 'unknown');
+  const legend = {tag: 'legend', classes: ['lg'], text: true};
+  assert.equal(run(set([legend, radio('a'), radio('b')]), css, {boxes: {'.lg': {minInlineSize: 1, intrinsicBlockSize: 20}}}).status, 'unknown'); // rendered legend
+  const contents = run({tag: 'main', classes: ['page'], children: [set([legend, radio('a'), radio('b')])]}, css + '.page { display: grid; grid-template-columns: 30px 30px; grid-auto-rows: 30px; background: #fff; color: #000; }\n.fs { display: contents; }\n', {boxes: {'.lg': {minInlineSize: 1, intrinsicBlockSize: 20}}});
+  assert.notEqual(contents.status, 'unknown', JSON.stringify(contents.diagnostics));
+  assert.equal(contents.accessibility.warnings.filter(w => w.code === 'W_A11Y_FIELDSET_NAME').length, 0);
 });

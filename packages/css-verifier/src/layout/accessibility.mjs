@@ -32,6 +32,9 @@
 //   role-valid       → E_A11Y_ROLE              a role token that is not a WAI-ARIA role
 //   interactive-role-focusable → E_A11Y_ROLE_FOCUS a rendered element with an interactive role that cannot take focus
 //   link-in-text-block → E_A11Y_LINK_IN_TEXT    a link inside text with no underline and under 3:1 against the text (SC 1.4.1)
+//   table-headers    → E_A11Y_TABLE_HEADERS     a table's th exist but none renders where data cells do (W_A11Y_TABLE_HEADERS: no th at all)
+//   td-headers       → E_A11Y_TABLE_HEADERS_REF td/th headers= names no th of the same table
+//   fieldset-name    → W_A11Y_FIELDSET_NAME     a rendered fieldset with no legend or name
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, width as domainWidth } from './region.mjs';
@@ -40,7 +43,7 @@ import { intersect } from './integrity.mjs';
 
 export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable',
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
-  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block'];
+  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -237,7 +240,9 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   const interactive = row => control(row) || field(row.box);
   const placed = geometry.filter(row => row.origin && row.block);
   const boxes = new Map(geometry.map(row => [row.path, row.box]));
-  const hiddenFrom = path => { for (let p = path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') if (boxes.get(p)?.ariaHidden) return true; return false; };
+  // aria-hidden on any ancestor in the box tree (display: contents elements have no geometry row).
+  const treeBoxes = new Map(); (function walk(box) { treeBoxes.set(box.path, box); for (const child of [...(box.children ?? []), ...(box.inline ?? [])]) walk(child); })(root);
+  const hiddenFrom = path => { for (let p = path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') if (treeBoxes.get(p)?.ariaHidden) return true; return false; };
 
   // accessible-name: no name attribute, and no visible text rendered inside.
   // aria-labelledby names through the text of the referenced elements, rendered or not (accname 2.B).
@@ -323,7 +328,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   }
 
   // hidden-focusable: rendered, visible focusable elements under aria-hidden.
-  const hidden = path => { let found = false; for (let p = path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') { const value = boxes.get(p)?.ariaHidden; if (value === true) return true; if (value) found = 'dynamic'; } return found; };
+  const hidden = path => { let found = false; for (let p = path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') { const value = treeBoxes.get(p)?.ariaHidden; if (value === true) return true; if (value) found = 'dynamic'; } return found; };
   for (const row of geometry.filter(row => (row.box.focusable ?? row.box.tag === 'button') && visible(row))) {
     const under = hidden(row.path);
     if (!under) continue;
@@ -530,6 +535,32 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     if (backdropOf.unknown) { report(unknowns, 'U_A11Y_LINK_IN_TEXT', 'unknown', `${row.box.label}: ${backdropOf.unknown}`, row, row.region, { rule: 'link-in-text-block' }); continue; }
     const ratio = contrastRatio(over(link, backdropOf.bg), over(text, backdropOf.bg));
     if (ratio < 3) report(findings, 'E_A11Y_LINK_IN_TEXT', 'error', `${row.box.label} is told apart from the text only by color (${ratio.toFixed(2)}:1, below 3:1) and has no underline`, row, row.region, { rule: 'link-in-text-block', ratio });
+  }
+
+  // Tables: data cells need rendered headers; headers= must name th of the same table.
+  const descendants = (box, test) => { const out = []; (function walk(b) { for (const child of b.children ?? []) { if (test(child)) out.push(child); if (child.tag !== 'table') walk(child); } })(box); return out; };
+  const rowsFor = box => geometry.filter(row => row.box === box && visible(row));
+  for (const tableBox of all.filter(box => box.tag === 'table' && !['presentation', 'none'].includes(roleOf(box)))) {
+    const cells = descendants(tableBox, box => box.tag === 'td'), heads = descendants(tableBox, box => box.tag === 'th' || ['columnheader', 'rowheader'].includes(roleOf(box)));
+    const tableRow = rowsFor(tableBox)[0] ?? { box: tableBox, path: tableBox.path };
+    let missing = cells.flatMap(rowsFor).map(row => row.region);
+    for (const head of heads) for (const row of rowsFor(head)) missing = missing.flatMap(region => subtract(region, row.region));
+    for (const region of missing) report(heads.length ? findings : warnings, heads.length ? 'E_A11Y_TABLE_HEADERS' : 'W_A11Y_TABLE_HEADERS', heads.length ? 'error' : 'warning',
+      heads.length ? `${tableBox.label} shows data cells here but none of its headers renders` : `${tableBox.label} has data cells and no th; mark headers, or role="presentation" for layout`, tableRow, region, { rule: 'table-headers' });
+    const ids = new Set(heads.filter(head => head.tag === 'th' && head.id).map(head => head.id));
+    for (const box of [...cells, ...heads]) {
+      if (box.headers === 'dynamic') { report(unknowns, 'U_A11Y_TABLE_HEADERS_REF', 'unknown', `${box.label}: a dynamic headers= may name no th`, whole(box), domain, { rule: 'td-headers' }); continue; }
+      for (const id of box.headers ?? []) if (!ids.has(id)) report(findings, 'E_A11Y_TABLE_HEADERS_REF', 'error', `${box.label} has headers=${JSON.stringify(id)}, which is not a th of this table`, whole(box), domain, { rule: 'td-headers', reference: id });
+    }
+  }
+
+  // fieldset-name: a fieldset groups controls under a name (its legend, or aria-label/labelledby/title).
+  for (const set of all.filter(box => box.tag === 'fieldset' && !hiddenFrom(box.path))) {
+    if ((set.children ?? []).some(child => child.tag === 'legend') || nameOf(set) === true) continue;
+    // Rendered where any descendant (or the fieldset itself) renders.
+    const own = geometry.filter(row => row.path === set.path);
+    for (const row of own.length ? own : geometry.filter(row => isAncestor(set.path, row.path) && visible(row) && !row.inlineFlow))
+      report(warnings, 'W_A11Y_FIELDSET_NAME', 'warning', `${set.label} groups controls without a legend`, { box: set, path: set.path }, row.region, { rule: 'fieldset-name' });
   }
 
   // target-size: SC 2.5.8 (AA, 24px, with the spacing exception) or SC 2.5.5 (AAA, 44px, no spacing exception).

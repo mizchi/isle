@@ -73,8 +73,11 @@ const cases = [
   {name: 'links-in-text', html: '<div class="page"><p class="p1">Read the <a class="u" href="#a">guide</a> first.</p><p class="p2">Or the <a class="c" href="#b">notes</a> or <a class="v" href="#c">faq</a>.</p><p class="p3">An <span class="g">aside</span> and <a class="e" href="#d"></a>.</p></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;background:#fff;color:#222;${type}}.p1,.p2,.p3{display:block}.u{color:#0645ad}.c{color:#333;text-decoration:none}.v{color:#0645ad;text-decoration:none}.g{color:#aaa}.e{color:#0645ad}@media (width < 600px){.c{text-decoration:underline}}`,
     boxes: {'.p1': label, '.p2': label, '.p3': label}},
+  {name: 'tables-and-fieldsets', html: '<div class="page"><table class="t1"><thead class="h"><tr class="r"><th class="c" id="name">Name</th></tr></thead><tbody class="b"><tr class="r"><td class="d" headers="name nope">Ada</td></tr></tbody></table><table class="t2"><tbody class="b"><tr class="r"><td class="d">x</td></tr></tbody></table><fieldset class="fs"><input class="i" type="radio" name="q" aria-label="Yes"><input class="i" type="radio" name="q" aria-label="No"></fieldset><fieldset class="fs2"><legend class="lg">Size</legend><input class="i" type="radio" name="s" aria-label="S"></fieldset></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff;color:#000;${type}}.t1,.t2{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px}.h,.b,.r{display:contents}.c,.d{display:block;font-weight:700;text-align:left}.fs{display:grid;grid-template-columns:30px 30px;margin:0;padding:0;border:0;min-inline-size:0}.fs2{display:contents}.lg{display:block;padding:0}.i{${button}inline-size:30px;block-size:30px}@media (width < 600px){.c{display:none}}`,
+    boxes: {'.c': label, '.d': label, '.lg': label}},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name'];
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
   && (!row.heightRange || (height >= row.heightRange.min && height <= row.heightRange.max));
 
@@ -131,7 +134,7 @@ async function runtime(page, sample) {
   for (const a of elements) for (const b of elements) {
     if (a.path === b.path || a.path.slice(0, a.path.lastIndexOf('/')) !== b.path.slice(0, b.path.lastIndexOf('/')) || !a.path.includes('/')) continue;
     const [ia, ib] = [a, b].map(e => Number(e.path.slice(e.path.lastIndexOf('/') + 1)));
-    if (ia >= ib || facts[a.path].position !== 'static' || facts[b.path].position !== 'static' || facts[a.path].display === 'none' || facts[b.path].display === 'none') continue;
+    if (ia >= ib || facts[a.path].position !== 'static' || facts[b.path].position !== 'static' || ['none', 'contents'].includes(facts[a.path].display) || ['none', 'contents'].includes(facts[b.path].display)) continue; // display: contents has no box (its rect is all zeros)
     const A = facts[a.path].rect, B = facts[b.path].rect;
     if (B.y + B.h <= A.y || (B.y < A.y + A.h && A.y < B.y + B.h && B.x + B.w <= A.x)) found.get('visual-order').add(b.path);
   }
@@ -267,6 +270,19 @@ async function runtime(page, sample) {
     return out;
   });
   for (const path of inText) found.get('link-in-text-block').add(path);
+  const tables = await page.evaluate(() => {
+    const out = {headers: [], refs: [], fieldset: []};
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible'; };
+    for (const t of document.body.firstElementChild.querySelectorAll('table:not([role=presentation]):not([role=none])')) {
+      const cells = [...t.querySelectorAll('td')], heads = [...t.querySelectorAll('th')];
+      if (cells.some(shown) && !heads.some(shown)) out.headers.push(pathOf(t));
+      for (const c of [...cells, ...heads]) for (const id of (c.getAttribute('headers') ?? '').split(/\s+/).filter(Boolean)) { const h = document.getElementById(id); if (!h || h.tagName !== 'TH' || h.closest('table') !== t) out.refs.push(pathOf(c)); }
+    }
+    for (const f of document.body.firstElementChild.querySelectorAll('fieldset')) if (![...f.children].some(c => c.tagName === 'LEGEND') && !f.getAttribute('aria-label') && [f, ...f.querySelectorAll('*')].some(shown)) out.fieldset.push(pathOf(f));
+    return out;
+  });
+  for (const [rule, key] of [['table-headers', 'headers'], ['td-headers', 'refs'], ['fieldset-name', 'fieldset']]) for (const path of tables[key]) found.get(rule).add(path);
   // Roles: Chromium's computed AX role must be the authored one; widget roles need focus.
   for (const element of elements) {
     const info = await (await handle(element.path)).evaluate(node => ({role: (node.getAttribute('role') ?? '').trim().split(/\s+/)[0], tabIndex: node.tabIndex, shown: getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility === 'visible'}));

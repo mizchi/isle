@@ -1,7 +1,7 @@
 import { q, cmp } from './linear.mjs';
 import { simpleSelector } from './css.mjs';
 import { validateFontContract, validateTextMetrics } from './text-font.mjs';
-export const boxTags = new Set('html body button div main aside section article nav header footer p span a strong em b i small h1 h2 h3 h4 h5 h6 output label img input select textarea ul ol li form'.split(' '));
+export const boxTags = new Set('html body button div main aside section article nav header footer p span a strong em b i small h1 h2 h3 h4 h5 h6 output label img input select textarea ul ol li form table caption thead tbody tfoot tr th td fieldset legend'.split(' '));
 // Form controls and images have UA intrinsic sizes and padding: checked only with resets and explicit sizes.
 export const controlTags = new Set(['button', 'input', 'select', 'textarea']), replacedTags = new Set(['img', 'input', 'select', 'textarea']);
 const ancestorTags=new Set([...boxTags].filter(tag=>!['button', 'img', 'input', 'select', 'textarea'].includes(tag)));
