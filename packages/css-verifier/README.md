@@ -128,9 +128,9 @@ is modeled. Build the FFI with `just css-text-build`.
 
 `oracle/` builds [mizchi/css](https://github.com/mizchi/css), an independent
 MoonBit CSS engine, to JS and compares the shared computed-value subset on a
-deterministic corpus using mizchi/css 0.8.1. Any difference fails; the cases
-that differed in 0.8.0 (all mizchi/css bugs, fixed in 0.8.1) are kept as
-agreement regressions. It is not part of the package files. Run
+deterministic corpus using mizchi/css 0.8.2, including flex properties. Any
+difference fails; the cases that differed in 0.8.0/0.8.1 (all mizchi/css bugs,
+fixed in 0.8.1/0.8.2) are kept as agreement regressions. It is not part of the package files. Run
 `just css-oracle-check` from the repository root (MoonBit required).
 
 ## Compare layout transitions

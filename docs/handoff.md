@@ -53,7 +53,7 @@ CSSコア単独のテストはworkspace package内にあり、rootのテスト�
 | 独立CSS package、npm consumer、Z3、反例の出典 | `just css-verifier-check` |
 | mizchi/cssとのcascade差分(MoonBit必要) | `just css-oracle-check` |
 | フォントから導出するテキスト寸法(MoonBit必要) | `just css-text-check` |
-| flex/contents サブセット(`packages/css-verifier/test/flex-contents.test.mjs`、`e2e/layout-flex.spec.mjs`) | コア7件、Chromium 6ケースで矩形が1/64 px以内で一致。flexの比較は`CSS_ORACLE_FLEX=1`(mizchi/css 0.8.1は flex shorthand 等の3件の誤りがあり、修正はmizchi/cssのbranchにある) |
+| flex/contents サブセット(`packages/css-verifier/test/flex-contents.test.mjs`、`e2e/layout-flex.spec.mjs`) | コア7件、Chromium 6ケースで矩形が1/64 px以内で一致。flexの比較はmizchi/css 0.8.2で既定に含める |
 | noshift、DOM注釈、key、CLI/Vite、有限case eval | `just noshift-check` |
 | 宣言した親子のlayout契約 | `just layout-contract-check` |
 | browser compilerとplayground | `just playground-check` |
@@ -150,7 +150,7 @@ CLS、任意のtext/paint、未対応のscroll/transform等を保証したとは
 | --- | --- |
 | `just test`相当(compiler build後の`pnpm test`) | root Node 682件成功 |
 | `pnpm --filter @mizchi/css-verifier test` | 33件成功 |
-| `just css-oracle-check`(mizchi/css 0.8.1) | 12件成功。30,000ケース全て一致、比較対象外0件(guaranteed-invalidな`var()`をunsetとして扱う変更後)、変異6種を全て検出 |
+| `just css-oracle-check`(mizchi/css 0.8.2、flex系を含む) | 12件成功。30,000ケース全て一致、比較対象外0件(guaranteed-invalidな`var()`をunsetとして扱う変更後)、変異6種を全て検出 |
 | `evals/scenarios/layout-explanations/check.mjs` | 5/5 |
 | `just css-text-check` | Node 7件・コア5件・Chromium 3件成功。実測幅は全て`[advance, 上界]`、上界の余裕は2/64 px以下 |
 | layout-transitionsのcheck/declared/dom/keys eval | 9/5/7/8成功、結果JSON不変、増分0 byte |

@@ -338,7 +338,7 @@ mediaで font-size を変えると、その領域だけunknownになる。`font`
 
 [mizchi/css](https://github.com/mizchi/css)はMoonBitの独立したCSS parser・selector・cascade・computed style実装である。開発用の差分オラクルとして`packages/css-verifier/oracle/`でJSへbuildし、同じCSSとbox treeについて、共通の部分集合の計算値を比較する。対象はdisplay・position・box-sizing・overflow・size・padding/border/margin・gap・Grid track。
 
-決定的に生成した入力(詳細度、`:is`/`:where`、`!important`、source順、media境界、`var()`と継承、wide keyword)を使う。差分は両者のどちらかの誤りの手掛かりであり、片方の正しさの証明ではない。mizchi/css 0.8.1を使い、差分は全て失敗にする。既知差分の分類は持たない。
+決定的に生成した入力(詳細度、`:is`/`:where`、`!important`、source順、media境界、`var()`と継承、wide keyword)を使う。差分は両者のどちらかの誤りの手掛かりであり、片方の正しさの証明ではない。mizchi/css 0.8.2を使い、差分は全て失敗にする。flex系(`flex`・`flex-basis`・`flex-flow`等)も比較する。既知差分の分類は持たない。
 
 0.8.0では次の7種類が差分になり、全てmizchi/css側の誤りだった。0.8.1で修正され、各最小例を「両者が仕様の値で一致する」回帰テストとして残している。
 
@@ -349,6 +349,7 @@ mediaで font-size を変えると、その領域だけunknownになる。`font`
 | 初期値と`inherit` | padding・gap・displayの初期値と、非継承プロパティの`inherit` |
 | `column-gap: normal` | autoになる |
 | `var()` | shorthand内のfallbackを失う。祖先の`--h: var(--g)`を子で再解決する |
+| flex(0.8.1、0.8.2で修正) | `flex: 30px 2 0`等の順序・単位なし0、`flex-basis: content`、`flex-flow`の省略側 |
 
 css-verifier側の`!important`無視、詳細度無視、順序反転、media無視、padding左右の入替、gapの消失を加えた変異は全て差分として検出する。`@layer`、container query、幾何、Z3は対象外。`gap: var(--missing)`等のguaranteed-invalid参照は両者とも`unset`として計算し、30,000ケースで比較対象外は0件。実行は`just css-oracle-check`、結果は[report.json](../evals/results/css-cascade-oracle/report.json)。未リリースのmizchi/cssを試す場合は、それへ接続したbuildを`CSS_ORACLE_JS`で指定する。
 

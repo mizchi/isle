@@ -35,7 +35,7 @@ text(匿名 box)、契約・noshift の対象、解析 root、領域で変わる
 
 差分検査を flex 系プロパティへ広げ、mizchi/css 0.8.1 の誤りを3件見つけて mizchi/css の branch で修正した。
 `flex: <basis> <grow>` 等の順序と単位なし0の扱い・不正値の parse 時破棄、`flex-basis: content`、`flex-flow` の省略側。
-修正版では生成した30,000ケースが一致する。公開版を固定しているため、flex 系の比較は `CSS_ORACLE_FLEX=1` で有効にする。
+修正は0.8.2としてリリースされ、差分検査は0.8.2を固定して flex 系を既定で比較する。
 
 ## 検証
 

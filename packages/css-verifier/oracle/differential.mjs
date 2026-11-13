@@ -8,7 +8,7 @@ import {tracks} from '../src/layout/grid.mjs';
 import {normalizeTree} from '../src/tree.mjs';
 import {cmp, q} from '../src/layout/linear.mjs';
 
-// mizchi/css 0.8.1 has no known divergence on this corpus; every difference fails.
+// mizchi/css 0.8.2 has no known divergence on this corpus; every difference fails.
 // CSS_ORACLE_JS points at another build, e.g. one linked to an unreleased mizchi/css checkout.
 export const oraclePath = process.env.CSS_ORACLE_JS ?? fileURLToPath(new URL('./_build/js/release/build/computed_oracle/computed_oracle.js', import.meta.url));
 
@@ -24,16 +24,8 @@ export const comparedProperties = [
   'inline-size', 'min-inline-size', 'max-inline-size', 'block-size', 'min-block-size', 'max-block-size',
   ...['left', 'right', 'top', 'bottom'].flatMap(side => [`padding-${side}`, `border-${side}`, `margin-${side}`]),
   'column-gap', 'row-gap', 'grid-template-columns', 'grid-template-rows',
-  'justify-content', 'align-items', 'order',
+  'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'align-items', 'order',
 ];
-/**
- * mizchi/css 0.8.1 mis-parses `flex: <basis> <grow>`, `flex-basis: content`
- * and the omitted half of `flex-flow`; fixed on mizchi/css branch
- * claude/dreamy-lovelace-90v3hb (all 30,000 cases agree against it). Enable with
- * CSS_ORACLE_FLEX=1 until the fixed release is the pinned oracle.
- */
-export const flexProperties = ['flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis'];
-if (process.env.CSS_ORACLE_FLEX === '1') comparedProperties.push(...flexProperties);
 
 const length = value => {
   if (value === '0' || value === '0px') return '0px';
