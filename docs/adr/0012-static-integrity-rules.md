@@ -1,6 +1,6 @@
 # ADR-0012: vlmkit の integrity 検査を静的検査へ落とし込む
 
-- 状態: 実装中(ボックスモデルの6規則)
+- 状態: 実装中(ボックスモデルの6規則、Vite と playground に接続)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: ユーザー指示「mizchi/vlmkit で検査しているボックスモデルの検査パターンを静的検査に落とし込む」
@@ -13,7 +13,7 @@ css-verifier はすでに border box の位置と寸法を viewport の affine �
 
 ## 判断
 
-`options.integrity`(`true` か `{targetSize}`)で有効にする規則を追加する。既定では無効で、既存の結果は変わらない。
+`options.integrity`(`true` か `{targetSize, protrusion}`)で有効にする規則を追加する。既定では無効で、既存の結果は変わらない。
 規則は `src/layout/integrity.mjs` にあり、engine が解いた幾何(矩形・領域)と、契約で免除した義務の破れだけを入力にする。
 
 | vlmkit | 静的な規則 | 判定 | 重大度 |
@@ -31,6 +31,21 @@ css-verifier はすでに border box の位置と寸法を viewport の affine �
 
 既存の義務(ITEM_SIZE・TRACKS・CONTENT)と重なる場合がある。integrity の規則は、契約で溢れを許した場合も報告する点と、
 vlmkit と同じ単位(ページ・親子・テキスト)で結果を示す点が異なる。
+
+## 塗りのある親に限る(`protrusion: 'painted'`)
+
+既定の `'all'` は全ての親を対象にする。`'painted'` は vlmkit と同じく、border(幅 > 0)か背景
+(`background-color` が透明以外、または `background-image`)を持つ親だけを対象にする。
+塗りの判定のため `background`・`background-color`・`background-image` を計算値に保持する(幾何には使わない)。
+色の値が透明と判定できない場合は塗りありとして扱い、検査を減らさない側に倒す。
+
+## Z3・Vite・playground
+
+integrity の違反は checks の義務ではないため、Z3 のモデルにはその違反区間が空でないことの確認として入れる。
+playground の状態表示(Z3 由来)と Vite の検査付き build は、同じ違反で失敗する。
+Vite では `layout.integrity` を渡す。違反は build エラー、警告は Vite の警告になり、`isle.layout.json` の
+`contracts.integrity` と `report.integrity` に記録する。playground は **Integrity · page overflow, protrusion & 24px targets** の preset と、
+状態行の「integrity N errors, M warnings, K exempted」で確認できる。
 
 ## テキストの範囲
 
@@ -62,5 +77,4 @@ vlmkit と同じく、absolute の box が関わる重なりは意図的なオ�
 
 ## 次の段階
 
-1. 塗り(背景・border の有無)を CSS から求め、protrusion を vlmkit と同じ対象に絞る選択肢。
-2. Vite の検査付き build と playground への接続。
+1. フォント由来のテキスト契約を Vite の build から使う(`layout.json` の `fonts` に相当する設定)。

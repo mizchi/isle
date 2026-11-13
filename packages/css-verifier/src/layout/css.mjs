@@ -17,7 +17,7 @@ const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset
 const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
-const decoration = /^(?:color|background(?:-(?:color|image|position|size|repeat|clip|origin|attachment))?|border-(?:color|radius)|outline(?:-(?:color|style|width|offset))?|box-shadow|text-shadow|text-decoration|cursor|opacity|visibility)$/;
+const decoration = /^(?:color|background-(?:position|size|repeat|clip|origin|attachment)|border-(?:color|radius)|outline(?:-(?:color|style|width|offset))?|box-shadow|text-shadow|text-decoration|cursor|opacity|visibility)$/;
 // Inherited text properties. They are kept as specified strings and only
 // interpreted for boxes whose contract derives text metrics from a font.
 export const textProperties = ['font-family', 'font-size', 'line-height', 'font-weight', 'font-style', 'font-stretch', 'font-variant', 'text-transform', 'letter-spacing', 'word-spacing', 'text-align'];
@@ -41,7 +41,7 @@ function expand(property, value) {
   if (property==='scrollbar-color') return [];
   if (property === 'all') {
     if (!wide.has(value)) throw new Error('Unsupported all reset');
-    return [...geometry, ...textProperties, ...['left', 'right', 'top', 'bottom'].flatMap(side => [side, `padding-${side}`, `margin-${side}`, `border-${side}`])].filter(key => key !== 'direction').map(key => [key, value]);
+    return [...geometry, ...textProperties, 'background-color', 'background-image', ...['left', 'right', 'top', 'bottom'].flatMap(side => [side, `padding-${side}`, `margin-${side}`, `border-${side}`])].filter(key => key !== 'direction').map(key => [key, value]);
   }
   if (property === 'flex') return flexShorthand(value);
   if (property === 'flex-flow') {
@@ -102,6 +102,14 @@ function expand(property, value) {
     return [[property, value]];
   }
   if (property === 'font') return textProperties.filter(key => key.startsWith('font-') || key === 'line-height').map(key => [key, wide.has(value) ? value : fontShorthand]);
+  // Paint only: whether a box draws a background (integrity `protrusion: 'painted'`).
+  if (property === 'background-color' || property === 'background-image') return [[property, value]];
+  if (property === 'background') {
+    if (wide.has(value)) return [['background-color', value], ['background-image', value]];
+    const parts = postcss.list.space(value), image = parts.find(p => /^(?:url|(?:repeating-)?(?:linear|radial|conic)-gradient|image-set)\(/.test(p)) ?? 'none';
+    const color = parts.find(p => !/^(?:url|(?:repeating-)?(?:linear|radial|conic)-gradient|image-set)\(/.test(p) && !/^(?:none|repeat|repeat-x|repeat-y|no-repeat|space|round|scroll|fixed|local|top|bottom|left|right|center|border-box|padding-box|content-box|\d.*|\/|auto|cover|contain)$/.test(p)) ?? 'transparent';
+    return [['background-color', color], ['background-image', image]];
+  }
   if (decoration.test(property)) return [];
   throw new Error(`Unsupported layout property: ${property}`);
 }
@@ -211,6 +219,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
     'grid-template-columns': 'none', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'grid-auto-flow': 'row', 'row-gap': 'normal',
     'container-type': 'normal', 'container-name': 'none', 'align-items': 'normal', 'align-self': 'auto', 'align-content': 'normal',
     'column-gap': 'normal', 'grid-column': 'auto', 'grid-row': 'auto',
+    'background-color': 'transparent', 'background-image': 'none',
     'flex-direction': 'row', 'flex-wrap': 'nowrap', 'flex-grow': '0', 'flex-shrink': '1', 'flex-basis': 'auto', 'justify-content': 'normal', order: '0',
     'overflow-x': 'visible', 'overflow-y': 'visible', 'white-space': inherited['white-space'] ?? 'normal',
     'scrollbar-gutter':'auto', 'scrollbar-width':'auto',

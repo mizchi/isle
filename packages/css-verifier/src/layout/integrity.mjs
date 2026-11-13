@@ -50,7 +50,7 @@ function textExtents(row) {
 }
 const isParent = (parent, child) => child.path.startsWith(parent.path + '/') && !child.path.slice(parent.path.length + 1).includes('/');
 
-export function judgeIntegrity({ geometry, waived }, { block, targetSize = 24, ranges }) {
+export function judgeIntegrity({ geometry, waived }, { block, targetSize = 24, protrusion = 'all', ranges }) {
   const findings = [], warnings = [], exempted = [];
   const witness = region => { const p = sample(region); return { viewport: number(p.x), viewportExact: exact(p.x), ...(block ? { viewportHeight: number(p.y), viewportHeightExact: exact(p.y) } : {}) }; };
   const report = (list, code, severity, message, row, region, extra = {}) => list.push({ code, severity, message, box: row.box.label, path: row.path, source: row.box.source, ...ranges(region), witness: witness(region), ...extra });
@@ -65,7 +65,8 @@ export function judgeIntegrity({ geometry, waived }, { block, targetSize = 24, r
   // container-protrusion: a child's border box leaves its parent's padding box.
   for (const child of placed) {
     if (child.position === 'absolute') continue; // authored overlay; its containing block is checked separately
-    for (const parent of placed.filter(p => isParent(p, child))) {
+    // 'painted': only parents with a border or background, as vlmkit judges visible protrusion.
+    for (const parent of placed.filter(p => isParent(p, child) && (protrusion === 'all' || p.painted))) {
       const shared = intersect(child.region, parent.region);
       if (!shared) continue;
       const box = { left: sum(parent.origin.inline, scalar(parent.borders.left)), top: sum(parent.origin.block, scalar(parent.borders.top)),

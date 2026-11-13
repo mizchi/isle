@@ -91,11 +91,13 @@ these contracts, then checked for coverage and conformance.
 
 ## Integrity rules (opt-in)
 
-`integrity: true` (or `{targetSize}`) adds static counterparts of the box-model
+`integrity: true` (or `{targetSize, protrusion: 'all' | 'painted'}`) adds static counterparts of the box-model
 rules of `vlmkit check integrity`, decided over the whole viewport domain:
 page overflow, container protrusion, text-box collision and interactive target
 size are errors; content cut by `overflow: hidden/clip` and nested scrolling are
 warnings in `report.integrity.warnings`. Each finding carries the vlmkit `rule`.
+`protrusion: 'painted'` only judges parents with a border or background, as
+vlmkit does. Z3 confirms integrity findings like the other obligations.
 
 ## Explain a counterexample
 

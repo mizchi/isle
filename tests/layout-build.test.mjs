@@ -200,3 +200,31 @@ test('a later HTML transform cannot change the initial snapshot used by the boun
   }}}]});
   await assert.rejects(run,/E_ISLE_LAYOUT.*snapshot/i);
 });
+
+test('checked builds can enforce the integrity rules and record them in the certificate', async t => {
+  const toolbar = 'export component Four() { <main class="bar"><button class="b">Go</button></main> }';
+  const style = size => `*{box-sizing:border-box;margin:0}.bar{display:grid;grid-template-columns:${size}px;grid-template-rows:${size}px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0}`;
+  const boxes = {'.b':{minInlineSize:1,minBlockSize:1}};
+  // Without integrity, a 20px button is a valid layout.
+  await (await fixture(t, {source:toolbar, css:style(20), options:{mounts:[{component:'Four',props:{}}],wrapMounts:false,layout:{css:'./app.css',viewport,boxes}}}))();
+  const small = await fixture(t, {source:toolbar, css:style(20), options:{mounts:[{component:'Four',props:{}}],wrapMounts:false,layout:{css:'./app.css',viewport,boxes,integrity:true}}});
+  await assert.rejects(small, error => /E_ISLE_LAYOUT/.test(error.message) && /E_LAYOUT_TARGET_SIZE/.test(error.message));
+  const output = await (await fixture(t, {source:toolbar, css:style(24), options:{mounts:[{component:'Four',props:{}}],wrapMounts:false,layout:{css:'./app.css',viewport,boxes,integrity:{targetSize:24,protrusion:'painted'}}}}))();
+  const certificate = JSON.parse(artifact(output, 'isle.layout.json').source);
+  assert.deepEqual(certificate.contracts.integrity, {targetSize:24,protrusion:'painted'});
+  assert.equal(certificate.report.integrity.protrusion, 'painted');
+  assert.deepEqual(certificate.report.integrity.warnings, []);
+});
+
+test('integrity warnings are reported by the build without failing it', async t => {
+  const strip = 'export component Four() { <main class="frame"><div class="wide"></div></main> }';
+  const directory = await mkdtemp(join(tmpdir(), 'isle-layout-integrity-'));
+  t.after(() => rm(directory, { recursive:true, force:true }));
+  await Promise.all([writeFile(join(directory, 'app.isle'), strip), writeFile(join(directory, 'index.html'), html), writeFile(join(directory, 'package.json'), '{"type":"module"}'),
+    writeFile(join(directory, 'app.css'), '*{box-sizing:border-box;margin:0}.frame{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:20px;overflow:hidden}.wide{inline-size:250px}')]);
+  const warnings = [];
+  const customLogger = {info() {}, warn: message => warnings.push(message), warnOnce: message => warnings.push(message), error() {}, clearScreen() {}, hasErrorLogged: () => false, hasWarned: false};
+  await build({configFile:false,root:directory,base:'./',customLogger,plugins:[isle({entry:join(directory, 'app.isle'),mounts:[{component:'Four',props:{}}],wrapMounts:false,
+    layout:{css:'./app.css',viewport,boxes:{'.frame':{overflow:'clip'}},integrity:true}})],build:{write:false}});
+  assert.ok(warnings.some(message => /W_LAYOUT_CLIPPED/.test(message) && /80\.\.250/.test(message)), warnings.join('\n'));
+});

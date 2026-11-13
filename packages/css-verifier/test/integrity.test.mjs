@@ -107,3 +107,29 @@ test('clipped-content and nested-scroll are warnings that do not change the stat
   assert.equal(nested.status, 'verified', JSON.stringify(nested.diagnostics));
   assert.ok(nested.integrity.warnings.some(w => w.code === 'W_LAYOUT_NESTED_SCROLL' && w.path === 'Page/0'), JSON.stringify(nested.integrity.warnings));
 });
+
+test("protrusion: 'painted' only judges parents with a border or a background", () => {
+  const tree = {tag: 'main', classes: ['row'], children: [{tag: 'div', classes: ['plain'], children: [{tag: 'div', classes: ['wide']}]}, {tag: 'div', classes: ['card'], children: [{tag: 'div', classes: ['wide']}]}]};
+  const css = '.row { display: grid; grid-template-columns: minmax(0, 1fr); }\n.plain, .card { display: grid; grid-template-columns: minmax(0, 1fr); }\n.wide { inline-size: 600px; }\n';
+  const boxes = {'.plain': {overflow: 'visible'}, '.card': {overflow: 'visible'}};
+  for (const [paint, painted] of [['.card { background: #eef; }', true], ['.card { border: 1px solid red; }', true], ['.card { background-color: transparent; }', false], ['.card { background: none; }', false], ['.card { background: url(a.png) no-repeat; }', true]]) {
+    const report = run(tree, css + paint + '\n', {boxes, integrity: {protrusion: 'painted'}});
+    const parents = report.diagnostics.filter(d => d.code === 'E_LAYOUT_PROTRUSION').map(d => d.parent);
+    assert.ok(!parents.includes('Page/0'), 'an unpainted parent is skipped');
+    assert.equal(parents.includes('Page/1'), painted, paint);
+  }
+  const all = run(tree, css, {boxes});
+  assert.ok(all.diagnostics.some(d => d.code === 'E_LAYOUT_PROTRUSION' && d.parent === 'Page/0'));
+  assert.throws(() => run(tree, css, {integrity: {protrusion: 'visible'}}), /Invalid integrity option/);
+});
+
+test('Z3 confirms integrity findings', async () => {
+  const {verifyLayoutReport} = await import('../src/layout-z3-node.mjs');
+  const tree = {tag: 'main', classes: ['bar'], children: [{tag: 'button', classes: ['b'], text: true}]};
+  const css = '.bar { display: grid; grid-template-columns: 20px; grid-template-rows: 20px; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n';
+  const report = run(tree, css, {boxes: {'.b': {minInlineSize: 1, minBlockSize: 1}}});
+  assert.deepEqual(report.diagnostics.map(d => d.code), ['E_LAYOUT_TARGET_SIZE']);
+  const proof = await verifyLayoutReport(report);
+  assert.equal(proof.status, 'violated');
+  assert.equal(proof.witness.code, 'E_LAYOUT_TARGET_SIZE');
+});

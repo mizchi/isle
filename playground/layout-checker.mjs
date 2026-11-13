@@ -36,7 +36,10 @@ export function createLayoutChecker({enabled,editor,status,getSession,onResult,i
       const v=result.verification,w=v.witness;
       const explanation=w ? ` · ${w.code} at ${w.viewportExact}px${w.viewportHeightExact ? ' × '+w.viewportHeightExact+'px' : ''}` : v.diagnostics[0]?.message ? ' · '+v.diagnostics[0].message : '';
       const comparisons=result.noshift ? ` · ${result.noshift.comparisons.checked}/${result.noshift.comparisons.planned} noshift comparisons` : '';
-      show(`${v.status[0].toUpperCase()+v.status.slice(1)} · Z3 ${v.solver.result.toUpperCase()} · ${result.model.obligations.length} obligations${comparisons}${explanation}`,v.status);
+      const integrity=result.report.integrity;
+      // Integrity errors are Z3 obligations too; warnings never change the status.
+      const integrityText=integrity ? ` · integrity ${result.report.diagnostics.filter(d=>d.rule).length} errors, ${integrity.warnings.length} warnings, ${integrity.exempted.length} exempted` : '';
+      show(`${v.status[0].toUpperCase()+v.status.slice(1)} · Z3 ${v.solver.result.toUpperCase()} · ${result.model.obligations.length} obligations${comparisons}${integrityText}${explanation}`,v.status);
       onResult(result);
     };
     instance.onerror=()=>{if(instance===worker) {clearTimeout(deadline);worker.terminate();worker=undefined;show('Unknown · Z3 Worker failed. Compile to retry.','unknown');}};

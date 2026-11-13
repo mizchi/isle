@@ -97,3 +97,9 @@ just noshift-check
 ```sh
 node tools/isle.mjs layout examples/layout-contracts/text-fonts.isle examples/layout-contracts/text-fonts.json --summary
 ```
+
+## Integrity rules / 静的な integrity 検査
+
+[integrity.isle](integrity.isle) is a toolbar with two 24px icon buttons. With `integrity: {targetSize: 24, protrusion: 'painted'}` the layout check also enforces vlmkit's box-model rules over the whole viewport domain: page overflow, protrusion from painted parents, text collision and interactive target size. Shrinking the buttons to 20px is a violation. Open the **Integrity · page overflow, protrusion & 24px targets** preset in the playground. See [ADR-0012](../../docs/adr/0012-static-integrity-rules.md).
+
+24px のアイコンボタンを持つツールバーです。`integrity` を有効にすると、ページの横溢れ・塗りのある親からのはみ出し・テキストの重なり・操作対象の寸法も viewport の全域で検査します。ボタンを 20px にすると違反になります。

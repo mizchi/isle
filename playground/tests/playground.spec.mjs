@@ -70,11 +70,15 @@ test('CSS variables reach Z3 Wasm with inherited values, cycle diagnostics and f
   const source=await page.locator('#source').inputValue();
   await page.locator('#source').fill(source.replace('--cell: 40px','--cell: 41px'));
   await expect(page.locator('#layout-status')).toContainText('Violated');
+  // A plain cycle is guaranteed-invalid: min-width computes as unset, so the layout still verifies.
   await page.locator('#source').fill(source.replace('--cell: 40px','--cell: var(--cell)'));
+  await expect(page.locator('#layout-status')).toContainText('Verified');
+  // A cycle through a dormant fallback stays outside the portable subset.
+  await page.locator('#source').fill(source.replace('--cell: 40px','--safe: 40px; --cell: var(--safe, var(--other)); --other: var(--cell)'));
   await expect(page.locator('#layout-status')).toContainText('Unknown');
   await expect(page.locator('#layout-status')).toContainText('cycle');
-  await page.locator('#source').fill(source.replace('--cell: 40px','--cell: var(--cell)').replace('min-width: var(--cell)','min-width: var(--cell, 40px)'));
-  await expect(page.locator('#layout-status')).toContainText('Verified');
+  await page.locator('#source').fill(source.replace('--cell: 40px','--cell: var(--cell)').replace('min-width: var(--cell)','min-width: var(--cell, 41px)'));
+  await expect(page.locator('#layout-status')).toContainText('Violated');
 });
 
 test('source noshift verifies finite states in browser Z3 and flags moving targets',async({page})=>{
@@ -484,4 +488,16 @@ test('browser compilation keeps projected parent events on the native button onl
   await expect(card.locator('p')).toHaveText('Done');
   expect(await card.evaluate(node=>node===window.originalCard)).toBe(true);
   expect(await page.locator('#preview').getAttribute('srcdoc')).not.toMatch(/<ReviewCard\b|RenderFragment/);
+});
+
+test('integrity rules reach browser Z3: 24px targets verify and a 20px button is a witness',async({page})=>{
+  await page.goto('/');await page.locator('#preset').selectOption('layoutIntegrity');
+  await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});
+  await expect(page.locator('#layout-status')).toContainText('integrity 0 errors, 0 warnings');
+  await expect(preview(page).locator('button.icon')).toHaveCount(2);
+  const source=await page.locator('#source').inputValue();
+  await page.locator('#source').fill(source.replace('width: 24px; height: 24px','width: 20px; height: 20px'));
+  await expect(page.locator('#layout-status')).toContainText('Violated');
+  await expect(page.locator('#layout-status')).toContainText('E_LAYOUT_TARGET_SIZE');
+  await expect(page.locator('#layout-status')).toContainText('integrity 2 errors');
 });

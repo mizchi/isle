@@ -19,7 +19,8 @@ export function createLayoutModel(report) {
     append({...check,domain:region(check),failure});
   }
   // Discrete policies (float, grid-only, wrapping, overflow) are obligations too.
-  for(const diagnostic of report.diagnostics) if(diagnostic.severity==='error' && !diagnostic.witness) append({...diagnostic,domain:diagnostic.range ? region(diagnostic) : and(terms),failure:'true'});
+  // Integrity findings (`rule`) are not checks: Z3 confirms their failing region is non-empty.
+  for(const diagnostic of report.diagnostics) if(diagnostic.severity==='error' && (!diagnostic.witness || diagnostic.rule)) append({...diagnostic,domain:diagnostic.range ? region(diagnostic) : and(terms),failure:'true'});
   if(obligations.length>8192) throw new RangeError('Z3 layout obligation limit exceeded');
   const prelude=`(set-logic QF_LRA)\n(declare-const width Real)\n(declare-const height Real)\n(declare-const layout_case Real)\n(assert ${and(terms)})\n`;
   const cases=obligations.map((o,i)=>`(and (= layout_case ${i}) ${o.domain} ${o.failure})`);

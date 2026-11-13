@@ -5,6 +5,8 @@ export interface LayoutOptions {
   name?: string;
   /** Trusted exact native gutter geometries of the target environments. */
   scrollbars?: readonly LayoutScrollbarProfile[];
+  /** Static counterparts of vlmkit's box-model integrity rules (ADR-0012). */
+  integrity?: boolean | LayoutIntegrityOptions;
   css: string;
   cssFile?: string;
   /** Ordered reset sources, before css in the same author cascade. */
@@ -87,6 +89,13 @@ export interface LayoutInvalidSubstitution {
   property:string; longhands:string[];
   css:{file:string;line:number}; reason:'guaranteed-invalid'|'cycle'; message:string; resolution:'unset';
 }
+export interface LayoutIntegrityOptions {
+  /** WCAG 2.2 SC 2.5.8 target size for button/a (default 24). */
+  targetSize?: number;
+  /** 'all' parents (default) or only those with a border or background, as vlmkit judges. */
+  protrusion?: 'all' | 'painted';
+}
+export interface LayoutIntegrityRow { code: string; severity: 'error' | 'warning'; rule: string; message: string; box: string; path: string; range: LayoutRange; heightRange?: LayoutRange; other?: string; parent?: string; axis?: 'inline' | 'block'; reason?: string }
 export interface LayoutCSSCondition { kind:'media'|'container'; name?:string; params:string; css:{file:string;line:number} }
 export interface LayoutCSSOrigin { file:string; line:number; selector:string; layer?:string; specified:string; conditions?:LayoutCSSCondition[] }
 export type LayoutExplanationFact =
@@ -122,6 +131,7 @@ export interface LayoutSummary {
   structure?: LayoutStructure;
   scrollbars?: {box:string;path:string;inlineSize:number;blockSize:number;viewport:boolean;variant?:number;scrollbarProfile?:string;range:LayoutRange;heightRange?:LayoutRange;region?:LayoutRegion}[];
   invalidSubstitutions?: LayoutInvalidSubstitution[];
+  integrity?: { rules: string[]; targetSize: number; protrusion: 'all' | 'painted'; warnings: LayoutIntegrityRow[]; exempted: LayoutIntegrityRow[] };
   version: 1; ok: boolean; status: 'verified' | 'violated' | 'unknown'; component: string;
   scope: { axis: 'inline' | 'both'; viewport: LayoutRange & { height?: LayoutRange | null }; hostInset: number; hostBlockInset?: number; closedCSS: true; browserRounding: false; blockSizing: boolean; scrollbarProfiles?:readonly LayoutScrollbarProfile[] };
   assumptions: string[];

@@ -53,7 +53,7 @@ CSSコア単独のテストはworkspace package内にあり、rootのテスト�
 | 独立CSS package、npm consumer、Z3、反例の出典 | `just css-verifier-check` |
 | mizchi/cssとのcascade差分(MoonBit必要) | `just css-oracle-check` |
 | フォントから導出するテキスト寸法(MoonBit必要) | `just css-text-check` |
-| integrity 規則(`packages/css-verifier/test/integrity.test.mjs`、`e2e/layout-integrity.spec.mjs`) | コア7件。vlmkit 0.24.0 と8構成×3幅で規則ごとに一致(フォント契約のあるテキストは text-collision も一致、契約のない text は vlmkit ⇒ 静的のみ) |
+| integrity 規則(`packages/css-verifier/test/integrity.test.mjs`、`e2e/layout-integrity.spec.mjs`) | コア9件(塗りのある親、Z3 の確認を含む)、Vite の build 2件、playground 1件。vlmkit 0.24.0 と8構成×3幅で規則ごとに一致(フォント契約のあるテキストは text-collision も一致、契約のない text は vlmkit ⇒ 静的のみ) |
 | flex/contents サブセット(`packages/css-verifier/test/flex-contents.test.mjs`、`e2e/layout-flex.spec.mjs`) | コア24件、Chromium 25ケースで矩形が1/64 px以内で一致。flexの比較はmizchi/css 0.8.2で既定に含める |
 | noshift、DOM注釈、key、CLI/Vite、有限case eval | `just noshift-check` |
 | 宣言した親子のlayout契約 | `just layout-contract-check` |
@@ -157,6 +157,8 @@ CLS、任意のtext/paint、未対応のscroll/transform等を保証したとは
 | layout-transitionsのcheck/declared/dom/keys eval | 9/5/7/8成功、結果JSON不変、増分0 byte |
 | `e2e/layout-contract.spec.mjs` | 2件成功 |
 | `just check-types` | **環境要因で失敗**。`@types/node`がlockfileの直接依存になく、viteの型の`Buffer`が解決できない(40件、全て`node_modules`内)。リポジトリ側の型エラーは0件 |
+
+`playground/tests/editor.spec.mjs` の1440pxのオーバーレイ描画テストは、このコンテナでは変更前のcommit(c01a42e)でも失敗する(画素差分。フォント等の環境要因)。
 
 コンテナ環境でPlaywrightの指定versionとChromiumのrevisionが一致しない場合、
 `PLAYWRIGHT_BROWSERS_PATH`に既存のbrowserへのsymlinkを置いた別ディレクトリを指定すると再downloadせずに実行できる。
