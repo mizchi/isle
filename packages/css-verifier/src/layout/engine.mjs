@@ -6,6 +6,7 @@ import { tracks, place } from './grid.mjs';
 import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
 import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
+import {fact, sizeChain, sizeProperties, trackProperties, contractFact, explanation} from './explain.mjs';
 
 const zero = q(0), one = q(1), minusOne = q(-1);
 const total = values => values.reduce(sum, scalar(0));
@@ -43,7 +44,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   for (const [selector, contract] of Object.entries(options.boxes ?? {})) {
     const selected = boxes.filter(box => matches(selector, box));
     if (!selected.length) throw new Error(`Layout contract does not match a box: ${selector}`);
-    for (const box of selected) { if (box.contract) throw new Error(`Ambiguous layout contracts for ${box.label}`); box.contract = contract; }
+    for (const box of selected) { if (box.contract) throw new Error(`Ambiguous layout contracts for ${box.label}`); box.contract = contract; box.contractSelector = selector; }
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
   const { rules, layers } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
@@ -53,7 +54,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   for (const rule of rules) rule.layerName = rule.layer === null ? undefined : layers[rule.layer];
   const bounded = values => { spend(values.length); if (values.length > 512) throw new Error('Layout state limit exceeded'); return values; };
 
-  function obligation(available, required, box, region, code, axis, enabled = true) {
+  function obligation(available, required, box, region, code, axis, enabled = true, explain) {
     checks.push({ box: box.label, path: box.path, code, axis, ...ranges(region), available: affine(available), required: affine(required), enforced: enabled });
     if (!enabled) return;
     const failed = clip(region, diff(required, available), true);
@@ -63,6 +64,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       message: `${box.label} requires ${exact(need)}px but receives ${exact(offered)}px on ${axis} axis at viewport ${exact(p.x)}px${block ? ` × ${exact(p.y)}px` : ''}`,
       ...ranges(failed), signature: JSON.stringify([box.path, code, axis, affine(available), affine(required)]),
       witness: { viewport: number(p.x), viewportExact: exact(p.x), ...(block ? { viewportHeight: number(p.y), viewportHeightExact: exact(p.y) } : {}), available: number(offered), required: number(need) },
+      ...(explain ? { explanation: explain() } : {}),
     });
   }
 
@@ -189,11 +191,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function finish(box, style, region, inline, contentInline, blockSize, contentBlock, available, parents, emit) {
     const contract = box.contract ?? {};
     if (emit) {
-      obligation(available.inline, inline, box, region, 'E_LAYOUT_ITEM_SIZE', 'inline', available.fitInline !== false);
-      if (contract.minInlineSize !== undefined) obligation(contentInline, scalar(contract.minInlineSize), box, region, 'E_LAYOUT_CONTENT', 'inline', (contract.overflow ?? 'fit') === 'fit');
+      const self = [...parents, { box, style }];
+      const offered = axis => () => parents.length ? [...trackProperties(axis).map(property => fact(parents.at(-1).box, parents.at(-1).style, property)),
+        fact(box, style, axis === 'inline' ? 'grid-column' : 'grid-row'), ...sizeChain(parents, axis, { hostInset: options.hostInset })] : [{ kind: 'viewport', axis }];
+      const own = axis => sizeProperties(axis).filter(property => style.$sources[property] || property === (axis === 'inline' ? 'inline-size' : 'block-size')).map(property => fact(box, style, property));
+      const item = axis => () => explanation(offered(axis)(), own(axis));
+      const content = (axis, property) => () => explanation(sizeChain(self, axis, { hostInset: options.hostInset }), [contractFact(box, property)]);
+      obligation(available.inline, inline, box, region, 'E_LAYOUT_ITEM_SIZE', 'inline', available.fitInline !== false, item('inline'));
+      if (contract.minInlineSize !== undefined) obligation(contentInline, scalar(contract.minInlineSize), box, region, 'E_LAYOUT_CONTENT', 'inline', (contract.overflow ?? 'fit') === 'fit', content('inline', 'minInlineSize'));
       if (block) {
-        if (available.block) obligation(available.block, blockSize, box, region, 'E_LAYOUT_ITEM_SIZE', 'block', available.fitBlock !== false);
-        if (contract.minBlockSize !== undefined) obligation(contentBlock, scalar(contract.minBlockSize), box, region, 'E_LAYOUT_CONTENT', 'block', (contract.overflowBlock ?? 'fit') === 'fit');
+        if (available.block) obligation(available.block, blockSize, box, region, 'E_LAYOUT_ITEM_SIZE', 'block', available.fitBlock !== false, item('block'));
+        if (contract.minBlockSize !== undefined) obligation(contentBlock, scalar(contract.minBlockSize), box, region, 'E_LAYOUT_CONTENT', 'block', (contract.overflowBlock ?? 'fit') === 'fit', content('block', 'minBlockSize'));
       }
       let positioned;
       if (style.position === 'absolute') {
@@ -293,7 +301,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const minimum = style['min-inline-size'] === 'auto' ? zero : px(style['min-inline-size']);
         const minimumBorderBox = sum(scalar(minimum), style['box-sizing'] === 'content-box' ? cssInlineEdges : scalar(0));
         const preferredStates = cmp(minimum, zero) > 0 ? maximum(state.region, preferred, minimumBorderBox) : [{ region: state.region, value: preferred }];
-        for (const proposal of preferredStates) if (emit) obligation(proposal.value, inlineEdges, box, proposal.region, 'E_LAYOUT_BOX_EDGES', 'inline');
+        const edgeExplanation = axis => () => explanation(sizeChain([...parents, { box, style }], axis, { hostInset: options.hostInset }), sizeProperties(axis).filter(property => /^(?:padding|border)-/.test(property)).map(property => fact(box, style, property)));
+        for (const proposal of preferredStates) if (emit) obligation(proposal.value, inlineEdges, box, proposal.region, 'E_LAYOUT_BOX_EDGES', 'inline', true, edgeExplanation('inline'));
         const contentStates = preferredStates.flatMap(proposal => clamp(proposal.region, diff(proposal.value, inlineEdges)));
         for (const content of contentStates) {
           const inline = sum(content.value, inlineEdges), contentInline = content.value;
@@ -305,11 +314,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             if (style['block-size'] !== 'auto' && style['box-sizing'] === 'content-box') fixedBlock = sum(fixedBlock, cssBlockEdges);
           }
           const blockStates = fixedBlock ? clamp(content.region, diff(fixedBlock, blockEdges)) : [{ region: content.region, value: null }];
-          if (fixedBlock && emit) obligation(fixedBlock, blockEdges, box, content.region, 'E_LAYOUT_BOX_EDGES', 'block');
+          if (fixedBlock && emit) obligation(fixedBlock, blockEdges, box, content.region, 'E_LAYOUT_BOX_EDGES', 'block', true, edgeExplanation('block'));
           for (const bs of blockStates) {
             const origin=resolvedOrigin(style,available,inline,bs.value ? sum(bs.value,blockEdges) : null,parents);
             const contentOrigin=offset(origin,edge(['left']),edge(['top']));
-            const knownBlock = bs.value, own = { box, inline: contentInline, block: knownBlock, positioned:style.position!=='static',
+            const knownBlock = bs.value, own = { box, style, inline: contentInline, block: knownBlock, positioned:style.position!=='static',
               contentOrigin,paddingOrigin:offset(origin,scalar(px(style['border-left'])),scalar(px(style['border-top']))),
               subgrid:style['grid-template-columns']==='subgrid' || style['grid-template-rows']==='subgrid',
               clipped:style['overflow-x']!=='visible' || style['overflow-y']!=='visible',
@@ -335,7 +344,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               const columnBases = columns.map(track => scalar(track.fixed ?? zero));
               const columnLayouts = sharedColumns ? [{ region: geometryRegion, values: sharedColumns.values, required: trackArea(sharedColumns.values, columnGap, 0, columns.length) }] : flex(geometryRegion, contentInline, columns, mul(columnGap, q(Math.max(0, columns.length - 1))), columnBases, false);
               for (const cs of columnLayouts) {
-                if (emit) obligation(contentInline, cs.required, box, cs.region, 'E_LAYOUT_TRACKS', 'inline', (box.contract?.overflow ?? 'fit') === 'fit');
+                if (emit) obligation(contentInline, cs.required, box, cs.region, 'E_LAYOUT_TRACKS', 'inline', (box.contract?.overflow ?? 'fit') === 'fit', () => explanation(sizeChain([...parents, { box, style }], 'inline', { hostInset: options.hostInset }), trackProperties('inline').map(property => fact(box, style, property))));
                 let childStates = [{ region: cs.region, children: [] }];
                 for (const child of box.children) childStates = bounded(childStates.flatMap(s => styles(child, s.region, ancestors, style, false).map(c => ({ region: c.region, children: c.style.display === 'none' ? s.children : [...s.children, { box: child, style: c.style }] }))));
                 for (const children of childStates) {
@@ -381,7 +390,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     for (const rs of layouts) {
                       const contentBlock = knownBlock ?? rs.required, blockSize = sum(contentBlock, blockEdges);
                       const finalAncestors = [...parents, { ...own, block: contentBlock, paddingBlock:diff(blockSize,scalar(add(px(style['border-top']),px(style['border-bottom'])))) }];
-                      if (emit) obligation(contentBlock, rs.required, box, rs.region, 'E_LAYOUT_TRACKS', 'block', (box.contract?.overflowBlock ?? 'fit') === 'fit');
+                      if (emit) obligation(contentBlock, rs.required, box, rs.region, 'E_LAYOUT_TRACKS', 'block', (box.contract?.overflowBlock ?? 'fit') === 'fit', () => explanation(sizeChain([...parents, { box, style }], 'block', { hostInset: options.hostBlockInset }), trackProperties('block').map(property => fact(box, style, property))));
                       let endings = [rs.region];
                       for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: areaInline(item), block: trackArea(rs.values, rowGap, item.row, item.rowSpan),
                         origin:offset(contentOrigin,trackStart(cs.values,columnGap,item.start),trackStart(rs.values,rowGap,item.row)),

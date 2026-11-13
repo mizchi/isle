@@ -109,6 +109,8 @@ export function parseLayoutCSS(sheets, diagnostic) {
         if (!['media', 'container'].includes(node.name.toLowerCase()) || !node.nodes) { problem('U_LAYOUT_CSS', `Unsupported @${node.name}`, node.source.start.line); continue; }
         try {
           const condition = parseCondition(node.params, node.name.toLowerCase());
+          // Provenance for explanations only; never consulted by the proof.
+          condition.params = node.params.trim(); condition.css = {file: filename, line: node.source.start.line};
           if (condition.groups.length) visit(node.nodes, [...contexts, condition], layer, filename, depth + 1);
         } catch (error) { problem('U_LAYOUT_QUERY', error.message, node.source.start.line); }
         continue;
@@ -179,9 +181,15 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
   const ua = { ...values };
   const initial = { ...defaults, display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
   const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction']);
-  const priorities = new Map(), sources = {},custom=new Map();
+  const priorities = new Map(), sources = {},custom=new Map(),dormant={};
+  const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};
   for (const rule of rules) {
-    if (!active(rule)) continue;
+    if (!active(rule)) {
+      // Matching declarations whose conditions are false here: explanation data.
+      const selector = rule.selectors.find(selector => matches(selector, box));
+      if (selector) for (const declaration of rule.declarations) (dormant[declaration.property] ??= []).push({file: declaration.file, line: declaration.line, selector: selector.source, ...(rule.layerName ? {layer: rule.layerName} : {}), specified: declaration.specified ?? declaration.value, ...conditions(rule)});
+      continue;
+    }
     for (const selector of rule.selectors) {
       if (!matches(selector, box)) continue;
       for (const declaration of rule.declarations) {
@@ -191,7 +199,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
           if(declaration.expression) custom.set(declaration.property,declaration);
           else values[declaration.property] = declaration.pending ? declaration : declaration.value;
           priorities.set(declaration.property, rank);
-          sources[declaration.property] = { file: declaration.file, line: declaration.line, selector: selector.source, layer: rule.layerName, specified: declaration.specified ?? declaration.value };
+          sources[declaration.property] = { file: declaration.file, line: declaration.line, selector: selector.source, layer: rule.layerName, specified: declaration.specified ?? declaration.value, ...conditions(rule) };
         }
       }
     }
@@ -218,6 +226,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
     values[property] = value;
   }
   values.$sources = sources;
+  values.$dormant = dormant;
   values.$variables = environment;
   const nonscroll = value => ['visible', 'clip'].includes(value);
   const x = values['overflow-x'], y = values['overflow-y'];

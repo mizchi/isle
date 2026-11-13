@@ -70,6 +70,22 @@ export interface LayoutDiagnostic {
   conflict?: {properties:[string,string];longhands:string[]};
   source?: SourceSpan;
   witness?: { viewport: number; viewportExact: string; viewportHeight?: number; viewportHeightExact?: string; available: number; required: number };
+  /** Build/debug provenance of both sides (ADR-0002). Never consulted by the proof. */
+  explanation?: LayoutExplanation;
+}
+export interface LayoutCSSCondition { kind:'media'|'container'; name?:string; params:string; css:{file:string;line:number} }
+export interface LayoutCSSOrigin { file:string; line:number; selector:string; layer?:string; specified:string; conditions?:LayoutCSSCondition[] }
+export type LayoutExplanationFact =
+  | { path:string; box:string; property:string; value:string; origin:'author'; css:LayoutCSSOrigin; dormant?:{css:LayoutCSSOrigin}[] }
+  | { path:string; box:string; property:string; value:string; origin:'default'; dormant?:{css:LayoutCSSOrigin}[] }
+  | { kind:'viewport'; axis:'inline'|'block'; hostInset?:number }
+  | { kind:'contract'; path:string; box:string; property:'minInlineSize'|'minBlockSize'; value:number; selector:string; trusted:true };
+export interface LayoutExplanation {
+  version:1;
+  /** Facts that determine the offered size (parent tracks/gaps up to a definite size or the viewport). */
+  available:{facts:LayoutExplanationFact[]};
+  /** Facts that determine the box's own requirement. */
+  required:{facts:LayoutExplanationFact[]};
 }
 export interface LayoutScenarioIdentity { variant?:number; scrollbarProfile?:string }
 export interface LayoutElement extends LayoutScenarioIdentity {
