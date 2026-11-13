@@ -2,8 +2,8 @@
   "version": 1,
   "status": "consistent",
   "measured": {
-    "commit": "762111cdb31c74b99d3b2f3e99121158311f1962",
-    "dirty": true,
+    "commit": "25defc5f16beb316fb1a2581b0a5377d561993c4",
+    "dirty": false,
     "node": "v24.22.3",
     "oracle": "mizchi/css@0.8.1"
   },
