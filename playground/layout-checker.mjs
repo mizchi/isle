@@ -38,8 +38,10 @@ export function createLayoutChecker({enabled,editor,status,getSession,onResult,i
       const comparisons=result.noshift ? ` · ${result.noshift.comparisons.checked}/${result.noshift.comparisons.planned} noshift comparisons` : '';
       const integrity=result.report.integrity;
       // Integrity errors are Z3 obligations too; warnings never change the status.
-      const integrityText=integrity ? ` · integrity ${result.report.diagnostics.filter(d=>d.rule).length} errors, ${integrity.warnings.length} warnings, ${integrity.exempted.length} exempted` : '';
-      show(`${v.status[0].toUpperCase()+v.status.slice(1)} · Z3 ${v.solver.result.toUpperCase()} · ${result.model.obligations.length} obligations${comparisons}${integrityText}${explanation}`,v.status);
+      const integrityText=integrity ? ` · integrity ${result.report.diagnostics.filter(d=>d.rule && !d.code.startsWith('E_A11Y')).length} errors, ${integrity.warnings.length} warnings, ${integrity.exempted.length} exempted` : '';
+      const accessibility=result.report.accessibility;
+      const accessibilityText=accessibility ? ` · accessibility ${result.report.diagnostics.filter(d=>d.rule && d.code.startsWith('E_A11Y')).length} errors, ${accessibility.warnings.length} warnings` : '';
+      show(`${v.status[0].toUpperCase()+v.status.slice(1)} · Z3 ${v.solver.result.toUpperCase()} · ${result.model.obligations.length} obligations${comparisons}${integrityText}${accessibilityText}${explanation}`,v.status);
       onResult(result);
     };
     instance.onerror=()=>{if(instance===worker) {clearTimeout(deadline);worker.terminate();worker=undefined;show('Unknown · Z3 Worker failed. Compile to retry.','unknown');}};

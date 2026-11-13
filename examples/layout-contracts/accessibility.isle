@@ -1,0 +1,15 @@
+component NoticeCard() {
+  <main class="card">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .card { display: grid; grid-template-columns: minmax(0, 1fr) 24px; grid-template-rows: 24px 24px; column-gap: 8px; padding: 8px 12px; background: #ffffff; color: #1f2933; font-size: 16px; line-height: 24px; }
+      .title { grid-column: 1; grid-row: 1; font-size: 16px; font-weight: 700; }
+      .body { grid-column: 1; grid-row: 2; color: #52606d; }
+      .close { appearance: none; display: block; grid-column: 2; grid-row: 1; width: 24px; height: 24px; min-width: 0; min-height: 0; border: 1px solid #52606d; background: #f5f7fa; }
+      @media (width < 360px) { .body { display: none; } }
+    </style>
+    <h2 class="title">Saved</h2>
+    <p class="body">Your changes are stored.</p>
+    <button class="close" type="button" aria-label="Dismiss"></button>
+  </main>
+}

@@ -11,6 +11,7 @@ import noshiftLayout from '../examples/layout-contracts/noshift.isle?raw';
 import noshiftDOM from '../examples/layout-contracts/noshift-dom.isle?raw';
 import noshiftKeys from '../examples/layout-contracts/noshift-keys.isle?raw';
 import integrityLayout from '../examples/layout-contracts/integrity.isle?raw';
+import accessibilityLayout from '../examples/layout-contracts/accessibility.isle?raw';
 export const defaultLayout={viewport:{min:160,max:640,height:{min:80,max:640}}};
 const layoutCSS='html,body { margin: 0; padding: 0; }';
 export const defaultCSS=`* { box-sizing: border-box; }
@@ -37,6 +38,7 @@ export const presets={
   layoutBroken:{label:'Inline CSS · overflow witness',source:inlineCSS,props:{},css:layoutCSS,layout:{viewport:{min:120,max:640,height:{min:80,max:640}}}},
   layoutResponsive:{label:'Inline CSS · responsive proof',source:inlineCSS.replace('    </style>','      @media (width < 160px) { .row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }\n    </style>'),props:{},css:layoutCSS,layout:{viewport:{min:80,max:640,height:{min:80,max:640}}}},
   layoutIntegrity:{label:'Integrity · page overflow, protrusion & 24px targets',source:integrityLayout,props:{},css:layoutCSS,layout:{viewport:{min:200,max:640,height:{min:80,max:640}},boxes:{'.title':{overflow:'clip',overflowBlock:'clip'}},integrity:{targetSize:24,protrusion:'painted'}}},
+  layoutAccessibility:{label:'Accessibility · names, contrast & focus',source:accessibilityLayout,props:{},css:layoutCSS,layout:{viewport:{min:280,max:640,height:{min:80,max:640}},boxes:{'.title':{minInlineSize:1,intrinsicBlockSize:24},'.body':{minInlineSize:1,intrinsicBlockSize:24}},accessibility:true}},
   layoutVariables:{label:'CSS variables · responsive proof',source:variableLayout,props:{},css:layoutCSS,layout:{viewport:{min:80,max:640,height:{min:80,max:640}}}},
   list:{label:'List · branches & keyed regions',source:list,props:{initial:[{id:'a',title:'First'},{id:'b',title:'Second'}]}},
   fragments:{label:'Fragments · keyed groups',source:fragments,props:{initial:[{id:'a',title:'First'},{id:'b',title:'Second'}]}},

@@ -490,6 +490,18 @@ test('browser compilation keeps projected parent events on the native button onl
   expect(await page.locator('#preview').getAttribute('srcdoc')).not.toMatch(/<ReviewCard\b|RenderFragment/);
 });
 
+test('accessibility rules reach browser Z3: a named button verifies, an unnamed one or grey text is a witness',async({page})=>{
+  await page.goto('/');await page.locator('#preset').selectOption('layoutAccessibility');
+  await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});
+  await expect(page.locator('#layout-status')).toContainText('accessibility 0 errors, 0 warnings');
+  const source=await page.locator('#source').inputValue();
+  await page.locator('#source').fill(source.replace(' aria-label="Dismiss"',''));
+  await expect(page.locator('#layout-status')).toContainText('Violated');
+  await expect(page.locator('#layout-status')).toContainText('E_A11Y_NAME');
+  await page.locator('#source').fill(source.replace('color: #52606d;','color: #9aa5b1;'));
+  await expect(page.locator('#layout-status')).toContainText('E_A11Y_CONTRAST');
+});
+
 test('integrity rules reach browser Z3: 24px targets verify and a 20px button is a witness',async({page})=>{
   await page.goto('/');await page.locator('#preset').selectOption('layoutIntegrity');
   await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});

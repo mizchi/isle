@@ -103,3 +103,9 @@ node tools/isle.mjs layout examples/layout-contracts/text-fonts.isle examples/la
 [integrity.isle](integrity.isle) is a toolbar with two 24px icon buttons. With `integrity: {targetSize: 24, protrusion: 'painted'}` the layout check also enforces vlmkit's box-model rules over the whole viewport domain: page overflow, protrusion from painted parents, text collision and interactive target size. Shrinking the buttons to 20px is a violation. Open the **Integrity · page overflow, protrusion & 24px targets** preset in the playground. See [ADR-0012](../../docs/adr/0012-static-integrity-rules.md).
 
 24px のアイコンボタンを持つツールバーです。`integrity` を有効にすると、ページの横溢れ・塗りのある親からのはみ出し・テキストの重なり・操作対象の寸法も viewport の全域で検査します。ボタンを 20px にすると違反になります。
+
+## Accessibility rules / DOM と CSS のアクセシビリティ検査
+
+[accessibility.isle](accessibility.isle) is a notice card: a bold title, body text hidden below 360px, and a 24px dismiss button named by `aria-label`. With `accessibility: true` the layout check combines DOM facts with the cascade and geometry over the whole viewport domain: accessible names, text contrast against the composited backgrounds, occluded or overlapping targets, headings, ids, focus and reflow. Removing `aria-label` is `E_A11Y_NAME`; a lighter body color is `E_A11Y_CONTRAST`. Open the **Accessibility · names, contrast & focus** preset in the playground. See [ADR-0013](../../docs/adr/0013-static-accessibility-rules.md).
+
+見出し・本文・24px の閉じるボタンを持つ通知カードです。`accessibility` を有効にすると、名前・コントラスト・覆い・見出し・id・フォーカス・reflow を viewport の全域で検査します。`aria-label` を外すと名前がなく、本文の色を薄くするとコントラスト不足になります。
