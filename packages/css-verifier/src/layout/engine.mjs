@@ -8,6 +8,7 @@ import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
 import {textFontMismatch, fittingLength} from './text-font.mjs';
 import {validateFlexContainer, flexItem, crossAlignment, distribution, flexUnknown} from './flex.mjs';
+import {judgeIntegrity} from './integrity.mjs';
 import {fact, sizeChain, sizeProperties, trackProperties, contractFact, explanation} from './explain.mjs';
 
 const zero = q(0), one = q(1), minusOne = q(-1);
@@ -30,6 +31,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   const h = options.viewport.height ?? { min: 0, max: 0 };
   const initial = rectangle(domain, { min: q(h.min), max: q(h.max) });
   const diagnostics = [...inputDiagnostics], findings = [], checks = [], policies = [], sizes = [], queries = [], subgrids = [], scrollbars = [], invalidSubstitutions = [];
+  // Live geometry and waived obligations for the opt-in integrity rules.
+  const geometry = [], waived = [];
   let work = 0;
   const spend = count => {
     work += count;
@@ -58,7 +61,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
 
   function obligation(available, required, box, region, code, axis, enabled = true, explain, annotate) {
     checks.push({ box: box.label, path: box.path, code, axis, ...ranges(region), available: affine(available), required: affine(required), enforced: enabled });
-    if (!enabled) return;
+    if (!enabled) {
+      // A contract allowed this overflow; the integrity rules still report where it happens.
+      const failed = clip(region, diff(required, available), true);
+      if (failed) waived.push({ box, path: box.path, code, axis, region: failed, self: code !== 'E_LAYOUT_ITEM_SIZE' });
+      return;
+    }
     const failed = clip(region, diff(required, available), true);
     if (!failed) return;
     const p = sample(failed), need = evaluate(required, p), offered = evaluate(available, p);
@@ -439,6 +447,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         positioned = {origin:{inline:affine(origin.inline),block:affine(origin.block)},containingBlock:{path:containing.path,inline:affine(containing.inline),block:affine(containing.block)}};
       }
       const origin=resolvedOrigin(style,available,inline,blockSize,parents);
+      const overflowValue=[style['overflow-x'],style['overflow-y']].find(v=>v!=='visible') ?? 'visible';
+      // A box's own overflow clips its content, not its border box.
+      const ownOrigin = origin ?? resolvedOrigin({...style,'overflow-x':'visible','overflow-y':'visible'},available,inline,blockSize,parents);
+      geometry.push({ box, path: box.path, region, origin: ownOrigin, inline, block: blockSize, position: style.position,
+        borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
+        overflow: ['hidden','clip'].includes(overflowValue) ? 'clip' : ['auto','scroll'].includes(overflowValue) ? 'scroll' : 'visible', overflowValue });
       const rect=origin && blockSize ? {inlineStart:affine(origin.inline),blockStart:affine(origin.block),inlineSize:affine(inline),blockSize:affine(blockSize)} : null;
       sizes.push({ box: box.label, path: box.path, position:style.position, ...positioned,...(rect ? {rect} : {}), boxSizing: style['box-sizing'], boxSizingSource: style.$sources['box-sizing'],
         paddingInlineSize:affine(diff(inline,scalar(add(px(style['border-left']),px(style['border-right']))))),
@@ -711,6 +725,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     else merged.push({ ...finding });
   }
   diagnostics.push(...merged.map(({ signature, ...finding }) => finding));
+  let integrityWarnings = [];
+  if (options.integrity && !diagnostics.some(d => d.severity === 'unknown')) {
+    const judged = judgeIntegrity({ geometry, waived }, { block, targetSize: options.integrity.targetSize ?? 24, ranges });
+    diagnostics.push(...judged.findings);
+    integrityWarnings = judged.warnings;
+  }
   const status = diagnostics.some(d => d.severity === 'unknown') ? 'unknown' : diagnostics.length ? 'violated' : 'verified';
   return { version: 1, ok: status === 'verified', status, component,
     scope: { axis: block ? 'both' : 'inline', viewport: { ...projection(initial, 'x'), ...(block ? { height: options.viewport.height ? projection(initial, 'y') : null } : {}) }, hostInset: options.hostInset ?? 0, ...(block ? { hostBlockInset: options.hostBlockInset ?? 0 } : {}), closedCSS: true, browserRounding: false, blockSizing: block },
@@ -721,5 +741,6 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     styleSources: styleSources.map(({ kind, file }) => ({ kind, file })), diagnostics, policies, checks, sizes, queries, subgrids,
     elements:boxes.map(({path,tag,id,classes,owner,targets,targetIdentity})=>({path,tag,...(id ? {id} : {}),classes,owner,...(targets?.length ? {targets} : {}),...(targetIdentity ? {targetIdentity} : {})})),
     ...(boxes.some(box=>box.layoutContracts?.length) ? {layoutBindings:boxes.flatMap(box=>(box.layoutContracts ?? []).map(declaration=>({path:box.path,declaration})))} : {}),
-    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}) };
+    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}),
+    ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, warnings: integrityWarnings } } : {}) };
 }

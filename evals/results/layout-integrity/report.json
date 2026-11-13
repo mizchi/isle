@@ -1,0 +1,300 @@
+{
+  "version": 1,
+  "widths": [
+    1280,
+    768,
+    375
+  ],
+  "height": 800,
+  "rules": [
+    "page-overflow-x",
+    "container-protrusion",
+    "clipped-content",
+    "text-collision"
+  ],
+  "scope": "Static integrity rules vs vlmkit check integrity (runtime). text-collision compares boxes statically and glyphs at runtime, so only runtime ⇒ static is required for it.",
+  "cases": [
+    {
+      "name": "rigid-row",
+      "static": {
+        "page-overflow-x": [
+          false,
+          true,
+          true
+        ],
+        "container-protrusion": [
+          false,
+          true,
+          true
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          false,
+          false,
+          false
+        ]
+      },
+      "runtime": {
+        "page-overflow-x": [
+          false,
+          true,
+          true
+        ],
+        "container-protrusion": [
+          false,
+          true,
+          true
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "name": "fluid-row",
+      "static": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          false,
+          false,
+          false
+        ]
+      },
+      "runtime": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "name": "wrapping-cards",
+      "static": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          false,
+          false,
+          false
+        ]
+      },
+      "runtime": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "name": "wide-grid-track",
+      "static": {
+        "page-overflow-x": [
+          false,
+          false,
+          true
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          true
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          false,
+          false,
+          false
+        ]
+      },
+      "runtime": {
+        "page-overflow-x": [
+          false,
+          false,
+          true
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          true
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "name": "clipped-strip",
+      "static": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          true,
+          true
+        ],
+        "text-collision": [
+          false,
+          false,
+          false
+        ]
+      },
+      "runtime": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          true,
+          true
+        ],
+        "text-collision": [
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "name": "badge-over-title",
+      "static": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          true,
+          true,
+          true
+        ]
+      },
+      "runtime": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          false,
+          false,
+          false
+        ]
+      }
+    }
+  ]
+}

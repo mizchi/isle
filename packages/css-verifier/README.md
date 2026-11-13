@@ -89,6 +89,14 @@ The `component` field in a ContractIR is a named verification unit, using the
 existing uppercase identifier convention. Geometry is extracted independently of
 these contracts, then checked for coverage and conformance.
 
+## Integrity rules (opt-in)
+
+`integrity: true` (or `{targetSize}`) adds static counterparts of the box-model
+rules of `vlmkit check integrity`, decided over the whole viewport domain:
+page overflow, container protrusion, text-box collision and interactive target
+size are errors; content cut by `overflow: hidden/clip` and nested scrolling are
+warnings in `report.integrity.warnings`. Each finding carries the vlmkit `rule`.
+
 ## Explain a counterexample
 
 Geometric findings carry `explanation: {version: 1, available, required}`.

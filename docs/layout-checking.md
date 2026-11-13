@@ -289,6 +289,13 @@ E_LAYOUT_CONTENT .body
 
 両軸の診断は `axis`、`heightRange`、高さを含む witness、`region` を持つ。range / heightRange は各軸への射影で、直積が反例領域と一致するとは限らない。正本は region の vertices が張る閉包と strict constraints の共通部分である。`sizes` は計算したサイズ式、`queries` は選んだ target と条件成立を説明する。
 
+## vlmkit の integrity 規則(opt-in)
+
+`integrity: true`(または `{targetSize: 24}`)を渡すと、`vlmkit check integrity` のボックスモデルの規則を viewport の全域で静的に判定する([ADR-0012](adr/0012-static-integrity-rules.md))。
+ページの横溢れ(`E_LAYOUT_PAGE_OVERFLOW`)、子の親からのはみ出し(`E_LAYOUT_PROTRUSION`)、テキスト box の重なり(`E_LAYOUT_TEXT_COLLISION`)、
+button / a の target 寸法(`E_LAYOUT_TARGET_SIZE`)はエラー、overflow で切れる内容(`W_LAYOUT_CLIPPED`)と入れ子のスクロール(`W_LAYOUT_NESTED_SCROLL`)は警告になる。
+契約で溢れを許した場合も報告する。vlmkit の4px閾値は持たず、text-collision は border box で判定する。vlmkit との差分は `e2e/layout-integrity.spec.mjs` で確認する。
+
 ## 反例の出典
 
 幾何の違反(`E_LAYOUT_ITEM_SIZE`、`E_LAYOUT_TRACKS`、`E_LAYOUT_CONTENT`、`E_LAYOUT_BOX_EDGES`)は、[ADR-0002](adr/0002-layout-counterexample-explanations.md)の`explanation`を持つ。両辺を決めたcascadeの勝者を、宣言のfile・line・selector・layer・指定値と、勝者を囲む`@media`/`@container`条件で示す。
