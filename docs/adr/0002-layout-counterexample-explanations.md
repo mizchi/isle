@@ -1,6 +1,6 @@
 # ADR-0002: レイアウト反例の可視化と原因追跡
 
-- 状態: Proposed
+- 状態: 実装中(コアとCLIまで。playground表示とnoshift接続は未着手)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: 1「反例の可視化と原因追跡」
@@ -64,6 +64,26 @@ scoreやframeが未実装でも独立に完了できる。
 
 追加evalは`evals/scenarios/layout-explanations/`に、説明JSONと期待するsource対応を置く計画。
 既存の回帰確認は`just noshift-check`、`just layout-contract-check`、`just playground-check`。
+
+## 進捗
+
+2026-11-13、ユーザーのADRに沿った実装指示により着手した。commitは`0634eda`、`1cb1ccd`。
+
+| 計画 | 状態 | 根拠 |
+| --- | --- | --- |
+| 1. 探索 | 済 | 既存の反例はviewport・差分・pathを持つが、track・gap・padding・条件の出典を持たなかった |
+| 2. Red | 済 | `packages/css-verifier/test/explanations.test.mjs`。無関係な同名class規則を引用しないことも検査 |
+| 3. Green: コア | 一部 | cascadeの勝者・負けた宣言・条件不成立の宣言を`explanation`の両辺へ付与。affine演算単位のfact graphではなく、使った宣言の経路 |
+| 4. Green: adapter/CLI | 一部 | `layout --summary`の`offered by`/`required by`行。key列とtemplate位置の結合、noshiftの40px移動の原因trackは未実装 |
+| 5. playground | 未着手 | |
+| 6. Refactoring | 一部 | 説明の生成を`src/layout/explain.mjs`、表示を`lib/layout-summary.mjs`へ分離 |
+
+eval: [layout-explanations](../../evals/scenarios/layout-explanations/check.mjs)の5シナリオ
+(gap込みの4箱、固定track、media境界、入れ子owner、CSS未対応)が成功し、説明の有無でZ3の結果が一致した。
+既存の`layout-transitions`のevalは結果JSONが不変で、HTML/JS/CSS増分0 byteを維持した。
+
+完了条件の確認状況: status・数値・入力領域の一致は確認済み。表示値は有理数の正本からの計算のまま。
+CLIは文字列として出力する。390px/1440px等のPlaywright確認と、表の「同じkeyの40px移動」は未達。
 
 ## 代替案と未決事項
 

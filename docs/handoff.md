@@ -50,7 +50,8 @@ CSSコア単独のテストはworkspace package内にあり、rootのテスト�
 
 | 対象 | コマンド |
 | --- | --- |
-| 独立CSS package、npm consumer、Z3 | `just css-verifier-check` |
+| 独立CSS package、npm consumer、Z3、反例の出典 | `just css-verifier-check` |
+| mizchi/cssとのcascade差分(MoonBit必要) | `just css-oracle-check` |
 | noshift、DOM注釈、key、CLI/Vite、有限case eval | `just noshift-check` |
 | 宣言した親子のlayout契約 | `just layout-contract-check` |
 | browser compilerとplayground | `just playground-check` |
@@ -113,7 +114,8 @@ node tools/isle.mjs layout examples/layout-contracts/noshift-keys.isle --summary
 CLS、任意のtext/paint、未対応のscroll/transform等を保証したとは扱わない。
 根拠不足や探索上限はUnknownとする。
 
-[ADR一覧](adr/README.md)の9件はProposedで、GitHub Issueは未作成。
+[ADR一覧](adr/README.md)のうち0002はコアとCLIまで実装中、他の8件はProposed。GitHub Issueは未作成。
+0002の残りはplaygroundの模式図と、noshift反例(同じkeyの40px移動)への原因trackの接続。
 最初の候補は0002の反例説明、0003の動的寸法、0005の世代/同期遷移。
 続いて0004の予約領域と0001の観測モデルへ進む。
 0008のlive propsと0009のfactory分割は、resume側の別の実装軸として記録している。
@@ -139,6 +141,21 @@ CLS、任意のtext/paint、未対応のscroll/transform等を保証したとは
 | `just package-build` | 現行compilerとCSSコアを含むプレビューアーカイブを再生成 |
 
 新しい環境では必要なコマンドを再実行し、実行したcommit・toolchain・結果を更新する。
+
+2026-11-13の後続作業(branch `claude/dreamy-lovelace-90v3hb`、Node v24.22.3、pnpm 12.18.0、moon 0.1.20261104)の結果:
+
+| 検証 | 結果 |
+| --- | --- |
+| `just test`相当(compiler build後の`pnpm test`) | root Node 682件成功 |
+| `pnpm --filter @mizchi/css-verifier test` | 33件成功 |
+| `just css-oracle-check` | 12件成功。5000ケースで未分類の差分0、変異6種を全て検出 |
+| `evals/scenarios/layout-explanations/check.mjs` | 5/5 |
+| layout-transitionsのcheck/declared/dom/keys eval | 9/5/7/8成功、結果JSON不変、増分0 byte |
+| `e2e/layout-contract.spec.mjs` | 2件成功 |
+| `just check-types` | **環境要因で失敗**。`@types/node`がlockfileの直接依存になく、viteの型の`Buffer`が解決できない(40件、全て`node_modules`内)。リポジトリ側の型エラーは0件 |
+
+コンテナ環境でPlaywrightの指定versionとChromiumのrevisionが一致しない場合、
+`PLAYWRIGHT_BROWSERS_PATH`に既存のbrowserへのsymlinkを置いた別ディレクトリを指定すると再downloadせずに実行できる。
 
 再現可能な入力は`evals/scenarios/layout-transitions/`、結果は`evals/results/layout-transitions/`にある。
 browserのscreen captureは補助資料で、`test-results/`の画像はE2Eから再生成する。

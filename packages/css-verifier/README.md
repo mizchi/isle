@@ -89,6 +89,26 @@ The `component` field in a ContractIR is a named verification unit, using the
 existing uppercase identifier convention. Geometry is extracted independently of
 these contracts, then checked for coverage and conformance.
 
+## Explain a counterexample
+
+Geometric findings carry `explanation: {version: 1, available, required}`.
+Each side lists the cascade winners that produced it (file, line, selector,
+layer, specified value and enclosing `@media`/`@container` conditions), the
+declarations they overrode, and matching declarations whose conditions are
+false in the failing region (`dormant`). `available` follows the parent's
+tracks, gaps and the item's placement up to a definite length or the viewport;
+`required` cites the box's own sizing. Trusted caller bounds appear as
+`{kind: 'contract', trusted: true}`. Explanations are attached after the
+geometry is decided and never change the status, regions or proof.
+
+## Differential cascade oracle (development only)
+
+`oracle/` builds [mizchi/css](https://github.com/mizchi/css), an independent
+MoonBit CSS engine, to JS and compares the shared computed-value subset on a
+deterministic corpus. Known mizchi/css 0.8.0 divergences are pinned; any other
+difference fails. It is not part of the package files. Run
+`just css-oracle-check` from the repository root (MoonBit required).
+
 ## Compare layout transitions
 
 `/transitions` extracts endpoint relations independently of a `noshift/1`

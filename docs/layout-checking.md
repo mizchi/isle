@@ -281,6 +281,41 @@ E_LAYOUT_CONTENT .body
 
 両軸の診断は `axis`、`heightRange`、高さを含む witness、`region` を持つ。range / heightRange は各軸への射影で、直積が反例領域と一致するとは限らない。正本は region の vertices が張る閉包と strict constraints の共通部分である。`sizes` は計算したサイズ式、`queries` は選んだ target と条件成立を説明する。
 
+## 反例の出典
+
+幾何の違反(`E_LAYOUT_ITEM_SIZE`、`E_LAYOUT_TRACKS`、`E_LAYOUT_CONTENT`、`E_LAYOUT_BOX_EDGES`)は、[ADR-0002](adr/0002-layout-counterexample-explanations.md)の`explanation`を持つ。両辺を決めたcascadeの勝者を、宣言のfile・line・selector・layer・指定値と、勝者を囲む`@media`/`@container`条件で示す。
+
+- `available`: 親のtrack・gap・itemの配置と、親から上の寸法の連鎖。定まったpx長さ、または全てが長さのtrackで止まり、autoのrootはviewportへ到達する。
+- `required`: 対象box自身のbox-sizing・size・min-size・padding・border。`minInlineSize`等は`kind: 'contract'`、`trusted: true`の呼出し側の前提として区別する。
+- `overridden`は勝者に負けた宣言、`dormant`は同じboxに一致するが反例の領域で条件が成立しない宣言。
+
+説明は幾何の判定後に付ける付加情報で、status・range・witness・checks・Z3の結果を変えない。CSSの値を再計算して原因を推測せず、実際に使った勝者だけを引用する。最小原因集合ではない。unknownの診断には説明を付けない。`layout --summary`は`offered by`/`required by`/`overridden`/`not applied here`の行で表示する。
+
+```text
+E_LAYOUT_ITEM_SIZE: .cell requires 40px but receives 53/2px on inline axis at viewport 154px
+  offered by: .row grid-template-columns: repeat(4, minmax(0, 1fr)) (app.css:2); .row column-gap: 16px (app.css:8 under @media (max-width: 300px) (app.css:7)); …; viewport inline size
+  required by: .cell box-sizing: border-box (app.css:1); .cell min-inline-size: 40px (app.css:3)
+  not applied here: .row grid-template-columns: repeat(2, minmax(0, 1fr)) (app.css:5 under @media (min-width: 400px) (app.css:4))
+```
+
+検査は`packages/css-verifier/test/explanations.test.mjs`と[説明のeval](../evals/scenarios/layout-explanations/check.mjs)。playgroundの模式図とnoshift反例への接続は未実装。
+
+## mizchi/cssとのcascade差分検査
+
+[mizchi/css](https://github.com/mizchi/css)はMoonBitの独立したCSS parser・selector・cascade・computed style実装である。開発用の差分オラクルとして`packages/css-verifier/oracle/`でJSへbuildし、同じCSSとbox treeについて、共通の部分集合の計算値を比較する。対象はdisplay・position・box-sizing・overflow・size・padding/border/margin・gap・Grid track。
+
+決定的に生成した入力(詳細度、`:is`/`:where`、`!important`、source順、media境界、`var()`と継承、wide keyword)を使う。差分は両者のどちらかの誤りの手掛かりであり、片方の正しさの証明ではない。既知のmizchi/css 0.8.0の差分は、狭い判定と最小例で固定し、それ以外の差分を失敗にする。
+
+| 分類 | mizchi/css 0.8.0の挙動 |
+| --- | --- |
+| `source-order-over-precedence` | shorthandとlonghandを別のkeyでcascadeし、source順に適用するため、後に書かれた低い詳細度・非importantの宣言が勝つ |
+| `overflow-not-coerced` | 片方の軸がscrollでもvisible/clipをauto/hiddenへ変換しない |
+| `wide-keyword-initial` / `inherit-non-inherited` | padding・gap・displayの初期値と、非継承プロパティの`inherit` |
+| `explicit-normal-gap` | `column-gap: normal`がautoになる |
+| `var-fallback` / `inherited-var-rebinding` | shorthand内のfallbackを失う。祖先の`--h: var(--g)`を子で再解決する |
+
+css-verifier側の`!important`無視、詳細度無視、順序反転、media無視、padding左右の入替、gapの消失を加えた変異は全て差分として検出する。`@layer`、container query、幾何、Z3は対象外。`gap: var(--missing)`等のguaranteed-invalid参照はcss-verifierが現在unknownにする。実行は`just css-oracle-check`、結果は[report.json](../evals/results/css-cascade-oracle/report.json)。
+
 ## 検査結果と前提
 
 ### 40px の箱を4つ並べる場合
