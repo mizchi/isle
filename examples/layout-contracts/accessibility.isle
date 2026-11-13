@@ -9,7 +9,7 @@ component NoticeCard() {
       @media (width < 360px) { .body { display: none; } }
     </style>
     <h2 class="title">Saved</h2>
-    <p class="body">Your changes are stored.</p>
     <button class="close" type="button" aria-label="Dismiss"></button>
+    <p class="body">Your changes are stored.</p>
   </main>
 }
