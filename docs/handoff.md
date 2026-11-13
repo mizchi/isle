@@ -148,7 +148,7 @@ CLS、任意のtext/paint、未対応のscroll/transform等を保証したとは
 | --- | --- |
 | `just test`相当(compiler build後の`pnpm test`) | root Node 682件成功 |
 | `pnpm --filter @mizchi/css-verifier test` | 33件成功 |
-| `just css-oracle-check`(mizchi/css 0.8.1) | 12件成功。5000ケース全て一致(差分0、既知差分の分類なし)、変異6種を全て検出 |
+| `just css-oracle-check`(mizchi/css 0.8.1) | 12件成功。30,000ケース全て一致、比較対象外0件(guaranteed-invalidな`var()`をunsetとして扱う変更後)、変異6種を全て検出 |
 | `evals/scenarios/layout-explanations/check.mjs` | 5/5 |
 | layout-transitionsのcheck/declared/dom/keys eval | 9/5/7/8成功、結果JSON不変、増分0 byte |
 | `e2e/layout-contract.spec.mjs` | 2件成功 |

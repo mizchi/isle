@@ -43,7 +43,8 @@ test('layout CLI loads ordered reset files relative to the sidecar and preserves
     let result = run(source, config);
     assert.equal(result.status, 0, result.stderr);
     assert.equal(JSON.parse(result.stdout).sizes[0].boxSizing, 'border-box');
-    await writeFile(reset, '* {padding:var(--unavailable);}');
+    // Relative units are outside the checked subset: Unknown, attributed to the reset file.
+    await writeFile(reset, '* {padding:1em;}');
     result = run(source, config);
     assert.equal(result.status, 1, result.stderr);
     assert.equal(JSON.parse(result.stdout).diagnostics[0].css.file, reset);

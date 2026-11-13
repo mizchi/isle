@@ -35,8 +35,9 @@ test('nested and empty fallbacks work, while external inherited values stay unkn
 
 test('cycle edges include unused fallback references and cycles never masquerade as values',()=>{
   const cycle='.row{--cell:var(--other);--other:var(--cell)}';
-  const invalid=run(cycle);status(invalid,'unknown');
-  assert.ok(invalid.diagnostics.some(d=>d.code==='U_LAYOUT_VARIABLE_CYCLE' && /--cell/.test(d.message)));
+  // A non-conditional cycle is guaranteed-invalid: min-width:var(--cell) is unset.
+  const invalid=run(cycle);status(invalid,'verified');
+  assert.ok(invalid.invalidSubstitutions.some(d=>d.reason==='cycle' && d.resolution==='unset' && /--cell/.test(d.message)));
   status(run(cycle+'.cell{min-width:var(--cell,80px)}'),'violated');
   const dormant='.row{--safe:80px;--cell:var(--safe,var(--other));--other:var(--cell)}';
   status(run(dormant+'.cell{min-width:var(--cell,40px)}'),'unknown');
@@ -56,9 +57,12 @@ test('media and container branches keep custom-property environments separate',(
 });
 
 test('invalid substitution cannot reuse an earlier declaration or concatenate CSS tokens',()=>{
-  const missing=run('.cell{min-width:40px;min-width:var(--missing)}');
-  status(missing,'unknown');assert.equal(missing.diagnostics[0].css.file,'variables.css');
-  for(const declaration of ['--cell:40;min-width:var(--cell)px','--cell:4/**/0px','--cell:10deg','--cell:var(--cell)']) status(run('.cell{'+declaration+'}'),'unknown');
+  // Invalid at computed-value time means unset (auto), never the earlier 80px.
+  const missing=run('.cell{min-width:80px;min-width:var(--missing)}');
+  status(missing,'verified');assert.equal(missing.invalidSubstitutions[0].css.file,'variables.css');
+  status(run('.cell{--cell:var(--cell)}'),'verified');
+  // Substituted tokens outside the layout subset are not assumed invalid.
+  for(const declaration of ['--cell:40;min-width:var(--cell)px','--cell:4/**/0px','--cell:10deg']) status(run('.cell{'+declaration+'}'),'unknown');
   status(run('.row{--cell:40px}@property --cell{syntax:"<length>";inherits:false;initial-value:40px}'),'unknown');
 });
 

@@ -25,6 +25,10 @@ test('custom-property cascade and substitution match native computed geometry',a
     ['substituted inherit','.row{--cell:40px}.cell{--cell:var(--missing,inherit)}','verified',40],
     ['substituted initial','.row{--cell:80px}.cell{--cell:var(--missing,initial);min-width:var(--cell,40px)}','verified',40],
     ['important layers','@layer a,b;@layer a{.row{--cell:40px!important}}@layer b{.row{--cell:80px!important}}.row{--cell:80px!important}','verified',40],
+    // Guaranteed-invalid references: invalid at computed-value time, i.e. unset.
+    ['missing reference is unset','.row{--cell:40px}.cell{min-width:80px;min-width:var(--missing)}','verified',40],
+    ['cycle reference is unset','.row{--a:var(--b);--b:var(--a)}.cell{min-width:80px;min-width:var(--a)}','verified',40],
+    ['invalid shorthand is unset','.row{--cell:40px;gap:40px}.row{gap:var(--missing)}','verified',40],
     ['all leaves custom properties','.row{--cell:40px}.cell{all:initial}.cell{min-width:var(--cell)}','verified',40],
   ];
   await page.setViewportSize({width:160,height:300});

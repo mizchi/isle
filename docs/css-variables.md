@@ -34,7 +34,11 @@ query の閾値そのものへ `var()` を使う機能ではなく、成立し�
 
 `initial` は未登録変数の guaranteed-invalid 値、`inherit` / `unset` / `revert` は継承を扱います。missing / invalid が確定していれば `var(--missing, var(--backup, 40px))` の fallback を選びます。空の変数値と空の fallback も token 列として扱います。
 
-`--n:40; min-width:var(--n)px` を `40px` とみなしてはいけません。Number と Ident は別 token のままで、長さとして解析できなければ Unknown です。`min-width:40px; min-width:var(--missing)` の後者が勝つ場合も、前の40pxへ戻したことにはしません。
+`--n:40; min-width:var(--n)px` を `40px` とみなしてはいけません。Number と Ident は別 token のままで、長さとして解析できなければ Unknown です。置換後の値が部分集合外であることは、CSS として無効であることを意味しないためです。
+
+参照先が **guaranteed-invalid と確定した** 宣言は、[CSS Variables 1](https://drafts.csswg.org/css-variables-1/#invalid-at-computed-value-time)の invalid at computed-value time として `unset` で扱います。対象は、fallback のない未定義変数・`initial` にした変数・fallback を経由しない循環への参照です。継承プロパティは親の値、それ以外は初期値になります。shorthand なら、その宣言が勝った longhand を全て `unset` にします。`min-width:80px; min-width:var(--missing)` の後者が勝つと `min-width` は `auto` で、前の80pxへ戻しません。
+
+該当した宣言は report の `invalidSubstitutions` に、box・path・著者のプロパティ・決めた longhand・CSS 位置・`reason`(`guaranteed-invalid` / `cycle`)・`resolution: 'unset'`・領域として残ります。診断ではないので status を変えません。外部祖先から継承され得る変数、fallback を経由する循環、`revert-layer` は引き続き Unknown です。
 
 ## 循環と移植性
 
@@ -74,7 +78,7 @@ analyzeLayout(ir, {
 - custom-property 名は unescaped ASCII の `--name` 形式に限定します。`@property`、`revert-layer`、任意の登録・animation・runtime の外部上書きは検査対象外です。
 - 置換後の値も従来の layout 部分集合に従います。`var()` を使っても、未対応の `calc()`、単位、配置が検証済みにはなりません。
 - 1値4096 token / 65536 UTF-16単位、関数・括弧の入れ子32、1 element の自前 binding 256件に上限を置き、解決の仕事量も全体の work budget に課金します。超過は `U_LAYOUT_LIMIT` であり、fallback では隠せません。
-- CSS のファイル・宣言行を診断へ残します。未対応値・未知の継承・循環・上限超過は、検査付きビルドを失敗させます。
+- CSS のファイル・宣言行を診断へ残します。未対応値・未知の継承・fallback を経由する循環・上限超過は、検査付きビルドを失敗させます。確定した guaranteed-invalid 参照は `unset` として検査し、`invalidSubstitutions` に記録します。
 
 Node の境界値テスト、Chromium の computed geometry、独立した [SMT 参照仕様](../models/css_layout/README.md)との XOR 検査を組み合わせます。40pxの仕様と生成制約は UNSAT で一致し、変数を41pxへ壊すと SAT で差を検出します。CSS parser・モデル抽出器・全ブラウザーの正しさを証明したものではありません。
 

@@ -127,6 +127,19 @@ export function variableEnvironment(declarations,parent,documentRoot,globalSpend
   return {closed:parent.closed,lookup};
 }
 
+/**
+ * Substitute var() for one declaration. A guaranteed-invalid reference
+ * (missing without fallback, initial, non-conditional cycle) returns
+ * `{invalid}`: the declaration is invalid at computed-value time and the
+ * caller treats it as unset. Undecidable lookups still throw (Unknown).
+ */
+export function substituteDeclaration(expression,environment,spend) {
+  const value=evaluate(expression.nodes,environment.lookup,resolutionBudget(spend));
+  if(value.status==='invalid') return {invalid:{code:value.code,message:value.message}};
+  if(value.status!=='resolved') fail(value.message,value.code);
+  return {value:value.tokens.join(' ').trim()};
+}
+
 export function substituteVariables(expression,environment,spend) {
   const value=evaluate(expression.nodes,environment.lookup,resolutionBudget(spend));
   if(value.status!=='resolved') fail(value.message,value.code);

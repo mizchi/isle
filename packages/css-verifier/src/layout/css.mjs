@@ -2,7 +2,7 @@ import postcss from 'postcss';
 import {findCSSWriteConflicts,cssWriteConflictMessage} from '../css-writes.mjs';
 import { q, cmp } from './linear.mjs';
 import { parseCondition } from './conditions.mjs';
-import {customName,variableValue,variableEnvironment,substituteVariables} from './variables.mjs';
+import {customName,variableValue,variableEnvironment,substituteDeclaration} from './variables.mjs';
 
 import { compileSelector, matches, greaterRank } from './selectors.mjs';
 export { matches, simpleSelector } from './selectors.mjs';
@@ -209,14 +209,21 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
       }
     }
   }
-  const environment=variableEnvironment(custom,inherited.$variables,box.documentRoot,spend),expanded=new Map();
+  const environment=variableEnvironment(custom,inherited.$variables,box.documentRoot,spend),expanded=new Map(),invalid=[];
   for (const property of Object.keys(values)) {
     let value = values[property];
     if(typeof value==='object') {
       const declaration=value;
       try {
-        if(!expanded.has(declaration.pending)) expanded.set(declaration.pending,new Map(expand(declaration.pending.property,substituteVariables(declaration.pending.expression,environment,spend))));
-        value=expanded.get(declaration.pending).get(property);
+        if(!expanded.has(declaration.pending)) {
+          const result=substituteDeclaration(declaration.pending.expression,environment,spend);
+          // Invalid at computed-value time: every longhand it writes is unset.
+          if(result.invalid) invalid.push({property:declaration.pending.property,file:declaration.file,line:declaration.line,...result.invalid,longhands:[]});
+          expanded.set(declaration.pending,{map:new Map(expand(declaration.pending.property,result.invalid ? 'unset' : result.value)),invalid:result.invalid ? invalid.at(-1) : undefined});
+        }
+        const entry=expanded.get(declaration.pending);
+        value=entry.map.get(property);
+        entry.invalid?.longhands.push(property);
         if(value===undefined) throw new Error('CSS variable shorthand does not produce the required property');
       } catch(error) {error.css={file:declaration.file,line:declaration.line};throw error;}
     }
@@ -233,6 +240,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
   values.$sources = sources;
   values.$dormant = dormant;
   values.$overridden = overridden;
+  values.$invalid = invalid;
   values.$variables = environment;
   const nonscroll = value => ['visible', 'clip'].includes(value);
   const x = values['overflow-x'], y = values['overflow-y'];

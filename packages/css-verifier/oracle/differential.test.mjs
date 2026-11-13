@@ -20,8 +20,8 @@ test('the generated corpus has no unexplained cascade differences and enough sha
     }
   }
   // A vacuous pass (everything rejected or explained away) is not evidence.
-  assert.ok((counts.same ?? 0) > seeds * 0.8, JSON.stringify(counts));
-  assert.ok((counts['verifier-unsupported'] ?? 0) < seeds * 0.2, JSON.stringify(counts));
+  assert.ok((counts.same ?? 0) > seeds * 0.99, JSON.stringify(counts));
+  assert.ok((counts['verifier-unsupported'] ?? 0) < seeds * 0.01, JSON.stringify(counts));
   assert.ok(compared > seeds * 50, `compared ${compared} property values`);
 });
 

@@ -11,4 +11,4 @@
   .copy { inline-size: 100%; block-size: 100%; padding: 16px; overflow-wrap: anywhere; }
 }
 
-.copy { inline-size: var(--host-size); }
+.copy { inline-size: min(100%, 40rem); }

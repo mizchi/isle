@@ -73,6 +73,13 @@ export interface LayoutDiagnostic {
   /** Build/debug provenance of both sides (ADR-0002). Never consulted by the proof. */
   explanation?: LayoutExplanation;
 }
+/** A declaration whose var() reference is guaranteed-invalid; it computes as unset (CSS Variables 1 section 3). */
+export interface LayoutInvalidSubstitution {
+  box:string; path:string; range:LayoutRange; heightRange?:LayoutRange;
+  /** Authored property, possibly a shorthand, and the longhands it decided. */
+  property:string; longhands:string[];
+  css:{file:string;line:number}; reason:'guaranteed-invalid'|'cycle'; message:string; resolution:'unset';
+}
 export interface LayoutCSSCondition { kind:'media'|'container'; name?:string; params:string; css:{file:string;line:number} }
 export interface LayoutCSSOrigin { file:string; line:number; selector:string; layer?:string; specified:string; conditions?:LayoutCSSCondition[] }
 export type LayoutExplanationFact =
@@ -107,6 +114,7 @@ export interface LayoutSummary {
   layoutBindings?:(LayoutScenarioIdentity & {path:string;declaration:LayoutDeclaration})[];
   structure?: LayoutStructure;
   scrollbars?: {box:string;path:string;inlineSize:number;blockSize:number;viewport:boolean;variant?:number;scrollbarProfile?:string;range:LayoutRange;heightRange?:LayoutRange;region?:LayoutRegion}[];
+  invalidSubstitutions?: LayoutInvalidSubstitution[];
   version: 1; ok: boolean; status: 'verified' | 'violated' | 'unknown'; component: string;
   scope: { axis: 'inline' | 'both'; viewport: LayoutRange & { height?: LayoutRange | null }; hostInset: number; hostBlockInset?: number; closedCSS: true; browserRounding: false; blockSizing: boolean; scrollbarProfiles?:readonly LayoutScrollbarProfile[] };
   assumptions: string[];

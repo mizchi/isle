@@ -2,8 +2,8 @@
   "version": 1,
   "status": "consistent",
   "measured": {
-    "commit": "25defc5f16beb316fb1a2581b0a5377d561993c4",
-    "dirty": false,
+    "commit": "af0cfb1d1bd5e39969350f83a275095aa4d8bebc",
+    "dirty": true,
     "node": "v24.22.3",
     "oracle": "mizchi/css@0.8.1"
   },
@@ -45,94 +45,91 @@
   },
   "scope": "Specified-to-computed values of the shared longhand subset at one concrete viewport per case. Geometry, container queries, layers and Z3 are outside this eval.",
   "cases": {
-    "same": 4505,
-    "verifier-unsupported": 495
+    "same": 5000
   },
   "properties": {
     "display": {
-      "same": 27862
+      "same": 29972
     },
     "position": {
-      "same": 27862
+      "same": 29972
     },
     "box-sizing": {
-      "same": 27862
+      "same": 29972
     },
     "overflow-x": {
-      "same": 27862
+      "same": 29972
     },
     "overflow-y": {
-      "same": 27862
+      "same": 29972
     },
     "inline-size": {
-      "same": 27862
+      "same": 29972
     },
     "min-inline-size": {
-      "same": 27862
+      "same": 29972
     },
     "max-inline-size": {
-      "same": 27862
+      "same": 29972
     },
     "block-size": {
-      "same": 27862
+      "same": 29972
     },
     "min-block-size": {
-      "same": 27862
+      "same": 29972
     },
     "max-block-size": {
-      "same": 27862
+      "same": 29972
     },
     "padding-left": {
-      "same": 27862
+      "same": 29972
     },
     "border-left": {
-      "same": 27862
+      "same": 29972
     },
     "margin-left": {
-      "same": 27862
+      "same": 29972
     },
     "padding-right": {
-      "same": 27862
+      "same": 29972
     },
     "border-right": {
-      "same": 27862
+      "same": 29972
     },
     "margin-right": {
-      "same": 27862
+      "same": 29972
     },
     "padding-top": {
-      "same": 27862
+      "same": 29972
     },
     "border-top": {
-      "same": 27862
+      "same": 29972
     },
     "margin-top": {
-      "same": 27862
+      "same": 29972
     },
     "padding-bottom": {
-      "same": 27862
+      "same": 29972
     },
     "border-bottom": {
-      "same": 27862
+      "same": 29972
     },
     "margin-bottom": {
-      "same": 27862
+      "same": 29972
     },
     "column-gap": {
-      "same": 27862
+      "same": 29972
     },
     "row-gap": {
-      "same": 27862
+      "same": 29972
     },
     "grid-template-columns": {
-      "same": 27862
+      "same": 29972
     },
     "grid-template-rows": {
-      "same": 27862
+      "same": 29972
     }
   },
-  "verifierUnsupported": {
-    "Custom property --g has the guaranteed-invalid value": 495
-  },
+  "verifierUnsupported": {},
   "differences": []
 }

@@ -1,8 +1,8 @@
 {
   "version": 1,
   "measured": {
-    "commit": "1cb1ccdafc0d1447d09a39b2857f26e8060978ff",
-    "node": "v22.23.4"
+    "commit": "af0cfb1d1bd5e39969350f83a275095aa4d8bebc",
+    "node": "v24.22.3"
   },
   "scope": "Static counterexample provenance (ADR-0002 core/CLI). Playground diagrams are not covered.",
   "results": [
