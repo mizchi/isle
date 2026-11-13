@@ -21,6 +21,8 @@
 //   reflow           → E_A11Y_REFLOW            the page scrolls horizontally at 320 CSS px or narrower (SC 1.4.10)
 //   focus-obscured   → E_A11Y_FOCUS_OBSCURED    a focusable box entirely covered by a later painted box (SC 2.4.11)
 //   focus-area       → E_A11Y_FOCUS_AREA        a visible focusable box with a zero-size border box
+//   pointer-disabled → E_A11Y_POINTER_DISABLED  a visible button/link that pointer-events: none makes unclickable
+//   small-text       → W_A11Y_SMALL_TEXT        rendered text below 12px
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, width as domainWidth } from './region.mjs';
 import { q } from './linear.mjs';
@@ -28,7 +30,7 @@ import { intersect } from './integrity.mjs';
 
 export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable',
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
-  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area'];
+  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -96,6 +98,8 @@ const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(Stri
 function backdrop(chain) {
   const self = chain.at(-1);
   for (const layer of chain) if (!opaqueValue(layer.opacity)) return { unknown: `opacity ${layer.opacity} blends the text with what lies behind it` };
+  // ADR-0007: no implicit black-on-white. The UA text and canvas colors depend on the user's color scheme.
+  if (String(self.color).toLowerCase() === 'canvastext') return { unknown: 'the text color is the user-agent default (canvastext); declare color' };
   const fg = parseColor(self.color);
   if (!fg) return { unknown: `color ${self.color} is not a modeled color` };
   const layers = [];
@@ -109,8 +113,9 @@ function backdrop(chain) {
     if (color.a > 0) layers.push({ index: i, color });
     if (color.a >= 1) { bg = color; break; }
   }
-  // Composite translucent layers bottom-up over the opaque one (or the canvas).
-  let base = bg ?? parseColor('canvas');
+  if (!bg) return { unknown: 'no ancestor has an opaque background color; the canvas color depends on the user agent' };
+  // Composite translucent layers bottom-up over the opaque one.
+  let base = bg;
   for (const layer of layers.slice(0, bg ? -1 : undefined).reverse()) base = over(layer.color, base);
   return { fg: over(fg, base), bg: base, opaqueAt: bg ? layers.at(-1).index : -1 };
 }
@@ -201,6 +206,8 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       if (!text.origin || others.length) { report(unknowns, 'U_A11Y_CONTRAST', 'unknown', `${text.box.label} is positioned without an opaque background of its own; the boxes behind it are not its ancestors`, text, text.region, { rule: 'text-contrast' }); continue; }
     }
     const ratio = contrastRatio(result.fg, result.bg), required = large(text.chain.at(-1)) ? big : normal;
+    // Floating-point luminance: a ratio within numeric error of the threshold is not decided (ADR-0007).
+    if (Math.abs(ratio - required) < 1e-9) { report(unknowns, 'U_A11Y_CONTRAST', 'unknown', `${text.box.label} has contrast ${ratio}:1, at the ${required}:1 threshold within numeric error`, text, text.region, { rule: 'text-contrast', ratio, required }); continue; }
     if (ratio < required) report(findings, 'E_A11Y_CONTRAST', 'error', `${text.box.label} has contrast ${ratio.toFixed(2)}:1, below ${required}:1`, text, text.region,
       { rule: 'text-contrast', ratio, required, foreground: result.fg, background: result.bg });
   }
@@ -350,6 +357,16 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       const region = atMost(target.region, size, scalar(0));
       if (region) { report(findings, 'E_A11Y_FOCUS_AREA', 'error', `${target.box.label} can take focus but has no area to show it`, target, region, { rule: 'focus-area' }); break; }
     }
+  }
+
+  // pointer-disabled: keyboard can reach it, a pointer cannot.
+  for (const row of geometry.filter(row => interactive(row) && visible(row) && !hiddenFrom(row.path) && row.paint.pointerEvents === 'none'))
+    report(findings, 'E_A11Y_POINTER_DISABLED', 'error', `${row.box.label} cannot be clicked: pointer-events is none here`, row, row.region, { rule: 'pointer-disabled' });
+
+  // small-text: a px font size below 12 (relative sizes are not resolved here).
+  for (const row of geometry.filter(row => row.box.text && visible(row))) {
+    const size = px(row.paint.fontSize);
+    if (size !== undefined && size < 12) report(warnings, 'W_A11Y_SMALL_TEXT', 'warning', `${row.box.label} is set at ${size}px`, row, row.region, { rule: 'small-text', fontSize: size });
   }
 
   return { findings: dedupe(findings), warnings: dedupe(warnings), unknowns: dedupe(unknowns), notes };

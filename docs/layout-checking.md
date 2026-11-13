@@ -296,6 +296,18 @@ E_LAYOUT_CONTENT .body
 button / a の target 寸法(`E_LAYOUT_TARGET_SIZE`)はエラー、overflow で切れる内容(`W_LAYOUT_CLIPPED`)と入れ子のスクロール(`W_LAYOUT_NESTED_SCROLL`)は警告になる。
 契約で溢れを許した場合も報告する。vlmkit の4px閾値は持たない。text-collision は、フォント由来のテキスト契約を持つ leaf では描かれる1行の範囲(上界の幅を `text-align` で配置し、入りきらなければ行頭寄せ)、それ以外は border box で判定し、absolute の box が関わる重なりは免除として記録する。`protrusion: 'painted'` は border か背景を持つ親だけを対象にする(vlmkit と同じ)。Vite の `layout.integrity` で検査付き build の失敗条件に加わり、警告は build の警告になる。vlmkit との差分は `e2e/layout-integrity.spec.mjs` で確認する。
 
+
+## DOM と CSS を組み合わせたアクセシビリティ規則(opt-in)
+
+`accessibility: true`(または `{contrast: 'AAA'}`)を渡すと、DOM の事実(名前、`aria-hidden`、id、木の順序)と
+CSS の結果(`display`・`visibility`・`pointer-events`・色・配置)を組み合わせた19規則を viewport の全域で判定する
+([ADR-0013](adr/0013-static-accessibility-rules.md))。名前のない button/link、コントラスト不足、覆われた・重なった操作対象、
+`aria-hidden` の内側のフォーカス、空の見出しと階層の飛び、入れ子の操作対象、重複 id と存在しない参照、
+フォーカスできない scroll 領域、320px での横スクロール、完全に隠れるフォーカス、面積のない focusable、
+`pointer-events: none` の操作対象をエラーに、表示順と DOM 順の不一致・正の tabindex・複数の main・12px 未満の文字を警告にする。
+メディアクエリで変わる状態は区間として報告する(例:`@media (width < 600px)` で label を隠すと、その区間で名前がない)。
+動的な属性値、画像の背景、`opacity`、宣言されていない色は Unknown。Vite では `layout.accessibility` で検査付き build の失敗条件に加わる。
+
 ## 反例の出典
 
 幾何の違反(`E_LAYOUT_ITEM_SIZE`、`E_LAYOUT_TRACKS`、`E_LAYOUT_CONTENT`、`E_LAYOUT_BOX_EDGES`)は、[ADR-0002](adr/0002-layout-counterexample-explanations.md)の`explanation`を持つ。両辺を決めたcascadeの勝者を、宣言のfile・line・selector・layer・指定値と、勝者を囲む`@media`/`@container`条件で示す。

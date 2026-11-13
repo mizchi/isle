@@ -6,7 +6,7 @@
 上位の目的は[Qwik型の事前コンパイルUIとCSSレイアウト契約の型システムへの統合](../project-purpose.md)。
 環境の再構築と作業の再開は[引き継ぎ手順](../handoff.md)を参照する。
 
-0002は **実装中**(コアとCLI)、0010は **実装中**(1行テキスト)、0011は **実装中**(row/column flex と contents)、0012は **実装中**(integrity の6規則)、他は **Proposed**。計画の記録と機能の実装承認を区別する。
+0002は **実装中**(コアとCLI)、0010は **実装中**(1行テキスト)、0011は **実装中**(row/column flex と contents)、0012は **実装中**(integrity の6規則)、0013は **実装中**(DOM と CSS を組み合わせた19のアクセシビリティ規則)、0007は **一部実装**(0013 の text-contrast)、他は **Proposed**。計画の記録と機能の実装承認を区別する。
 GitHub Issueは未作成で、各文書の「Issue化」を承認後の起票に使う。
 記載した新しい型・profile・成果物名は設計案であり、現在の公開APIではない。
 
@@ -26,6 +26,7 @@ GitHub Issueは未作成で、各文書の「Issue化」を承認後の起票に
 | [0010](0010-font-derived-text-metrics.md) | 追加の指示 | mizchi/fontによる1行テキストの幅・高さの導出 | 既存CSS検証コア |
 | [0011](0011-flex-and-contents-subsets.md) | 追加の指示 | flex(row/column・nowrap)と`display: contents`の安全なサブセット | 既存CSS検証コア、mizchi/cssの差分検査 |
 | [0012](0012-static-integrity-rules.md) | 追加の指示 | vlmkit の integrity 検査(ページ溢れ・突出・衝突・target 寸法・clip・入れ子スクロール)の静的版 | 既存CSS検証コア |
+| [0013](0013-static-accessibility-rules.md) | 追加の指示 | DOM と CSS を組み合わせた静的アクセシビリティ検査(名前・コントラスト・覆い・見出し・id・フォーカス・reflow など) | 0012 の geometry、0007 |
 
 0001は上位の設計方針であり、残るADRの完了を一括して宣言するものではない。
 0006・0007は独立して進められる。0008・0009も互いの完了を必須条件にしない。

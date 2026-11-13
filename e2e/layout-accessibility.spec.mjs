@@ -49,8 +49,10 @@ const cases = [
     boxes: {'.page': {overflow: 'visible'}}, widths: [320, 340, 375], min: 320},
   {name: 'sheet-over-button', html: '<main class="panel"><button class="go" aria-label="Go"></button><button class="zero" aria-label="Zero"></button><div class="sheet"></div></main>',
     css: `.panel{display:grid;grid-template-columns:100px 0px minmax(0,1fr);grid-template-rows:40px;position:relative;background:#fff}.go,.zero{${button}}.sheet{position:absolute;top:0;left:0;inline-size:120px;block-size:40px;background:#eee}@media (width < 600px){.sheet{inline-size:50px}}`},
+  {name: 'disabled-pointer-and-fine-print', html: '<main class="bar"><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><p class="fine">Fine print</p></main>',
+    css: `.bar{display:grid;grid-template-columns:40px 40px minmax(0,1fr);grid-template-rows:40px;background:#fff;color:#000;pointer-events:none;${type}}.b1,.b2{${button}}.b2{pointer-events:auto}.fine{font-size:11px}@media (width >= 900px){.fine{font-size:14px}}`, boxes: {'.fine': label}},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text'];
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
   && (!row.heightRange || (height >= row.heightRange.min && height <= row.heightRange.max));
 
@@ -155,6 +157,19 @@ async function runtime(page, sample) {
     return out;
   });
   for (const [rule, key] of [['scrollable-region-focusable', 'scroll'], ['reflow', 'reflow'], ['focus-obscured', 'obscured'], ['focus-area', 'area']]) for (const path of focusStuff[key]) found.get(rule).add(path);
+  const pointer = await page.evaluate(() => {
+    const out = {disabled: [], small: []};
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    for (const n of [document.body.firstElementChild, ...document.body.firstElementChild.querySelectorAll('*')]) {
+      const style = getComputedStyle(n);
+      if (style.display === 'none' || style.visibility !== 'visible') continue;
+      if (n.matches('a[href], button') && style.pointerEvents === 'none') out.disabled.push(pathOf(n));
+      if ([...n.childNodes].some(c => c.nodeType === 3 && c.data.trim()) && parseFloat(style.fontSize) < 12) out.small.push(pathOf(n));
+    }
+    return out;
+  });
+  for (const path of pointer.disabled) found.get('pointer-disabled').add(path);
+  for (const path of pointer.small) found.get('small-text').add(path);
   // Contrast from computed colors, composited over the ancestors like the WCAG definition.
   const low = await page.evaluate(() => {
     const parse = value => { const m = value.match(/[\d.]+/g).map(Number); return {r: m[0], g: m[1], b: m[2], a: m[3] ?? 1}; };

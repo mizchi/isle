@@ -99,6 +99,20 @@ warnings in `report.integrity.warnings`. Each finding carries the vlmkit `rule`.
 `protrusion: 'painted'` only judges parents with a border or background, as
 vlmkit does. Z3 confirms integrity findings like the other obligations.
 
+## Accessibility rules (opt-in)
+
+`accessibility: true` (or `{contrast: 'AA' | 'AAA'}`) combines DOM facts on the
+box tree (`named`, `labelledBy`, `references`, `ariaHidden`, `focusable`,
+`tabIndex`; the HTML adapter derives them from attributes) with the cascade
+(`display`, `visibility`, `pointer-events`, colors, `opacity`) and the proved
+geometry: accessible names, text contrast, occluded and overlapping targets,
+focusable content under aria-hidden, headings, nested interactive elements,
+duplicate ids and dangling references, focusable scroll regions, reflow at
+320px, obscured focus, zero-size focus and pointer-disabled targets are errors;
+visual order, positive tabindex, multiple main landmarks and text below 12px
+are warnings (`report.accessibility.warnings`). Contrast follows ADR-0007: no
+implicit black-on-white, and images, opacity or undeclared colors are Unknown.
+
 ## Explain a counterexample
 
 Geometric findings carry `explanation: {version: 1, available, required}`.

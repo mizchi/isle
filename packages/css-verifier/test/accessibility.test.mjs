@@ -17,12 +17,12 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
 const toolbar = (link, label = {}) => ({tag: 'main', classes: ['bar'], children: [{tag: 'a', classes: ['b'], focusable: true, ...link, children: [{tag: 'span', classes: ['label'], text: true, ...label}]}]});
-const barCSS = extra => `.bar { display: grid; grid-template-columns: 120px; grid-template-rows: 40px; }\n.b { display: grid; grid-template-columns: minmax(0, 1fr); }\n${extra}`;
+const barCSS = extra => `.bar { display: grid; grid-template-columns: 120px; grid-template-rows: 40px; background: #fff; color: #000; }\n.b { display: grid; grid-template-columns: minmax(0, 1fr); }\n${extra}`;
 const boxes = {'.label': text};
 
 test('accessible-name: a link whose only text is display: none has no name where that holds', () => {
@@ -63,17 +63,20 @@ test('text-contrast: inherited color against the nearest opaque background', () 
   assert.equal(find(run(card, cardCSS('.card { background: #fff; color: #767676; }'), {boxes: cardBoxes, accessibility: {contrast: 'AAA'}}), 'E_A11Y_CONTRAST').length, 1);
 });
 
-test('text-contrast: translucent layers composite over the canvas, media queries split the domain', () => {
-  // rgba(0,0,0,.5) over white is #808080 (3.95:1 against white text? no: black text) — here white text over it.
-  const half = run(card, cardCSS('.card { background: rgba(0, 0, 0, 0.5); color: white; }'), {boxes: cardBoxes});
-  assert.equal(find(half, 'E_A11Y_CONTRAST').length, 1);
+test('text-contrast: translucent layers composite over an opaque ancestor, media queries split the domain', () => {
+  // rgba(0, 0, 0, .5) over an opaque white ancestor is #808080; white text on it is 3.95:1.
+  const panelTree = {tag: 'main', classes: ['page'], children: [{tag: 'section', classes: ['card'], children: [{tag: 'p', classes: ['t'], text: true}]}]};
+  const half = run(panelTree, cardCSS('.page { display: grid; grid-template-columns: minmax(0, 1fr); background: #fff; }\n.card { background: rgba(0, 0, 0, 0.5); color: white; }'), {boxes: cardBoxes});
+  const [low] = find(half, 'E_A11Y_CONTRAST');
+  assert.ok(low.ratio > 3.9 && low.ratio < 4, String(low.ratio));
   const dark = run(card, cardCSS('.card { background: #fff; color: #000; }\n@media (width >= 800px) { .card { color: #ccc; } }'), {boxes: cardBoxes});
   const [finding] = find(dark, 'E_A11Y_CONTRAST');
   assert.equal(finding.range.minExact, '800');
 });
 
-test('text-contrast: images, opacity and unknown colors make the result unknown, not verified', () => {
-  for (const extra of ['.card { background-image: linear-gradient(#000, #fff); color: #000; }', '.card { background: #fff; color: #000; opacity: 0.5; }', '.card { background: #fff; color: color-mix(in srgb, red, blue); }']) {
+test('text-contrast: images, opacity, unknown colors and no declared colors are unknown, not verified (ADR-0007)', () => {
+  for (const extra of ['.card { background-image: linear-gradient(#000, #fff); color: #000; }', '.card { background: #fff; color: #000; opacity: 0.5; }', '.card { background: #fff; color: color-mix(in srgb, red, blue); }',
+    '.card { color: #000; }', '.card { background: #fff; }', '.card { background: rgba(255, 255, 255, 0.9); color: #000; }']) {
     const report = run(card, cardCSS(extra), {boxes: cardBoxes});
     assert.equal(report.status, 'unknown', extra);
     assert.ok(report.diagnostics.some(d => d.code === 'U_A11Y_CONTRAST'), JSON.stringify(report.diagnostics));
@@ -243,4 +246,16 @@ test('a zero-size target overlaps nothing (it fails focus-area instead)', () => 
   const report = run(panel(), panelCSS('.panel { grid-template-columns: 0px minmax(0, 1fr); }\n.cover { left: 0; }'));
   assert.equal(find(report, 'E_A11Y_OCCLUDED').length, 0);
   assert.equal(find(report, 'E_A11Y_FOCUS_AREA').length, 1);
+});
+
+test('pointer-disabled: a visible target under inherited pointer-events: none', () => {
+  const [finding] = find(run(panel(), panelCSS('.panel { pointer-events: none; }\n.cover { display: none; }')), 'E_A11Y_POINTER_DISABLED');
+  assert.equal(finding.box, '.go');
+  assert.equal(find(run(panel(), panelCSS('.panel { pointer-events: none; }\n.go { pointer-events: auto; }\n.cover { display: none; }')), 'E_A11Y_POINTER_DISABLED').length, 0);
+});
+
+test('small-text: rendered text below 12px is a warning', () => {
+  const report = run(card, cardCSS('.card { background: #fff; color: #000; }\n@media (width < 500px) { .t { font-size: 11px; } }'), {boxes: cardBoxes});
+  const [warning] = report.accessibility.warnings.filter(w => w.code === 'W_A11Y_SMALL_TEXT');
+  assert.equal(warning.range.maxExact, '500');
 });

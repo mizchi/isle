@@ -1,6 +1,6 @@
 # ADR-0007: 単色・不透明な色の静的コントラスト契約
 
-- 状態: Proposed
+- 状態: 一部実装([ADR-0013](0013-static-accessibility-rules.md)の text-contrast。theme/state の候補と ratio の区間表示は未実装)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: 6「静的コントラスト契約」
