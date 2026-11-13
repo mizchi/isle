@@ -26,6 +26,11 @@
 //   image-alt        → E_A11Y_IMAGE_ALT         a rendered img without alt (alt="" marks it decorative)
 //   form-label       → E_A11Y_LABEL             a field with no label, aria name or title (W_A11Y_PLACEHOLDER_LABEL: placeholder only)
 //   label-for        → E_A11Y_LABEL_FOR         label[for] names no labelable element
+//   list-structure   → E_A11Y_LIST              a rendered li outside ul/ol, or a list child that is not li
+//   radio-group      → W_A11Y_RADIO_GROUP       same-name radios rendered outside a fieldset or radiogroup/group role
+//   landmark-name    → W_A11Y_LANDMARK_NAME     two navigation landmarks render at once and not both are named
+//   role-valid       → E_A11Y_ROLE              a role token that is not a WAI-ARIA role
+//   interactive-role-focusable → E_A11Y_ROLE_FOCUS a rendered element with an interactive role that cannot take focus
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, width as domainWidth } from './region.mjs';
@@ -34,7 +39,7 @@ import { intersect } from './integrity.mjs';
 
 export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable',
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
-  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for'];
+  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -224,7 +229,10 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   const visible = row => row.paint.visibility === 'visible';
   // Interactive: buttons, links with href (or a dynamic one), and form fields (not type=hidden or disabled-hidden).
   const field = box => ['select', 'textarea'].includes(box.tag) || (box.tag === 'input' && box.inputType !== 'hidden');
-  const control = row => row.box.tag === 'button' || (row.box.tag === 'a' && row.box.focusable !== false);
+  // Widget roles that need focus and a name (WAI-ARIA 1.2), on any element.
+  const widgetRoles = new Set(['button', 'link', 'checkbox', 'radio', 'switch', 'tab', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'option', 'slider', 'spinbutton', 'textbox', 'searchbox', 'combobox', 'treeitem', 'gridcell']);
+  const roleOf = box => box.role && box.role !== 'dynamic' ? box.role.split(/\s+/)[0] : undefined;
+  const control = row => row.box.tag === 'button' || (row.box.tag === 'a' && row.box.focusable !== false) || widgetRoles.has(roleOf(row.box));
   const interactive = row => control(row) || field(row.box);
   const placed = geometry.filter(row => row.origin && row.block);
   const boxes = new Map(geometry.map(row => [row.path, row.box]));
@@ -468,6 +476,43 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     if (!labelable(byId.get(label.labelFor))) report(findings, 'E_A11Y_LABEL_FOR', 'error', `${label.label} is for ${JSON.stringify(label.labelFor)}, which is not a labelable element`, whole(label), domain, { rule: 'label-for', reference: label.labelFor });
   }
 
+  // list-structure: list semantics follow the DOM (CSS display does not change it here).
+  for (const row of geometry.filter(row => visible(row) && !hiddenFrom(row.path))) {
+    const parentBox = boxOf.get(row.path.slice(0, row.path.lastIndexOf('/')));
+    if (row.box.tag === 'li' && !['ul', 'ol'].includes(parentBox?.tag)) report(findings, 'E_A11Y_LIST', 'error', `${row.box.label} is a list item outside ul/ol`, row, row.region, { rule: 'list-structure' });
+    if (['ul', 'ol'].includes(row.box.tag) && (row.box.children ?? []).some(child => child.tag !== 'li')) report(findings, 'E_A11Y_LIST', 'error', `${row.box.label} has a child that is not li`, row, row.region, { rule: 'list-structure' });
+  }
+
+  // radio-group: radios sharing a name should be grouped (fieldset, or role=radiogroup/group).
+  const radios = geometry.filter(row => row.box.tag === 'input' && row.box.inputType === 'radio' && row.box.inputName && row.box.inputName !== 'dynamic' && visible(row) && !hiddenFrom(row.path));
+  const grouped = row => ancestorsOf(row.path).some(a => a.tag === 'fieldset' || ['radiogroup', 'group'].includes(a.role));
+  for (let i = 0; i < radios.length; i++) for (let j = i + 1; j < radios.length; j++) {
+    const a = radios[i], b = radios[j];
+    if (a.path === b.path || a.box.inputName !== b.box.inputName || (grouped(a) && grouped(b))) continue;
+    const region = intersect(a.region, b.region);
+    if (region) report(warnings, 'W_A11Y_RADIO_GROUP', 'warning', `radios named ${JSON.stringify(a.box.inputName)} are not grouped in a fieldset or radiogroup`, b, region, { rule: 'radio-group', name: a.box.inputName });
+  }
+
+  // landmark-name: navigation landmarks rendered together need names to tell them apart (presence only:
+  // the name strings are not compared).
+  const navs = geometry.filter(row => (row.box.tag === 'nav' || row.box.role === 'navigation') && visible(row) && !hiddenFrom(row.path));
+  for (let i = 0; i < navs.length; i++) for (let j = i + 1; j < navs.length; j++) {
+    const a = navs[i], b = navs[j];
+    if (a.path === b.path || (nameOf(a.box) === true && nameOf(b.box) === true)) continue;
+    const region = intersect(a.region, b.region);
+    if (region) report(warnings, 'W_A11Y_LANDMARK_NAME', 'warning', `${b.box.label} and ${a.box.label} are navigation landmarks without names to tell them apart`, b, region, { rule: 'landmark-name', other: a.path });
+  }
+
+  // role-valid / interactive-role-focusable.
+  const ariaRoles = new Set([...widgetRoles, 'alert', 'alertdialog', 'application', 'article', 'banner', 'blockquote', 'caption', 'cell', 'code', 'columnheader', 'complementary', 'contentinfo', 'definition', 'deletion', 'dialog', 'directory', 'document', 'emphasis', 'feed', 'figure', 'form', 'generic', 'grid', 'group', 'heading', 'img', 'image', 'insertion', 'list', 'listbox', 'listitem', 'log', 'main', 'marquee', 'math', 'menu', 'menubar', 'meter', 'navigation', 'none', 'note', 'paragraph', 'presentation', 'progressbar', 'radiogroup', 'region', 'row', 'rowgroup', 'rowheader', 'scrollbar', 'search', 'separator', 'status', 'strong', 'subscript', 'superscript', 'table', 'tablist', 'tabpanel', 'term', 'time', 'timer', 'toolbar', 'tooltip', 'tree', 'treegrid']);
+  for (const box of all) {
+    if (box.role === 'dynamic') { report(unknowns, 'U_A11Y_ROLE', 'unknown', `${box.label}: a dynamic role decides its semantics`, whole(box), domain, { rule: 'role-valid' }); continue; }
+    if (box.role && !ariaRoles.has(roleOf(box))) report(findings, 'E_A11Y_ROLE', 'error', `${box.label} has role ${JSON.stringify(roleOf(box))}, which is not a WAI-ARIA role`, whole(box), domain, { rule: 'role-valid', role: roleOf(box) });
+  }
+  for (const row of geometry.filter(row => widgetRoles.has(roleOf(row.box)) && visible(row) && !hiddenFrom(row.path)))
+    if (!(row.box.focusable === true || row.box.tabIndex >= 0 || ['button', 'input', 'select', 'textarea'].includes(row.box.tag) || (row.box.tag === 'a' && row.box.focusable !== false)))
+      report(findings, 'E_A11Y_ROLE_FOCUS', 'error', `${row.box.label} has role ${roleOf(row.box)} but cannot take focus; add tabindex="0"`, row, row.region, { rule: 'interactive-role-focusable' });
+
   // target-size: SC 2.5.8 (AA, 24px, with the spacing exception) or SC 2.5.5 (AAA, 44px, no spacing exception).
   // Violations are collected per target, then the declared exceptions are applied.
   const violations = new Map(), undecided = new Map();
@@ -553,5 +598,5 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
 
 function dedupe(rows) {
   const seen = new Set();
-  return rows.filter(row => { const key = JSON.stringify([row.code, row.path, row.other, row.cover, row.before, row.previous, row.outer, row.reference, row.id, row.range, row.heightRange]); if (seen.has(key)) return false; seen.add(key); return true; });
+  return rows.filter(row => { const key = JSON.stringify([row.code, row.path, row.other, row.cover, row.before, row.previous, row.outer, row.reference, row.id, row.name, row.range, row.heightRange]); if (seen.has(key)) return false; seen.add(key); return true; });
 }

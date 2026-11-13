@@ -1,6 +1,6 @@
 # ADR-0013: DOM と CSS を組み合わせた静的アクセシビリティ検査
 
-- 状態: 実装中(23規則、HTML adapter・Isle template・Vite・playground に接続)
+- 状態: 実装中(28規則、HTML adapter・Isle template・Vite・playground に接続)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: ユーザー指示「思いつく限りのCSSとDOMを組み合わせた静的検査パターンを実装したい」。ADR-0007(静的コントラスト契約)の text-contrast を含む
@@ -42,6 +42,11 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | image-alt | 描画され公開される img に `alt` がない(`alt=""` は装飾)。`alt` は link/button の名前にもなる | E_A11Y_IMAGE_ALT |
 | form-label | input(hidden・submit・reset・button・image 以外)・select・textarea に、`aria-label`・`title`・`aria-labelledby` も、**描画され可視の**テキストを持つ label(包む label か `label[for]`)もない。placeholder だけなら警告 | E_A11Y_LABEL / W_A11Y_PLACEHOLDER_LABEL |
 | label-for | `label[for]` が labelable な要素(button・hidden 以外の input・select・textarea・output)を指さない | E_A11Y_LABEL_FOR |
+| list-structure | 描画される li の親が ul/ol でない、または ul/ol に li 以外の子がある。ul/ol の UA margin・padding と li の `display: list-item` は reset するまで Unknown | E_A11Y_LIST |
+| radio-group | 同じ name の radio が、fieldset か `role=radiogroup`/`group` の外で同時に描画される | W_A11Y_RADIO_GROUP(警告) |
+| landmark-name | 2つの navigation landmark が同時に描画され、両方に名前がない(名前の文字列の比較はしない) | W_A11Y_LANDMARK_NAME(警告) |
+| role-valid | `role` の最初の token が WAI-ARIA の role でない | E_A11Y_ROLE |
+| interactive-role-focusable | widget role(button・link・checkbox など)の要素が描画されるのにフォーカスできない。名前の規則も widget role に適用する | E_A11Y_ROLE_FOCUS |
 | target-size | SC 2.5.8:24px 未満の操作対象で、border box の中心に置いた 24px の円が他の操作対象の box か、他の小さい対象の円と交わる(spacing 例外を満たさない) | E_A11Y_TARGET_SIZE |
 
 ### target-size の円(非線形)の扱い
@@ -113,15 +118,15 @@ ADR-0007 の制約に従う。
 
 | 検査 | 内容 |
 | --- | --- |
-| `packages/css-verifier/test/accessibility.test.mjs` | 39件(画像・form control・in-flow の覆いを含む。equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
+| `packages/css-verifier/test/accessibility.test.mjs` | 43件(list・radio・landmark・role を含む。画像・form control・in-flow の覆いを含む。equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
 | `tests/layout-accessibility.test.mjs` | Isle template の静的・動的な属性 |
 | `tests/layout-build.test.mjs` | Vite の `layout.accessibility`:名前のない button で build が失敗し、証明書に契約が残る |
-| `e2e/layout-accessibility.spec.mjs` | 24構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
+| `e2e/layout-accessibility.spec.mjs` | 26構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
 
 結果は `evals/results/layout-accessibility/report.json` に残る。
 
 ## 次の段階
 
 1. playground の preset と、Isle の例(`examples/layout-contracts`)。
-2. `form`・`fieldset`/`legend`・`ul`/`li` などの構造要素の box tag(grouping の規則のため)。
+2. `fieldset`/`legend`(UA のレイアウトが通常の block と異なる)と table。
 3. inline box のモデル(文中のリンクの inline 例外を判定するため)。

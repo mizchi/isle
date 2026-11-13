@@ -240,6 +240,9 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
     ...Object.fromEntries(textProperties.map(key => [key, inherited[key] ?? textInitial[key]])),
   };
   const defaults={...values};
+  // Lists: UA margins and the start padding for markers; li defaults to display: list-item (unsupported).
+  if(['ul', 'ol'].includes(box.tag)) { values['margin-top']='ua'; values['margin-bottom']='ua'; values['padding-left']='ua'; }
+  if(box.tag==='li') values.display='list-item';
   if(['button', 'input', 'select', 'textarea'].includes(box.tag)) {
     for(const side of ['left','right','top','bottom']) {values[`padding-${side}`]='ua';values[`border-${side}`]='ua';}
     for(const key of ['display','box-sizing','min-inline-size','min-block-size']) values[key]='ua';

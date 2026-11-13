@@ -66,8 +66,12 @@ const cases = [
   {name: 'form-fields', html: '<div class="page"><label class="l1" for="email">Email</label><input class="f1" id="email" type="email"><label class="w"><span class="l2">Name</span><input class="f2" type="text"></label><input class="f3" type="text" placeholder="Search"><input class="f4" type="text"><select class="f5" aria-label="Country"></select><textarea class="f6" title="Notes"></textarea><label class="l3" for="nowhere">Ghost</label><input class="f7" type="submit" value="Send"><input class="f8" type="hidden"></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:32px;row-gap:4px;background:#fff;color:#000;${type}}.l1,.l2,.l3{display:block}.w{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:20px 32px}.f1,.f2,.f3,.f4,.f5,.f6,.f7,.f8{${button}inline-size:200px;block-size:32px;border:1px solid #000}@media (width < 600px){.l1{display:none}}`,
     boxes: {'.l1': label, '.l2': label, '.l3': label}},
+  {name: 'lists-radios-navs', html: '<div class="page"><ul class="ok"><li class="i1"></li></ul><div class="bad"><li class="i2"></li></div><ul class="mixed"><li class="i3"></li><div class="d"></div></ul><input class="r1" type="radio" name="size" aria-label="S"><input class="r2" type="radio" name="size" aria-label="M"><div class="g" role="radiogroup" aria-label="Color"><input class="r3" type="radio" name="color" aria-label="Red"><input class="r4" type="radio" name="color" aria-label="Blue"></div><nav class="n1"></nav><nav class="n2" aria-label="Footer"></nav></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff}.ok,.bad,.mixed,.g{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px;margin:0;padding:0}.i1,.i2,.i3,.d{display:block}.r1,.r2,.r3,.r4{${button}inline-size:30px;block-size:30px}@media (width < 600px){.n2{display:none}}`},
+  {name: 'aria-roles', html: '<div class="page"><div class="a" role="buton"></div><div class="b" role="button" aria-label="Go"></div><div class="c" role="button" tabindex="0" aria-label="Ok"></div><div class="d" role="checkbox" tabindex="0"></div></div>',
+    css: '.page{display:grid;grid-template-columns:100px;grid-auto-rows:30px;background:#fff}.a,.b,.c,.d{display:block}'},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable'];
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
   && (!row.heightRange || (height >= row.heightRange.min && height <= row.heightRange.max));
 
@@ -93,7 +97,8 @@ async function runtime(page, sample) {
     const fact = facts[element.path];
     if (fact.display === 'none' || fact.rect.w === 0) continue;
     const isLink = element.tag === 'a' && await (await handle(element.path)).evaluate(node => node.hasAttribute('href'));
-    if (element.tag === 'button' || isLink) {
+    const widget = await (await handle(element.path)).evaluate(node => /^(?:button|link|checkbox|radio|switch|tab|menuitem|menuitemcheckbox|menuitemradio|option|slider|spinbutton|textbox|searchbox|combobox|treeitem|gridcell)$/.test((node.getAttribute('role') ?? '').trim().split(/\s+/)[0]));
+    if (element.tag === 'button' || isLink || widget) {
       // Names: Chromium's computed accessible name.
       const {result} = await client.send('Runtime.evaluate', {expression: `(() => { let n = document.body.firstElementChild; for (const i of ${JSON.stringify(element.path.split('/').slice(1).map(Number))}) n = n.children[i]; return n; })()`});
       const {node} = await client.send('DOM.describeNode', {objectId: result.objectId});
@@ -223,6 +228,32 @@ async function runtime(page, sample) {
     return out;
   });
   for (const path of media.alt) found.get('image-alt').add(path);
+  const structure2 = await page.evaluate(() => {
+    const out = {list: [], radio: [], nav: []};
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible' && !node.closest('[aria-hidden="true"]'); };
+    const all = [document.body.firstElementChild, ...document.body.firstElementChild.querySelectorAll('*')].filter(shown);
+    for (const n of all) {
+      if (n.tagName === 'LI' && !['UL', 'OL'].includes(n.parentElement.tagName)) out.list.push(pathOf(n));
+      if (['UL', 'OL'].includes(n.tagName) && [...n.children].some(c => c.tagName !== 'LI')) out.list.push(pathOf(n));
+    }
+    const radios = all.filter(n => n.matches('input[type=radio][name]')), grouped = n => n.closest('fieldset, [role=radiogroup], [role=group]') !== null;
+    for (let i = 0; i < radios.length; i++) for (let j = i + 1; j < radios.length; j++) if (radios[i].name === radios[j].name && !(grouped(radios[i]) && grouped(radios[j]))) out.radio.push(pathOf(radios[j]));
+    const navs = all.filter(n => n.matches('nav, [role=navigation]'));
+    for (let i = 0; i < navs.length; i++) for (let j = i + 1; j < navs.length; j++) if (!(navs[i].getAttribute('aria-label')?.trim() && navs[j].getAttribute('aria-label')?.trim())) out.nav.push(pathOf(navs[j]));
+    return out;
+  });
+  for (const [rule, key] of [['list-structure', 'list'], ['radio-group', 'radio'], ['landmark-name', 'nav']]) for (const path of structure2[key]) found.get(rule).add(path);
+  // Roles: Chromium's computed AX role must be the authored one; widget roles need focus.
+  for (const element of elements) {
+    const info = await (await handle(element.path)).evaluate(node => ({role: (node.getAttribute('role') ?? '').trim().split(/\s+/)[0], tabIndex: node.tabIndex, shown: getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility === 'visible'}));
+    if (!info.role) continue;
+    const {result} = await client.send('Runtime.evaluate', {expression: `(() => { let n = document.body.firstElementChild; for (const i of ${JSON.stringify(element.path.split('/').slice(1).map(Number))}) n = n.children[i]; return n; })()`});
+    const {node} = await client.send('DOM.describeNode', {objectId: result.objectId});
+    const {nodes} = await client.send('Accessibility.getPartialAXTree', {backendNodeId: node.backendNodeId, fetchRelatives: false});
+    if (nodes[0]?.role?.value !== info.role) found.get('role-valid').add(element.path);
+    if (info.shown && /^(?:button|link|checkbox|radio|switch|tab|menuitem|menuitemcheckbox|menuitemradio|option|slider|spinbutton|textbox|searchbox|combobox|treeitem|gridcell)$/.test(info.role) && info.tabIndex < 0) found.get('interactive-role-focusable').add(element.path);
+  }
   for (const path of media.dangling) found.get('label-for').add(path);
   for (const path of media.unlabelled) {
     const {result} = await client.send('Runtime.evaluate', {expression: `(() => { let n = document.body.firstElementChild; for (const i of ${JSON.stringify(path.split('/').slice(1).map(Number))}) n = n.children[i]; return n; })()`});

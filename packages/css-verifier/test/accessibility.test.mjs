@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -415,4 +415,43 @@ test('form-label: a display: none label does not name its field there (aria-labe
   const tree = page([{tag: 'label', classes: ['l'], text: true, labelFor: 'email'}, {tag: 'input', classes: ['f'], id: 'email', inputType: 'text', focusable: true}]);
   const [finding] = find(run(tree, fieldCSS + '@media (width < 600px) { .l { display: none; } }', {boxes: lb}), 'E_A11Y_LABEL');
   assert.equal(finding.range.maxExact, '600');
+});
+
+// Structure: lists, radio groups, landmark names.
+const listCSS = '.page { display: grid; grid-template-columns: 200px; grid-auto-rows: 30px; background: #fff; color: #000; }\n.list { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 30px; margin: 0; padding: 0; }\n.item { display: block; }\n';
+test('list-structure: li outside a list, or a list child that is not li', () => {
+  assert.equal(run(page([{tag: 'ul', classes: ['list'], children: [{tag: 'li', classes: ['item']}]}]), listCSS).status, 'verified');
+  assert.deepEqual(find(run(page([{tag: 'div', classes: ['list'], children: [{tag: 'li', classes: ['item']}]}]), listCSS), 'E_A11Y_LIST').map(d => d.box), ['.item']);
+  assert.deepEqual(find(run(page([{tag: 'ul', classes: ['list'], children: [{tag: 'div', classes: ['item']}]}]), listCSS), 'E_A11Y_LIST').map(d => d.box), ['.list']);
+  // UA list margins/padding and display: list-item stay Unknown until reset.
+  assert.equal(run(page([{tag: 'ul', classes: ['list'], children: [{tag: 'li', classes: ['item']}]}]), listCSS.replace('margin: 0; padding: 0; ', '')).status, 'unknown');
+  assert.equal(run(page([{tag: 'ul', classes: ['list'], children: [{tag: 'li', classes: ['x']}]}]), listCSS).status, 'unknown');
+});
+
+test('radio-group: same-name radios need a fieldset or radiogroup', () => {
+  const radio = (cls, extra = {}) => ({tag: 'input', classes: [cls], inputType: 'radio', inputName: 'size', focusable: true, named: true, ...extra});
+  const css = '.page, .g { display: grid; grid-template-columns: 30px 30px; grid-template-rows: 30px; background: #fff; }\n.r1, .r2 { appearance: none; display: block; inline-size: 30px; block-size: 30px; padding: 0; border: 0; min-width: 0; min-height: 0; }\n';
+  const loose = run(page([radio('r1'), radio('r2')]), css);
+  assert.deepEqual(loose.accessibility.warnings.filter(w => w.code === 'W_A11Y_RADIO_GROUP').map(w => w.name), ['size']);
+  const grouped = run(page([{tag: 'div', classes: ['g'], role: 'radiogroup', named: true, children: [radio('r1'), radio('r2')]}]), css);
+  assert.equal(grouped.accessibility.warnings.filter(w => w.code === 'W_A11Y_RADIO_GROUP').length, 0);
+});
+
+test('landmark-name: two navigation landmarks at once need distinct names', () => {
+  const nav = (cls, extra = {}) => ({tag: 'nav', classes: [cls], ...extra});
+  const css = '.page { display: grid; grid-template-columns: 100px; grid-auto-rows: 30px; }\n@media (width < 600px) { .n2 { display: none; } }\n';
+  const report = run(page([nav('n1'), nav('n2')]), css);
+  const [warning] = report.accessibility.warnings.filter(w => w.code === 'W_A11Y_LANDMARK_NAME');
+  assert.equal(warning.range.minExact, '600');
+  assert.equal(run(page([nav('n1', {named: true}), nav('n2', {named: true})]), css).accessibility.warnings.filter(w => w.code === 'W_A11Y_LANDMARK_NAME').length, 0);
+});
+
+test('roles: unknown tokens, and interactive roles that cannot take focus or have no name', () => {
+  const css = '.page { display: grid; grid-template-columns: 100px; grid-auto-rows: 30px; background: #fff; color: #000; }\n.r { display: block; }\n';
+  const div = extra => page([{tag: 'div', classes: ['r'], ...extra}]);
+  assert.deepEqual(find(run(div({role: 'buton'}), css), 'E_A11Y_ROLE').map(d => d.role), ['buton']);
+  assert.deepEqual(find(run(div({role: 'button', named: true}), css), 'E_A11Y_ROLE_FOCUS').map(d => d.box), ['.r']);
+  assert.equal(find(run(div({role: 'button', named: true, tabIndex: 0, focusable: true}), css), 'E_A11Y_ROLE_FOCUS').length, 0);
+  assert.equal(find(run(div({role: 'button', tabIndex: 0, focusable: true}), css), 'E_A11Y_NAME').length, 1);
+  assert.equal(run(div({role: 'dynamic'}), css).status, 'unknown');
 });
