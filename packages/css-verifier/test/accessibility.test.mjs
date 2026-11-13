@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -142,4 +142,63 @@ test('HTML adapter: names, aria-hidden, href, disabled and tabindex become DOM f
   assert.deepEqual(find(hidden, 'E_A11Y_HIDDEN_FOCUSABLE').map(d => d.box), ['.b']); // tabindex=-1 and no href: not focusable
   const disabled = analyzeHTML(`<main class="bar" aria-hidden="true"><button class="b" disabled aria-label="x"></button><a class="c" aria-label="y"></a></main>`, {name: 'Page', css, viewport: domain, accessibility: true});
   assert.equal(find(disabled, 'E_A11Y_HIDDEN_FOCUSABLE').length, 0);
+});
+
+// Second batch: document structure that the cascade can change.
+const page = children => ({tag: 'main', classes: ['page'], children});
+const pageCSS = extra => `.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 30px; }\n${extra}`;
+const heading = (tag, cls, extra = {}) => ({tag, classes: [cls], text: true, ...extra});
+const hb = (...names) => Object.fromEntries(names.map(k => [k, {minInlineSize: 1, intrinsicBlockSize: 20}]));
+const hCSS = '.h1, .h2, .h3, .h4 { font-size: 16px; font-weight: 400; line-height: 20px; }\n';
+
+test('empty-heading: a heading with no visible text, or none where its text is hidden', () => {
+  const report = run(page([heading('h1', 'h1'), {tag: 'h2', classes: ['h2']}]), pageCSS(hCSS), {boxes: hb('.h1')});
+  assert.deepEqual(find(report, 'E_A11Y_EMPTY_HEADING').map(d => d.box), ['.h2']);
+  const hidden = run(page([heading('h1', 'h1'), heading('h2', 'h2')]), pageCSS(hCSS + '.h2 { visibility: hidden; }'), {boxes: hb('.h1', '.h2')});
+  assert.equal(find(hidden, 'E_A11Y_EMPTY_HEADING').length, 0); // a hidden heading is not exposed at all
+});
+
+test('heading-order: a skipped level among the headings that render, per media region', () => {
+  const tree = page([heading('h1', 'h1'), heading('h2', 'h2'), heading('h3', 'h3')]);
+  assert.equal(run(tree, pageCSS(hCSS), {boxes: hb('.h1', '.h2', '.h3')}).accessibility.warnings.length, 0);
+  const narrow = run(tree, pageCSS(hCSS + '@media (width < 600px) { .h2 { display: none; } }'), {boxes: hb('.h1', '.h2', '.h3')});
+  const [warning] = narrow.accessibility.warnings.filter(w => w.code === 'W_A11Y_HEADING_ORDER');
+  assert.equal(warning.box, '.h3');
+  assert.equal(warning.range.maxExact, '600');
+  assert.equal(warning.previous, 'Page/0');
+});
+
+test('nested-interactive: a rendered link inside a button-like link', () => {
+  const tree = page([{tag: 'a', classes: ['outer'], focusable: true, named: true, children: [{tag: 'a', classes: ['inner'], focusable: true, named: true}]}]);
+  const css = pageCSS('.outer { display: grid; grid-template-columns: minmax(0, 1fr); }\n.inner { display: block; }\n');
+  assert.deepEqual(find(run(tree, css), 'E_A11Y_NESTED_INTERACTIVE').map(d => d.box), ['.inner']);
+  assert.equal(find(run(tree, css + '.inner { display: none; }'), 'E_A11Y_NESTED_INTERACTIVE').length, 0);
+});
+
+test('duplicate-id and aria-reference: DOM facts over the whole domain', () => {
+  const tree = page([{tag: 'div', classes: ['a'], id: 'x'}, {tag: 'div', classes: ['b'], id: 'x'}, {tag: 'button', classes: ['c'], named: true, references: ['missing', 'x']}]);
+  const css = pageCSS('.c { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n');
+  const report = run(tree, css);
+  assert.deepEqual(find(report, 'E_A11Y_DUPLICATE_ID').map(d => d.id), ['x']);
+  assert.deepEqual(find(report, 'E_A11Y_REFERENCE').map(d => d.reference), ['missing']);
+  // A display: none target still names (aria-labelledby reads hidden content).
+  const hiddenTarget = run(page([{tag: 'div', classes: ['a'], id: 'x'}, {tag: 'button', classes: ['c'], named: true, references: ['x']}]), css + '.a { display: none; }');
+  assert.equal(find(hiddenTarget, 'E_A11Y_REFERENCE').length, 0);
+});
+
+test('positive-tabindex and multiple-main are warnings', () => {
+  const tree = {tag: 'div', classes: ['root'], children: [{tag: 'main', classes: ['m1']}, {tag: 'main', classes: ['m2']}, {tag: 'div', classes: ['t'], tabIndex: 3}]};
+  const css = '.root { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 30px; }\n';
+  const report = run(tree, css);
+  assert.deepEqual(report.accessibility.warnings.map(w => w.code).sort(), ['W_A11Y_MULTIPLE_MAIN', 'W_A11Y_POSITIVE_TABINDEX']);
+  assert.equal(run(tree, css + '@media (width < 9999px) { .m2 { display: none; } }').accessibility.warnings.filter(w => w.code === 'W_A11Y_MULTIPLE_MAIN').length, 0);
+});
+
+test('aria-labelledby names through the referenced text, even when that text is display: none', () => {
+  const tree = refs => page([{tag: 'p', classes: ['t'], id: 'label', text: true}, {tag: 'div', classes: ['e'], id: 'empty'}, {tag: 'button', classes: ['b'], labelledBy: refs}]);
+  const css = pageCSS('.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n.t { display: none; }\n');
+  assert.equal(find(run(tree(['label']), css), 'E_A11Y_NAME').length, 0);
+  assert.equal(find(run(tree(['empty']), css), 'E_A11Y_NAME').length, 1);
+  assert.equal(find(run(tree(['nowhere']), css), 'E_A11Y_NAME').length, 1);
+  assert.equal(run(tree('dynamic'), css).status, 'unknown');
 });

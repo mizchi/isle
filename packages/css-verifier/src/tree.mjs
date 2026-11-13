@@ -9,15 +9,21 @@ import {validateTargetMetadata} from './layout/target-metadata.mjs';
  */
 export function accessibilityFacts(tag, attributes) {
   const has = name => Object.hasOwn(attributes, name), value = name => attributes[name];
-  const names = ['aria-label', 'aria-labelledby', 'title'].filter(has);
+  // aria-labelledby names through the referenced elements' text (resolved by the rules).
+  const names = ['aria-label', 'title'].filter(has);
+  const labelledBy = has('aria-labelledby') ? (value('aria-labelledby') === undefined ? 'dynamic' : value('aria-labelledby').trim().split(/\s+/).filter(Boolean)) : undefined;
   const named = names.some(name => value(name) !== undefined && value(name).trim()) ? true : names.some(name => value(name) === undefined) ? 'dynamic' : undefined;
   let focusable = tag === 'a' ? has('href') : tag === 'button' ? !has('disabled') : undefined;
   if (has('tabindex')) { const index = value('tabindex'); focusable = index === undefined ? 'dynamic' : /^\s*-/.test(index) ? false : /^\s*\d+\s*$/.test(index) ? true : focusable; }
+  // id references (aria-labelledby, aria-describedby, aria-controls); 'dynamic' when any is dynamic.
+  const referenceNames = ['aria-labelledby', 'aria-describedby', 'aria-controls'].filter(has);
+  const references = referenceNames.some(name => value(name) === undefined) ? 'dynamic' : referenceNames.flatMap(name => value(name).trim().split(/\s+/).filter(Boolean));
+  const tabIndex = has('tabindex') && value('tabindex') !== undefined && /^\s*-?\d+\s*$/.test(value('tabindex')) ? Number(value('tabindex')) : undefined;
   const ariaHidden = has('aria-hidden') ? (value('aria-hidden') === undefined ? 'dynamic' : value('aria-hidden').trim() === 'true' || undefined) : undefined;
-  return {...(named ? {named} : {}), ...(ariaHidden ? {ariaHidden} : {}), ...(focusable !== undefined ? {focusable} : {})};
+  return {...(labelledBy === 'dynamic' || labelledBy?.length ? {labelledBy} : {}), ...(references === 'dynamic' || references.length ? {references} : {}), ...(tabIndex !== undefined ? {tabIndex} : {}), ...(named ? {named} : {}), ...(ariaHidden ? {ariaHidden} : {}), ...(focusable !== undefined ? {focusable} : {})};
 }
 
-const fields=new Set(['tag','id','lang','named','ariaHidden','focusable','classes','children','text','whitespace','path','source','owner','documentRoot','layoutContracts','targets','targetIdentity']);
+const fields=new Set(['tag','id','lang','named','ariaHidden','focusable','references','labelledBy','tabIndex','classes','children','text','whitespace','path','source','owner','documentRoot','layoutContracts','targets','targetIdentity']);
 const object=value=>value!==null && typeof value==='object' && !Array.isArray(value);
 
 /** Clone the supplied model: analysis must never attach facts to caller state. */
@@ -30,6 +36,9 @@ export function normalizeTree(tree,name) {
     seen.add(input);
     for(const key of ['id','lang','owner','path']) if(input[key]!==undefined && (typeof input[key]!=='string' || input[key].length>4096)) throw new TypeError(`Invalid box ${key}`);
     for(const key of ['text','whitespace','documentRoot']) if(input[key]!==undefined && typeof input[key]!=='boolean') throw new TypeError(`Invalid box ${key}`);
+    if(input.references!==undefined && input.references!=='dynamic' && (!Array.isArray(input.references) || input.references.some(id=>typeof id!=='string' || !id))) throw new TypeError('Invalid box references');
+    if(input.labelledBy!==undefined && input.labelledBy!=='dynamic' && (!Array.isArray(input.labelledBy) || input.labelledBy.some(id=>typeof id!=='string' || !id))) throw new TypeError('Invalid box labelledBy');
+    if(input.tabIndex!==undefined && !Number.isSafeInteger(input.tabIndex)) throw new TypeError('Invalid box tabIndex');
     for(const key of ['named','ariaHidden','focusable']) if(input[key]!==undefined && typeof input[key]!=='boolean' && input[key]!=='dynamic') throw new TypeError(`Invalid box ${key}`);
     if(input.classes!==undefined && (!Array.isArray(input.classes) || input.classes.some(c=>typeof c!=='string' || !c || /\s/.test(c)))) throw new TypeError('Invalid box classes');
     if(input.children!==undefined && !Array.isArray(input.children)) throw new TypeError('Invalid box children');
@@ -39,7 +48,7 @@ export function normalizeTree(tree,name) {
     const path=input.path ?? (parent ? `${parent}/${index}` : name);
     if(!path || paths.has(path) || (parent && !path.startsWith(parent+'/'))) throw new TypeError('Box paths must be unique and nested below their parent');
     paths.add(path);
-    const box={tag:input.tag,classes:[...(input.classes ?? [])],id:input.id,...(input.lang!==undefined ? {lang:input.lang} : {}),...(input.named ? {named:input.named} : {}),...(input.ariaHidden ? {ariaHidden:input.ariaHidden} : {}),...(input.focusable!==undefined ? {focusable:input.focusable} : {}),owner:input.owner ?? name,path,
+    const box={tag:input.tag,classes:[...(input.classes ?? [])],id:input.id,...(input.lang!==undefined ? {lang:input.lang} : {}),...(input.named ? {named:input.named} : {}),...(input.ariaHidden ? {ariaHidden:input.ariaHidden} : {}),...(input.focusable!==undefined ? {focusable:input.focusable} : {}),...(input.references!==undefined ? {references:input.references==='dynamic' ? 'dynamic' : [...input.references]} : {}),...(input.tabIndex!==undefined ? {tabIndex:input.tabIndex} : {}),...(input.labelledBy!==undefined ? {labelledBy:input.labelledBy==='dynamic' ? 'dynamic' : [...input.labelledBy]} : {}),owner:input.owner ?? name,path,
       ...(input.source ? {source:{...input.source}} : {}),children:[],text:input.text ?? false,
       ...(input.whitespace ? {whitespace:true} : {}),
       ...(input.targets?.length ? {targets:[...input.targets]} : {}),...(input.targetIdentity ? {targetIdentity:input.targetIdentity} : {}),

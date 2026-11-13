@@ -36,8 +36,14 @@ const cases = [
     css: '.grid{display:grid;grid-template-columns:100px 100px;grid-template-rows:40px 40px}.a{grid-column:2;grid-row:1}.b{grid-column:1;grid-row:1}.c{grid-column:1;grid-row:2}@media (width < 600px){.a,.b,.c{grid-column:auto;grid-row:auto}}'},
   {name: 'hidden-dialog', html: '<main class="bar" aria-hidden="true"><button class="b1" aria-label="A"></button><button class="b2" disabled aria-label="B"></button><a class="b3" tabindex="-1" aria-label="C"></a><a class="b4" href="#d" aria-label="D"></a></main>',
     css: `.bar{display:grid;grid-template-columns:40px 40px 40px 40px;grid-template-rows:40px;background:#fff}.b1,.b2{${button}}.b3,.b4{display:block}@media (width < 600px){.b4{display:none}}`},
+  {name: 'headings-by-width', html: '<div class="page"><h1 class="h1">Title</h1><h2 class="h2">Section</h2><h3 class="h3">Detail</h3><h2 class="e"></h2></div>',
+    css: `.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px;background:#fff;color:#000}.h1,.h2,.h3,.e{${type}font-weight:400}@media (width < 600px){.h2{display:none}}`, boxes: {'.h1': label, '.h2': label, '.h3': label}},
+  {name: 'nested-and-references', html: '<div class="page"><a class="outer" href="#a" aria-label="Outer"><button class="inner" aria-label="Inner"></button></a><div class="t" id="dup"></div><div class="u" id="dup"></div><button class="b" aria-labelledby="dup missing" tabindex="2"></button></div>',
+    css: `.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px;background:#fff}.outer{display:grid;grid-template-columns:minmax(0,1fr)}.inner,.b{${button}}`},
+  {name: 'two-mains-on-wide', html: '<div class="page"><main class="m1"></main><main class="m2"></main></div>',
+    css: '.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px}@media (width < 600px){.m2{display:none}}'},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main'];
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
   && (!row.heightRange || (height >= row.heightRange.min && height <= row.heightRange.max));
 
@@ -101,6 +107,26 @@ async function runtime(page, sample) {
     const focused = await page.evaluate(indices => { let node = document.body.firstElementChild; for (const i of indices) node = node.children[i]; node.focus(); return document.activeElement === node && node.closest('[aria-hidden="true"]') !== null && node.tabIndex >= 0; }, element.path.split('/').slice(1).map(Number));
     if (focused) found.get('hidden-focusable').add(element.path);
   }
+  // Batch 2: headings, nesting, ids, tabindex and main landmarks.
+  const structure = await page.evaluate(() => {
+    const out = {empty: [], order: [], nested: [], duplicate: [], reference: [], tabindex: [], main: []};
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible' && !node.closest('[aria-hidden="true"]'); };
+    const all = [document.body.firstElementChild, ...document.body.firstElementChild.querySelectorAll('*')];
+    const headings = all.filter(n => /^H[1-6]$/.test(n.tagName) && shown(n));
+    for (const h of headings) if (!h.textContent.trim() && !h.getAttribute('aria-label')?.trim()) out.empty.push(pathOf(h));
+    for (let i = 1; i < headings.length; i++) if (Number(headings[i].tagName[1]) > Number(headings[i - 1].tagName[1]) + 1) out.order.push(pathOf(headings[i]));
+    const interactive = n => n.matches('a[href], button');
+    for (const n of all) if (interactive(n) && shown(n) && n.parentElement?.closest('a[href], button') && document.body.firstElementChild.contains(n.parentElement.closest('a[href], button'))) out.nested.push(pathOf(n));
+    const ids = new Map(); for (const n of all) if (n.id) ids.set(n.id, [...(ids.get(n.id) ?? []), n]);
+    for (const owners of ids.values()) if (owners.length > 1) out.duplicate.push(pathOf(owners[1]));
+    for (const n of all) for (const name of ['aria-labelledby', 'aria-describedby', 'aria-controls']) for (const id of (n.getAttribute(name) ?? '').split(/\s+/).filter(Boolean)) if (!document.getElementById(id)) out.reference.push(pathOf(n));
+    for (const n of all) if (n.tabIndex > 0) out.tabindex.push(pathOf(n));
+    const mains = all.filter(n => n.tagName === 'MAIN' && shown(n)); for (const m of mains.slice(1)) out.main.push(pathOf(m));
+    return out;
+  });
+  for (const [rule, key] of [['empty-heading', 'empty'], ['heading-order', 'order'], ['nested-interactive', 'nested'], ['duplicate-id', 'duplicate'], ['aria-reference', 'reference'], ['positive-tabindex', 'tabindex'], ['multiple-main', 'main']])
+    for (const path of structure[key]) found.get(rule).add(path);
   // Contrast from computed colors, composited over the ancestors like the WCAG definition.
   const low = await page.evaluate(() => {
     const parse = value => { const m = value.match(/[\d.]+/g).map(Number); return {r: m[0], g: m[1], b: m[2], a: m[3] ?? 1}; };

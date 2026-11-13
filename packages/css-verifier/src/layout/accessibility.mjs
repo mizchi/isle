@@ -10,12 +10,20 @@
 //   target-overlap   → E_A11Y_TARGET_OVERLAP    two interactive targets intersect
 //   visual-order     → W_A11Y_ORDER             a later sibling is placed visually before an earlier one (SC 1.3.2)
 //   hidden-focusable → E_A11Y_HIDDEN_FOCUSABLE  a rendered focusable element inside aria-hidden
+//   empty-heading    → E_A11Y_EMPTY_HEADING     an exposed h1–h6 with no rendered text and no name attribute
+//   heading-order    → W_A11Y_HEADING_ORDER     a skipped level among the headings that render (per media region)
+//   nested-interactive → E_A11Y_NESTED_INTERACTIVE a rendered button/link inside another
+//   duplicate-id     → E_A11Y_DUPLICATE_ID      two elements share an id (DOM, every width)
+//   aria-reference   → E_A11Y_REFERENCE         aria-labelledby/describedby/controls names a missing id
+//   positive-tabindex → W_A11Y_POSITIVE_TABINDEX tabindex > 0 reorders focus away from the DOM
+//   multiple-main    → W_A11Y_MULTIPLE_MAIN     more than one main element renders at once
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip } from './region.mjs';
 import { q } from './linear.mjs';
 import { intersect } from './integrity.mjs';
 
-export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable'];
+export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable',
+  'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -141,7 +149,7 @@ function overlap(a, b) {
   return region;
 }
 
-export function judgeAccessibility({ geometry }, { contrast = 'AA', ranges, block }) {
+export function judgeAccessibility({ geometry, root, domain }, { contrast = 'AA', ranges, block }) {
   const findings = [], warnings = [], unknowns = [];
   const witness = region => { const p = sample(region); return { viewport: number(p.x), viewportExact: exact(p.x), ...(block ? { viewportHeight: number(p.y), viewportHeightExact: exact(p.y) } : {}) }; };
   const report = (list, code, severity, message, row, region, extra) => list.push({ code, severity, message, box: row.box.label, path: row.path, source: row.box.source, ...ranges(region), witness: witness(region), ...extra });
@@ -153,13 +161,23 @@ export function judgeAccessibility({ geometry }, { contrast = 'AA', ranges, bloc
   const hiddenFrom = path => { for (let p = path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') if (boxes.get(p)?.ariaHidden) return true; return false; };
 
   // accessible-name: no name attribute, and no visible text rendered inside.
+  // aria-labelledby names through the text of the referenced elements, rendered or not (accname 2.B).
+  const byId = new Map();
+  (function walk(box) { if (box.id && !byId.has(box.id)) byId.set(box.id, box); for (const child of box.children ?? []) walk(child); })(root);
+  const hasText = box => box.text || (box.named === true) || (box.children ?? []).some(hasText);
+  const nameOf = box => {
+    if (box.named === true) return true;
+    if (box.labelledBy === 'dynamic') return 'dynamic';
+    if (box.labelledBy?.some(id => byId.has(id) && hasText(byId.get(id)))) return true;
+    return box.named;
+  };
   // Hidden targets (visibility, or aria-hidden content) are not exposed and need no name.
-  for (const target of geometry.filter(row => interactive(row) && visible(row) && row.box.named !== true && !hiddenFrom(row.path))) {
+  for (const target of geometry.filter(row => interactive(row) && visible(row) && nameOf(row.box) !== true && !hiddenFrom(row.path))) {
     const texts = geometry.filter(row => row.box.text && visible(row) && (row.path === target.path || isAncestor(target.path, row.path)));
     let missing = [target.region];
     for (const text of texts) missing = missing.flatMap(region => subtract(region, text.region));
     // A dynamic name attribute may be empty: Unknown where no text names the target.
-    if (target.box.named === 'dynamic') { for (const region of missing) report(unknowns, 'U_A11Y_NAME', 'unknown', `${target.box.label} is named only by a dynamic attribute, which may be empty`, target, region, { rule: 'accessible-name' }); continue; }
+    if (nameOf(target.box) === 'dynamic') { for (const region of missing) report(unknowns, 'U_A11Y_NAME', 'unknown', `${target.box.label} is named only by a dynamic attribute, which may be empty`, target, region, { rule: 'accessible-name' }); continue; }
     for (const region of missing) report(findings, 'E_A11Y_NAME', 'error', `${target.box.label} has no accessible name here: no rendered text and no aria-label, aria-labelledby or title`, target, region, { rule: 'accessible-name' });
   }
 
@@ -225,10 +243,59 @@ export function judgeAccessibility({ geometry }, { contrast = 'AA', ranges, bloc
     else report(findings, 'E_A11Y_HIDDEN_FOCUSABLE', 'error', `${row.box.label} can take focus inside aria-hidden content`, row, row.region, { rule: 'hidden-focusable' });
   }
 
+  // empty-heading: like accessible-name, for exposed headings.
+  const level = row => /^h([1-6])$/.exec(row.box.tag)?.[1];
+  const headings = geometry.filter(row => level(row) && visible(row) && !hiddenFrom(row.path));
+  for (const head of headings.filter(row => nameOf(row.box) !== true)) {
+    let missing = [head.region];
+    for (const text of geometry.filter(row => row.box.text && visible(row) && (row.path === head.path || isAncestor(head.path, row.path)))) missing = missing.flatMap(region => subtract(region, text.region));
+    const dynamic = nameOf(head.box) === 'dynamic';
+    for (const region of missing) report(dynamic ? unknowns : findings, dynamic ? 'U_A11Y_EMPTY_HEADING' : 'E_A11Y_EMPTY_HEADING', dynamic ? 'unknown' : 'error',
+      `${head.box.label} is an empty heading here`, head, region, { rule: 'empty-heading' });
+  }
+
+  // heading-order: b follows a with no rendered heading between them, and skips a level.
+  const ordered = [...headings].sort((x, y) => treeOrder(x.path, y.path));
+  for (let i = 0; i < ordered.length; i++) for (let j = i + 1; j < ordered.length; j++) {
+    const a = ordered[i], b = ordered[j];
+    if (a.path === b.path || Number(level(b)) <= Number(level(a)) + 1) continue;
+    let pieces = [intersect(a.region, b.region)].filter(Boolean);
+    for (const between of ordered.slice(i + 1, j)) if (between.path !== a.path && between.path !== b.path) pieces = pieces.flatMap(region => subtract(region, between.region));
+    for (const region of pieces) report(warnings, 'W_A11Y_HEADING_ORDER', 'warning', `${b.box.label} (h${level(b)}) follows h${level(a)} ${a.box.label}, skipping a level`, b, region, { rule: 'heading-order', previous: a.path });
+  }
+
+  // nested-interactive: an interactive element rendered inside another.
+  for (const inner of geometry.filter(interactive)) for (const outer of geometry.filter(row => interactive(row) && isAncestor(row.path, inner.path))) {
+    const region = intersect(inner.region, outer.region);
+    if (region) report(findings, 'E_A11Y_NESTED_INTERACTIVE', 'error', `${inner.box.label} is interactive inside ${outer.box.label}`, inner, region, { rule: 'nested-interactive', outer: outer.path });
+  }
+
+  // DOM-only facts hold at every width: duplicate ids, dangling references, positive tabindex.
+  const all = [];
+  (function walk(box) { all.push(box); for (const child of box.children ?? []) walk(child); })(root);
+  const ids = new Map();
+  for (const box of all) if (box.id) ids.set(box.id, [...(ids.get(box.id) ?? []), box]);
+  const whole = box => ({ box, path: box.path });
+  for (const [id, owners] of ids) if (owners.length > 1) report(findings, 'E_A11Y_DUPLICATE_ID', 'error', `id ${JSON.stringify(id)} is used by ${owners.length} elements`, whole(owners[1]), domain, { rule: 'duplicate-id', id, first: owners[0].path });
+  for (const box of all) {
+    if (box.labelledBy === 'dynamic' && box.references === undefined) report(unknowns, 'U_A11Y_REFERENCE', 'unknown', `${box.label}: a dynamic aria-labelledby may name a missing id`, whole(box), domain, { rule: 'aria-reference' });
+    if (box.references === 'dynamic') { report(unknowns, 'U_A11Y_REFERENCE', 'unknown', `${box.label}: a dynamic aria reference may name a missing id`, whole(box), domain, { rule: 'aria-reference' }); continue; }
+    for (const reference of box.references ?? []) if (!ids.has(reference)) report(findings, 'E_A11Y_REFERENCE', 'error', `${box.label} references the missing id ${JSON.stringify(reference)}`, whole(box), domain, { rule: 'aria-reference', reference });
+    if (box.tabIndex > 0) report(warnings, 'W_A11Y_POSITIVE_TABINDEX', 'warning', `${box.label} has tabindex ${box.tabIndex}, which moves it ahead of the DOM focus order`, whole(box), domain, { rule: 'positive-tabindex' });
+  }
+
+  // multiple-main: two main elements render at the same viewport.
+  const mains = geometry.filter(row => row.box.tag === 'main' && visible(row) && !hiddenFrom(row.path));
+  for (let i = 0; i < mains.length; i++) for (let j = i + 1; j < mains.length; j++) {
+    if (mains[i].path === mains[j].path) continue;
+    const region = intersect(mains[i].region, mains[j].region);
+    if (region) report(warnings, 'W_A11Y_MULTIPLE_MAIN', 'warning', `${mains[j].box.label} renders as a second main landmark`, mains[j], region, { rule: 'multiple-main', first: mains[i].path });
+  }
+
   return { findings: dedupe(findings), warnings: dedupe(warnings), unknowns: dedupe(unknowns) };
 }
 
 function dedupe(rows) {
   const seen = new Set();
-  return rows.filter(row => { const key = JSON.stringify([row.code, row.path, row.other, row.cover, row.before, row.range, row.heightRange]); if (seen.has(key)) return false; seen.add(key); return true; });
+  return rows.filter(row => { const key = JSON.stringify([row.code, row.path, row.other, row.cover, row.before, row.previous, row.outer, row.reference, row.id, row.range, row.heightRange]); if (seen.has(key)) return false; seen.add(key); return true; });
 }

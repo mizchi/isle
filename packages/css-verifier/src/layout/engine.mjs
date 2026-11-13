@@ -748,7 +748,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     integrityWarnings = judged.warnings; integrityExempted = judged.exempted;
   }
   if (options.accessibility && !diagnostics.some(d => d.severity === 'unknown')) {
-    const judged = judgeAccessibility({ geometry }, { contrast: options.accessibility.contrast ?? 'AA', ranges, block });
+    const judged = judgeAccessibility({ geometry, root, domain: initial }, { contrast: options.accessibility.contrast ?? 'AA', ranges, block });
     diagnostics.push(...judged.findings, ...judged.unknowns);
     accessibilityWarnings = judged.warnings;
   }
