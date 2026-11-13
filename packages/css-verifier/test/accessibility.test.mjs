@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -201,4 +201,46 @@ test('aria-labelledby names through the referenced text, even when that text is 
   assert.equal(find(run(tree(['empty']), css), 'E_A11Y_NAME').length, 1);
   assert.equal(find(run(tree(['nowhere']), css), 'E_A11Y_NAME').length, 1);
   assert.equal(run(tree('dynamic'), css).status, 'unknown');
+});
+
+// Third batch: geometry and focus together.
+test('scrollable-region-focusable: overflowing scroll content with nothing focusable to reach it', () => {
+  const tree = inner => ({tag: 'main', classes: ['page'], children: [{tag: 'section', classes: ['s'], ...inner}]});
+  // The scroller's own tracks (500px) exceed its 300px box below 900px.
+  const css = '.page { display: grid; grid-template-columns: 300px; grid-auto-rows: 30px; }\n.s { display: grid; grid-template-columns: 500px; overflow: auto; scrollbar-width: none; }\n@media (width >= 900px) { .s { grid-template-columns: 200px; } }\n';
+  const options = {boxes: {'.s': {overflow: 'scroll'}}};
+  const [finding] = find(run(tree({}), css, options), 'E_A11Y_SCROLL_FOCUS');
+  assert.equal(finding.box, '.s');
+  assert.equal(finding.range.maxExact, '900');
+  assert.equal(find(run(tree({tabIndex: 0, focusable: true}), css, options), 'E_A11Y_SCROLL_FOCUS').length, 0);
+  // An item wider than its track may still fit the scroller: Unknown, not an error.
+  const item = run({tag: 'main', classes: ['page'], children: [{tag: 'section', classes: ['s'], children: [{tag: 'div', classes: ['w']}]}]},
+    '.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 30px; }\n.s { display: grid; grid-template-columns: 300px; overflow: auto; scrollbar-width: none; }\n.w { inline-size: 500px; }\n', options);
+  assert.equal(item.status, 'unknown');
+  assert.ok(find(item, 'U_A11Y_SCROLL_FOCUS').length > 0);
+});
+
+test('reflow: horizontal page scrolling at 320 CSS px', () => {
+  const tree = page([{tag: 'div', classes: ['w']}]);
+  const css = pageCSS('.w { inline-size: 360px; }\n');
+  const [finding] = find(run(tree, css, {boxes: {'.page': {overflow: 'visible'}}}), 'E_A11Y_REFLOW');
+  assert.equal(finding.range.maxExact, '320');
+  // A domain that starts above 320px cannot show reflow: the rule says so instead of passing silently.
+  const wide = run(tree, css, {boxes: {'.page': {overflow: 'visible'}}, viewport: {...domain, min: 400}});
+  assert.ok(wide.accessibility.notes.some(n => /320/.test(n)));
+});
+
+test('focus-obscured and focus-area', () => {
+  const covered = run(panel(), panelCSS('.cover { left: 0; inline-size: 120px; background: #fff; }'));
+  assert.deepEqual(find(covered, 'E_A11Y_FOCUS_OBSCURED').map(d => d.box), ['.go']);
+  assert.equal(find(run(panel(), panelCSS('.cover { background: #fff; }')), 'E_A11Y_FOCUS_OBSCURED').length, 0); // only partly covered
+  assert.equal(find(run(panel(), panelCSS('.cover { left: 0; inline-size: 120px; }')), 'E_A11Y_FOCUS_OBSCURED').length, 0); // nothing painted
+  const zero = run(panel(), panelCSS('.panel { grid-template-columns: 0px minmax(0, 1fr); }\n.cover { display: none; }'));
+  assert.deepEqual(find(zero, 'E_A11Y_FOCUS_AREA').map(d => d.box), ['.go']);
+});
+
+test('a zero-size target overlaps nothing (it fails focus-area instead)', () => {
+  const report = run(panel(), panelCSS('.panel { grid-template-columns: 0px minmax(0, 1fr); }\n.cover { left: 0; }'));
+  assert.equal(find(report, 'E_A11Y_OCCLUDED').length, 0);
+  assert.equal(find(report, 'E_A11Y_FOCUS_AREA').length, 1);
 });

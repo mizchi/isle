@@ -17,13 +17,18 @@
 //   aria-reference   → E_A11Y_REFERENCE         aria-labelledby/describedby/controls names a missing id
 //   positive-tabindex → W_A11Y_POSITIVE_TABINDEX tabindex > 0 reorders focus away from the DOM
 //   multiple-main    → W_A11Y_MULTIPLE_MAIN     more than one main element renders at once
+//   scrollable-region-focusable → E_A11Y_SCROLL_FOCUS  content overflows a scroll container that nothing focusable reaches
+//   reflow           → E_A11Y_REFLOW            the page scrolls horizontally at 320 CSS px or narrower (SC 1.4.10)
+//   focus-obscured   → E_A11Y_FOCUS_OBSCURED    a focusable box entirely covered by a later painted box (SC 2.4.11)
+//   focus-area       → E_A11Y_FOCUS_AREA        a visible focusable box with a zero-size border box
 import { exact, number } from './linear.mjs';
-import { scalar, sum, diff, times, sample, clip } from './region.mjs';
+import { scalar, sum, diff, times, sample, clip, width as domainWidth } from './region.mjs';
 import { q } from './linear.mjs';
 import { intersect } from './integrity.mjs';
 
 export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable',
-  'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main'];
+  'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
+  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -146,11 +151,13 @@ function overlap(a, b) {
   let region = intersect(a.region, b.region);
   region = below(region, a.origin.inline, right(b)); region = below(region, b.origin.inline, right(a));
   region = below(region, a.origin.block, bottom(b)); region = below(region, b.origin.block, bottom(a));
+  // An empty box overlaps nothing: both boxes need a positive area.
+  for (const size of [a.inline, a.block, b.inline, b.block]) region = below(region, scalar(0), size);
   return region;
 }
 
-export function judgeAccessibility({ geometry, root, domain }, { contrast = 'AA', ranges, block }) {
-  const findings = [], warnings = [], unknowns = [];
+export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', ranges, block, viewportMin }) {
+  const findings = [], warnings = [], unknowns = [], notes = [];
   const witness = region => { const p = sample(region); return { viewport: number(p.x), viewportExact: exact(p.x), ...(block ? { viewportHeight: number(p.y), viewportHeightExact: exact(p.y) } : {}) }; };
   const report = (list, code, severity, message, row, region, extra) => list.push({ code, severity, message, box: row.box.label, path: row.path, source: row.box.source, ...ranges(region), witness: witness(region), ...extra });
   const visible = row => row.paint.visibility === 'visible';
@@ -292,7 +299,60 @@ export function judgeAccessibility({ geometry, root, domain }, { contrast = 'AA'
     if (region) report(warnings, 'W_A11Y_MULTIPLE_MAIN', 'warning', `${mains[j].box.label} renders as a second main landmark`, mains[j], region, { rule: 'multiple-main', first: mains[i].path });
   }
 
-  return { findings: dedupe(findings), warnings: dedupe(warnings), unknowns: dedupe(unknowns) };
+  // scrollable-region-focusable: where content overflows a scroll container, keyboard users need a focusable way in.
+  const focusable = row => (row.box.focusable === true || (row.box.focusable ?? row.box.tag === 'button') === true || row.box.tabIndex >= 0) && visible(row);
+  const byPath = new Map(geometry.map(row => [row.path, row]));
+  const scroller = path => { for (let p = path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') for (const row of geometry) if (row.path === p && row.overflow === 'scroll') return row; return null; };
+  // Only overflow of the container's own content box is a proved scroll range; an item
+  // overflowing its track inside it may still fit the container (Unknown).
+  const overflowing = new Map();
+  for (const entry of waived) {
+    const container = scroller(entry.self ? entry.path : entry.path.includes('/') ? entry.path.slice(0, entry.path.lastIndexOf('/')) : entry.path);
+    if (!container) continue;
+    const definite = entry.self && entry.path === container.path;
+    overflowing.set(container.path, [...(overflowing.get(container.path) ?? []), { region: entry.region, definite }]);
+  }
+  for (const [path, entries] of overflowing) {
+    const container = byPath.get(path);
+    if (focusable(container)) continue;
+    const inner = geometry.filter(row => isAncestor(path, row.path) && focusable(row));
+    for (const { region: start, definite } of entries) {
+      let missing = [start];
+      for (const row of inner) missing = missing.flatMap(region => subtract(region, row.region));
+      for (const region of missing) report(definite ? findings : unknowns, definite ? 'E_A11Y_SCROLL_FOCUS' : 'U_A11Y_SCROLL_FOCUS', definite ? 'error' : 'unknown',
+        definite ? `${container.box.label} scrolls here but neither it nor anything inside it can take focus` : `${container.box.label} may scroll here (an item overflows its track) and nothing inside it can take focus`, container, region, { rule: 'scrollable-region-focusable' });
+    }
+  }
+
+  // reflow: no horizontal page scrolling at 320 CSS px (or narrower widths in the domain).
+  if (viewportMin !== undefined && viewportMin > 320) notes.push('reflow: the viewport domain starts above 320px, so SC 1.4.10 at 320 CSS px is not checked');
+  for (const row of placed) {
+    const narrow = row.region && clip(row.region, diff(scalar(320), domainWidth));
+    const failed = narrow && below(narrow, domainWidth, right(row));
+    if (failed) report(findings, 'E_A11Y_REFLOW', 'error', `${row.box.label} makes the page scroll horizontally at 320 CSS px`, row, failed, { rule: 'reflow' });
+  }
+
+  // focus-obscured: a later painted box contains a focusable box. focus-area: nothing to show focus on.
+  for (const target of placed.filter(focusable)) {
+    const own = layer(target);
+    for (const cover of placed) {
+      if (related(cover.path, target.path) || !visible(cover) || !cover.painted) continue;
+      // A zero-size box is reported by focus-area, not as obscured.
+      const above = layer(cover);
+      if (!above || (own && (isAncestor(above, own) || above === own || treeOrder(above, own) < 0))) continue;
+      let region = intersect(target.region, cover.region);
+      region = below(below(region, scalar(0), target.inline), scalar(0), target.block);
+      region = atMost(region, cover.origin.inline, target.origin.inline); region = atMost(region, cover.origin.block, target.origin.block);
+      region = atMost(region, right(target), right(cover)); region = atMost(region, bottom(target), bottom(cover));
+      if (region) { report(findings, 'E_A11Y_FOCUS_OBSCURED', 'error', `${target.box.label} is entirely hidden behind ${cover.box.label} when focused`, target, region, { rule: 'focus-obscured', cover: cover.path }); break; }
+    }
+    for (const size of [target.inline, target.block]) {
+      const region = atMost(target.region, size, scalar(0));
+      if (region) { report(findings, 'E_A11Y_FOCUS_AREA', 'error', `${target.box.label} can take focus but has no area to show it`, target, region, { rule: 'focus-area' }); break; }
+    }
+  }
+
+  return { findings: dedupe(findings), warnings: dedupe(warnings), unknowns: dedupe(unknowns), notes };
 }
 
 function dedupe(rows) {

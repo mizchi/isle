@@ -741,16 +741,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     else merged.push({ ...finding });
   }
   diagnostics.push(...merged.map(({ signature, ...finding }) => finding));
-  let integrityWarnings = [], integrityExempted = [], accessibilityWarnings = [];
+  let integrityWarnings = [], integrityExempted = [], accessibilityWarnings = [], accessibilityNotes = [];
   if (options.integrity && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeIntegrity({ geometry, waived }, { block, targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', ranges });
     diagnostics.push(...judged.findings);
     integrityWarnings = judged.warnings; integrityExempted = judged.exempted;
   }
   if (options.accessibility && !diagnostics.some(d => d.severity === 'unknown')) {
-    const judged = judgeAccessibility({ geometry, root, domain: initial }, { contrast: options.accessibility.contrast ?? 'AA', ranges, block });
+    const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', ranges, block });
     diagnostics.push(...judged.findings, ...judged.unknowns);
-    accessibilityWarnings = judged.warnings;
+    accessibilityWarnings = judged.warnings; accessibilityNotes = judged.notes;
   }
   const status = diagnostics.some(d => d.severity === 'unknown') ? 'unknown' : diagnostics.length ? 'violated' : 'verified';
   return { version: 1, ok: status === 'verified', status, component,
@@ -763,6 +763,6 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     elements:boxes.map(({path,tag,id,classes,owner,targets,targetIdentity})=>({path,tag,...(id ? {id} : {}),classes,owner,...(targets?.length ? {targets} : {}),...(targetIdentity ? {targetIdentity} : {})})),
     ...(boxes.some(box=>box.layoutContracts?.length) ? {layoutBindings:boxes.flatMap(box=>(box.layoutContracts ?? []).map(declaration=>({path:box.path,declaration})))} : {}),
     ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}),
-    ...(options.accessibility ? { accessibility: { rules: accessibilityRules, contrast: options.accessibility.contrast ?? 'AA', warnings: accessibilityWarnings } } : {}),
+    ...(options.accessibility ? { accessibility: { rules: accessibilityRules, contrast: options.accessibility.contrast ?? 'AA', warnings: accessibilityWarnings, notes: accessibilityNotes } } : {}),
     ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', warnings: integrityWarnings, exempted: integrityExempted } } : {}) };
 }

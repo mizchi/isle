@@ -42,8 +42,15 @@ const cases = [
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px;background:#fff}.outer{display:grid;grid-template-columns:minmax(0,1fr)}.inner,.b{${button}}`},
   {name: 'two-mains-on-wide', html: '<div class="page"><main class="m1"></main><main class="m2"></main></div>',
     css: '.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px}@media (width < 600px){.m2{display:none}}'},
+  {name: 'scroller-without-focus', html: '<div class="page"><section class="s"></section><section class="k" tabindex="0"></section></div>',
+    css: '.page{display:grid;grid-template-columns:300px;grid-auto-rows:40px}.s,.k{display:grid;grid-template-columns:500px;grid-template-rows:40px;overflow:auto;scrollbar-width:none}@media (width >= 900px){.s{grid-template-columns:200px}}',
+    boxes: {'.s': {overflow: 'scroll'}, '.k': {overflow: 'scroll'}}},
+  {name: 'wide-banner-at-320', html: '<div class="page"><div class="w"></div></div>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:40px}.w{inline-size:350px}',
+    boxes: {'.page': {overflow: 'visible'}}, widths: [320, 340, 375], min: 320},
+  {name: 'sheet-over-button', html: '<main class="panel"><button class="go" aria-label="Go"></button><button class="zero" aria-label="Zero"></button><div class="sheet"></div></main>',
+    css: `.panel{display:grid;grid-template-columns:100px 0px minmax(0,1fr);grid-template-rows:40px;position:relative;background:#fff}.go,.zero{${button}}.sheet{position:absolute;top:0;left:0;inline-size:120px;block-size:40px;background:#eee}@media (width < 600px){.sheet{inline-size:50px}}`},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area'];
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
   && (!row.heightRange || (height >= row.heightRange.min && height <= row.heightRange.max));
 
@@ -127,6 +134,27 @@ async function runtime(page, sample) {
   });
   for (const [rule, key] of [['empty-heading', 'empty'], ['heading-order', 'order'], ['nested-interactive', 'nested'], ['duplicate-id', 'duplicate'], ['aria-reference', 'reference'], ['positive-tabindex', 'tabindex'], ['multiple-main', 'main']])
     for (const path of structure[key]) found.get(rule).add(path);
+  // Batch 3: scroll containers, reflow, obscured focus, zero focus area.
+  const focusStuff = await page.evaluate(() => {
+    const out = {scroll: [], reflow: [], obscured: [], area: []};
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible'; };
+    const focusable = node => shown(node) && (node.matches('a[href], button:not([disabled])') || node.tabIndex >= 0 && node.hasAttribute('tabindex'));
+    const all = [document.body.firstElementChild, ...document.body.firstElementChild.querySelectorAll('*')];
+    for (const n of all) {
+      const style = getComputedStyle(n);
+      if (['auto', 'scroll'].includes(style.overflowX) && n.scrollWidth > n.clientWidth && !focusable(n) && ![...n.querySelectorAll('*')].some(focusable)) out.scroll.push(pathOf(n));
+      if (innerWidth <= 320 && shown(n) && n.getBoundingClientRect().right > innerWidth) out.reflow.push(pathOf(n));
+      if (!focusable(n)) continue;
+      const r = n.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) { out.area.push(pathOf(n)); continue; }
+      const points = [[r.left + 0.5, r.top + 0.5], [r.right - 0.5, r.top + 0.5], [r.left + 0.5, r.bottom - 0.5], [r.right - 0.5, r.bottom - 0.5], [(r.left + r.right) / 2, (r.top + r.bottom) / 2]];
+      const covers = points.map(([x, y]) => document.elementFromPoint(x, y));
+      if (covers.every(c => c && !n.contains(c) && c === covers[0] && getComputedStyle(c).backgroundColor !== 'rgba(0, 0, 0, 0)')) out.obscured.push(pathOf(n));
+    }
+    return out;
+  });
+  for (const [rule, key] of [['scrollable-region-focusable', 'scroll'], ['reflow', 'reflow'], ['focus-obscured', 'obscured'], ['focus-area', 'area']]) for (const path of focusStuff[key]) found.get(rule).add(path);
   // Contrast from computed colors, composited over the ancestors like the WCAG definition.
   const low = await page.evaluate(() => {
     const parse = value => { const m = value.match(/[\d.]+/g).map(Number); return {r: m[0], g: m[1], b: m[2], a: m[3] ?? 1}; };
@@ -159,12 +187,12 @@ test.afterAll(() => {
 for (const sample of cases) {
   test(`${sample.name}: static accessibility agrees with the browser`, async ({page}) => {
     const css = reset + sample.css;
-    const report = analyzeHTML(sample.html, {name: 'Page', css, viewport: {min: 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true, ...(sample.boxes ? {boxes: sample.boxes} : {})});
+    const report = analyzeHTML(sample.html, {name: 'Page', css, viewport: {min: sample.min ?? 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true, ...(sample.boxes ? {boxes: sample.boxes} : {})});
     expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
     const rows = [...report.diagnostics, ...report.accessibility.warnings].filter(row => rules.includes(row.rule));
     const document = `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>${css}</style></head><body>${sample.html}</body></html>`;
     const row = {name: sample.name, static: {}, runtime: {}};
-    for (const width of widths) {
+    for (const width of sample.widths ?? widths) {
       await page.setViewportSize({width, height});
       await page.setContent(document);
       const found = await runtime(page, sample);
