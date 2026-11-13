@@ -1,0 +1,782 @@
+{
+  "version": 1,
+  "widths": [
+    1280,
+    768,
+    375
+  ],
+  "height": 800,
+  "rules": [
+    "accessible-name",
+    "text-contrast",
+    "occluded-target",
+    "target-overlap",
+    "visual-order",
+    "hidden-focusable"
+  ],
+  "scope": "Static accessibility rules vs the browser (AX tree names, hit testing, focus, rects, computed colors; vlmkit a11y contrast at 1280).",
+  "cases": [
+    {
+      "name": "label-hidden-when-narrow",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          [
+            "Page/0"
+          ]
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          [
+            "Page/0"
+          ]
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "icon-buttons",
+      "static": {
+        "accessible-name": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "label-visibility",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "grey-text-by-width",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [
+            "Page/0"
+          ],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [
+            "Page/0"
+          ],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "translucent-panel",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [
+            "Page/0/0"
+          ],
+          [
+            "Page/0/0"
+          ],
+          [
+            "Page/0/0"
+          ]
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [
+            "Page/0/0"
+          ],
+          [
+            "Page/0/0"
+          ],
+          [
+            "Page/0/0"
+          ]
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "large-grey-heading",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "badge-over-button",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "overlapping-links",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "target-overlap": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "target-overlap": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "reordered-grid",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "hidden-dialog",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [
+            "Page/0",
+            "Page/3"
+          ],
+          [
+            "Page/0",
+            "Page/3"
+          ],
+          [
+            "Page/0"
+          ]
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [
+            "Page/0",
+            "Page/3"
+          ],
+          [
+            "Page/0",
+            "Page/3"
+          ],
+          [
+            "Page/0"
+          ]
+        ]
+      }
+    }
+  ]
+}

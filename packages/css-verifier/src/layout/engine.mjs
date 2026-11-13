@@ -9,6 +9,7 @@ import {absoluteOrigin} from './positioned.mjs';
 import {textFontMismatch, textLinesMismatch, textLangMismatch, fittingLength, fittingLines} from './text-font.mjs';
 import {validateFlexContainer, flexItem, crossAlignment, distribution, flexUnknown} from './flex.mjs';
 import {judgeIntegrity} from './integrity.mjs';
+import {judgeAccessibility, accessibilityRules, paintFacts} from './accessibility.mjs';
 import {fact, sizeChain, sizeProperties, trackProperties, contractFact, explanation} from './explain.mjs';
 
 const zero = q(0), one = q(1), minusOne = q(-1);
@@ -33,6 +34,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   const diagnostics = [...inputDiagnostics], findings = [], checks = [], policies = [], sizes = [], queries = [], subgrids = [], scrollbars = [], invalidSubstitutions = [];
   // Live geometry and waived obligations for the opt-in integrity rules.
   const geometry = [], waived = [];
+  // Paint facts of the options.ancestors chain (html, body, …) for the accessibility rules.
+  let ancestorPaint = [];
   let work = 0;
   const spend = count => {
     work += count;
@@ -461,7 +464,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         overflow: ['hidden','clip'].includes(overflowValue) ? 'clip' : ['auto','scroll'].includes(overflowValue) ? 'scroll' : 'visible', overflowValue,
         // Where a single line of text starts inside the box (font-derived text extents).
         content: { left: add(px(style['border-left']), px(style['padding-left'])), top: add(px(style['border-top']), px(style['padding-top'])), inline: contentInline },
-        textAlign: style['text-align'], painted: paints(style) });
+        textAlign: style['text-align'], painted: paints(style),
+        paint: paintFacts(style), chain: [...ancestorPaint, ...parents.map(parent => paintFacts(parent.style)), paintFacts(style)] });
       const rect=origin && blockSize ? {inlineStart:affine(origin.inline),blockStart:affine(origin.block),inlineSize:affine(inline),blockSize:affine(blockSize)} : null;
       sizes.push({ box: box.label, path: box.path, position:style.position, ...positioned,...(rect ? {rect} : {}), boxSizing: style['box-sizing'], boxSizingSource: style.$sources['box-sizing'],
         paddingInlineSize:affine(diff(inline,scalar(add(px(style['border-left']),px(style['border-right']))))),
@@ -715,17 +719,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   if (!diagnostics.length) {
     try {
-      let environments = [{ region: initial, style: undefined }];
+      let environments = [{ region: initial, style: undefined, paint: [] }];
       for (let i = 0; i < (options.ancestors ?? []).length; i++) {
         const ancestor = options.ancestors[i];
         const host = { ...ancestor, classes: ancestor.classes ?? [], documentRoot: i === 0 && ancestor.tag === 'html', label: `ancestor:${ancestor.tag}`, path: `ancestor/${i}` };
-        environments = bounded(environments.flatMap(environment => styles(host, environment.region, [], environment.style, false, false).filter(state => {
+        environments = bounded(environments.flatMap(environment => styles(host, environment.region, [], environment.style, false, false).map(state => ({ ...state, paint: [...environment.paint, paintFacts(state.style)] })).filter(state => {
           if (state.style.display === 'none') { unknown('U_LAYOUT_ANCESTOR', 'A hidden ancestor cannot provide the declared containing sizes', undefined, host); return false; }
           if (state.style['container-type'] === 'normal') return true;
           unknown('U_LAYOUT_ANCESTOR', 'Query containers need size geometry; include this ancestor in the analyzed template', undefined, host); return false;
         })));
       }
-      for (const environment of environments) solve(root, { root: true,origin:{inline:scalar(0),block:scalar(0)}, inline: diff(width, scalar(options.hostInset ?? 0)), block: block && options.viewport.height ? diff(height, scalar(options.hostBlockInset ?? 0)) : null }, environment.region, [], environment.style);
+      for (const environment of environments) (ancestorPaint = environment.paint ?? [], solve(root, { root: true,origin:{inline:scalar(0),block:scalar(0)}, inline: diff(width, scalar(options.hostInset ?? 0)), block: block && options.viewport.height ? diff(height, scalar(options.hostBlockInset ?? 0)) : null }, environment.region, [], environment.style));
     } catch (error) { unknown(error.code?.startsWith('U_LAYOUT_') ? error.code : 'U_LAYOUT_ANCESTOR', error.message,error.css?.line,undefined,error.css?.file); }
   }
   // Preserve compact one-dimensional diagnostics; 2-D regions retain correlated constraints.
@@ -737,11 +741,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     else merged.push({ ...finding });
   }
   diagnostics.push(...merged.map(({ signature, ...finding }) => finding));
-  let integrityWarnings = [], integrityExempted = [];
+  let integrityWarnings = [], integrityExempted = [], accessibilityWarnings = [];
   if (options.integrity && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeIntegrity({ geometry, waived }, { block, targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', ranges });
     diagnostics.push(...judged.findings);
     integrityWarnings = judged.warnings; integrityExempted = judged.exempted;
+  }
+  if (options.accessibility && !diagnostics.some(d => d.severity === 'unknown')) {
+    const judged = judgeAccessibility({ geometry }, { contrast: options.accessibility.contrast ?? 'AA', ranges, block });
+    diagnostics.push(...judged.findings, ...judged.unknowns);
+    accessibilityWarnings = judged.warnings;
   }
   const status = diagnostics.some(d => d.severity === 'unknown') ? 'unknown' : diagnostics.length ? 'violated' : 'verified';
   return { version: 1, ok: status === 'verified', status, component,
@@ -754,5 +763,6 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     elements:boxes.map(({path,tag,id,classes,owner,targets,targetIdentity})=>({path,tag,...(id ? {id} : {}),classes,owner,...(targets?.length ? {targets} : {}),...(targetIdentity ? {targetIdentity} : {})})),
     ...(boxes.some(box=>box.layoutContracts?.length) ? {layoutBindings:boxes.flatMap(box=>(box.layoutContracts ?? []).map(declaration=>({path:box.path,declaration})))} : {}),
     ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}),
+    ...(options.accessibility ? { accessibility: { rules: accessibilityRules, contrast: options.accessibility.contrast ?? 'AA', warnings: accessibilityWarnings } } : {}),
     ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', warnings: integrityWarnings, exempted: integrityExempted } } : {}) };
 }

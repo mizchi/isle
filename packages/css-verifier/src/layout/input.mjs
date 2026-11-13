@@ -3,7 +3,7 @@ import { simpleSelector } from './css.mjs';
 import { validateFontContract, validateTextMetrics } from './text-font.mjs';
 export const boxTags = new Set('html body button div main aside section article nav header footer p span a strong em b i small h1 h2 h3 h4 h5 h6 output label'.split(' '));
 const ancestorTags=new Set([...boxTags].filter(tag=>tag!=='button'));
-const supportedOptions = new Set(['name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity']);
+const supportedOptions = new Set(['name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility']);
 const supportedContract = new Set(['minInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock', 'font', 'textMetrics']);
 function finiteSize(value, name) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1_000_000) throw new Error(`Invalid layout ${name}`);
@@ -37,6 +37,7 @@ export function validateOptions(options) {
     if (cmp(finiteSize(h.min, 'viewport height'), finiteSize(h.max, 'viewport height')) > 0) throw new Error('Invalid viewport height interval');
   }
   if (options.integrity !== undefined && options.integrity !== false && options.integrity !== true && !(options.integrity && typeof options.integrity === 'object' && Object.keys(options.integrity).every(k => ['targetSize', 'protrusion'].includes(k)) && (options.integrity.targetSize === undefined || (Number.isFinite(options.integrity.targetSize) && options.integrity.targetSize >= 0 && options.integrity.targetSize <= 1000)) && [undefined, 'all', 'painted'].includes(options.integrity.protrusion))) throw new Error("Invalid integrity option: true or {targetSize, protrusion: 'all' | 'painted'}");
+  if (options.accessibility !== undefined && options.accessibility !== false && options.accessibility !== true && !(options.accessibility && typeof options.accessibility === 'object' && Object.keys(options.accessibility).every(k => k === 'contrast') && [undefined, 'AA', 'AAA'].includes(options.accessibility.contrast))) throw new Error("Invalid accessibility option: true or {contrast: 'AA' | 'AAA'}");
   if (options.boxes === null || (options.boxes !== undefined && (typeof options.boxes !== 'object' || Array.isArray(options.boxes)))) throw new Error('Invalid box contracts');
   for (const [selector, contract] of Object.entries(options.boxes ?? {})) {
     if (!selector || !simpleSelector.test(selector) || !contract || Object.keys(contract).some(key => !supportedContract.has(key))) throw new Error('Invalid box contract');

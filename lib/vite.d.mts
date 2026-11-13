@@ -21,6 +21,8 @@ export interface CheckedLayoutOptions {
   scrollbars?: readonly LayoutScrollbarProfile[];
   /** Also fail on page overflow, protrusion, text collision and small targets; warn on clipping and nested scrolling. */
   integrity?: boolean | LayoutIntegrityOptions;
+  /** Also fail on missing accessible names, low text contrast, occluded or overlapping targets and focusable content under aria-hidden; warn on visual order. */
+  accessibility?: boolean | { contrast?: 'AA' | 'AAA' };
 }
 export interface WidgetBuildOptions {
   /** shared pins an exact page version; standalone embeds a private runtime. Default: shared. */

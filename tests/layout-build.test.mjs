@@ -286,3 +286,14 @@ test('a text contract measured for a lang must match the delivered document lang
   assert.equal(JSON.parse(artifact(output, 'isle.layout.json').source).contracts.boxes['.title'].textMetrics.lang, 'ja');
   await assert.rejects(await textFixture(t, {viewport:range, boxes:measured, lang:'en'}), error => /E_ISLE_LAYOUT/.test(error.message) && /lang en differs from the measured ja/.test(error.message));
 });
+
+test('checked builds enforce the accessibility rules and warn on visual order', async t => {
+  const bar = 'export component Four() { <main class="bar"><button class="b" aria-label="Close"></button></main> }';
+  const style = color => `*{box-sizing:border-box;margin:0}.bar{display:grid;grid-template-columns:40px;grid-template-rows:40px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0}`;
+  const output = await (await fixture(t, {source:bar, css:style(), options:{mounts:[{component:'Four',props:{}}],wrapMounts:false,layout:{css:'./app.css',viewport,accessibility:true}}}))();
+  const certificate = JSON.parse(artifact(output, 'isle.layout.json').source);
+  assert.equal(certificate.contracts.accessibility, true);
+  assert.deepEqual(certificate.report.accessibility.warnings, []);
+  const unnamed = await fixture(t, {source:bar.replace(' aria-label="Close"', ''), css:style(), options:{mounts:[{component:'Four',props:{}}],wrapMounts:false,layout:{css:'./app.css',viewport,accessibility:true}}});
+  await assert.rejects(unnamed, error => /E_ISLE_LAYOUT/.test(error.message) && /E_A11Y_NAME/.test(error.message));
+});
