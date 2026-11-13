@@ -1,8 +1,8 @@
 // Flex subset (css-flexbox-1): a single-line `row` or `column` container whose
-// items are fixed (no grow/shrink, definite basis), flexible (zero basis,
-// explicit zero minimum) or, in a column, content-sized (auto basis and
+// items are fixed (no grow/shrink, definite basis), flexible (zero basis, an
+// explicit or scroll-container minimum, frozen in rounds) or, in a column, content-sized (auto basis and
 // height; the block content size is both its minimum and its basis). The
-// flexible length algorithm then freezes nothing, so item outer sizes are
+// flexible length algorithm only freezes items at their minimum, so item outer sizes are
 // affine in the container size. Everything else is Unknown.
 import { q, add, cmp } from './linear.mjs';
 import { px } from './css.mjs';
@@ -10,6 +10,12 @@ import { px } from './css.mjs';
 const unknown = message => { throw Object.assign(new Error(message), { code: 'U_LAYOUT_FLEX' }); };
 const zeroLength = value => ['0', '0px', '0%'].includes(value);
 const stretch = value => ['normal', 'stretch', 'auto'].includes(value);
+
+/** Positive minimums are resolved by freezing; a factor below 1 then triggers
+ * the initial-free-space rule (§9.7 step 4b), which is not modeled. */
+export function validateFlexLine(tracks) {
+  if (tracks.some(track => track.minimum) && tracks.some(track => track.weight && cmp(track.weight, q(1)) < 0)) unknown('Flex factors below 1 with a positive minimum on a flexible item are outside the subset');
+}
 
 /** Returns the main axis: 'inline' for row, 'block' for column. */
 export function validateFlexContainer(style) {
@@ -37,16 +43,21 @@ export function flexTrack(style, { empty = false, axis = 'inline' } = {}) {
   const n = names(axis);
   if (style.order !== '0') unknown('order changes the item sequence; only order: 0 is modeled');
   if (axis === 'block' && !stretch(style['align-self'])) unknown(`align-self ${style['align-self']} shrink-wraps a column item; only auto/normal/stretch is modeled`);
-  // An empty box has a zero content-based minimum; otherwise `auto` depends on content.
-  const automatic = style[n.min] === 'auto' && !empty;
+  // The automatic minimum is zero for empty boxes and scroll containers
+  // (overflow other than visible/clip, css-flexbox-1 §4.5); otherwise it
+  // depends on the content.
+  const scrollContainer = !['visible', 'clip'].includes(style['overflow-x']) || !['visible', 'clip'].includes(style['overflow-y']);
+  const automatic = style[n.min] === 'auto' && !empty && !scrollContainer;
   const grow = q(style['flex-grow']), shrink = q(style['flex-shrink']), basis = style['flex-basis'];
   const contentBox = style['box-sizing'] === 'content-box', own = edges(style, n.sides);
   if (cmp(grow, q(0)) > 0) {
     if (!zeroLength(basis)) unknown(`flex-basis ${basis} on a growing item is outside the subset; use a zero basis`);
     if (style[n.size] !== 'auto') unknown(`A flexible item with a ${n.label} is outside the subset; flex sizes it`);
     if (automatic) unknown(`The automatic minimum size of a flex item depends on its content; set ${n.minLabel}: 0`);
-    if (style[n.min] !== 'auto' && cmp(px(style[n.min]), q(0)) !== 0) unknown(`A positive ${n.minLabel} on a flexible item can freeze it; only ${n.minLabel}: 0 is modeled`);
-    return { weight: grow, edges: own };
+    // A positive minimum may freeze the item (resolved by the line solver).
+    const minimum = style[n.min] === 'auto' ? q(0) : px(style[n.min]);
+    const outer = contentBox ? add(minimum, own) : (cmp(minimum, own) < 0 ? own : minimum);
+    return { weight: grow, edges: own, ...(cmp(outer, own) > 0 ? { minimum: outer } : {}) };
   }
   // In a column, an auto basis with an auto height is the block content size,
   // which is also its automatic minimum: it neither grows nor shrinks.

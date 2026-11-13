@@ -7,7 +7,7 @@ import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
 import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
 import {textFontMismatch, fittingLength} from './text-font.mjs';
-import {validateFlexContainer, flexTrack} from './flex.mjs';
+import {validateFlexContainer, validateFlexLine, flexTrack} from './flex.mjs';
 import {fact, sizeChain, sizeProperties, trackProperties, contractFact, explanation} from './explain.mjs';
 
 const zero = q(0), one = q(1), minusOne = q(-1);
@@ -132,7 +132,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (box.text) throw new Error('Automatic text height needs an intrinsicBlockSize contract');
     return [{ region, value: scalar(0) }];
   }
-  function validate(style, box, region, emit) {
+  function validate(style, box, region, emit, available = {}) {
     if (style.display === 'none') return false;
     if(box.whitespace && !['normal','nowrap'].includes(style['white-space'])) throw new Error('Preserved whitespace needs explicit text geometry from the input adapter');
     // Derived text metrics apply only to the exact font they were measured with.
@@ -172,7 +172,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (style[`max-${axis}-size`] !== 'none') throw new Error('CSS max size clamping is not modeled');
       if (axis === 'inline') {
         if (style['min-inline-size'] !== 'auto') px(style['min-inline-size']);
-      } else if (!['auto', '0', '0px'].includes(style['min-block-size'])) throw new Error('CSS min-block-size clamping is not modeled');
+      // A column flex item's minimum is resolved by the flex line (its track is never smaller).
+      } else if (!['auto', '0', '0px'].includes(style['min-block-size']) && !available.flexBlockMinimum) throw new Error('CSS min-block-size clamping is not modeled');
     }
     if (block && (!['normal', 'stretch'].includes(style['align-items']) || !['auto', 'normal', 'stretch'].includes(style['align-self']) || !['normal', 'stretch', 'start'].includes(style['align-content']))) throw new Error('Only stretch items and normal/stretch/start content alignment are supported');
     return true;
@@ -191,16 +192,42 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       return { region, values, required: overhead };
     });
   }
-  // Single-line flex: fixed items keep their size; flexible items get their
-  // padding/border plus a share of the positive free space (factor sums below
-  // 1 leave space unused). Negative free space makes the TRACKS check fail.
+  // Single-line flex (css-flexbox-1 §9.7): fixed items keep their size;
+  // flexible items get their padding/border plus a share of the positive free
+  // space (factor sums below 1 leave space unused). A flexible item whose
+  // share is below its minimum is frozen there and the free space is
+  // redistributed; each round splits the region by every item's condition.
+  // Negative free space makes the TRACKS check fail.
   function flexLine(region, available, definitions, gap, bases) {
-    const overhead = sum(total(bases), scalar(gap));
-    return clamp(region, diff(available, overhead)).map(({ region, value: free }) => {
-      const weights = definitions.filter(t => t.weight).map(t => t.weight).reduce(add, zero);
-      const denominator = cmp(weights, one) < 0 ? one : weights;
-      return { region, values: definitions.map((track, index) => track.weight ? sum(bases[index], times(free, div(track.weight, denominator))) : bases[index]), required: overhead };
-    });
+    validateFlexLine(definitions);
+    const results = [];
+    let states = [{ region, frozen: new Set() }];
+    for (let round = 0; states.length && round <= definitions.length; round++) {
+      const next = [];
+      for (const state of states) {
+        const used = definitions.map((track, index) => state.frozen.has(index) ? scalar(track.minimum) : bases[index]);
+        const overhead = sum(total(used), scalar(gap));
+        const unfrozen = definitions.map((track, index) => track.weight && !state.frozen.has(index) ? index : -1).filter(index => index >= 0);
+        const weights = unfrozen.map(index => definitions[index].weight).reduce(add, zero);
+        const denominator = cmp(weights, one) < 0 ? one : weights;
+        for (const { region: freeRegion, value: free } of clamp(state.region, diff(available, overhead))) {
+          const values = definitions.map((track, index) => unfrozen.includes(index) ? sum(bases[index], times(free, div(track.weight, denominator))) : used[index]);
+          // Split by each unfrozen item with a positive minimum: share ≥ minimum or not.
+          let parts = [{ region: freeRegion, violators: [] }];
+          for (const index of unfrozen.filter(index => definitions[index].minimum)) parts = bounded(parts.flatMap(part => {
+            const split = partition(part.region, diff(values[index], scalar(definitions[index].minimum)), '>=');
+            return [...split.yes.map(r => ({ region: r, violators: part.violators })), ...split.no.map(r => ({ region: r, violators: [...part.violators, index] }))];
+          }));
+          for (const part of parts) {
+            if (!part.violators.length) results.push({ region: part.region, values, required: overhead });
+            else next.push({ region: part.region, frozen: new Set([...state.frozen, ...part.violators]) });
+          }
+        }
+      }
+      states = bounded(next);
+    }
+    if (states.length) throw new Error('Flex freezing did not converge');
+    return results;
   }
   function finish(box, style, region, inline, contentInline, blockSize, contentBlock, available, parents, emit) {
     const contract = box.contract ?? {};
@@ -300,7 +327,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     try {
       for (const state of styles(box, region, parents, inherited, emit, !available.root)) {
         const { style } = state;
-        if (!validate(style, box, state.region, emit)) continue;
+        if (!validate(style, box, state.region, emit, available)) continue;
         if (box.tag==='body' && parents.at(-1)?.box.documentRoot && inherited['overflow-x']==='visible' && inherited['overflow-y']==='visible' && inherited['container-type']==='normal' && style['container-type']==='normal' && (style['overflow-x']!=='visible' || style['overflow-y']!=='visible')) throw Object.assign(new Error('Body overflow propagation requires explicit overflow on html; set html overflow to auto or hidden'),{code:'U_LAYOUT_SCROLLBAR'});
         const incoming=available;
         for (const frame of scrollbarFrames(style,scrollbarProfile,box.documentRoot)) {
@@ -448,7 +475,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       const finalAncestors = [...parents, { ...own, block: contentBlock, paddingBlock:diff(blockSize,scalar(add(px(style['border-top']),px(style['border-bottom'])))) }];
                       if (emit) obligation(contentBlock, rs.required, box, rs.region, 'E_LAYOUT_TRACKS', 'block', (box.contract?.overflowBlock ?? 'fit') === 'fit', () => explanation(sizeChain([...parents, { box, style }], 'block', { hostInset: options.hostBlockInset }), trackProperties('block').map(property => fact(box, style, property))));
                       let endings = [rs.region];
-                      for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: areaInline(item), block: trackArea(rs.values, rowGap, item.row, item.rowSpan),
+                      for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: areaInline(item), block: trackArea(rs.values, rowGap, item.row, item.rowSpan), ...(isColumn ? { flexBlockMinimum: true } : {}),
                         origin:offset(contentOrigin,trackStart(cs.values,columnGap,item.start),trackStart(rs.values,rowGap,item.row)),
                         tracks: { inline: childColumns(item), block: trackSlice(rs.values, rowGap, box, item.row, item.rowSpan) },
                         fitInline: (box.contract?.overflow ?? 'fit') === 'fit', fitBlock: (box.contract?.overflowBlock ?? 'fit') === 'fit' }, r, finalAncestors, item.inherited ?? style, emit).map(result => result.region)));

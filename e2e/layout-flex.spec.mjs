@@ -24,6 +24,17 @@ const cases = [
     css: '.page{display:flex;flex-direction:column;block-size:100%}.c{flex:none;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:30px;border:2px solid red}.x{flex:1 1 0;min-block-size:0}.y{flex:3 0 0;min-block-size:0;border:5px solid red}', fullHeight: true},
   {name: 'column stretched by a definite row', html: '<main class="row"><div class="stack"><div class="a"></div><div class="g"><div></div></div></div><div class="side"></div></main>',
     css: '.row{display:flex;block-size:200px}.stack{flex:1 1 0;min-width:0;display:flex;flex-direction:column;row-gap:4px}.a{flex:none;block-size:20px}.g{flex:none;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:18px}.side{flex:none;width:40px}'},
+  {name: 'flexible item frozen at its min-width', html: '<main class="row"><div class="a"></div><div class="b"></div><div class="c"></div></main>',
+    css: '.row{display:flex;block-size:20px;column-gap:4px}.a{flex:1 1 0;min-width:180px}.b{flex:1 1 0;min-width:0}.c{flex:2 1 0;min-width:0}'},
+  {name: 'freezing in rounds with a content-box minimum', html: '<main class="row"><div class="a"></div><div class="b"></div><div class="c"></div></main>',
+    css: '.row{display:flex;block-size:20px}.a{flex:1 1 0;min-width:100px;padding:0 10px;box-sizing:content-box}.b{flex:2 1 0;min-width:300px}.c{flex:1 1 0;min-width:0}',
+    // Below 420px the frozen minimums overflow the line; the geometry is still compared there.
+    expected: 'violated'},
+  {name: 'column item frozen at its min-height', html: '<main class="page"><div class="a"></div><div class="b"></div></main>',
+    css: '.page{display:flex;flex-direction:column;block-size:100%}.a{flex:1 1 0;min-block-size:250px}.b{flex:1 1 0;min-block-size:0}', fullHeight: true},
+  {name: 'scroll container items have a zero automatic minimum', html: '<main class="row"><div class="a"><div class="w"></div></div><div class="b"></div></main>',
+    css: '.row{display:flex;block-size:30px}.a{flex:1 1 0;overflow:hidden;display:grid;grid-template-columns:500px}.b{flex:1 1 0;min-width:0}',
+    boxes: {'.a': {overflow: 'clip'}}},
 ];
 const evaluate = (affine, width, height) => {
   const value = text => { const [n, d = '1'] = text.split('/'); return Number(n) / Number(d); };
@@ -34,8 +45,8 @@ const inside = (range, value) => value >= range.min && value <= range.max;
 for (const sample of cases) {
   test(`${sample.name}: model rectangles match Chromium`, async ({page}) => {
     const css = reset + sample.css;
-    const report = analyzeHTML(sample.html, {name: 'Case', css, viewport: {min: 200, max: 900, height: {min: 300, max: 600}}});
-    expect(report.status, JSON.stringify(report.diagnostics)).toBe('verified');
+    const report = analyzeHTML(sample.html, {name: 'Case', css, viewport: {min: 200, max: 900, height: {min: 300, max: 600}}, ...(sample.boxes ? {boxes: sample.boxes} : {})});
+    expect(report.status, JSON.stringify(report.diagnostics)).toBe(sample.expected ?? 'verified');
     let compared = 0;
     for (const [width, height] of [[200, 300], [321, 400], [480, 450], [777, 600]]) {
       await page.setViewportSize({width, height});
@@ -55,6 +66,7 @@ for (const sample of cases) {
         compared++;
       }
     }
-    expect(compared).toBeGreaterThan(8);
+    // Scroll containers publish no rectangle; their size shows in the following items.
+    expect(compared).toBeGreaterThanOrEqual(8);
   });
 }

@@ -154,3 +154,76 @@ test('width-only analysis of a column flex gives every item the content width', 
   assert.equal(report.diagnostics.find(d => d.box === '.a').range.maxExact, '170');
   assert.ok(!report.diagnostics.some(d => d.box === '.b'));
 });
+
+// ---- positive minimums on flexible items, and overflow -------------------
+const line = (css, children, options = {}) => analyzeLayout({tag: 'main', classes: ['row'], children}, {name: 'Line', css: reset + css, viewport: {min: 100, max: 1000}, ...options});
+const size = (report, box) => report.sizes.filter(s => s.box === box);
+
+test('a flexible item whose share falls below its min-width is frozen there and the rest is redistributed', () => {
+  const css = '.row { display: flex; }\n.a { flex: 1 1 0; min-width: 120px; }\n.b { flex: 1 1 0; min-width: 0; }\n';
+  const report = line(css, [{tag: 'div', classes: ['a']}, {tag: 'div', classes: ['b']}]);
+  status(report, 'violated'); // below 120px the line overflows
+  // V ≥ 240: equal halves; 120 ≤ V < 240: a frozen at 120, b = V - 120.
+  const a = size(report, '.a'), b = size(report, '.b');
+  const at = (rows, v) => rows.find(r => r.range.min <= v && v <= r.range.max && (v < r.range.max || r.range.maxInclusive));
+  assert.deepEqual(at(a, 300).inlineSize, {coefficient: '1/2', constant: '0'});
+  assert.deepEqual(at(a, 200).inlineSize, {coefficient: '0', constant: '120'});
+  assert.deepEqual(at(b, 200).inlineSize, {coefficient: '1', constant: '-120'});
+  const tracks = report.diagnostics.find(d => d.code === 'E_LAYOUT_TRACKS');
+  assert.equal(tracks.range.maxExact, '120');
+});
+
+test('freezing proceeds in rounds and min-width applies to the content box of content-box items', () => {
+  // a: weight 1, min 100 (content-box, padding 10 → outer 120); b: weight 2, min 300; c: weight 1, min 0
+  const css = '.row { display: flex; }\n.a { flex: 1 1 0; min-width: 100px; padding: 0 10px; box-sizing: content-box; }\n.b { flex: 2 1 0; min-width: 300px; }\n.c { flex: 1 1 0; min-width: 0; }\n';
+  const report = line(css, [{tag: 'div', classes: ['a']}, {tag: 'div', classes: ['b']}, {tag: 'div', classes: ['c']}]);
+  const at = (box, v) => size(report, box).find(r => r.range.min <= v && v <= r.range.max);
+  // V = 500: shares (V-20)/4 → b = 240 < 300 → frozen; then a: 10+... recompute free = 500-300-20 = 180 → a 20+90=110 < 120 → frozen next round; c = 500-300-120 = 80.
+  assert.equal(at('.b', 500).inlineSize.constant, '300');
+  assert.equal(at('.a', 500).inlineSize.constant, '120');
+  assert.deepEqual(at('.c', 500).inlineSize, {coefficient: '1', constant: '-420'});
+});
+
+test('positive minimums with flex factors below one are Unknown', () => {
+  const report = line('.row { display: flex; }\n.a { flex: 0.5 1 0; min-width: 50px; }\n.b { flex: 1 1 0; min-width: 0; }\n', [{tag: 'div', classes: ['a']}, {tag: 'div', classes: ['b']}]);
+  status(report, 'unknown');
+  assert.ok(report.diagnostics.some(d => d.code === 'U_LAYOUT_FLEX' && /factor/.test(d.message)));
+});
+
+test('a column freezes flexible items at a positive min-height', () => {
+  const css = '.row { display: flex; flex-direction: column; block-size: 100%; }\n.a { flex: 1 1 0; min-block-size: 250px; }\n.b { flex: 1 1 0; min-block-size: 0; }\n';
+  const report = line(css, [{tag: 'div', classes: ['a']}, {tag: 'div', classes: ['b']}], {viewport: {min: 100, max: 400, height: {min: 300, max: 900}}});
+  status(report, 'verified');
+  const at = (box, h) => size(report, box).find(r => r.heightRange.min <= h && h <= r.heightRange.max);
+  assert.equal(at('.a', 400).blockSize.constant, '250');
+  assert.deepEqual(at('.b', 400).blockSize, {coefficient: '0', constant: '-250', heightCoefficient: '1'});
+  assert.deepEqual(at('.a', 800).blockSize, {coefficient: '0', constant: '0', heightCoefficient: '1/2'});
+});
+
+test('a scroll container item has a zero automatic minimum; clip does not', () => {
+  const base = '.row { display: flex; }\n.a { flex: 1 1 0; }\n';
+  const children = [{tag: 'div', classes: ['a'], children: [{tag: 'p', classes: ['t'], text: true}]}];
+  const run = extra => line(base + extra + '\n.a { display: grid; grid-template-columns: minmax(0, 1fr); }\n', children, {boxes: {'.t': {minInlineSize: 50}}});
+  status(run('.a { overflow: hidden; }'), 'verified');
+  status(run('.a { overflow: auto; }'), 'unknown'); // scrollbars need a declared platform profile
+  const clip = run('.a { overflow: clip; }');
+  status(clip, 'unknown');
+  assert.ok(clip.diagnostics.some(d => /automatic minimum/.test(d.message)));
+  const visible = run('');
+  status(visible, 'unknown');
+});
+
+test('flex line overflow follows the container overflow policy', () => {
+  const css = '.row { display: flex; overflow-x: auto; overflow-y: hidden; }\n.a, .b { flex: 0 0 300px; }\n';
+  const children = [{tag: 'div', classes: ['a']}, {tag: 'div', classes: ['b']}];
+  const scrollbars = [{name: 'overlay', inlineSize: 0, blockSize: 0}];
+  const scroll = line(css, children, {boxes: {'.row': {overflow: 'scroll'}}, scrollbars});
+  status(scroll, 'verified');
+  const fit = line(css, children, {scrollbars});
+  status(fit, 'violated');
+  assert.equal(fit.diagnostics.find(d => d.code === 'E_LAYOUT_TRACKS').range.maxExact, '600');
+  // overflow-x: visible with overflow-y: hidden computes to auto, so it still scrolls.
+  status(line(css.replace('overflow-x: auto', 'overflow-x: visible'), children, {boxes: {'.row': {overflow: 'scroll'}}, scrollbars}), 'verified');
+  const policy = line(css.replace('overflow-x: auto; overflow-y: hidden;', ''), children, {boxes: {'.row': {overflow: 'scroll'}}, scrollbars});
+  assert.ok(policy.diagnostics.some(d => d.code === 'E_LAYOUT_OVERFLOW_POLICY'));
+});
