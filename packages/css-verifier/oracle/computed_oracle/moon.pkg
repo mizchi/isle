@@ -1,0 +1,14 @@
+import {
+  "moonbitlang/core/json",
+  "mizchi/css/cascade",
+  "mizchi/css/computed",
+  "mizchi/css/media",
+  "mizchi/css/parser",
+  "mizchi/css/selector",
+  "mizchi/css/style",
+  "mizchi/css/values",
+}
+
+options(
+  link: { "js": { "exports": [ "compute_tree" ], "format": "esm" } },
+)

@@ -8,6 +8,14 @@ css-verifier-check: check-types
     node --test tests/css-verifier.test.mjs tests/css-verifier-package.test.mjs tests/css-transitions.test.mjs
     node packages/css-verifier/examples/responsive.mjs
 
+# Development-only differential oracle backed by mizchi/css (MoonBit -> JS).
+css-oracle-build:
+    cd packages/css-verifier/oracle && moon build --target js --release
+
+css-oracle-check: css-oracle-build
+    node --test packages/css-verifier/oracle/differential.test.mjs
+    node evals/scenarios/css-cascade-oracle/check.mjs
+
 # Static endpoint relations; no browser is needed to decide the proof.
 noshift-check: build-compiler check-types
     node --test tests/css-transitions.test.mjs tests/layout-noshift*.test.mjs
