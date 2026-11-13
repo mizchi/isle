@@ -57,7 +57,7 @@ export interface LayoutBuildCertificate {
   document: { file: string; sha256: string };
   stylesheet: { sha256: string };
   sources: { file: string; sha256: string }[];
-  contracts: { viewport: LayoutOptions['viewport'] & { height: { min: number; max: number } }; boxes: Record<string, CheckedLayoutBoxContract>; scrollbars?:readonly LayoutScrollbarProfile[] };
+  contracts: { viewport: LayoutOptions['viewport'] & { height: { min: number; max: number } }; boxes: Record<string, CheckedLayoutBoxContract>; scrollbars?:readonly LayoutScrollbarProfile[]; integrity?: true | LayoutIntegrityOptions; fonts?: readonly { family: string; file: string; sha256: string }[] };
   report: LayoutSummary & { ok: true; status: 'verified'; scope: LayoutSummary['scope'] & { axis: 'both'; blockSizing: true } };
   declarations?:import('./layout-contract.mjs').ContractProof[];
 }

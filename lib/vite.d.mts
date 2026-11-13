@@ -5,6 +5,7 @@ import type { LoadingPolicy } from './code-contracts.d.ts';
 import type { SpeculationRules } from './speculation.mjs';
 import type { CostBudget } from './cost-contracts.d.ts';
 import type { CheckedLayoutBoxContract, LayoutScrollbarProfile, LayoutIntegrityOptions } from './layout-contracts.d.ts';
+import type { TextContract } from '../packages/css-verifier/src/text.d.mts';
 /** Closed document profile: all author CSS is owned by this build. Unknown is an error. */
 export interface CheckedLayoutOptions {
   /** Local CSS path relative to the .isle entry. Delivered automatically. */
@@ -13,7 +14,9 @@ export interface CheckedLayoutOptions {
   reset?: readonly string[];
   viewport: { min: number; max: number; height: { min: number; max: number } };
   /** Trusted content bounds and explicit overflow policies. */
-  boxes?: Record<string, CheckedLayoutBoxContract>;
+  boxes?: Record<string, CheckedLayoutBoxContract | (Omit<CheckedLayoutBoxContract, 'minInlineSize' | 'minBlockSize' | 'intrinsicBlockSize'> & { text: TextContract })>;
+  /** CSS family → local font file (relative to the entry) measuring `text` contracts at build time (mizchi/font). Recorded by sha256. */
+  fonts?: Record<string, { file: string; weight?: number }>;
   /** Exact native scrollbar sizes for every supported target environment. */
   scrollbars?: readonly LayoutScrollbarProfile[];
   /** Also fail on page overflow, protrusion, text collision and small targets; warn on clipping and nested scrolling. */

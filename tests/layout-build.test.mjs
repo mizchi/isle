@@ -228,3 +228,42 @@ test('integrity warnings are reported by the build without failing it', async t 
     layout:{css:'./app.css',viewport,boxes:{'.frame':{overflow:'clip'}},integrity:true}})],build:{write:false}});
   assert.ok(warnings.some(message => /W_LAYOUT_CLIPPED/.test(message) && /80\.\.250/.test(message)), warnings.join('\n'));
 });
+
+// Font-derived text contracts (ADR-0010) in the checked build: `layout.fonts`
+// maps CSS families to font files next to the entry, as layout.json does.
+const fontFile = new URL('../packages/css-verifier/text-metrics/fixtures/japanese-variable.ttf', import.meta.url);
+const jp = {family:'Noto Sans JP', size:16, lineHeight:24, weight:400};
+async function textFixture(t, {viewport:range, boxes, fonts = {'Noto Sans JP':{file:'./jp.ttf'}}, plugins = []}) {
+  const directory = await mkdtemp(join(tmpdir(), 'isle-layout-fonts-'));
+  t.after(() => rm(directory, { recursive:true, force:true }));
+  await Promise.all([
+    writeFile(join(directory, 'app.isle'), 'export component Four() { <main class="card"><p class="title">日本語のテキスト幅検査</p></main> }'),
+    writeFile(join(directory, 'app.css'), '*{box-sizing:border-box;margin:0;padding:0}.card{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:24px;font-family:"Noto Sans JP",sans-serif;font-size:16px;line-height:24px}.title{white-space:nowrap}'),
+    writeFile(join(directory, 'index.html'), html), writeFile(join(directory, 'package.json'), '{"type":"module"}'),
+    writeFile(join(directory, 'jp.ttf'), await readFile(fontFile)),
+  ]);
+  return () => build({configFile:false,root:directory,base:'./',logLevel:'silent',plugins:[isle({entry:join(directory, 'app.isle'),mounts:[{component:'Four',props:{}}],wrapMounts:false,
+    layout:{css:'./app.css',viewport:range,boxes,...(fonts ? {fonts} : {})}}),...plugins],build:{write:false}});
+}
+const title = {'.title':{text:{font:jp, content:'日本語のテキスト幅検査'}}};
+
+test('checked builds resolve font-derived text contracts and record the font in the certificate', async t => {
+  const output = await (await textFixture(t, {viewport:{min:200,max:400,height:{min:200,max:600}}, boxes:title}))();
+  const certificate = JSON.parse(artifact(output, 'isle.layout.json').source);
+  const contract = certificate.contracts.boxes['.title'];
+  assert.equal(contract.textMetrics.kind, 'content');
+  assert.equal(contract.font.family, 'Noto Sans JP');
+  assert.ok(contract.minInlineSize > 150 && contract.minInlineSize < 200, String(contract.minInlineSize));
+  assert.deepEqual(certificate.contracts.fonts, [{family:'Noto Sans JP', file:'jp.ttf', sha256:hash(await readFile(fontFile))}]);
+  assert.equal(contract.textMetrics.font.sha256, certificate.contracts.fonts[0].sha256);
+});
+
+test('checked builds reject text that the font makes wider than the narrowest viewport', async t => {
+  const run = await textFixture(t, {viewport:{min:120,max:400,height:{min:200,max:600}}, boxes:title});
+  await assert.rejects(run, error => /E_ISLE_LAYOUT/.test(error.message) && /width 120\.\./.test(error.message));
+});
+
+test('a text contract without layout.fonts is a configuration error', async t => {
+  await assert.rejects(textFixture(t, {viewport:{min:200,max:400,height:{min:200,max:600}}, boxes:title, fonts:null}).then(run => run()), /E_ISLE_LAYOUT.*layout\.fonts/);
+  await assert.rejects(textFixture(t, {viewport:{min:200,max:400,height:{min:200,max:600}}, boxes:title, fonts:{'Noto Sans JP':{path:'./jp.ttf'}}}).then(run => run()), /E_ISLE_LAYOUT.*fonts/);
+});

@@ -330,6 +330,17 @@ E_LAYOUT_ITEM_SIZE: .cell requires 40px but receives 53/2px on inline axis at vi
 ```
 
 導出した幅は`minInlineSize`、1行の高さは`intrinsicBlockSize`、`wrap: "nowrap"`になり、既存の検査が全てのviewportで照合する。
+Vite の検査付き build では `layout.fonts` に同じ形で渡す(パスは `.isle` entry からの相対)。
+
+```js
+isle({entry: './app.isle', mounts: [{component: 'Card'}], wrapMounts: false,
+  layout: {css: './app.css', viewport: {min: 240, max: 1000, height: {min: 200, max: 600}},
+    fonts: {'Noto Sans JP': {file: './fonts/NotoSansJP.ttf'}},
+    boxes: {'.title': {text: {font: {family: 'Noto Sans JP', size: 16, lineHeight: 24, weight: 400}, content: '日本語のテキスト幅検査'}}}}})
+```
+
+溢れる幅があれば build が失敗し、成功時は `isle.layout.json` の `contracts.fonts` にフォントの SHA-256 が残る。`fonts` なしの `text` 契約は設定エラー。
+
 反例には収まる文字数が付く。[例](../examples/layout-contracts/text-fonts.json)では、名前欄の割当が`V − 88`、12文字の上界が`192 + 1/64`pxなので、
 viewport `[240, 17921/64)`で溢れ得ると報告する。
 

@@ -53,7 +53,10 @@ Chromiumの幅はshapingのadvanceを1/64 px(LayoutUnit)へ切り上げた値に
 - FFI: `packages/css-verifier/text-metrics/`(`mizchi/font@0.8.0`、fixtureはOFLのNoto Sans JP/Robotoのsubset)。
 - 導出: `src/text.mjs`、`src/text-node.mjs`(`@mizchi/css-verifier/text`、`/text/node`)。
 - コア: `src/layout/css.mjs`(text系プロパティを継承付きで保持)、`text-font.mjs`、`engine.mjs`、`input.mjs`。
-- Isle: CLIの`layout.json`の`fonts`、`lib/layout-summary.mjs`の`text:`行。
+- Isle: CLIの`layout.json`の`fonts`、Viteの検査付きbuildの`layout.fonts`(`lib/layout-build.mjs`の`resolveCheckedLayout`)、`lib/layout-summary.mjs`の`text:`行。
+  Viteではentryからの相対パスでフォントを読み、`text`契約をbuildStartで寸法契約へ解決する。フォントは監視対象になり、
+  証明書`isle.layout.json`の`contracts.fonts`にfamily・相対パス・SHA-256を、`contracts.boxes`に導出した契約(`textMetrics`)を記録する。
+  FFIはbuild時だけ読み込み、配信するJS/CSSは変わらない。
 
 ## 検証
 
