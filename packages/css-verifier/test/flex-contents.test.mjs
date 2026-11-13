@@ -43,7 +43,7 @@ test('fixed items overflow instead of shrinking when the line is too short', () 
 test('flex outside the modeled subset is Unknown', () => {
   for (const [extra, reason] of [
     ['.row { flex-wrap: wrap; }', /flex-wrap/],
-    ['.row { flex-direction: column; }', /flex-direction/],
+    ['.row { flex-direction: row-reverse; }', /flex-direction/],
     ['.row { justify-content: center; }', /justify-content/],
     ['.name { min-width: auto; }', /automatic minimum/],
     ['.name { flex: 1; min-width: auto; }', /automatic minimum/],
@@ -86,4 +86,71 @@ test('display: contents that would create anonymous boxes or sits at the root is
   status(report, 'unknown');
   assert.ok(report.diagnostics.some(d => /contents/.test(d.message)));
   status(analyzeLayout({tag: 'main', classes: ['row']}, {name: 'Card', css: '.row { display: contents; }', viewport: {min: 100, max: 600}}), 'unknown');
+});
+
+// ---- flex-direction: column ------------------------------------------------
+const both = {min: 200, max: 600, height: {min: 300, max: 800}};
+const page = (css, children, boxes = {}) => analyzeLayout({tag: 'main', classes: ['page'], children}, {name: 'Page', css: reset + css, viewport: both, boxes});
+const column = '.page { display: flex; flex-direction: column; block-size: 100%; row-gap: 8px; padding: 16px 0; }\n';
+const parts = [{tag: 'header', classes: ['head']}, {tag: 'section', classes: ['body'], children: [{tag: 'p', classes: ['copy'], text: true}]}, {tag: 'footer', classes: ['foot']}];
+
+test('a column flex shares the free height: fixed header/footer, flexible body', () => {
+  const css = column + '.head { flex: none; block-size: 56px; }\n.foot { flex: 0 0 40px; min-block-size: 0; }\n.body { flex: 1 1 0; min-block-size: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }\n';
+  const report = page(css, parts, {'.copy': {minInlineSize: 100, minBlockSize: 300}});
+  status(report, 'violated');
+  // body = H - 32 - 56 - 40 - 16 = H - 144 ≥ 300 ⇔ H ≥ 444
+  const finding = report.diagnostics.find(d => d.code === 'E_LAYOUT_CONTENT' && d.axis === 'block');
+  assert.equal(finding.heightRange.maxExact, '444');
+  // 156px fits from the smallest height (300 - 144).
+  status(page(css, parts, {'.copy': {minInlineSize: 100, minBlockSize: 156}}), 'verified');
+  // Items stretch across: the body receives the full content width.
+  const body = report.sizes.find(s => s.box === '.body');
+  assert.deepEqual(body.inlineSize, {coefficient: '1', constant: '0'});
+});
+
+test('content-sized items take their intrinsic height and do not stretch along the main axis', () => {
+  const css = column + '.head { flex: none; } .head { flex-basis: auto; }\n.body { flex: 1 1 0; min-block-size: 0; }\n.foot { flex: none; block-size: 40px; }\n';
+  const children = [{tag: 'p', classes: ['head'], text: true}, {tag: 'div', classes: ['body']}, {tag: 'footer', classes: ['foot']}];
+  const report = page(css, children, {'.head': {minInlineSize: 50, intrinsicBlockSize: 30}});
+  status(report, 'verified');
+  const head = report.sizes.find(s => s.box === '.head'), body = report.sizes.find(s => s.box === '.body');
+  assert.deepEqual(head.blockSize, {coefficient: '0', constant: '30'});
+  // body = H - 32 - 30 - 40 - 16
+  assert.deepEqual(body.blockSize, {coefficient: '0', constant: '-118', heightCoefficient: '1'});
+});
+
+test('an auto-height column is the sum of its fixed and content-sized items', () => {
+  const css = '.page { display: flex; flex-direction: column; row-gap: 4px; }\n.a { flex: none; block-size: 20px; }\n.b { flex: none; }\n';
+  const report = analyzeLayout({tag: 'main', classes: ['page'], children: [{tag: 'div', classes: ['a']}, {tag: 'p', classes: ['b'], text: true}]},
+    {name: 'Stack', css: reset + css, viewport: both, boxes: {'.b': {minInlineSize: 10, intrinsicBlockSize: 18}}});
+  status(report, 'verified');
+  assert.deepEqual(report.sizes.find(s => s.box === '.page').blockSize, {coefficient: '0', constant: '42'});
+});
+
+test('column flex outside the subset is Unknown', () => {
+  const ok = column + '.head { flex: none; block-size: 56px; }\n.foot { flex: none; block-size: 40px; }\n.body { flex: 1 1 0; min-block-size: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }\n';
+  for (const [extra, reason] of [
+    ['.page { block-size: auto; }', /indefinite/],
+    ['.page { align-items: center; }', /align/],
+    ['.body { align-self: flex-start; }', /align/],
+    ['.page { justify-content: space-between; }', /justify-content/],
+    ['.page { flex-direction: column-reverse; }', /flex-direction/],
+    ['.body { min-block-size: auto; }', /automatic minimum|min-block-size|min-height/],
+    ['.head { flex: 0 1 56px; block-size: auto; min-block-size: 0; }', /shrink/],
+    ['.head { flex: 1 1 0; block-size: 56px; min-block-size: 0; }', /height/],
+  ]) {
+    const report = page(ok + extra + '\n', parts, {'.copy': {minInlineSize: 100, minBlockSize: 10}});
+    status(report, 'unknown');
+    // Cross-axis alignment is also rejected by the general both-axis alignment check.
+    assert.ok(report.diagnostics.some(d => (d.code === 'U_LAYOUT_FLEX' || /alignment/.test(d.message)) && reason.test(d.message.replace('content alignment', 'align'))), `${extra}: ${JSON.stringify(report.diagnostics)}`);
+  }
+});
+
+test('width-only analysis of a column flex gives every item the content width', () => {
+  const css = '.page { display: flex; flex-direction: column; padding: 0 10px; }\n.a, .b { flex: none; }\n';
+  const report = analyzeLayout({tag: 'main', classes: ['page'], children: [{tag: 'p', classes: ['a'], text: true}, {tag: 'p', classes: ['b'], text: true}]},
+    {name: 'Stack', css: reset + css, viewport: {min: 100, max: 400}, boxes: {'.a': {minInlineSize: 150}, '.b': {minInlineSize: 50}}});
+  status(report, 'violated');
+  assert.equal(report.diagnostics.find(d => d.box === '.a').range.maxExact, '170');
+  assert.ok(!report.diagnostics.some(d => d.box === '.b'));
 });

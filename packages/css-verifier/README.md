@@ -74,7 +74,7 @@ establish their coverage separately.
 - `unknown`: the model is incomplete or unsupported. A strict build must reject
   both `violated` and `unknown`, and must also reject thrown input/limit errors.
 
-Current scope includes Grid box geometry, a single-line row flex subset (fixed items and zero-basis flexible items with `min-width: 0`), `display: contents`, reset/cascade/custom properties,
+Current scope includes Grid box geometry, a single-line row/column flex subset (fixed items, zero-basis flexible items with a zero minimum, and content-sized column items), `display: contents`, reset/cascade/custom properties,
 supported media/container conditions, both axes, limited subgrid, exact declared
 scrollbar profiles, and explicitly sized local absolute positioning. It checks
 continuous regions, including boundaries and fractional widths. It does not

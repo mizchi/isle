@@ -1,6 +1,6 @@
 # ADR-0011: flex と display: contents の安全なサブセット
 
-- 状態: 実装中(row・nowrap の flex と contents。column・wrap は未着手)
+- 状態: 実装中(row/column・nowrap の flex と contents。wrap は未着手)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: ユーザー指示「grid/flex や contents のサブセットで動かし、徐々に安全に書ける範囲を増やす」
@@ -26,6 +26,15 @@ flexible length algorithm([css-flexbox-1 §9.7](https://www.w3.org/TR/css-flexbo
 既存の Grid の列配分・行・子の解決を再利用し、flex の item 列を1行の track として渡す。
 Grid の配置プロパティは flex item に適用しない。
 
+### column
+
+主軸は block 軸。交差軸の幅は全 item が container の内容幅へ伸長する(normal / stretch のみ)。
+item は固定(grow 0・shrink 0、basis px か `auto`+px の height)、伸縮(grow > 0、basis 0、height auto、`min-height: 0`)、
+内容サイズ(grow 0、basis auto、height auto)。block の内容高さは min-content = max-content なので、
+内容サイズ item の flex base size と自動最小サイズは一致し、縮小も凍結も起きない。高さは既存の行の測定(`intrinsicBlockSize`、子の解決)で求める。
+item を1列の行 track とし、定義済みの高さでは固定・内容サイズを差し引いた余白を伸縮 item へ配る。
+高さが未定の column は item の合計高さになり、伸縮 item は内容から伸びるため unknown にする。幅だけの解析では全 item に内容幅を渡す。
+
 `display: contents` は子を親の item に置き換える。継承は要素の木に従い、contents 要素の style を親として子を計算する。
 text(匿名 box)、契約・noshift の対象、解析 root、領域で変わる contents は unknown。
 
@@ -42,11 +51,10 @@ text(匿名 box)、契約・noshift の対象、解析 root、領域で変わる
 | 検査 | 内容 |
 | --- | --- |
 | `packages/css-verifier/test/flex-contents.test.mjs` | 固定+伸縮、比の配分と padding、Σgrow < 1、固定 item の溢れ、サブセット外10種の unknown、交差軸の伸長、contents の平坦化と継承 |
-| `e2e/layout-flex.spec.mjs` | 6構成×4 viewport で、モデルの矩形(位置・寸法)が Chromium と1/64 px以内で一致。伸縮 item の padding を落とす変異を検出 |
+| `e2e/layout-flex.spec.mjs` | 9構成(column 3件を含む)×4 viewport で、モデルの矩形(位置・寸法)が Chromium と1/64 px以内で一致。伸縮 item の padding を落とす変異、column で border を落とす変異を検出 |
 | `evals/scenarios/layout-rejections` | `flex` の例を「初期値の item → U_LAYOUT_FLEX、伸縮 item に書くと verified」へ更新 |
 
 ## 次の段階
 
-1. `flex-direction: column`(定義済みの高さ、block 軸の固定・伸縮 item)。
-2. 正の min-width を持つ伸縮 item の凍結を、条件分割した有限の場合分けとして扱う。
-3. `justify-content` の他の値(位置のみ変わる)、`flex-wrap` は行分割の場合分けが必要。
+1. 正の min-width を持つ伸縮 item の凍結を、条件分割した有限の場合分けとして扱う。
+2. `justify-content` の他の値(位置のみ変わる)、`flex-wrap` は行分割の場合分けが必要。

@@ -354,7 +354,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               if (!['grid', 'flex'].includes(style.display)) { issue('E_LAYOUT_CONTAINER', 'Layout containers must use grid or the flex subset', box, bs.region); continue; }
               const isFlex = style.display === 'flex';
               if (!isFlex && style['grid-auto-flow'] !== 'row') throw new Error('Only sparse row auto-placement is supported');
-              if (isFlex) validateFlexContainer(style);
+              const mainAxis = isFlex ? validateFlexContainer(style) : undefined, isColumn = mainAxis === 'block';
               // Child boxes per region. display: contents is replaced by its
               // children, which inherit from it (the element tree) but are
               // laid out as items of this container.
@@ -383,9 +383,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               const plans = isFlex ? collect(geometryRegion).map(state => {
                 const inFlow = state.children.filter(child => child.style.position !== 'absolute');
                 if (inFlow.length !== state.children.length) throw Object.assign(new Error('Absolute children of a flex container use flex static positions'), { code: 'U_LAYOUT_FLEX' });
-                return { region: state.region, children: state.children, columns: inFlow.map(child => {
-                  try { return flexTrack(child.style, { empty: !child.box.text && !child.box.children.length }); } catch (error) { error.box ??= child.box; throw error; }
-                }) };
+                const track = (child, axis) => { try { return flexTrack(child.style, { empty: !child.box.text && !child.box.children.length, axis }); } catch (error) { error.box ??= child.box; throw error; } };
+                // A column has one stretched column track; its items are main-axis rows (checked only with block analysis).
+                if (isColumn) return { region: state.region, children: state.children, columns: [{ stretched: true }], rows: block ? inFlow.map(child => track(child, 'block')) : undefined };
+                return { region: state.region, children: state.children, columns: inFlow.map(child => track(child, 'inline')) };
               }) : [{ region: geometryRegion, columns: sharedColumns ? sharedColumns.values.map(value => ({ definite: value })) :
                 style['grid-template-columns'] === 'none' ? [] : tracks(style['grid-template-columns'] ?? 'none') }];
               for (const plan of plans) {
@@ -393,7 +394,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               const columnGap = gapSize(style['column-gap'], sharedColumns);
               const columnBases = columns.map(track => scalar(track.fixed ?? track.edges ?? zero));
               const columnLayouts = sharedColumns ? [{ region: plan.region, values: sharedColumns.values, required: trackArea(sharedColumns.values, columnGap, 0, columns.length) }] :
-                isFlex ? flexLine(plan.region, contentInline, columns, mul(columnGap, q(Math.max(0, columns.length - 1))), columnBases) : flex(plan.region, contentInline, columns, mul(columnGap, q(Math.max(0, columns.length - 1))), columnBases, false);
+                isColumn ? [{ region: plan.region, values: [contentInline], required: scalar(0) }] : isFlex ? flexLine(plan.region, contentInline, columns, mul(columnGap, q(Math.max(0, columns.length - 1))), columnBases) : flex(plan.region, contentInline, columns, mul(columnGap, q(Math.max(0, columns.length - 1))), columnBases, false);
               for (const cs of columnLayouts) {
                 if (emit) obligation(contentInline, cs.required, box, cs.region, 'E_LAYOUT_TRACKS', 'inline', (box.contract?.overflow ?? 'fit') === 'fit', () => explanation(sizeChain([...parents, { box, style }], 'inline', { hostInset: options.hostInset }), trackProperties('inline').map(property => fact(box, style, property))));
                 const childStates = isFlex ? [{ region: cs.region, children: plan.children }] : collect(cs.region);
@@ -402,7 +403,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   if (!columns.length && children.children.some(child=>child.style.position!=='absolute')) throw new Error('In-flow Grid children require explicit supported columns');
                   let placed;
                   // Flex items fill the single line in order; grid placement properties do not apply.
-                  try { placed = isFlex ? children.children.map((child, index) => ({ ...child, start: index, span: 1, row: 0, rowSpan: 1 })) :
+                  try { placed = isFlex ? children.children.map((child, index) => isColumn ? { ...child, start: 0, span: 1, row: index, rowSpan: 1 } : { ...child, start: index, span: 1, row: 0, rowSpan: 1 }) :
                     place(children.children.filter(child=>child.style.position!=='absolute'), columns.length, { subgridColumns: Boolean(sharedColumns), rows: inheritedAxes.block?.values.length }).map(item => ({ ...item, inherited: children.children.find(child => child.box === item.box).inherited })); }
                   catch (error) { error.region = children.region; throw error; }
                   const areaInline = item => trackArea(cs.values, columnGap, item.start, item.span);
@@ -416,7 +417,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   const rowCount = placed.length ? Math.max(...placed.map(item => item.row + item.rowSpan)) : 0;
                   const sharedRows = inheritedAxes.block;
                   // The line of a single-line flex container with a definite cross size is that size (css-flexbox-1 §9.4 step 15).
-                  let rows = sharedRows ? sharedRows.values.map(value => ({ definite: value })) : isFlex ? (knownBlock ? [{ definite: knownBlock }] : []) : style['grid-template-rows'] === 'none' ? [] : tracks(style['grid-template-rows'], true);
+                  let rows = sharedRows ? sharedRows.values.map(value => ({ definite: value })) : isColumn ? [...plan.rows] : isFlex ? (knownBlock ? [{ definite: knownBlock }] : []) : style['grid-template-rows'] === 'none' ? [] : tracks(style['grid-template-rows'], true);
                   const explicitRowCount = rows.length;
                   // A single-line flex container is one auto row stretched to a definite cross size.
                   const implicit = sharedRows ? [] : tracks(isFlex ? 'auto' : style['grid-auto-rows'], true);
@@ -427,7 +428,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     (item.rowSpan > 1 || item.style['grid-template-rows'] === 'subgrid')) {
                     throw subgridError('Intrinsic row contributions across subgrids or row spans are not modeled; use independently sized parent rows', item.box, children.region, 'block');
                   }
-                  let measurements = [{ region: children.region, bases: rows.map(row => row.definite ?? scalar(row.fixed ?? zero)) }];
+                  if (isColumn && !knownBlock && rows.some(row => row.weight)) throw Object.assign(new Error('Flexible items in a column with an indefinite height grow from their content; give the container a definite height'), { code: 'U_LAYOUT_FLEX', region: children.region });
+                  let measurements = [{ region: children.region, bases: rows.map(row => row.definite ?? scalar(row.fixed ?? row.edges ?? zero)) }];
                   for (const item of placed.filter(item => rows[item.row].auto || (!knownBlock && rows[item.row].weight))) {
                     measurements = bounded(measurements.flatMap(m => solve(item.box, { inline: areaInline(item), tracks: { inline: childColumns(item) } }, m.region, ancestors, item.inherited ?? style, false).flatMap(measured => maximum(measured.region, m.bases[item.row], measured.block).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))));
                   }
@@ -437,7 +439,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       const divisor = cmp(rows[i].weight, one) > 0 ? rows[i].weight : one;
                       fractions = fractions.flatMap(f => maximum(f.region, f.value, times(m.bases[i], div(one, divisor))));
                     }
-                    const layouts = sharedRows ? [{ region: m.region, values: sharedRows.values, required: trackArea(sharedRows.values, rowGap, 0, rows.length) }] : knownBlock ? flex(m.region, knownBlock, rows, gaps, m.bases, isFlex || style['align-content'] !== 'start') : fractions.map(f => {
+                    const layouts = sharedRows ? [{ region: m.region, values: sharedRows.values, required: trackArea(sharedRows.values, rowGap, 0, rows.length) }] : knownBlock ? (isColumn ? flexLine(m.region, knownBlock, rows, gaps, m.bases) : flex(m.region, knownBlock, rows, gaps, m.bases, isFlex || style['align-content'] !== 'start')) : fractions.map(f => {
                       const values = rows.map((row, i) => row.weight ? times(f.value, row.weight) : m.bases[i]);
                       return { region: f.region, values, required: sum(total(values), scalar(gaps)) };
                     });

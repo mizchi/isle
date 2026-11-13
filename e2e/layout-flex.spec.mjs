@@ -18,6 +18,12 @@ const cases = [
     css: '.row{display:flex;block-size:24px;column-gap:6px}.outer,.inner{display:contents}.a,.b{flex:1 1 0;min-width:0}.c{flex:none;width:50px}'},
   {name: 'flex item that is a grid', html: '<main class="row"><section class="g"><div></div><div></div></section><div class="side"></div></main>',
     css: '.row{display:flex;block-size:50px}.g{flex:1 1 0;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 20px}.side{flex:none;width:64px}'},
+  {name: 'column with fixed header/footer and a flexible body', html: '<main class="page"><header class="h"></header><section class="b"></section><footer class="f"></footer></main>',
+    css: '.page{display:flex;flex-direction:column;block-size:100%;row-gap:8px;padding:16px 12px}.h{flex:none;block-size:56px}.b{flex:1 1 0;min-block-size:0;padding:10px 0}.f{flex:0 0 40px;min-block-size:0}', fullHeight: true},
+  {name: 'column with weighted bodies and a content-sized grid item', html: '<main class="page"><div class="c"><div></div></div><div class="x"></div><div class="y"></div></main>',
+    css: '.page{display:flex;flex-direction:column;block-size:100%}.c{flex:none;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:30px;border:2px solid red}.x{flex:1 1 0;min-block-size:0}.y{flex:3 0 0;min-block-size:0;border:5px solid red}', fullHeight: true},
+  {name: 'column stretched by a definite row', html: '<main class="row"><div class="stack"><div class="a"></div><div class="g"><div></div></div></div><div class="side"></div></main>',
+    css: '.row{display:flex;block-size:200px}.stack{flex:1 1 0;min-width:0;display:flex;flex-direction:column;row-gap:4px}.a{flex:none;block-size:20px}.g{flex:none;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:18px}.side{flex:none;width:40px}'},
 ];
 const evaluate = (affine, width, height) => {
   const value = text => { const [n, d = '1'] = text.split('/'); return Number(n) / Number(d); };
@@ -33,7 +39,7 @@ for (const sample of cases) {
     let compared = 0;
     for (const [width, height] of [[200, 300], [321, 400], [480, 450], [777, 600]]) {
       await page.setViewportSize({width, height});
-      await page.setContent(`<!doctype html><style>html,body{margin:0}${css}</style>${sample.html}`);
+      await page.setContent(`<!doctype html><style>html,body{margin:0}${sample.fullHeight ? 'html,body{height:100%}' : ''}${css}</style>${sample.html}`);
       const rows = report.sizes.filter(row => row.rect && inside(row.range, width) && (!row.heightRange || inside(row.heightRange, height)));
       for (const row of rows) {
         const indices = row.path.split('/').slice(1).map(Number);
