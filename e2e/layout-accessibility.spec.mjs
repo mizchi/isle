@@ -61,8 +61,13 @@ const cases = [
     css: `.row{display:flex;column-gap:1px;align-items:flex-start;block-size:30px;background:#fff;color:#000;${type}}.i,.j,.t{${button}flex:none}.i,.j{width:20px;height:20px}.t{width:60px;height:30px}@media (width < 600px){.t{display:none}}`, boxes: {'.t': label}},
   {name: 'aaa-forty-pixel-buttons', html: '<main class="row"><button class="b1" aria-label="A"></button><button class="b2" aria-label="B" data-a11y-essential="fixed control panel"></button></main>',
     css: `.row{display:flex;column-gap:40px;align-items:flex-start;block-size:60px}.b1,.b2{${button}flex:none;width:40px;height:40px}`, accessibility: {targetLevel: 'AAA'}},
+  {name: 'images-and-image-links', html: '<div class="page"><img class="p1" src="data:," ><img class="p2" src="data:," alt=""><a class="go" href="#h"><img class="p3" src="data:," alt="Home"></a><a class="bad" href="#x"><img class="p4" src="data:," alt=""></a></div>',
+    css: `.page{display:grid;grid-template-columns:120px;grid-auto-rows:40px;row-gap:4px;background:#fff}.p1,.p2,.p3,.p4{display:block;inline-size:120px;block-size:40px}.go,.bad{display:grid;grid-template-columns:minmax(0,1fr)}@media (width < 600px){.p1{display:none}}`},
+  {name: 'form-fields', html: '<div class="page"><label class="l1" for="email">Email</label><input class="f1" id="email" type="email"><label class="w"><span class="l2">Name</span><input class="f2" type="text"></label><input class="f3" type="text" placeholder="Search"><input class="f4" type="text"><select class="f5" aria-label="Country"></select><textarea class="f6" title="Notes"></textarea><label class="l3" for="nowhere">Ghost</label><input class="f7" type="submit" value="Send"><input class="f8" type="hidden"></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:32px;row-gap:4px;background:#fff;color:#000;${type}}.l1,.l2,.l3{display:block}.w{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:20px 32px}.f1,.f2,.f3,.f4,.f5,.f6,.f7,.f8{${button}inline-size:200px;block-size:32px;border:1px solid #000}@media (width < 600px){.l1{display:none}}`,
+    boxes: {'.l1': label, '.l2': label, '.l3': label}},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for'];
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
   && (!row.heightRange || (height >= row.heightRange.min && height <= row.heightRange.max));
 
@@ -99,8 +104,8 @@ async function runtime(page, sample) {
     }
   }
   // Occlusion and overlap: rect intersections, then hit testing at the overlap centre.
-  const links = new Set(await page.evaluate(() => [...document.querySelectorAll('a[href]')].map(node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); })));
-  const targets = elements.filter(e => facts[e.path].display !== 'none' && facts[e.path].visibility === 'visible' && facts[e.path].rect.w > 0 && (e.tag === 'button' || links.has(e.path)));
+  const links = new Set(await page.evaluate(() => [...document.querySelectorAll('a[href], button, input:not([type=hidden]), select, textarea')].map(node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); })));
+  const targets = elements.filter(e => facts[e.path].display !== 'none' && facts[e.path].visibility === 'visible' && facts[e.path].rect.w > 0 && links.has(e.path));
   const inside = (a, b) => b.startsWith(a + '/') || a.startsWith(b + '/') || a === b;
   for (const target of targets) {
     const t = facts[target.path].rect;
@@ -136,8 +141,8 @@ async function runtime(page, sample) {
     const headings = all.filter(n => /^H[1-6]$/.test(n.tagName) && shown(n));
     for (const h of headings) if (!h.textContent.trim() && !h.getAttribute('aria-label')?.trim()) out.empty.push(pathOf(h));
     for (let i = 1; i < headings.length; i++) if (Number(headings[i].tagName[1]) > Number(headings[i - 1].tagName[1]) + 1) out.order.push(pathOf(headings[i]));
-    const interactive = n => n.matches('a[href], button');
-    for (const n of all) if (interactive(n) && shown(n) && n.parentElement?.closest('a[href], button') && document.body.firstElementChild.contains(n.parentElement.closest('a[href], button'))) out.nested.push(pathOf(n));
+    const interactive = n => n.matches('a[href], button, input:not([type=hidden]), select, textarea');
+    for (const n of all) if (interactive(n) && shown(n) && n.parentElement?.closest('a[href], button, input:not([type=hidden]), select, textarea') && document.body.firstElementChild.contains(n.parentElement.closest('a[href], button, input:not([type=hidden]), select, textarea'))) out.nested.push(pathOf(n));
     const ids = new Map(); for (const n of all) if (n.id) ids.set(n.id, [...(ids.get(n.id) ?? []), n]);
     for (const owners of ids.values()) if (owners.length > 1) out.duplicate.push(pathOf(owners[1]));
     for (const n of all) for (const name of ['aria-labelledby', 'aria-describedby', 'aria-controls']) for (const id of (n.getAttribute(name) ?? '').split(/\s+/).filter(Boolean)) if (!document.getElementById(id)) out.reference.push(pathOf(n));
@@ -152,7 +157,7 @@ async function runtime(page, sample) {
     const out = {scroll: [], reflow: [], obscured: [], area: []};
     const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
     const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible'; };
-    const focusable = node => shown(node) && (node.matches('a[href], button:not([disabled])') || node.tabIndex >= 0 && node.hasAttribute('tabindex'));
+    const focusable = node => shown(node) && (node.matches('a[href], button:not([disabled]), input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled])') || node.tabIndex >= 0 && node.hasAttribute('tabindex'));
     const all = [document.body.firstElementChild, ...document.body.firstElementChild.querySelectorAll('*')];
     for (const n of all) {
       const style = getComputedStyle(n);
@@ -174,7 +179,7 @@ async function runtime(page, sample) {
     for (const n of [document.body.firstElementChild, ...document.body.firstElementChild.querySelectorAll('*')]) {
       const style = getComputedStyle(n);
       if (style.display === 'none' || style.visibility !== 'visible') continue;
-      if (n.matches('a[href], button') && style.pointerEvents === 'none') out.disabled.push(pathOf(n));
+      if (n.matches('a[href], button, input:not([type=hidden]), select, textarea') && style.pointerEvents === 'none') out.disabled.push(pathOf(n));
       if ([...n.childNodes].some(c => c.nodeType === 3 && c.data.trim()) && parseFloat(style.fontSize) < 12) out.small.push(pathOf(n));
     }
     return out;
@@ -185,7 +190,7 @@ async function runtime(page, sample) {
   const spacing = await page.evaluate(({size, level}) => {
     const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
     const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible' && !node.closest('[aria-hidden="true"]'); };
-    const targets = [...document.body.firstElementChild.querySelectorAll('a[href], button'), ...(document.body.firstElementChild.matches('a[href], button') ? [document.body.firstElementChild] : [])].filter(shown).map(n => ({n, r: n.getBoundingClientRect()}));
+    const targets = [...document.body.firstElementChild.querySelectorAll('a[href], button, input:not([type=hidden]), select, textarea'), ...(document.body.firstElementChild.matches('a[href], button, input:not([type=hidden]), select, textarea') ? [document.body.firstElementChild] : [])].filter(shown).map(n => ({n, r: n.getBoundingClientRect()}));
     const small = t => t.r.width < size || t.r.height < size, centre = t => [t.r.x + t.r.width / 2, t.r.y + t.r.height / 2];
     const failing = t => {
       if (!small(t)) return false;
@@ -204,6 +209,28 @@ async function runtime(page, sample) {
     return out;
   }, {size, level});
   for (const path of spacing) found.get('target-size').add(path);
+  // Images and form fields: alt, the AX name without the placeholder, and label.control.
+  const media = await page.evaluate(() => {
+    const out = {alt: [], unlabelled: [], dangling: []};
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible' && !node.closest('[aria-hidden="true"]'); };
+    const all = [document.body.firstElementChild, ...document.body.firstElementChild.querySelectorAll('*')];
+    for (const n of all) {
+      if (n.tagName === 'IMG' && shown(n) && !n.hasAttribute('alt')) out.alt.push(pathOf(n));
+      if (n.tagName === 'LABEL' && n.hasAttribute('for') && n.control === null) out.dangling.push(pathOf(n));
+      if (n.matches('input:not([type=hidden]):not([type=submit]):not([type=reset]):not([type=button]):not([type=image]), select, textarea') && shown(n)) { if (n.hasAttribute('placeholder')) { n.dataset.placeholder = n.getAttribute('placeholder'); n.removeAttribute('placeholder'); } out.unlabelled.push(pathOf(n)); }
+    }
+    return out;
+  });
+  for (const path of media.alt) found.get('image-alt').add(path);
+  for (const path of media.dangling) found.get('label-for').add(path);
+  for (const path of media.unlabelled) {
+    const {result} = await client.send('Runtime.evaluate', {expression: `(() => { let n = document.body.firstElementChild; for (const i of ${JSON.stringify(path.split('/').slice(1).map(Number))}) n = n.children[i]; return n; })()`});
+    const {node} = await client.send('DOM.describeNode', {objectId: result.objectId});
+    const {nodes} = await client.send('Accessibility.getPartialAXTree', {backendNodeId: node.backendNodeId, fetchRelatives: false});
+    if (!(nodes[0]?.name?.value ?? '').trim()) found.get('form-label').add(path);
+  }
+  await page.evaluate(() => { for (const n of document.querySelectorAll('[data-placeholder]')) { n.setAttribute('placeholder', n.dataset.placeholder); delete n.dataset.placeholder; } });
   // Contrast from computed colors, composited over the ancestors like the WCAG definition.
   const low = await page.evaluate(() => {
     const parse = value => { const m = value.match(/[\d.]+/g).map(Number); return {r: m[0], g: m[1], b: m[2], a: m[3] ?? 1}; };

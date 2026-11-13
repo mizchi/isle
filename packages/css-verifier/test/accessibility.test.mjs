@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -350,4 +350,69 @@ test('HTML adapter: data-a11y-equivalent and data-a11y-essential', async () => {
   const report = analyzeHTML('<main class="row"><button class="a" aria-label="x" data-a11y-equivalent="big"></button><button class="b" id="big" aria-label="y"></button></main>', {name: 'Page', css, viewport: domain, accessibility: true});
   assert.equal(find(report, 'E_A11Y_TARGET_SIZE').length, 0);
   assert.equal(report.accessibility.exempted.length, 1);
+});
+
+// Images and form controls (UA sizes are reset; explicit sizes are required).
+const fieldCSS = '.page { display: grid; grid-template-columns: 200px; grid-auto-rows: 32px; row-gap: 8px; background: #fff; color: #000; }\n.f, .pic { appearance: none; display: block; inline-size: 200px; block-size: 32px; padding: 0; border: 1px solid #000; min-width: 0; min-height: 0; }\n.l { display: block; font-size: 16px; line-height: 20px; }\n';
+const lb = {'.l': {minInlineSize: 1, intrinsicBlockSize: 20}};
+
+test('form controls and images without explicit sizes stay Unknown', () => {
+  const report = run(page([{tag: 'input', classes: ['f'], inputType: 'text', focusable: true, named: true}]), pageCSS('.f { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n'));
+  assert.equal(report.status, 'unknown');
+  assert.ok(report.diagnostics.some(d => /intrinsic sizes are not modeled/.test(d.message)));
+});
+
+test('image-alt: a rendered image needs alt; alt="" marks it decorative; alt names a link', () => {
+  const img = extra => ({tag: 'img', classes: ['pic'], ...extra});
+  assert.deepEqual(find(run(page([img({})]), fieldCSS), 'E_A11Y_IMAGE_ALT').map(d => d.box), ['.pic']);
+  assert.equal(find(run(page([img({alt: ''})]), fieldCSS), 'E_A11Y_IMAGE_ALT').length, 0);
+  assert.equal(find(run(page([img({})]), fieldCSS + '.pic { display: none; }'), 'E_A11Y_IMAGE_ALT').length, 0);
+  assert.equal(run(page([img({alt: 'dynamic'})]), fieldCSS).status, 'unknown');
+  const link = alt => page([{tag: 'a', classes: ['go'], focusable: true, children: [img({alt})]}]);
+  const linkCSS = fieldCSS + '.go { display: grid; grid-template-columns: minmax(0, 1fr); }\n';
+  assert.equal(find(run(link('Home'), linkCSS), 'E_A11Y_NAME').length, 0);
+  assert.equal(find(run(link(''), linkCSS), 'E_A11Y_NAME').length, 1); // a decorative image does not name the link
+});
+
+test('form-label: a field needs a label, aria name or title; placeholder alone is a warning', () => {
+  const field = (extra = {}) => ({tag: 'input', classes: ['f'], id: 'email', inputType: 'text', focusable: true, ...extra});
+  const label = (extra = {}) => ({tag: 'label', classes: ['l'], text: true, ...extra});
+  assert.deepEqual(find(run(page([field()]), fieldCSS), 'E_A11Y_LABEL').map(d => d.box), ['#email']);
+  assert.equal(find(run(page([label({labelFor: 'email'}), field()]), fieldCSS, {boxes: lb}), 'E_A11Y_LABEL').length, 0);
+  assert.equal(find(run(page([field({named: true})]), fieldCSS), 'E_A11Y_LABEL').length, 0);
+  const placeholder = run(page([field({placeholder: true})]), fieldCSS);
+  assert.equal(find(placeholder, 'E_A11Y_LABEL').length, 0);
+  assert.deepEqual(placeholder.accessibility.warnings.filter(w => w.code === 'W_A11Y_PLACEHOLDER_LABEL').map(w => w.box), ['#email']);
+  // Buttons-as-inputs and hidden inputs need no label.
+  assert.equal(find(run(page([field({inputType: 'submit'})]), fieldCSS), 'E_A11Y_LABEL').length, 0);
+  assert.equal(find(run(page([field({inputType: 'hidden', focusable: false})]), fieldCSS), 'E_A11Y_LABEL').length, 0);
+});
+
+test('form-label: a wrapping label names its field; label-for must name a labelable element', () => {
+  const wrapped = page([{tag: 'label', classes: ['w'], children: [{tag: 'span', classes: ['l'], text: true}, {tag: 'input', classes: ['f'], inputType: 'text', focusable: true}]}]);
+  const css = fieldCSS + '.w { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 32px; }\n';
+  assert.equal(find(run(wrapped, css, {boxes: lb}), 'E_A11Y_LABEL').length, 0);
+  const dangling = run(page([{tag: 'label', classes: ['l'], text: true, labelFor: 'nowhere'}, {tag: 'div', classes: ['x'], id: 'box'}, {tag: 'label', classes: ['l2'], text: true, labelFor: 'box'}]),
+    fieldCSS + '.l2 { display: block; font-size: 16px; line-height: 20px; }\n', {boxes: {...lb, '.l2': lb['.l']}});
+  assert.deepEqual(find(dangling, 'E_A11Y_LABEL_FOR').map(d => d.reference).sort(), ['box', 'nowhere']);
+});
+
+test('form controls are targets: undersized fields fail target-size, covered ones are occluded', () => {
+  const tiny = run(page([{tag: 'input', classes: ['f'], inputType: 'checkbox', focusable: true, named: true}, {tag: 'input', classes: ['g'], inputType: 'checkbox', focusable: true, named: true}]),
+    '.page { display: flex; column-gap: 1px; block-size: 16px; background: #fff; }\n.f, .g { appearance: none; display: block; flex: none; inline-size: 16px; block-size: 16px; padding: 0; border: 0; min-width: 0; min-height: 0; }\n');
+  assert.deepEqual(find(tiny, 'E_A11Y_TARGET_SIZE').map(d => d.box).sort(), ['.f', '.g']);
+});
+
+test('occluded-target: a later in-flow box covers a target that overflows into it', () => {
+  // .a overflows its 20px row by 20px into .b's row; .b is later in tree order and on top.
+  const tree = page([{tag: 'button', classes: ['a'], named: true}, {tag: 'div', classes: ['b']}]);
+  const css = '.page { display: grid; grid-template-columns: 100px; grid-template-rows: 20px 20px; }\n.a { appearance: none; display: block; block-size: 40px; padding: 0; border: 0; min-width: 0; min-height: 0; }\n';
+  const report = run(tree, css, {boxes: {'.page': {overflowBlock: 'visible'}}});
+  assert.deepEqual(find(report, 'E_A11Y_OCCLUDED').map(d => d.cover), ['Page/1']);
+});
+
+test('form-label: a display: none label does not name its field there (aria-labelledby would)', () => {
+  const tree = page([{tag: 'label', classes: ['l'], text: true, labelFor: 'email'}, {tag: 'input', classes: ['f'], id: 'email', inputType: 'text', focusable: true}]);
+  const [finding] = find(run(tree, fieldCSS + '@media (width < 600px) { .l { display: none; } }', {boxes: lb}), 'E_A11Y_LABEL');
+  assert.equal(finding.range.maxExact, '600');
 });

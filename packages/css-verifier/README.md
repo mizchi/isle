@@ -107,7 +107,8 @@ box tree (`named`, `labelledBy`, `references`, `ariaHidden`, `focusable`,
 (`display`, `visibility`, `pointer-events`, colors, `opacity`) and the proved
 geometry: accessible names, text contrast, occluded and overlapping targets,
 focusable content under aria-hidden, headings, nested interactive elements,
-duplicate ids and dangling references, focusable scroll regions, reflow at
+duplicate ids and dangling references, image alt, form labels (a label names
+its field only where its text renders), dangling label[for], focusable scroll regions, reflow at
 320px, obscured focus, zero-size focus, pointer-disabled targets and SC 2.5.8
 target size (with the 24px-circle spacing exception, decided exactly for
 constant or single-axis offsets and between inner and outer polygons

@@ -1,6 +1,6 @@
 # ADR-0013: DOM と CSS を組み合わせた静的アクセシビリティ検査
 
-- 状態: 実装中(20規則、HTML adapter・Isle template・Vite・playground に接続)
+- 状態: 実装中(23規則、HTML adapter・Isle template・Vite・playground に接続)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: ユーザー指示「思いつく限りのCSSとDOMを組み合わせた静的検査パターンを実装したい」。ADR-0007(静的コントラスト契約)の text-contrast を含む
@@ -39,6 +39,9 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | focus-area | 可視のフォーカス可能な box の幅か高さが 0 | E_A11Y_FOCUS_AREA |
 | pointer-disabled | 可視の button/link が継承した `pointer-events: none` でクリックできない | E_A11Y_POINTER_DISABLED |
 | small-text | 描画される文字が 12px 未満 | W_A11Y_SMALL_TEXT(警告) |
+| image-alt | 描画され公開される img に `alt` がない(`alt=""` は装飾)。`alt` は link/button の名前にもなる | E_A11Y_IMAGE_ALT |
+| form-label | input(hidden・submit・reset・button・image 以外)・select・textarea に、`aria-label`・`title`・`aria-labelledby` も、**描画され可視の**テキストを持つ label(包む label か `label[for]`)もない。placeholder だけなら警告 | E_A11Y_LABEL / W_A11Y_PLACEHOLDER_LABEL |
+| label-for | `label[for]` が labelable な要素(button・hidden 以外の input・select・textarea・output)を指さない | E_A11Y_LABEL_FOR |
 | target-size | SC 2.5.8:24px 未満の操作対象で、border box の中心に置いた 24px の円が他の操作対象の box か、他の小さい対象の円と交わる(spacing 例外を満たさない) | E_A11Y_TARGET_SIZE |
 
 ### target-size の円(非線形)の扱い
@@ -65,12 +68,23 @@ ADR-0012 の target-undersized(vlmkit と同じく spacing を考えない)と�
 
 違反は checks の義務ではないため、Z3 のモデルにはその違反領域が空でないことの確認として入る(`rule` を持つ診断)。
 
+### form control と画像
+
+`img`・`input`・`select`・`textarea` を box tag に加えた。UA の固有寸法と padding はモデルにないので、button と同じく `appearance: none`・
+`display: block` と reset を要求し、さらに `inline-size`(両軸の検査では `block-size` も)の明示を要求する。満たさなければ Unknown。
+`width`/`height` 属性は presentational hint なので HTML adapter では未対応の属性(Unknown)のまま。
+form field は操作対象として target-size・occluded-target・target-overlap・hidden-focusable・pointer-disabled の対象にもなる。
+
+Chromium と照合して分かったこと:`display: none` の label は field の名前にならない(`aria-labelledby` は隠れた参照先の text も読む)。
+label による名前は、label の text が描画され可視の領域だけで成立するとした。
+また、2つの in-flow の block box が重なるとき、木の順で後の box が上に描かれ hit test を受ける(occluded-target と focus-obscured に追加)。
+
 ### 事実の出どころ
 
 - **CSS**: `color`・`visibility`・`pointer-events`(継承)と `opacity` を計算値に保持するようにした(以前は装飾として捨てていた)。
   `background`・`background-color`・`background-image` は ADR-0012 で保持済み。幾何には使わない。
   `z-index` は未対応のプロパティのまま(使うと Unknown)なので、描画順は「positioned は in-flow の後、positioned 同士は木の順」で確定する。
-- **DOM**: box tree に `named`(空でない `aria-label`・`title`)、`labelledBy`、`references`、`ariaHidden`、`focusable`
+- **DOM**: box tree に `alt`・`inputType`・`labelFor`・`placeholder`、`named`(空でない `aria-label`・`title`)、`labelledBy`、`references`、`ariaHidden`、`focusable`
   (`a[href]`、無効でない button、tabindex ≥ 0。tabindex < 0 は除く)、`tabIndex` を持たせた。
   HTML adapter と Isle template(IR)は同じ `accessibilityFacts` で属性から導き、動的な値は `'dynamic'` として Unknown の原因にする。
   `aria-labelledby` は参照先の subtree のテキストで名前になる(描画されない参照先も含む、accname 2.B)。
@@ -91,7 +105,6 @@ ADR-0007 の制約に従う。
 ## 範囲外
 
 - `z-index`、`position: fixed/sticky`、`transform`、filter・blend、`color-scheme`・forced colors、`:focus` などの状態の擬似クラス。
-- 画像の代替テキスト(`img` は box tag にない)、form control とそのラベル(`input` などは未対応の要素)。
 - 文字列そのものに依存する規則(label-in-name など)。box tree はテキストの有無だけを持つ。
 - 2.5.8 の spacing 例外(24px の円の距離は線形でない)。target-undersized(ADR-0012)は spacing を考慮しない。
 - Chromium 130 以降は focusable な子のない scroller を自動でフォーカス可能にする。scrollable-region-focusable は axe と同じ DOM の定義で判定する。
@@ -100,15 +113,15 @@ ADR-0007 の制約に従う。
 
 | 検査 | 内容 |
 | --- | --- |
-| `packages/css-verifier/test/accessibility.test.mjs` | 32件(equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
+| `packages/css-verifier/test/accessibility.test.mjs` | 39件(画像・form control・in-flow の覆いを含む。equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
 | `tests/layout-accessibility.test.mjs` | Isle template の静的・動的な属性 |
 | `tests/layout-build.test.mjs` | Vite の `layout.accessibility`:名前のない button で build が失敗し、証明書に契約が残る |
-| `e2e/layout-accessibility.spec.mjs` | 22構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
+| `e2e/layout-accessibility.spec.mjs` | 24構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
 
 結果は `evals/results/layout-accessibility/report.json` に残る。
 
 ## 次の段階
 
 1. playground の preset と、Isle の例(`examples/layout-contracts`)。
-2. form control とラベル、`img` の代替テキスト(要素の対応が先に必要)。
+2. `form`・`fieldset`/`legend`・`ul`/`li` などの構造要素の box tag(grouping の規則のため)。
 3. inline box のモデル(文中のリンクの inline 例外を判定するため)。

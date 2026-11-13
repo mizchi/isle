@@ -23,6 +23,9 @@
 //   focus-area       → E_A11Y_FOCUS_AREA        a visible focusable box with a zero-size border box
 //   pointer-disabled → E_A11Y_POINTER_DISABLED  a visible button/link that pointer-events: none makes unclickable
 //   small-text       → W_A11Y_SMALL_TEXT        rendered text below 12px
+//   image-alt        → E_A11Y_IMAGE_ALT         a rendered img without alt (alt="" marks it decorative)
+//   form-label       → E_A11Y_LABEL             a field with no label, aria name or title (W_A11Y_PLACEHOLDER_LABEL: placeholder only)
+//   label-for        → E_A11Y_LABEL_FOR         label[for] names no labelable element
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, width as domainWidth } from './region.mjs';
@@ -31,7 +34,7 @@ import { intersect } from './integrity.mjs';
 
 export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable',
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
-  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size'];
+  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -219,8 +222,10 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   const witness = region => { const p = sample(region); return { viewport: number(p.x), viewportExact: exact(p.x), ...(block ? { viewportHeight: number(p.y), viewportHeightExact: exact(p.y) } : {}) }; };
   const report = (list, code, severity, message, row, region, extra) => list.push({ code, severity, message, box: row.box.label, path: row.path, source: row.box.source, ...ranges(region), witness: witness(region), ...extra });
   const visible = row => row.paint.visibility === 'visible';
-  // Interactive: buttons, and links with href (or a dynamic one).
-  const interactive = row => row.box.tag === 'button' || (row.box.tag === 'a' && row.box.focusable !== false);
+  // Interactive: buttons, links with href (or a dynamic one), and form fields (not type=hidden or disabled-hidden).
+  const field = box => ['select', 'textarea'].includes(box.tag) || (box.tag === 'input' && box.inputType !== 'hidden');
+  const control = row => row.box.tag === 'button' || (row.box.tag === 'a' && row.box.focusable !== false);
+  const interactive = row => control(row) || field(row.box);
   const placed = geometry.filter(row => row.origin && row.block);
   const boxes = new Map(geometry.map(row => [row.path, row.box]));
   const hiddenFrom = path => { for (let p = path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') if (boxes.get(p)?.ariaHidden) return true; return false; };
@@ -229,7 +234,9 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   // aria-labelledby names through the text of the referenced elements, rendered or not (accname 2.B).
   const byId = new Map();
   (function walk(box) { if (box.id && !byId.has(box.id)) byId.set(box.id, box); for (const child of box.children ?? []) walk(child); })(root);
-  const hasText = box => box.text || (box.named === true) || (box.children ?? []).some(hasText);
+  const hasText = box => box.text || (box.named === true) || (box.tag === 'img' && box.alt && box.alt !== 'dynamic') || (box.children ?? []).some(hasText);
+  // Name from content: rendered, visible text leaves and images with a non-empty alt.
+  const speaks = row => (row.box.text || (row.box.tag === 'img' && row.box.alt && row.box.alt !== 'dynamic')) && visible(row);
   const nameOf = box => {
     if (box.named === true) return true;
     if (box.labelledBy === 'dynamic') return 'dynamic';
@@ -237,8 +244,8 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     return box.named;
   };
   // Hidden targets (visibility, or aria-hidden content) are not exposed and need no name.
-  for (const target of geometry.filter(row => interactive(row) && visible(row) && nameOf(row.box) !== true && !hiddenFrom(row.path))) {
-    const texts = geometry.filter(row => row.box.text && visible(row) && (row.path === target.path || isAncestor(target.path, row.path)));
+  for (const target of geometry.filter(row => control(row) && visible(row) && nameOf(row.box) !== true && !hiddenFrom(row.path))) {
+    const texts = geometry.filter(row => speaks(row) && (row.path === target.path || isAncestor(target.path, row.path)));
     let missing = [target.region];
     for (const text of texts) missing = missing.flatMap(region => subtract(region, text.region));
     // A dynamic name attribute may be empty: Unknown where no text names the target.
@@ -267,14 +274,19 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
 
   // occluded-target: a hit-testable box from a later paint layer covers a target.
   const layer = row => { for (let p = row.path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') { const r = geometry.find(g => g.path === p); if (r && r.position !== 'static') return p; } return null; };
+  const paintsAbove = (cover, above, target, own) => {
+    if (!above) return !own && treeOrder(cover.path, target.path) > 0;
+    return !(own && (isAncestor(above, own) || above === own || treeOrder(above, own) < 0));
+  };
   const targets = placed.filter(row => interactive(row) && visible(row));
   for (const target of targets) {
     const own = layer(target);
     for (const cover of placed) {
       if (related(cover.path, target.path) || !visible(cover) || cover.paint.pointerEvents === 'none') continue;
       const above = layer(cover);
-      // Positioned layers paint after in-flow content, and among themselves in tree order (z-index is not modeled).
-      if (!above || (own && (isAncestor(above, own) || above === own || treeOrder(above, own) < 0))) continue;
+      // Positioned layers paint after in-flow content, and among themselves in tree order (z-index is not modeled);
+      // two in-flow block boxes paint (and hit-test) in tree order, the later one on top.
+      if (!paintsAbove(cover, above, target, own)) continue;
       const region = overlap(target, cover);
       if (region) { report(findings, 'E_A11Y_OCCLUDED', 'error', `${target.box.label} is covered by ${cover.box.label}, which is painted later and receives the pointer`, target, region, { rule: 'occluded-target', cover: cover.path }); break; }
     }
@@ -399,7 +411,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       if (related(cover.path, target.path) || !visible(cover) || !cover.painted) continue;
       // A zero-size box is reported by focus-area, not as obscured.
       const above = layer(cover);
-      if (!above || (own && (isAncestor(above, own) || above === own || treeOrder(above, own) < 0))) continue;
+      if (!paintsAbove(cover, above, target, own)) continue;
       let region = intersect(target.region, cover.region);
       region = below(below(region, scalar(0), target.inline), scalar(0), target.block);
       region = atMost(region, cover.origin.inline, target.origin.inline); region = atMost(region, cover.origin.block, target.origin.block);
@@ -420,6 +432,40 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   for (const row of geometry.filter(row => row.box.text && visible(row))) {
     const size = px(row.paint.fontSize);
     if (size !== undefined && size < 12) report(warnings, 'W_A11Y_SMALL_TEXT', 'warning', `${row.box.label} is set at ${size}px`, row, row.region, { rule: 'small-text', fontSize: size });
+  }
+
+  // image-alt: every rendered, exposed image needs an alt attribute.
+  for (const row of geometry.filter(row => row.box.tag === 'img' && visible(row) && !hiddenFrom(row.path))) {
+    if (row.box.alt === 'dynamic') report(unknowns, 'U_A11Y_IMAGE_ALT', 'unknown', `${row.box.label}: a dynamic alt may be missing`, row, row.region, { rule: 'image-alt' });
+    else if (row.box.alt === undefined) report(findings, 'E_A11Y_IMAGE_ALT', 'error', `${row.box.label} has no alt; use alt="" if it is decorative`, row, row.region, { rule: 'image-alt' });
+  }
+
+  // form-label: aria-label/title/labelledby, a wrapping label, or label[for] with text (HTML-AAM).
+  const labels = []; (function walk(box) { if (box.tag === 'label') labels.push(box); for (const child of box.children ?? []) walk(child); })(root);
+  const ancestorsOf = path => { const out = []; for (let p = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : ''; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') { const box = boxOf.get(p); if (box) out.push(box); } return out; };
+  const boxOf = new Map(); (function walk(box) { boxOf.set(box.path, box); for (const child of box.children ?? []) walk(child); })(root);
+  for (const row of geometry.filter(row => field(row.box) && visible(row) && !hiddenFrom(row.path) && !['submit', 'reset', 'button', 'image'].includes(row.box.inputType))) {
+    const box = row.box;
+    const name = nameOf(box);
+    const wrapped = ancestorsOf(row.path).find(a => a.tag === 'label');
+    const pointed = box.id ? labels.filter(l => l.labelFor === box.id) : [];
+    const dynamic = name === 'dynamic' || box.inputType === 'dynamic' || labels.some(l => l.labelFor === 'dynamic');
+    if (name === true) continue;
+    // A label names its field only where the label's text renders and is visible (Chromium; unlike aria-labelledby).
+    let missing = [row.region];
+    for (const label of [wrapped, ...pointed].filter(Boolean)) for (const text of geometry.filter(t => speaks(t) && t.box !== box && (t.path === label.path || isAncestor(label.path, t.path)) && !isAncestor(box.path, t.path)))
+      missing = missing.flatMap(region => subtract(region, text.region));
+    for (const region of missing) {
+      if (dynamic) report(unknowns, 'U_A11Y_LABEL', 'unknown', `${box.label}: a dynamic name, type or label[for] decides whether it is labelled`, row, region, { rule: 'form-label' });
+      else if (box.placeholder) report(warnings, 'W_A11Y_PLACEHOLDER_LABEL', 'warning', `${box.label} is named only by its placeholder here, which disappears on input`, row, region, { rule: 'form-label' });
+      else report(findings, 'E_A11Y_LABEL', 'error', `${box.label} has no label here: add a visible <label>, aria-label, aria-labelledby or title`, row, region, { rule: 'form-label' });
+    }
+  }
+  // label-for: the id must name a labelable element (button, input other than hidden, select, textarea, output).
+  const labelable = box => box && (['button', 'select', 'textarea', 'output'].includes(box.tag) || (box.tag === 'input' && box.inputType !== 'hidden'));
+  for (const label of labels.filter(l => l.labelFor !== undefined)) {
+    if (label.labelFor === 'dynamic') { report(unknowns, 'U_A11Y_LABEL_FOR', 'unknown', `${label.label}: a dynamic for= may name no field`, whole(label), domain, { rule: 'label-for' }); continue; }
+    if (!labelable(byId.get(label.labelFor))) report(findings, 'E_A11Y_LABEL_FOR', 'error', `${label.label} is for ${JSON.stringify(label.labelFor)}, which is not a labelable element`, whole(label), domain, { rule: 'label-for', reference: label.labelFor });
   }
 
   // target-size: SC 2.5.8 (AA, 24px, with the spacing exception) or SC 2.5.5 (AAA, 44px, no spacing exception).

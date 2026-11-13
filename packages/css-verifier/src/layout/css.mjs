@@ -218,7 +218,7 @@ const textInitial = { 'font-family': 'ua-default', 'font-size': 'medium', 'line-
 
 export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
   const values = {
-    display: ['span', 'a', 'strong', 'em', 'b', 'i', 'small', 'output', 'label'].includes(box.tag) ? 'inline' : 'block',
+    display: ['span', 'a', 'strong', 'em', 'b', 'i', 'small', 'output', 'label', 'img'].includes(box.tag) ? 'inline' : 'block',
     'box-sizing': 'content-box', 'inline-size': 'auto', 'min-inline-size': 'auto', 'max-inline-size': 'none',
     'padding-left': '0', 'padding-right': '0', 'border-left': '0', 'border-right': '0',
     'padding-top': '0', 'padding-bottom': '0', 'border-top': '0', 'border-bottom': '0',
@@ -240,7 +240,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
     ...Object.fromEntries(textProperties.map(key => [key, inherited[key] ?? textInitial[key]])),
   };
   const defaults={...values};
-  if(box.tag==='button') {
+  if(['button', 'input', 'select', 'textarea'].includes(box.tag)) {
     for(const side of ['left','right','top','bottom']) {values[`padding-${side}`]='ua';values[`border-${side}`]='ua';}
     for(const key of ['display','box-sizing','min-inline-size','min-block-size']) values[key]='ua';
   }

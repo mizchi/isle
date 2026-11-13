@@ -23,7 +23,13 @@
     "scrollable-region-focusable",
     "reflow",
     "focus-obscured",
-    "focus-area"
+    "focus-area",
+    "pointer-disabled",
+    "small-text",
+    "target-size",
+    "image-alt",
+    "form-label",
+    "label-for"
   ],
   "scope": "Static accessibility rules vs the browser (AX tree names, hit testing, focus, rects, computed colors; vlmkit a11y contrast at 1280).",
   "cases": [
@@ -116,6 +122,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -202,6 +238,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -301,6 +367,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -394,6 +490,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -484,6 +610,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -568,6 +724,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -663,6 +849,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -749,6 +965,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -848,6 +1094,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -941,6 +1217,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -1031,6 +1337,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1115,6 +1451,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -1214,6 +1580,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1304,6 +1700,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -1409,6 +1835,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1505,6 +1961,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -1602,6 +2088,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1690,6 +2206,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -1791,6 +2337,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1883,6 +2459,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -1984,6 +2590,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2076,6 +2712,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -2199,6 +2865,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2313,6 +3009,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -2410,6 +3136,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2498,6 +3254,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -2595,6 +3381,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2683,6 +3499,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -2778,6 +3624,36 @@
           [],
           [],
           []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2864,6 +3740,36 @@
           []
         ],
         "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
           [],
           [],
           []
@@ -2973,6 +3879,42 @@
           [
             "Page/1"
           ]
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3075,6 +4017,2086 @@
           ],
           [
             "Page/1"
+          ]
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "disabled-pointer-and-fine-print",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "small-text": [
+          [],
+          [
+            "Page/2"
+          ],
+          [
+            "Page/2"
+          ]
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "small-text": [
+          [],
+          [
+            "Page/2"
+          ],
+          [
+            "Page/2"
+          ]
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "tight-icon-row",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [
+            "Page/0",
+            "Page/1",
+            "Page/2"
+          ],
+          [
+            "Page/0",
+            "Page/1",
+            "Page/2"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [
+            "Page/0",
+            "Page/1",
+            "Page/2"
+          ],
+          [
+            "Page/0",
+            "Page/1",
+            "Page/2"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "icon-beside-full-button",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          [
+            "Page/0"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          [
+            "Page/0"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "stacked-small-links",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          [
+            "Page/0",
+            "Page/1"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          [
+            "Page/0",
+            "Page/1"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "icon-with-equivalent",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/0",
+            "Page/1"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/0",
+            "Page/1"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "aaa-forty-pixel-buttons",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "images-and-image-links",
+      "static": {
+        "accessible-name": [
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ]
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ]
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "form-fields",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ]
+        ],
+        "target-overlap": [
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ]
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [
+            "Page/3",
+            "Page/4"
+          ],
+          [
+            "Page/3",
+            "Page/4"
+          ],
+          [
+            "Page/1",
+            "Page/3",
+            "Page/4"
+          ]
+        ],
+        "label-for": [
+          [
+            "Page/7"
+          ],
+          [
+            "Page/7"
+          ],
+          [
+            "Page/7"
+          ]
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ]
+        ],
+        "target-overlap": [
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ]
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [
+            "Page/3",
+            "Page/4"
+          ],
+          [
+            "Page/3",
+            "Page/4"
+          ],
+          [
+            "Page/1",
+            "Page/3",
+            "Page/4"
+          ]
+        ],
+        "label-for": [
+          [
+            "Page/7"
+          ],
+          [
+            "Page/7"
+          ],
+          [
+            "Page/7"
           ]
         ]
       }
