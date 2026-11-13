@@ -23,14 +23,15 @@
 //   focus-area       → E_A11Y_FOCUS_AREA        a visible focusable box with a zero-size border box
 //   pointer-disabled → E_A11Y_POINTER_DISABLED  a visible button/link that pointer-events: none makes unclickable
 //   small-text       → W_A11Y_SMALL_TEXT        rendered text below 12px
+//   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, width as domainWidth } from './region.mjs';
-import { q } from './linear.mjs';
+import { q, add, mul, cmp, div } from './linear.mjs';
 import { intersect } from './integrity.mjs';
 
 export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable',
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
-  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text'];
+  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -161,7 +162,59 @@ function overlap(a, b) {
   return region;
 }
 
-export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', ranges, block, viewportMin }) {
+// --- circles (SC 2.5.8 spacing) -------------------------------------------
+// Rational unit normals in the first quadrant (Pythagorean triples), at most
+// about 2.5° apart. The circle of radius r lies between the polygon
+// {n·p < r·c} (c a rational lower bound of cos(gap/2): inside the circle) and
+// {n·p < r} (circumscribed: outside it, the point is outside the circle).
+const normals = (() => {
+  const found = [[q(1), q(0), 0], [q(0), q(1), Math.PI / 2]];
+  for (let k = 1; k < 36; k++) {
+    const target = k * Math.PI / 72;
+    let best = null;
+    for (let m = 2; m <= 80; m++) for (let n = 1; n < m; n++) {
+      const angle = Math.atan2(2 * m * n, m * m - n * n);
+      if (!best || Math.abs(angle - target) < Math.abs(best.angle - target)) best = { m, n, angle };
+    }
+    const d = BigInt(best.m * best.m + best.n * best.n);
+    found.push([div(q(best.m * best.m - best.n * best.n), q(Number(d))), div(q(2 * best.m * best.n), q(Number(d))), best.angle]);
+  }
+  found.sort((a, b) => a[2] - b[2]);
+  let gap = 0; for (let i = 1; i < found.length; i++) gap = Math.max(gap, found[i][2] - found[i - 1][2]);
+  return { list: found.map(([a, b]) => [a, b]), cosine: q((Math.floor(Math.cos(gap / 2) * 1e6) - 1) / 1e6) };
+})();
+const isZero = a => !cmp(a.x, q(0)) && !cmp(a.y, q(0)) && !cmp(a.b, q(0));
+const isConstant = a => !cmp(a.x, q(0)) && !cmp(a.y, q(0));
+/**
+ * Where the point (dx, dy) — affine in the viewport — is strictly inside the
+ * circle of radius r: {yes} proven inside, {maybe} not decided (a thin band
+ * at the circle when both offsets vary). Exact when an offset is constant zero
+ * or both are constants.
+ */
+export function circleReach(region, dx, dy, r) {
+  const yes = [], maybe = [];
+  for (const [sx, px] of [[1, dx], [-1, times(dx, q(-1))]]) {
+    const a = sx > 0 ? clip(region, px) : clip(region, px, true); // |dx| as px ≥ 0
+    if (!a) continue;
+    for (const [sy, py] of [[1, dy], [-1, times(dy, q(-1))]]) {
+      const piece = sy > 0 ? clip(a, py) : clip(a, py, true);
+      if (!piece) continue;
+      if (isConstant(px) && isConstant(py)) {
+        if (cmp(add(mul(px.b, px.b), mul(py.b, py.b)), mul(r, r)) < 0) yes.push(piece);
+        continue;
+      }
+      if (isZero(px) || isZero(py)) { const one = below(piece, isZero(px) ? py : px, scalar(r)); if (one) yes.push(one); continue; }
+      const dot = ([na, nb]) => sum(times(px, na), times(py, nb));
+      let inner = piece, outer = piece;
+      for (const n of normals.list) { inner = inner && below(inner, dot(n), scalar(mul(r, normals.cosine))); outer = outer && below(outer, dot(n), scalar(r)); }
+      if (inner) yes.push(inner);
+      if (outer) maybe.push(...(inner ? subtract(outer, inner) : [outer]));
+    }
+  }
+  return { yes, maybe };
+}
+
+export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', targetSize = 24, ranges, block, viewportMin }) {
   const findings = [], warnings = [], unknowns = [], notes = [];
   const witness = region => { const p = sample(region); return { viewport: number(p.x), viewportExact: exact(p.x), ...(block ? { viewportHeight: number(p.y), viewportHeightExact: exact(p.y) } : {}) }; };
   const report = (list, code, severity, message, row, region, extra) => list.push({ code, severity, message, box: row.box.label, path: row.path, source: row.box.source, ...ranges(region), witness: witness(region), ...extra });
@@ -367,6 +420,48 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   for (const row of geometry.filter(row => row.box.text && visible(row))) {
     const size = px(row.paint.fontSize);
     if (size !== undefined && size < 12) report(warnings, 'W_A11Y_SMALL_TEXT', 'warning', `${row.box.label} is set at ${size}px`, row, row.region, { rule: 'small-text', fontSize: size });
+  }
+
+  // target-size (SC 2.5.8): an undersized target passes when its 24px circle stays clear.
+  const S = q(targetSize), radius = div(S, q(2));
+  const center = row => ({ inline: sum(row.origin.inline, times(row.inline, q(1 / 2))), block: sum(row.origin.block, times(row.block, q(1 / 2))) });
+  const undersized = row => { const narrow = below(row.region, row.inline, scalar(S)), wide = row.region && clip(row.region, diff(row.inline, scalar(S))); return [narrow, below(wide, row.block, scalar(S))].filter(Boolean); };
+  const exposed = geometry.filter(row => interactive(row) && visible(row) && !hiddenFrom(row.path));
+  for (const target of exposed) {
+    const small = undersized(target);
+    if (!small.length) continue;
+    if (!target.origin) { for (const region of small) report(unknowns, 'U_A11Y_TARGET_SIZE', 'unknown', `${target.box.label} is under ${targetSize}px and its position is not proved, so the spacing exception cannot be checked`, target, region, { rule: 'target-size' }); continue; }
+    const hits = [], doubtful = [];
+    for (const other of exposed) {
+      if (related(other.path, target.path)) continue;
+      for (const piece of small) {
+        const shared = intersect(piece, other.region);
+        if (!shared) continue;
+        if (!other.origin) { doubtful.push({ region: shared, other }); continue; }
+        // The circle against the other target's box: offset to the nearest point of the box.
+        const c = center(target), left = other.origin.inline, top = other.origin.block, r = right(other), b = bottom(other);
+        const axis = (value, low, high) => [[clip(shared, diff(low, value), true), diff(low, value)], [atMost(clip(shared, diff(value, low)), value, high), scalar(0)], [clip(shared, diff(value, high), true), diff(value, high)]];
+        for (const [xs, dx] of axis(c.inline, left, r)) if (xs) for (const [ys, dy] of axis(c.block, top, b)) {
+          const part = ys && intersect(xs, ys);
+          if (!part) continue;
+          const reach = circleReach(part, dx, dy, radius);
+          hits.push(...reach.yes.map(region => ({ region, other }))); doubtful.push(...reach.maybe.map(region => ({ region, other })));
+        }
+        // Two undersized circles meet when the centres are closer than the target size.
+        for (const otherSmall of undersized(other)) {
+          const both = intersect(shared, otherSmall);
+          if (!both) continue;
+          const d = center(other), reach = circleReach(both, diff(c.inline, d.inline), diff(c.block, d.block), S);
+          hits.push(...reach.yes.map(region => ({ region, other }))); doubtful.push(...reach.maybe.map(region => ({ region, other })));
+        }
+      }
+    }
+    // Keep the largest proven pieces; undecided bands only matter where nothing is proven.
+    // h ⊆ g exactly: no point of h violates a constraint of g (strictness included).
+    const within = (h, g) => g.constraints.every(c => !clip(h, times(c.slack, q(-1)), !c.strict));
+    const kept = hits.filter((h, i) => !hits.some((g, j) => j !== i && within(h.region, g.region) && (!within(g.region, h.region) || j < i)));
+    for (const hit of kept) report(findings, 'E_A11Y_TARGET_SIZE', 'error', `${target.box.label} is under ${targetSize}px and its ${targetSize}px circle meets ${hit.other.box.label}`, target, hit.region, { rule: 'target-size', other: hit.other.path });
+    if (!kept.length) for (const piece of doubtful) report(unknowns, 'U_A11Y_TARGET_SIZE', 'unknown', `${target.box.label} is under ${targetSize}px and its circle's distance to ${piece.other.box.label} is not decided here`, target, piece.region, { rule: 'target-size', other: piece.other.path });
   }
 
   return { findings: dedupe(findings), warnings: dedupe(warnings), unknowns: dedupe(unknowns), notes };

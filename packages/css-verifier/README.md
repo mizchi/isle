@@ -108,7 +108,10 @@ box tree (`named`, `labelledBy`, `references`, `ariaHidden`, `focusable`,
 geometry: accessible names, text contrast, occluded and overlapping targets,
 focusable content under aria-hidden, headings, nested interactive elements,
 duplicate ids and dangling references, focusable scroll regions, reflow at
-320px, obscured focus, zero-size focus and pointer-disabled targets are errors;
+320px, obscured focus, zero-size focus, pointer-disabled targets and SC 2.5.8
+target size (with the 24px-circle spacing exception, decided exactly for
+constant or single-axis offsets and between inner and outer polygons
+otherwise) are errors;
 visual order, positive tabindex, multiple main landmarks and text below 12px
 are warnings (`report.accessibility.warnings`). Contrast follows ADR-0007: no
 implicit black-on-white, and images, opacity or undeclared colors are Unknown.

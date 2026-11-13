@@ -1,6 +1,6 @@
 # ADR-0013: DOM と CSS を組み合わせた静的アクセシビリティ検査
 
-- 状態: 実装中(19規則、HTML adapter・Isle template・Vite に接続)
+- 状態: 実装中(20規則、HTML adapter・Isle template・Vite・playground に接続)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: ユーザー指示「思いつく限りのCSSとDOMを組み合わせた静的検査パターンを実装したい」。ADR-0007(静的コントラスト契約)の text-contrast を含む
@@ -39,6 +39,20 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | focus-area | 可視のフォーカス可能な box の幅か高さが 0 | E_A11Y_FOCUS_AREA |
 | pointer-disabled | 可視の button/link が継承した `pointer-events: none` でクリックできない | E_A11Y_POINTER_DISABLED |
 | small-text | 描画される文字が 12px 未満 | W_A11Y_SMALL_TEXT(警告) |
+| target-size | SC 2.5.8:24px 未満の操作対象で、border box の中心に置いた 24px の円が他の操作対象の box か、他の小さい対象の円と交わる(spacing 例外を満たさない) | E_A11Y_TARGET_SIZE |
+
+### target-size の円(非線形)の扱い
+
+円との交差は距離の2乗の比較で、viewport の affine 式の2次式になる。領域は有理数の凸多角形なので、次のように決める。
+
+- 2つの中心の差(または中心から相手の box の最も近い点までの差)の両成分が viewport に依らない定数なら、有理数で2乗を厳密に比較する。
+- 片方の成分が恒等的に0なら、もう一方の絶対値と半径の線形比較で厳密に決まる(横一列や縦一列の配置)。
+- 両成分が変わるときは、ピタゴラス数で作った有理単位法線(第1象限で約2.5°間隔)の多角形で円を内側と外側から挟む。
+  内側の多角形 `n·p < r·c`(c は cos(間隔/2) の有理の下界)に入れば交わり、外側の多角形 `n·p < r` の外なら交わらない。
+  間の帯(幅 0.01px 未満)は、同じ対象に証明した違反がなければ Unknown にする。
+
+他の例外(文中の inline、同じ機能の別の対象、UA の control、本質的な配置)はモデルにない。`accessibility.targetSize` で 24 以外の寸法も指定できる。
+ADR-0012 の target-undersized(vlmkit と同じく spacing を考えない)とは別の規則である。
 
 違反は checks の義務ではないため、Z3 のモデルにはその違反領域が空でないことの確認として入る(`rule` を持つ診断)。
 
@@ -77,10 +91,10 @@ ADR-0007 の制約に従う。
 
 | 検査 | 内容 |
 | --- | --- |
-| `packages/css-verifier/test/accessibility.test.mjs` | 24件。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
+| `packages/css-verifier/test/accessibility.test.mjs` | 28件(円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
 | `tests/layout-accessibility.test.mjs` | Isle template の静的・動的な属性 |
 | `tests/layout-build.test.mjs` | Vite の `layout.accessibility`:名前のない button で build が失敗し、証明書に契約が残る |
-| `e2e/layout-accessibility.spec.mjs` | 17構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
+| `e2e/layout-accessibility.spec.mjs` | 20構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
 
 結果は `evals/results/layout-accessibility/report.json` に残る。
 
@@ -88,4 +102,4 @@ ADR-0007 の制約に従う。
 
 1. playground の preset と、Isle の例(`examples/layout-contracts`)。
 2. form control とラベル、`img` の代替テキスト(要素の対応が先に必要)。
-3. 2.5.8 の spacing 例外(円の距離を区間で上下から挟む)。
+3. 2.5.8 の他の例外(inline・equivalent)と AAA(2.5.5、44px)。

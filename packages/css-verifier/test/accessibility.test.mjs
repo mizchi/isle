@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -258,4 +258,50 @@ test('small-text: rendered text below 12px is a warning', () => {
   const report = run(card, cardCSS('.card { background: #fff; color: #000; }\n@media (width < 500px) { .t { font-size: 11px; } }'), {boxes: cardBoxes});
   const [warning] = report.accessibility.warnings.filter(w => w.code === 'W_A11Y_SMALL_TEXT');
   assert.equal(warning.range.maxExact, '500');
+});
+
+// target-size (WCAG 2.2 SC 2.5.8): 24px, or the spacing exception — a 24px circle centred on each
+// undersized target meets no other target and no other undersized target's circle.
+const row = (gap, extra = '') => run({tag: 'main', classes: ['row'], children: [{tag: 'button', classes: ['a'], named: true}, {tag: 'button', classes: ['b'], named: true}]},
+  `.row { display: flex; column-gap: ${gap}px; block-size: 20px; }\n.a, .b { appearance: none; display: block; flex: none; width: 20px; height: 20px; padding: 0; border: 0; min-width: 0; min-height: 0; }\n${extra}`);
+
+test('target-size: undersized targets pass when their 24px circles are apart', () => {
+  // Centres 20 + gap apart: circles meet below a 4px gap.
+  assert.deepEqual(find(row(2), 'E_A11Y_TARGET_SIZE').map(d => d.box).sort(), ['.a', '.b']);
+  assert.equal(find(row(4), 'E_A11Y_TARGET_SIZE').length, 0); // touching circles do not intersect
+  assert.equal(find(row(3.99), 'E_A11Y_TARGET_SIZE').length, 2);
+  // 24px targets need no spacing.
+  assert.equal(find(row(0, '.a, .b { width: 24px; height: 24px; }\n.row { block-size: 24px; }'), 'E_A11Y_TARGET_SIZE').length, 0);
+});
+
+test('target-size: one undersized target next to a full-size one', () => {
+  // .a is 20px, .b 24px: .a's circle (r 12) reaches .b's box when the gap is below 2px.
+  const report = row(1, '.b { width: 24px; height: 24px; }\n.row { block-size: 24px; align-items: flex-start; }');
+  assert.deepEqual(find(report, 'E_A11Y_TARGET_SIZE').map(d => d.box), ['.a']);
+  assert.equal(find(row(2, '.b { width: 24px; height: 24px; }\n.row { block-size: 24px; align-items: flex-start; }'), 'E_A11Y_TARGET_SIZE').length, 0);
+});
+
+test('target-size: spacing that depends on the viewport is decided exactly along one axis', () => {
+  // space-between: the second button sits at V - 20, so the centres are V - 20 apart; circles meet while V < 44.
+  const report = run({tag: 'main', classes: ['row'], children: [{tag: 'button', classes: ['a'], named: true}, {tag: 'button', classes: ['b'], named: true}]},
+    '.row { display: flex; justify-content: space-between; block-size: 20px; }\n.a, .b { appearance: none; display: block; flex: none; width: 20px; height: 20px; padding: 0; border: 0; min-width: 0; min-height: 0; }\n',
+    {viewport: {min: 40, max: 400, height: {min: 100, max: 400}}});
+  const findings = find(report, 'E_A11Y_TARGET_SIZE');
+  // One piece per target up to 44 (open), plus the flex case V = 40 where the free space is zero.
+  assert.deepEqual(findings.filter(d => d.range.maxExact === '44' && d.range.maxInclusive === false).map(d => d.box).sort(), ['.a', '.b']);
+  for (const finding of findings) assert.ok(finding.range.max <= 44);
+  assert.notEqual(report.status, 'unknown');
+});
+
+test('circle approximation: proven hits lie inside the circle, proven misses outside', async () => {
+  const {circleReach} = await import('../src/layout/accessibility.mjs');
+  const {rectangle, scalar, width, height, diff, evaluate} = await import('../src/layout/region.mjs');
+  const {q, number} = await import('../src/layout/linear.mjs');
+  // A point moving with the viewport on both axes: (x - 100, y - 100) against radius 12.
+  const region = rectangle({min: q(80), max: q(120)}, {min: q(80), max: q(120)});
+  const {yes, maybe} = circleReach(region, diff(width, scalar(100)), diff(height, scalar(100)), q(12));
+  const distance = (r, p) => Math.hypot(number(evaluate(diff(width, scalar(100)), p)), number(evaluate(diff(height, scalar(100)), p)));
+  for (const piece of yes) for (const p of piece.vertices) assert.ok(distance(piece, p) <= 12 + 1e-9);
+  // The undecided band is thin: every maybe vertex is within 0.05px of the circle.
+  for (const piece of maybe) for (const p of piece.vertices) assert.ok(Math.abs(distance(piece, p) - 12) < 0.05, String(distance(piece, p)));
 });

@@ -51,8 +51,14 @@ const cases = [
     css: `.panel{display:grid;grid-template-columns:100px 0px minmax(0,1fr);grid-template-rows:40px;position:relative;background:#fff}.go,.zero{${button}}.sheet{position:absolute;top:0;left:0;inline-size:120px;block-size:40px;background:#eee}@media (width < 600px){.sheet{inline-size:50px}}`},
   {name: 'disabled-pointer-and-fine-print', html: '<main class="bar"><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><p class="fine">Fine print</p></main>',
     css: `.bar{display:grid;grid-template-columns:40px 40px minmax(0,1fr);grid-template-rows:40px;background:#fff;color:#000;pointer-events:none;${type}}.b1,.b2{${button}}.b2{pointer-events:auto}.fine{font-size:11px}@media (width >= 900px){.fine{font-size:14px}}`, boxes: {'.fine': label}},
+  {name: 'tight-icon-row', html: '<main class="row"><button class="i1" aria-label="A"></button><button class="i2" aria-label="B"></button><button class="i3" aria-label="C"></button></main>',
+    css: `.row{display:flex;column-gap:2px;block-size:20px}.i1,.i2,.i3{${button}flex:none;width:20px;height:20px}@media (width >= 900px){.row{column-gap:4px}}`},
+  {name: 'icon-beside-full-button', html: '<main class="row"><button class="i" aria-label="A"></button><button class="f" aria-label="B"></button></main>',
+    css: `.row{display:flex;column-gap:1px;align-items:flex-start;block-size:24px}.i,.f{${button}flex:none}.i{width:20px;height:20px}.f{width:24px;height:24px}@media (width >= 600px){.row{column-gap:2px}}`},
+  {name: 'stacked-small-links', html: '<main class="list"><a class="l1" href="#1" aria-label="One"></a><a class="l2" href="#2" aria-label="Two"></a></main>',
+    css: '.list{display:grid;grid-template-columns:120px;grid-template-rows:16px 16px;row-gap:6px}.l1,.l2{display:block}@media (width >= 700px){.list{row-gap:10px}}'},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size'];
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
   && (!row.heightRange || (height >= row.heightRange.min && height <= row.heightRange.max));
 
@@ -170,6 +176,22 @@ async function runtime(page, sample) {
   });
   for (const path of pointer.disabled) found.get('pointer-disabled').add(path);
   for (const path of pointer.small) found.get('small-text').add(path);
+  // SC 2.5.8 with the spacing exception, from the rendered rects.
+  const spacing = await page.evaluate(() => {
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible' && !node.closest('[aria-hidden="true"]'); };
+    const targets = [...document.body.firstElementChild.querySelectorAll('a[href], button'), ...(document.body.firstElementChild.matches('a[href], button') ? [document.body.firstElementChild] : [])].filter(shown).map(n => ({n, r: n.getBoundingClientRect()}));
+    const small = t => t.r.width < 24 || t.r.height < 24, centre = t => [t.r.x + t.r.width / 2, t.r.y + t.r.height / 2];
+    const out = [];
+    for (const t of targets.filter(small)) {
+      const [cx, cy] = centre(t);
+      const hit = targets.some(o => o !== t && !o.n.contains(t.n) && !t.n.contains(o.n) && (Math.hypot(Math.max(o.r.left - cx, 0, cx - o.r.right), Math.max(o.r.top - cy, 0, cy - o.r.bottom)) < 12
+        || (small(o) && Math.hypot(cx - centre(o)[0], cy - centre(o)[1]) < 24)));
+      if (hit) out.push(pathOf(t.n));
+    }
+    return out;
+  });
+  for (const path of spacing) found.get('target-size').add(path);
   // Contrast from computed colors, composited over the ancestors like the WCAG definition.
   const low = await page.evaluate(() => {
     const parse = value => { const m = value.match(/[\d.]+/g).map(Number); return {r: m[0], g: m[1], b: m[2], a: m[3] ?? 1}; };
