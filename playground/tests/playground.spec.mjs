@@ -76,6 +76,133 @@ test('CSS variables reach Z3 Wasm with inherited values, cycle diagnostics and f
   await page.locator('#source').fill(source.replace('--cell: 40px','--cell: var(--cell)').replace('min-width: var(--cell)','min-width: var(--cell, 40px)'));
   await expect(page.locator('#layout-status')).toContainText('Verified');
 });
+
+test('source noshift verifies finite states in browser Z3 and flags moving targets',async({page})=>{
+  await page.goto('/');await expect(page.getByRole('status')).toContainText('Ready');await page.locator('#preset').selectOption('layoutNoShift');
+  await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});
+  await expect(page.locator('#verify-layout')).toBeDisabled();
+  await page.locator('#output-kind').selectOption('layout');
+  await expect(page.locator('#output')).toContainText('"noshift"');
+  await expect(page.locator('#output')).toContainText('"planned": 2');
+  for(const width of [390,1440]) {
+    await page.setViewportSize({width,height:960});
+    await page.locator('#preview').scrollIntoViewIfNeeded();
+    await preview(page).getByRole('button',{name:'Toggle panel'}).scrollIntoViewIfNeeded();
+    await expect(preview(page).getByRole('button',{name:'Toggle panel'})).toBeVisible();
+    await page.screenshot({path:test.info().outputPath(`noshift-verified-${width}.png`),fullPage:true});
+  }
+  const action=preview(page).getByRole('button',{name:'Toggle panel'});
+  const before=await action.boundingBox();await action.click();
+  await expect(preview(page).locator('.content')).toHaveClass(/expanded/);
+  const after=await action.boundingBox();expect(after.y).toBe(before.y);
+  const source=await page.locator('#source').inputValue();
+  await page.locator('#source').fill(source.replace('height:80px;display:grid','display:grid'));
+  await expect(page.locator('#layout-status')).toContainText('Violated',{timeout:30000});
+  await expect(page.locator('#layout-status')).toContainText('E_NOSHIFT_BLOCK_START');
+  await page.screenshot({path:test.info().outputPath('noshift-violated.png'),fullPage:true});
+  await page.locator('#output-kind').selectOption('smt');
+  await expect(page.locator('#output')).toContainText('Noshift Panel');
+  await page.locator('#source').fill(source.replace('noshift ".action"','noshift ".missing"'));
+  await expect(page.locator('#layout-status')).toContainText('Unknown');
+  await expect(page.locator('#layout-status')).toContainText('needs exactly one');
+  await page.screenshot({path:test.info().outputPath('noshift-unknown.png'),fullPage:true});
+});
+
+test('keyed noshift follows resumed row identity and detects movement after reorder',async({page})=>{
+  await page.goto('/');await expect(page.getByRole('status')).toContainText('Ready');
+  await page.locator('#preset').selectOption('layoutNoShiftKeys');
+  await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});
+  await page.locator('#output-kind').selectOption('layout');
+  await expect(page.locator('#output')).toContainText('"identities"');
+  const source=await page.locator('#source').inputValue(),rows=preview(page).locator('.list > div');
+  const first=await rows.first().elementHandle(),before=await first.boundingBox();
+  await preview(page).getByRole('button',{name:'Reorder rows'}).click();
+  await expect(rows.first()).toHaveAttribute('data-id','b');
+  expect(await rows.last().evaluate((node,original)=>node===original,first)).toBe(true);
+  expect((await first.boundingBox()).y).toBe(before.y);
+  for(const width of [390,1440]) {
+    await page.setViewportSize({width,height:960});
+    await page.locator('#preview').scrollIntoViewIfNeeded();
+    await preview(page).getByRole('button',{name:'Reorder rows'}).scrollIntoViewIfNeeded();
+    await page.screenshot({path:test.info().outputPath(`noshift-keys-${width}.png`),fullPage:true});
+  }
+  const moving=source.replace('grid-column:1;grid-row:1;','').replace('grid-column:1;grid-row:2;','');
+  await page.locator('#source').fill(moving);
+  await expect(page.locator('#layout-status')).toContainText('Violated',{timeout:30000});
+  await expect(page.locator('#layout-status')).toContainText('E_NOSHIFT_BLOCK_START');
+  const row=await preview(page).locator('[data-id="a"]').elementHandle(),start=await row.boundingBox();
+  await preview(page).getByRole('button',{name:'Reorder rows'}).click();
+  await expect(rows.first()).toHaveAttribute('data-id','b');
+  expect((await row.boundingBox()).y-start.y).toBe(40);
+  await page.screenshot({path:test.info().outputPath('noshift-keys-violated.png'),fullPage:true});
+});
+
+test('DOM noshift requirements survive class changes and cannot be disabled by CSS',async({page})=>{
+  await page.goto('/');await expect(page.getByRole('status')).toContainText('Ready');
+  await page.locator('#preset').selectOption('layoutNoShiftDOM');
+  await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});
+  await expect(page.locator('#verify-layout')).toBeDisabled();
+  await expect(page.locator('#source').locator('..').locator('.syntax-token--attribute').filter({hasText:'@noshift'})).toHaveText('@noshift');
+  const source=await page.locator('#source').inputValue();
+  await page.locator('#output-kind').selectOption('layout');
+  await expect(page.locator('#output')).toContainText('"nodeId": "Panel.noshift.0"');
+  await page.locator('#source').fill(source.replace('class="action"','class={expanded ? "action active" : "action"}'));
+  await expect(page.locator('#layout-status')).toContainText('Verified');
+  const action=preview(page).getByRole('button',{name:'Toggle panel'});
+  await action.click();await expect(action).toHaveClass(/active/);
+  await page.locator('#source').evaluate(input=>{input.scrollTop=input.scrollHeight;});
+  for(const width of [390,1440]) {
+    await page.setViewportSize({width,height:960});await page.locator('#preview').scrollIntoViewIfNeeded();
+    await expect(action).toBeVisible();await page.screenshot({path:test.info().outputPath(`noshift-dom-${width}.png`),fullPage:true});
+  }
+  await page.locator('#source').fill(source.replace('height:80px;display:grid','display:grid'));
+  await expect(page.locator('#layout-status')).toContainText('E_NOSHIFT_BLOCK_START');
+  await page.locator('#source').fill(source.replace('</style>','.action{display:none}</style>'));
+  await expect(page.locator('#layout-status')).toContainText('E_NOSHIFT_PRESENCE');
+  await page.locator('#source').fill(source.replace('@noshift','@noshift={false}'));
+  await expect(page.locator('#diagnostics')).toContainText('E_LAYOUT_ANNOTATION');
+});
+test('named absolute spaces use padding-box coordinates and validate in Z3 Wasm',async({page})=>{
+  await page.goto('/');await page.locator('#preset').selectOption('layoutPositioned');
+  await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});
+  const source=await page.locator('#source').inputValue();
+  for(const width of [320,641,960]) {
+    await page.locator('#preview').evaluate((frame,width)=>{frame.style.width=`${width}px`;},width);
+    const coordinates=await preview(page).locator('.controls').evaluate(control=>{
+      const map=document.querySelector('.map'),p=map.getBoundingClientRect(),c=control.getBoundingClientRect();
+      return {x:c.left-p.left-map.clientLeft,y:c.top-p.top-map.clientTop,width:p.width};
+    });
+    expect(Math.abs(coordinates.x-(coordinates.width-60))).toBeLessThan(.03);
+    expect(coordinates.y).toBe(180);
+  }
+  await page.locator('#source').fill(source.replace('inset-inline-end: 16px','inset-inline-end: -8px'));
+  await expect(page.locator('#layout-status')).toContainText('Violated');
+  await expect(page.locator('#layout-status')).toContainText('E_LAYOUT_ABSOLUTE_END');
+  await page.locator('#source').fill(source.replace('space map = ".map"','space map = ".surface"'));
+  await expect(page.locator('#layout-status')).toContainText('Violated');
+  await page.locator('#source').fill(source.replace('position: relative','position: relative; transform: translateX(1px)'));
+  await expect(page.locator('#layout-status')).toContainText('Unknown');
+});
+test('child coordinate spaces transfer allocation and keep their private overlays local',async({page})=>{
+  await page.goto('/');await page.locator('#preset').selectOption('layoutPositionedComponents');
+  await expect(page.locator('#layout-status')).toContainText('Verified',{timeout:30000});
+  const frame=preview(page),panel=frame.locator('.map-panel');
+  await expect(panel).toHaveCSS('width','160px');
+  await expect(panel).toHaveCSS('height','120px');
+  expect(await panel.evaluate(el=>el.parentElement.classList.contains('map'))).toBe(true);
+  const geometry=await frame.locator('.panel-knob').evaluate(knob=>{
+    const inner=document.querySelector('.panel-content'),p=inner.getBoundingClientRect(),c=knob.getBoundingClientRect();
+    return {x:c.left-p.left-inner.clientLeft,y:c.top-p.top-inner.clientTop,owner:knob.offsetParent.classList.contains('panel-content')};
+  });
+  expect(geometry).toEqual({x:108,y:68,owner:true});
+  const source=await page.locator('#source').inputValue();
+  await page.locator('#output-kind').selectOption('layout');
+  await expect(page.locator('#output')).toContainText('"placementTransfers"');
+  await page.locator('#source').fill(source.replace('160px..240px','161px..240px'));
+  await expect(page.locator('#layout-status')).toContainText('Violated');
+  await expect(page.locator('#layout-status')).toContainText('E_LAYOUT_CHILD_REQUIRES');
+  await page.locator('#source').fill(source);await expect(page.locator('#layout-status')).toContainText('Verified');
+});
 test('owned inline CSS stays separate across server/client components after resume',async({page})=>{
   await page.goto('/');await page.locator('#preset').selectOption('styled');
   const frame=preview(page),child=frame.locator('[data-styled-child]'),parent=frame.locator('[data-styled-parent]');

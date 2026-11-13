@@ -1,0 +1,235 @@
+{
+  "version": 1,
+  "passed": true,
+  "scope": "noshift/1 endpoint presence and root-relative border-rectangle equality over a continuous viewport domain",
+  "oracle": null,
+  "limits": [
+    "trusted CSS/box extraction and content bounds",
+    "same viewport and root origin at both endpoints",
+    "one concrete case per endpoint",
+    "no scroll/subgrid coordinate frames",
+    "intermediate frames, paint, text and CLS not proved"
+  ],
+  "cases": [
+    {
+      "name": "unreserved",
+      "status": "violated",
+      "coverage": "verified",
+      "change": {
+        "target": "target",
+        "field": "blockStart",
+        "beforePath": "Page/1",
+        "afterPath": "Page/1",
+        "before": {
+          "value": 32,
+          "exact": "32"
+        },
+        "after": {
+          "value": 88,
+          "exact": "88"
+        },
+        "delta": {
+          "value": 56,
+          "exact": "56"
+        }
+      },
+      "witness": {
+        "obligationIndex": 2,
+        "code": "E_NOSHIFT_BLOCK_START",
+        "box": "target",
+        "path": "Page/1",
+        "axis": "block",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240",
+        "available": 32,
+        "availableExact": "32",
+        "required": 88,
+        "requiredExact": "88"
+      }
+    },
+    {
+      "name": "reserved",
+      "status": "verified",
+      "coverage": "verified"
+    },
+    {
+      "name": "fixed-frame-only",
+      "status": "verified",
+      "coverage": "verified"
+    },
+    {
+      "name": "fixed-frame-moving-child",
+      "status": "violated",
+      "coverage": "verified",
+      "change": {
+        "target": "target",
+        "field": "blockStart",
+        "beforePath": "Page/1",
+        "afterPath": "Page/1",
+        "before": {
+          "value": 32,
+          "exact": "32"
+        },
+        "after": {
+          "value": 88,
+          "exact": "88"
+        },
+        "delta": {
+          "value": 56,
+          "exact": "56"
+        }
+      },
+      "witness": {
+        "obligationIndex": 2,
+        "code": "E_NOSHIFT_BLOCK_START",
+        "box": "target",
+        "path": "Page/1",
+        "axis": "block",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240",
+        "available": 32,
+        "availableExact": "32",
+        "required": 88,
+        "requiredExact": "88"
+      }
+    },
+    {
+      "name": "fractional-responsive",
+      "status": "violated",
+      "coverage": "verified",
+      "change": {
+        "target": "target",
+        "field": "blockStart",
+        "beforePath": "Page/1",
+        "afterPath": "Page/1",
+        "before": {
+          "value": 32,
+          "exact": "32"
+        },
+        "after": {
+          "value": 32.25,
+          "exact": "129/4"
+        },
+        "delta": {
+          "value": 0.25,
+          "exact": "1/4"
+        }
+      },
+      "witness": {
+        "obligationIndex": 3,
+        "code": "E_NOSHIFT_BLOCK_START",
+        "box": "target",
+        "path": "Page/1",
+        "axis": "block",
+        "viewport": 600,
+        "viewportExact": "600",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240",
+        "available": 32,
+        "availableExact": "32",
+        "required": 32.25,
+        "requiredExact": "129/4"
+      }
+    },
+    {
+      "name": "target-disappears",
+      "status": "violated",
+      "coverage": "verified",
+      "witness": {
+        "obligationIndex": 1,
+        "code": "E_NOSHIFT_PRESENCE",
+        "box": "target",
+        "path": "Page/1",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      }
+    },
+    {
+      "name": "absolute-padding-origin",
+      "status": "violated",
+      "coverage": "verified",
+      "change": {
+        "target": "target",
+        "field": "inlineStart",
+        "beforePath": "Page/0/0",
+        "afterPath": "Page/0/0",
+        "before": {
+          "value": 20,
+          "exact": "20"
+        },
+        "after": {
+          "value": 21,
+          "exact": "21"
+        },
+        "delta": {
+          "value": 1,
+          "exact": "1"
+        }
+      },
+      "witness": {
+        "obligationIndex": 1,
+        "code": "E_NOSHIFT_INLINE_START",
+        "box": "target",
+        "path": "Page/0/0",
+        "axis": "inline",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240",
+        "available": 20,
+        "availableExact": "20",
+        "required": 21,
+        "requiredExact": "21"
+      }
+    },
+    {
+      "name": "unknown-transform",
+      "status": "unknown",
+      "coverage": "unknown",
+      "diagnostics": [
+        {
+          "code": "U_LAYOUT_CSS",
+          "severity": "unknown",
+          "message": "Unsupported layout property: transform",
+          "css": {
+            "file": "<css>",
+            "line": 1
+          }
+        },
+        {
+          "code": "U_NOSHIFT_LAYOUT",
+          "severity": "unknown",
+          "message": "Both endpoint layouts must satisfy their static layout checks"
+        }
+      ]
+    },
+    {
+      "name": "unknown-scroll-frame",
+      "status": "unknown",
+      "coverage": "violated",
+      "witness": {
+        "obligationIndex": 1,
+        "code": "U_NOSHIFT_GEOMETRY",
+        "box": "target",
+        "path": "Page/1",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      },
+      "diagnostics": [
+        {
+          "code": "U_NOSHIFT_GEOMETRY",
+          "severity": "unknown",
+          "message": "Visible target geometry does not cover the full endpoint domain"
+        }
+      ]
+    }
+  ]
+}

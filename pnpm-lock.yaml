@@ -240,6 +240,21 @@ importers:
         specifier: 8.3.5
         version: 8.3.5(esbuild@0.28.2)
 
+  packages/css-verifier:
+    dependencies:
+      css-tree:
+        specifier: 3.2.1
+        version: 3.2.1
+      parse5:
+        specifier: 8.0.1
+        version: 8.0.1
+      postcss:
+        specifier: 8.5.32
+        version: 8.5.32
+      z3-solver:
+        specifier: 5.3.3
+        version: 5.3.3
+
 packages:
 
   '@babel/code-frame@7.29.7':

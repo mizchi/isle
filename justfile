@@ -3,6 +3,23 @@ set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 default:
     @just --list
 
+# Independent static CSS core, isolated package consumer and Isle adapter parity.
+css-verifier-check: check-types
+    node --test tests/css-verifier.test.mjs tests/css-verifier-package.test.mjs tests/css-transitions.test.mjs
+    node packages/css-verifier/examples/responsive.mjs
+
+# Static endpoint relations; no browser is needed to decide the proof.
+noshift-check: build-compiler check-types
+    node --test tests/css-transitions.test.mjs tests/layout-noshift*.test.mjs
+    node evals/scenarios/layout-transitions/check.mjs
+    node evals/scenarios/layout-transitions/declared.mjs
+    node evals/scenarios/layout-transitions/dom.mjs
+    node evals/scenarios/layout-transitions/keys.mjs
+
+# Supplementary browser oracle for analyzer semantics, separate from proof.
+noshift-oracle:
+    node evals/scenarios/layout-transitions/check.mjs --browser-oracle
+
 # Local interactive map: independent async channels, owned Canvas and lazy details.
 async-map-build: build-compiler
     pnpm exec vite build --config examples/async-map/vite.config.mjs
@@ -20,6 +37,26 @@ async-map-input-eval:
 
 async-map-quality: async-map-build
     node tools/check-async-map-quality.mjs
+
+# Proposal evidence only: existing SafeGrid checks and a hand-authored absolute model.
+component-proposal-check: build-compiler
+    node evals/scenarios/component-structure/check-layout.mjs
+    node evals/scenarios/component-structure/check-positioned.mjs
+    pnpm exec vlmkit check integrity evals/scenarios/component-structure/positioned.html --json > evals/results/component-structure/positioned-integrity.json
+
+# Compiled local absolute geometry, delivered-document gates and browser Z3.
+positioned-layout-check: build-compiler check-types
+    node --test tests/layout-positioned.test.mjs tests/layout-declaration-build.test.mjs
+    node evals/scenarios/positioned-layout/check.mjs
+    pnpm exec playwright test --config playwright.playground.config.mjs --grep 'named absolute'
+    pnpm exec vlmkit check integrity evals/results/positioned-layout/preview.html --json > evals/results/positioned-layout/integrity.json
+
+# Private child spaces and explicitly placed component roots; no extra runtime.
+positioned-components-check: build-compiler check-types
+    node --test tests/layout-positioned-components.test.mjs tests/layout-declaration-build.test.mjs
+    node evals/scenarios/positioned-components/check.mjs
+    pnpm exec playwright test --config playwright.playground.config.mjs --grep 'child coordinate'
+    pnpm exec vlmkit check integrity evals/results/positioned-components/preview.html --json > evals/results/positioned-components/integrity.json
 
 build-compiler:
     pnpm build:compiler

@@ -1,0 +1,248 @@
+{
+  "version": 1,
+  "passed": true,
+  "scope": "Finite ordered arrays -> typed key chains and source-site identities -> generic endpoint obligations; no browser",
+  "limits": [
+    "exact finite item/key alternatives required",
+    "same live key is compared across all cases; entire row birth/death is allowed",
+    "same-key remount lifetimes may be conservatively combined",
+    "text/paint/intermediate frames and CLS not proved"
+  ],
+  "runtimeBytes": {
+    "html": 857,
+    "modules": 1566,
+    "css": 713
+  },
+  "runtimeDelta": {
+    "html": 0,
+    "modules": 0,
+    "css": 0
+  },
+  "cases": [
+    {
+      "name": "keyed-explicit-placement",
+      "status": "verified",
+      "variants": 2,
+      "comparisons": {
+        "planned": 2,
+        "checked": 2
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "keyed-reorder-moves",
+      "status": "violated",
+      "variants": 2,
+      "comparisons": {
+        "planned": 2,
+        "checked": 2
+      },
+      "change": {
+        "target": "target1",
+        "field": "blockStart",
+        "beforePath": "Keyed/0/1",
+        "afterPath": "Keyed/0/0",
+        "before": {
+          "value": 40,
+          "exact": "40"
+        },
+        "after": {
+          "value": 0,
+          "exact": "0"
+        },
+        "delta": {
+          "value": -40,
+          "exact": "-40"
+        }
+      },
+      "identities": [
+        {
+          "target": "target0",
+          "id": "layout.2",
+          "nodeId": "Keyed.noshift.0",
+          "keys": [
+            {
+              "site": "layout.1",
+              "value": "a"
+            }
+          ]
+        },
+        {
+          "target": "target1",
+          "id": "layout.3",
+          "nodeId": "Keyed.noshift.0",
+          "keys": [
+            {
+              "site": "layout.1",
+              "value": "b"
+            }
+          ]
+        }
+      ],
+      "witness": {
+        "obligationIndex": 9,
+        "code": "E_NOSHIFT_BLOCK_START",
+        "box": "target1",
+        "path": "Keyed/0/1",
+        "axis": "block",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240",
+        "available": 40,
+        "availableExact": "40",
+        "required": 0,
+        "requiredExact": "0"
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "keyed-tail-append",
+      "status": "verified",
+      "variants": 2,
+      "comparisons": {
+        "planned": 3,
+        "checked": 3
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "keyed-tail-remove",
+      "status": "verified",
+      "variants": 2,
+      "comparisons": {
+        "planned": 3,
+        "checked": 3
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "keyed-head-remove-moves-survivor",
+      "status": "violated",
+      "variants": 2,
+      "comparisons": {
+        "planned": 3,
+        "checked": 3
+      },
+      "change": {
+        "target": "target0",
+        "field": "blockStart",
+        "beforePath": "Keyed/1",
+        "afterPath": "Keyed/0",
+        "before": {
+          "value": 40,
+          "exact": "40"
+        },
+        "after": {
+          "value": 0,
+          "exact": "0"
+        },
+        "delta": {
+          "value": -40,
+          "exact": "-40"
+        }
+      },
+      "identities": [
+        {
+          "target": "target0",
+          "id": "layout.3",
+          "nodeId": "Keyed.noshift.0",
+          "keys": [
+            {
+              "site": "layout.1",
+              "value": 2
+            }
+          ]
+        }
+      ],
+      "witness": {
+        "obligationIndex": 3,
+        "code": "E_NOSHIFT_BLOCK_START",
+        "box": "target0",
+        "path": "Keyed/1",
+        "axis": "block",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240",
+        "available": 40,
+        "availableExact": "40",
+        "required": 0,
+        "requiredExact": "0"
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "keyed-live-row-target-disappears",
+      "status": "violated",
+      "variants": 2,
+      "comparisons": {
+        "planned": 2,
+        "checked": 2
+      },
+      "witness": {
+        "obligationIndex": 3,
+        "code": "E_NOSHIFT_PRESENCE",
+        "box": "target1",
+        "path": "Keyed/[target:layout.3]",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "keyed-duplicate",
+      "status": "unknown",
+      "variants": 0,
+      "comparisons": {
+        "planned": 0,
+        "checked": 0
+      },
+      "diagnostics": [
+        {
+          "code": "U_LAYOUT_IDENTITY",
+          "severity": "unknown",
+          "message": "Duplicate row key at Keyed:414"
+        },
+        {
+          "code": "U_NOSHIFT_LAYOUT",
+          "severity": "unknown",
+          "message": "Finite structure and every endpoint layout must verify before noshift checking"
+        },
+        {
+          "code": "U_NOSHIFT_BINDING",
+          "severity": "unknown",
+          "message": "Root noshift declaration has no native instance binding"
+        }
+      ]
+    },
+    {
+      "name": "keyed-unsafe-number",
+      "status": "unknown",
+      "variants": 0,
+      "comparisons": {
+        "planned": 0,
+        "checked": 0
+      },
+      "diagnostics": [
+        {
+          "code": "U_LAYOUT_IDENTITY",
+          "severity": "unknown",
+          "message": "Row keys must be strings or safe integers, excluding -0 at Keyed:414"
+        },
+        {
+          "code": "U_NOSHIFT_LAYOUT",
+          "severity": "unknown",
+          "message": "Finite structure and every endpoint layout must verify before noshift checking"
+        },
+        {
+          "code": "U_NOSHIFT_BINDING",
+          "severity": "unknown",
+          "message": "Root noshift declaration has no native instance binding"
+        }
+      ]
+    }
+  ]
+}

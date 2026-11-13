@@ -1,0 +1,101 @@
+component MapLegend() {
+  layout PositionedGrid {
+    requires { inline-size: 120px..960px; block-size: 40px..720px; }
+    space legend = ".legend";
+    overlay ".legend-dot" within legend;
+  }
+  <aside class="legend" aria-label="Legend with a private coordinate space">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .legend {
+        position: relative;
+        display: grid;
+        inline-size: 120px;
+        block-size: 40px;
+        padding: 8px;
+        border: 1px solid #345;
+        background: #fff;
+      }
+      .legend-dot {
+        position: absolute;
+        inset-inline-start: 8px;
+        inset-block-start: 8px;
+        inline-size: 16px;
+        block-size: 16px;
+        background: #476c45;
+      }
+    </style>
+    <div class="legend-dot" role="img" aria-label="Legend swatch" />
+  </aside>
+}
+
+component MapPanel() {
+  layout PositionedGrid {
+    requires { inline-size: 160px..240px; block-size: 120px..180px; }
+    space content = ".panel-content";
+    overlay ".panel-knob" within content;
+  }
+  <aside class="map-panel" aria-label="Absolute panel with a private coordinate space">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .map-panel {
+        position: absolute;
+        inset-inline-end: 16px;
+        inset-block-end: 16px;
+        inline-size: 160px;
+        block-size: 120px;
+        padding: 8px;
+        border: 2px solid #345;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+        background: #fff;
+      }
+      .panel-content {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+        min-inline-size: 0;
+        min-block-size: 0;
+        background: #e2eaf4;
+      }
+      .panel-knob {
+        position: absolute;
+        inset-inline-end: 8px;
+        inset-block-end: 8px;
+        inline-size: 24px;
+        block-size: 24px;
+        background: #234567;
+      }
+    </style>
+    <div class="panel-content">
+      <div class="panel-knob" role="img" aria-label="Private panel overlay" />
+    </div>
+  </aside>
+}
+
+component MapWithPanels() {
+  layout PositionedGrid {
+    requires { inline-size: 320px..960px; block-size: 240px..720px; }
+    space map = ".map";
+    overlay ".map-panel" within map;
+  }
+  <main class="map" aria-label="Map with independently checked child components">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .map {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+        block-size: 240px;
+        padding: 16px;
+        border: 2px solid #345;
+        background: #edf4fa;
+      }
+    </style>
+    <MapLegend />
+    <MapPanel />
+  </main>
+}

@@ -3,6 +3,7 @@ import {analyzeLayout} from '../lib/layout.mjs';
 import {createLayoutModel,verifyLayoutModel} from '../lib/layout-z3.mjs';
 import {createLayoutIR,createDeclaredObligations,verifyObligationIR} from '../lib/layout-contract.mjs';
 import {declaredLayoutOptions} from '../lib/layout-declarations.mjs';
+import {hasDeclaredNoShift,createNoShiftPlan,verifyNoShiftPlan,noShiftVerification} from '../lib/layout-noshift.mjs';
 
 let initialized,pending,running=false;
 const api=()=>initialized ??= (async()=>{
@@ -29,7 +30,14 @@ async function drain() {
       }
       const failed=declarations.find(p=>p.status==='unknown') ?? declarations.find(p=>p.status==='violated');
       if(failed && (verification.status==='verified' || failed.status==='unknown')) verification=failed.proof;
-      self.postMessage({id,result:{report,model,verification,...(declarations.length ? {declarations,constraints:scripts.join('\n(reset)\n')} : {})}});
+      let noshift;
+      if(hasDeclaredNoShift(ir,report)) {
+        const plan=createNoShiftPlan(ir,report);
+        self.postMessage({id,progress:`Checking ${plan.checks.length} noshift comparisons…`});
+        noshift=await verifyNoShiftPlan(plan,solver);verification=noShiftVerification(verification,noshift);
+        for(const check of plan.checks) for(const [phase,m] of [['coverage',check.obligation.coverage],['equality',check.obligation.model]]) scripts.push(`; Noshift ${check.component} at ${check.path}: ${phase}\n${m.smt2}\n(check-sat)\n`);
+      }
+      self.postMessage({id,result:{report,model,verification,...(noshift ? {noshift} : {}),...(declarations.length || noshift ? {declarations,constraints:scripts.join('\n(reset)\n')} : {})}});
     } catch(error) {self.postMessage({id,error:String(error.message)});}
   }} finally {running=false;}
 }

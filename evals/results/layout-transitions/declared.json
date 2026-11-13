@@ -1,0 +1,158 @@
+{
+  "version": 1,
+  "passed": true,
+  "scope": "Isle source noshift declarations -> finite abstract structural candidates -> generic noshift/1 endpoint obligations; no browser",
+  "limits": [
+    "state candidates are a conservative overapproximation, not an exact event graph",
+    "each declared live instance has unique owned/public-root targets",
+    "fixed root origin and viewport; text/paint/CLS outside the profile",
+    "unmount outside a child instance lifetime needs a caller contract"
+  ],
+  "runtimeBytes": {
+    "html": 466,
+    "modules": 712,
+    "css": 727
+  },
+  "runtimeDelta": {
+    "html": 0,
+    "modules": 0,
+    "css": 0
+  },
+  "cases": [
+    {
+      "name": "reserved",
+      "status": "verified",
+      "candidates": 2,
+      "comparisons": {
+        "planned": 2,
+        "checked": 2
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "unreserved",
+      "status": "violated",
+      "candidates": 2,
+      "comparisons": {
+        "planned": 2,
+        "checked": 2
+      },
+      "change": {
+        "target": "target0",
+        "field": "blockStart",
+        "beforePath": "Panel/1",
+        "afterPath": "Panel/1",
+        "before": {
+          "value": 32,
+          "exact": "32"
+        },
+        "after": {
+          "value": 88,
+          "exact": "88"
+        },
+        "delta": {
+          "value": 56,
+          "exact": "56"
+        }
+      },
+      "witness": {
+        "obligationIndex": 2,
+        "code": "E_NOSHIFT_BLOCK_START",
+        "box": "target0",
+        "path": "Panel/1",
+        "axis": "block",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240",
+        "available": 32,
+        "availableExact": "32",
+        "required": 88,
+        "requiredExact": "88"
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "missing-target",
+      "status": "unknown",
+      "candidates": 2,
+      "comparisons": {
+        "planned": 0,
+        "checked": 0
+      },
+      "diagnostics": [
+        {
+          "code": "U_NOSHIFT_TARGET",
+          "severity": "unknown",
+          "message": "Panel noshift \".missing\" needs exactly one owned native box in each live case; found 0 in [0,null]",
+          "path": "Panel",
+          "source": {
+            "start": 185,
+            "end": 204
+          }
+        },
+        {
+          "code": "U_NOSHIFT_TARGET",
+          "severity": "unknown",
+          "message": "Panel noshift \".missing\" needs exactly one owned native box in each live case; found 0 in [1,null]",
+          "path": "Panel",
+          "source": {
+            "start": 185,
+            "end": 204
+          }
+        }
+      ]
+    },
+    {
+      "name": "duplicate-target",
+      "status": "unknown",
+      "candidates": 2,
+      "comparisons": {
+        "planned": 2,
+        "checked": 0
+      },
+      "diagnostics": [
+        {
+          "code": "U_NOSHIFT_TARGET",
+          "severity": "unknown",
+          "message": "Panel noshift \".action\" needs exactly one owned native box in each live case; found 2 in [0,null]",
+          "path": "Panel",
+          "source": {
+            "start": 185,
+            "end": 203
+          }
+        },
+        {
+          "code": "U_NOSHIFT_TARGET",
+          "severity": "unknown",
+          "message": "Panel noshift \".action\" needs exactly one owned native box in each live case; found 2 in [1,null]",
+          "path": "Panel",
+          "source": {
+            "start": 185,
+            "end": 203
+          }
+        }
+      ]
+    },
+    {
+      "name": "hidden-target",
+      "status": "violated",
+      "candidates": 2,
+      "comparisons": {
+        "planned": 2,
+        "checked": 1
+      },
+      "witness": {
+        "obligationIndex": 0,
+        "code": "E_NOSHIFT_PRESENCE",
+        "box": "target0",
+        "path": "Panel/1",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      },
+      "diagnostics": []
+    }
+  ]
+}

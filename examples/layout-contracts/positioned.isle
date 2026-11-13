@@ -1,0 +1,41 @@
+component MapOverlay() {
+  layout PositionedGrid {
+    requires {
+      inline-size: 320px..960px;
+      block-size: 240px..720px;
+    }
+    space map = ".map";
+    overlay ".controls" within map;
+    ensures {
+      overflow-inline: fit;
+      overflow-block: fit;
+    }
+  }
+
+  <section class="map" aria-label="Checked map and overlay geometry">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .map {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+        block-size: 240px;
+        padding: 16px;
+        border: 2px solid #345;
+        background: #edf4fa;
+      }
+      .surface { min-inline-size: 0; min-block-size: 0; }
+      .controls {
+        position: absolute;
+        inset-inline-end: 16px;
+        inset-block-end: 16px;
+        inline-size: 40px;
+        block-size: 40px;
+        background: #234567;
+      }
+    </style>
+    <div class="surface" />
+    <div class="controls" role="img" aria-label="Fixed overlay region" />
+  </section>
+}

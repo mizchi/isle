@@ -1,6 +1,10 @@
 # レイアウト契約の言語と適合性検査
 
-状態: 独立した検査 IR と、component 本文の `layout SafeGrid { ... }` を実装しました。Vite・playground・CLI がソースの宣言を検査します。任意の profile 定義、一般の述語構文、子の本体を省略する合成証明は設計段階です。
+状態: 独立した検査 IR と、component 本文の `layout SafeGrid { ... }` / `layout PositionedGrid { ... }` を実装しました。Vite・playground・CLI がソースの宣言を検査します。任意の profile 定義、一般の述語構文、子の本体を省略する合成証明は設計段階です。
+
+CSS解析・幾何モデル・契約IR・Z3検査の実装は、汎用の[`@mizchi/css-verifier`](../packages/css-verifier/README.md)へ分離しています。Isleはテンプレートと状態候補を汎用box treeへ変換するadapterです。[保証範囲と静的モデルの方針](static-ui-verification.md)を参照してください。
+
+状態間の比較には[`noshift/1`](layout-transitions.md)があります。DOM要素への`@noshift`を基本にし、`ensures { noshift ".action"; }`も外部・集約指定として使えます。Isle adapterが有限な候補を汎用APIへ渡し、対象boxの存在・位置・寸法を比較します。fit保証だけからnoshiftを推論することはありません。
 
 ## 三つの境界
 
@@ -52,6 +56,27 @@ layout SafeGrid {
 }
 ```
 
+## 絶対配置: PositionedGrid
+
+`positioned-grid/1`は、Gridに局所的なabsolute配置を加える別profileです。[実行できる例](../examples/layout-contracts/positioned.isle)の宣言は次の形です。
+
+```text
+layout PositionedGrid {
+  requires { inline-size: 320px..960px; block-size: 240px..720px; }
+  space map = ".map";
+  overlay ".controls" within map;
+  ensures { overflow-inline: fit; overflow-block: fit; }
+}
+```
+
+`space`は各到達caseで一意な所有boxを命名し、実CSSの`position: relative`と照合します。`overlay`は、対象boxのactual containing blockがそのspaceであること、padding box内に収まること、同時に存在するpeer overlay同士が正の面積で重ならないことを要求します。宣言がposition・寸法・insetを生成することはありません。絶対配置はGrid trackの寸法計算から外します。
+
+各軸でstart/endの片側とinline/block-sizeを明示します。insetはpx・固定百分率・加減算のcalc、寸法は既存解析が解決できるpx/百分率に対応します。padding/border、実際のbox-sizing、media/container分岐、有限なShow/For候補を考慮します。Showやdisplay:noneで消えるoverlayに配置は作りません。どの到達候補でも対象が見つからないselector、宣言のないabsolute、基準の取り違えは失敗します。
+
+transform、scroll/clipを持つ途中の祖先、subgridの基準box、非ゼロのrelative移動、auto inset、auto size、auto margin、absoluteのgrid-area指定など、モデル化していない意味はUnknownです。別componentのabsoluteは、後述の明示的な親子契約で接続します。宣言のない境界やopaqueなSDKのDOMを暗黙に無視することはありません。詳しい[座標モデルと検査範囲](proposals/positioned-layout.md)を参照してください。
+
+APIでは`profile: 'positioned-grid/1'`、`spaces: [{name:'map', selector:'.map'}]`、`overlays: [{selector:'.controls', within:'map'}]`を`createContractIR`へ渡します。selectorは単純なtag/id/classの組合せ、各binding配列は1〜64件に制限します。profileやbindingの異なる契約同士のrefinementは受け付けません。
+
 ## 実装の意味と保証
 
 環境を e、到達可能状態を s、配置を b とします。契約の必要条件を R、外部の信頼仮定を A、保証を G、実装の抽象意味を M と置きます。
@@ -68,12 +93,13 @@ Conforms(I, C):
 
 初版の外部仮定は既存解析の `LayoutIR.assumptions` から証明結果へ引き継ぎます。ContractIR から `assume` 文や任意の述語を入力する機能は未実装です。
 
-LayoutIR は以下の三つを区別します。
+LayoutIR は以下の寸法を区別します。
 
 | 寸法 | 意味 |
 | --- | --- |
-| allocated | 親からの割当領域。子の要求と照合する入力 |
+| allocated | in-flowではGridからの割当。明示サイズのabsoluteではCSSが決めたused border rectangle。子の要求と照合する入力 |
 | border | 実装 CSS が作る border box |
+| padding | border を除いた padding box。absolute の局所座標系の基準 |
 | content | padding・border・適用される scrollbar gutter を除いた content box |
 
 既存 report の `inlineSize` / `blockSize` は border 寸法のままです。`allocatedInlineSize` / `allocatedBlockSize` と、常時記録する `contentInlineSize` / `contentBlockSize` を追加しました。auto row 等で割当高さが definite でなければ allocated.block はありません。その地点へ両軸の子契約を接続すると Unknown です。
@@ -147,7 +173,7 @@ node tools/isle.mjs layout app.isle environment.json
 
 ## 親子と差し替え
 
-API の `createObligationIR(parent, implementation, { children })` の children は `{ path, contract }` の配列です。native box の明示した path へ子契約を接続し、**border 寸法ではなく allocated 寸法**を子の requires と照合します。存在しない path はエラーです。
+API の `createObligationIR(parent, implementation, { children })` の children は `{ path, contract }` の配列です。native box の明示した path へ子契約を接続し、**allocated 寸法**を子の requires と照合します。存在しない path はエラーです。in-flowの子では、CSSで小さく描画していても親Gridの割当を使います。明示サイズのabsoluteでは、次の公開境界の規則に従います。
 
 ソース宣言では compiler が pure / alias / client component の root へ契約を引き継ぎ、解析器が native path と到達 case を記録します。`createDeclaredObligations(implementation)` が自動で接続し、同じ path を異なる分岐の component が使う場合も、それぞれの case だけで検査します。Node adapter の `verifyDeclaredLayouts(report)` はまとめて検査します。
 
@@ -156,6 +182,33 @@ API の `createObligationIR(parent, implementation, { children })` の children 
 40px以上を要求する子4個なら160px、48pxを要求する子なら192pxが必要です。後者は CSS が40pxのままでも拒否できます。現段階では実際の子の内部も展開して検査し、子の保証を仮定して本体を省略する modular verification は行いません。
 
 `createRefinementObligationIR(previous, next)` は、同じ名前・同じ SafeGrid/Fit 保証の二契約について `R_previous => R_next` を検査します。最小幅160px→120pxは許可し、184pxへの強化は拒否します。これは入力範囲の互換性であり、差し替える CSS・任意の保証・外部仮定の同値性を証明する API ではありません。返る operation は refinement です。その witness の width/height 座標は割当寸法を表します。conformance の witness は元の viewport 座標です。
+
+## 子componentの公開rootとprivateな座標系
+
+[実行できる例](../examples/layout-contracts/positioned-components.isle)では、親のmapへin-flowのMapLegendとabsoluteなMapPanelを置きます。各子は自分のレイアウト契約とprivateな座標系を持ちます。親には子の公開native rootだけを見せ、内部のclassを親のspace/overlay selectorから参照できないようにします。
+
+```text
+// 親の宣言の一部
+space map = ".map";
+overlay ".map-panel" within map;
+```
+
+子のsource契約と、親の明示的なoverlay bindingがそろった場合だけ、子のrootをabsoluteな公開境界として接続します。CSSは引き続きrootのposition・サイズ・insetを指定します。rootに余分なwrapperを生成しません。子自身のSafeGridは公開rootの内部をin-flowとして検査でき、子のPositionedGridはprivateなrelative boxとoverlayを検査できます。in-flowの子がprivateなPositionedGridを持つ構成も許可します。
+
+absoluteのallocatedは、子のrequiresへ依存せずCSSから解決したused border boxです。160×120pxなら、containing blockが316×236pxでも割当は160×120pxです。padding/borderはこの中に含みます。寸法は既存の明示サイズの部分集合に限定し、originとcontaining blockは別の事実として保存します。absoluteのallocatedとborderが一致することも検査し、IR上で割当を水増ししてrequiresを満たすことはできません。
+
+親のObligationIRには子のrequires、profile、privateな配置、coverageを再帰的に含めます。親だけを検査して子の違反を見落とすことはありません。子の独立したinstance検査にも、呼出し元のspaceとの一致・包含・peer非重複を含めます。`dependencies`は子のcomponent/path、`placementTransfers`は呼出し元・case・`used-border-box`による割当を記録します。これらはbuild-onlyで、子の保証を仮定して本体を省略する証明ではありません。
+
+同じCBのpeer検査には、親のnative overlayと子の公開rootを含めます。子のprivateなoverlayはその子のCB内で検査します。Show/Forのcaseとnative pathの組合せで境界を特定し、別分岐の同じpathにあった子の宣言を借用しません。
+
+未宣言の子のabsolute、曖昧な呼出し元、未知のCSSやopaqueなDOMはUnknownです。子がCSSでdisplay:noneになる範囲を別契約として合成する検証は未対応で、coverage不足としてUnknownになる場合があります。合成の深さは64、work見積りは200万を上限にし、超過時は検証成功にせず停止します。
+
+```sh
+node tools/isle.mjs layout examples/layout-contracts/positioned-components.isle examples/layout-contracts/positioned-components.json --summary
+just positioned-components-check
+```
+
+playgroundの **Absolute layout · child component contracts** でも試せます。[評価結果](../evals/results/positioned-components/report.json)は、CSSを変えずに子の必要幅を161pxへ強化した違反、private profile違反、root同士の衝突、未宣言境界を区別して記録します。
 
 ## 根拠と今後の証明
 

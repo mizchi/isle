@@ -1,0 +1,135 @@
+# CSS verifier
+
+An experimental, framework-independent CSS verification library. It analyzes a
+finite box tree and a complete author stylesheet without rendering a page or
+executing application code. Isle is one input adapter; the core has no dependency
+on the Isle compiler, its syntax, or a browser renderer.
+
+The provisional package name is `@mizchi/css-verifier`. It is private and has not
+been published. From this checkout, create and install a local archive:
+
+```sh
+pnpm --dir packages/css-verifier pack --pack-destination /tmp
+pnpm add /tmp/mizchi-css-verifier-0.0.1.tgz
+```
+
+## Verify static HTML
+
+```js
+import {analyzeHTML} from '@mizchi/css-verifier/html';
+import {verifyLayoutReport} from '@mizchi/css-verifier/z3/node';
+
+const report = analyzeHTML(
+  '<main class="row">' + '<div class="cell"></div>'.repeat(4) + '</main>',
+  {
+    name: 'Four',
+    css: `
+      * { box-sizing: border-box; }
+      .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .cell { min-width: 40px; }
+    `,
+    viewport: {min: 160, max: 1200},
+  },
+);
+
+console.log(report.status); // verified
+const proof = await verifyLayoutReport(report);
+if (proof.status !== 'verified') throw new Error(JSON.stringify(proof));
+```
+
+The HTML adapter accepts one fragment root. Unsupported rendering attributes,
+foreign/replaced elements, and parse recovery produce `unknown`. Inline `style`
+attributes currently need a different adapter; pass CSS as a complete stylesheet.
+
+## Supply a box tree from another tool
+
+```js
+import {analyzeLayout} from '@mizchi/css-verifier';
+
+const report = analyzeLayout(
+  {tag: 'div', classes: ['message'], text: true},
+  {
+    name: 'Message',
+    css: '* { box-sizing: border-box; }',
+    viewport: {min: 320, max: 1200},
+    boxes: {'.message': {minInlineSize: 240}},
+  },
+);
+```
+
+Trees are cloned before analysis. Cycles, shared nodes, invalid fields and
+ambiguous paths are rejected. Adapters must faithfully describe the concrete
+structure, text presence, class/id values, ancestors, and stylesheet cascade.
+`name`, `owner`, and the historical report field `component` are opaque identifiers;
+they do not require framework components. Framework props and state machines
+belong to adapters. An adapter may enumerate finite structural cases and must
+establish their coverage separately.
+
+## What a result means
+
+- `verified`: every modeled obligation holds throughout the supplied responsive
+  domain, conditional on the report's assumptions.
+- `violated`: a supported rule is forbidden by the profile, or a failing input
+  region was found. Geometric failures include rational endpoints and a witness.
+- `unknown`: the model is incomplete or unsupported. A strict build must reject
+  both `violated` and `unknown`, and must also reject thrown input/limit errors.
+
+Current scope includes Grid box geometry, reset/cascade/custom properties,
+supported media/container conditions, both axes, limited subgrid, exact declared
+scrollbar profiles, and explicitly sized local absolute positioning. It checks
+continuous regions, including boundaries and fractional widths. It does not
+prove arbitrary CSS, font metrics, browser pixel rounding, ink overflow, CLS, or
+contrast. `minInlineSize` / `minBlockSize` are **trusted sufficient content bounds**;
+`intrinsicBlockSize` is a **trusted exact** height or width-dependent height
+profile. They are assumptions supplied by a caller, not facts verified from text.
+
+ContractIR, LayoutIR, and ObligationIR remain separate. Use `/contracts` for
+`SafeGrid` / `PositionedGrid` contracts and `/contracts/node` for Node Z3 helpers.
+The `component` field in a ContractIR is a named verification unit, using the
+existing uppercase identifier convention. Geometry is extracted independently of
+these contracts, then checked for coverage and conformance.
+
+## Compare layout transitions
+
+`/transitions` extracts endpoint relations independently of a `noshift/1`
+contract. `/transitions/node` verifies exact presence and border-rectangle
+equality for explicitly matched targets:
+
+```js
+import {createNoShiftContract} from '@mizchi/css-verifier/transitions';
+import {verifyNoShift} from '@mizchi/css-verifier/transitions/node';
+
+const contract = createNoShiftContract({
+  name: 'Load',
+  targets: [{name: 'action', before: 'Page/1', after: 'Page/1'}],
+});
+const result = await verifyNoShift(beforeReport, afterReport, contract);
+```
+
+Input adapters can also attach `targets: ['action']` to a box tree and use
+`before: {id: 'action', within: 'Page'}` / `after: {id: 'action', within: 'Page'}`.
+These are semantic IDs, independent of HTML classes, DOM `id` attributes and
+box-tree paths. Missing IDs violate presence; ambiguous or
+`targetIdentity: 'unknown'` mappings remain Unknown. Adapters establish identity
+and lifetime correspondence. The core knows no template-annotation syntax.
+
+Reports must cover identical width/height and host domains, with one concrete
+structural/platform case each. Targets must remain present, with equal
+root-relative inline/block starts and border sizes everywhere in that domain.
+Missing coordinate coverage, scroll/clip or subgrid frames, unequal environments,
+unsupported CSS and solver failures produce `unknown`. A fixed outer box only
+certifies that selected box. This endpoint relation does not prove intermediate
+frames, text/paint stability or a browser CLS value. See the
+[complete guide and runnable examples](../../docs/layout-transitions.md).
+
+The root and `/html` entry points do not initialize Z3. `/z3`, `/contracts` and `/transitions`
+accept an externally initialized Z3 API, including Wasm in a browser Worker.
+`/z3/node`, `/contracts/node` and `/transitions/node` own solver startup and teardown. All verification
+is tooling; no verifier or solver belongs in the application's UI runtime.
+
+Run `just css-verifier-check` from the repository root. The
+[responsive example](examples/responsive.mjs) checks a correct breakpoint and
+finds a one-pixel failure interval in an incorrect one without a browser.
+
+The adopted architecture and verification boundaries are described in
+[静的UI検証の方針](../../docs/static-ui-verification.md).

@@ -1,0 +1,26 @@
+schema Row { id:string; slot:string; }
+client component Keyed(){
+  state reversed=false;
+  state items:Row[]=[{id:"a",slot:"a"},{id:"b",slot:"b"}];
+  layout SafeGrid{
+    requires{inline-size:320px..960px;block-size:240px..720px;}
+  }
+  event reorder(e:EventSnapshot<MouseEvent>){
+    reversed=!reversed;
+    items=reversed ? [{id:"b",slot:"b"},{id:"a",slot:"a"}] : [{id:"a",slot:"a"},{id:"b",slot:"b"}];
+  }
+  <main class="panel">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      .panel{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-content:start}
+      .list{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:40px 40px}
+      .a{grid-column:1;grid-row:1;height:40px;background:#96c7b3}
+      .b{grid-column:1;grid-row:2;height:40px;background:#387a64}
+      .reorder{appearance:none;display:block;min-width:0;min-height:0;width:32px;height:32px;padding:0;border:0;border-radius:6px;background:linear-gradient(#fff,#fff) center/12px 2px no-repeat,linear-gradient(#fff,#fff) center/2px 12px no-repeat,#23594c;cursor:pointer}
+    </style>
+    <div class="list">
+      <For each={items}>{item=><div key={item.id} @noshift class={item.slot} data-id={item.id}/>}</For>
+    </div>
+    <button class="reorder" type="button" aria-label="Reorder rows" on:click={reorder}/>
+  </main>
+}

@@ -1,0 +1,43 @@
+{
+  "gate": "check.integrity",
+  "command": "check integrity",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 0,
+    "info": 0
+  },
+  "findings": [],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "evals/results/positioned-layout/preview.html",
+    "verdict": "clean",
+    "findings": [],
+    "exempted": [],
+    "viewports": [
+      {
+        "width": 1280,
+        "height": 800,
+        "components": 8,
+        "inkRatio": 0.233,
+        "textBlocks": 2
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "components": 8,
+        "inkRatio": 0.2785,
+        "textBlocks": 2
+      },
+      {
+        "width": 375,
+        "height": 700,
+        "components": 8,
+        "inkRatio": 0.374,
+        "textBlocks": 2
+      }
+    ],
+    "kickback": []
+  }
+}

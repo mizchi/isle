@@ -1,0 +1,19 @@
+client component Panel(){
+  state expanded=false;
+  layout SafeGrid {
+    requires{inline-size:320px..960px;block-size:240px..720px;}
+    ensures{overflow-inline:fit;overflow-block:fit;}
+  }
+  event toggle(e:EventSnapshot<MouseEvent>){expanded=!expanded;}
+  <main class="panel">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      .panel{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-content:start}
+      .slot{height:80px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);background:#edf5f1;border-radius:6px}
+      .content{height:24px;background:#96c7b3;border-radius:6px}.expanded{height:80px}
+      .action{appearance:none;display:block;min-width:0;min-height:0;width:32px;height:32px;padding:0;border:0;border-radius:6px;background:linear-gradient(#fff,#fff) center/12px 2px no-repeat,linear-gradient(#fff,#fff) center/2px 12px no-repeat,#23594c;cursor:pointer}
+    </style>
+    <div class="slot"><div class={expanded ? "content expanded" : "content"}/></div>
+    <button @noshift class="action" type="button" aria-label="Toggle panel" on:click={toggle}/>
+  </main>
+}

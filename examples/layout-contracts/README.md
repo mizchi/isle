@@ -43,3 +43,47 @@ component 内に宣言を書く例です。サイドカーを省略して CLI �
 `node examples/layout-contracts/check-contract.mjs` checks [contract.isle](contract.isle) against a separate ContractIR. The four-cell and responsive cases verify; an 8px gap and stronger child requirements produce witnesses. Coverage is checked before conformance. See [the specification and API](../../docs/layout-contract-language.md).
 
 4箱と responsive は Verified、gap 8px と子48pxの要求は Violated です。被覆と適合を別々に検査します。[形式仕様と API](../../docs/layout-contract-language.md)を参照してください。
+
+## Absolute positioning / 絶対配置
+
+[positioned.isle](positioned.isle) names a padding-box coordinate space with `layout PositionedGrid`. Standard CSS positions a fixed overlay; the compiler checks its actual containing block, containment and peer separation. The playground's **Absolute layout · named coordinate space** preset runs the same source with Z3 Wasm.
+
+名前付き座標系とabsoluteの検査例です。親のpadding boxを基準にし、途中のrelativeな親による基準変更や、小数幅でのoverlay衝突も反例にします。transform・scroll等の未対応な意味はUnknownとして扱います。任意の地図SDKや動的marker座標を保証する機能ではありません。
+
+```sh
+node tools/isle.mjs layout examples/layout-contracts/positioned.isle
+just positioned-layout-check
+```
+
+The check includes Vite delivery, browser Z3 and compiled geometry at four widths. [Evaluation results](../../evals/results/positioned-layout/report.json) / [評価シナリオ](../../evals/scenarios/positioned-layout/check.mjs).
+
+## Child coordinate spaces / 子componentの座標系
+
+[positioned-components.isle](positioned-components.isle) composes an in-flow legend and an absolute panel, each with private overlays. The caller binds the panel's public native root. A 160×120px panel receives that CSS-resolved border rectangle as allocation, independently of the surrounding containing block. The parent proof includes each child's requirements and implementation.
+
+親は公開rootの配置とpeerとの衝突を、子はprivateな座標系を検査します。子の保証を仮定して内部を省略する方式ではなく、親の検査へ子の違反も伝えます。未宣言の境界はUnknownです。playgroundの **Absolute layout · child component contracts** で同じ例を編集できます。
+
+```sh
+node tools/isle.mjs layout examples/layout-contracts/positioned-components.isle examples/layout-contracts/positioned-components.json --summary
+just positioned-components-check
+```
+
+[Evaluation results / 評価結果](../../evals/results/positioned-components/report.json) · [Semantics / 意味論](../../docs/layout-contract-language.md#子componentの公開rootとprivateな座標系)
+
+## Noshift across finite states / 状態間の位置・寸法の安定
+
+[noshift-dom.isle](noshift-dom.isle) attaches `@noshift` directly to the control. A fixed 80px slot reserves room for content that switches between 24px and 80px. Vite, the CLI and browser Z3 compare finite candidates using a source-site target ID, independent of class names. Removing reservation produces a 56px movement witness; the annotation adds no application HTML/JS/CSS. Try **Noshift · element requirement** in the playground. [noshift.isle](noshift.isle) retains the selector-contract form.
+
+DOMに要求、CSSに実装、componentのlayoutに環境を書きます。内容の高さが変わっても、下の操作boxが動かないことを検査します。slotの予約を削除すると、各状態でfitしていてもnoshift違反です。DOM注釈は別の同一class要素へ移らず、Forでkey対応が不明ならUnknownです。CLS値や途中のframeを保証する契約ではありません。
+
+[noshift-keys.isle](noshift-keys.isle) compares the same keyed row across DOM reorders. Explicit Grid placement preserves its rectangle; removing the row/column placement exposes a 40px movement. Whole-row insertion/removal starts/ends that row's requirement; surviving keys remain checked. Try **Noshift · keyed rows** in the playground.
+
+For内ではソース上の要素とkey列を対応付けます。行全体の追加・削除と、生存中の行内の対象消失を区別します。重複・不明なkeyはUnknownにし、indexで別の行を借りて成功させません。
+
+```sh
+node tools/isle.mjs layout examples/layout-contracts/noshift-dom.isle --summary
+node tools/isle.mjs layout examples/layout-contracts/noshift-keys.isle --summary
+just noshift-check
+```
+
+[API and scope / 保証範囲](../../docs/layout-transitions.md) · [Evaluation / 評価結果](../../evals/results/layout-transitions/declared.json)

@@ -1,0 +1,238 @@
+{
+  "version": 1,
+  "scope": "Hand-authored QF_LRA rectangle model and matching Chromium CSS fixtures; NOT compiler/profile support, CSS extraction, or a general browser proof",
+  "assumptions": [
+    "horizontal-tb/ltr",
+    "border-box",
+    "2px borders",
+    "16px padding",
+    "zero child margins",
+    "no transforms/scrolling",
+    "grid placement auto"
+  ],
+  "browser": "156.0.8078.4",
+  "pixelTolerance": 0.03,
+  "passed": true,
+  "cases": [
+    {
+      "name": "start-edges",
+      "status": "unsat",
+      "samples": [
+        {
+          "width": 40,
+          "height": 40,
+          "x": 16,
+          "y": 24,
+          "containingBlock": "map",
+          "fits": true
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": 16,
+          "y": 24,
+          "containingBlock": "map",
+          "fits": true
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": 16,
+          "y": 24,
+          "containingBlock": "map",
+          "fits": true
+        }
+      ]
+    },
+    {
+      "name": "end-edges",
+      "status": "unsat",
+      "samples": [
+        {
+          "width": 40,
+          "height": 40,
+          "x": 260,
+          "y": 180,
+          "containingBlock": "map",
+          "fits": true
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": 581,
+          "y": 421,
+          "containingBlock": "map",
+          "fits": true
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": 900,
+          "y": 660,
+          "containingBlock": "map",
+          "fits": true
+        }
+      ]
+    },
+    {
+      "name": "percentage-axes",
+      "status": "unsat",
+      "samples": [
+        {
+          "width": 40,
+          "height": 40,
+          "x": 79,
+          "y": 59,
+          "containingBlock": "map",
+          "fits": true
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": 159.25,
+          "y": 119.25,
+          "containingBlock": "map",
+          "fits": true
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": 239,
+          "y": 179,
+          "containingBlock": "map",
+          "fits": true
+        }
+      ]
+    },
+    {
+      "name": "end-overflow",
+      "status": "sat",
+      "witness": {
+        "W": 320,
+        "H": 240
+      },
+      "samples": [
+        {
+          "width": 40,
+          "height": 40,
+          "x": 296,
+          "y": 16,
+          "containingBlock": "map",
+          "fits": false
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": 617,
+          "y": 16,
+          "containingBlock": "map",
+          "fits": false
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": 936,
+          "y": 16,
+          "containingBlock": "map",
+          "fits": false
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": 296,
+          "y": 16,
+          "containingBlock": "map",
+          "fits": false
+        }
+      ]
+    },
+    {
+      "name": "negative-start",
+      "status": "sat",
+      "witness": {
+        "W": 320,
+        "H": 240
+      },
+      "samples": [
+        {
+          "width": 40,
+          "height": 40,
+          "x": -8,
+          "y": 16,
+          "containingBlock": "map",
+          "fits": false
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": -8,
+          "y": 16,
+          "containingBlock": "map",
+          "fits": false
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": -8,
+          "y": 16,
+          "containingBlock": "map",
+          "fits": false
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "x": -8,
+          "y": 16,
+          "containingBlock": "map",
+          "fits": false
+        }
+      ]
+    },
+    {
+      "name": "intervening-containing-block",
+      "status": "binding-mismatch",
+      "expectedSpace": "map",
+      "actual": {
+        "x": 160,
+        "y": 184,
+        "width": 24,
+        "height": 24,
+        "containingBlock": "frame",
+        "fits": true
+      }
+    },
+    {
+      "name": "peer-overlay-min-80",
+      "status": "sat",
+      "witness": {
+        "W": 80
+      },
+      "replay": {
+        "width": 80,
+        "overlaps": true,
+        "bothFit": true
+      }
+    },
+    {
+      "name": "peer-overlay-min-115.5",
+      "status": "sat",
+      "witness": {
+        "W": 115.5
+      },
+      "replay": {
+        "width": 115.5,
+        "overlaps": true,
+        "bothFit": true
+      }
+    },
+    {
+      "name": "peer-overlay-min-116",
+      "status": "unsat",
+      "replay": {
+        "width": 116,
+        "overlaps": false,
+        "bothFit": true
+      }
+    }
+  ]
+}

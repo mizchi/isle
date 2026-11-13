@@ -1,0 +1,120 @@
+{
+  "gate": "check.integrity",
+  "command": "check integrity",
+  "verdict": "pass",
+  "counts": {
+    "suspect": 0,
+    "warn": 3,
+    "info": 0
+  },
+  "findings": [
+    {
+      "rule": "clipped-content",
+      "severity": "warn",
+      "message": "section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1) clips 222px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+      "selector": "section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1)",
+      "viewport": 375
+    },
+    {
+      "rule": "clipped-content",
+      "severity": "warn",
+      "message": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1) clips 908px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+      "selector": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1)",
+      "viewport": 1280
+    },
+    {
+      "rule": "clipped-content",
+      "severity": "warn",
+      "message": "div.layout-contract > div:nth-of-type(1) > pre:nth-of-type(1) clips 106px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+      "selector": "div.layout-contract > div:nth-of-type(1) > pre:nth-of-type(1)",
+      "viewport": 1280
+    }
+  ],
+  "suppressed": [],
+  "retuned": [],
+  "report": {
+    "source": "http://127.0.0.1:4334",
+    "verdict": "clean",
+    "findings": [
+      {
+        "kind": "clipped-content",
+        "severity": "warn",
+        "viewport": 375,
+        "selector": "section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1)",
+        "message": "section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1) clips 222px of its content behind overflow: hidden — cut-off content unless the oversize is decorative."
+      },
+      {
+        "kind": "clipped-content",
+        "severity": "warn",
+        "viewport": 1280,
+        "selector": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1)",
+        "message": "div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1) clips 908px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+        "viewports": [
+          1280,
+          768,
+          375
+        ]
+      },
+      {
+        "kind": "clipped-content",
+        "severity": "warn",
+        "viewport": 1280,
+        "selector": "div.layout-contract > div:nth-of-type(1) > pre:nth-of-type(1)",
+        "message": "div.layout-contract > div:nth-of-type(1) > pre:nth-of-type(1) clips 106px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+        "viewports": [
+          1280,
+          768,
+          375
+        ]
+      }
+    ],
+    "exempted": [
+      {
+        "kind": "text-clipped",
+        "viewport": 1280,
+        "selector": "label.sr-only",
+        "reason": "visually-hidden (sr-only) pattern — 1px box, text for AT only"
+      },
+      {
+        "kind": "text-clipped",
+        "viewport": 768,
+        "selector": "label.sr-only",
+        "reason": "visually-hidden (sr-only) pattern — 1px box, text for AT only"
+      },
+      {
+        "kind": "text-clipped",
+        "viewport": 375,
+        "selector": "label.sr-only",
+        "reason": "visually-hidden (sr-only) pattern — 1px box, text for AT only"
+      }
+    ],
+    "viewports": [
+      {
+        "width": 1280,
+        "height": 800,
+        "components": 8,
+        "inkRatio": 0.6355,
+        "textBlocks": 34
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "components": 8,
+        "inkRatio": 0.7531,
+        "textBlocks": 34
+      },
+      {
+        "width": 375,
+        "height": 700,
+        "components": 8,
+        "inkRatio": 0.7056,
+        "textBlocks": 34
+      }
+    ],
+    "kickback": [
+      "[clipped-content] section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1) (viewport 375): section.editor.panel > div:nth-of-type(2) > pre:nth-of-type(1) clips 222px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+      "[clipped-content] div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1) (viewport 1280,768,375): div.inputs > div:nth-of-type(2) > div:nth-of-type(1) > pre:nth-of-type(1) clips 908px of its content behind overflow: hidden — cut-off content unless the oversize is decorative.",
+      "[clipped-content] div.layout-contract > div:nth-of-type(1) > pre:nth-of-type(1) (viewport 1280,768,375): div.layout-contract > div:nth-of-type(1) > pre:nth-of-type(1) clips 106px of its content behind overflow: hidden — cut-off content unless the oversize is decorative."
+    ]
+  }
+}

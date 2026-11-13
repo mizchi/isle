@@ -7,6 +7,8 @@ import { analyzeCosts, checkCostBudgets } from '../lib/cost.mjs';
 import { analyzeLayout } from '../lib/layout.mjs';
 import {declaredLayoutOptions} from '../lib/layout-declarations.mjs';
 import {verifyDeclaredLayouts} from '../lib/layout-contract-node.mjs';
+import {hasDeclaredNoShift} from '../lib/layout-noshift.mjs';
+import {verifyDeclaredNoShift} from '../lib/layout-noshift-node.mjs';
 import { resolve, dirname } from 'node:path';
 import {formatLayoutSummary} from '../lib/layout-summary.mjs';
 import {formatWarning} from '../lib/compiler-warnings.mjs';
@@ -46,6 +48,12 @@ if (process.argv.slice(2).some(arg => ['--help', '-h'].includes(arg))) {
           report.declarations=await verifyDeclaredLayouts(report);
           if(report.declarations.some(p=>p.status==='unknown')) report.status='unknown';
           else if(report.status!=='unknown' && report.declarations.some(p=>p.status==='violated')) report.status='violated';
+          report.ok=report.status==='verified';
+        }
+        if(hasDeclaredNoShift(result.ir,report)) {
+          report.noshift=await verifyDeclaredNoShift(result.ir,report);
+          if(report.noshift.status==='unknown') report.status='unknown';
+          else if(report.status!=='unknown' && report.noshift.status==='violated') report.status='violated';
           report.ok=report.status==='verified';
         }
         await output(report); if (!report.ok) process.exitCode = 1;

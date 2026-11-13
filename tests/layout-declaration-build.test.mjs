@@ -35,3 +35,28 @@ test('the delivered document checks nested declarations on their own native path
   assert.equal(certificate.declarations.filter(p=>p.contract.component==='Cell').length,4);
   assert.ok(certificate.declarations.every(p=>p.status==='verified'));
 });
+
+test('PositionedGrid certifies delivered CSS, rejects overflow and ships no solver or runtime',async()=>{
+  const example=await readFile(new URL('../examples/layout-contracts/positioned.isle',import.meta.url),'utf8');
+  const source=example.replace('MapOverlay','Four');
+  const output=await bundle({change:()=>source});
+  const certificate=JSON.parse(output.find(o=>o.fileName==='isle.layout.json').source);
+  assert.equal(certificate.declarations[0].contract.profile.id,'positioned-grid/1');
+  assert.ok(certificate.declarations.every(p=>p.status==='verified'));
+  assert.equal(output.filter(o=>o.type==='chunk'||o.fileName.endsWith('.wasm')).length,0);
+  await assert.rejects(bundle({change:()=>source.replace('inset-inline-end: 16px','inset-inline-end: -8px')}),/E_ISLE_LAYOUT/);
+  await assert.rejects(bundle({change:()=>source.replace('space map = ".map"','space map = ".surface"')}),/Declared layout Four.*violated/);
+});
+
+test('delivered parent proofs include child interfaces, private spaces and placement transfer',async()=>{
+  const example=await readFile(new URL('../examples/layout-contracts/positioned-components.isle',import.meta.url),'utf8');
+  const source=example.replace('MapWithPanels','Four');
+  const output=await bundle({change:()=>source});
+  const certificate=JSON.parse(output.find(o=>o.fileName==='isle.layout.json').source);
+  assert.equal(certificate.declarations.length,3);
+  assert.ok(certificate.declarations.every(p=>p.status==='verified'));
+  const panel=certificate.declarations.find(p=>p.contract.component==='MapPanel');
+  assert.equal(panel.placementTransfers[0].allocation,'used-border-box');
+  assert.equal(output.filter(o=>o.type==='chunk'||o.fileName.endsWith('.wasm')).length,0);
+  await assert.rejects(bundle({change:()=>source.replace('160px..240px','161px..240px')}),/Declared layout MapPanel.*violated/);
+});

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Absolute coordinate space fixture</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { margin: 16px; font: 16px/1.5 system-ui, sans-serif; color: #223344; background: #fff; }
+    h1 { font-size: 20px; margin-bottom: 16px; }
+    .map {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr);
+      inline-size: 320px;
+      block-size: 240px;
+      padding: 16px;
+      border: 2px solid #345;
+      background: #edf4fa;
+    }
+    .surface { min-inline-size: 0; min-block-size: 0; }
+    .controls {
+      position: absolute;
+      inset-inline-end: 16px;
+      inset-block-end: 16px;
+      inline-size: 40px;
+      block-size: 40px;
+      border: 0;
+      border-radius: 4px;
+      background: #234567;
+      color: #fff;
+      font: 24px/1 system-ui, sans-serif;
+    }
+    .caption { margin-top: 16px; max-inline-size: 320px; }
+  </style>
+  <h1>Absolute coordinate space</h1>
+  <main class="map" aria-label="Coordinate test surface">
+    <div class="surface">Padding-box origin</div>
+    <button class="controls" type="button" aria-label="Example map control">+</button>
+  </main>
+  <p class="caption">40 × 40 control, 16px end insets.<br>16px padding and 2px border.</p>
+</html>

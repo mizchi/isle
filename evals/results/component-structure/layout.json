@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "scope": "CSS and declared SafeGrid semantics only; proposal view wrapper removed manually; no compiler syntax implementation or full browser proof",
+  "passed": true,
+  "cases": [
+    {
+      "name": "four-cells",
+      "layout": "verified",
+      "contract": "verified"
+    },
+    {
+      "name": "gap-missing-space",
+      "layout": "violated",
+      "contract": "violated",
+      "witness": {
+        "code": "E_LAYOUT_FIT",
+        "box": ".cell.i_779b46686e2d",
+        "path": "FourCells/3",
+        "axis": "inline",
+        "viewport": 160,
+        "viewportExact": "160",
+        "viewportHeight": 40,
+        "viewportHeightExact": "40",
+        "available": 34,
+        "required": 40
+      }
+    },
+    {
+      "name": "gap-corrected",
+      "layout": "verified",
+      "contract": "verified"
+    },
+    {
+      "name": "responsive-corrected",
+      "layout": "verified",
+      "contract": "verified"
+    },
+    {
+      "name": "responsive-boundary-hole",
+      "layout": "violated",
+      "contract": "violated",
+      "witness": {
+        "code": "E_LAYOUT_FIT",
+        "box": ".cell.i_8c470479aa38",
+        "path": "FourCells/0",
+        "axis": "inline",
+        "viewport": 159,
+        "viewportExact": "159",
+        "viewportHeight": 80,
+        "viewportHeightExact": "80",
+        "available": 39.75,
+        "required": 40
+      }
+    },
+    {
+      "name": "responsive-missing-height",
+      "layout": "violated",
+      "contract": "violated",
+      "witness": {
+        "code": "E_LAYOUT_FIT",
+        "box": ".row.i_887cf28d0f95",
+        "path": "FourCells",
+        "axis": "block",
+        "viewport": 80,
+        "viewportExact": "80",
+        "viewportHeight": 40,
+        "viewportHeightExact": "40",
+        "available": 40,
+        "required": 80
+      }
+    },
+    {
+      "name": "missing-border-box-reset",
+      "layout": "verified",
+      "contract": "violated",
+      "witness": {
+        "code": "E_LAYOUT_PROFILE",
+        "box": ".row.i_dd116f1c934c",
+        "path": "FourCells",
+        "viewport": 160,
+        "viewportExact": "160",
+        "viewportHeight": 40,
+        "viewportHeightExact": "40"
+      }
+    },
+    {
+      "name": "float",
+      "layout": "violated",
+      "contract": "unknown",
+      "witness": {
+        "code": "U_LAYOUT_COVERAGE",
+        "path": "FourCells",
+        "viewport": 160,
+        "viewportExact": "160",
+        "viewportHeight": 40,
+        "viewportHeightExact": "40"
+      }
+    },
+    {
+      "name": "shorthand-interference",
+      "stage": "compile",
+      "status": "rejected",
+      "codes": [
+        "E_CSS_SHORTHAND_CONFLICT"
+      ]
+    }
+  ]
+}

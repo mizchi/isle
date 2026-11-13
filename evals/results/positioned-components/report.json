@@ -1,0 +1,487 @@
+{
+  "version": 1,
+  "passed": true,
+  "scope": "Compiled child contracts, recursive Z3 obligations and caller placement transfers; Chromium component geometry samples, not a proof of the surrounding fixture",
+  "browser": "156.0.8078.4",
+  "cases": [
+    {
+      "name": "owned-child-spaces",
+      "status": "verified",
+      "declarations": [
+        {
+          "component": "MapWithPanels",
+          "path": "MapWithPanels",
+          "status": "verified",
+          "dependencies": [
+            {
+              "component": "MapLegend",
+              "path": "MapWithPanels/0"
+            },
+            {
+              "component": "MapPanel",
+              "path": "MapWithPanels/1"
+            }
+          ]
+        },
+        {
+          "component": "MapLegend",
+          "path": "MapWithPanels/0",
+          "status": "verified"
+        },
+        {
+          "component": "MapPanel",
+          "path": "MapWithPanels/1",
+          "status": "verified",
+          "placementTransfers": [
+            {
+              "caller": "MapWithPanels",
+              "path": "MapWithPanels",
+              "cases": [
+                {}
+              ],
+              "allocation": "used-border-box"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "child-requires-161",
+      "status": "violated",
+      "witness": {
+        "code": "E_LAYOUT_CHILD_REQUIRES",
+        "box": ".map-panel.i_5aa502b2d248",
+        "path": "MapWithPanels/1",
+        "axis": "inline",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240",
+        "available": 160,
+        "required": 161
+      },
+      "declarations": [
+        {
+          "component": "MapWithPanels",
+          "path": "MapWithPanels",
+          "status": "violated",
+          "dependencies": [
+            {
+              "component": "MapLegend",
+              "path": "MapWithPanels/0"
+            },
+            {
+              "component": "MapPanel",
+              "path": "MapWithPanels/1"
+            }
+          ]
+        },
+        {
+          "component": "MapLegend",
+          "path": "MapWithPanels/0",
+          "status": "verified"
+        },
+        {
+          "component": "MapPanel",
+          "path": "MapWithPanels/1",
+          "status": "violated",
+          "placementTransfers": [
+            {
+              "caller": "MapWithPanels",
+              "path": "MapWithPanels",
+              "cases": [
+                {}
+              ],
+              "allocation": "used-border-box"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "private-overlay-overflow",
+      "status": "violated",
+      "witness": {
+        "code": "E_LAYOUT_ABSOLUTE_END",
+        "box": ".panel-knob.i_efcce6eb4e3d",
+        "path": "MapWithPanels/1/0/0",
+        "axis": "inline",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      },
+      "declarations": [
+        {
+          "component": "MapWithPanels",
+          "path": "MapWithPanels",
+          "status": "violated",
+          "dependencies": [
+            {
+              "component": "MapLegend",
+              "path": "MapWithPanels/0"
+            },
+            {
+              "component": "MapPanel",
+              "path": "MapWithPanels/1"
+            }
+          ]
+        },
+        {
+          "component": "MapLegend",
+          "path": "MapWithPanels/0",
+          "status": "verified"
+        },
+        {
+          "component": "MapPanel",
+          "path": "MapWithPanels/1",
+          "status": "violated",
+          "placementTransfers": [
+            {
+              "caller": "MapWithPanels",
+              "path": "MapWithPanels",
+              "cases": [
+                {}
+              ],
+              "allocation": "used-border-box"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "caller-space-mismatch",
+      "status": "violated",
+      "witness": {
+        "code": "E_LAYOUT_SPACE",
+        "path": "MapWithPanels",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      },
+      "declarations": [
+        {
+          "component": "MapWithPanels",
+          "path": "MapWithPanels",
+          "status": "violated",
+          "dependencies": [
+            {
+              "component": "MapLegend",
+              "path": "MapWithPanels/0"
+            },
+            {
+              "component": "MapPanel",
+              "path": "MapWithPanels/1"
+            }
+          ]
+        },
+        {
+          "component": "MapLegend",
+          "path": "MapWithPanels/0",
+          "status": "verified"
+        },
+        {
+          "component": "MapPanel",
+          "path": "MapWithPanels/1",
+          "status": "violated",
+          "placementTransfers": [
+            {
+              "caller": "MapWithPanels",
+              "path": "MapWithPanels",
+              "cases": [
+                {}
+              ],
+              "allocation": "used-border-box"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "child-interface-missing",
+      "status": "unknown",
+      "witness": {
+        "code": "U_LAYOUT_POSITIONED_OWNER",
+        "box": ".map-panel.i_5aa502b2d248",
+        "path": "MapWithPanels/1",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      },
+      "declarations": [
+        {
+          "component": "MapWithPanels",
+          "path": "MapWithPanels",
+          "status": "unknown",
+          "dependencies": [
+            {
+              "component": "MapLegend",
+              "path": "MapWithPanels/0"
+            }
+          ]
+        },
+        {
+          "component": "MapLegend",
+          "path": "MapWithPanels/0",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "name": "private-profile-invalid",
+      "status": "violated",
+      "witness": {
+        "code": "E_LAYOUT_PROFILE",
+        "box": ".panel-knob.i_5aa502b2d248",
+        "path": "MapWithPanels/1/0/0",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      },
+      "declarations": [
+        {
+          "component": "MapWithPanels",
+          "path": "MapWithPanels",
+          "status": "violated",
+          "dependencies": [
+            {
+              "component": "MapLegend",
+              "path": "MapWithPanels/0"
+            },
+            {
+              "component": "MapPanel",
+              "path": "MapWithPanels/1"
+            }
+          ]
+        },
+        {
+          "component": "MapLegend",
+          "path": "MapWithPanels/0",
+          "status": "verified"
+        },
+        {
+          "component": "MapPanel",
+          "path": "MapWithPanels/1",
+          "status": "violated",
+          "placementTransfers": [
+            {
+              "caller": "MapWithPanels",
+              "path": "MapWithPanels",
+              "cases": [
+                {}
+              ],
+              "allocation": "used-border-box"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public-root-collision",
+      "status": "violated",
+      "witness": {
+        "code": "E_LAYOUT_OVERLAY_OVERLAP",
+        "box": ".map-panel.i_5aa502b2d248",
+        "path": "MapWithPanels/1",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      },
+      "declarations": [
+        {
+          "component": "MapWithPanels",
+          "path": "MapWithPanels",
+          "status": "violated",
+          "dependencies": [
+            {
+              "component": "MapLegend",
+              "path": "MapWithPanels/0"
+            },
+            {
+              "component": "MapPanel",
+              "path": "MapWithPanels/1"
+            },
+            {
+              "component": "MapPanel",
+              "path": "MapWithPanels/2"
+            }
+          ]
+        },
+        {
+          "component": "MapLegend",
+          "path": "MapWithPanels/0",
+          "status": "verified"
+        },
+        {
+          "component": "MapPanel",
+          "path": "MapWithPanels/1",
+          "status": "violated",
+          "placementTransfers": [
+            {
+              "caller": "MapWithPanels",
+              "path": "MapWithPanels",
+              "cases": [
+                {}
+              ],
+              "allocation": "used-border-box"
+            }
+          ]
+        },
+        {
+          "component": "MapPanel",
+          "path": "MapWithPanels/2",
+          "status": "violated",
+          "placementTransfers": [
+            {
+              "caller": "MapWithPanels",
+              "path": "MapWithPanels",
+              "cases": [
+                {}
+              ],
+              "allocation": "used-border-box"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "transform-unmodeled",
+      "status": "unknown",
+      "witness": {
+        "code": "U_LAYOUT_POSITIONED",
+        "path": "MapWithPanels/1",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      },
+      "declarations": [
+        {
+          "component": "MapWithPanels",
+          "path": "MapWithPanels",
+          "status": "unknown",
+          "dependencies": [
+            {
+              "component": "MapLegend",
+              "path": "MapWithPanels/0"
+            },
+            {
+              "component": "MapPanel",
+              "path": "MapWithPanels/1"
+            }
+          ]
+        },
+        {
+          "component": "MapLegend",
+          "path": "MapWithPanels/0",
+          "status": "unknown"
+        },
+        {
+          "component": "MapPanel",
+          "path": "MapWithPanels/1",
+          "status": "unknown",
+          "placementTransfers": [
+            {
+              "caller": "MapWithPanels",
+              "path": "MapWithPanels",
+              "cases": [
+                {}
+              ],
+              "allocation": "used-border-box"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "viewport": 320,
+      "width": 160,
+      "height": 120,
+      "x": 140,
+      "y": 100,
+      "knob": {
+        "x": 108,
+        "y": 68
+      },
+      "directRoot": true,
+      "nativeBoxes": 6
+    },
+    {
+      "viewport": 375,
+      "width": 160,
+      "height": 120,
+      "x": 195,
+      "y": 100,
+      "knob": {
+        "x": 108,
+        "y": 68
+      },
+      "directRoot": true,
+      "nativeBoxes": 6
+    },
+    {
+      "viewport": 641,
+      "width": 160,
+      "height": 120,
+      "x": 461,
+      "y": 100,
+      "knob": {
+        "x": 108,
+        "y": 68
+      },
+      "directRoot": true,
+      "nativeBoxes": 6
+    },
+    {
+      "viewport": 960,
+      "width": 160,
+      "height": 120,
+      "x": 780,
+      "y": 100,
+      "knob": {
+        "x": 108,
+        "y": 68
+      },
+      "directRoot": true,
+      "nativeBoxes": 6
+    }
+  ],
+  "allocation": {
+    "inline": {
+      "coefficient": "0",
+      "constant": "160"
+    },
+    "block": {
+      "coefficient": "0",
+      "constant": "120"
+    },
+    "containingBlock": {
+      "path": "MapWithPanels",
+      "inline": {
+        "coefficient": "1",
+        "constant": "-4"
+      },
+      "block": {
+        "coefficient": "0",
+        "constant": "236"
+      }
+    }
+  },
+  "payload": {
+    "htmlBytes": 528,
+    "moduleBytes": 0,
+    "identicalWithoutDeclarations": true
+  },
+  "limits": [
+    "Closed CSS and independently resolved dimensions",
+    "Undeclared child boundaries remain Unknown",
+    "No transforms, scrolling or opaque SDK DOM",
+    "Browser rounding and hit testing are not proved"
+  ]
+}

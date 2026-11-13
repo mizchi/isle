@@ -1,5 +1,7 @@
 # 記述・読解の評価
 
+[状態間のレイアウト検証](scenarios/layout-transitions/README.md)は、汎用CSSコアのnoshift/1を九例、Isleのsource宣言を五例で検査します。`just noshift-check`はブラウザーなしで反例・予約領域・Unknownを判定し、`just noshift-oracle`は補助としてChromiumの矩形と照合します。参加者による記述・読解の評価は未実施です。
+
 [非同期ローカル地図の課題](scenarios/async-map/brief.md)では、検索・詳細・viewport・破棄の独立した寿命と、DSL/adapterの所有境界を評価する。ブラウザ操作、24 scheduleの有限検査、サイズ・要求・CPUの診断を実行し、独立した参加者評価は未実施。
 
 [意味論からの最適化の課題](scenarios/semantic-optimizer/brief.md)では、不要なイベント、片方向のShow、readonly recordのcaptureを予測して実行出力と照合する。サイズ報告とブラウザ受入検査があり、参加者評価は未実施。

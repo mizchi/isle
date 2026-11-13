@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "passed": true,
+  "scope": "Actual compiler + independent CSS extraction + declared PositionedGrid Z3 obligations; compiled preview measured in Chromium at four widths",
+  "limits": [
+    "closed CSS",
+    "horizontal-tb/ltr",
+    "no transform/scrolling/subgrid containing blocks",
+    "pixel rounding not proved; sample tolerance 0.03px",
+    "opaque SDK/Canvas and arbitrary dynamic coordinates not modeled"
+  ],
+  "browser": "156.0.8078.4",
+  "cases": [
+    {
+      "name": "padding-box-end",
+      "status": "verified",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "unsat"
+      },
+      "samples": [
+        {
+          "viewport": 320,
+          "x": 260,
+          "y": 180,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "viewport": 375,
+          "x": 315,
+          "y": 180,
+          "width": 375,
+          "height": 240
+        },
+        {
+          "viewport": 641,
+          "x": 581,
+          "y": 180,
+          "width": 641,
+          "height": 240
+        },
+        {
+          "viewport": 960,
+          "x": 900,
+          "y": 180,
+          "width": 960,
+          "height": 240
+        }
+      ]
+    },
+    {
+      "name": "percentage-axes",
+      "status": "verified",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "unsat"
+      },
+      "samples": [
+        {
+          "viewport": 320,
+          "x": 79,
+          "y": 59,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "viewport": 375,
+          "x": 92.75,
+          "y": 59,
+          "width": 375,
+          "height": 240
+        },
+        {
+          "viewport": 641,
+          "x": 159.25,
+          "y": 59,
+          "width": 641,
+          "height": 240
+        },
+        {
+          "viewport": 960,
+          "x": 239,
+          "y": 59,
+          "width": 960,
+          "height": 240
+        }
+      ]
+    },
+    {
+      "name": "end-overflow",
+      "status": "violated",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "sat"
+      },
+      "witness": {
+        "code": "E_LAYOUT_ABSOLUTE_END",
+        "box": ".controls.i_923c36acbe9b",
+        "path": "MapOverlay/1",
+        "axis": "inline",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      }
+    },
+    {
+      "name": "space-mismatch",
+      "status": "violated",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "sat"
+      },
+      "witness": {
+        "code": "E_LAYOUT_SPACE",
+        "box": ".surface.i_177162769bc0",
+        "path": "MapOverlay/0",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      }
+    },
+    {
+      "name": "transform-unmodeled",
+      "status": "unknown",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "sat"
+      },
+      "witness": {
+        "code": "U_LAYOUT_COVERAGE",
+        "path": "MapOverlay",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      }
+    },
+    {
+      "name": "peer-fractional-collision",
+      "status": "violated",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "sat"
+      },
+      "witness": {
+        "code": "E_LAYOUT_OVERLAY_OVERLAP",
+        "box": ".peer.i_7a67b55d214d",
+        "path": "MapOverlay/1",
+        "viewport": 115.5,
+        "viewportExact": "231/2",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      }
+    },
+    {
+      "name": "peer-corrected",
+      "status": "verified",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "unsat"
+      }
+    },
+    {
+      "name": "peer-responsive",
+      "status": "verified",
+      "solver": {
+        "engine": "z3-wasm",
+        "version": "5.3.3",
+        "result": "unsat"
+      }
+    }
+  ]
+}

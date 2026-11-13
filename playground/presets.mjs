@@ -5,6 +5,11 @@ import inlineCSS from '../examples/inline-css/app.isle?raw';
 import styledCounter from '../examples/inline-css/counter.isle?raw';
 import variableLayout from '../examples/inline-css/variables.isle?raw';
 import declaredLayout from '../examples/layout-contracts/declared.isle?raw';
+import positionedLayout from '../examples/layout-contracts/positioned.isle?raw';
+import positionedComponents from '../examples/layout-contracts/positioned-components.isle?raw';
+import noshiftLayout from '../examples/layout-contracts/noshift.isle?raw';
+import noshiftDOM from '../examples/layout-contracts/noshift-dom.isle?raw';
+import noshiftKeys from '../examples/layout-contracts/noshift-keys.isle?raw';
 export const defaultLayout={viewport:{min:160,max:640,height:{min:80,max:640}}};
 const layoutCSS='html,body { margin: 0; padding: 0; }';
 export const defaultCSS=`* { box-sizing: border-box; }
@@ -22,6 +27,11 @@ export const presets={
   counter:{label:'Counter · state & derive',source:counter,props:{initial:5}},
   styled:{label:'Inline CSS · independent client styles',source:styledCounter,props:{}},
   layoutDeclared:{label:'Declared layout · SafeGrid contract',source:declaredLayout,props:{},css:layoutCSS,layout:{}},
+  layoutNoShiftDOM:{label:'Noshift · element requirement',source:noshiftDOM,props:{},css:layoutCSS,layout:{}},
+  layoutNoShiftKeys:{label:'Noshift · keyed rows',source:noshiftKeys,props:{},css:layoutCSS,layout:{}},
+  layoutNoShift:{label:'Noshift · selector contract',source:noshiftLayout,props:{},css:layoutCSS,layout:{}},
+  layoutPositioned:{label:'Absolute layout · named coordinate space',source:positionedLayout,props:{},css:layoutCSS,layout:{}},
+  layoutPositionedComponents:{label:'Absolute layout · child component contracts',source:positionedComponents,props:{},css:layoutCSS,layout:{}},
   layout:{label:'Inline CSS · Z3 layout proof',source:inlineCSS,props:{},css:layoutCSS,layout:defaultLayout},
   layoutBroken:{label:'Inline CSS · overflow witness',source:inlineCSS,props:{},css:layoutCSS,layout:{viewport:{min:120,max:640,height:{min:80,max:640}}}},
   layoutResponsive:{label:'Inline CSS · responsive proof',source:inlineCSS.replace('    </style>','      @media (width < 160px) { .row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }\n    </style>'),props:{},css:layoutCSS,layout:{viewport:{min:80,max:640,height:{min:80,max:640}}}},

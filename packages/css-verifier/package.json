@@ -1,0 +1,21 @@
+{
+  "name": "@mizchi/css-verifier",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Static responsive CSS verification over a closed box-tree model.",
+  "exports": {
+    ".": {"types":"./src/index.d.mts","import":"./src/index.mjs"},
+    "./html": {"types":"./src/html.d.mts","import":"./src/html.mjs"},
+    "./z3": {"types":"./src/layout-z3.d.mts","import":"./src/layout-z3.mjs"},
+    "./z3/node": {"types":"./src/layout-z3-node.d.mts","import":"./src/layout-z3-node.mjs"},
+    "./contracts": {"types":"./src/layout-contract.d.mts","import":"./src/layout-contract.mjs"},
+    "./contracts/node": {"types":"./src/layout-contract-node.d.mts","import":"./src/layout-contract-node.mjs"},
+    "./transitions": {"types":"./src/transitions.d.mts","import":"./src/transitions.mjs"},
+    "./transitions/node": {"types":"./src/transitions-node.d.mts","import":"./src/transitions-node.mjs"}
+  },
+  "files": ["src/", "README.md"],
+  "dependencies": {"postcss":"8.5.32","css-tree":"3.2.1","parse5":"8.0.1","z3-solver":"5.3.3"},
+  "engines": {"node":">=24"},
+  "scripts": {"test":"node --test test/*.test.mjs"}
+}

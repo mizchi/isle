@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "passed": true,
+  "scope": "DOM @noshift -> build-only source-site IDs -> generic target-ID contracts; all finite candidates, without a browser",
+  "limits": [
+    "source-site identity is local to this compilation",
+    "repeated targets require exact finite keys and row lifetimes",
+    "one owning component layout profile supplies the environment",
+    "text/paint/intermediate frames and CLS not proved"
+  ],
+  "runtimeBytes": {
+    "html": 466,
+    "modules": 712,
+    "css": 727
+  },
+  "runtimeDelta": {
+    "html": 0,
+    "modules": 0,
+    "css": 0
+  },
+  "cases": [
+    {
+      "name": "element-reserved",
+      "status": "verified",
+      "comparisons": {
+        "planned": 2,
+        "checked": 2
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "element-class-changes",
+      "status": "verified",
+      "comparisons": {
+        "planned": 2,
+        "checked": 2
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "element-same-class-neighbor",
+      "status": "verified",
+      "comparisons": {
+        "planned": 2,
+        "checked": 2
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "element-unreserved",
+      "status": "violated",
+      "comparisons": {
+        "planned": 2,
+        "checked": 2
+      },
+      "change": {
+        "target": "target0",
+        "field": "blockStart",
+        "beforePath": "Panel/1",
+        "afterPath": "Panel/1",
+        "before": {
+          "value": 32,
+          "exact": "32"
+        },
+        "after": {
+          "value": 88,
+          "exact": "88"
+        },
+        "delta": {
+          "value": 56,
+          "exact": "56"
+        }
+      },
+      "witness": {
+        "obligationIndex": 2,
+        "code": "E_NOSHIFT_BLOCK_START",
+        "box": "target0",
+        "path": "Panel/1",
+        "axis": "block",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240",
+        "available": 32,
+        "availableExact": "32",
+        "required": 88,
+        "requiredExact": "88"
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "element-hidden",
+      "status": "violated",
+      "comparisons": {
+        "planned": 2,
+        "checked": 1
+      },
+      "witness": {
+        "obligationIndex": 0,
+        "code": "E_NOSHIFT_PRESENCE",
+        "box": "target0",
+        "path": "Panel/1",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "element-replaced",
+      "status": "violated",
+      "comparisons": {
+        "planned": 2,
+        "checked": 1
+      },
+      "witness": {
+        "obligationIndex": 0,
+        "code": "E_NOSHIFT_PRESENCE",
+        "box": "target0",
+        "path": "Panel/[target:layout.1]",
+        "viewport": 320,
+        "viewportExact": "320",
+        "viewportHeight": 240,
+        "viewportHeightExact": "240"
+      },
+      "diagnostics": []
+    },
+    {
+      "name": "element-repeated",
+      "status": "verified",
+      "comparisons": {
+        "planned": 1,
+        "checked": 1
+      },
+      "diagnostics": []
+    }
+  ]
+}

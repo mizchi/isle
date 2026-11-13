@@ -27,7 +27,8 @@ export interface Handler { id: string; event: 'click' | 'input' | 'change' | 'su
 export type WireValue = Primitive | readonly WireValue[] | { readonly [key: string]: WireValue };
 export type ValueType = 'number' | 'string' | 'boolean' | { array: ValueType } | { record: Record<string, ValueType> };
 export type ComponentField = Omit<Field, 'type'> & { type: string; source?:SourceSpan };
-export interface ComponentLayout {contract:import('./layout-contract.mjs').ContractIR;source:SourceSpan}
+export type ComponentNoShiftTarget={source:SourceSpan} & ({selector:string;nodeId?:never}|{nodeId:string;selector?:never});
+export interface ComponentLayout {contract:import('./layout-contract.mjs').ContractIR;source:SourceSpan;noshift?:ComponentNoShiftTarget[]}
 export type ValueField = Omit<Field, 'type'> & { type: ValueType };
 export type TemplateNode =
   | { kind: 'select'; cases: { test: Expression; children: TemplateNode[] }[]; fallback: TemplateNode[]; source: SourceSpan }
@@ -39,7 +40,7 @@ export type TemplateNode =
   | { kind: 'slot' }
   /** Lowered client call; its props are invariant in the parent owner. */
   | { kind: 'island'; component: string; site: string; props: { name: string; value: Expression }[]; children: TemplateNode[]; source?: SourceSpan;layoutContracts?:ComponentLayout[] }
-  | { kind: 'element'; tag: string; source?: SourceSpan;layoutContracts?:ComponentLayout[]; attributes: { name: string; value: Expression }[]; children: TemplateNode[]; handlers: Handler[];
+  | { kind: 'element'; tag: string; source?: SourceSpan;layoutContracts?:ComponentLayout[];layoutTargets?:string[];layoutIdentity?:string; attributes: { name: string; value: Expression }[]; children: TemplateNode[]; handlers: Handler[];
     form?: FormContract; formField?: string; formError?: string; formSummary?: boolean; formStatus?: boolean };
 export interface Component {
   /** Build-only observer boundary; external setup can observe an otherwise dead entry. */

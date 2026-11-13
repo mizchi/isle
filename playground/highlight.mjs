@@ -1,9 +1,9 @@
 // A lossless lexical view, independent of compilation. Incomplete edits are valid
 // input here; highlighting never evaluates, formats or changes the source.
-const keywords=new Set('client server component layout requires ensures state derive event resource receive async await const let function return if else switch case default try catch finally throw new typeof instanceof void true false null undefined import export from as in of for while break continue readonly'.split(' '));
+const keywords=new Set('client server component layout requires ensures noshift space overlay within state derive event resource receive async await const let function return if else switch case default try catch finally throw new typeof instanceof void true false null undefined import export from as in of for while break continue readonly'.split(' '));
 const types=new Set('string number boolean unknown never any object bigint symbol'.split(' '));
 const patterns={
-  isle: /(?<comment>\/\/[^\r\n]*|\/\*[\s\S]*?(?:\*\/|$)|<!--[\s\S]*?(?:-->|$))|(?<string>"(?:\\[\s\S]|[^"\\])*"?|'(?:\\[\s\S]|[^'\\])*'?|`(?:\\[\s\S]|[^`\\])*`?)|(?<style><style\s*>[\s\S]*?(?:<\/style\s*>|$))|(?<tag>(?<![\w$])<\/?[A-Za-z_][\w.:-]*(?=[\s/>]))|(?<attribute>on:[\w.:-]+|[A-Za-z_][\w:-]*(?=\s*=\s*["'{]))|(?<number>\b(?:0[xX][\da-fA-F]+|\d+(?:\.\d+)?(?:[eE][+-]?\d+)?))|(?<identifier>[A-Za-z_$][\w$]*)/g,
+  isle: /(?<comment>\/\/[^\r\n]*|\/\*[\s\S]*?(?:\*\/|$)|<!--[\s\S]*?(?:-->|$))|(?<string>"(?:\\[\s\S]|[^"\\])*"?|'(?:\\[\s\S]|[^'\\])*'?|`(?:\\[\s\S]|[^`\\])*`?)|(?<style><style\s*>[\s\S]*?(?:<\/style\s*>|$))|(?<tag>(?<![\w$])<\/?[A-Za-z_][\w.:-]*(?=[\s/>]))|(?<attribute>@noshift\b|on:[\w.:-]+|[A-Za-z_][\w:-]*(?=\s*=\s*["'{]))|(?<number>\b(?:0[xX][\da-fA-F]+|\d+(?:\.\d+)?(?:[eE][+-]?\d+)?))|(?<identifier>[A-Za-z_$][\w$]*)/g,
   css: /(?<comment>\/\*[\s\S]*?(?:\*\/|$))|(?<string>"(?:\\[\s\S]|[^"\\])*"?|'(?:\\[\s\S]|[^'\\])*'?)|(?<atRule>@[\w-]+)|(?<number>#[\da-fA-F]{3,8}\b|-?\b\d+(?:\.\d+)?(?:%|[a-zA-Z]+)?)|(?<selector>[.#][\w-]+)|(?<property>(?:--)?[A-Za-z_][\w-]*(?=\s*:))/g,
   json: /(?<property>"(?:\\[\s\S]|[^"\\])*"(?=\s*:))|(?<string>"(?:\\[\s\S]|[^"\\])*"?)|(?<number>-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(?<keyword>\b(?:true|false|null)\b)/g,
 };
