@@ -304,19 +304,19 @@ E_LAYOUT_ITEM_SIZE: .cell requires 40px but receives 53/2px on inline axis at vi
 
 [mizchi/css](https://github.com/mizchi/css)はMoonBitの独立したCSS parser・selector・cascade・computed style実装である。開発用の差分オラクルとして`packages/css-verifier/oracle/`でJSへbuildし、同じCSSとbox treeについて、共通の部分集合の計算値を比較する。対象はdisplay・position・box-sizing・overflow・size・padding/border/margin・gap・Grid track。
 
-決定的に生成した入力(詳細度、`:is`/`:where`、`!important`、source順、media境界、`var()`と継承、wide keyword)を使う。差分は両者のどちらかの誤りの手掛かりであり、片方の正しさの証明ではない。既知のmizchi/css 0.8.0の差分は、狭い判定と最小例で固定し、それ以外の差分を失敗にする。
+決定的に生成した入力(詳細度、`:is`/`:where`、`!important`、source順、media境界、`var()`と継承、wide keyword)を使う。差分は両者のどちらかの誤りの手掛かりであり、片方の正しさの証明ではない。mizchi/css 0.8.1を使い、差分は全て失敗にする。既知差分の分類は持たない。
 
-| 分類 | mizchi/css 0.8.0の挙動 |
+0.8.0では次の7種類が差分になり、全てmizchi/css側の誤りだった。0.8.1で修正され、各最小例を「両者が仕様の値で一致する」回帰テストとして残している。
+
+| 0.8.0の差分 | 0.8.0の挙動 |
 | --- | --- |
-| `source-order-over-precedence` | shorthandとlonghandを別のkeyでcascadeし、source順に適用するため、後に書かれた低い詳細度・非importantの宣言が勝つ |
-| `overflow-not-coerced` | 片方の軸がscrollでもvisible/clipをauto/hiddenへ変換しない |
-| `wide-keyword-initial` / `inherit-non-inherited` | padding・gap・displayの初期値と、非継承プロパティの`inherit` |
-| `explicit-normal-gap` | `column-gap: normal`がautoになる |
-| `var-fallback` / `inherited-var-rebinding` | shorthand内のfallbackを失う。祖先の`--h: var(--g)`を子で再解決する |
+| shorthandとlonghandの優先順位 | 別のkeyでcascadeし、source順に適用するため、後に書かれた低い詳細度・非importantの宣言が勝つ |
+| overflowの計算値 | 片方の軸がscrollでもvisible/clipをauto/hiddenへ変換しない |
+| 初期値と`inherit` | padding・gap・displayの初期値と、非継承プロパティの`inherit` |
+| `column-gap: normal` | autoになる |
+| `var()` | shorthand内のfallbackを失う。祖先の`--h: var(--g)`を子で再解決する |
 
-css-verifier側の`!important`無視、詳細度無視、順序反転、media無視、padding左右の入替、gapの消失を加えた変異は全て差分として検出する。`@layer`、container query、幾何、Z3は対象外。`gap: var(--missing)`等のguaranteed-invalid参照はcss-verifierが現在unknownにする。実行は`just css-oracle-check`、結果は[report.json](../evals/results/css-cascade-oracle/report.json)。
-
-上記7分類はmizchi/cssのbranch `claude/dreamy-lovelace-90v3hb`(v0.8.0基準、未リリース)で修正した。そのbuildを`CSS_ORACLE_JS`で指定すると、30,000ケースが全て一致し、既知差分は0件になる。固定した最小例のテストは修正を検出して失敗するため、修正版のリリース後に`oracle/moon.mod`のversionを上げ、最小例の期待値を一致へ変え、分類を削除する。
+css-verifier側の`!important`無視、詳細度無視、順序反転、media無視、padding左右の入替、gapの消失を加えた変異は全て差分として検出する。`@layer`、container query、幾何、Z3は対象外。`gap: var(--missing)`等のguaranteed-invalid参照はcss-verifierが現在unknownにする。実行は`just css-oracle-check`、結果は[report.json](../evals/results/css-cascade-oracle/report.json)。未リリースのmizchi/cssを試す場合は、それへ接続したbuildを`CSS_ORACLE_JS`で指定する。
 
 ## 検査結果と前提
 

@@ -2,10 +2,10 @@
   "version": 1,
   "status": "consistent",
   "measured": {
-    "commit": "8df9df60797f4400c4410f1bf914fb729848fc0e",
-    "dirty": false,
-    "node": "v22.23.4",
-    "oracle": "mizchi/css@0.8.0"
+    "commit": "762111cdb31c74b99d3b2f3e99121158311f1962",
+    "dirty": true,
+    "node": "v24.22.3",
+    "oracle": "mizchi/css@0.8.1"
   },
   "input": {
     "generator": "packages/css-verifier/oracle/differential.mjs#generateCase",
@@ -45,66 +45,30 @@
   },
   "scope": "Specified-to-computed values of the shared longhand subset at one concrete viewport per case. Geometry, container queries, layers and Z3 are outside this eval.",
   "cases": {
-    "known-oracle-divergence": 1766,
-    "same": 2739,
+    "same": 4505,
     "verifier-unsupported": 495
-  },
-  "knownOracleDivergences": {
-    "overflow-not-coerced": {
-      "count": 1123,
-      "explanation": "CSS Overflow 3: visible/clip compute to auto/hidden when the other axis scrolls; mizchi/css keeps visible/clip."
-    },
-    "var-fallback": {
-      "count": 2795,
-      "explanation": "The verifier proved the reference guaranteed-invalid and used the fallback; mizchi/css drops the fallback in shorthands or re-resolves inherited custom properties against the child."
-    },
-    "wide-keyword-initial": {
-      "count": 1228,
-      "explanation": "mizchi/css initial values for padding/gap/display differ from CSS (0, normal, inline)."
-    },
-    "source-order-over-precedence": {
-      "count": 867,
-      "explanation": "Shorthands and longhands are cascaded under different keys and then applied in source order, so a later lower-precedence (specificity/!important) shorthand or longhand overwrites the winner."
-    },
-    "explicit-normal-gap": {
-      "count": 485,
-      "explanation": "An explicit column-gap: normal computes to auto in mizchi/css."
-    },
-    "inherit-non-inherited": {
-      "count": 364,
-      "explanation": "Explicit inherit on a non-inherited property (padding, min-width, display, gaps) does not take the parent value in mizchi/css."
-    },
-    "inherited-var-rebinding": {
-      "count": 3,
-      "explanation": "A custom property defined as var(--other) on an ancestor is inherited as its computed value (CSS Variables 1 section 3); mizchi/css re-resolves var(--other) against the child."
-    }
   },
   "properties": {
     "display": {
-      "same": 27414,
-      "known-oracle-divergence": 448
+      "same": 27862
     },
     "position": {
       "same": 27862
     },
     "box-sizing": {
-      "same": 27857,
-      "known-oracle-divergence": 5
+      "same": 27862
     },
     "overflow-x": {
-      "same": 27295,
-      "known-oracle-divergence": 567
+      "same": 27862
     },
     "overflow-y": {
-      "same": 27306,
-      "known-oracle-divergence": 556
+      "same": 27862
     },
     "inline-size": {
       "same": 27862
     },
     "min-inline-size": {
-      "same": 27848,
-      "known-oracle-divergence": 14
+      "same": 27862
     },
     "max-inline-size": {
       "same": 27862
@@ -119,8 +83,7 @@
       "same": 27862
     },
     "padding-left": {
-      "same": 26960,
-      "known-oracle-divergence": 902
+      "same": 27862
     },
     "border-left": {
       "same": 27862
@@ -129,8 +92,7 @@
       "same": 27862
     },
     "padding-right": {
-      "same": 27762,
-      "known-oracle-divergence": 100
+      "same": 27862
     },
     "border-right": {
       "same": 27862
@@ -139,8 +101,7 @@
       "same": 27862
     },
     "padding-top": {
-      "same": 27779,
-      "known-oracle-divergence": 83
+      "same": 27862
     },
     "border-top": {
       "same": 27862
@@ -149,8 +110,7 @@
       "same": 27862
     },
     "padding-bottom": {
-      "same": 27748,
-      "known-oracle-divergence": 114
+      "same": 27862
     },
     "border-bottom": {
       "same": 27862
@@ -159,12 +119,10 @@
       "same": 27862
     },
     "column-gap": {
-      "same": 25272,
-      "known-oracle-divergence": 2590
+      "same": 27862
     },
     "row-gap": {
-      "same": 26376,
-      "known-oracle-divergence": 1486
+      "same": 27862
     },
     "grid-template-columns": {
       "same": 27862

@@ -4,11 +4,11 @@
 import {existsSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {parseLayoutCSS, computeStyle} from '../src/layout/css.mjs';
-import {matches, greaterRank} from '../src/layout/selectors.mjs';
 import {tracks} from '../src/layout/grid.mjs';
 import {normalizeTree} from '../src/tree.mjs';
 import {cmp, q} from '../src/layout/linear.mjs';
 
+// mizchi/css 0.8.1 has no known divergence on this corpus; every difference fails.
 // CSS_ORACLE_JS points at another build, e.g. one linked to an unreleased mizchi/css checkout.
 export const oraclePath = process.env.CSS_ORACLE_JS ?? fileURLToPath(new URL('./_build/js/release/build/computed_oracle/computed_oracle.js', import.meta.url));
 
@@ -79,7 +79,7 @@ export function compareCase(oracle, {css, tree, width, height = 768, name = 'Doc
   const {root} = normalizeTree(tree, name);
   const active = mutate?.active ?? activeAt(width, height), rows = [];
   let failure;
-  const visit = (box, inherited, parent) => {
+  const visit = (box, inherited) => {
     let style;
     try { style = computeStyle(rules, box, active, inherited); }
     catch (error) { failure = `${box.path}: ${error.message}`; return; }
@@ -89,84 +89,13 @@ export function compareCase(oracle, {css, tree, width, height = 768, name = 'Doc
       if (ours.unsupported) { rows.push({path: box.path, property, status: 'verifier-unsupported', reason: ours.unsupported}); continue; }
       const other = normalizeOracle(property, theirs?.[property]);
       const same = JSON.stringify(ours.value) === JSON.stringify(other);
-      const row = {path: box.path, property, status: same ? 'same' : 'different', verifier: ours.value, oracle: other, ...(style.$sources[property] ? {source: style.$sources[property]} : {})};
-      if (!same) {
-        const known = classifyOracleDivergence(row, {style, theirs, rules, box, active, parent});
-        if (known) Object.assign(row, {status: 'known-oracle-divergence', divergence: known});
-      }
-      rows.push(row);
+      rows.push({path: box.path, property, status: same ? 'same' : 'different', verifier: ours.value, oracle: other, ...(style.$sources[property] ? {source: style.$sources[property]} : {})});
     }
-    for (const child of box.children) visit(child, style, {style, theirs});
+    for (const child of box.children) visit(child, style);
   };
-  visit(root, undefined, undefined);
+  visit(root, undefined);
   if (failure) return {status: 'verifier-unsupported', reason: failure, rows};
-  return {status: rows.some(row => row.status === 'different') ? 'different' : rows.some(row => row.status === 'known-oracle-divergence') ? 'known-oracle-divergence' : 'same', rows};
-}
-
-// ---- Known mizchi/css 0.8.0 divergences ----------------------------------
-// Each rule matches one reproducible upstream behavior and is deliberately
-// narrow: anything it does not explain stays a `different` row and fails the
-// eval. Verifier-side CSS semantics are cited from the CSS specifications.
-
-const wideKeywords = new Set(['initial', 'unset', 'revert']);
-/** The value mizchi/css 0.8.0 produces for initial/unset on these properties. */
-const oracleInitial = property => property === 'display' ? 'block' : property === 'box-sizing' ? 'content-box' : 'auto';
-const scrollable = value => !['visible', 'clip'].includes(value);
-
-/** Declarations of `property` that apply to `box`, with verifier cascade rank. */
-function applicable(rules, box, active, property) {
-  const out = [];
-  let order = 0;
-  for (const rule of rules) {
-    if (!active(rule)) continue;
-    for (const selector of rule.selectors) {
-      if (!matches(selector, box)) continue;
-      for (const declaration of rule.declarations) {
-        order++;
-        if (declaration.property !== property) continue;
-        const layer = rule.layer === null ? (declaration.important ? -Infinity : Infinity) : declaration.important ? -rule.layer : rule.layer;
-        out.push({declaration, order, rank: [declaration.important, layer, ...selector.specificity]});
-      }
-    }
-  }
-  return out;
-}
-
-export const divergenceKinds = {
-  'overflow-not-coerced': 'CSS Overflow 3: visible/clip compute to auto/hidden when the other axis scrolls; mizchi/css keeps visible/clip.',
-  'source-order-over-precedence': 'Shorthands and longhands are cascaded under different keys and then applied in source order, so a later lower-precedence (specificity/!important) shorthand or longhand overwrites the winner.',
-  'wide-keyword-initial': 'mizchi/css initial values for padding/gap/display differ from CSS (0, normal, inline).',
-  'explicit-normal-gap': 'An explicit column-gap: normal computes to auto in mizchi/css.',
-  'inherit-non-inherited': 'Explicit inherit on a non-inherited property (padding, min-width, display, gaps) does not take the parent value in mizchi/css.',
-  'var-fallback': 'The verifier proved the reference guaranteed-invalid and used the fallback; mizchi/css drops the fallback in shorthands or re-resolves inherited custom properties against the child.',
-  'inherited-var-rebinding': 'A custom property defined as var(--other) on an ancestor is inherited as its computed value (CSS Variables 1 section 3); mizchi/css re-resolves var(--other) against the child.',
-};
-
-export function classifyOracleDivergence(row, {style, theirs, rules, box, active, parent}) {
-  const {property, verifier, oracle} = row;
-  if (property.startsWith('overflow-')) {
-    const otherAxis = property === 'overflow-x' ? 'overflow-y' : 'overflow-x';
-    const coerced = {visible: 'auto', clip: 'hidden'}[oracle];
-    if (coerced === verifier && scrollable(style[otherAxis]) && theirs?.[otherAxis] && scrollable(normalizeOracle(otherAxis, theirs[otherAxis]))) return 'overflow-not-coerced';
-  }
-  const specified = row.source?.specified?.trim().toLowerCase();
-  if (specified && wideKeywords.has(specified) && ((oracle === 'auto' && /^(?:padding-|column-gap|row-gap)/.test(property)) || (property === 'display' && verifier === 'inline' && oracle === 'block'))) return 'wide-keyword-initial';
-  if (specified === 'normal' && property === 'column-gap' && verifier === 'normal' && oracle === 'auto') return 'explicit-normal-gap';
-  // mizchi/css falls back to its own initial value instead of the parent's.
-  if (specified === 'inherit' && parent && JSON.stringify(normalizeVerifier(property, parent.style[property]).value) === JSON.stringify(verifier) &&
-    oracle === oracleInitial(property)) return 'inherit-non-inherited';
-  if (specified === 'inherit' && !parent && oracle === oracleInitial(property)) return 'wide-keyword-initial';
-  const fallback = specified && /^var\(\s*--[\w-]+\s*,\s*([^()]+)\)$/.exec(specified);
-  if (fallback && JSON.stringify(normalizeVerifier(property, fallback[1].trim()).value) === JSON.stringify(verifier)) return 'var-fallback';
-  if (specified && /var\(/.test(specified) && property.endsWith('-gap') && oracle === 'auto') return 'var-fallback';
-  const aliases = new Set(rules.flatMap(rule => rule.declarations.filter(d => d.expression?.references.length).map(d => d.property)));
-  if (specified && [...specified.matchAll(/var\(\s*(--[\w-]+)/g)].some(m => aliases.has(m[1]))) return 'inherited-var-rebinding';
-  const all = applicable(rules, box, active, property);
-  const winner = all.reduce((best, entry) => !best || greaterRank(entry.rank, best.rank) ? entry : best, undefined);
-  if (winner && all.some(entry => entry !== winner && entry.order > winner.order &&
-    !greaterRank(entry.rank, winner.rank) && (entry.declaration.pending || ['inherit', ...wideKeywords].includes(entry.declaration.value) || (entry.declaration.value === 'normal' && oracle === 'auto') ||
-      JSON.stringify(normalizeVerifier(property, entry.declaration.value).value) === JSON.stringify(oracle)))) return 'source-order-over-precedence';
-  return undefined;
+  return {status: rows.some(row => row.status === 'different') ? 'different' : 'same', rows};
 }
 
 // ---- Deterministic corpus -------------------------------------------------

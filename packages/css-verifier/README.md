@@ -105,8 +105,9 @@ geometry is decided and never change the status, regions or proof.
 
 `oracle/` builds [mizchi/css](https://github.com/mizchi/css), an independent
 MoonBit CSS engine, to JS and compares the shared computed-value subset on a
-deterministic corpus. Known mizchi/css 0.8.0 divergences are pinned; any other
-difference fails. It is not part of the package files. Run
+deterministic corpus using mizchi/css 0.8.1. Any difference fails; the cases
+that differed in 0.8.0 (all mizchi/css bugs, fixed in 0.8.1) are kept as
+agreement regressions. It is not part of the package files. Run
 `just css-oracle-check` from the repository root (MoonBit required).
 
 ## Compare layout transitions

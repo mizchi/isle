@@ -3,11 +3,11 @@
 // unexplained difference. Browser rendering is not used.
 import {mkdirSync, writeFileSync, readFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
-import {loadOracle, compareCase, generateCase, divergenceKinds, comparedProperties} from '../../../packages/css-verifier/oracle/differential.mjs';
+import {loadOracle, compareCase, generateCase, comparedProperties} from '../../../packages/css-verifier/oracle/differential.mjs';
 
 const seeds = Number(process.argv[2] ?? 5000);
 const oracle = await loadOracle();
-const cases = {}, kinds = {}, properties = {}, unsupported = {}, differences = [];
+const cases = {}, properties = {}, unsupported = {}, differences = [];
 for (let seed = 1; seed <= seeds; seed++) {
   const input = generateCase(seed), result = compareCase(oracle, input);
   cases[result.status] = (cases[result.status] ?? 0) + 1;
@@ -15,7 +15,6 @@ for (let seed = 1; seed <= seeds; seed++) {
   for (const row of result.rows) {
     properties[row.property] ??= {};
     properties[row.property][row.status] = (properties[row.property][row.status] ?? 0) + 1;
-    if (row.divergence) kinds[row.divergence] = (kinds[row.divergence] ?? 0) + 1;
     if (row.status === 'different' && differences.length < 20) differences.push({seed, css: input.css, width: input.width, ...row});
   }
 }
@@ -26,7 +25,7 @@ const report = {
   measured: {commit: git(['rev-parse', 'HEAD']), dirty: Boolean(git(['status', '--porcelain'])), node: process.version, oracle: `mizchi/css@${lock}`},
   input: {generator: 'packages/css-verifier/oracle/differential.mjs#generateCase', seeds: [1, seeds], comparedProperties},
   scope: 'Specified-to-computed values of the shared longhand subset at one concrete viewport per case. Geometry, container queries, layers and Z3 are outside this eval.',
-  cases, knownOracleDivergences: Object.fromEntries(Object.entries(kinds).map(([kind, count]) => [kind, {count, explanation: divergenceKinds[kind]}])),
+  cases,
   properties, verifierUnsupported: unsupported, differences,
 };
 const out = new URL('../../results/css-cascade-oracle/', import.meta.url);
