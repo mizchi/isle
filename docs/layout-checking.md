@@ -330,6 +330,27 @@ E_LAYOUT_ITEM_SIZE: .cell requires 40px but receives 53/2px on inline axis at vi
 ```
 
 導出した幅は`minInlineSize`、1行の高さは`intrinsicBlockSize`、`wrap: "nowrap"`になり、既存の検査が全てのviewportで照合する。
+### 折り返すテキスト
+
+`wrap: "normal"`(または `"anywhere"`)と固定文字列を書くと、行分割をモデルにして行数の profile を導出する。
+
+```json
+".body": { "wrap": "normal",
+  "text": { "font": { "family": "Noto Sans JP", "size": 16, "lineHeight": 24, "weight": 400 }, "content": "折り返しを確認します。日本語のテキスト幅検査。" } }
+```
+
+内容の幅ごとの行数 × line-height が `intrinsicBlockSize`、最長の分割できない区間が `minInlineSize` になる。
+分割位置は空白の後、漢字・仮名の前後で、`。`・`、` は行頭に来ない。それ以外の記号は入力エラー。
+[例](../examples/layout-contracts/text-wrap.json)では 48px の行に本文が3行必要になる幅を報告する。
+
+```text
+E_LAYOUT_CONTENT: .body requires 72px but receives 48px on block axis at viewport 24475/128px × 400px
+  width [160, 14235/64)px; height [200, 600]px
+  text: wraps into 3 lines at this width; 2 fit
+```
+
+見出し(`h1`–`h6`)などの UA のフォント指定は継承しないので、計測したフォントを CSS で明示する。
+
 Vite の検査付き build では `layout.fonts` に同じ形で渡す(パスは `.isle` entry からの相対)。
 
 ```js

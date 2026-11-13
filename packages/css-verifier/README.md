@@ -132,7 +132,11 @@ LayoutUnit). A character domain bounds every string of up to `maxLength`
 characters by the widest character and the largest pair adjustment; findings
 report `text.fitsUpTo`. The core checks that the computed CSS font equals the
 measured one and otherwise reports Unknown. Only single-line (`nowrap`) text
-is modeled. Build the FFI with `just css-text-build`.
+is modeled for character domains; fixed `content` with `wrap: 'normal'` (or
+`'anywhere'`) is resolved by a line-breaking model (a UAX #14 subset: spaces,
+CJK ideographs/kana, Latin words, no line start at 。、) into a line-count
+profile over the content width (`intrinsicBlockSize`) and a min-content
+`minInlineSize`. Build the FFI with `just css-text-build`.
 
 ## Differential cascade oracle (development only)
 

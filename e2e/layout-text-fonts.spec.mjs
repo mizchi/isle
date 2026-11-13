@@ -96,3 +96,63 @@ test('the example card overflows exactly where the analysis reports it may', asy
     else expect(text, `overflows at ${viewport}`).toBeGreaterThan(available - 2 / 64);
   }
 });
+
+// Line breaking (white-space: normal). Chromium wraps the same text at many
+// widths: the modeled line count is never below the rendered one and equals
+// it except within 3/64 px below a modeled threshold (the bound allowance).
+const ro = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
+const wrapping = [
+  [jp, '日本語のテキスト幅検査。折り返しを確認します。', 'normal'], [jp, '英語ABC 123 日本語のテキスト幅検査。', 'normal'], [jp, '確認ABC123テキスト', 'normal'],
+  [ro, 'Hello world office AV To WMW 0123456789 Hello world', 'normal'], [ro, 'office WMW Hello', 'anywhere'], [ro, 'office WMW Hello', 'break-word'],
+];
+for (const lang of ['en', 'ja']) test(`modeled line counts match Chromium (lang=${lang})`, async ({page}) => {
+  await page.setContent(`<!doctype html><html lang="${lang}"><style>${face}body{margin:0}</style><body></body></html>`);
+  for (const [font, text, overflowWrap] of wrapping) {
+    const lines = metrics.breakLines({font, text, overflowWrap});
+    const set = new Set();
+    for (const entry of lines.profile) for (const d of [-3, -2, -1, 0, 1]) set.add(entry.atLeastInlineSize + d / 64);
+    for (let w = 1; w <= Math.ceil(lines.width) + 4; w++) set.add(w);
+    const count = w => lines.profile.filter(entry => entry.atLeastInlineSize <= w).at(-1)?.lines;
+    const widths = [...set].filter(w => count(w) !== undefined).sort((a, b) => a - b);
+    const rendered = await page.evaluate(async ({font, text, overflowWrap, widths}) => {
+      await document.fonts.load(`${font.weight} ${font.size}px "${font.family}"`, text);
+      const element = document.createElement('div');
+      Object.assign(element.style, {fontFamily: `"${font.family}"`, fontSize: `${font.size}px`, lineHeight: `${font.lineHeight}px`, fontWeight: String(font.weight), overflowWrap});
+      element.textContent = text; document.body.append(element);
+      const out = widths.map(w => { element.style.width = `${w}px`; return element.getBoundingClientRect().height / font.lineHeight; });
+      element.remove(); return out;
+    }, {font, text, overflowWrap, widths});
+    let banded = 0;
+    widths.forEach((w, i) => {
+      const modeled = count(w), band = lines.profile.some(entry => w < entry.atLeastInlineSize && w >= entry.atLeastInlineSize - 3 / 64);
+      expect(rendered[i], `${text} (${overflowWrap}) at ${w}px: Chromium ≤ model`).toBeLessThanOrEqual(modeled);
+      if (band) banded += rendered[i] < modeled; else expect(rendered[i], `${text} (${overflowWrap}) at ${w}px`).toBe(modeled);
+    });
+    expect(widths.length).toBeGreaterThan(100);
+  }
+});
+
+test('the wrapping example: heights match Chromium and the body overflows where reported', async ({page}) => {
+  const read = name => readFileSync(new URL(`../examples/layout-contracts/${name}`, import.meta.url), 'utf8');
+  const config = JSON.parse(read('text-wrap.json')), css = read('text-wrap.css'), ir = requireIR(compile(read('text-wrap.isle')));
+  const {fonts, ...options} = config;
+  const report = analyzeLayout(ir, metrics.resolveOptions({...options, css, cssFile: 'text-wrap.css'}));
+  const finding = report.diagnostics.find(d => d.code === 'E_LAYOUT_CONTENT' && d.box === '.body');
+  expect(finding.range.maxExact).toBe('14235/64');
+  const limit = 14235 / 64;
+  const html = prepareProgram(ir).render('NoticeCard', {}, {mode: 'ssr'}).html;
+  const value = text => { const [n, d = '1'] = text.split('/'); return Number(n) / Number(d); };
+  for (const viewport of [160, 180, 207, 208, 222, 223, 300, 400, 800]) {
+    await page.setViewportSize({width: viewport, height: 400});
+    await page.setContent(`<!doctype html><html lang="ja"><style>${face}${css}html,body{margin:0}</style>${html}`);
+    await page.evaluate(() => document.fonts.ready);
+    const measured = await page.evaluate(() => Object.fromEntries(['.title', '.body'].map(selector => {
+      const node = document.querySelector(selector), range = document.createRange(); range.selectNodeContents(node);
+      return [selector, {height: node.getBoundingClientRect().height, text: range.getBoundingClientRect().height}];
+    })));
+    // The auto row is as tall as the modeled lines of the title.
+    const row = report.sizes.find(r => r.box === '.title' && r.rect && viewport >= r.range.min && viewport <= r.range.max);
+    expect(measured['.title'].height, `title at ${viewport}`).toBe(value(row.rect.blockSize.constant) + value(row.rect.blockSize.coefficient) * viewport);
+    expect(measured['.body'].text > 48, `body overflows at ${viewport}`).toBe(viewport < limit);
+  }
+});

@@ -6,7 +6,7 @@ import {q, cmp} from './linear.mjs';
 import {fontShorthand} from './css.mjs';
 
 const fontKeys = new Set(['family', 'size', 'lineHeight', 'weight', 'style']);
-const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance']);
+const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance', 'minContent', 'overflowWrap', 'profile']);
 const finite = (value, min, max) => typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;
 
 export function validateFontContract(font) {
@@ -17,7 +17,16 @@ export function validateFontContract(font) {
 }
 
 export function validateTextMetrics(metrics) {
-  if (!metrics || typeof metrics !== 'object' || Object.keys(metrics).some(key => !metricKeys.has(key)) || !['content', 'domain'].includes(metrics.kind)) throw new Error('Invalid text metrics');
+  if (!metrics || typeof metrics !== 'object' || Object.keys(metrics).some(key => !metricKeys.has(key)) || !['content', 'domain', 'lines'].includes(metrics.kind)) throw new Error('Invalid text metrics');
+  if (metrics.kind === 'lines') {
+    const {profile} = metrics;
+    if (!['normal', 'anywhere', 'break-word'].includes(metrics.overflowWrap) || !Array.isArray(profile) || !profile.length || profile.length > 256) throw new Error('Invalid text line profile');
+    for (let i = 0; i < profile.length; i++) {
+      const entry = profile[i];
+      if (!entry || Object.keys(entry).some(key => !['atLeastInlineSize', 'lines'].includes(key)) || !finite(entry.atLeastInlineSize, 0, 1_000_000) || !Number.isSafeInteger(entry.lines) || entry.lines < 1
+        || (i && (entry.atLeastInlineSize <= profile[i - 1].atLeastInlineSize || entry.lines >= profile[i - 1].lines))) throw new Error('A text line profile must have increasing widths and decreasing line counts');
+    }
+  }
   if (metrics.kind === 'domain') {
     const {bounds, maxLength} = metrics;
     if (!Number.isSafeInteger(maxLength) || maxLength < 1 || !Array.isArray(bounds) || bounds.length !== maxLength + 1 || bounds[0] !== 0) throw new Error('Invalid text domain bounds');
@@ -53,6 +62,26 @@ export function textFontMismatch(style, font) {
   if (style['text-transform'] !== 'none') return `text-transform ${style['text-transform']} changes the measured characters`;
   for (const key of ['letter-spacing', 'word-spacing']) if (!['normal', '0', '0px'].includes(style[key])) return `${key} must be normal`;
   return null;
+}
+
+/**
+ * A line profile was measured for one white-space/overflow-wrap pair and must
+ * be the box's block contract (line count × line height). Returns a reason.
+ */
+export function textLinesMismatch(style, contract) {
+  const metrics = contract.textMetrics;
+  if (style['white-space'] !== 'normal') return `white-space ${style['white-space']} differs from the measured normal line breaking`;
+  if (style['overflow-wrap'] !== metrics.overflowWrap) return `overflow-wrap ${style['overflow-wrap']} differs from the measured ${metrics.overflowWrap}`;
+  const heights = contract.intrinsicBlockSize;
+  if (!Array.isArray(heights) || heights.length !== metrics.profile.length || heights.some((entry, i) => entry.atLeastInlineSize !== metrics.profile[i].atLeastInlineSize || Math.abs(entry.blockSize - metrics.profile[i].lines * contract.font.lineHeight) > 1e-9)) return 'intrinsicBlockSize must be the line profile times the line height';
+  return null;
+}
+
+/** Line boxes of `lineHeight` that fit `offered` (an exact rational), at most `limit`. */
+export function fittingLines(lineHeight, offered, limit) {
+  let n = 0;
+  while (n < limit && cmp(q(lineHeight * (n + 1)), offered) <= 0) n++;
+  return n;
 }
 
 /** Largest domain length whose bound fits `offered` (an exact rational). */

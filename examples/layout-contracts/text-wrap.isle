@@ -1,0 +1,6 @@
+component NoticeCard() {
+  <main class="card">
+    <h1 class="title">日本語のテキスト幅検査。</h1>
+    <p class="body">折り返しを確認します。日本語のテキスト幅検査。</p>
+  </main>
+}

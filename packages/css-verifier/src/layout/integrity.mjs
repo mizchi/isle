@@ -35,7 +35,8 @@ const alignments = { start: 0, left: 0, justify: 0, center: 1 / 2, end: 1, right
  */
 function textExtents(row) {
   const contract = row.box.contract, factor = alignments[row.textAlign];
-  if (!contract?.textMetrics || !contract.font || factor === undefined) return [{ region: row.region, extent: box(row) }];
+  // Wrapped lines (kind 'lines') are bounded by the border box.
+  if (!contract?.textMetrics || contract.textMetrics.kind === 'lines' || !contract.font || factor === undefined) return [{ region: row.region, extent: box(row) }];
   const start = sum(row.origin.inline, scalar(row.content.left)), top = sum(row.origin.block, scalar(row.content.top));
   const width = scalar(contract.minInlineSize), block = [[top, sum(top, scalar(contract.font.lineHeight))]];
   const place = left => {

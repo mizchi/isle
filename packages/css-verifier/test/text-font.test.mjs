@@ -70,3 +70,44 @@ test('wrapping CSS disagrees with a single-line measurement', () => {
   status(report, 'violated');
   assert.ok(report.diagnostics.some(d => d.code === 'E_LAYOUT_WRAP'));
 });
+
+// Wrapping text: a hand-written line profile (3 lines below 100px, 2 below 160px, 1 from 160px).
+const profile = [{atLeastInlineSize: 0, lines: 3}, {atLeastInlineSize: 100, lines: 2}, {atLeastInlineSize: 160, lines: 1}];
+const lines = (overflowWrap = 'normal') => ({minInlineSize: 40, wrap: 'normal', font, intrinsicBlockSize: profile.map(e => ({atLeastInlineSize: e.atLeastInlineSize, blockSize: e.lines * 24})),
+  textMetrics: {kind: 'lines', text: 'あいう', width: 159.5, minContent: 40, overflowWrap, profile}});
+const wrapCSS = (extra = '') => `* { box-sizing: border-box; margin: 0; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 48px; padding: 0 8px; }
+.name { font-family: "Noto Sans JP"; font-size: 16px; line-height: 24px; }
+${extra}`;
+const wrapRun = (contract, extra, viewport = {min: 60, max: 400, height: {min: 100, max: 400}}) => analyzeLayout(tree(), {name: 'Card', css: wrapCSS(extra), viewport, ancestors: [{tag: 'html'}], boxes: {'.name': {...lines(), ...contract}}});
+
+test('wrapping text needs as many line boxes as the profile gives at its content width', () => {
+  const report = wrapRun({});
+  status(report, 'violated');
+  // Three lines (72px) do not fit the 48px row while the content box is below 100px: V < 116.
+  const finding = report.diagnostics.find(d => d.code === 'E_LAYOUT_CONTENT' && d.axis === 'block');
+  assert.equal(finding.range.max, 116);
+  assert.deepEqual(finding.text, {lines: 3, fitsLines: 2});
+  assert.equal(finding.range.maxInclusive, false);
+  status(wrapRun({}, '', {min: 116, max: 400, height: {min: 100, max: 400}}), 'verified');
+});
+
+test('a line profile applies only to the white-space and overflow-wrap it was measured for', () => {
+  const viewport = {min: 116, max: 400, height: {min: 100, max: 400}};
+  for (const [extra, reason] of [['.name { overflow-wrap: anywhere; }', /overflow-wrap anywhere differs from the measured normal/], ['.name { white-space: pre-line; }', /white-space/]]) {
+    const report = wrapRun({}, extra, viewport);
+    status(report, 'unknown');
+    assert.ok(report.diagnostics.some(d => reason.test(d.message)), JSON.stringify(report.diagnostics));
+  }
+  status(wrapRun({...lines('anywhere'), wrap: 'anywhere'}, '.name { overflow-wrap: anywhere; }', viewport), 'verified');
+});
+
+test('UA heading fonts are not inherited: a measured h1 needs author font longhands', () => {
+  const heading = () => ({tag: 'main', classes: ['row'], children: [{tag: 'h1', classes: ['name'], text: true}]});
+  const run = extra => analyzeLayout(heading(), {name: 'Card', css: css(extra), viewport: {min: 300, max: 400}, ancestors: [{tag: 'html'}],
+    boxes: {'.name': {minInlineSize: bounds[10], intrinsicBlockSize: 24, wrap: 'nowrap', font, textMetrics: domain}}});
+  const report = run('');
+  status(report, 'unknown');
+  assert.ok(report.diagnostics.some(d => d.code === 'U_LAYOUT_TEXT_FONT' && /font-weight ua must be absolute/.test(d.message)), JSON.stringify(report.diagnostics));
+  status(run('h1 { font-weight: 400; }'), 'verified');
+});

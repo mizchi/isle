@@ -45,7 +45,7 @@ export function validateOptions(options) {
     if (contract.intrinsicBlockSize !== undefined) {
       if (Array.isArray(contract.intrinsicBlockSize)) {
         const profile = contract.intrinsicBlockSize;
-        if (!profile.length || profile.length > 32) throw new Error('Invalid intrinsic block profile');
+        if (!profile.length || profile.length > (contract.textMetrics?.kind === 'lines' ? 256 : 32)) throw new Error('Invalid intrinsic block profile');
         let previous = -1;
         for (const entry of profile) {
           finiteSize(entry.atLeastInlineSize, 'profile width'); finiteSize(entry.blockSize, 'profile blockSize');

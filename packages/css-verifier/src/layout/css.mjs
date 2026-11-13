@@ -234,6 +234,12 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
     for(const side of ['left','right','top','bottom']) {values[`padding-${side}`]='ua';values[`border-${side}`]='ua';}
     for(const key of ['display','box-sizing','min-inline-size','min-block-size']) values[key]='ua';
   }
+  // UA font rules (h1–h6 size and weight, strong/b weight, em/i style, small
+  // size) are not author facts: they stay 'ua' until author CSS sets them.
+  if (/^h[1-6]$/.test(box.tag)) { values['font-size'] = 'ua'; values['font-weight'] = 'ua'; }
+  if (['strong', 'b'].includes(box.tag)) values['font-weight'] = 'ua';
+  if (['em', 'i'].includes(box.tag)) values['font-style'] = 'ua';
+  if (box.tag === 'small') values['font-size'] = 'ua';
   const ua = { ...values };
   const initial = { ...defaults, ...textInitial, display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
   const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', ...textProperties]);

@@ -35,7 +35,8 @@ export interface LayoutBoxContract {
   font?: { family: string; size: number; lineHeight: number; weight?: number; style?: 'normal' };
   /** Provenance of font-derived bounds. A domain bound table indexed by character count. */
   textMetrics?: { kind: 'content'; text: string; width: number; font?: object; allowance?: string }
-    | { kind: 'domain'; characters: string; maxLength: number; perCharacter: number; pairAdjustment: number; widest: string; bounds: number[]; font?: object; allowance?: string };
+    | { kind: 'domain'; characters: string; maxLength: number; perCharacter: number; pairAdjustment: number; widest: string; bounds: number[]; font?: object; allowance?: string }
+    | { kind: 'lines'; text: string; width: number; minContent: number; overflowWrap: 'normal' | 'anywhere' | 'break-word'; profile: { atLeastInlineSize: number; lines: number }[]; font?: object; allowance?: string };
 }
 export interface CheckedLayoutBoxContract extends Omit<LayoutBoxContract, 'overflow' | 'overflowBlock'> {
   overflow?: 'fit' | 'clip' | 'scroll';
@@ -78,7 +79,7 @@ export interface LayoutDiagnostic {
   source?: SourceSpan;
   witness?: { viewport: number; viewportExact: string; viewportHeight?: number; viewportHeightExact?: string; available: number; required: number };
   /** For a text domain: how many characters fit at the witness (font-derived contracts only). */
-  text?: { maxLength: number; fitsUpTo: number; widest: string };
+  text?: { maxLength: number; fitsUpTo: number; widest: string } | { lines: number; fitsLines: number };
   /** Build/debug provenance of both sides (ADR-0002). Never consulted by the proof. */
   explanation?: LayoutExplanation;
 }

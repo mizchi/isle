@@ -23,6 +23,16 @@ export const layoutAllowance = {unit: 1 / UNIT, rule: 'ceil to 1/64 px, then + 1
 const clean = value => Math.round(value * 1e6) / 1e6;
 export const upperBound = width => (Math.ceil(clean(width * UNIT)) + 1) / UNIT;
 
+// UAX #14 classes of the modeled subset (null: not modeled).
+const smallKana = /[ぁぃぅぇぉっゃゅょゎゕゖァィゥェォッャュョヮヵヶ]/u;
+function lineClass(c) {
+  if (c === ' ') return 'SP';
+  if (/[A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]/u.test(c)) return 'AL';
+  if (/[0-9]/.test(c)) return 'NU';
+  if (/[\u3400-\u4DBF\u4E00-\u9FFF]/u.test(c) || (/[\u3041-\u3096\u30A1-\u30FA]/u.test(c) && !smallKana.test(c))) return 'ID';
+  if (c === '。' || c === '、') return 'CL';
+  return null;
+}
 const collapse = text => text.replace(/[ \t\n\r\f]+/g, ' ').trim();
 const codepoints = text => [...text];
 
@@ -90,6 +100,87 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     return {characters: set.join(''), maxLength: length, perCharacter, pairAdjustment, widest, bounds};
   }
 
+  /**
+   * Line breaking of fixed content under white-space: normal, word-break:
+   * normal and line-break: auto, for a UAX #14 subset: spaces (SP), Latin
+   * letters (AL), digits (NU), CJK ideographs and non-small kana (ID), and
+   * 。、 (CL, never at a line start). Other characters are rejected.
+   *
+   * A line fits when the bound of its shaped text (trailing spaces hang) is at
+   * most the available width, the same rule as a single line. Bounds are
+   * multiples of 1/64 px, so the greedy result is constant on [k/64,
+   * (k+1)/64) and the profile is found by stepping down from the widest line:
+   * each greedy run fixes its breaks while the width stays at least its widest
+   * fitting line. With the bound wider than the advance, a modeled line count
+   * is never smaller than the browser's (a larger first line can only fit
+   * when the modeled one does).
+   */
+  function breakLines({font, text, overflowWrap = 'normal'}) {
+    if (typeof text !== 'string') fail('Text content must be a string');
+    if (!['normal', 'anywhere', 'break-word'].includes(overflowWrap)) fail(`overflow-wrap ${overflowWrap} is outside the line-breaking model`);
+    const collapsed = collapse(text), chars = codepoints(collapsed);
+    if (chars.length > maxLength) fail(`Wrapping text is limited to ${maxLength} characters`);
+    const classes = chars.map(lineClass);
+    const bad = chars.findIndex((c, i) => !classes[i]);
+    if (bad >= 0) fail(`Line breaking around U+${chars[bad].codePointAt(0).toString(16).toUpperCase().padStart(4, '0')} is not modeled`);
+    const n = chars.length;
+    // Break opportunities: before character i (0 < i < n).
+    const opportunity = i => classes[i] !== 'SP' && classes[i] !== 'CL' && (classes[i - 1] === 'SP' || !(['AL', 'NU'].includes(classes[i - 1]) && ['AL', 'NU'].includes(classes[i])));
+    const ends = [];
+    for (let i = 1; i < n; i++) if (opportunity(i)) ends.push(i);
+    ends.push(n);
+    const memo = new Map();
+    const bound = (start, end) => {
+      const key = start * (n + 1) + end;
+      if (!memo.has(key)) { const line = chars.slice(start, end).join('').trimEnd(); memo.set(key, line ? upperBound(shape(font, line)) : 0); }
+      return memo.get(key);
+    };
+    const emergency = overflowWrap !== 'normal';
+    // Greedy lines at width w: the count, and the widest line that fits (0 if every line is forced).
+    const greedy = w => {
+      let start = 0, count = 0, widest = 0;
+      while (start < n) {
+        let next = ends.findIndex(e => e > start), best = -1;
+        for (let k = next; k < ends.length && bound(start, ends[k]) <= w; k++) best = k;
+        let end;
+        if (best >= 0) { end = ends[best]; widest = Math.max(widest, bound(start, end)); }
+        else if (emergency) {
+          // An unbreakable run that does not fit is broken between characters (at least one per line).
+          const limit = ends[next];
+          end = start + 1;
+          for (let c = start + 1; c <= limit && bound(start, c) <= w; c++) end = c;
+          if (bound(start, end) <= w) widest = Math.max(widest, bound(start, end));
+          if (chars.slice(end, limit).every(c => c === ' ')) end = limit;
+        } else end = ends[next];
+        start = end; count++;
+      }
+      return {count, widest};
+    };
+    const width = n ? bound(0, n) : 0;
+    const runs = [];
+    for (let w = Infinity; ;) {
+      const {count, widest} = greedy(w);
+      runs.push({atLeastInlineSize: widest, lines: count});
+      if (widest === 0) break;
+      w = widest - 1 / UNIT;
+    }
+    // Ascending widths; keep the smallest width of each line count.
+    const profile = [];
+    for (const run of runs.reverse()) if (!profile.length || profile.at(-1).lines !== run.lines) profile.push(run);
+    // Below one character, a browser keeps clusters such as ligatures whole when
+    // it breaks a word: emergency-break profiles start at the widest character
+    // (narrower boxes are Unknown). Without emergency breaks every width is modeled.
+    const widestCharacter = Math.max(0, ...chars.map((c, i) => bound(i, i + 1)));
+    const floor = emergency ? widestCharacter : 0;
+    const covered = profile.filter(entry => entry.atLeastInlineSize > floor);
+    const atFloor = profile.filter(entry => entry.atLeastInlineSize <= floor).at(-1);
+    profile.splice(0, profile.length, {atLeastInlineSize: floor, lines: atFloor.lines}, ...covered);
+    if (profile.length > 256) fail('The line profile has more than 256 steps; shorten the text');
+    const pieces = ends.map((e, k) => [k ? ends[k - 1] : 0, e]);
+    const minContent = overflowWrap === 'anywhere' ? widestCharacter : Math.max(0, ...pieces.map(([a, b]) => bound(a, b)));
+    return {text: collapsed, width, minContent, overflowWrap, profile};
+  }
+
   /** Replace `text` box contracts with the core's derived size contracts. */
   function resolveBoxes(boxes = {}) {
     const out = {};
@@ -97,9 +188,18 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
       if (!contract?.text) { out[selector] = contract; continue; }
       const {text, ...rest} = contract;
       if (rest.minInlineSize !== undefined || rest.intrinsicBlockSize !== undefined || rest.minBlockSize !== undefined) fail(`${selector}: a text contract derives its own sizes`);
-      if (rest.wrap !== undefined && rest.wrap !== 'nowrap') fail(`${selector}: font-derived text is measured on one line; wrapping needs a line-breaking model`);
+      if (rest.wrap !== undefined && !['nowrap', 'normal', 'anywhere'].includes(rest.wrap)) fail(`${selector}: wrap must be nowrap, normal or anywhere`);
       const {font} = text;
       const fontContract = {family: font.family, size: font.size, lineHeight: font.lineHeight, ...(font.weight !== undefined ? {weight: font.weight} : {})};
+      if (rest.wrap === 'normal' || rest.wrap === 'anywhere') {
+        if (text.content === undefined) fail(`${selector}: wrapping is measured for fixed content; a character domain has no fixed line breaks`);
+        const overflowWrap = rest.wrap === 'anywhere' ? 'anywhere' : (text.overflowWrap ?? 'normal');
+        if (rest.wrap === 'anywhere' && text.overflowWrap !== undefined && text.overflowWrap !== 'anywhere') fail(`${selector}: wrap anywhere measures overflow-wrap: anywhere`);
+        const lines = breakLines({font, text: text.content, overflowWrap});
+        out[selector] = {...rest, minInlineSize: lines.minContent, intrinsicBlockSize: lines.profile.map(entry => ({atLeastInlineSize: entry.atLeastInlineSize, blockSize: entry.lines * font.lineHeight})),
+          font: fontContract, textMetrics: {kind: 'lines', text: lines.text, width: lines.width, minContent: lines.minContent, overflowWrap, profile: lines.profile, font: provenance(font), allowance: layoutAllowance.rule}};
+        continue;
+      }
       let metrics, width;
       if (text.content !== undefined) {
         const measured = measureText({font, text: text.content});
@@ -116,6 +216,6 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     return out;
   }
 
-  return {measureText, domainBounds, resolveBoxes, resolveOptions: options => ({...options, boxes: resolveBoxes(options.boxes)})};
+  return {measureText, domainBounds, breakLines, resolveBoxes, resolveOptions: options => ({...options, boxes: resolveBoxes(options.boxes)})};
 }
 

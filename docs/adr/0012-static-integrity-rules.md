@@ -77,4 +77,4 @@ vlmkit と同じく、absolute の box が関わる重なりは意図的なオ�
 
 ## 次の段階
 
-1. フォント由来のテキスト契約は Vite の `layout.fonts` で build から使える([ADR-0010](0010-font-derived-text-metrics.md))。次は折り返すテキスト(行分割のモデル)。
+1. フォント由来のテキスト契約は Vite の `layout.fonts` で build から使える([ADR-0010](0010-font-derived-text-metrics.md))。折り返すテキストの行数profileもある(ADR-0010)。

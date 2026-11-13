@@ -238,7 +238,7 @@ async function textFixture(t, {viewport:range, boxes, fonts = {'Noto Sans JP':{f
   t.after(() => rm(directory, { recursive:true, force:true }));
   await Promise.all([
     writeFile(join(directory, 'app.isle'), 'export component Four() { <main class="card"><p class="title">日本語のテキスト幅検査</p></main> }'),
-    writeFile(join(directory, 'app.css'), '*{box-sizing:border-box;margin:0;padding:0}.card{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:24px;font-family:"Noto Sans JP",sans-serif;font-size:16px;line-height:24px}.title{white-space:nowrap}'),
+    writeFile(join(directory, 'app.css'), '*{box-sizing:border-box;margin:0;padding:0}.card{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:24px;font-family:"Noto Sans JP",sans-serif;font-size:16px;line-height:24px}.title{white-space:'+(Object.values(boxes).some(b=>b.wrap) ? 'normal' : 'nowrap')+'}'),
     writeFile(join(directory, 'index.html'), html), writeFile(join(directory, 'package.json'), '{"type":"module"}'),
     writeFile(join(directory, 'jp.ttf'), await readFile(fontFile)),
   ]);
@@ -266,4 +266,15 @@ test('checked builds reject text that the font makes wider than the narrowest vi
 test('a text contract without layout.fonts is a configuration error', async t => {
   await assert.rejects(textFixture(t, {viewport:{min:200,max:400,height:{min:200,max:600}}, boxes:title, fonts:null}).then(run => run()), /E_ISLE_LAYOUT.*layout\.fonts/);
   await assert.rejects(textFixture(t, {viewport:{min:200,max:400,height:{min:200,max:600}}, boxes:title, fonts:{'Noto Sans JP':{path:'./jp.ttf'}}}).then(run => run()), /E_ISLE_LAYOUT.*fonts/);
+});
+
+test('checked builds measure wrapping text into a line profile', async t => {
+  const wrap = {'.title':{wrap:'normal', text:{font:jp, content:'日本語のテキスト幅検査'}}};
+  // The single 24px row holds one line only from the full width on.
+  const run = await textFixture(t, {viewport:{min:100,max:400,height:{min:200,max:600}}, boxes:wrap});
+  await assert.rejects(run, error => /E_LAYOUT_CONTENT/.test(error.message) && /block axis/.test(error.message));
+  const output = await (await textFixture(t, {viewport:{min:200,max:400,height:{min:200,max:600}}, boxes:wrap}))();
+  const contract = JSON.parse(artifact(output, 'isle.layout.json').source).contracts.boxes['.title'];
+  assert.equal(contract.textMetrics.kind, 'lines');
+  assert.equal(contract.intrinsicBlockSize.at(-1).blockSize, 24);
 });
