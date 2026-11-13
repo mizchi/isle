@@ -29,8 +29,12 @@ FFIはbuild時専用で、アプリの配信runtimeには含めない。
 ### 丸め
 
 Chromiumの幅はshapingのadvanceを1/64 px(LayoutUnit)へ切り上げた値になり、整数のadvanceでも
-浮動小数の誤差で1単位増える場合がある。上界は「1/64 pxへ切り上げ、さらに1/64 px」とし、
-1/64 pxの倍数なので有理数として正確に扱える。実測は常に `[advance, 上界]` に入る。
+浮動小数の誤差で1単位増える場合がある。Chromiumは**script runごと**にshapingと切り上げを行うので、
+固定文字列はChromiumと同じ規則でrunに分け(Script_Extensions:`ー`は{Hira, Kana}、CJKの約物は漢字・仮名のどれとも、
+空白・数字・全角形はどのrunとも続く)、runごとにshapingした和をadvanceとする。runをまたぐkerningはない。
+上界はk個のrunで「1/64 pxへ切り上げ、さらに(2k − 1)/64 px」とし、1/64 pxの倍数なので有理数として正確に扱える。
+(当初は文字列全体を1回shapingしていたため、`日ーア`の`ーア`のkerningを落とし、`xyzABCxyz ぁ`ではChromiumが上界を2/64 px超えていた。)
+文字集合と最大文字数の上界は全文字を最大advanceで数えるため、その余裕がrunごとの切り上げを覆う(Chromiumのランダム検査で確認)。
 
 ### 文字集合と最大文字数
 
@@ -44,8 +48,19 @@ Chromiumの幅はshapingのadvanceを1/64 px(LayoutUnit)へ切り上げた値に
 `wrap: 'normal'`(または`'anywhere'`)と固定文字列の`text`契約は、行数のprofileに解決する
 (`breakLines`、[`src/text.mjs`](../../packages/css-verifier/src/text.mjs))。
 
-- **分割位置**: UAX #14の部分集合。空白(SP)の後、CJKの漢字と小書きでない仮名(ID)の前後、Latin文字・数字(AL/NU)の連続の外。
-  `。`・`、`(CL)の前では分割しない(行頭禁則)。それ以外の文字(括弧・小書き仮名・長音・記号など)は入力エラー。
+- **分割位置**: Chromiumで全ての順序対(約80文字の6400対)と空白をはさむ対を描画して確かめた規則。
+  - 空白の後は常に分割できる(閉じ括弧の前でも)。
+  - 漢字・仮名(小書き仮名と`ー`を含む)の前後で分割できる。
+  - 全角の開き括弧`「『（［【〈《〔`の後では分割しない(行末禁則)。
+  - 閉じ括弧`」』）］】〉》〕`、`、。，．・：；！？〜…‥`、繰り返し記号`々ヽヾゝゞ`の前では分割しない(行頭禁則)。
+  - Latin文字・数字の連続の中では分割しない。開き括弧の前、閉じ括弧類の後では分割できる。
+  - `lang`(en/ja/zh)で分割位置は変わらなかった。ASCIIの記号は数値・引用符・接頭辞の文脈規則(UAX #14 LB25等)に従い、
+    対の表で表せないため入力エラーにする。
+- **text-spacing-trim**: Chromiumの既定(`normal`)はフォントの`halt`で約物を半角に詰める。shaperは`halt`を適用しないため、
+  - 隣接する全角約物(`。」`・`」「`など)は詰められる(`。「`が24 px)。入力エラーにする。
+  - 行末の閉じ括弧は、そのままでは収まらないとき半角になる(allow-end)。詰める場合と詰めない場合の両方で行数を求め、
+    一致しない幅は行数なし(`lines: null`)とし、コアはその幅をUnknownにする。部分的な詰めは両者の間に入る。
+  - 行頭の開き括弧と、句読点の行末は詰められなかった。
 - **1行の判定**: 行の文字列(行末の空白は吊り下げ、幅に入れない)をshapingした上界が、利用できる幅以下なら収まる。
   1行のテキストと同じ規則である。
 - **profile**: 上界は1/64 pxの倍数なので、greedyの結果は `[k/64, (k+1)/64)` で一定になる。
@@ -53,7 +68,7 @@ Chromiumの幅はshapingのadvanceを1/64 px(LayoutUnit)へ切り上げた値に
   行数ごとに最小の幅を残し、`intrinsicBlockSize`の段階profile(行数 × line-height)と、
   最長の分割不能な区間の上界を`minInlineSize`(min-content)にする。最大256段。
 - **健全性**: 上界はadvance以上なので、モデルの各行はブラウザーの行より長くならず、行数はブラウザー以上になる。
-  閾値の直下、幅3/64 px未満の帯ではモデルが1行多い場合があり、その帯では高さを大きめに見積もる。
+  閾値の直下、幅(2k + 1)/64 px未満の帯(kはscript run数)ではモデルが1行多い場合があり、その帯では高さを大きめに見積もる。
 - **overflow-wrap**: `anywhere`と`break-word`は、収まらない語を文字の間で分ける(1行に最低1文字)。
   1文字より狭い幅ではChromiumがligatureをまとめるため、profileは最も広い1文字の上界から始め、それより狭い幅はUnknownにする。
   `anywhere`ではmin-contentも最も広い1文字になる。
@@ -75,7 +90,8 @@ UAの見出し・強調のフォント(h1–h6のsizeとweight、strong/bのweig
 
 ## 依存関係と変更箇所
 
-- FFI: `packages/css-verifier/text-metrics/`(`mizchi/font@0.8.0`、fixtureはOFLのNoto Sans JP/Robotoのsubset)。
+- FFI: `packages/css-verifier/text-metrics/`(`mizchi/font@0.8.0`、fixtureはOFLのNoto Sans JP/Robotoのsubset。
+  `fixtures/sources.json`の元フォント・subset対象文字・pyftsubsetの指定から再生成できる。ASCII・仮名全体・全角約物を含み、旧fixtureの文字の幅は変わらない)。
 - 導出: `src/text.mjs`、`src/text-node.mjs`(`@mizchi/css-verifier/text`、`/text/node`)。
 - コア: `src/layout/css.mjs`(text系プロパティを継承付きで保持)、`text-font.mjs`、`engine.mjs`、`input.mjs`。
 - Isle: CLIの`layout.json`の`fonts`、Viteの検査付きbuildの`layout.fonts`(`lib/layout-build.mjs`の`resolveCheckedLayout`)、`lib/layout-summary.mjs`の`text:`行。
@@ -89,13 +105,14 @@ UAの見出し・強調のフォント(h1–h6のsizeとweight、strong/bのweig
 | --- | --- |
 | `packages/css-verifier/test/text-font.test.mjs` | 手書き契約でコアを単独検査。照合を外す変異で失敗することを確認 |
 | `tests/css-text-metrics.test.mjs` | 丸め、空白の畳み込み、wght、上界表、拒否する入力、CLIの例 |
-| `e2e/layout-text-fonts.spec.mjs` | Chromiumで同じフォントを描画。7文字列が`[advance, 上界]`、ランダム200文字列が上界以下、上界の余裕が2/64 px以下、例のcardが報告どおりの幅で溢れる。折り返し6構成(日本語・混在・Latin、`anywhere`・`break-word`)を`lang=en`/`ja`で各100幅以上描画し、行数がモデル以下、閾値直下3/64 px未満の帯の外では一致。[折り返しの例](../../examples/layout-contracts/text-wrap.json)のtitleの高さと、bodyが溢れる幅が一致 |
+| `e2e/layout-text-fonts.spec.mjs` | Chromiumで同じフォントを描画。7文字列が`[advance, 上界]`、ランダム200文字列が上界以下、上界の余裕が2/64 px以下、例のcardが報告どおりの幅で溢れる。折り返し11構成(日本語・混在・Latin・括弧・小書き仮名・繰り返し記号、`anywhere`・`break-word`)と全クラスのランダム60文字列を`lang=en`/`ja`で描画し、行数がモデル以下、閾値直下の帯の外では一致(行数なしの幅は除く)。[折り返しの例](../../examples/layout-contracts/text-wrap.json)のtitleの高さと、bodyが溢れる幅が一致 |
 
 実行は`just css-text-check`。ブラウザーの実測は静的モデルの誤りを探す補助で、受理の判定には使わない。
 
 ## 次の段階
 
 1. Isle adapterがtemplateの静的テキストを`content`として渡し、手書きの重複をなくす。
-2. 行分割の文字クラスを広げる(括弧・小書き仮名・長音・ASCII記号)。それぞれChromiumで照合してから受理する。
+2. ASCII記号の行分割(UAX #14の文脈規則)と、`halt`の適用(mizchi/fontのshapingにfeature指定が必要)による隣接約物の詰め。
+   どちらもChromiumで照合してから受理する。
    文字集合と最大文字数の折り返しは、行数の上界(高さの上界)として扱えるかを検討する。
 3. フォント全体(cmap全体)を定義域とする上界。GPOSのpair調整の上限が必要になる。

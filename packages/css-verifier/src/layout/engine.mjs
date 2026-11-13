@@ -138,10 +138,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       let states = [{ region, value: null }];
       for (const entry of value) states = states.flatMap(state => {
         const p = partition(state.region, diff(content, scalar(entry.atLeastInlineSize)), '>=');
-        return [...p.yes.map(region => ({ region, value: scalar(entry.blockSize) })), ...p.no.map(region => ({ ...state, region }))];
+        return [...p.yes.map(region => ({ region, value: entry.blockSize === null ? 'undetermined' : scalar(entry.blockSize) })), ...p.no.map(region => ({ ...state, region }))];
       });
-      for (const state of states) if (!state.value) unknown('U_LAYOUT_INTRINSIC', 'Intrinsic block profile does not cover the available inline size', undefined, box);
-      return states.filter(state => state.value);
+      for (const state of states) {
+        if (!state.value) unknown('U_LAYOUT_INTRINSIC', 'Intrinsic block profile does not cover the available inline size', undefined, box);
+        else if (state.value === 'undetermined') { const r = ranges(state.region).range; unknown('U_LAYOUT_INTRINSIC', `The line count depends on text-spacing-trim (a closing bracket at a line end may be set half-width)${r ? ` for viewport width ${r.minExact}..${r.maxExact}` : ''}`, undefined, box); }
+      }
+      return states.filter(state => state.value && state.value !== 'undetermined');
     }
     if (box.text) throw new Error('Automatic text height needs an intrinsicBlockSize contract');
     return [{ region, value: scalar(0) }];

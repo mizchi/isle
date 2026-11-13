@@ -23,9 +23,12 @@ export function validateTextMetrics(metrics) {
     if (!['normal', 'anywhere', 'break-word'].includes(metrics.overflowWrap) || !Array.isArray(profile) || !profile.length || profile.length > 256) throw new Error('Invalid text line profile');
     for (let i = 0; i < profile.length; i++) {
       const entry = profile[i];
-      if (!entry || Object.keys(entry).some(key => !['atLeastInlineSize', 'lines'].includes(key)) || !finite(entry.atLeastInlineSize, 0, 1_000_000) || !Number.isSafeInteger(entry.lines) || entry.lines < 1
-        || (i && (entry.atLeastInlineSize <= profile[i - 1].atLeastInlineSize || entry.lines >= profile[i - 1].lines))) throw new Error('A text line profile must have increasing widths and decreasing line counts');
+      // lines: null marks widths where the count depends on text-spacing-trim (Unknown).
+      if (!entry || Object.keys(entry).some(key => !['atLeastInlineSize', 'lines'].includes(key)) || !finite(entry.atLeastInlineSize, 0, 1_000_000) || (entry.lines !== null && (!Number.isSafeInteger(entry.lines) || entry.lines < 1))
+        || (i && entry.atLeastInlineSize <= profile[i - 1].atLeastInlineSize)) throw new Error('A text line profile must have increasing widths');
     }
+    const known = profile.filter(entry => entry.lines !== null);
+    if (profile.at(-1).lines === null || known.some((entry, i) => i && entry.lines >= known[i - 1].lines)) throw new Error('A text line profile must have decreasing line counts and end with a known count');
   }
   if (metrics.kind === 'domain') {
     const {bounds, maxLength} = metrics;
@@ -73,7 +76,7 @@ export function textLinesMismatch(style, contract) {
   if (style['white-space'] !== 'normal') return `white-space ${style['white-space']} differs from the measured normal line breaking`;
   if (style['overflow-wrap'] !== metrics.overflowWrap) return `overflow-wrap ${style['overflow-wrap']} differs from the measured ${metrics.overflowWrap}`;
   const heights = contract.intrinsicBlockSize;
-  if (!Array.isArray(heights) || heights.length !== metrics.profile.length || heights.some((entry, i) => entry.atLeastInlineSize !== metrics.profile[i].atLeastInlineSize || Math.abs(entry.blockSize - metrics.profile[i].lines * contract.font.lineHeight) > 1e-9)) return 'intrinsicBlockSize must be the line profile times the line height';
+  if (!Array.isArray(heights) || heights.length !== metrics.profile.length || heights.some((entry, i) => entry.atLeastInlineSize !== metrics.profile[i].atLeastInlineSize || (metrics.profile[i].lines === null ? entry.blockSize !== null : entry.blockSize === null || Math.abs(entry.blockSize - metrics.profile[i].lines * contract.font.lineHeight) > 1e-9))) return 'intrinsicBlockSize must be the line profile times the line height';
   return null;
 }
 

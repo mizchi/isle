@@ -48,7 +48,9 @@ export function validateOptions(options) {
         if (!profile.length || profile.length > (contract.textMetrics?.kind === 'lines' ? 256 : 32)) throw new Error('Invalid intrinsic block profile');
         let previous = -1;
         for (const entry of profile) {
-          finiteSize(entry.atLeastInlineSize, 'profile width'); finiteSize(entry.blockSize, 'profile blockSize');
+          finiteSize(entry.atLeastInlineSize, 'profile width');
+          // null: a derived line profile with no determined count at these widths.
+          if (!(entry.blockSize === null && contract.textMetrics?.kind === 'lines')) finiteSize(entry.blockSize, 'profile blockSize');
           if (entry.atLeastInlineSize <= previous || Object.keys(entry).some(k => !['atLeastInlineSize', 'blockSize'].includes(k))) throw new Error('Invalid intrinsic block profile order');
           previous = entry.atLeastInlineSize;
         }

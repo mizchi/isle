@@ -6,6 +6,7 @@ import {readFile, writeFile, mkdtemp, rm, copyFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {loadTextMetrics, upperBound} from '../packages/css-verifier/src/text-node.mjs';
+import {scriptRuns, scriptSegments} from '../packages/css-verifier/src/text.mjs';
 
 const fixtures = new URL('../packages/css-verifier/text-metrics/fixtures/', import.meta.url).pathname;
 const metrics = await loadTextMetrics({fonts: {'Noto Sans JP': {file: fixtures + 'japanese-variable.ttf'}, Roboto: {file: fixtures + 'roboto-variable.ttf'}}});
@@ -22,7 +23,8 @@ test('the bound snaps shaped advances to 1/64 px and adds one unit', () => {
 test('fixed content is collapsed like white-space: nowrap and measured with the CSS weight', () => {
   const plain = metrics.measureText({font: jp, text: '  日本語の\nテキスト  '});
   assert.equal(plain.text, '日本語の テキスト');
-  assert.ok(plain.bound > plain.width && plain.bound - plain.width <= 2 / 64);
+  assert.equal(scriptRuns(plain.text), 3); // 日本語 / の␠ / テキスト, each snapped on its own
+  assert.ok(plain.bound > plain.width && plain.bound - plain.width <= (2 * 3) / 64);
   // Latin glyphs of the variable CJK font depend on the wght coordinate.
   assert.ok(metrics.measureText({font: {...jp, weight: 700}, text: 'ABC'}).width > metrics.measureText({font: jp, text: 'ABC'}).width);
   assert.deepEqual(metrics.measureText({font: jp, text: '   '}), {text: '', width: 0, bound: 0});
@@ -39,7 +41,7 @@ test('a character domain yields a monotone bound table with the widest character
 
 test('inputs the model cannot cover are rejected instead of guessed', () => {
   for (const [input, pattern] of [
-    [() => metrics.measureText({font: jp, text: '日本x'}), /lacks U\+0078; fallback fonts are not modeled/],
+    [() => metrics.measureText({font: jp, text: '日本Ω'}), /lacks U\+03A9; fallback fonts are not modeled/],
     [() => metrics.measureText({font: {...jp, family: 'Unknown'}, text: '日本'}), /No font file is mapped/],
     [() => metrics.measureText({font: {...jp, weight: 950}, text: '日本'}), /outside the wght axis/],
     [() => metrics.domainBounds({font: jp, characters: '日\n', maxLength: 4}), /line breaks that are not modeled/],
@@ -47,7 +49,8 @@ test('inputs the model cannot cover are rejected instead of guessed', () => {
     [() => metrics.domainBounds({font: jp, characters: '日', maxLength: 0}), /maxLength/],
     [() => metrics.resolveBoxes({'.a': {text: {font: jp, content: '日本'}, minInlineSize: 10}}), /derives its own sizes/],
     [() => metrics.resolveBoxes({'.a': {text: {font: jp, characters: '日本', maxLength: 4}, wrap: 'normal'}}), /fixed content/],
-    [() => metrics.breakLines({font: jp, text: '日本「語」'}), /U\+300C/],
+    [() => metrics.breakLines({font: jp, text: '日本 "語"'}), /U\+0022/],
+    [() => metrics.breakLines({font: jp, text: '日本語。」'}), /Adjacent fullwidth punctuation 。」 is trimmed by text-spacing-trim/],
     [() => metrics.breakLines({font: jp, text: '日本', overflowWrap: 'break-all'}), /overflow-wrap/],
   ]) assert.throws(input, error => error.code === 'U_LAYOUT_TEXT_METRICS' && pattern.test(error.message));
 });
@@ -144,8 +147,26 @@ test('the wrapping CLI example reports where the body needs a third line', () =>
   const report = JSON.parse(result.stdout);
   const body = report.diagnostics.find(d => d.code === 'E_LAYOUT_CONTENT' && d.box === '.body');
   assert.equal(body.axis, 'block');
-  assert.equal(body.range.maxExact, '14235/64');
+  assert.equal(body.range.maxExact, '14247/64');
   assert.deepEqual(body.text, {lines: 3, fitsLines: 2});
   assert.equal(report.diagnostics.filter(d => d.severity === 'error').length, 1); // the auto title row grows with its lines
   assert.match(layout('examples/layout-contracts/text-wrap.isle', 'examples/layout-contracts/text-wrap.json', '--summary').stdout, /text: wraps into 3 lines at this width; 2 fit/);
+});
+
+test('fullwidth brackets never end a line and closing marks never start one; small kana and ー break like kana', () => {
+  const quoted = metrics.breakLines({font: jp, text: '日本「語」です'});
+  // Narrowest: 日 / 本 / 「語」 / で / す — the brackets stay with 語.
+  assert.equal(quoted.profile[0].lines, 5);
+  assert.equal(quoted.minContent, metrics.measureText({font: jp, text: '「語」'}).bound);
+  const kana = metrics.breakLines({font: jp, text: 'ショッピング'});
+  assert.equal(kana.profile[0].lines, 6); // every kana, small ones and ー included, may start a line
+  const marks = metrics.breakLines({font: jp, text: '日々、確認'});
+  assert.equal(marks.minContent, metrics.measureText({font: jp, text: '日々、'}).bound); // 々 and 、 never start a line
+});
+
+test('script runs follow Script_Extensions: ー joins the kana after a kanji, punctuation and digits join any run', () => {
+  assert.deepEqual(scriptSegments('日ーア'), ['日', 'ーア']);
+  assert.deepEqual(scriptSegments('「日本」と123ABC'), ['「日本」', 'と123', 'ABC']);
+  // Shaped run by run, so ー and ア kern as in Chromium (16 + 15.36).
+  assert.equal(metrics.measureText({font: jp, text: '日ーア'}).width, 16 + metrics.measureText({font: jp, text: 'ーア'}).width);
 });

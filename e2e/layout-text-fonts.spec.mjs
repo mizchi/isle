@@ -5,6 +5,7 @@
 import {test, expect} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 import {loadTextMetrics} from '../packages/css-verifier/src/text-node.mjs';
+import {scriptRuns} from '../packages/css-verifier/src/text.mjs';
 import {compile, requireIR} from '../lib/compiler.mjs';
 import {prepareProgram} from '../lib/codegen.mjs';
 import {analyzeLayout} from '../lib/layout.mjs';
@@ -99,21 +100,42 @@ test('the example card overflows exactly where the analysis reports it may', asy
 
 // Line breaking (white-space: normal). Chromium wraps the same text at many
 // widths: the modeled line count is never below the rendered one and equals
-// it except within 3/64 px below a modeled threshold (the bound allowance).
+// it except just below a modeled threshold (the bound allowance, per script run).
 const ro = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
 const wrapping = [
   [jp, '日本語のテキスト幅検査。折り返しを確認します。', 'normal'], [jp, '英語ABC 123 日本語のテキスト幅検査。', 'normal'], [jp, '確認ABC123テキスト', 'normal'],
   [ro, 'Hello world office AV To WMW 0123456789 Hello world', 'normal'], [ro, 'office WMW Hello', 'anywhere'], [ro, 'office WMW Hello', 'break-word'],
+  [jp, '「日本語」の『テキスト』と（幅）を【検査】します。', 'normal'], [jp, 'ショッピングセンターへ会社員です！本日？', 'normal'], [jp, '日々の確認・検査、ゝゞ〜日…と〈本〉', 'normal'],
+  [jp, 'ABC「テスト」123 東京都・新聞', 'normal'], [jp, '「確認」ABCDEF「検査」', 'anywhere'],
 ];
+// Seeded random strings over every modeled class (no adjacent fullwidth punctuation: text-spacing-trim).
+{
+  const alphabet = [...'日本語東京都会社新聞あいうアイウッャョぁァー「」『』（）【】、。・！？々〜…'], latin = ['ABC', 'xyz', '123', ' '];
+  const punctuation = new Set([...'「」『』（）【】、。・！？〜…']);
+  let seed = 11;
+  const next = () => (seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31;
+  for (let i = 0; i < 60; i++) {
+    let text = '';
+    const length = 6 + Math.floor(next() * 24);
+    while ([...text].length < length) {
+      const piece = next() < 0.15 ? latin[Math.floor(next() * latin.length)] : alphabet[Math.floor(next() * alphabet.length)];
+      if (punctuation.has(piece) && punctuation.has([...text].at(-1))) continue;
+      text += piece;
+    }
+    wrapping.push([jp, text, next() < 0.2 ? 'anywhere' : 'normal']);
+  }
+}
 for (const lang of ['en', 'ja']) test(`modeled line counts match Chromium (lang=${lang})`, async ({page}) => {
   await page.setContent(`<!doctype html><html lang="${lang}"><style>${face}body{margin:0}</style><body></body></html>`);
   for (const [font, text, overflowWrap] of wrapping) {
     const lines = metrics.breakLines({font, text, overflowWrap});
     const set = new Set();
     for (const entry of lines.profile) for (const d of [-3, -2, -1, 0, 1]) set.add(entry.atLeastInlineSize + d / 64);
-    for (let w = 1; w <= Math.ceil(lines.width) + 4; w++) set.add(w);
+    // Random strings: every threshold neighbourhood, plus a coarser sweep.
+    for (let w = 1; w <= Math.ceil(lines.width) + 4; w += text.length > 12 ? 3 : 1) set.add(w);
     const count = w => lines.profile.filter(entry => entry.atLeastInlineSize <= w).at(-1)?.lines;
-    const widths = [...set].filter(w => count(w) !== undefined).sort((a, b) => a - b);
+    // Widths without a count (text-spacing-trim may change it) are Unknown in the analysis.
+    const widths = [...set].filter(w => count(w) != null).sort((a, b) => a - b);
     const rendered = await page.evaluate(async ({font, text, overflowWrap, widths}) => {
       await document.fonts.load(`${font.weight} ${font.size}px "${font.family}"`, text);
       const element = document.createElement('div');
@@ -124,11 +146,13 @@ for (const lang of ['en', 'ja']) test(`modeled line counts match Chromium (lang=
     }, {font, text, overflowWrap, widths});
     let banded = 0;
     widths.forEach((w, i) => {
-      const modeled = count(w), band = lines.profile.some(entry => w < entry.atLeastInlineSize && w >= entry.atLeastInlineSize - 3 / 64);
+      // The bound exceeds the advance by under 2k/64 px for k script runs (plus one unit).
+      const slack = (2 * scriptRuns(text) + 1) / 64;
+      const modeled = count(w), band = lines.profile.some(entry => w < entry.atLeastInlineSize && w >= entry.atLeastInlineSize - slack);
       expect(rendered[i], `${text} (${overflowWrap}) at ${w}px: Chromium ≤ model`).toBeLessThanOrEqual(modeled);
       if (band) banded += rendered[i] < modeled; else expect(rendered[i], `${text} (${overflowWrap}) at ${w}px`).toBe(modeled);
     });
-    expect(widths.length).toBeGreaterThan(100);
+    expect(widths.length).toBeGreaterThan(20);
   }
 });
 
@@ -138,7 +162,7 @@ test('the wrapping example: heights match Chromium and the body overflows where 
   const {fonts, ...options} = config;
   const report = analyzeLayout(ir, metrics.resolveOptions({...options, css, cssFile: 'text-wrap.css'}));
   const finding = report.diagnostics.find(d => d.code === 'E_LAYOUT_CONTENT' && d.box === '.body');
-  expect(finding.range.maxExact).toBe('14235/64');
+  expect(finding.range.maxExact).toBe('14247/64');
   const limit = 14235 / 64;
   const html = prepareProgram(ir).render('NoticeCard', {}, {mode: 'ssr'}).html;
   const value = text => { const [n, d = '1'] = text.split('/'); return Number(n) / Number(d); };

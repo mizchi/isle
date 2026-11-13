@@ -340,12 +340,13 @@ E_LAYOUT_ITEM_SIZE: .cell requires 40px but receives 53/2px on inline axis at vi
 ```
 
 内容の幅ごとの行数 × line-height が `intrinsicBlockSize`、最長の分割できない区間が `minInlineSize` になる。
-分割位置は空白の後、漢字・仮名の前後で、`。`・`、` は行頭に来ない。それ以外の記号は入力エラー。
+分割位置は空白の後と漢字・仮名の前後で、開き括弧は行末に、閉じ括弧・句読点・`・！？々` などは行頭に来ない。
+隣接する全角約物(`。」` など)は Chromium が詰めるので入力エラー、行末の閉じ括弧が詰められるかで行数が変わる幅は Unknown。ASCII の記号は入力エラー。
 [例](../examples/layout-contracts/text-wrap.json)では 48px の行に本文が3行必要になる幅を報告する。
 
 ```text
-E_LAYOUT_CONTENT: .body requires 72px but receives 48px on block axis at viewport 24475/128px × 400px
-  width [160, 14235/64)px; height [200, 600]px
+E_LAYOUT_CONTENT: .body requires 72px but receives 48px on block axis at viewport 24487/128px × 400px
+  width [160, 14247/64)px; height [200, 600]px
   text: wraps into 3 lines at this width; 2 fit
 ```
 

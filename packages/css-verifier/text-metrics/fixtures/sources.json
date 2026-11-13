@@ -3,16 +3,18 @@
     "file": "roboto-variable.ttf",
     "source": "https://raw.githubusercontent.com/google/fonts/5dac96833c85ada9384fe3e50b11df08091b9246/ofl/roboto/Roboto%5Bwdth,wght%5D.ttf",
     "source_sha256": "d7598e12c5dbef095ff8272cfc55da0250bd07fbdecbac8a530b9b277872a134",
-    "subset_sha256": "2eb0923b0d9f378486c2663d78e7c0d17324004e7192c96aeb789923ceaab7a2",
+    "subset_sha256": "97d8a903899de1ab787e7fd5405a4fb9a48acbc3ea46cdd50838e62d629d80d6",
     "sample_text": "Hello world office AV To WMW iii 0123456789 1/2 ág",
-    "copiedFrom": "mizchi/font@0.8.0 fixtures/shaping-reference"
+    "subset_text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~Hello world office AV To WMW iii 0123456789 1/2 ág",
+    "subset_command": "pyftsubset <source> --text-file=<text> --layout-features+=cpsp,mark,mkmk,ccmp (fontTools 4.68.0); a superset of the earlier mizchi/font fixture with identical advances for its sample text"
   },
   {
     "file": "japanese-variable.ttf",
     "source": "https://raw.githubusercontent.com/google/fonts/5dac96833c85ada9384fe3e50b11df08091b9246/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf",
     "source_sha256": "c2f3b4d463500a2ddcd3849cded1fceeb9fd6d1c32e6cbecd568453ba50fc68f",
-    "subset_sha256": "a17e7dc9e192345cd5b17b4f57590a1b4ad3a1a9c0b06f9a14fa25ee0813d46e",
+    "subset_sha256": "e98295636f4e435b37a7898afdad465ed9a6be2e6afaa7eb3fc0dbdbe1dd81a8",
     "sample_text": "日本語のテキスト幅検査。折り返しを確認します。英語ABC 123",
-    "copiedFrom": "mizchi/font@0.8.0 fixtures/shaping-reference"
+    "subset_text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~‥…、。々〈〉《》「」『』【】〔〕〜ぁあぃいぅうぇえぉおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわゐゑをんゔゕゖゝゞァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモャヤュユョヨラリルレロヮワヰヱヲンヴヵヶヷヸヹヺ・ーヽヾ予京今会住分前号名員報天幅年所折新日時書月末本東査検気番確社私秒聞英話認語読返週都間電！（），．：；？［］",
+    "subset_command": "pyftsubset <source> --text-file=<text> --layout-features+=halt,chws,palt,vhal,vchw (fontTools 4.68.0); a superset of the earlier mizchi/font fixture with identical advances for its sample text"
   }
 ]
