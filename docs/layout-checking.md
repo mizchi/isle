@@ -316,6 +316,8 @@ E_LAYOUT_ITEM_SIZE: .cell requires 40px but receives 53/2px on inline axis at vi
 
 css-verifier側の`!important`無視、詳細度無視、順序反転、media無視、padding左右の入替、gapの消失を加えた変異は全て差分として検出する。`@layer`、container query、幾何、Z3は対象外。`gap: var(--missing)`等のguaranteed-invalid参照はcss-verifierが現在unknownにする。実行は`just css-oracle-check`、結果は[report.json](../evals/results/css-cascade-oracle/report.json)。
 
+上記7分類はmizchi/cssのbranch `claude/dreamy-lovelace-90v3hb`(v0.8.0基準、未リリース)で修正した。そのbuildを`CSS_ORACLE_JS`で指定すると、30,000ケースが全て一致し、既知差分は0件になる。固定した最小例のテストは修正を検出して失敗するため、修正版のリリース後に`oracle/moon.mod`のversionを上げ、最小例の期待値を一致へ変え、分類を削除する。
+
 ## 検査結果と前提
 
 ### 40px の箱を4つ並べる場合

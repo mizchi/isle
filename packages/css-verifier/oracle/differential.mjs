@@ -9,7 +9,8 @@ import {tracks} from '../src/layout/grid.mjs';
 import {normalizeTree} from '../src/tree.mjs';
 import {cmp, q} from '../src/layout/linear.mjs';
 
-export const oraclePath = fileURLToPath(new URL('./_build/js/release/build/computed_oracle/computed_oracle.js', import.meta.url));
+// CSS_ORACLE_JS points at another build, e.g. one linked to an unreleased mizchi/css checkout.
+export const oraclePath = process.env.CSS_ORACLE_JS ?? fileURLToPath(new URL('./_build/js/release/build/computed_oracle/computed_oracle.js', import.meta.url));
 
 export async function loadOracle() {
   if (!existsSync(oraclePath)) throw new Error(`mizchi/css oracle is not built: run "just css-oracle-build" (${oraclePath})`);
