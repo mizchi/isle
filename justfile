@@ -7,6 +7,8 @@ default:
 css-verifier-check: check-types
     node --test tests/css-verifier.test.mjs tests/css-verifier-package.test.mjs tests/css-transitions.test.mjs
     node packages/css-verifier/examples/responsive.mjs
+    node --test packages/css-verifier/test/explanations.test.mjs tests/layout-explanations.test.mjs
+    node evals/scenarios/layout-explanations/check.mjs
 
 # Development-only differential oracle backed by mizchi/css (MoonBit -> JS).
 css-oracle-build:

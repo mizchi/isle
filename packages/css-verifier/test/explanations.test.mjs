@@ -58,7 +58,7 @@ test('trusted content bounds are labelled as caller assumptions, not CSS', () =>
     css: '* { box-sizing: border-box; margin: 0; }\n.row { display: grid; grid-template-columns: minmax(0, 1fr); }\n', viewport: {min: 100, max: 400},
     boxes: {'.t': {minInlineSize: 240}}});
   const finding = first(report, 'E_LAYOUT_CONTENT');
-  assert.deepEqual(finding.explanation.required.facts, [{kind: 'contract', path: 'Text/0', box: '.t', property: 'minInlineSize', value: 240, selector: '.t', trusted: true}]);
+  assert.deepEqual(finding.explanation.required.facts, [{kind: 'contract', path: 'Text/0', box: '.t', owner: 'Text', property: 'minInlineSize', value: 240, selector: '.t', trusted: true}]);
 });
 
 test('explanations do not change status, ranges, witnesses or the proof', async () => {

@@ -76,10 +76,10 @@ export interface LayoutDiagnostic {
 export interface LayoutCSSCondition { kind:'media'|'container'; name?:string; params:string; css:{file:string;line:number} }
 export interface LayoutCSSOrigin { file:string; line:number; selector:string; layer?:string; specified:string; conditions?:LayoutCSSCondition[] }
 export type LayoutExplanationFact =
-  | { path:string; box:string; property:string; value:string; origin:'author'; css:LayoutCSSOrigin; dormant?:{css:LayoutCSSOrigin}[] }
-  | { path:string; box:string; property:string; value:string; origin:'default'; dormant?:{css:LayoutCSSOrigin}[] }
+  | { path:string; box:string; owner:string; property:string; value:string; origin:'author'; css:LayoutCSSOrigin; overridden?:{css:LayoutCSSOrigin}[]; dormant?:{css:LayoutCSSOrigin}[] }
+  | { path:string; box:string; owner:string; property:string; value:string; origin:'default'; overridden?:{css:LayoutCSSOrigin}[]; dormant?:{css:LayoutCSSOrigin}[] }
   | { kind:'viewport'; axis:'inline'|'block'; hostInset?:number }
-  | { kind:'contract'; path:string; box:string; property:'minInlineSize'|'minBlockSize'; value:number; selector:string; trusted:true };
+  | { kind:'contract'; path:string; box:string; owner:string; property:'minInlineSize'|'minBlockSize'; value:number; selector:string; trusted:true };
 export interface LayoutExplanation {
   version:1;
   /** Facts that determine the offered size (parent tracks/gaps up to a definite size or the viewport). */

@@ -181,7 +181,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
   const ua = { ...values };
   const initial = { ...defaults, display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
   const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction']);
-  const priorities = new Map(), sources = {},custom=new Map(),dormant={};
+  const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={};
   const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};
   for (const rule of rules) {
     if (!active(rule)) {
@@ -195,11 +195,16 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
       for (const declaration of rule.declarations) {
         const layer = rule.layer === null ? (declaration.important ? -Infinity : Infinity) : declaration.important ? -rule.layer : rule.layer;
         const rank = [declaration.important, layer, ...selector.specificity];
-        if (!priorities.has(declaration.property) || greaterRank(rank, priorities.get(declaration.property))) {
+        const origin = { file: declaration.file, line: declaration.line, selector: selector.source, layer: rule.layerName, specified: declaration.specified ?? declaration.value, ...conditions(rule) };
+        const wins = !priorities.has(declaration.property) || greaterRank(rank, priorities.get(declaration.property));
+        // Explanation data only: the losing side of each comparison.
+        const loser = wins ? sources[declaration.property] : origin;
+        if (loser) (overridden[declaration.property] ??= []).push(loser);
+        if (wins) {
           if(declaration.expression) custom.set(declaration.property,declaration);
           else values[declaration.property] = declaration.pending ? declaration : declaration.value;
           priorities.set(declaration.property, rank);
-          sources[declaration.property] = { file: declaration.file, line: declaration.line, selector: selector.source, layer: rule.layerName, specified: declaration.specified ?? declaration.value, ...conditions(rule) };
+          sources[declaration.property] = origin;
         }
       }
     }
@@ -227,6 +232,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
   }
   values.$sources = sources;
   values.$dormant = dormant;
+  values.$overridden = overridden;
   values.$variables = environment;
   const nonscroll = value => ['visible', 'clip'].includes(value);
   const x = values['overflow-x'], y = values['overflow-y'];

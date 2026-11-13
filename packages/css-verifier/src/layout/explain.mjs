@@ -11,12 +11,16 @@ export const trackProperties = axis => axis === 'inline' ? ['grid-template-colum
 const placementProperty = axis => axis === 'inline' ? 'grid-column' : 'grid-row';
 const isDefault = (style, property) => !style.$sources[property];
 const definite = value => /^(?:\d+(?:\.\d+)?px|0)$/.test(value);
+// Only length tracks: the item's area no longer depends on the container size.
+const fixedTracks = value => value !== 'none' && !/fr|auto|%|min-content|max-content|fit-content|subgrid/.test(value);
 
 /** One cascade winner (or the initial/UA value), with dormant conditional writes. */
 export function fact(box, style, property) {
   const css = style.$sources[property], dormant = style.$dormant?.[property];
-  return {path: box.path, box: box.label, property, value: style[property],
+  const overridden = style.$overridden?.[property]?.filter(entry => entry !== css);
+  return {path: box.path, box: box.label, owner: box.owner, property, value: style[property],
     ...(css ? {origin: 'author', css: clean(css)} : {origin: 'default'}),
+    ...(overridden?.length ? {overridden: overridden.map(css => ({css: clean(css)}))} : {}),
     ...(dormant?.length ? {dormant: dormant.map(css => ({css: clean(css)}))} : {})};
 }
 const clean = ({file, line, selector, layer, specified, conditions}) => ({file, line, selector, ...(layer ? {layer} : {}), specified, ...(conditions ? {conditions} : {})});
@@ -39,6 +43,7 @@ export function sizeChain(chain, axis, {hostInset = 0} = {}) {
       // A grid item's area comes from the parent's tracks and gaps.
       for (const property of trackProperties(axis)) facts.push(fact(parent.box, parent.style, property));
       facts.push(fact(box, style, placementProperty(axis)));
+      if (fixedTracks(parent.style[trackProperties(axis)[0]])) return facts;
     }
   }
   facts.push({kind: 'viewport', axis, ...(hostInset ? {hostInset} : {})});
@@ -46,7 +51,7 @@ export function sizeChain(chain, axis, {hostInset = 0} = {}) {
 }
 
 export function contractFact(box, property) {
-  return {kind: 'contract', path: box.path, box: box.label, property, value: box.contract[property], selector: box.contractSelector, trusted: true};
+  return {kind: 'contract', path: box.path, box: box.label, owner: box.owner, property, value: box.contract[property], selector: box.contractSelector, trusted: true};
 }
 
 export const explanation = (available, required) => ({version: 1, available: {facts: available}, required: {facts: required}});

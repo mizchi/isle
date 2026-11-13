@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "measured": {
+    "commit": "0634edab4567350636b860cd6acb4284d5a87699",
+    "node": "v22.23.4"
+  },
+  "scope": "Static counterexample provenance (ADR-0002 core/CLI). Playground diagrams are not covered.",
+  "results": [
+    {
+      "name": "gap-four-boxes",
+      "expectedStatus": "violated",
+      "status": "violated",
+      "proof": "violated",
+      "finding": {
+        "code": "E_LAYOUT_ITEM_SIZE",
+        "path": "Four/0",
+        "range": {
+          "min": 100,
+          "max": 184,
+          "minInclusive": true,
+          "maxInclusive": false,
+          "minExact": "100",
+          "maxExact": "184"
+        },
+        "witness": {
+          "viewport": 142,
+          "viewportExact": "142",
+          "available": 29.5,
+          "required": 40
+        },
+        "available": [
+          "Four grid-template-columns@2",
+          "Four column-gap@2",
+          "Four box-sizing@1"
+        ],
+        "required": [
+          "Four/0 box-sizing@1",
+          "Four/0 min-inline-size@3"
+        ]
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "name": "fixed-tracks",
+      "expectedStatus": "violated",
+      "status": "violated",
+      "proof": "violated",
+      "finding": {
+        "code": "E_LAYOUT_TRACKS",
+        "path": "Four",
+        "range": {
+          "min": 400,
+          "max": 800,
+          "minInclusive": true,
+          "maxInclusive": true,
+          "minExact": "400",
+          "maxExact": "800"
+        },
+        "witness": {
+          "viewport": 600,
+          "viewportExact": "600",
+          "available": 150,
+          "required": 200
+        },
+        "available": [
+          "Four box-sizing@1",
+          "Four inline-size@2"
+        ],
+        "required": [
+          "Four grid-template-columns@2"
+        ]
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "name": "media-boundary",
+      "expectedStatus": "violated",
+      "status": "violated",
+      "proof": "violated",
+      "finding": {
+        "code": "E_LAYOUT_ITEM_SIZE",
+        "path": "Four/0",
+        "range": {
+          "min": 100,
+          "max": 160,
+          "minInclusive": true,
+          "maxInclusive": false,
+          "minExact": "100",
+          "maxExact": "160"
+        },
+        "witness": {
+          "viewport": 130,
+          "viewportExact": "130",
+          "available": 32.5,
+          "required": 40
+        },
+        "available": [
+          "Four grid-template-columns@5",
+          "Four box-sizing@1"
+        ],
+        "required": [
+          "Four/0 box-sizing@1",
+          "Four/0 min-inline-size@3"
+        ]
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "name": "nested-owner",
+      "expectedStatus": "violated",
+      "status": "violated",
+      "proof": "violated",
+      "finding": {
+        "code": "E_LAYOUT_ITEM_SIZE",
+        "path": "Four/0/0",
+        "range": {
+          "min": 300,
+          "max": 800,
+          "minInclusive": true,
+          "maxInclusive": true,
+          "minExact": "300",
+          "maxExact": "800"
+        },
+        "witness": {
+          "viewport": 550,
+          "viewportExact": "550",
+          "available": 80,
+          "required": 100
+        },
+        "available": [
+          "Four/0 grid-template-columns@3",
+          "Four/0 box-sizing@1",
+          "Four/0 padding-left@3",
+          "Four/0 padding-right@3",
+          "Four grid-template-columns@2"
+        ],
+        "required": [
+          "Four/0/0 box-sizing@1",
+          "Four/0/0 min-inline-size@4"
+        ]
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "name": "unsupported-css",
+      "expectedStatus": "unknown",
+      "status": "unknown",
+      "proof": "unknown",
+      "passed": true,
+      "failures": []
+    }
+  ]
+}
