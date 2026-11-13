@@ -2,10 +2,10 @@
   "version": 1,
   "status": "consistent",
   "measured": {
-    "commit": "7ce2d60622ef331d6458975837154626bcfd7c4a",
+    "commit": "f43845bf150985f61cfb3b85c5266b2ab556cfa9",
     "dirty": false,
-    "node": "v22.23.4",
-    "oracle": "mizchi/css@0.8.1"
+    "node": "v24.22.3",
+    "oracle": "mizchi/css@0.8.2"
   },
   "input": {
     "generator": "packages/css-verifier/oracle/differential.mjs#generateCase",
@@ -41,6 +41,11 @@
       "row-gap",
       "grid-template-columns",
       "grid-template-rows",
+      "flex-direction",
+      "flex-wrap",
+      "flex-grow",
+      "flex-shrink",
+      "flex-basis",
       "justify-content",
       "align-items",
       "order"
@@ -130,6 +135,21 @@
       "same": 29972
     },
     "grid-template-rows": {
+      "same": 29972
+    },
+    "flex-direction": {
+      "same": 29972
+    },
+    "flex-wrap": {
+      "same": 29972
+    },
+    "flex-grow": {
+      "same": 29972
+    },
+    "flex-shrink": {
+      "same": 29972
+    },
+    "flex-basis": {
       "same": 29972
     },
     "justify-content": {
