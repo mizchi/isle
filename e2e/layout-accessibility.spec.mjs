@@ -76,8 +76,11 @@ const cases = [
   {name: 'tables-and-fieldsets', html: '<div class="page"><table class="t1"><thead class="h"><tr class="r"><th class="c" id="name">Name</th></tr></thead><tbody class="b"><tr class="r"><td class="d" headers="name nope">Ada</td></tr></tbody></table><table class="t2"><tbody class="b"><tr class="r"><td class="d">x</td></tr></tbody></table><fieldset class="fs"><input class="i" type="radio" name="q" aria-label="Yes"><input class="i" type="radio" name="q" aria-label="No"></fieldset><fieldset class="fs2"><legend class="lg">Size</legend><input class="i" type="radio" name="s" aria-label="S"></fieldset></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff;color:#000;${type}}.t1,.t2{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px}.h,.b,.r{display:contents}.c,.d{display:block;font-weight:700;text-align:left}.fs{display:grid;grid-template-columns:30px 30px;margin:0;padding:0;border:0;min-inline-size:0}.fs2{display:contents}.lg{display:block;padding:0}.i{${button}inline-size:30px;block-size:30px}@media (width < 600px){.c{display:none}}`,
     boxes: {'.c': label, '.d': label, '.lg': label}},
+  {name: 'link-texts', html: '<div class="page"><a class="a1" href="/s" aria-label="Find">Search</a><a class="a2" href="/s2" aria-label="Search the site">Search</a><a class="a3" href="/p1">Pricing</a><a class="a4" href="/p2">Pricing</a><a class="a5" href="/m">Read more</a><nav class="n1" aria-label="Main"></nav><nav class="n2" aria-label="main"></nav></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff;color:#000;${type}}.a1,.a2,.a3,.a4,.a5{display:block;color:inherit}@media (width < 600px){.a4{display:none}}`,
+    boxes: {'.a1': label, '.a2': label, '.a3': label, '.a4': label, '.a5': label}},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text'];
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
   && (!row.heightRange || (height >= row.heightRange.min && height <= row.heightRange.max));
 
@@ -248,7 +251,7 @@ async function runtime(page, sample) {
     const radios = all.filter(n => n.matches('input[type=radio][name]')), grouped = n => n.closest('fieldset, [role=radiogroup], [role=group]') !== null;
     for (let i = 0; i < radios.length; i++) for (let j = i + 1; j < radios.length; j++) if (radios[i].name === radios[j].name && !(grouped(radios[i]) && grouped(radios[j]))) out.radio.push(pathOf(radios[j]));
     const navs = all.filter(n => n.matches('nav, [role=navigation]'));
-    for (let i = 0; i < navs.length; i++) for (let j = i + 1; j < navs.length; j++) if (!(navs[i].getAttribute('aria-label')?.trim() && navs[j].getAttribute('aria-label')?.trim())) out.nav.push(pathOf(navs[j]));
+    for (let i = 0; i < navs.length; i++) for (let j = i + 1; j < navs.length; j++) { const a = navs[i].getAttribute('aria-label')?.trim().toLowerCase(), b = navs[j].getAttribute('aria-label')?.trim().toLowerCase(); if (!(a && b) || a === b) out.nav.push(pathOf(navs[j])); }
     return out;
   });
   for (const [rule, key] of [['list-structure', 'list'], ['radio-group', 'radio'], ['landmark-name', 'nav']]) for (const path of structure2[key]) found.get(rule).add(path);
@@ -283,6 +286,22 @@ async function runtime(page, sample) {
     return out;
   });
   for (const [rule, key] of [['table-headers', 'headers'], ['td-headers', 'refs'], ['fieldset-name', 'fieldset']]) for (const path of tables[key]) found.get(rule).add(path);
+  const texts = await page.evaluate(() => {
+    const out = {inName: [], purpose: [], generic: [], navs: []};
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible'; };
+    const norm = t => t.toLowerCase().replace(/\s+/g, ' ').trim();
+    const links = [...document.body.firstElementChild.querySelectorAll('a[href]')].filter(shown);
+    for (const a of links) {
+      const label = a.getAttribute('aria-label'), visible = a.innerText;
+      if (label !== null && visible.trim() && !norm(label).includes(norm(visible))) out.inName.push(pathOf(a));
+      const name = norm(label ?? a.textContent);
+      if (/^(?:click here|here|read more|more|learn more|link|this|go|details|こちら|ここ|詳細|詳しくはこちら|もっと見る|続きを読む|クリック)$/.test(name)) out.generic.push(pathOf(a));
+    }
+    for (let i = 0; i < links.length; i++) for (let j = i + 1; j < links.length; j++) { const n = x => norm(x.getAttribute('aria-label') ?? x.textContent); if (n(links[i]) && n(links[i]) === n(links[j]) && links[i].getAttribute('href') !== links[j].getAttribute('href')) out.purpose.push(pathOf(links[j])); }
+    return out;
+  });
+  for (const [rule, key] of [['label-in-name', 'inName'], ['link-purpose', 'purpose'], ['link-text', 'generic']]) for (const path of texts[key]) found.get(rule).add(path);
   // Roles: Chromium's computed AX role must be the authored one; widget roles need focus.
   for (const element of elements) {
     const info = await (await handle(element.path)).evaluate(node => ({role: (node.getAttribute('role') ?? '').trim().split(/\s+/)[0], tabIndex: node.tabIndex, shown: getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility === 'visible'}));

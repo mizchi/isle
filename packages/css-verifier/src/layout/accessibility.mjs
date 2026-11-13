@@ -35,6 +35,9 @@
 //   table-headers    → E_A11Y_TABLE_HEADERS     a table's th exist but none renders where data cells do (W_A11Y_TABLE_HEADERS: no th at all)
 //   td-headers       → E_A11Y_TABLE_HEADERS_REF td/th headers= names no th of the same table
 //   fieldset-name    → W_A11Y_FIELDSET_NAME     a rendered fieldset with no legend or name
+//   label-in-name    → E_A11Y_LABEL_IN_NAME     an aria-label that does not contain the control's visible text (SC 2.5.3)
+//   link-purpose     → W_A11Y_LINK_PURPOSE      two links with the same name to different hrefs render together
+//   link-text        → W_A11Y_LINK_TEXT         generic link text (click here, read more, こちら, …)
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, width as domainWidth } from './region.mjs';
@@ -43,7 +46,7 @@ import { intersect } from './integrity.mjs';
 
 export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable',
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
-  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name'];
+  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -136,6 +139,9 @@ const px = value => { const m = /^(\d+(?:\.\d+)?)px$/.exec(String(value)); retur
 const weight = value => value === 'bold' ? 700 : /^\d+$/.test(String(value)) ? Number(value) : 400;
 // Large text: at least 18pt (24px), or 14pt (56/3 px) bold. An unknown size is not large (the stricter ratio).
 const large = facts => { const size = px(facts.fontSize); return size !== undefined && (size >= 24 || (size >= 56 / 3 && weight(facts.fontWeight) >= 700)); };
+
+// Accessible-name text comparison: case and white space folded.
+const normalize = text => String(text).toLowerCase().replace(/\s+/g, ' ').trim();
 
 // --- tree order and regions -----------------------------------------------
 const segments = path => path.split('/');
@@ -499,12 +505,12 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     if (region) report(warnings, 'W_A11Y_RADIO_GROUP', 'warning', `radios named ${JSON.stringify(a.box.inputName)} are not grouped in a fieldset or radiogroup`, b, region, { rule: 'radio-group', name: a.box.inputName });
   }
 
-  // landmark-name: navigation landmarks rendered together need names to tell them apart (presence only:
-  // the name strings are not compared).
+  // landmark-name: navigation landmarks rendered together need names that tell them apart.
   const navs = geometry.filter(row => (row.box.tag === 'nav' || row.box.role === 'navigation') && visible(row) && !hiddenFrom(row.path));
   for (let i = 0; i < navs.length; i++) for (let j = i + 1; j < navs.length; j++) {
     const a = navs[i], b = navs[j];
-    if (a.path === b.path || (nameOf(a.box) === true && nameOf(b.box) === true)) continue;
+    const same = typeof a.box.ariaLabel === 'string' && typeof b.box.ariaLabel === 'string' && a.box.ariaLabel !== 'dynamic' && b.box.ariaLabel !== 'dynamic' && normalize(a.box.ariaLabel) === normalize(b.box.ariaLabel);
+    if (a.path === b.path || (nameOf(a.box) === true && nameOf(b.box) === true && !same)) continue;
     const region = intersect(a.region, b.region);
     if (region) report(warnings, 'W_A11Y_LANDMARK_NAME', 'warning', `${b.box.label} and ${a.box.label} are navigation landmarks without names to tell them apart`, b, region, { rule: 'landmark-name', other: a.path });
   }
@@ -562,6 +568,34 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     for (const row of own.length ? own : geometry.filter(row => isAncestor(set.path, row.path) && visible(row) && !row.inlineFlow))
       report(warnings, 'W_A11Y_FIELDSET_NAME', 'warning', `${set.label} groups controls without a legend`, { box: set, path: set.path }, row.region, { rule: 'fieldset-name' });
   }
+
+  // Text comparisons. A control's visible text: rendered, visible text rows in its subtree.
+  const textRows = target => geometry.filter(row => row.box.text && visible(row) && (row.path === target.path || isAncestor(target.path, row.path)));
+  for (const target of geometry.filter(row => control(row) && visible(row) && !hiddenFrom(row.path) && typeof row.box.ariaLabel === 'string')) {
+    for (const text of textRows(target)) {
+      const label = target.box.ariaLabel, words = text.box.textContent;
+      if (label === 'dynamic' || words === 'dynamic') { const region = intersect(target.region, text.region); if (region) report(unknowns, 'U_A11Y_LABEL_IN_NAME', 'unknown', `${target.box.label}: a dynamic aria-label or text decides whether the name contains the visible text`, target, region, { rule: 'label-in-name' }); continue; }
+      if (!words || normalize(label).includes(normalize(words))) continue;
+      const region = intersect(target.region, text.region);
+      if (region) report(findings, 'E_A11Y_LABEL_IN_NAME', 'error', `${target.box.label} is named ${JSON.stringify(label)}, which does not contain its visible text ${JSON.stringify(words)}`, target, region, { rule: 'label-in-name', visible: words });
+    }
+  }
+  // A link's name as a string: aria-label, else its static text content (undefined when it cannot be known).
+  const linkName = box => {
+    if (box.ariaLabel !== undefined) return box.ariaLabel === 'dynamic' ? undefined : normalize(box.ariaLabel);
+    const parts = []; let known = true;
+    (function walk(b) { if (b.textContent === 'dynamic') known = false; else if (b.textContent) parts.push(b.textContent); for (const child of [...(b.inline ?? []), ...(b.children ?? [])]) walk(child); })(box);
+    return known ? normalize(parts.join(' ')) : undefined;
+  };
+  const links = geometry.filter(row => row.box.tag === 'a' && typeof row.box.href === 'string' && row.box.href !== 'dynamic' && visible(row) && !hiddenFrom(row.path));
+  for (let i = 0; i < links.length; i++) for (let j = i + 1; j < links.length; j++) {
+    const a = links[i], b = links[j], name = linkName(a.box);
+    if (a.path === b.path || !name || name !== linkName(b.box) || a.box.href === b.box.href) continue;
+    const region = intersect(a.region, b.region);
+    if (region) report(warnings, 'W_A11Y_LINK_PURPOSE', 'warning', `${b.box.label} and ${a.box.label} are both named ${JSON.stringify(name)} but go to different places`, b, region, { rule: 'link-purpose', other: a.path });
+  }
+  const generic = /^(?:click here|here|read more|more|learn more|link|this|go|details|こちら|ここ|詳細|詳しくはこちら|もっと見る|続きを読む|クリック)$/;
+  for (const row of links) { const name = linkName(row.box); if (name && generic.test(name)) report(warnings, 'W_A11Y_LINK_TEXT', 'warning', `${row.box.label} is named ${JSON.stringify(name)}, which does not say where it goes`, row, row.region, { rule: 'link-text' }); }
 
   // target-size: SC 2.5.8 (AA, 24px, with the spacing exception) or SC 2.5.5 (AAA, 44px, no spacing exception).
   // Violations are collected per target, then the declared exceptions are applied.

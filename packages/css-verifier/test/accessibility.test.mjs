@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -523,4 +523,41 @@ test('fieldset: UA edges and a rendered legend are Unknown; a group without a le
   const contents = run({tag: 'main', classes: ['page'], children: [set([legend, radio('a'), radio('b')])]}, css + '.page { display: grid; grid-template-columns: 30px 30px; grid-auto-rows: 30px; background: #fff; color: #000; }\n.fs { display: contents; }\n', {boxes: {'.lg': {minInlineSize: 1, intrinsicBlockSize: 20}}});
   assert.notEqual(contents.status, 'unknown', JSON.stringify(contents.diagnostics));
   assert.equal(contents.accessibility.warnings.filter(w => w.code === 'W_A11Y_FIELDSET_NAME').length, 0);
+});
+
+// Text comparisons: textContent (direct static text), aria-label and href values.
+test('label-in-name (SC 2.5.3): an aria-label must contain the visible text', () => {
+  const btn = (label, text) => page([{tag: 'a', classes: ['go'], focusable: true, named: true, ariaLabel: label, href: '/x', children: [{tag: 'span', classes: ['t'], text: true, textContent: text}]}]);
+  const css = pageCSS('.page { background: #fff; color: #000; }\n.go { display: grid; grid-template-columns: minmax(0, 1fr); color: inherit; }\n.t { display: block; }\n');
+  const b = {'.t': {minInlineSize: 1, intrinsicBlockSize: 20}};
+  assert.equal(find(run(btn('Search the catalogue', 'Search'), css, {boxes: b}), 'E_A11Y_LABEL_IN_NAME').length, 0);
+  assert.deepEqual(find(run(btn('Find', 'Search'), css, {boxes: b}), 'E_A11Y_LABEL_IN_NAME').map(d => d.box), ['.go']);
+  // Hidden text is not visible text.
+  assert.equal(find(run(btn('Find', 'Search'), css + '.t { display: none; }', {boxes: b}), 'E_A11Y_LABEL_IN_NAME').length, 0);
+  assert.equal(run(btn('Find', 'dynamic'), css, {boxes: b}).status, 'unknown');
+});
+
+test('link-purpose and link-text: same text to different places, and generic link text', () => {
+  const link = (cls, text, href) => ({tag: 'a', classes: [cls], focusable: true, href, text: true, textContent: text});
+  const css = pageCSS('.page { background: #fff; color: #000; }\n.a, .b { display: block; color: inherit; }\n');
+  const b = {'.a': {minInlineSize: 1, intrinsicBlockSize: 20}, '.b': {minInlineSize: 1, intrinsicBlockSize: 20}};
+  const same = run(page([link('a', 'Pricing', '/p'), link('b', 'Pricing', '/q')]), css, {boxes: b});
+  assert.deepEqual(same.accessibility.warnings.filter(w => w.code === 'W_A11Y_LINK_PURPOSE').map(w => w.box), ['.b']);
+  assert.equal(run(page([link('a', 'Pricing', '/p'), link('b', 'Pricing', '/p')]), css, {boxes: b}).accessibility.warnings.filter(w => w.code === 'W_A11Y_LINK_PURPOSE').length, 0);
+  const generic = run(page([link('a', 'Click here', '/p'), link('b', '詳細', '/q')]), css, {boxes: b});
+  assert.deepEqual(generic.accessibility.warnings.filter(w => w.code === 'W_A11Y_LINK_TEXT').map(w => w.box).sort(), ['.a', '.b']);
+});
+
+test('landmark-name: two navs with the same name are not told apart', () => {
+  const nav = (cls, label) => ({tag: 'nav', classes: [cls], named: true, ariaLabel: label});
+  const css = '.page { display: grid; grid-template-columns: 100px; grid-auto-rows: 30px; }\n';
+  assert.ok(run(page([nav('n1', 'Main'), nav('n2', 'main ')]), css).accessibility.warnings.some(w => w.code === 'W_A11Y_LANDMARK_NAME'));
+  assert.equal(run(page([nav('n1', 'Main'), nav('n2', 'Footer')]), css).accessibility.warnings.filter(w => w.code === 'W_A11Y_LANDMARK_NAME').length, 0);
+});
+
+test('HTML adapter: direct text, aria-label and href become text facts', async () => {
+  const {analyzeHTML} = await import('../src/html.mjs');
+  const css = reset + '.page { display: grid; grid-template-columns: 200px; grid-auto-rows: 30px; background: #fff; color: #000; }\n.go { display: block; color: inherit; }\n';
+  const report = analyzeHTML('<main class="page"><a class="go" href="/s" aria-label="Find">Search</a></main>', {name: 'Page', css, viewport: domain, accessibility: true, boxes: {'.go': {minInlineSize: 1, intrinsicBlockSize: 20}}});
+  assert.deepEqual(find(report, 'E_A11Y_LABEL_IN_NAME').map(d => d.box), ['.go']);
 });
