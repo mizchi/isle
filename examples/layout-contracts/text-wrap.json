@@ -1,19 +1,54 @@
 {
   "component": "NoticeCard",
   "css": "./text-wrap.css",
-  "ancestors": [{ "tag": "html" }, { "tag": "body" }],
-  "viewport": { "min": 160, "max": 800, "height": { "min": 200, "max": 600 } },
+  "ancestors": [
+    {
+      "tag": "html",
+      "lang": "ja"
+    },
+    {
+      "tag": "body"
+    }
+  ],
+  "viewport": {
+    "min": 160,
+    "max": 800,
+    "height": {
+      "min": 200,
+      "max": 600
+    }
+  },
   "fonts": {
-    "Noto Sans JP": { "file": "../../packages/css-verifier/text-metrics/fixtures/japanese-variable.ttf" }
+    "Noto Sans JP": {
+      "file": "../../packages/css-verifier/text-metrics/fixtures/japanese-variable.ttf"
+    }
   },
   "boxes": {
     ".title": {
       "wrap": "normal",
-      "text": { "font": { "family": "Noto Sans JP", "size": 16, "lineHeight": 24, "weight": 400 }, "content": "日本語のテキスト幅検査。" }
+      "text": {
+        "font": {
+          "family": "Noto Sans JP",
+          "size": 16,
+          "lineHeight": 24,
+          "weight": 400
+        },
+        "content": "日本語のテキスト幅検査。",
+        "lang": "ja"
+      }
     },
     ".body": {
       "wrap": "normal",
-      "text": { "font": { "family": "Noto Sans JP", "size": 16, "lineHeight": 24, "weight": 400 }, "content": "折り返しを確認します。日本語のテキスト幅検査。" }
+      "text": {
+        "font": {
+          "family": "Noto Sans JP",
+          "size": 16,
+          "lineHeight": 24,
+          "weight": 400
+        },
+        "content": "折り返しを確認します。日本語のテキスト幅検査。",
+        "lang": "ja"
+      }
     }
   }
 }

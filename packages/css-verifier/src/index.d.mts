@@ -5,6 +5,8 @@ export type * from './layout-contracts.d.ts';
 export interface BoxTree {
   readonly tag:string;
   readonly id?:string;
+  /** lang attribute: the content language, inherited by descendants. */
+  readonly lang?:string;
   readonly classes?:readonly string[];
   readonly children?:readonly BoxTree[];
   readonly text?:boolean;

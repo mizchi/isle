@@ -17,7 +17,7 @@ export function analyzeHTML(html,options) {
       if(attr.namespace || !/^(?:class|id|title|role|lang|tabindex|aria-[\w-]+|data-[\w-]+)$/.test(attr.name)) unknown(`HTML rendering attribute needs an adapter: ${attr.name}`);
     }
     if(node.namespaceURI!=='http://www.w3.org/1999/xhtml') unknown('Foreign element needs a size adapter');
-    return {tag:node.tagName,...(attrs.id!==undefined ? {id:attrs.id} : {}),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),
+    return {tag:node.tagName,...(attrs.id!==undefined ? {id:attrs.id} : {}),...(attrs.lang!==undefined ? {lang:attrs.lang.trim()} : {}),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),
       text:node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)),
       ...(node.childNodes.some(n=>n.nodeName==='#text' && n.value && !/[^\t\n\r ]/.test(n.value)) ? {whitespace:true} : {}),
       children:node.childNodes.filter(n=>n.tagName).map(child=>convert(child,depth+1))};

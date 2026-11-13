@@ -6,7 +6,11 @@ import {q, cmp} from './linear.mjs';
 import {fontShorthand} from './css.mjs';
 
 const fontKeys = new Set(['family', 'size', 'lineHeight', 'weight', 'style']);
-const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance', 'minContent', 'overflowWrap', 'profile']);
+const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance', 'minContent', 'overflowWrap', 'profile', 'lang']);
+export const languageTag = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
+// Languages whose break opportunities were compared with Chromium (e2e). Chinese differs (e.g. !〜).
+export const breakingLanguages = new Set(['en', 'ja', 'ko']);
+export const breaksModeled = lang => breakingLanguages.has(lang.toLowerCase().split('-')[0]) && !/^(?:ja|ko|en)-(?:hans|hant)/i.test(lang);
 const finite = (value, min, max) => typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;
 
 export function validateFontContract(font) {
@@ -18,6 +22,7 @@ export function validateFontContract(font) {
 
 export function validateTextMetrics(metrics) {
   if (!metrics || typeof metrics !== 'object' || Object.keys(metrics).some(key => !metricKeys.has(key)) || !['content', 'domain', 'lines'].includes(metrics.kind)) throw new Error('Invalid text metrics');
+  if (metrics.lang !== undefined && (typeof metrics.lang !== 'string' || !languageTag.test(metrics.lang))) throw new Error('Invalid text metrics lang');
   if (metrics.kind === 'lines') {
     const {profile} = metrics;
     if (!['normal', 'anywhere', 'break-word'].includes(metrics.overflowWrap) || !Array.isArray(profile) || !profile.length || profile.length > 256) throw new Error('Invalid text line profile');
@@ -74,10 +79,24 @@ export function textFontMismatch(style, font) {
 export function textLinesMismatch(style, contract) {
   const metrics = contract.textMetrics;
   if (style['white-space'] !== 'normal') return `white-space ${style['white-space']} differs from the measured normal line breaking`;
+  // Unmeasured lang: the element's declared language must use the modeled break rules.
+  if (metrics.lang === undefined && style.$lang && style.$lang !== '<dynamic>' && !breaksModeled(style.$lang)) return `lang ${style.$lang}: line breaking is modeled for ${[...breakingLanguages].join(', ')}`;
+  if (metrics.lang === undefined && style.$lang === '<dynamic>') return 'lang is dynamic; line breaking depends on the language';
   if (style['overflow-wrap'] !== metrics.overflowWrap) return `overflow-wrap ${style['overflow-wrap']} differs from the measured ${metrics.overflowWrap}`;
   const heights = contract.intrinsicBlockSize;
   if (!Array.isArray(heights) || heights.length !== metrics.profile.length || heights.some((entry, i) => entry.atLeastInlineSize !== metrics.profile[i].atLeastInlineSize || (metrics.profile[i].lines === null ? entry.blockSize !== null : entry.blockSize === null || Math.abs(entry.blockSize - metrics.profile[i].lines * contract.font.lineHeight) > 1e-9))) return 'intrinsicBlockSize must be the line profile times the line height';
   return null;
+}
+
+/**
+ * Metrics measured for one content language apply where the element's
+ * language (the inherited lang attribute) is that tag, compared without case.
+ */
+export function textLangMismatch(lang, measured) {
+  if (measured === undefined) return null;
+  if (lang === '<dynamic>') return `lang is dynamic; the text was measured for ${measured}`;
+  if (!lang) return `lang is not declared on the element or an ancestor; the text was measured for ${measured}`;
+  return lang.toLowerCase() === measured.toLowerCase() ? null : `lang ${lang} differs from the measured ${measured}`;
 }
 
 /** Line boxes of `lineHeight` that fit `offered` (an exact rational), at most `limit`. */

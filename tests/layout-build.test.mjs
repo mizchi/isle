@@ -233,13 +233,13 @@ test('integrity warnings are reported by the build without failing it', async t 
 // maps CSS families to font files next to the entry, as layout.json does.
 const fontFile = new URL('../packages/css-verifier/text-metrics/fixtures/japanese-variable.ttf', import.meta.url);
 const jp = {family:'Noto Sans JP', size:16, lineHeight:24, weight:400};
-async function textFixture(t, {viewport:range, boxes, fonts = {'Noto Sans JP':{file:'./jp.ttf'}}, plugins = []}) {
+async function textFixture(t, {viewport:range, boxes, fonts = {'Noto Sans JP':{file:'./jp.ttf'}}, plugins = [], lang = 'en'}) {
   const directory = await mkdtemp(join(tmpdir(), 'isle-layout-fonts-'));
   t.after(() => rm(directory, { recursive:true, force:true }));
   await Promise.all([
     writeFile(join(directory, 'app.isle'), 'export component Four() { <main class="card"><p class="title">日本語のテキスト幅検査</p></main> }'),
     writeFile(join(directory, 'app.css'), '*{box-sizing:border-box;margin:0;padding:0}.card{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:24px;font-family:"Noto Sans JP",sans-serif;font-size:16px;line-height:24px}.title{white-space:'+(Object.values(boxes).some(b=>b.wrap) ? 'normal' : 'nowrap')+'}'),
-    writeFile(join(directory, 'index.html'), html), writeFile(join(directory, 'package.json'), '{"type":"module"}'),
+    writeFile(join(directory, 'index.html'), html.replace('lang="en"', `lang="${lang}"`)), writeFile(join(directory, 'package.json'), '{"type":"module"}'),
     writeFile(join(directory, 'jp.ttf'), await readFile(fontFile)),
   ]);
   return () => build({configFile:false,root:directory,base:'./',logLevel:'silent',plugins:[isle({entry:join(directory, 'app.isle'),mounts:[{component:'Four',props:{}}],wrapMounts:false,
@@ -277,4 +277,12 @@ test('checked builds measure wrapping text into a line profile', async t => {
   const contract = JSON.parse(artifact(output, 'isle.layout.json').source).contracts.boxes['.title'];
   assert.equal(contract.textMetrics.kind, 'lines');
   assert.equal(contract.intrinsicBlockSize.at(-1).blockSize, 24);
+});
+
+test('a text contract measured for a lang must match the delivered document language', async t => {
+  const measured = {'.title':{text:{font:jp, content:'日本語のテキスト幅検査', lang:'ja'}}};
+  const range = {min:200,max:400,height:{min:200,max:600}};
+  const output = await (await textFixture(t, {viewport:range, boxes:measured, lang:'ja'}))();
+  assert.equal(JSON.parse(artifact(output, 'isle.layout.json').source).contracts.boxes['.title'].textMetrics.lang, 'ja');
+  await assert.rejects(await textFixture(t, {viewport:range, boxes:measured, lang:'en'}), error => /E_ISLE_LAYOUT/.test(error.message) && /lang en differs from the measured ja/.test(error.message));
 });

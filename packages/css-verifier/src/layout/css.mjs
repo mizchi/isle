@@ -299,6 +299,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
     }
     values[property] = value;
   }
+  // Content language from the lang attribute (HTML: inherited; empty means unknown). Not settable by CSS.
+  values.$lang = box.lang !== undefined ? box.lang : inherited.$lang ?? '';
   values.$sources = sources;
   values.$dormant = dormant;
   values.$overridden = overridden;

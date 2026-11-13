@@ -1,22 +1,22 @@
 /** Font settings a text contract was measured with; the core checks the computed CSS against them. */
 export interface TextFont { family: string; size: number; lineHeight: number; weight?: number }
 export type TextContract =
-  | { font: TextFont; content: string; overflowWrap?: 'normal' | 'break-word' }
-  | { font: TextFont; characters: string; maxLength: number };
+  | { font: TextFont; content: string; overflowWrap?: 'normal' | 'break-word'; /** content language: measured alone, must equal the element lang */ lang?: string }
+  | { font: TextFont; characters: string; maxLength: number; lang?: string };
 export interface TextShaper {
   load(data: Uint8Array): number;
   info(handle: number): { unitsPerEm: number; axes: { tag: string; min: number; default: number; max: number }[] };
   shape(handle: number, text: string, size: number, axes: Record<string, number>, language?: string): unknown;
 }
 export interface FontEntry { data: Uint8Array; weight?: number; sha256?: string; file?: string }
-export interface LineProfile { text: string; width: number; minContent: number; overflowWrap: 'normal' | 'anywhere' | 'break-word'; profile: { atLeastInlineSize: number; lines: number }[] }
+export interface LineProfile { text: string; width: number; minContent: number; overflowWrap: 'normal' | 'anywhere' | 'break-word'; profile: { atLeastInlineSize: number; lines: number | null }[] }
 export interface MeasuredText { text: string; width: number; bound: number }
 export interface TextDomainBounds { characters: string; maxLength: number; perCharacter: number; pairAdjustment: number; widest: string; bounds: number[] }
 export interface TextMetrics {
-  measureText(input: { font: TextFont; text: string }): MeasuredText;
-  domainBounds(input: { font: TextFont; characters: string; maxLength: number }): TextDomainBounds;
+  measureText(input: { font: TextFont; text: string; lang?: string }): MeasuredText;
+  domainBounds(input: { font: TextFont; characters: string; maxLength: number; lang?: string }): TextDomainBounds;
   /** Line counts of wrapped fixed text over the content width (UAX #14 subset). */
-  breakLines(input: { font: TextFont; text: string; overflowWrap?: 'normal' | 'anywhere' | 'break-word' }): LineProfile;
+  breakLines(input: { font: TextFont; text: string; overflowWrap?: 'normal' | 'anywhere' | 'break-word'; lang?: string }): LineProfile;
   /** Replace `{text}` box contracts with minInlineSize/intrinsicBlockSize/wrap/font/textMetrics. */
   resolveBoxes<T extends Record<string, object>>(boxes?: T): Record<string, object>;
   resolveOptions<T extends { boxes?: Record<string, object> }>(options: T): T;

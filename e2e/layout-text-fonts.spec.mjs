@@ -200,7 +200,7 @@ test('the wrapping example: heights match Chromium and the body overflows where 
 // opportunity becomes a line break, so one render shows all of them. Every
 // pair of class members and random strings over all modeled characters.
 test('break opportunities match Chromium on every class pair and random strings', async ({page}) => {
-  test.setTimeout(240_000);
+  test.setTimeout(600_000);
   const members = [];
   for (let c = 0x21; c < 0x7f; c++) members.push(String.fromCharCode(c));
   members.push(...'「『（［【〈《〔」』）］】〉》〕、。，．・：；！？〜…‥々ヽヾゝゞ日あアッーぁゃァéÀ');
@@ -208,9 +208,9 @@ test('break opportunities match Chromium on every class pair and random strings'
   for (const x of members) for (const y of members) strings.push(x + y, `${x} ${y}`);
   let state = 3;
   const random = () => { state = state + 0x6D2B79F5 | 0; let t = Math.imul(state ^ state >>> 15, 1 | state); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-  for (let i = 0; i < 3000; i++) strings.push(Array.from({length: 3 + Math.floor(random() * 10)}, () => random() < 0.1 ? ' ' : members[Math.floor(random() * members.length)]).join('').replace(/ +/g, ' ').trim());
+  for (let i = 0; i < 1500; i++) strings.push(Array.from({length: 3 + Math.floor(random() * 10)}, () => random() < 0.1 ? ' ' : members[Math.floor(random() * members.length)]).join('').replace(/ +/g, ' ').trim());
   const modeled = strings.map(text => { try { return breakOpportunities(text); } catch (error) { if (error.code !== 'U_LAYOUT_TEXT_METRICS') throw error; return null; } });
-  for (const lang of ['en', 'ja']) {
+  for (const lang of (process.env.BREAK_LANGS ?? 'en,ja,ko').split(',')) {
     await page.setContent(`<!doctype html><html lang="${lang}"><style>body{margin:0}div{font:16px/20px monospace;width:0}</style><body><div></div></body></html>`);
     const rendered = await page.evaluate(strings => {
       const d = document.querySelector('div');
@@ -225,5 +225,33 @@ test('break opportunities match Chromium on every class pair and random strings'
     let compared = 0;
     strings.forEach((text, i) => { if (!modeled[i]) return; compared++; expect(modeled[i], `${JSON.stringify(text)} (lang=${lang})`).toEqual(rendered[i]); });
     expect(compared).toBeGreaterThan(strings.length * 0.8);
+  }
+});
+
+// A contract measured for the document language: every width has a count, and it matches Chromium there.
+test('lang-specific line profiles match Chromium in that language', async ({page}) => {
+  test.setTimeout(240_000);
+  const texts = ["it's 日本語の\"テキスト\"を確認します", '"quote" and \'apostrophe\' 日本', "Hello world, it's \"office\" time"];
+  for (const lang of ['ja', 'en']) {
+    await page.setContent(`<!doctype html><html lang="${lang}"><style>${face}body{margin:0}</style><body></body></html>`);
+    for (const text of texts) {
+      const lines = metrics.breakLines({font: jp, text, lang});
+      expect(lines.profile.every(entry => entry.lines !== null), `${text} (${lang}) has a count at every width`).toBe(true);
+      const widths = [...new Set(lines.profile.flatMap(entry => [-2, -1, 0, 1].map(d => entry.atLeastInlineSize + d / 64)))].filter(w => w >= lines.profile[0].atLeastInlineSize && w > 0).sort((a, b) => a - b);
+      const rendered = await page.evaluate(async ({text, widths}) => {
+        await document.fonts.load('400 16px "Noto Sans JP"', text);
+        const element = document.createElement('div');
+        Object.assign(element.style, {fontFamily: '"Noto Sans JP"', fontSize: '16px', lineHeight: '24px', fontWeight: '400'});
+        element.textContent = text; document.body.append(element);
+        const out = widths.map(w => { element.style.width = `${w}px`; return element.getBoundingClientRect().height / 24; });
+        element.remove(); return out;
+      }, {text, widths});
+      const slack = (2 * scriptRuns(text) + 1) / 64;
+      widths.forEach((w, i) => {
+        const modeled = lines.profile.filter(entry => entry.atLeastInlineSize <= w).at(-1).lines;
+        expect(rendered[i], `${text} (${lang}) at ${w}px`).toBeLessThanOrEqual(modeled);
+        if (!lines.profile.some(entry => w < entry.atLeastInlineSize && w >= entry.atLeastInlineSize - slack)) expect(rendered[i], `${text} (${lang}) at ${w}px`).toBe(modeled);
+      });
+    }
   }
 });

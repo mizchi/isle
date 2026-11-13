@@ -10,6 +10,7 @@
 // or a test double). Widths are shaped advances; the bound adds the browser
 // layout rounding allowance described in `layoutAllowance`.
 
+import {languageTag, breakingLanguages, breaksModeled} from './layout/text-font.mjs';
 const UNIT = 64; // Chromium LayoutUnit: 1/64 CSS px
 const contentLanguages = ['ja', 'zh-Hans', 'zh-Hant', 'ko'];
 const fail = message => { throw Object.assign(new Error(message), {code: 'U_LAYOUT_TEXT_METRICS'}); };
@@ -161,7 +162,9 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
   // listed language is measured: bounds take the widest, line profiles keep
   // only counts on which all languages agree. Languages that shape this text
   // exactly like 'und' (every character and adjacent pair) are skipped.
-  const languagesFor = (font, chars) => ['und', ...contentLanguages.filter(language => chars.some((c, i) =>
+  // A declared content language (`lang`) is measured alone; the core checks the element's lang attribute.
+  const checkLang = lang => { if (lang !== undefined && (typeof lang !== 'string' || !languageTag.test(lang))) fail(`Invalid lang ${JSON.stringify(lang)}: use a BCP 47 tag such as ja or en`); };
+  const languagesFor = (font, chars, lang) => lang !== undefined ? [lang] : ['und', ...contentLanguages.filter(language => chars.some((c, i) =>
     shape(font, c, language) !== shape(font, c) || (i && shape(font, chars[i - 1] + c, language) !== shape(font, chars[i - 1] + c))))];
   const provenance = font => {
     const {entry, info} = lookup(font);
@@ -170,12 +173,13 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
   };
 
   /** Single-line width of a fixed string after white-space collapsing. */
-  function measureText({font, text}) {
+  function measureText({font, text, lang}) {
+    checkLang(lang);
     if (typeof text !== 'string') fail('Text content must be a string');
     const collapsed = collapse(text);
     if (!collapsed) return {text: collapsed, width: 0, bound: 0};
-    const width = shapeLine(font, collapsed);
-    const bound = Math.max(...languagesFor(font, codepoints(collapsed)).map(language => textBound(collapsed, shapeLine(font, collapsed, language))));
+    const width = shapeLine(font, collapsed, lang);
+    const bound = Math.max(...languagesFor(font, codepoints(collapsed), lang).map(language => textBound(collapsed, shapeLine(font, collapsed, language))));
     return {text: collapsed, width, bound};
   }
 
@@ -185,12 +189,13 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
    * every ordered pair; contextual effects spanning three or more characters
    * are outside the bound.
    */
-  function domainBounds({font, characters, maxLength: length}) {
+  function domainBounds({font, characters, maxLength: length, lang}) {
+    checkLang(lang);
     if (!Number.isSafeInteger(length) || length < 1 || length > maxLength) fail(`maxLength must be 1..${maxLength}`);
     const set = [...new Set(codepoints(String(characters ?? '')))];
     if (!set.length || set.length > maxCharacters) fail(`Use 1..${maxCharacters} distinct characters`);
     for (const c of set) if (/[\t\n\r\f\p{M}\p{Cf}\p{Cs}]/u.test(c) || /\p{Extended_Pictographic}/u.test(c)) fail(`Character U+${c.codePointAt(0).toString(16).toUpperCase()} forms clusters or line breaks that are not modeled`);
-    const languages = languagesFor(font, set);
+    const languages = languagesFor(font, set, lang);
     const widestAdvance = text => Math.max(...languages.map(language => shape(font, text, language)));
     const advance = new Map(set.map(c => [c, widestAdvance(c)]));
     let widest = set[0], perCharacter = 0, pairAdjustment = 0;
@@ -215,7 +220,9 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
    * is never smaller than the browser's (a larger first line can only fit
    * when the modeled one does).
    */
-  function breakLines({font, text, overflowWrap = 'normal'}) {
+  function breakLines({font, text, overflowWrap = 'normal', lang}) {
+    checkLang(lang);
+    if (lang !== undefined && !breaksModeled(lang)) fail(`lang ${lang}: line breaking is verified for ${[...breakingLanguages].join(', ')}`);
     if (typeof text !== 'string') fail('Text content must be a string');
     if (!['normal', 'anywhere', 'break-word'].includes(overflowWrap)) fail(`overflow-wrap ${overflowWrap} is outside the line-breaking model`);
     const collapsed = collapse(text), chars = codepoints(collapsed);
@@ -264,7 +271,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
       };
       return chars.some(c => closingBrackets.has(c)) ? [bound, trimmed] : [bound];
     };
-    const variants = languagesFor(font, chars).flatMap(sizes);
+    const variants = languagesFor(font, chars, lang).flatMap(sizes);
     const bound = (start, end) => Math.max(...variants.map(size => size(start, end))); // the widest variant
     const emergency = overflowWrap !== 'normal';
     // Greedy lines at width w: the count, and the widest line that fits (0 if every line is forced).
@@ -338,23 +345,23 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         if (text.content === undefined) fail(`${selector}: wrapping is measured for fixed content; a character domain has no fixed line breaks`);
         const overflowWrap = rest.wrap === 'anywhere' ? 'anywhere' : (text.overflowWrap ?? 'normal');
         if (rest.wrap === 'anywhere' && text.overflowWrap !== undefined && text.overflowWrap !== 'anywhere') fail(`${selector}: wrap anywhere measures overflow-wrap: anywhere`);
-        const lines = breakLines({font, text: text.content, overflowWrap});
+        const lines = breakLines({font, text: text.content, overflowWrap, lang: text.lang});
         out[selector] = {...rest, minInlineSize: lines.minContent, intrinsicBlockSize: lines.profile.map(entry => ({atLeastInlineSize: entry.atLeastInlineSize, blockSize: entry.lines === null ? null : entry.lines * font.lineHeight})),
-          font: fontContract, textMetrics: {kind: 'lines', text: lines.text, width: lines.width, minContent: lines.minContent, overflowWrap, profile: lines.profile, font: provenance(font), allowance: layoutAllowance.rule}};
+          font: fontContract, textMetrics: {kind: 'lines', text: lines.text, width: lines.width, minContent: lines.minContent, overflowWrap, profile: lines.profile, ...(text.lang !== undefined ? {lang: text.lang} : {}), font: provenance(font), allowance: layoutAllowance.rule}};
         continue;
       }
       let metrics, width;
       if (text.content !== undefined) {
-        const measured = measureText({font, text: text.content});
+        const measured = measureText({font, text: text.content, lang: text.lang});
         width = measured.bound;
         metrics = {kind: 'content', text: measured.text, width: measured.width};
       } else {
-        const domain = domainBounds({font, characters: text.characters, maxLength: text.maxLength});
+        const domain = domainBounds({font, characters: text.characters, maxLength: text.maxLength, lang: text.lang});
         width = domain.bounds.at(-1);
         metrics = {kind: 'domain', ...domain};
       }
       out[selector] = {...rest, minInlineSize: width, intrinsicBlockSize: font.lineHeight, wrap: 'nowrap', font: fontContract,
-        textMetrics: {...metrics, font: provenance(font), allowance: metrics.kind === 'domain' ? domainAllowance : layoutAllowance.rule}};
+        textMetrics: {...metrics, ...(text.lang !== undefined ? {lang: text.lang} : {}), font: provenance(font), allowance: metrics.kind === 'domain' ? domainAllowance : layoutAllowance.rule}};
     }
     return out;
   }

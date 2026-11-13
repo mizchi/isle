@@ -52,7 +52,7 @@ CSSコア単独のテストはworkspace package内にあり、rootのテスト�
 | --- | --- |
 | 独立CSS package、npm consumer、Z3、反例の出典 | `just css-verifier-check` |
 | mizchi/cssとのcascade差分(MoonBit必要) | `just css-oracle-check` |
-| フォントから導出するテキスト寸法(MoonBit必要) | `just css-text-check`。折り返し(行分割 profile、括弧・約物・小書き仮名・`ー` を含む)はコア3件・計測5件・CLI 1件・Vite 1件、Chromium で11構成+ランダム140文字列×2言語の行数、全クラス対+3000文字列の分割可能位置、例の高さを照合。Vite の `layout.fonts` は `tests/layout-build.test.mjs` の3件(証明書へのフォント記録、狭い viewport での失敗、設定エラー) |
+| フォントから導出するテキスト寸法(MoonBit必要) | `just css-text-check`。折り返し(行分割 profile、括弧・約物・小書き仮名・`ー` を含む)はコア3件・計測5件・CLI 1件・Vite 1件、Chromium で11構成+ランダム140文字列×2言語の行数、全クラス対+3000文字列の分割可能位置、例の高さを照合。`lang` 契約はコア3件・計測2件・Vite 1件、Chromium で言語別の行数と en/ja/ko の分割可能位置。Vite の `layout.fonts` は `tests/layout-build.test.mjs` の3件(証明書へのフォント記録、狭い viewport での失敗、設定エラー) |
 | integrity 規則(`packages/css-verifier/test/integrity.test.mjs`、`e2e/layout-integrity.spec.mjs`) | コア9件(塗りのある親、Z3 の確認を含む)、Vite の build 2件、playground 1件。vlmkit 0.24.0 と8構成×3幅で規則ごとに一致(フォント契約のあるテキストは text-collision も一致、契約のない text は vlmkit ⇒ 静的のみ) |
 | flex/contents サブセット(`packages/css-verifier/test/flex-contents.test.mjs`、`e2e/layout-flex.spec.mjs`) | コア24件、Chromium 25ケースで矩形が1/64 px以内で一致。flexの比較はmizchi/css 0.8.2で既定に含める |
 | noshift、DOM注釈、key、CLI/Vite、有限case eval | `just noshift-check` |

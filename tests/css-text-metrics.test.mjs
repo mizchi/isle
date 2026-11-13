@@ -182,3 +182,21 @@ test('ASCII punctuation follows Chromium: hyphens break before letters, and befo
   assert.equal(pieces('Hello, world!'), 2);
   assert.equal(metrics.breakLines({font: jp, text: '日本(ABC)です'}).profile[0].lines, 5); // 日 / 本 / (ABC) / で / す
 });
+
+test('a text contract with lang is measured in that language only', () => {
+  // Noto Sans JP's locl gives ja a wider apostrophe and quotes.
+  const any = metrics.breakLines({font: jp, text: "it's 日本"});
+  const ja = metrics.breakLines({font: jp, text: "it's 日本", lang: 'ja'}), en = metrics.breakLines({font: jp, text: "it's 日本", lang: 'en'});
+  assert.ok(any.profile.some(entry => entry.lines === null)); // languages disagree somewhere
+  for (const one of [ja, en]) assert.ok(one.profile.every(entry => entry.lines !== null));
+  assert.ok(ja.minContent > en.minContent);
+  assert.equal(metrics.measureText({font: jp, text: "it's", lang: 'en'}).bound, upperBound(metrics.measureText({font: jp, text: "it's", lang: 'en'}).width));
+  const {'.a': resolved} = metrics.resolveBoxes({'.a': {wrap: 'normal', text: {font: jp, content: "it's 日本", lang: 'ja'}}});
+  assert.equal(resolved.textMetrics.lang, 'ja');
+  assert.throws(() => metrics.breakLines({font: jp, text: '日本', lang: 'not a tag'}), /Invalid lang/);
+  assert.throws(() => metrics.breakLines({font: jp, text: '日本', lang: 'zh-Hans'}), /line breaking is verified for/);
+});
+
+test('region subtags keep the modeled break rules', () => {
+  assert.ok(metrics.breakLines({font: jp, text: '日本語', lang: 'ja-JP'}).profile.length > 1);
+});

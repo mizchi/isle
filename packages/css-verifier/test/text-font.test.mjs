@@ -111,3 +111,29 @@ test('UA heading fonts are not inherited: a measured h1 needs author font longha
   assert.ok(report.diagnostics.some(d => d.code === 'U_LAYOUT_TEXT_FONT' && /font-weight ua must be absolute/.test(d.message)), JSON.stringify(report.diagnostics));
   status(run('h1 { font-weight: 400; }'), 'verified');
 });
+
+// Content language (lang attribute): a contract measured for one language applies only there.
+test('a measured lang must equal the element language, inherited from the lang attribute', () => {
+  const contract = {...lines(), textMetrics: {...lines().textMetrics, lang: 'ja'}};
+  const viewport = {min: 116, max: 400, height: {min: 100, max: 400}};
+  const run = (tree, ancestors = [{tag: 'html'}]) => analyzeLayout(tree, {name: 'Card', css: wrapCSS(), viewport, ancestors, boxes: {'.name': contract}});
+  const card = lang => ({tag: 'main', classes: ['row'], ...(lang !== undefined ? {lang} : {}), children: [{tag: 'p', classes: ['name'], text: true}]});
+  status(run(card('ja')), 'verified');
+  status(run(card(), [{tag: 'html', lang: 'JA'}]), 'verified'); // inherited; language tags compare case-insensitively
+  for (const [tree, ancestors, reason] of [[card(), [{tag: 'html'}], /lang is not declared/], [card('en'), [{tag: 'html'}], /lang en differs from the measured ja/], [card('ja-JP'), [{tag: 'html'}], /lang ja-JP differs/]]) {
+    const report = run(tree, ancestors);
+    status(report, 'unknown');
+    assert.ok(report.diagnostics.some(d => d.code === 'U_LAYOUT_TEXT_FONT' && reason.test(d.message)), JSON.stringify(report.diagnostics));
+  }
+  // Without a measured lang the element language is not consulted.
+  status(analyzeLayout(card('en'), {name: 'Card', css: wrapCSS(), viewport, ancestors: [{tag: 'html'}], boxes: {'.name': lines()}}), 'verified');
+});
+
+test('without a measured lang, a declared language must use the modeled break rules', () => {
+  const viewport = {min: 116, max: 400, height: {min: 100, max: 400}};
+  const run = lang => analyzeLayout({tag: 'main', classes: ['row'], lang, children: [{tag: 'p', classes: ['name'], text: true}]}, {name: 'Card', css: wrapCSS(), viewport, ancestors: [{tag: 'html'}], boxes: {'.name': lines()}});
+  for (const lang of ['en', 'ja', 'ko-KR', '']) status(run(lang), 'verified');
+  const report = run('zh-Hans');
+  status(report, 'unknown');
+  assert.ok(report.diagnostics.some(d => /lang zh-Hans: line breaking is modeled for en, ja, ko/.test(d.message)), JSON.stringify(report.diagnostics));
+});

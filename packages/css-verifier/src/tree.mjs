@@ -1,7 +1,7 @@
 import {boxTags} from './layout/input.mjs';
 import {validateTargetMetadata} from './layout/target-metadata.mjs';
 
-const fields=new Set(['tag','id','classes','children','text','whitespace','path','source','owner','documentRoot','layoutContracts','targets','targetIdentity']);
+const fields=new Set(['tag','id','lang','classes','children','text','whitespace','path','source','owner','documentRoot','layoutContracts','targets','targetIdentity']);
 const object=value=>value!==null && typeof value==='object' && !Array.isArray(value);
 
 /** Clone the supplied model: analysis must never attach facts to caller state. */
@@ -12,7 +12,7 @@ export function normalizeTree(tree,name) {
     if(seen.has(input)) throw new TypeError('Box tree must not contain cycles or shared nodes');
     if(depth>64 || seen.size>=2048) throw new TypeError('Box tree limit exceeded');
     seen.add(input);
-    for(const key of ['id','owner','path']) if(input[key]!==undefined && (typeof input[key]!=='string' || input[key].length>4096)) throw new TypeError(`Invalid box ${key}`);
+    for(const key of ['id','lang','owner','path']) if(input[key]!==undefined && (typeof input[key]!=='string' || input[key].length>4096)) throw new TypeError(`Invalid box ${key}`);
     for(const key of ['text','whitespace','documentRoot']) if(input[key]!==undefined && typeof input[key]!=='boolean') throw new TypeError(`Invalid box ${key}`);
     if(input.classes!==undefined && (!Array.isArray(input.classes) || input.classes.some(c=>typeof c!=='string' || !c || /\s/.test(c)))) throw new TypeError('Invalid box classes');
     if(input.children!==undefined && !Array.isArray(input.children)) throw new TypeError('Invalid box children');
@@ -22,7 +22,7 @@ export function normalizeTree(tree,name) {
     const path=input.path ?? (parent ? `${parent}/${index}` : name);
     if(!path || paths.has(path) || (parent && !path.startsWith(parent+'/'))) throw new TypeError('Box paths must be unique and nested below their parent');
     paths.add(path);
-    const box={tag:input.tag,classes:[...(input.classes ?? [])],id:input.id,owner:input.owner ?? name,path,
+    const box={tag:input.tag,classes:[...(input.classes ?? [])],id:input.id,...(input.lang!==undefined ? {lang:input.lang} : {}),owner:input.owner ?? name,path,
       ...(input.source ? {source:{...input.source}} : {}),children:[],text:input.text ?? false,
       ...(input.whitespace ? {whitespace:true} : {}),
       ...(input.targets?.length ? {targets:[...input.targets]} : {}),...(input.targetIdentity ? {targetIdentity:input.targetIdentity} : {}),

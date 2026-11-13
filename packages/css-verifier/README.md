@@ -141,7 +141,10 @@ profile over the content width (`intrinsicBlockSize`) and a min-content
 line-end rules; adjacent fullwidth punctuation (squeezed by text-spacing-trim)
 is rejected, and widths where a trimmed line-final bracket changes the count
 are Unknown. Lines are shaped per script run, as Chromium does, and in every
-CJK content language (locl): counts that differ by language are Unknown.
+CJK content language (locl): counts that differ by language are Unknown. A
+`text.lang` (e.g. `ja`) measures one language only; the core checks it against
+the element's inherited `lang` attribute (box tree `lang`, `ancestors[].lang`).
+Break rules are verified for en, ja and ko (Chinese differs).
 Build the FFI with `just css-text-build`.
 
 ## Differential cascade oracle (development only)

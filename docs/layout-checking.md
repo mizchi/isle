@@ -344,6 +344,7 @@ E_LAYOUT_ITEM_SIZE: .cell requires 40px but receives 53/2px on inline axis at vi
 隣接する全角約物(`。」` など)は Chromium が詰めるので入力エラー、行末の閉じ括弧が詰められるかで行数が変わる幅は Unknown。
 ASCII の記号は Chromium の対の表に従う(`well-known` は `-` の後、`ABCD-1234` も分けるが `-1` は分けない、括弧・句読点は語に付く)。
 `$ % + \` と日本語の隣接、Latin-1 の文字と ASCII 記号の隣接は入力エラー。`lang` で字形が変わる文字(Noto Sans JP の `'` など)は各言語で測り、行数が言語で変わる幅は Unknown。
+`text` に `"lang": "ja"` を書くとその言語だけで測る。要素の `lang` 属性(継承、CLI では `ancestors` の `lang`、Vite では配信する `<html lang>`)と一致しなければ Unknown。分割位置は en・ja・ko で照合済みで、中国語は対象外。
 [例](../examples/layout-contracts/text-wrap.json)では 48px の行に本文が3行必要になる幅を報告する。
 
 ```text

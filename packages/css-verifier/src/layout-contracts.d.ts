@@ -12,7 +12,7 @@ export interface LayoutOptions {
   /** Ordered reset sources, before css in the same author cascade. */
   reset?: readonly { css: string; file?: string }[];
   /** Real ancestors, outermost first; used for inherited styles, not host sizing. */
-  ancestors?: readonly { tag: string; id?: string; classes?: readonly string[] }[];
+  ancestors?: readonly { tag: string; id?: string; classes?: readonly string[]; /** lang attribute (content language, inherited) */ lang?: string }[];
   /** Closed finite interval in CSS pixels. */
   viewport: { min: number; max: number; height?: { min: number; max: number } };
   /** Defaults to true when viewport.height is supplied. */
@@ -36,7 +36,7 @@ export interface LayoutBoxContract {
   /** Provenance of font-derived bounds. A domain bound table indexed by character count. */
   textMetrics?: { kind: 'content'; text: string; width: number; font?: object; allowance?: string }
     | { kind: 'domain'; characters: string; maxLength: number; perCharacter: number; pairAdjustment: number; widest: string; bounds: number[]; font?: object; allowance?: string }
-    | { kind: 'lines'; text: string; width: number; minContent: number; overflowWrap: 'normal' | 'anywhere' | 'break-word'; profile: { atLeastInlineSize: number; lines: number }[]; font?: object; allowance?: string };
+    | { kind: 'lines'; text: string; width: number; minContent: number; overflowWrap: 'normal' | 'anywhere' | 'break-word'; profile: { atLeastInlineSize: number; lines: number | null }[]; lang?: string; font?: object; allowance?: string };
 }
 export interface CheckedLayoutBoxContract extends Omit<LayoutBoxContract, 'overflow' | 'overflowBlock'> {
   overflow?: 'fit' | 'clip' | 'scroll';
