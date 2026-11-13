@@ -105,9 +105,11 @@ test('wrapping must agree with CSS and is not itself a font-metric guarantee', (
   assert.equal(run({ css: css.replace('anywhere', 'break-word') }).diagnostics.some(d => d.code === 'E_LAYOUT_WRAP'), true);
 });
 
-test('float, non-grid containers, overlapping/outside placement are rejected', () => {
+test('float, block containers, flex outside the subset and overlapping/outside placement are rejected', () => {
   assert.ok(run({ css: css + '.side { float: left; }' }).diagnostics.some(d => d.code === 'E_LAYOUT_FLOAT'));
-  assert.ok(run({ css: css.replace('display: grid', 'display: flex') }).diagnostics.some(d => d.code === 'E_LAYOUT_CONTAINER'));
+  // flex items with content-sized defaults are outside the flex subset.
+  assert.ok(run({ css: css.replace('display: grid', 'display: flex') }).diagnostics.some(d => d.code === 'U_LAYOUT_FLEX'));
+  assert.ok(run({ css: css + '.board { display: block; }' }).diagnostics.some(d => d.code === 'E_LAYOUT_CONTAINER'));
   assert.ok(run({ css: css + '.body { grid-column: 3; }' }).diagnostics.some(d => d.code === 'E_LAYOUT_PLACEMENT'));
   assert.ok(run({ css: css + '.side, .body { grid-column: 1; grid-row: 1; }' }).diagnostics.some(d => d.code === 'E_LAYOUT_OVERLAP'));
 });

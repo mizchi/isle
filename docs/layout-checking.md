@@ -196,7 +196,9 @@ ancestor 入力は継承用であり、host の寸法を再計算する入力で
 
 各条件領域で cascade / specificity / source order / `!important` を計算し、親の content box から子の grid area へ渡す幅と高さを求める。物理・論理プロパティの対応は horizontal-tb / ltr に固定する。
 
-- 子 element を配置する container は Grid を要求する。effective な non-none float、意図を宣言していない重なり、明示列の外への配置は違反にする。
+- 子 element を配置する container は Grid か下記の flex サブセットを要求する。block container が子を持つ場合、effective な non-none float、意図を宣言していない重なり、明示列の外への配置は違反にする。
+- **flex サブセット**([ADR-0011](adr/0011-flex-and-contents-subsets.md)): `flex-direction: row`、`flex-wrap: nowrap`、`justify-content` は normal / flex-start / start、全 item の `order: 0`。item は、固定(grow 0・shrink 0、basis が px か `auto`+px の width)か、伸縮(grow > 0、basis 0、width auto、`min-width: 0`)のどちらか。固定 item は縮まずに溢れ、伸縮 item は padding/border に加えて正の余白を grow の比で受け取る(合計が1未満なら一部を残す)。定義済みの高さを持つ container の行はその高さで、item は伸長する。内容に依存する自動最小サイズ、縮小、%・content の basis、wrap・column・その他の配置は `U_LAYOUT_FLEX` の unknown。
+- **`display: contents`**: box を作らず、子を親の Grid / flex の item として扱う。継承は要素の木に従う。text・契約・noshift の対象を持つ場合、解析の root にある場合、領域によって contents かどうかが変わる場合は unknown。
 - 列は固定 px と `minmax(0, Nfr)`。固定列・column gap を引いた残りを fr の比で配分し、fr 合計が1未満なら残余幅を一部残す。通常の `1fr` は intrinsic minimum を持つため未対応として unknown にする。
 - 列・行の正の数値 line、`start / span N`、`start / end`、`span N` と sparse な通常の auto-placement を扱う。確定した row を先に配置する。確定 row には明示 column を要求する。暗黙の追加列、名前付き area、dense は未対応。
 - auto・固定 px・割合の inline/block-size、content-box / border-box、px の padding・solid border・gap を扱う。margin は0だけを許可する。p / heading 等の native な block margin は明示的な reset を要求する。CSS min-inline-size / min-width は auto / 固定 px、min-block-size は auto / 0、max は none に限定する。

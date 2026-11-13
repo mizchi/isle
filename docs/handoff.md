@@ -53,6 +53,7 @@ CSSコア単独のテストはworkspace package内にあり、rootのテスト�
 | 独立CSS package、npm consumer、Z3、反例の出典 | `just css-verifier-check` |
 | mizchi/cssとのcascade差分(MoonBit必要) | `just css-oracle-check` |
 | フォントから導出するテキスト寸法(MoonBit必要) | `just css-text-check` |
+| flex/contents サブセット(`packages/css-verifier/test/flex-contents.test.mjs`、`e2e/layout-flex.spec.mjs`) | コア7件、Chromium 6ケースで矩形が1/64 px以内で一致。flexの比較は`CSS_ORACLE_FLEX=1`(mizchi/css 0.8.1は flex shorthand 等の3件の誤りがあり、修正はmizchi/cssのbranchにある) |
 | noshift、DOM注釈、key、CLI/Vite、有限case eval | `just noshift-check` |
 | 宣言した親子のlayout契約 | `just layout-contract-check` |
 | browser compilerとplayground | `just playground-check` |

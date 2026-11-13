@@ -33,10 +33,10 @@ export const cases = [
     note: 'Grid item の float を browser が無視する場合も、言語の禁止規則として検査する。',
   },
   {
-    id: 'flex', title: 'Grid container の要求',
-    reject: cardExample('.card {display:flex;}'), accept: cardExample(),
-    expected: expected('violated', 'E_LAYOUT_CONTAINER'),
-    note: 'この検査対象の container は Grid で構築する。',
+    id: 'flex', title: 'flex のサブセット外の item',
+    reject: cardExample('.card {display:flex;}'), accept: cardExample('.card {display:flex;}\n.text {flex:1 1 0;min-width:0;}'),
+    expected: expected('unknown', 'U_LAYOUT_FLEX'),
+    note: '初期値の flex: 0 1 auto は内容サイズと縮小に依存する。row・nowrap で、固定(flex:none と px 幅)または伸縮(flex:1 1 0 と min-width:0)の item に書く。',
   },
   {
     id: 'content-box', title: 'reset の上書きによる幅超過',

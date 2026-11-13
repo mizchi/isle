@@ -30,16 +30,16 @@
   "assumptions": [
     "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
     "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
-    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+    "Only horizontal-tb/ltr in-flow and explicitly sized local absolute geometry is checked; ink overflow and browser pixel rounding are outside the contract."
   ],
   "styleSources": [
     {
       "kind": "reset",
-      "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/inherit-boundary/reject/reset-0.css"
+      "file": "/home/user/isle/evals/results/layout-rejections/inherit-boundary/reject/reset-0.css"
     },
     {
       "kind": "app",
-      "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/inherit-boundary/reject/app.css"
+      "file": "/home/user/isle/evals/results/layout-rejections/inherit-boundary/reject/app.css"
     }
   ],
   "diagnostics": [
@@ -58,5 +58,24 @@
   "policies": [],
   "checks": [],
   "sizes": [],
-  "queries": []
+  "queries": [],
+  "subgrids": [],
+  "elements": [
+    {
+      "path": "Card",
+      "tag": "main",
+      "classes": [
+        "card"
+      ],
+      "owner": "Card"
+    },
+    {
+      "path": "Card/0",
+      "tag": "p",
+      "classes": [
+        "text"
+      ],
+      "owner": "Card"
+    }
+  ]
 }

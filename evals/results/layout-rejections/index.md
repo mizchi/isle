@@ -5,7 +5,7 @@
 |結果|例|拒否版|実際の診断|対応版|
 |---|---|---|---|---|
 |PASS|[float](float/reject/app.css)|violated|[E_LAYOUT_FLOAT](float/reject/report.json)|[verified](float/accept/app.css)|
-|PASS|[flex](flex/reject/app.css)|violated|[E_LAYOUT_CONTAINER](flex/reject/report.json)|[verified](flex/accept/app.css)|
+|PASS|[flex](flex/reject/app.css)|unknown|[U_LAYOUT_FLEX](flex/reject/report.json)|[verified](flex/accept/app.css)|
 |PASS|[content-box](content-box/reject/app.css)|violated|[E_LAYOUT_ITEM_SIZE](content-box/reject/report.json)|[verified](content-box/accept/app.css)|
 |PASS|[block-height](block-height/reject/app.css)|violated|[E_LAYOUT_CONTENT](block-height/reject/report.json)|[verified](block-height/accept/app.css)|
 |PASS|[wrapping](wrapping/reject/app.css)|violated|[E_LAYOUT_WRAP](wrapping/reject/report.json)|[verified](wrapping/accept/app.css)|
@@ -25,9 +25,9 @@ Grid item の float を browser が無視する場合も、言語の禁止規則
 
 入力: [source](float/reject/app.isle)、[設定](float/reject/layout.json)。対応版: [source](float/accept/app.isle)、[設定](float/accept/layout.json)。
 
-## Grid container の要求
+## flex のサブセット外の item
 
-この検査対象の container は Grid で構築する。
+初期値の flex: 0 1 auto は内容サイズと縮小に依存する。row・nowrap で、固定(flex:none と px 幅)または伸縮(flex:1 1 0 と min-width:0)の item に書く。
 
 入力: [source](flex/reject/app.isle)、[設定](flex/reject/layout.json)。対応版: [source](flex/accept/app.isle)、[設定](flex/accept/layout.json)。
 

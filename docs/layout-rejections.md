@@ -1,6 +1,6 @@
 # リジェクトされるコードを実行する
 
-現在のレイアウト検査で成功扱いにしない14例と、それぞれの対応版を実行できる。契約違反の `violated` が6例、未対応・情報不足の `unknown` が8例である。
+現在のレイアウト検査で成功扱いにしない14例と、それぞれの対応版を実行できる。契約違反の `violated` が5例、未対応・情報不足の `unknown` が9例である。
 
 ```sh
 just layout-rejections
@@ -21,7 +21,7 @@ just layout evals/results/layout-rejections/content-box/reject/app.isle \
 | ID | 拒否される記述・条件 | 診断 | 対応版 |
 |---|---|---|---|
 | float | float:left | E_LAYOUT_FLOAT | float:none |
-| flex | container が display:flex | E_LAYOUT_CONTAINER | Grid にする |
+| flex | display:flex の item が初期値(flex:0 1 auto) | U_LAYOUT_FLEX | flex:1 1 0 と min-width:0 で伸縮 item にする |
 | content-box | width:100% + padding + content-box | E_LAYOUT_ITEM_SIZE | border-box を保つ |
 | block-height | 必要高さ200pxに row が100px | E_LAYOUT_CONTENT | row に200pxを与える |
 | wrapping | wrap:anywhere と white-space:nowrap | E_LAYOUT_WRAP | CSS と契約を一致させる |

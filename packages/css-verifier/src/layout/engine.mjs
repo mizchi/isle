@@ -7,6 +7,7 @@ import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
 import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
 import {textFontMismatch, fittingLength} from './text-font.mjs';
+import {validateFlexContainer, flexTrack} from './flex.mjs';
 import {fact, sizeChain, sizeProperties, trackProperties, contractFact, explanation} from './explain.mjs';
 
 const zero = q(0), one = q(1), minusOne = q(-1);
@@ -139,12 +140,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(box.tag==='button' && (style.appearance!=='none' || style.display!=='block')) throw new Error('Checked buttons require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets');
     if (['left', 'right', 'inline-start', 'inline-end'].includes(style.float)) { issue('E_LAYOUT_FLOAT', 'float is forbidden in checked layout', box, region); return false; }
     if (style.float !== 'none') throw new Error('Unsupported float value');
-    if (!['block', 'grid'].includes(style.display)) {
-      if (style.display === 'flex') issue('E_LAYOUT_CONTAINER', 'Layout containers must use grid', box, region);
-      else throw new Error(`Unsupported display: ${style.display}`);
-      return false;
-    }
-    if (style.display === 'grid' && box.text) throw new Error('Wrap text in an explicit leaf; anonymous grid text items need a layout adapter');
+    if (style.display === 'contents') throw new Error('display: contents on the analyzed root or with text needs its parent box and anonymous items');
+    if (!['block', 'grid', 'flex'].includes(style.display)) throw new Error(`Unsupported display: ${style.display}`);
+    if (['grid', 'flex'].includes(style.display) && box.text) throw new Error('Wrap text in an explicit leaf; anonymous grid/flex text items need a layout adapter');
     if (['margin-left', 'margin-right'].some(key => style[key] !== '0')) throw new Error('Only known zero inline margins are supported');
     if (block && ['margin-top', 'margin-bottom'].some(key => style[key] !== '0')) throw new Error('Reset native block margins explicitly before block checking');
     if (!['static', 'relative', 'absolute'].includes(style.position) || style['writing-mode'] !== 'horizontal-tb' || style.direction !== 'ltr') throw new Error('Only static/relative/local-absolute horizontal-tb / ltr boxes are supported');
@@ -191,6 +189,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const values = definitions.map((track, index) => track.weight ? times(free, div(track.weight, denominator)) :
         track.auto && stretchAuto ? sum(bases[index], times(remaining, div(one, q(automatic)))) : bases[index]);
       return { region, values, required: overhead };
+    });
+  }
+  // Single-line flex: fixed items keep their size; flexible items get their
+  // padding/border plus a share of the positive free space (factor sums below
+  // 1 leave space unused). Negative free space makes the TRACKS check fail.
+  function flexLine(region, available, definitions, gap, bases) {
+    const overhead = sum(total(bases), scalar(gap));
+    return clamp(region, diff(available, overhead)).map(({ region, value: free }) => {
+      const weights = definitions.filter(t => t.weight).map(t => t.weight).reduce(add, zero);
+      const denominator = cmp(weights, one) < 0 ? one : weights;
+      return { region, values: definitions.map((track, index) => track.weight ? sum(bases[index], times(free, div(track.weight, denominator))) : bases[index]), required: overhead };
     });
   }
   function finish(box, style, region, inline, contentInline, blockSize, contentBlock, available, parents, emit) {
@@ -342,37 +351,75 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                 for (const h of heights) results.push(finish(box, style, h.region, inline, contentInline, h.value ? sum(h.value, blockEdges) : null, h.value, available, parents, emit));
                 continue;
               }
-              if (style.display !== 'grid') { issue('E_LAYOUT_CONTAINER', 'Layout containers must use grid', box, bs.region); continue; }
-              if (style['grid-auto-flow'] !== 'row') throw new Error('Only sparse row auto-placement is supported');
-              const sharedColumns = inheritedAxes.inline;
-              const columns = sharedColumns ? sharedColumns.values.map(value => ({ definite: value })) :
-                style['grid-template-columns'] === 'none' ? [] : tracks(style['grid-template-columns'] ?? 'none');
+              if (!['grid', 'flex'].includes(style.display)) { issue('E_LAYOUT_CONTAINER', 'Layout containers must use grid or the flex subset', box, bs.region); continue; }
+              const isFlex = style.display === 'flex';
+              if (!isFlex && style['grid-auto-flow'] !== 'row') throw new Error('Only sparse row auto-placement is supported');
+              if (isFlex) validateFlexContainer(style);
+              // Child boxes per region. display: contents is replaced by its
+              // children, which inherit from it (the element tree) but are
+              // laid out as items of this container.
+              const collect = region => {
+                let states = [{ region, children: [] }];
+                const visit = (child, inheritedStyle) => {
+                  states = bounded(states.flatMap(s => styles(child, s.region, ancestors, inheritedStyle, false).flatMap(c => {
+                    if (c.style.display === 'none') return [{ region: c.region, children: s.children }];
+                    if (c.style.display !== 'contents') return [{ region: c.region, children: [...s.children, { box: child, style: c.style, inherited: inheritedStyle }] }];
+                    if (child.text || child.contract || child.targets?.length) throw new Error('display: contents with text, contracts or noshift targets needs anonymous or absent boxes');
+                    return [{ region: c.region, children: s.children, contents: c.style }];
+                  })));
+                  const nested = states.filter(state => state.contents);
+                  if (!nested.length) return;
+                  if (nested.length !== states.length) throw new Error('display: contents that varies across regions is outside the subset');
+                  const contentsStyle = nested[0].contents;
+                  for (const state of states) delete state.contents;
+                  for (const grandchild of child.children) visit(grandchild, contentsStyle);
+                };
+                for (const child of box.children) visit(child, style);
+                for (const state of states) for (const child of state.children) if (child.style.order !== '0') throw Object.assign(new Error('order changes the item sequence; only order: 0 is modeled'), { code: isFlex ? 'U_LAYOUT_FLEX' : undefined });
+                return states;
+              };
+              const sharedColumns = isFlex ? undefined : inheritedAxes.inline;
+              // Flex: the items' flex properties define one row of tracks.
+              const plans = isFlex ? collect(geometryRegion).map(state => {
+                const inFlow = state.children.filter(child => child.style.position !== 'absolute');
+                if (inFlow.length !== state.children.length) throw Object.assign(new Error('Absolute children of a flex container use flex static positions'), { code: 'U_LAYOUT_FLEX' });
+                return { region: state.region, children: state.children, columns: inFlow.map(child => {
+                  try { return flexTrack(child.style, { empty: !child.box.text && !child.box.children.length }); } catch (error) { error.box ??= child.box; throw error; }
+                }) };
+              }) : [{ region: geometryRegion, columns: sharedColumns ? sharedColumns.values.map(value => ({ definite: value })) :
+                style['grid-template-columns'] === 'none' ? [] : tracks(style['grid-template-columns'] ?? 'none') }];
+              for (const plan of plans) {
+              const columns = plan.columns;
               const columnGap = gapSize(style['column-gap'], sharedColumns);
-              const columnBases = columns.map(track => scalar(track.fixed ?? zero));
-              const columnLayouts = sharedColumns ? [{ region: geometryRegion, values: sharedColumns.values, required: trackArea(sharedColumns.values, columnGap, 0, columns.length) }] : flex(geometryRegion, contentInline, columns, mul(columnGap, q(Math.max(0, columns.length - 1))), columnBases, false);
+              const columnBases = columns.map(track => scalar(track.fixed ?? track.edges ?? zero));
+              const columnLayouts = sharedColumns ? [{ region: plan.region, values: sharedColumns.values, required: trackArea(sharedColumns.values, columnGap, 0, columns.length) }] :
+                isFlex ? flexLine(plan.region, contentInline, columns, mul(columnGap, q(Math.max(0, columns.length - 1))), columnBases) : flex(plan.region, contentInline, columns, mul(columnGap, q(Math.max(0, columns.length - 1))), columnBases, false);
               for (const cs of columnLayouts) {
                 if (emit) obligation(contentInline, cs.required, box, cs.region, 'E_LAYOUT_TRACKS', 'inline', (box.contract?.overflow ?? 'fit') === 'fit', () => explanation(sizeChain([...parents, { box, style }], 'inline', { hostInset: options.hostInset }), trackProperties('inline').map(property => fact(box, style, property))));
-                let childStates = [{ region: cs.region, children: [] }];
-                for (const child of box.children) childStates = bounded(childStates.flatMap(s => styles(child, s.region, ancestors, style, false).map(c => ({ region: c.region, children: c.style.display === 'none' ? s.children : [...s.children, { box: child, style: c.style }] }))));
+                const childStates = isFlex ? [{ region: cs.region, children: plan.children }] : collect(cs.region);
                 for (const children of childStates) {
                   if (!block && children.children.some(child=>child.style.position==='absolute')) throw new Error('Absolute boxes require both-axis analysis');
                   if (!columns.length && children.children.some(child=>child.style.position!=='absolute')) throw new Error('In-flow Grid children require explicit supported columns');
                   let placed;
-                  try { placed = place(children.children.filter(child=>child.style.position!=='absolute'), columns.length, { subgridColumns: Boolean(sharedColumns), rows: inheritedAxes.block?.values.length }); }
+                  // Flex items fill the single line in order; grid placement properties do not apply.
+                  try { placed = isFlex ? children.children.map((child, index) => ({ ...child, start: index, span: 1, row: 0, rowSpan: 1 })) :
+                    place(children.children.filter(child=>child.style.position!=='absolute'), columns.length, { subgridColumns: Boolean(sharedColumns), rows: inheritedAxes.block?.values.length }).map(item => ({ ...item, inherited: children.children.find(child => child.box === item.box).inherited })); }
                   catch (error) { error.region = children.region; throw error; }
                   const areaInline = item => trackArea(cs.values, columnGap, item.start, item.span);
                   const childColumns = item => trackSlice(cs.values, columnGap, box, item.start, item.span);
                   if (!block) {
                     let endings = [children.region];
-                    for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: areaInline(item), tracks: { inline: childColumns(item) }, fitInline: (box.contract?.overflow ?? 'fit') === 'fit' }, r, ancestors, style, emit).map(result => result.region)));
+                    for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: areaInline(item), tracks: { inline: childColumns(item) }, fitInline: (box.contract?.overflow ?? 'fit') === 'fit' }, r, ancestors, item.inherited ?? style, emit).map(result => result.region)));
                     for (const r of endings) results.push(finish(box, style, r, inline, contentInline, null, null, available, parents, emit));
                     continue;
                   }
                   const rowCount = placed.length ? Math.max(...placed.map(item => item.row + item.rowSpan)) : 0;
                   const sharedRows = inheritedAxes.block;
-                  let rows = sharedRows ? sharedRows.values.map(value => ({ definite: value })) : style['grid-template-rows'] === 'none' ? [] : tracks(style['grid-template-rows'], true);
+                  // The line of a single-line flex container with a definite cross size is that size (css-flexbox-1 §9.4 step 15).
+                  let rows = sharedRows ? sharedRows.values.map(value => ({ definite: value })) : isFlex ? (knownBlock ? [{ definite: knownBlock }] : []) : style['grid-template-rows'] === 'none' ? [] : tracks(style['grid-template-rows'], true);
                   const explicitRowCount = rows.length;
-                  const implicit = sharedRows ? [] : tracks(style['grid-auto-rows'], true);
+                  // A single-line flex container is one auto row stretched to a definite cross size.
+                  const implicit = sharedRows ? [] : tracks(isFlex ? 'auto' : style['grid-auto-rows'], true);
                   while (rows.length < rowCount) rows.push(implicit[(rows.length - explicitRowCount) % implicit.length]);
                   if (rows.length > 2048) throw new Error('Grid row limit exceeded');
                   const rowGap = gapSize(style['row-gap'], sharedRows), gaps = mul(rowGap, q(Math.max(0, rows.length - 1)));
@@ -382,7 +429,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   }
                   let measurements = [{ region: children.region, bases: rows.map(row => row.definite ?? scalar(row.fixed ?? zero)) }];
                   for (const item of placed.filter(item => rows[item.row].auto || (!knownBlock && rows[item.row].weight))) {
-                    measurements = bounded(measurements.flatMap(m => solve(item.box, { inline: areaInline(item), tracks: { inline: childColumns(item) } }, m.region, ancestors, style, false).flatMap(measured => maximum(measured.region, m.bases[item.row], measured.block).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))));
+                    measurements = bounded(measurements.flatMap(m => solve(item.box, { inline: areaInline(item), tracks: { inline: childColumns(item) } }, m.region, ancestors, item.inherited ?? style, false).flatMap(measured => maximum(measured.region, m.bases[item.row], measured.block).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))));
                   }
                   for (const m of measurements) {
                     let fractions = [{ region: m.region, value: scalar(0) }];
@@ -390,7 +437,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       const divisor = cmp(rows[i].weight, one) > 0 ? rows[i].weight : one;
                       fractions = fractions.flatMap(f => maximum(f.region, f.value, times(m.bases[i], div(one, divisor))));
                     }
-                    const layouts = sharedRows ? [{ region: m.region, values: sharedRows.values, required: trackArea(sharedRows.values, rowGap, 0, rows.length) }] : knownBlock ? flex(m.region, knownBlock, rows, gaps, m.bases, style['align-content'] !== 'start') : fractions.map(f => {
+                    const layouts = sharedRows ? [{ region: m.region, values: sharedRows.values, required: trackArea(sharedRows.values, rowGap, 0, rows.length) }] : knownBlock ? flex(m.region, knownBlock, rows, gaps, m.bases, isFlex || style['align-content'] !== 'start') : fractions.map(f => {
                       const values = rows.map((row, i) => row.weight ? times(f.value, row.weight) : m.bases[i]);
                       return { region: f.region, values, required: sum(total(values), scalar(gaps)) };
                     });
@@ -402,17 +449,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: areaInline(item), block: trackArea(rs.values, rowGap, item.row, item.rowSpan),
                         origin:offset(contentOrigin,trackStart(cs.values,columnGap,item.start),trackStart(rs.values,rowGap,item.row)),
                         tracks: { inline: childColumns(item), block: trackSlice(rs.values, rowGap, box, item.row, item.rowSpan) },
-                        fitInline: (box.contract?.overflow ?? 'fit') === 'fit', fitBlock: (box.contract?.overflowBlock ?? 'fit') === 'fit' }, r, finalAncestors, style, emit).map(result => result.region)));
+                        fitInline: (box.contract?.overflow ?? 'fit') === 'fit', fitBlock: (box.contract?.overflowBlock ?? 'fit') === 'fit' }, r, finalAncestors, item.inherited ?? style, emit).map(result => result.region)));
                       for (const item of children.children.filter(child=>child.style.position==='absolute')) endings = bounded(endings.flatMap(r => {
                         const containing = finalAncestors.findLast(ancestor=>ancestor.positioned);
                         if (!containing?.paddingBlock || containing.subgrid || finalAncestors.some(ancestor=>ancestor.clipped)) throw new Error('Absolute boxes require an owned non-scrolling, unclipped containing block without subgrid placement');
                         return solve(item.box,{inline:containing.paddingInline,block:containing.paddingBlock,
-                          containingBlock:{path:containing.box.path,inline:containing.paddingInline,block:containing.paddingBlock,origin:containing.paddingOrigin}},r,finalAncestors,style,emit).map(result=>result.region);
+                          containingBlock:{path:containing.box.path,inline:containing.paddingInline,block:containing.paddingBlock,origin:containing.paddingOrigin}},r,finalAncestors,item.inherited ?? style,emit).map(result=>result.region);
                       }));
                       for (const r of endings) results.push(finish(box, style, r, inline, contentInline, blockSize, contentBlock, available, parents, emit));
                     }
                   }
                 }
+              }
               }
             }
           }

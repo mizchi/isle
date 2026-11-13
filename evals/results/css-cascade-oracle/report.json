@@ -2,7 +2,7 @@
   "version": 1,
   "status": "consistent",
   "measured": {
-    "commit": "1b656413760194fbf3f7e3c58586fea48d9ac748",
+    "commit": "f097071f20c4636a1f6c50bb5ed06253b125b0ee",
     "dirty": true,
     "node": "v24.22.3",
     "oracle": "mizchi/css@0.8.1"
@@ -40,7 +40,10 @@
       "column-gap",
       "row-gap",
       "grid-template-columns",
-      "grid-template-rows"
+      "grid-template-rows",
+      "justify-content",
+      "align-items",
+      "order"
     ]
   },
   "scope": "Specified-to-computed values of the shared longhand subset at one concrete viewport per case. Geometry, container queries, layers and Z3 are outside this eval.",
@@ -127,6 +130,15 @@
       "same": 29972
     },
     "grid-template-rows": {
+      "same": 29972
+    },
+    "justify-content": {
+      "same": 29972
+    },
+    "align-items": {
+      "same": 29972
+    },
+    "order": {
       "same": 29972
     }
   },

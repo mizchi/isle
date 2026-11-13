@@ -12,8 +12,8 @@ test('rejection examples exercise real CLI diagnostics and a verified counterpar
     const report = await evaluateLayoutRejections(cases, directory);
     assert.equal(report.pass, true, JSON.stringify(report.cases.filter(c => !c.pass)));
     assert.equal(report.cases.length, 14);
-    assert.equal(report.cases.filter(c => c.reject.status === 'violated').length, 6);
-    assert.equal(report.cases.filter(c => c.reject.status === 'unknown').length, 8);
+    assert.equal(report.cases.filter(c => c.reject.status === 'violated').length, 5);
+    assert.equal(report.cases.filter(c => c.reject.status === 'unknown').length, 9);
     for (const result of report.cases) {
       assert.equal(result.reject.exitCode, 1);
       assert.equal(result.accept.exitCode, 0);

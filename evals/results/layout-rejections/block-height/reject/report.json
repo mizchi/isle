@@ -30,16 +30,16 @@
   "assumptions": [
     "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
     "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
-    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+    "Only horizontal-tb/ltr in-flow and explicitly sized local absolute geometry is checked; ink overflow and browser pixel rounding are outside the contract."
   ],
   "styleSources": [
     {
       "kind": "reset",
-      "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/block-height/reject/reset-0.css"
+      "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/reset-0.css"
     },
     {
       "kind": "app",
-      "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/block-height/reject/app.css"
+      "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/app.css"
     }
   ],
   "diagnostics": [
@@ -94,36 +94,6 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": true
           }
         ]
       },
@@ -134,6 +104,115 @@
         "viewportHeightExact": "400",
         "available": 100,
         "required": 200
+      },
+      "explanation": {
+        "version": 1,
+        "available": {
+          "facts": [
+            {
+              "path": "Card/0",
+              "box": ".text",
+              "owner": "Card",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/reset-0.css",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "Card/0",
+              "box": ".text",
+              "owner": "Card",
+              "property": "block-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "Card",
+              "box": ".card",
+              "owner": "Card",
+              "property": "grid-template-rows",
+              "value": "minmax(0,1fr)",
+              "origin": "author",
+              "css": {
+                "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/app.css",
+                "line": 2,
+                "selector": ".card",
+                "specified": "minmax(0,1fr)"
+              }
+            },
+            {
+              "path": "Card",
+              "box": ".card",
+              "owner": "Card",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "Card",
+              "box": ".card",
+              "owner": "Card",
+              "property": "row-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "Card/0",
+              "box": ".text",
+              "owner": "Card",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "Card",
+              "box": ".card",
+              "owner": "Card",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/reset-0.css",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "Card",
+              "box": ".card",
+              "owner": "Card",
+              "property": "block-size",
+              "value": "100px",
+              "origin": "author",
+              "css": {
+                "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/app.css",
+                "line": 2,
+                "selector": ".card",
+                "specified": "100px"
+              }
+            }
+          ]
+        },
+        "required": {
+          "facts": [
+            {
+              "kind": "contract",
+              "path": "Card/0",
+              "box": ".text",
+              "owner": "Card",
+              "property": "minBlockSize",
+              "value": 200,
+              "selector": ".text",
+              "trusted": true
+            }
+          ]
+        }
       }
     },
     {
@@ -187,36 +266,6 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": true
           }
         ]
       },
@@ -362,21 +411,6 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
           }
         ]
       }
@@ -425,21 +459,6 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
             "strict": false
           }
         ]
@@ -602,16 +621,6 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
           }
         ]
       },
@@ -670,21 +679,6 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
           }
         ]
       },
@@ -742,21 +736,6 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
             "strict": false
           }
         ]
@@ -816,26 +795,6 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
           }
         ]
       },
@@ -893,31 +852,6 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
             "strict": false
           }
         ]
@@ -977,31 +911,6 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
           }
         ]
       },
@@ -1060,31 +969,6 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
           }
         ]
       },
@@ -1142,31 +1026,6 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
             "strict": false
           }
         ]
@@ -1226,31 +1085,6 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
           }
         ]
       },
@@ -1309,31 +1143,6 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
           }
         ]
       },
@@ -1391,31 +1200,6 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
             "strict": false
           }
         ]
@@ -1436,18 +1220,61 @@
     {
       "box": ".text",
       "path": "Card/0",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "0"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "100"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
-        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/block-height/reject/reset-0.css",
+        "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/reset-0.css",
         "line": 1,
         "selector": "*",
         "specified": "border-box"
+      },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
       },
       "inlineSize": {
         "coefficient": "1",
         "constant": "0"
       },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
       "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
         "coefficient": "0",
         "constant": "100"
       },
@@ -1490,31 +1317,6 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
             "strict": false
           }
         ]
@@ -1523,18 +1325,62 @@
     {
       "box": ".card",
       "path": "Card",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "0"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "100"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
-        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/block-height/reject/reset-0.css",
+        "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/reset-0.css",
         "line": 1,
         "selector": "*",
         "specified": "border-box"
+      },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
       },
       "inlineSize": {
         "coefficient": "1",
         "constant": "0"
       },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
       "blockSize": {
+        "coefficient": "0",
+        "constant": "100"
+      },
+      "contentBlockSize": {
         "coefficient": "0",
         "constant": "100"
       },
@@ -1578,35 +1424,29 @@
             "coefficient": "1",
             "constant": "0",
             "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "100",
-            "strict": false
           }
         ]
       }
     }
   ],
-  "queries": []
+  "queries": [],
+  "subgrids": [],
+  "elements": [
+    {
+      "path": "Card",
+      "tag": "main",
+      "classes": [
+        "card"
+      ],
+      "owner": "Card"
+    },
+    {
+      "path": "Card/0",
+      "tag": "p",
+      "classes": [
+        "text"
+      ],
+      "owner": "Card"
+    }
+  ]
 }

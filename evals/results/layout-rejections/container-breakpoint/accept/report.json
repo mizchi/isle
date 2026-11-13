@@ -21,12 +21,12 @@
   "assumptions": [
     "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
     "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
-    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+    "Only horizontal-tb/ltr in-flow and explicitly sized local absolute geometry is checked; ink overflow and browser pixel rounding are outside the contract."
   ],
   "styleSources": [
     {
       "kind": "app",
-      "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css"
+      "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css"
     }
   ],
   "diagnostics": [],
@@ -642,14 +642,27 @@
     {
       "box": ".a",
       "path": "Panel/0/0",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
-        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
         "line": 1,
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
       "inlineSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "contentInlineSize": {
         "coefficient": "0",
         "constant": "200"
       },
@@ -665,14 +678,27 @@
     {
       "box": ".b",
       "path": "Panel/0/1",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
-        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
         "line": 1,
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
       "inlineSize": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
+      "contentInlineSize": {
         "coefficient": "1",
         "constant": "-248"
       },
@@ -688,14 +714,27 @@
     {
       "box": ".panel",
       "path": "Panel/0",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
-        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
         "line": 1,
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "contentInlineSize": {
         "coefficient": "1",
         "constant": "-32"
       },
@@ -711,16 +750,29 @@
     {
       "box": ".shell",
       "path": "Panel",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
-        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
         "line": 1,
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
       "inlineSize": {
         "coefficient": "1",
         "constant": "0"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
       },
       "range": {
         "min": 648,
@@ -734,14 +786,27 @@
     {
       "box": ".a",
       "path": "Panel/0/0",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
-        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
         "line": 1,
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "contentInlineSize": {
         "coefficient": "1",
         "constant": "-32"
       },
@@ -757,14 +822,27 @@
     {
       "box": ".b",
       "path": "Panel/0/1",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
-        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
         "line": 1,
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "contentInlineSize": {
         "coefficient": "1",
         "constant": "-32"
       },
@@ -780,14 +858,27 @@
     {
       "box": ".panel",
       "path": "Panel/0",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
-        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
         "line": 1,
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "contentInlineSize": {
         "coefficient": "1",
         "constant": "-32"
       },
@@ -803,16 +894,29 @@
     {
       "box": ".shell",
       "path": "Panel",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
-        "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
+        "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/accept/app.css",
         "line": 1,
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
       "inlineSize": {
         "coefficient": "1",
         "constant": "0"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
       },
       "range": {
         "min": 432,
@@ -856,6 +960,41 @@
         "minExact": "432",
         "maxExact": "648"
       }
+    }
+  ],
+  "subgrids": [],
+  "elements": [
+    {
+      "path": "Panel",
+      "tag": "main",
+      "classes": [
+        "shell"
+      ],
+      "owner": "Panel"
+    },
+    {
+      "path": "Panel/0",
+      "tag": "section",
+      "classes": [
+        "panel"
+      ],
+      "owner": "Panel"
+    },
+    {
+      "path": "Panel/0/0",
+      "tag": "p",
+      "classes": [
+        "a"
+      ],
+      "owner": "Panel"
+    },
+    {
+      "path": "Panel/0/1",
+      "tag": "p",
+      "classes": [
+        "b"
+      ],
+      "owner": "Panel"
     }
   ]
 }

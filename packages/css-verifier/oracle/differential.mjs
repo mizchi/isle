@@ -24,7 +24,16 @@ export const comparedProperties = [
   'inline-size', 'min-inline-size', 'max-inline-size', 'block-size', 'min-block-size', 'max-block-size',
   ...['left', 'right', 'top', 'bottom'].flatMap(side => [`padding-${side}`, `border-${side}`, `margin-${side}`]),
   'column-gap', 'row-gap', 'grid-template-columns', 'grid-template-rows',
+  'justify-content', 'align-items', 'order',
 ];
+/**
+ * mizchi/css 0.8.1 mis-parses `flex: <basis> <grow>`, `flex-basis: content`
+ * and the omitted half of `flex-flow`; fixed on mizchi/css branch
+ * claude/dreamy-lovelace-90v3hb (all 30,000 cases agree against it). Enable with
+ * CSS_ORACLE_FLEX=1 until the fixed release is the pinned oracle.
+ */
+export const flexProperties = ['flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis'];
+if (process.env.CSS_ORACLE_FLEX === '1') comparedProperties.push(...flexProperties);
 
 const length = value => {
   if (value === '0' || value === '0px') return '0px';
@@ -43,6 +52,11 @@ export function normalizeVerifier(property, value) {
     try { return {value: trackText(value)}; } catch (error) { return {unsupported: error.message}; }
   }
   if (property === 'row-gap' && value === 'normal') return {value: '0px'};
+  if (['flex-grow', 'flex-shrink', 'order'].includes(property)) return /^-?\d+(?:\.\d+)?$/.test(value) ? {value: Number(value)} : {unsupported: `non-numeric ${property}`};
+  // mizchi/css has no `normal` alignment: it stores the flex defaults.
+  if (property === 'justify-content') return {value: value === 'normal' ? 'flex-start' : value};
+  if (property === 'align-items') return {value: value === 'normal' ? 'stretch' : value};
+  if (['flex-direction', 'flex-wrap'].includes(property)) return {value};
   if (['display', 'position', 'box-sizing', 'overflow-x', 'overflow-y', 'column-gap'].includes(property)) return {value};
   return {value: length(value)};
 }
@@ -50,8 +64,11 @@ export function normalizeVerifier(property, value) {
 const kebab = text => text.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 export function normalizeOracle(property, value) {
   if (Array.isArray(value)) return value.map(String);
-  if (['display', 'position', 'box-sizing', 'overflow-x', 'overflow-y'].includes(property)) return kebab(value);
+  if (typeof value === 'number') return value;
+  if (property === 'flex-wrap') return {NoWrap: 'nowrap', Wrap: 'wrap', WrapReverse: 'wrap-reverse'}[value] ?? value;
+  if (['display', 'position', 'box-sizing', 'overflow-x', 'overflow-y', 'flex-direction', 'justify-content', 'align-items'].includes(property)) return kebab(value);
   if (property.startsWith('max-') && value === 'auto') return 'none';
+  if (property === 'flex-basis' && value === 'other:MaxContent') return 'content';
   return length(value);
 }
 
@@ -134,7 +151,17 @@ function declaration(r) {
     () => `gap: var(--g${r.chance(0.5) ? `, ${px()}` : ''})`,
     () => `padding-left: var(--${r.pick(['g', 'h', 'missing'])}, ${px()})`,
     () => `--h: var(--g)`,
-    () => `${r.pick(['padding-left', 'min-width', 'display', 'box-sizing', 'column-gap'])}: ${wideKeyword()}`,
+    () => `${r.pick(['padding-left', 'min-width', 'display', 'box-sizing', 'column-gap', 'flex-grow', 'flex-basis'])}: ${wideKeyword()}`,
+    () => `display: ${r.pick(['flex', 'contents', 'flex', 'block'])}`,
+    () => `flex: ${r.pick(['1', 'none', 'auto', '0', '2 1 0', '0 0 40px', '40px', '0% 1', '30px 2 0', '1 30px', '2 3'])}`,
+    () => `flex-${r.pick(['grow', 'shrink'])}: ${r.pick(['0', '1', '2', '0.5'])}`,
+    () => `flex-basis: ${r.pick(['auto', '0', '40px', '25%', 'content'])}`,
+    () => `flex-direction: ${r.pick(['row', 'column', 'row-reverse'])}`,
+    () => `flex-wrap: ${r.pick(['nowrap', 'wrap', 'wrap-reverse'])}`,
+    () => `flex-flow: ${r.pick(['row wrap', 'column', 'wrap', 'column-reverse nowrap'])}`,
+    () => `justify-content: ${r.pick(['flex-start', 'center', 'space-between', 'flex-end'])}`,
+    () => `align-items: ${r.pick(['stretch', 'center', 'flex-start'])}`,
+    () => `order: ${r.pick(['0', '1', '2'])}`,
   ];
   return r.pick(choices)() + (r.chance(0.1) ? ' !important' : '');
 }
@@ -151,7 +178,7 @@ export function generateCase(seed) {
     const selector = r.chance(0.2) ? `${r.pick(selectors)}, ${r.pick(selectors)}` : r.pick(selectors);
     // The verifier rejects overlapping shorthand/longhand writes in one rule
     // (E_CSS_SHORTHAND_CONFLICT); keep one declaration per family per rule.
-    const family = text => /^padding/.test(text) ? 'padding' : /^(?:gap|column-gap|row-gap)\b/.test(text) ? 'gap' : text.split(':')[0];
+    const family = text => /^padding/.test(text) ? 'padding' : /^(?:gap|column-gap|row-gap)\b/.test(text) ? 'gap' : /^flex(?:-grow|-shrink|-basis)?:/.test(text) ? 'flex' : /^flex-(?:flow|direction|wrap)\b/.test(text) ? 'flex-flow' : text.split(':')[0];
     const seen = new Set(), list = [];
     for (const text of Array.from({length: r.int(1, 3)}, () => declaration(r))) if (!seen.has(family(text))) { seen.add(family(text)); list.push(text); }
     const body = `${selector} { ${list.join('; ')} }`;

@@ -65,11 +65,6 @@
                   "coefficient": "1",
                   "constant": "0",
                   "strict": false
-                },
-                {
-                  "coefficient": "1",
-                  "constant": "0",
-                  "strict": false
                 }
               ]
             }
@@ -125,11 +120,6 @@
                 "coefficient": "1",
                 "constant": "0",
                 "strict": false
-              },
-              {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
               }
             ]
           }
@@ -143,112 +133,38 @@
     },
     {
       "id": "flex",
-      "title": "Grid container の要求",
-      "note": "この検査対象の container は Grid で構築する。",
+      "title": "flex のサブセット外の item",
+      "note": "初期値の flex: 0 1 auto は内容サイズと縮小に依存する。row・nowrap で、固定(flex:none と px 幅)または伸縮(flex:1 1 0 と min-width:0)の item に書く。",
       "pass": true,
       "expected": {
-        "status": "violated",
-        "code": "E_LAYOUT_CONTAINER"
+        "status": "unknown",
+        "code": "U_LAYOUT_FLEX"
       },
       "reject": {
         "exitCode": 1,
-        "status": "violated",
+        "status": "unknown",
         "diagnostics": [
           {
-            "code": "E_LAYOUT_CONTAINER",
-            "severity": "error",
-            "message": "Layout containers must use grid",
-            "box": ".card",
-            "path": "Card",
+            "code": "U_LAYOUT_FLEX",
+            "severity": "unknown",
+            "message": "A shrinkable item with a nonzero basis is outside the subset; use flex-shrink: 0",
+            "box": ".text",
+            "path": "Card/0",
             "source": {
-              "start": 19,
-              "end": 24
-            },
-            "range": {
-              "min": 320,
-              "max": 1000,
-              "minInclusive": true,
-              "maxInclusive": true,
-              "minExact": "320",
-              "maxExact": "1000"
-            },
-            "heightRange": {
-              "min": 200,
-              "max": 600,
-              "minInclusive": true,
-              "maxInclusive": true,
-              "minExact": "200",
-              "maxExact": "600"
-            },
-            "region": {
-              "vertices": [
-                {
-                  "width": "320",
-                  "height": "200"
-                },
-                {
-                  "width": "1000",
-                  "height": "200"
-                },
-                {
-                  "width": "1000",
-                  "height": "600"
-                },
-                {
-                  "width": "320",
-                  "height": "600"
-                }
-              ],
-              "constraints": []
+              "start": 38,
+              "end": 40
             }
           }
         ],
         "matched": {
-          "code": "E_LAYOUT_CONTAINER",
-          "severity": "error",
-          "message": "Layout containers must use grid",
-          "box": ".card",
-          "path": "Card",
+          "code": "U_LAYOUT_FLEX",
+          "severity": "unknown",
+          "message": "A shrinkable item with a nonzero basis is outside the subset; use flex-shrink: 0",
+          "box": ".text",
+          "path": "Card/0",
           "source": {
-            "start": 19,
-            "end": 24
-          },
-          "range": {
-            "min": 320,
-            "max": 1000,
-            "minInclusive": true,
-            "maxInclusive": true,
-            "minExact": "320",
-            "maxExact": "1000"
-          },
-          "heightRange": {
-            "min": 200,
-            "max": 600,
-            "minInclusive": true,
-            "maxInclusive": true,
-            "minExact": "200",
-            "maxExact": "600"
-          },
-          "region": {
-            "vertices": [
-              {
-                "width": "320",
-                "height": "200"
-              },
-              {
-                "width": "1000",
-                "height": "200"
-              },
-              {
-                "width": "1000",
-                "height": "600"
-              },
-              {
-                "width": "320",
-                "height": "600"
-              }
-            ],
-            "constraints": []
+            "start": 38,
+            "end": 40
           }
         }
       },
@@ -324,36 +240,6 @@
                   "coefficient": "1",
                   "constant": "0",
                   "strict": false
-                },
-                {
-                  "coefficient": "1",
-                  "constant": "0",
-                  "strict": false
-                },
-                {
-                  "coefficient": "1",
-                  "constant": "0",
-                  "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "56",
-                  "strict": true
-                },
-                {
-                  "coefficient": "1",
-                  "constant": "0",
-                  "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "24",
-                  "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "32",
-                  "strict": true
                 }
               ]
             },
@@ -364,6 +250,139 @@
               "viewportHeightExact": "400",
               "available": 660,
               "required": 692
+            },
+            "explanation": {
+              "version": 1,
+              "available": {
+                "facts": [
+                  {
+                    "path": "Card",
+                    "box": ".card",
+                    "owner": "Card",
+                    "property": "grid-template-columns",
+                    "value": "minmax(0, 1fr)",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/app.css",
+                      "line": 1,
+                      "selector": ".card",
+                      "specified": "minmax(0, 1fr)"
+                    }
+                  },
+                  {
+                    "path": "Card",
+                    "box": ".card",
+                    "owner": "Card",
+                    "property": "column-gap",
+                    "value": "normal",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Card/0",
+                    "box": ".text",
+                    "owner": "Card",
+                    "property": "grid-column",
+                    "value": "auto",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Card",
+                    "box": ".card",
+                    "owner": "Card",
+                    "property": "box-sizing",
+                    "value": "border-box",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/reset-0.css",
+                      "line": 1,
+                      "selector": "*",
+                      "specified": "border-box"
+                    }
+                  },
+                  {
+                    "path": "Card",
+                    "box": ".card",
+                    "owner": "Card",
+                    "property": "inline-size",
+                    "value": "auto",
+                    "origin": "default"
+                  },
+                  {
+                    "kind": "viewport",
+                    "axis": "inline"
+                  }
+                ]
+              },
+              "required": {
+                "facts": [
+                  {
+                    "path": "Card/0",
+                    "box": ".text",
+                    "owner": "Card",
+                    "property": "box-sizing",
+                    "value": "content-box",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/app.css",
+                      "line": 2,
+                      "selector": ".text",
+                      "specified": "content-box"
+                    },
+                    "overridden": [
+                      {
+                        "css": {
+                          "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/reset-0.css",
+                          "line": 1,
+                          "selector": "*",
+                          "specified": "border-box"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "path": "Card/0",
+                    "box": ".text",
+                    "owner": "Card",
+                    "property": "inline-size",
+                    "value": "100%",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/app.css",
+                      "line": 2,
+                      "selector": ".text",
+                      "specified": "100%"
+                    }
+                  },
+                  {
+                    "path": "Card/0",
+                    "box": ".text",
+                    "owner": "Card",
+                    "property": "padding-left",
+                    "value": "16px",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/app.css",
+                      "line": 2,
+                      "selector": ".text",
+                      "specified": "16px"
+                    }
+                  },
+                  {
+                    "path": "Card/0",
+                    "box": ".text",
+                    "owner": "Card",
+                    "property": "padding-right",
+                    "value": "16px",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/app.css",
+                      "line": 2,
+                      "selector": ".text",
+                      "specified": "16px"
+                    }
+                  }
+                ]
+              }
             }
           }
         ],
@@ -418,36 +437,6 @@
                 "coefficient": "1",
                 "constant": "0",
                 "strict": false
-              },
-              {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
-              },
-              {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
-              },
-              {
-                "coefficient": "0",
-                "constant": "56",
-                "strict": true
-              },
-              {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
-              },
-              {
-                "coefficient": "0",
-                "constant": "24",
-                "strict": false
-              },
-              {
-                "coefficient": "0",
-                "constant": "32",
-                "strict": true
               }
             ]
           },
@@ -458,6 +447,139 @@
             "viewportHeightExact": "400",
             "available": 660,
             "required": 692
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Card",
+                  "box": ".card",
+                  "owner": "Card",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0, 1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/app.css",
+                    "line": 1,
+                    "selector": ".card",
+                    "specified": "minmax(0, 1fr)"
+                  }
+                },
+                {
+                  "path": "Card",
+                  "box": ".card",
+                  "owner": "Card",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Card/0",
+                  "box": ".text",
+                  "owner": "Card",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Card",
+                  "box": ".card",
+                  "owner": "Card",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/reset-0.css",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Card",
+                  "box": ".card",
+                  "owner": "Card",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Card/0",
+                  "box": ".text",
+                  "owner": "Card",
+                  "property": "box-sizing",
+                  "value": "content-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/app.css",
+                    "line": 2,
+                    "selector": ".text",
+                    "specified": "content-box"
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/reset-0.css",
+                        "line": 1,
+                        "selector": "*",
+                        "specified": "border-box"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Card/0",
+                  "box": ".text",
+                  "owner": "Card",
+                  "property": "inline-size",
+                  "value": "100%",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/app.css",
+                    "line": 2,
+                    "selector": ".text",
+                    "specified": "100%"
+                  }
+                },
+                {
+                  "path": "Card/0",
+                  "box": ".text",
+                  "owner": "Card",
+                  "property": "padding-left",
+                  "value": "16px",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/app.css",
+                    "line": 2,
+                    "selector": ".text",
+                    "specified": "16px"
+                  }
+                },
+                {
+                  "path": "Card/0",
+                  "box": ".text",
+                  "owner": "Card",
+                  "property": "padding-right",
+                  "value": "16px",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/content-box/reject/app.css",
+                    "line": 2,
+                    "selector": ".text",
+                    "specified": "16px"
+                  }
+                }
+              ]
+            }
           }
         }
       },
@@ -533,36 +655,6 @@
                   "coefficient": "1",
                   "constant": "0",
                   "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "100",
-                  "strict": false
-                },
-                {
-                  "coefficient": "1",
-                  "constant": "0",
-                  "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "100",
-                  "strict": false
-                },
-                {
-                  "coefficient": "1",
-                  "constant": "0",
-                  "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "100",
-                  "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "100",
-                  "strict": true
                 }
               ]
             },
@@ -573,6 +665,115 @@
               "viewportHeightExact": "400",
               "available": 100,
               "required": 200
+            },
+            "explanation": {
+              "version": 1,
+              "available": {
+                "facts": [
+                  {
+                    "path": "Card/0",
+                    "box": ".text",
+                    "owner": "Card",
+                    "property": "box-sizing",
+                    "value": "border-box",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/reset-0.css",
+                      "line": 1,
+                      "selector": "*",
+                      "specified": "border-box"
+                    }
+                  },
+                  {
+                    "path": "Card/0",
+                    "box": ".text",
+                    "owner": "Card",
+                    "property": "block-size",
+                    "value": "auto",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Card",
+                    "box": ".card",
+                    "owner": "Card",
+                    "property": "grid-template-rows",
+                    "value": "minmax(0,1fr)",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/app.css",
+                      "line": 2,
+                      "selector": ".card",
+                      "specified": "minmax(0,1fr)"
+                    }
+                  },
+                  {
+                    "path": "Card",
+                    "box": ".card",
+                    "owner": "Card",
+                    "property": "grid-auto-rows",
+                    "value": "auto",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Card",
+                    "box": ".card",
+                    "owner": "Card",
+                    "property": "row-gap",
+                    "value": "normal",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Card/0",
+                    "box": ".text",
+                    "owner": "Card",
+                    "property": "grid-row",
+                    "value": "auto",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Card",
+                    "box": ".card",
+                    "owner": "Card",
+                    "property": "box-sizing",
+                    "value": "border-box",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/reset-0.css",
+                      "line": 1,
+                      "selector": "*",
+                      "specified": "border-box"
+                    }
+                  },
+                  {
+                    "path": "Card",
+                    "box": ".card",
+                    "owner": "Card",
+                    "property": "block-size",
+                    "value": "100px",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/app.css",
+                      "line": 2,
+                      "selector": ".card",
+                      "specified": "100px"
+                    }
+                  }
+                ]
+              },
+              "required": {
+                "facts": [
+                  {
+                    "kind": "contract",
+                    "path": "Card/0",
+                    "box": ".text",
+                    "owner": "Card",
+                    "property": "minBlockSize",
+                    "value": 200,
+                    "selector": ".text",
+                    "trusted": true
+                  }
+                ]
+              }
             }
           },
           {
@@ -626,36 +827,6 @@
                   "coefficient": "1",
                   "constant": "0",
                   "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "100",
-                  "strict": false
-                },
-                {
-                  "coefficient": "1",
-                  "constant": "0",
-                  "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "100",
-                  "strict": false
-                },
-                {
-                  "coefficient": "1",
-                  "constant": "0",
-                  "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "100",
-                  "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "100",
-                  "strict": true
                 }
               ]
             },
@@ -720,36 +891,6 @@
                 "coefficient": "1",
                 "constant": "0",
                 "strict": false
-              },
-              {
-                "coefficient": "0",
-                "constant": "100",
-                "strict": false
-              },
-              {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
-              },
-              {
-                "coefficient": "0",
-                "constant": "100",
-                "strict": false
-              },
-              {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
-              },
-              {
-                "coefficient": "0",
-                "constant": "100",
-                "strict": false
-              },
-              {
-                "coefficient": "0",
-                "constant": "100",
-                "strict": true
               }
             ]
           },
@@ -760,6 +901,115 @@
             "viewportHeightExact": "400",
             "available": 100,
             "required": 200
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Card/0",
+                  "box": ".text",
+                  "owner": "Card",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/reset-0.css",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Card/0",
+                  "box": ".text",
+                  "owner": "Card",
+                  "property": "block-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Card",
+                  "box": ".card",
+                  "owner": "Card",
+                  "property": "grid-template-rows",
+                  "value": "minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/app.css",
+                    "line": 2,
+                    "selector": ".card",
+                    "specified": "minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Card",
+                  "box": ".card",
+                  "owner": "Card",
+                  "property": "grid-auto-rows",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Card",
+                  "box": ".card",
+                  "owner": "Card",
+                  "property": "row-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Card/0",
+                  "box": ".text",
+                  "owner": "Card",
+                  "property": "grid-row",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Card",
+                  "box": ".card",
+                  "owner": "Card",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/reset-0.css",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Card",
+                  "box": ".card",
+                  "owner": "Card",
+                  "property": "block-size",
+                  "value": "100px",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/block-height/reject/app.css",
+                    "line": 2,
+                    "selector": ".card",
+                    "specified": "100px"
+                  }
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "kind": "contract",
+                  "path": "Card/0",
+                  "box": ".text",
+                  "owner": "Card",
+                  "property": "minBlockSize",
+                  "value": 200,
+                  "selector": ".text",
+                  "trusted": true
+                }
+              ]
+            }
           }
         }
       },
@@ -832,21 +1082,6 @@
                   "coefficient": "1",
                   "constant": "0",
                   "strict": false
-                },
-                {
-                  "coefficient": "1",
-                  "constant": "0",
-                  "strict": false
-                },
-                {
-                  "coefficient": "1",
-                  "constant": "0",
-                  "strict": false
-                },
-                {
-                  "coefficient": "0",
-                  "constant": "24",
-                  "strict": true
                 }
               ]
             }
@@ -902,21 +1137,6 @@
                 "coefficient": "1",
                 "constant": "0",
                 "strict": false
-              },
-              {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
-              },
-              {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
-              },
-              {
-                "coefficient": "0",
-                "constant": "24",
-                "strict": true
               }
             ]
           }
@@ -973,6 +1193,212 @@
               "viewportExact": "640",
               "available": 392,
               "required": 400
+            },
+            "explanation": {
+              "version": 1,
+              "available": {
+                "facts": [
+                  {
+                    "path": "Panel/0/1",
+                    "box": ".b",
+                    "owner": "Panel",
+                    "property": "box-sizing",
+                    "value": "border-box",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                      "line": 1,
+                      "selector": "*",
+                      "specified": "border-box"
+                    }
+                  },
+                  {
+                    "path": "Panel/0/1",
+                    "box": ".b",
+                    "owner": "Panel",
+                    "property": "inline-size",
+                    "value": "auto",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Panel/0",
+                    "box": ".panel",
+                    "owner": "Panel",
+                    "property": "grid-template-columns",
+                    "value": "200px minmax(0,1fr)",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                      "line": 4,
+                      "selector": ".panel",
+                      "specified": "200px minmax(0,1fr)",
+                      "conditions": [
+                        {
+                          "kind": "container",
+                          "name": "Shell",
+                          "params": "Shell (width >= 600px)",
+                          "css": {
+                            "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                            "line": 4
+                          }
+                        }
+                      ]
+                    },
+                    "overridden": [
+                      {
+                        "css": {
+                          "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                          "line": 3,
+                          "selector": ".panel",
+                          "specified": "minmax(0,1fr)"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "path": "Panel/0",
+                    "box": ".panel",
+                    "owner": "Panel",
+                    "property": "column-gap",
+                    "value": "16px",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                      "line": 3,
+                      "selector": ".panel",
+                      "specified": "16px"
+                    }
+                  },
+                  {
+                    "path": "Panel/0/1",
+                    "box": ".b",
+                    "owner": "Panel",
+                    "property": "grid-column",
+                    "value": "auto",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Panel/0",
+                    "box": ".panel",
+                    "owner": "Panel",
+                    "property": "box-sizing",
+                    "value": "border-box",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                      "line": 1,
+                      "selector": "*",
+                      "specified": "border-box"
+                    }
+                  },
+                  {
+                    "path": "Panel/0",
+                    "box": ".panel",
+                    "owner": "Panel",
+                    "property": "inline-size",
+                    "value": "auto",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Panel",
+                    "box": ".shell",
+                    "owner": "Panel",
+                    "property": "grid-template-columns",
+                    "value": "minmax(0,1fr)",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                      "line": 2,
+                      "selector": ".shell",
+                      "specified": "minmax(0,1fr)"
+                    }
+                  },
+                  {
+                    "path": "Panel",
+                    "box": ".shell",
+                    "owner": "Panel",
+                    "property": "column-gap",
+                    "value": "normal",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Panel/0",
+                    "box": ".panel",
+                    "owner": "Panel",
+                    "property": "grid-column",
+                    "value": "auto",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Panel",
+                    "box": ".shell",
+                    "owner": "Panel",
+                    "property": "box-sizing",
+                    "value": "border-box",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                      "line": 1,
+                      "selector": "*",
+                      "specified": "border-box"
+                    }
+                  },
+                  {
+                    "path": "Panel",
+                    "box": ".shell",
+                    "owner": "Panel",
+                    "property": "inline-size",
+                    "value": "auto",
+                    "origin": "default"
+                  },
+                  {
+                    "path": "Panel",
+                    "box": ".shell",
+                    "owner": "Panel",
+                    "property": "padding-left",
+                    "value": "16px",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                      "line": 2,
+                      "selector": ".shell",
+                      "specified": "16px"
+                    }
+                  },
+                  {
+                    "path": "Panel",
+                    "box": ".shell",
+                    "owner": "Panel",
+                    "property": "padding-right",
+                    "value": "16px",
+                    "origin": "author",
+                    "css": {
+                      "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                      "line": 2,
+                      "selector": ".shell",
+                      "specified": "16px"
+                    }
+                  },
+                  {
+                    "kind": "viewport",
+                    "axis": "inline"
+                  }
+                ]
+              },
+              "required": {
+                "facts": [
+                  {
+                    "kind": "contract",
+                    "path": "Panel/0/1",
+                    "box": ".b",
+                    "owner": "Panel",
+                    "property": "minInlineSize",
+                    "value": 400,
+                    "selector": ".b",
+                    "trusted": true
+                  }
+                ]
+              }
             }
           }
         ],
@@ -1000,6 +1426,212 @@
             "viewportExact": "640",
             "available": 392,
             "required": 400
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Panel/0/1",
+                  "box": ".b",
+                  "owner": "Panel",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Panel/0/1",
+                  "box": ".b",
+                  "owner": "Panel",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Panel/0",
+                  "box": ".panel",
+                  "owner": "Panel",
+                  "property": "grid-template-columns",
+                  "value": "200px minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                    "line": 4,
+                    "selector": ".panel",
+                    "specified": "200px minmax(0,1fr)",
+                    "conditions": [
+                      {
+                        "kind": "container",
+                        "name": "Shell",
+                        "params": "Shell (width >= 600px)",
+                        "css": {
+                          "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                          "line": 4
+                        }
+                      }
+                    ]
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                        "line": 3,
+                        "selector": ".panel",
+                        "specified": "minmax(0,1fr)"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Panel/0",
+                  "box": ".panel",
+                  "owner": "Panel",
+                  "property": "column-gap",
+                  "value": "16px",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                    "line": 3,
+                    "selector": ".panel",
+                    "specified": "16px"
+                  }
+                },
+                {
+                  "path": "Panel/0/1",
+                  "box": ".b",
+                  "owner": "Panel",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Panel/0",
+                  "box": ".panel",
+                  "owner": "Panel",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Panel/0",
+                  "box": ".panel",
+                  "owner": "Panel",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Panel",
+                  "box": ".shell",
+                  "owner": "Panel",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                    "line": 2,
+                    "selector": ".shell",
+                    "specified": "minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Panel",
+                  "box": ".shell",
+                  "owner": "Panel",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Panel/0",
+                  "box": ".panel",
+                  "owner": "Panel",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Panel",
+                  "box": ".shell",
+                  "owner": "Panel",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Panel",
+                  "box": ".shell",
+                  "owner": "Panel",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Panel",
+                  "box": ".shell",
+                  "owner": "Panel",
+                  "property": "padding-left",
+                  "value": "16px",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                    "line": 2,
+                    "selector": ".shell",
+                    "specified": "16px"
+                  }
+                },
+                {
+                  "path": "Panel",
+                  "box": ".shell",
+                  "owner": "Panel",
+                  "property": "padding-right",
+                  "value": "16px",
+                  "origin": "author",
+                  "css": {
+                    "file": "/home/user/isle/evals/results/layout-rejections/container-breakpoint/reject/app.css",
+                    "line": 2,
+                    "selector": ".shell",
+                    "specified": "16px"
+                  }
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "kind": "contract",
+                  "path": "Panel/0/1",
+                  "box": ".b",
+                  "owner": "Panel",
+                  "property": "minInlineSize",
+                  "value": 400,
+                  "selector": ".b",
+                  "trusted": true
+                }
+              ]
+            }
           }
         }
       },
@@ -1070,7 +1702,7 @@
             "severity": "unknown",
             "message": "Cannot resolve inherited --size; provide the real ancestor chain starting at html",
             "css": {
-              "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/css-variable/reject/app.css",
+              "file": "/home/user/isle/evals/results/layout-rejections/css-variable/reject/app.css",
               "line": 2
             },
             "box": ".text",
@@ -1086,7 +1718,7 @@
           "severity": "unknown",
           "message": "Cannot resolve inherited --size; provide the real ancestor chain starting at html",
           "css": {
-            "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/css-variable/reject/app.css",
+            "file": "/home/user/isle/evals/results/layout-rejections/css-variable/reject/app.css",
             "line": 2
           },
           "box": ".text",
@@ -1164,7 +1796,7 @@
             "severity": "unknown",
             "message": "Unsupported layout property: content",
             "css": {
-              "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/generated-content/reject/app.css",
+              "file": "/home/user/isle/evals/results/layout-rejections/generated-content/reject/app.css",
               "line": 2
             }
           }
@@ -1174,7 +1806,7 @@
           "severity": "unknown",
           "message": "Unsupported layout property: content",
           "css": {
-            "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/generated-content/reject/app.css",
+            "file": "/home/user/isle/evals/results/layout-rejections/generated-content/reject/app.css",
             "line": 2
           }
         }
@@ -1203,7 +1835,7 @@
             "severity": "unknown",
             "message": "Nested or conditional layer declarations are outside the subset",
             "css": {
-              "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/nested-layer/reject/app.css",
+              "file": "/home/user/isle/evals/results/layout-rejections/nested-layer/reject/app.css",
               "line": 2
             }
           }
@@ -1213,7 +1845,7 @@
           "severity": "unknown",
           "message": "Nested or conditional layer declarations are outside the subset",
           "css": {
-            "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/nested-layer/reject/app.css",
+            "file": "/home/user/isle/evals/results/layout-rejections/nested-layer/reject/app.css",
             "line": 2
           }
         }
@@ -1242,7 +1874,7 @@
             "severity": "unknown",
             "message": "revert-layer is outside this subset",
             "css": {
-              "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/revert-layer/reject/app.css",
+              "file": "/home/user/isle/evals/results/layout-rejections/revert-layer/reject/app.css",
               "line": 2
             }
           }
@@ -1252,7 +1884,7 @@
           "severity": "unknown",
           "message": "revert-layer is outside this subset",
           "css": {
-            "file": "/Users/mz/ghq/github.com/mizchi/isle/evals/results/layout-rejections/revert-layer/reject/app.css",
+            "file": "/home/user/isle/evals/results/layout-rejections/revert-layer/reject/app.css",
             "line": 2
           }
         }

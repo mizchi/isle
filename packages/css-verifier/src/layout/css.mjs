@@ -14,7 +14,7 @@ export function px(text) {
 
 const aliases = { width: 'inline-size', 'min-width': 'min-inline-size', 'max-width': 'max-inline-size', height: 'block-size', 'min-height': 'min-block-size', 'max-height': 'max-block-size' };
 const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset-block-start':'top', 'inset-block-end':'bottom' };
-const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content']);
+const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
 const decoration = /^(?:color|background(?:-(?:color|image|position|size|repeat|clip|origin|attachment))?|border-(?:color|radius)|outline(?:-(?:color|style|width|offset))?|box-shadow|text-shadow|text-(?:align|decoration)|cursor|opacity|visibility)$/;
@@ -42,6 +42,13 @@ function expand(property, value) {
   if (property === 'all') {
     if (!wide.has(value)) throw new Error('Unsupported all reset');
     return [...geometry, ...textProperties, ...['left', 'right', 'top', 'bottom'].flatMap(side => [side, `padding-${side}`, `margin-${side}`, `border-${side}`])].filter(key => key !== 'direction').map(key => [key, value]);
+  }
+  if (property === 'flex') return flexShorthand(value);
+  if (property === 'flex-flow') {
+    if (wide.has(value)) return [['flex-direction', value], ['flex-wrap', value]];
+    const parts = postcss.list.space(value), direction = parts.filter(p => /^(?:row|row-reverse|column|column-reverse)$/.test(p)), wrap = parts.filter(p => /^(?:nowrap|wrap|wrap-reverse)$/.test(p));
+    if (!parts.length || parts.length > 2 || direction.length > 1 || wrap.length > 1 || direction.length + wrap.length !== parts.length) throw new Error(`Unsupported flex-flow: ${value}`);
+    return [['flex-direction', direction[0] ?? 'row'], ['flex-wrap', wrap[0] ?? 'nowrap']];
   }
   if (property === 'gap' && wide.has(value)) return [['row-gap', value], ['column-gap', value]];
   if (property === 'overflow' && wide.has(value)) return [['overflow-x', value], ['overflow-y', value]];
@@ -96,6 +103,28 @@ function expand(property, value) {
   if (property === 'font') return textProperties.filter(key => key.startsWith('font-') || key === 'line-height').map(key => [key, wide.has(value) ? value : fontShorthand]);
   if (decoration.test(property)) return [];
   throw new Error(`Unsupported layout property: ${property}`);
+}
+
+// css-flexbox-1 §7.2: [<grow> <shrink>?] || <basis>, none, auto. A unitless
+// zero is a flex factor unless two factors already precede it.
+const flexNumber = /^\d+(?:\.\d+)?$/;
+const flexBasis = value => value === 'auto' || value === 'content' || /^\d+(?:\.\d+)?(?:px|%)$/.test(value);
+function flexShorthand(value) {
+  if (wide.has(value)) return ['flex-grow', 'flex-shrink', 'flex-basis'].map(key => [key, value]);
+  if (value === 'none') return [['flex-grow', '0'], ['flex-shrink', '0'], ['flex-basis', 'auto']];
+  if (value === 'auto') return [['flex-grow', '1'], ['flex-shrink', '1'], ['flex-basis', 'auto']];
+  const parts = postcss.list.space(value), factors = [];
+  let basis, groupEnded = false;
+  for (const part of parts) {
+    if (flexNumber.test(part) && !(part === '0' && factors.length === 2) && !(groupEnded && factors.length)) {
+      if (factors.length === 2) throw new Error(`Invalid flex: ${value}`);
+      factors.push(part);
+    } else if (basis === undefined && (flexBasis(part) || part === '0')) { basis = part === '0' ? '0px' : part; if (factors.length) groupEnded = true; }
+    else throw new Error(`Invalid flex: ${value}`);
+  }
+  if (!factors.length && basis === undefined) throw new Error(`Invalid flex: ${value}`);
+  // Omitted grow is 1 and omitted shrink is 1; an omitted basis is 0 (computed as 0%).
+  return [['flex-grow', factors[0] ?? '1'], ['flex-shrink', factors[1] ?? '1'], ['flex-basis', basis ?? '0%']];
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
@@ -181,6 +210,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
     'grid-template-columns': 'none', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'grid-auto-flow': 'row', 'row-gap': 'normal',
     'container-type': 'normal', 'container-name': 'none', 'align-items': 'normal', 'align-self': 'auto', 'align-content': 'normal',
     'column-gap': 'normal', 'grid-column': 'auto', 'grid-row': 'auto',
+    'flex-direction': 'row', 'flex-wrap': 'nowrap', 'flex-grow': '0', 'flex-shrink': '1', 'flex-basis': 'auto', 'justify-content': 'normal', order: '0',
     'overflow-x': 'visible', 'overflow-y': 'visible', 'white-space': inherited['white-space'] ?? 'normal',
     'scrollbar-gutter':'auto', 'scrollbar-width':'auto',
     appearance:'auto',
