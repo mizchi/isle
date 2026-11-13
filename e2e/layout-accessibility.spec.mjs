@@ -57,6 +57,10 @@ const cases = [
     css: `.row{display:flex;column-gap:1px;align-items:flex-start;block-size:24px}.i,.f{${button}flex:none}.i{width:20px;height:20px}.f{width:24px;height:24px}@media (width >= 600px){.row{column-gap:2px}}`},
   {name: 'stacked-small-links', html: '<main class="list"><a class="l1" href="#1" aria-label="One"></a><a class="l2" href="#2" aria-label="Two"></a></main>',
     css: '.list{display:grid;grid-template-columns:120px;grid-template-rows:16px 16px;row-gap:6px}.l1,.l2{display:block}@media (width >= 700px){.list{row-gap:10px}}'},
+  {name: 'icon-with-equivalent', html: '<main class="row"><button class="i" aria-label="Edit" data-a11y-equivalent="edit"></button><button class="j" aria-label="More"></button><button class="t" id="edit">Edit</button></main>',
+    css: `.row{display:flex;column-gap:1px;align-items:flex-start;block-size:30px;background:#fff;color:#000;${type}}.i,.j,.t{${button}flex:none}.i,.j{width:20px;height:20px}.t{width:60px;height:30px}@media (width < 600px){.t{display:none}}`, boxes: {'.t': label}},
+  {name: 'aaa-forty-pixel-buttons', html: '<main class="row"><button class="b1" aria-label="A"></button><button class="b2" aria-label="B" data-a11y-essential="fixed control panel"></button></main>',
+    css: `.row{display:flex;column-gap:40px;align-items:flex-start;block-size:60px}.b1,.b2{${button}flex:none;width:40px;height:40px}`, accessibility: {targetLevel: 'AAA'}},
 ];
 const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size'];
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -64,6 +68,7 @@ const holds = (row, width) => row.range && (row.range.minInclusive === false ? w
 
 // Paths of the static report ("Page/0/1") as element selectors under body.
 async function runtime(page, sample) {
+  const level = sample.accessibility?.targetLevel ?? 'AA', size = level === 'AAA' ? 44 : 24;
   const client = await page.context().newCDPSession(page);
   const found = new Map(rules.map(rule => [rule, new Set()]));
   const elements = await page.evaluate(() => {
@@ -177,20 +182,27 @@ async function runtime(page, sample) {
   for (const path of pointer.disabled) found.get('pointer-disabled').add(path);
   for (const path of pointer.small) found.get('small-text').add(path);
   // SC 2.5.8 with the spacing exception, from the rendered rects.
-  const spacing = await page.evaluate(() => {
+  const spacing = await page.evaluate(({size, level}) => {
     const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
     const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible' && !node.closest('[aria-hidden="true"]'); };
     const targets = [...document.body.firstElementChild.querySelectorAll('a[href], button'), ...(document.body.firstElementChild.matches('a[href], button') ? [document.body.firstElementChild] : [])].filter(shown).map(n => ({n, r: n.getBoundingClientRect()}));
-    const small = t => t.r.width < 24 || t.r.height < 24, centre = t => [t.r.x + t.r.width / 2, t.r.y + t.r.height / 2];
-    const out = [];
-    for (const t of targets.filter(small)) {
+    const small = t => t.r.width < size || t.r.height < size, centre = t => [t.r.x + t.r.width / 2, t.r.y + t.r.height / 2];
+    const failing = t => {
+      if (!small(t)) return false;
+      if (level === 'AAA') return true;
       const [cx, cy] = centre(t);
-      const hit = targets.some(o => o !== t && !o.n.contains(t.n) && !t.n.contains(o.n) && (Math.hypot(Math.max(o.r.left - cx, 0, cx - o.r.right), Math.max(o.r.top - cy, 0, cy - o.r.bottom)) < 12
-        || (small(o) && Math.hypot(cx - centre(o)[0], cy - centre(o)[1]) < 24)));
-      if (hit) out.push(pathOf(t.n));
+      return targets.some(o => o !== t && !o.n.contains(t.n) && !t.n.contains(o.n) && (Math.hypot(Math.max(o.r.left - cx, 0, cx - o.r.right), Math.max(o.r.top - cy, 0, cy - o.r.bottom)) < size / 2
+        || (small(o) && Math.hypot(cx - centre(o)[0], cy - centre(o)[1]) < size)));
+    };
+    const out = [];
+    for (const t of targets) {
+      if (!failing(t) || t.n.hasAttribute('data-a11y-essential')) continue;
+      const equivalent = t.n.dataset.a11yEquivalent && targets.find(o => o.n.id === t.n.dataset.a11yEquivalent);
+      if (equivalent && !failing(equivalent)) continue;
+      out.push(pathOf(t.n));
     }
     return out;
-  });
+  }, {size, level});
   for (const path of spacing) found.get('target-size').add(path);
   // Contrast from computed colors, composited over the ancestors like the WCAG definition.
   const low = await page.evaluate(() => {
@@ -224,7 +236,7 @@ test.afterAll(() => {
 for (const sample of cases) {
   test(`${sample.name}: static accessibility agrees with the browser`, async ({page}) => {
     const css = reset + sample.css;
-    const report = analyzeHTML(sample.html, {name: 'Page', css, viewport: {min: sample.min ?? 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true, ...(sample.boxes ? {boxes: sample.boxes} : {})});
+    const report = analyzeHTML(sample.html, {name: 'Page', css, viewport: {min: sample.min ?? 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: sample.accessibility ?? true, ...(sample.boxes ? {boxes: sample.boxes} : {})});
     expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
     const rows = [...report.diagnostics, ...report.accessibility.warnings].filter(row => rules.includes(row.rule));
     const document = `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>${css}</style></head><body>${sample.html}</body></html>`;

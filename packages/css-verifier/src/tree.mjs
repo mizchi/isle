@@ -19,11 +19,14 @@ export function accessibilityFacts(tag, attributes) {
   const referenceNames = ['aria-labelledby', 'aria-describedby', 'aria-controls'].filter(has);
   const references = referenceNames.some(name => value(name) === undefined) ? 'dynamic' : referenceNames.flatMap(name => value(name).trim().split(/\s+/).filter(Boolean));
   const tabIndex = has('tabindex') && value('tabindex') !== undefined && /^\s*-?\d+\s*$/.test(value('tabindex')) ? Number(value('tabindex')) : undefined;
+  // SC 2.5.8 exceptions declared in the DOM: an equivalent control (id), or an essential presentation (reason).
+  const equivalent = has('data-a11y-equivalent') ? (value('data-a11y-equivalent') === undefined ? 'dynamic' : value('data-a11y-equivalent').trim() || undefined) : undefined;
+  const essential = has('data-a11y-essential') ? (value('data-a11y-essential') === undefined ? 'dynamic' : value('data-a11y-essential').trim() || undefined) : undefined;
   const ariaHidden = has('aria-hidden') ? (value('aria-hidden') === undefined ? 'dynamic' : value('aria-hidden').trim() === 'true' || undefined) : undefined;
-  return {...(labelledBy === 'dynamic' || labelledBy?.length ? {labelledBy} : {}), ...(references === 'dynamic' || references.length ? {references} : {}), ...(tabIndex !== undefined ? {tabIndex} : {}), ...(named ? {named} : {}), ...(ariaHidden ? {ariaHidden} : {}), ...(focusable !== undefined ? {focusable} : {})};
+  return {...(equivalent ? {equivalent} : {}), ...(essential ? {essential} : {}), ...(labelledBy === 'dynamic' || labelledBy?.length ? {labelledBy} : {}), ...(references === 'dynamic' || references.length ? {references} : {}), ...(tabIndex !== undefined ? {tabIndex} : {}), ...(named ? {named} : {}), ...(ariaHidden ? {ariaHidden} : {}), ...(focusable !== undefined ? {focusable} : {})};
 }
 
-const fields=new Set(['tag','id','lang','named','ariaHidden','focusable','references','labelledBy','tabIndex','classes','children','text','whitespace','path','source','owner','documentRoot','layoutContracts','targets','targetIdentity']);
+const fields=new Set(['tag','id','lang','named','ariaHidden','focusable','references','labelledBy','tabIndex','equivalent','essential','classes','children','text','whitespace','path','source','owner','documentRoot','layoutContracts','targets','targetIdentity']);
 const object=value=>value!==null && typeof value==='object' && !Array.isArray(value);
 
 /** Clone the supplied model: analysis must never attach facts to caller state. */
@@ -34,7 +37,7 @@ export function normalizeTree(tree,name) {
     if(seen.has(input)) throw new TypeError('Box tree must not contain cycles or shared nodes');
     if(depth>64 || seen.size>=2048) throw new TypeError('Box tree limit exceeded');
     seen.add(input);
-    for(const key of ['id','lang','owner','path']) if(input[key]!==undefined && (typeof input[key]!=='string' || input[key].length>4096)) throw new TypeError(`Invalid box ${key}`);
+    for(const key of ['id','lang','owner','path','equivalent','essential']) if(input[key]!==undefined && (typeof input[key]!=='string' || input[key].length>4096)) throw new TypeError(`Invalid box ${key}`);
     for(const key of ['text','whitespace','documentRoot']) if(input[key]!==undefined && typeof input[key]!=='boolean') throw new TypeError(`Invalid box ${key}`);
     if(input.references!==undefined && input.references!=='dynamic' && (!Array.isArray(input.references) || input.references.some(id=>typeof id!=='string' || !id))) throw new TypeError('Invalid box references');
     if(input.labelledBy!==undefined && input.labelledBy!=='dynamic' && (!Array.isArray(input.labelledBy) || input.labelledBy.some(id=>typeof id!=='string' || !id))) throw new TypeError('Invalid box labelledBy');
@@ -48,7 +51,7 @@ export function normalizeTree(tree,name) {
     const path=input.path ?? (parent ? `${parent}/${index}` : name);
     if(!path || paths.has(path) || (parent && !path.startsWith(parent+'/'))) throw new TypeError('Box paths must be unique and nested below their parent');
     paths.add(path);
-    const box={tag:input.tag,classes:[...(input.classes ?? [])],id:input.id,...(input.lang!==undefined ? {lang:input.lang} : {}),...(input.named ? {named:input.named} : {}),...(input.ariaHidden ? {ariaHidden:input.ariaHidden} : {}),...(input.focusable!==undefined ? {focusable:input.focusable} : {}),...(input.references!==undefined ? {references:input.references==='dynamic' ? 'dynamic' : [...input.references]} : {}),...(input.tabIndex!==undefined ? {tabIndex:input.tabIndex} : {}),...(input.labelledBy!==undefined ? {labelledBy:input.labelledBy==='dynamic' ? 'dynamic' : [...input.labelledBy]} : {}),owner:input.owner ?? name,path,
+    const box={tag:input.tag,classes:[...(input.classes ?? [])],id:input.id,...(input.lang!==undefined ? {lang:input.lang} : {}),...(input.named ? {named:input.named} : {}),...(input.ariaHidden ? {ariaHidden:input.ariaHidden} : {}),...(input.focusable!==undefined ? {focusable:input.focusable} : {}),...(input.references!==undefined ? {references:input.references==='dynamic' ? 'dynamic' : [...input.references]} : {}),...(input.tabIndex!==undefined ? {tabIndex:input.tabIndex} : {}),...(input.labelledBy!==undefined ? {labelledBy:input.labelledBy==='dynamic' ? 'dynamic' : [...input.labelledBy]} : {}),...(input.equivalent!==undefined ? {equivalent:input.equivalent} : {}),...(input.essential!==undefined ? {essential:input.essential} : {}),owner:input.owner ?? name,path,
       ...(input.source ? {source:{...input.source}} : {}),children:[],text:input.text ?? false,
       ...(input.whitespace ? {whitespace:true} : {}),
       ...(input.targets?.length ? {targets:[...input.targets]} : {}),...(input.targetIdentity ? {targetIdentity:input.targetIdentity} : {}),

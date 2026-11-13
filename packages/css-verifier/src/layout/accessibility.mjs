@@ -214,8 +214,8 @@ export function circleReach(region, dx, dy, r) {
   return { yes, maybe };
 }
 
-export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', targetSize = 24, ranges, block, viewportMin }) {
-  const findings = [], warnings = [], unknowns = [], notes = [];
+export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin }) {
+  const findings = [], warnings = [], unknowns = [], notes = [], exempted = [];
   const witness = region => { const p = sample(region); return { viewport: number(p.x), viewportExact: exact(p.x), ...(block ? { viewportHeight: number(p.y), viewportHeightExact: exact(p.y) } : {}) }; };
   const report = (list, code, severity, message, row, region, extra) => list.push({ code, severity, message, box: row.box.label, path: row.path, source: row.box.source, ...ranges(region), witness: witness(region), ...extra });
   const visible = row => row.paint.visibility === 'visible';
@@ -422,7 +422,10 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     if (size !== undefined && size < 12) report(warnings, 'W_A11Y_SMALL_TEXT', 'warning', `${row.box.label} is set at ${size}px`, row, row.region, { rule: 'small-text', fontSize: size });
   }
 
-  // target-size (SC 2.5.8): an undersized target passes when its 24px circle stays clear.
+  // target-size: SC 2.5.8 (AA, 24px, with the spacing exception) or SC 2.5.5 (AAA, 44px, no spacing exception).
+  // Violations are collected per target, then the declared exceptions are applied.
+  const violations = new Map(), undecided = new Map();
+  const add = (map, target, entry) => map.set(target.path, [...(map.get(target.path) ?? []), entry]);
   const S = q(targetSize), radius = div(S, q(2));
   const center = row => ({ inline: sum(row.origin.inline, times(row.inline, q(1 / 2))), block: sum(row.origin.block, times(row.block, q(1 / 2))) });
   const undersized = row => { const narrow = below(row.region, row.inline, scalar(S)), wide = row.region && clip(row.region, diff(row.inline, scalar(S))); return [narrow, below(wide, row.block, scalar(S))].filter(Boolean); };
@@ -430,7 +433,8 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   for (const target of exposed) {
     const small = undersized(target);
     if (!small.length) continue;
-    if (!target.origin) { for (const region of small) report(unknowns, 'U_A11Y_TARGET_SIZE', 'unknown', `${target.box.label} is under ${targetSize}px and its position is not proved, so the spacing exception cannot be checked`, target, region, { rule: 'target-size' }); continue; }
+    if (targetLevel === 'AAA') { for (const region of small) add(violations, target, { region, other: null }); continue; }
+    if (!target.origin) { for (const region of small) add(undecided, target, { region, other: null, reason: 'its position is not proved, so the spacing exception cannot be checked' }); continue; }
     const hits = [], doubtful = [];
     for (const other of exposed) {
       if (related(other.path, target.path)) continue;
@@ -460,11 +464,45 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     // h ⊆ g exactly: no point of h violates a constraint of g (strictness included).
     const within = (h, g) => g.constraints.every(c => !clip(h, times(c.slack, q(-1)), !c.strict));
     const kept = hits.filter((h, i) => !hits.some((g, j) => j !== i && within(h.region, g.region) && (!within(g.region, h.region) || j < i)));
-    for (const hit of kept) report(findings, 'E_A11Y_TARGET_SIZE', 'error', `${target.box.label} is under ${targetSize}px and its ${targetSize}px circle meets ${hit.other.box.label}`, target, hit.region, { rule: 'target-size', other: hit.other.path });
-    if (!kept.length) for (const piece of doubtful) report(unknowns, 'U_A11Y_TARGET_SIZE', 'unknown', `${target.box.label} is under ${targetSize}px and its circle's distance to ${piece.other.box.label} is not decided here`, target, piece.region, { rule: 'target-size', other: piece.other.path });
+    for (const hit of kept) add(violations, target, hit);
+    if (!kept.length) for (const piece of doubtful) add(undecided, target, { ...piece, reason: `its circle's distance to ${piece.other.box.label} is not decided here` });
+  }
+  // Exceptions: an equivalent control that renders and passes where the violation holds, or an essential presentation.
+  const rowsOf = path => exposed.filter(row => row.path === path);
+  for (const target of new Set([...violations.keys(), ...undecided.keys()])) {
+    const row = rowsOf(target)[0], box = row.box;
+    let pieces = violations.get(target) ?? [], doubtfulPieces = undecided.get(target) ?? [];
+    const describe = hit => hit.other ? `its ${targetSize}px circle meets ${hit.other.box.label}` : targetLevel === 'AAA' ? `SC 2.5.5 allows no spacing exception` : '';
+    if (box.essential === 'dynamic' || box.equivalent === 'dynamic') {
+      for (const hit of [...pieces, ...doubtfulPieces]) report(unknowns, 'U_A11Y_TARGET_SIZE', 'unknown', `${box.label} is under ${targetSize}px and a dynamic exception attribute decides whether it applies`, row, hit.region, { rule: 'target-size' });
+      continue;
+    }
+    if (box.essential) {
+      for (const hit of [...pieces, ...doubtfulPieces]) exempted.push({ code: 'E_A11Y_TARGET_SIZE', rule: 'target-size', box: box.label, path: target, ...ranges(hit.region), reason: `essential: ${box.essential}` });
+      continue;
+    }
+    if (box.equivalent) {
+      // Where the equivalent renders, is visible and has no violation of its own.
+      const equivalentBox = byId.get(box.equivalent);
+      let passing = equivalentBox ? exposed.filter(other => other.box === equivalentBox).map(other => other.region) : [];
+      for (const own of [...(violations.get(equivalentBox?.path) ?? []), ...(undecided.get(equivalentBox?.path) ?? [])]) passing = passing.flatMap(region => subtract(region, own.region));
+      const excuse = list => list.flatMap(hit => {
+        let rest = [hit.region];
+        for (const region of passing) {
+          const covered = intersect(hit.region, region);
+          if (covered) exempted.push({ code: 'E_A11Y_TARGET_SIZE', rule: 'target-size', box: box.label, path: target, ...ranges(covered), reason: `equivalent: ${equivalentBox.label} meets the target size here`, equivalent: equivalentBox.path });
+          rest = rest.flatMap(piece => subtract(piece, region));
+        }
+        return rest.map(region => ({ ...hit, region }));
+      });
+      pieces = excuse(pieces); doubtfulPieces = excuse(doubtfulPieces);
+    }
+    for (const hit of pieces) report(findings, 'E_A11Y_TARGET_SIZE', 'error', `${box.label} is under ${targetSize}px${describe(hit) ? ` and ${describe(hit)}` : ''}`, row, hit.region, { rule: 'target-size', required: targetSize, level: targetLevel, ...(hit.other ? { other: hit.other.path } : {}) });
+    for (const hit of doubtfulPieces) report(unknowns, 'U_A11Y_TARGET_SIZE', 'unknown', `${box.label} is under ${targetSize}px and ${hit.reason}`, row, hit.region, { rule: 'target-size', ...(hit.other ? { other: hit.other.path } : {}) });
   }
 
-  return { findings: dedupe(findings), warnings: dedupe(warnings), unknowns: dedupe(unknowns), notes };
+
+  return { findings: dedupe(findings), warnings: dedupe(warnings), unknowns: dedupe(unknowns), exempted: dedupe(exempted), notes };
 }
 
 function dedupe(rows) {

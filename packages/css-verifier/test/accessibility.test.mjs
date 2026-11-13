@@ -305,3 +305,49 @@ test('circle approximation: proven hits lie inside the circle, proven misses out
   // The undecided band is thin: every maybe vertex is within 0.05px of the circle.
   for (const piece of maybe) for (const p of piece.vertices) assert.ok(Math.abs(distance(piece, p) - 12) < 0.05, String(distance(piece, p)));
 });
+
+// SC 2.5.8 exceptions and SC 2.5.5 (AAA).
+const pair = (aCSS, bCSS, {level, ...a} = {}, b = {}) => run({tag: 'main', classes: ['row'], children: [{tag: 'button', classes: ['a'], named: true, id: 'a', ...a}, {tag: 'button', classes: ['b'], named: true, id: 'b', ...b}]},
+  `.row { display: flex; column-gap: 0px; align-items: flex-start; block-size: 60px; }\n.a, .b { appearance: none; display: block; flex: none; padding: 0; border: 0; min-width: 0; min-height: 0; }\n.a { ${aCSS} }\n.b { ${bCSS} }\n`, {accessibility: {targetLevel: level ?? 'AA'}});
+
+test('target-size AAA (SC 2.5.5): 44px and no spacing exception', () => {
+  const css = ['width: 40px; height: 40px;', 'width: 40px; height: 40px; margin-left: 200px;'];
+  assert.equal(find(pair(...css), 'E_A11Y_TARGET_SIZE').length, 0); // AA: 40px passes
+  const aaa = run({tag: 'main', classes: ['row'], children: [{tag: 'button', classes: ['a'], named: true}]},
+    '.row { display: flex; block-size: 60px; align-items: flex-start; }\n.a { appearance: none; display: block; flex: none; width: 40px; height: 40px; padding: 0; border: 0; min-width: 0; min-height: 0; }\n', {accessibility: {targetLevel: 'AAA'}});
+  const [finding] = find(aaa, 'E_A11Y_TARGET_SIZE');
+  assert.equal(finding.required, 44);
+  assert.equal(aaa.accessibility.targetSize, 44);
+});
+
+test('target-size equivalent exception: exempt where the declared equivalent renders and passes', () => {
+  // .a is 20px next to .b; it declares .b (24px) as the equivalent control.
+  const report = pair('width: 20px; height: 20px;', 'width: 24px; height: 24px;', {equivalent: 'b'});
+  assert.equal(find(report, 'E_A11Y_TARGET_SIZE').length, 0);
+  const [exempt] = report.accessibility.exempted.filter(e => e.code === 'E_A11Y_TARGET_SIZE');
+  assert.equal(exempt.box, '#a');
+  assert.match(exempt.reason, /equivalent: #b meets the target size/);
+  // The equivalent must itself pass: two small adjacent buttons cannot excuse each other.
+  const both = pair('width: 20px; height: 20px;', 'width: 20px; height: 20px;', {equivalent: 'b'}, {equivalent: 'a'});
+  assert.equal(find(both, 'E_A11Y_TARGET_SIZE').length, 2);
+  // A missing or hidden equivalent does not excuse it either.
+  // (AAA has no spacing exception, so a lone 20px target fails unless its equivalent renders.)
+  assert.equal(find(pair('width: 20px; height: 20px;', 'width: 44px; height: 44px;', {equivalent: 'b', level: 'AAA'}), 'E_A11Y_TARGET_SIZE').length, 0);
+  assert.equal(find(pair('width: 20px; height: 20px;', 'width: 44px; height: 44px; display: none;', {equivalent: 'b', level: 'AAA'}), 'E_A11Y_TARGET_SIZE').length, 1);
+  assert.equal(find(pair('width: 20px; height: 20px;', 'width: 44px; height: 44px;', {equivalent: 'missing', level: 'AAA'}), 'E_A11Y_TARGET_SIZE').length, 1);
+  assert.equal(pair('width: 20px; height: 20px;', 'width: 24px; height: 24px;', {equivalent: 'dynamic'}).status, 'unknown');
+});
+
+test('target-size essential exception: recorded as exempted with the stated reason', () => {
+  const report = pair('width: 20px; height: 20px;', 'width: 24px; height: 24px;', {essential: 'map pin positions are data'});
+  assert.equal(find(report, 'E_A11Y_TARGET_SIZE').length, 0);
+  assert.equal(report.accessibility.exempted.find(e => e.box === '#a').reason, 'essential: map pin positions are data');
+});
+
+test('HTML adapter: data-a11y-equivalent and data-a11y-essential', async () => {
+  const {analyzeHTML} = await import('../src/html.mjs');
+  const css = reset + '.row { display: flex; align-items: flex-start; block-size: 60px; }\n.a, .b { appearance: none; display: block; flex: none; padding: 0; border: 0; min-width: 0; min-height: 0; }\n.a { width: 20px; height: 20px; }\n.b { width: 24px; height: 24px; }\n';
+  const report = analyzeHTML('<main class="row"><button class="a" aria-label="x" data-a11y-equivalent="big"></button><button class="b" id="big" aria-label="y"></button></main>', {name: 'Page', css, viewport: domain, accessibility: true});
+  assert.equal(find(report, 'E_A11Y_TARGET_SIZE').length, 0);
+  assert.equal(report.accessibility.exempted.length, 1);
+});

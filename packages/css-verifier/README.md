@@ -111,7 +111,9 @@ duplicate ids and dangling references, focusable scroll regions, reflow at
 320px, obscured focus, zero-size focus, pointer-disabled targets and SC 2.5.8
 target size (with the 24px-circle spacing exception, decided exactly for
 constant or single-axis offsets and between inner and outer polygons
-otherwise) are errors;
+otherwise; `data-a11y-equivalent` exempts it where the referenced control
+renders and passes, `data-a11y-essential` records a stated exemption, and
+`targetLevel: 'AAA'` requires 44px without the spacing exception) are errors;
 visual order, positive tabindex, multiple main landmarks and text below 12px
 are warnings (`report.accessibility.warnings`). Contrast follows ADR-0007: no
 implicit black-on-white, and images, opacity or undeclared colors are Unknown.

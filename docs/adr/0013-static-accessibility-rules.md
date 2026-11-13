@@ -51,7 +51,16 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
   内側の多角形 `n·p < r·c`(c は cos(間隔/2) の有理の下界)に入れば交わり、外側の多角形 `n·p < r` の外なら交わらない。
   間の帯(幅 0.01px 未満)は、同じ対象に証明した違反がなければ Unknown にする。
 
-他の例外(文中の inline、同じ機能の別の対象、UA の control、本質的な配置)はモデルにない。`accessibility.targetSize` で 24 以外の寸法も指定できる。
+### 2.5.8 の他の例外と AAA(SC 2.5.5)
+
+- **Equivalent**:DOM の `data-a11y-equivalent="id"`(box tree の `equivalent`)で同じ機能の別の control を宣言する。
+  宣言を信頼せず、参照先が存在し、描画され可視で、その領域で自身が target-size を満たす部分だけを免除する(`report.accessibility.exempted`)。
+  互いを指す2つの小さい対象は免除されない。参照先が隠れる幅、存在しない id では違反のまま。動的な値は Unknown。
+- **Essential**:`data-a11y-essential="理由"` は作者の表明として、理由を付けて免除に記録する(検証ではない)。
+- **Inline**:文中の inline の対象は検査対象のサブセットの外(inline box は Unknown)なので生じない。
+- **User agent control**:検査対象の button は `appearance: none` などの reset を要求するため、UA が寸法を決める control は生じない。
+- **AAA**:`accessibility.targetLevel: 'AAA'` で SC 2.5.5 の 44px を要求し、spacing 例外を適用しない(equivalent と essential は適用する)。
+  `accessibility.targetSize` で寸法を直接指定することもできる。
 ADR-0012 の target-undersized(vlmkit と同じく spacing を考えない)とは別の規則である。
 
 違反は checks の義務ではないため、Z3 のモデルにはその違反領域が空でないことの確認として入る(`rule` を持つ診断)。
@@ -91,10 +100,10 @@ ADR-0007 の制約に従う。
 
 | 検査 | 内容 |
 | --- | --- |
-| `packages/css-verifier/test/accessibility.test.mjs` | 28件(円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
+| `packages/css-verifier/test/accessibility.test.mjs` | 32件(equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
 | `tests/layout-accessibility.test.mjs` | Isle template の静的・動的な属性 |
 | `tests/layout-build.test.mjs` | Vite の `layout.accessibility`:名前のない button で build が失敗し、証明書に契約が残る |
-| `e2e/layout-accessibility.spec.mjs` | 20構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
+| `e2e/layout-accessibility.spec.mjs` | 22構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
 
 結果は `evals/results/layout-accessibility/report.json` に残る。
 
@@ -102,4 +111,4 @@ ADR-0007 の制約に従う。
 
 1. playground の preset と、Isle の例(`examples/layout-contracts`)。
 2. form control とラベル、`img` の代替テキスト(要素の対応が先に必要)。
-3. 2.5.8 の他の例外(inline・equivalent)と AAA(2.5.5、44px)。
+3. inline box のモデル(文中のリンクの inline 例外を判定するため)。
