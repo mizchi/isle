@@ -134,12 +134,14 @@ report `text.fitsUpTo`. The core checks that the computed CSS font equals the
 measured one and otherwise reports Unknown. Only single-line (`nowrap`) text
 is modeled for character domains; fixed `content` with `wrap: 'normal'` (or
 `'anywhere'`) is resolved by a line-breaking model (a UAX #14 subset: spaces,
-CJK ideographs/kana, Latin words, fullwidth brackets and punctuation) into a line-count
+CJK ideographs/kana, Latin words, ASCII punctuation (Chromium's ASCII pair table),
+fullwidth brackets and punctuation) into a line-count
 profile over the content width (`intrinsicBlockSize`) and a min-content
 `minInlineSize`. Fullwidth brackets and punctuation follow Chromium's line-start/
 line-end rules; adjacent fullwidth punctuation (squeezed by text-spacing-trim)
 is rejected, and widths where a trimmed line-final bracket changes the count
-are Unknown. Lines are shaped per script run, as Chromium does.
+are Unknown. Lines are shaped per script run, as Chromium does, and in every
+CJK content language (locl): counts that differ by language are Unknown.
 Build the FFI with `just css-text-build`.
 
 ## Differential cascade oracle (development only)

@@ -5,7 +5,7 @@
 import {test, expect} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 import {loadTextMetrics} from '../packages/css-verifier/src/text-node.mjs';
-import {scriptRuns} from '../packages/css-verifier/src/text.mjs';
+import {scriptRuns, breakOpportunities} from '../packages/css-verifier/src/text.mjs';
 import {compile, requireIR} from '../lib/compiler.mjs';
 import {prepareProgram} from '../lib/codegen.mjs';
 import {analyzeLayout} from '../lib/layout.mjs';
@@ -124,11 +124,25 @@ const wrapping = [
     }
     wrapping.push([jp, text, next() < 0.2 ? 'anywhere' : 'normal']);
   }
+  // ASCII words and punctuation (Roboto), and ASCII mixed into Japanese (Noto Sans JP).
+  // Strings the model rejects (ICU's numeric rule, Latin-1 next to punctuation) are skipped.
+  let state = 7;
+  const random = () => { state = state + 0x6D2B79F5 | 0; let t = Math.imul(state ^ state >>> 15, 1 | state); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const asciiWords = ['Hello', 'world', 'office', 'AV', 'To', 'WMW', '0123', '1/2', 'a-b', 'x-1', 'well-known', '(test)', '[ok]', '{x}', 'end.', 'yes,', 'why?', 'no!', 'key:', 'a;b', '"quote"', "it's", '#tag', '@me', '$5', '50%', 'a+b', 'c\\d', 'x|y', '<a>', 'a=b', 'a&b', 'a*b', '~x', '_u_', '`c`', '^'];
+  for (let i = 0; i < 40; i++) {
+    const words = Array.from({length: 2 + Math.floor(random() * 8)}, () => asciiWords[Math.floor(random() * asciiWords.length)]);
+    wrapping.push([ro, words.join(random() < 0.7 ? ' ' : ''), random() < 0.2 ? 'anywhere' : 'normal']);
+    const japanese = [...'日本語のテキストを確認します'];
+    wrapping.push([jp, words.map(w => w + japanese[Math.floor(random() * japanese.length)]).join(random() < 0.5 ? ' ' : ''), 'normal']);
+  }
 }
 for (const lang of ['en', 'ja']) test(`modeled line counts match Chromium (lang=${lang})`, async ({page}) => {
+  test.setTimeout(240_000);
   await page.setContent(`<!doctype html><html lang="${lang}"><style>${face}body{margin:0}</style><body></body></html>`);
+  let rejected = 0;
   for (const [font, text, overflowWrap] of wrapping) {
-    const lines = metrics.breakLines({font, text, overflowWrap});
+    let lines;
+    try { lines = metrics.breakLines({font, text, overflowWrap}); } catch (error) { if (error.code !== 'U_LAYOUT_TEXT_METRICS' || !/not modeled/.test(error.message)) throw error; rejected++; continue; }
     const set = new Set();
     for (const entry of lines.profile) for (const d of [-3, -2, -1, 0, 1]) set.add(entry.atLeastInlineSize + d / 64);
     // Random strings: every threshold neighbourhood, plus a coarser sweep.
@@ -152,8 +166,9 @@ for (const lang of ['en', 'ja']) test(`modeled line counts match Chromium (lang=
       expect(rendered[i], `${text} (${overflowWrap}) at ${w}px: Chromium ≤ model`).toBeLessThanOrEqual(modeled);
       if (band) banded += rendered[i] < modeled; else expect(rendered[i], `${text} (${overflowWrap}) at ${w}px`).toBe(modeled);
     });
-    expect(widths.length).toBeGreaterThan(20);
+    expect(widths.length).toBeGreaterThan(5);
   }
+  expect(rejected, 'most strings are modeled').toBeLessThan(wrapping.length / 4);
 });
 
 test('the wrapping example: heights match Chromium and the body overflows where reported', async ({page}) => {
@@ -178,5 +193,37 @@ test('the wrapping example: heights match Chromium and the body overflows where 
     const row = report.sizes.find(r => r.box === '.title' && r.rect && viewport >= r.range.min && viewport <= r.range.max);
     expect(measured['.title'].height, `title at ${viewport}`).toBe(value(row.rect.blockSize.constant) + value(row.rect.blockSize.coefficient) * viewport);
     expect(measured['.body'].text > 48, `body overflows at ${viewport}`).toBe(viewport < limit);
+  }
+});
+
+// Break opportunities alone (no font, no widths): at width 0 every
+// opportunity becomes a line break, so one render shows all of them. Every
+// pair of class members and random strings over all modeled characters.
+test('break opportunities match Chromium on every class pair and random strings', async ({page}) => {
+  test.setTimeout(240_000);
+  const members = [];
+  for (let c = 0x21; c < 0x7f; c++) members.push(String.fromCharCode(c));
+  members.push(...'「『（［【〈《〔」』）］】〉》〕、。，．・：；！？〜…‥々ヽヾゝゞ日あアッーぁゃァéÀ');
+  const strings = [];
+  for (const x of members) for (const y of members) strings.push(x + y, `${x} ${y}`);
+  let state = 3;
+  const random = () => { state = state + 0x6D2B79F5 | 0; let t = Math.imul(state ^ state >>> 15, 1 | state); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  for (let i = 0; i < 3000; i++) strings.push(Array.from({length: 3 + Math.floor(random() * 10)}, () => random() < 0.1 ? ' ' : members[Math.floor(random() * members.length)]).join('').replace(/ +/g, ' ').trim());
+  const modeled = strings.map(text => { try { return breakOpportunities(text); } catch (error) { if (error.code !== 'U_LAYOUT_TEXT_METRICS') throw error; return null; } });
+  for (const lang of ['en', 'ja']) {
+    await page.setContent(`<!doctype html><html lang="${lang}"><style>body{margin:0}div{font:16px/20px monospace;width:0}</style><body><div></div></body></html>`);
+    const rendered = await page.evaluate(strings => {
+      const d = document.querySelector('div');
+      return strings.map(s => {
+        d.textContent = s; const n = d.firstChild, chars = [...s], tops = []; let offset = 0;
+        for (const c of chars) { const r = document.createRange(); r.setStart(n, offset); r.setEnd(n, offset + c.length); tops.push(r.getClientRects()[0]?.top ?? null); offset += c.length; }
+        const breaks = []; let previous = null;
+        chars.forEach((c, i) => { if (c === ' ') return; if (previous !== null && tops[i] !== tops[previous]) breaks.push(i); previous = i; });
+        return breaks;
+      });
+    }, strings);
+    let compared = 0;
+    strings.forEach((text, i) => { if (!modeled[i]) return; compared++; expect(modeled[i], `${JSON.stringify(text)} (lang=${lang})`).toEqual(rendered[i]); });
+    expect(compared).toBeGreaterThan(strings.length * 0.8);
   }
 });

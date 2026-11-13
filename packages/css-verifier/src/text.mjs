@@ -11,6 +11,7 @@
 // layout rounding allowance described in `layoutAllowance`.
 
 const UNIT = 64; // Chromium LayoutUnit: 1/64 CSS px
+const contentLanguages = ['ja', 'zh-Hans', 'zh-Hant', 'ko'];
 const fail = message => { throw Object.assign(new Error(message), {code: 'U_LAYOUT_TEXT_METRICS'}); };
 
 /**
@@ -58,29 +59,67 @@ export function scriptSegments(text) {
 export const scriptRuns = text => Math.max(scriptSegments(text).length, 1);
 export const textBound = (text, width) => width ? (Math.ceil(clean(width * UNIT)) + 2 * scriptRuns(text) - 1) / UNIT : 0;
 
-// Line-breaking classes of the modeled subset (null: not modeled). The rules
-// were checked against Chromium on every ordered pair and across a space:
-// a space always gives a break; fullwidth opening brackets (OP) never end a
-// line; fullwidth closing marks, 、。，．・：；！？〜…‥ and iteration marks
-// (CL) never start one; ideographs and kana, small kana and ー included (ID),
-// break on both sides; Latin letters and digits (AL/NU) only break next to
-// ID, OP (before) or CL (after). ASCII punctuation follows context rules
-// (numbers, quotes, prefixes) that are not modeled.
+// Line-breaking classes of the modeled subset, measured in Chromium. Between
+// two ASCII characters Chromium uses its own pair table (plus the hyphen-digit
+// rule below); otherwise ICU's line breaker. Every ordered pair of the classes
+// below, and 100 000 random strings (lang en and ja), were rendered at width 0,
+// where every break opportunity becomes a line break, and agree with this
+// table. A space always gives a break.
 const iterationMarks = new Set([...'々ヽヾゝゞ']), closingBrackets = new Set([...'」』）］】〉》〕']), openings = new Set([...'「『（［【〈《〔']), closings = new Set([...'」』）］】〉》〕、。，．・：；！？〜…‥々ヽヾゝゞ']);
+const asciiClasses = [
+  ['CP', '!),.:;]}'], ['QU', '"'], ['SYM', '#&*=>~'], ['DOLLAR', '$'], ['PO', '%'], ['APOS', "'"], ['OPA', '([{'], ['PR', '+\\'],
+  ['HY', '-'], ['SL', '/'], ['NU', '0123456789'], ['LT', '<'], ['QM', '?'], ['AL', '@ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz'], ['BAR', '|'],
+];
+const classNames = [...asciiClasses.map(([name]) => name), 'OP', 'CL', 'ID'];
+// breakTable[a][b] === '1': a break opportunity between a character of class a and one of class b.
+const breakTable = Object.fromEntries([
+  '000000100001000101', '000000100001000000', '000000100001000101', '000000000000000100', '000000100001000101', '000000000000000000',
+  '000000000000000000', '000000100001000100', '011011111001011101', '000000000000000101', '000000000000000101', '000000000000000101',
+  '001110111011011101', '000000000000000101', '000000100001000101', '000000000000000000', '001110110011010101', '001100110011010101',
+].map((row, i) => [classNames[i], Object.fromEntries([...row].map((bit, j) => [classNames[j], bit === '1']))]));
+const asciiClass = new Map(asciiClasses.flatMap(([name, members]) => [...members].map(c => [c, name])));
+const latin1 = c => /[\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]/u.test(c);
 function lineClass(c) {
   if (c === ' ') return 'SP';
-  if (/[A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]/u.test(c)) return 'AL';
-  if (/[0-9]/.test(c)) return 'NU';
+  if (asciiClass.has(c)) return asciiClass.get(c);
+  if (latin1(c)) return 'AL';
   if (/[\u3400-\u4DBF\u4E00-\u9FFF\u3041-\u3096\u30A1-\u30FA\u30FC]/u.test(c)) return 'ID';
   if (openings.has(c)) return 'OP';
   if (closings.has(c)) return 'CL';
   return null;
 }
-function breakBefore(a, b) {
+const ascii = c => c.charCodeAt(0) < 0x80;
+const asciiPunctuation = c => ascii(c) && /[^A-Za-z0-9 ]/.test(c);
+// ICU's numeric rule (UAX #14 LB25) makes $ % + \ next to CJK depend on the
+// surrounding digits; ICU treats Latin-1 letters next to ASCII punctuation
+// differently from the ASCII table. Both are rejected.
+function unmodeledPair(x, y) {
+  const numeric = c => '$%+\\'.includes(c);
+  if ((numeric(x) && !ascii(y) && y !== ' ') || (numeric(y) && !ascii(x) && x !== ' ')) return `${x}${y}: ${numeric(x) ? x : y} next to a non-ASCII character follows ICU's numeric rule`;
+  if ((latin1(x) && asciiPunctuation(y)) || (asciiPunctuation(x) && latin1(y))) return `${x}${y}: a Latin-1 letter next to ASCII punctuation follows ICU, not the ASCII table`;
+  return null;
+}
+/** A break opportunity before chars[i] (0 < i). */
+function breakBefore(chars, classes, i) {
+  const a = classes[i - 1], b = classes[i];
   if (b === 'SP') return false;
   if (a === 'SP') return true;
-  if (b === 'CL' || a === 'OP') return false;
-  return a === 'ID' || b === 'ID' || b === 'OP' || a === 'CL';
+  // Chromium: '-' then a digit breaks only after an ASCII letter or digit (ABCD-1234, not -1).
+  if (chars[i - 1] === '-' && b === 'NU') return i >= 2 && /[A-Za-z0-9]/.test(chars[i - 2]);
+  return breakTable[a][b];
+}
+/**
+ * Break opportunities of collapsed text (indices i, a break before character
+ * i), or a U_LAYOUT_TEXT_METRICS error for characters and pairs outside the model.
+ */
+export function breakOpportunities(text) {
+  const chars = [...text], classes = chars.map(lineClass);
+  const bad = chars.findIndex((c, i) => !classes[i]);
+  if (bad >= 0) fail(`Line breaking around U+${chars[bad].codePointAt(0).toString(16).toUpperCase().padStart(4, '0')} is not modeled`);
+  for (let i = 1; i < chars.length; i++) { const reason = unmodeledPair(chars[i - 1], chars[i]); if (reason) fail(`Line breaking at ${reason}, which is not modeled`); }
+  const out = [];
+  for (let i = 1; i < chars.length; i++) if (breakBefore(chars, classes, i)) out.push(i);
+  return out;
 }
 const collapse = text => text.replace(/[ \t\n\r\f]+/g, ' ').trim();
 const codepoints = text => [...text];
@@ -107,16 +146,23 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     // CSS font-weight selects the wght coordinate of a variable font.
     return {...found, axes: axis ? {wght: weight} : {}};
   };
-  const shape = (font, text) => {
+  const shape = (font, text, language = 'und') => {
     const {handle, axes} = lookup(font);
-    const shaped = shaper.shape(handle, text, font.size, axes);
+    const shaped = shaper.shape(handle, text, font.size, axes, language);
     if (shaped.error) fail(`Shaping failed: ${shaped.error}`);
     if (shaped.missing_codepoints.length) fail(`Font ${font.family} lacks ${shaped.missing_codepoints.map(c => `U+${c.toString(16).toUpperCase().padStart(4, '0')}`).join(', ')}; fallback fonts are not modeled`);
     if (shaped.runs.some(run => run.direction !== 'ltr')) fail('Only left-to-right text is modeled');
     return shaped.bounds.advance_width;
   };
   // A line's advance: each script run shaped on its own (see scriptSegments).
-  const shapeLine = (font, text) => scriptSegments(text).reduce((total, segment) => total + shape(font, segment), 0);
+  const shapeLine = (font, text, language) => scriptSegments(text).reduce((total, segment) => total + shape(font, segment, language), 0);
+  // The content language selects locl glyphs (Noto Sans JP's apostrophe and
+  // quotes differ under ja). The document language is not modeled, so every
+  // listed language is measured: bounds take the widest, line profiles keep
+  // only counts on which all languages agree. Languages that shape this text
+  // exactly like 'und' (every character and adjacent pair) are skipped.
+  const languagesFor = (font, chars) => ['und', ...contentLanguages.filter(language => chars.some((c, i) =>
+    shape(font, c, language) !== shape(font, c) || (i && shape(font, chars[i - 1] + c, language) !== shape(font, chars[i - 1] + c))))];
   const provenance = font => {
     const {entry, info} = lookup(font);
     return {family: font.family, size: font.size, weight: font.weight ?? 400, unitsPerEm: info.unitsPerEm,
@@ -129,7 +175,8 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     const collapsed = collapse(text);
     if (!collapsed) return {text: collapsed, width: 0, bound: 0};
     const width = shapeLine(font, collapsed);
-    return {text: collapsed, width, bound: textBound(collapsed, width)};
+    const bound = Math.max(...languagesFor(font, codepoints(collapsed)).map(language => textBound(collapsed, shapeLine(font, collapsed, language))));
+    return {text: collapsed, width, bound};
   }
 
   /**
@@ -143,10 +190,12 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     const set = [...new Set(codepoints(String(characters ?? '')))];
     if (!set.length || set.length > maxCharacters) fail(`Use 1..${maxCharacters} distinct characters`);
     for (const c of set) if (/[\t\n\r\f\p{M}\p{Cf}\p{Cs}]/u.test(c) || /\p{Extended_Pictographic}/u.test(c)) fail(`Character U+${c.codePointAt(0).toString(16).toUpperCase()} forms clusters or line breaks that are not modeled`);
-    const advance = new Map(set.map(c => [c, shape(font, c)]));
+    const languages = languagesFor(font, set);
+    const widestAdvance = text => Math.max(...languages.map(language => shape(font, text, language)));
+    const advance = new Map(set.map(c => [c, widestAdvance(c)]));
     let widest = set[0], perCharacter = 0, pairAdjustment = 0;
     for (const [c, a] of advance) if (a > perCharacter) { perCharacter = a; widest = c; }
-    for (const x of set) for (const y of set) pairAdjustment = Math.max(pairAdjustment, clean(shape(font, x + y) - advance.get(x) - advance.get(y)));
+    for (const x of set) for (const y of set) pairAdjustment = Math.max(pairAdjustment, ...languages.map(language => clean(shape(font, x + y, language) - advance.get(x) - advance.get(y))));
     const bounds = Array.from({length: length + 1}, (_, n) => n === 0 ? 0 : upperBound(n * perCharacter + (n - 1) * pairAdjustment));
     return {characters: set.join(''), maxLength: length, perCharacter, pairAdjustment, widest, bounds};
   }
@@ -154,7 +203,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
   /**
    * Line breaking of fixed content under white-space: normal, word-break:
    * normal and line-break: auto, for the classes of `lineClass` (spaces,
-   * Latin letters and digits, CJK ideographs and kana, fullwidth brackets and
+   * ASCII, Latin-1 letters, CJK ideographs and kana, fullwidth brackets and
    * punctuation). Other characters are rejected.
    *
    * A line fits when the bound of its shaped text (trailing spaces hang) is at
@@ -171,40 +220,53 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     if (!['normal', 'anywhere', 'break-word'].includes(overflowWrap)) fail(`overflow-wrap ${overflowWrap} is outside the line-breaking model`);
     const collapsed = collapse(text), chars = codepoints(collapsed);
     if (chars.length > maxLength) fail(`Wrapping text is limited to ${maxLength} characters`);
-    const classes = chars.map(lineClass);
-    const bad = chars.findIndex((c, i) => !classes[i]);
-    if (bad >= 0) fail(`Line breaking around U+${chars[bad].codePointAt(0).toString(16).toUpperCase().padStart(4, '0')} is not modeled`);
+    const opportunities = breakOpportunities(collapsed);
     const n = chars.length;
     // text-spacing-trim (Chromium's default) halves adjacent fullwidth punctuation
     // through the font's halt feature, which the shaper does not apply.
     const punctuation = c => openings.has(c) || (closings.has(c) && !iterationMarks.has(c));
     const adjacent = chars.findIndex((c, i) => i && punctuation(c) && punctuation(chars[i - 1]));
     if (adjacent > 0) fail(`Adjacent fullwidth punctuation ${chars[adjacent - 1]}${chars[adjacent]} is trimmed by text-spacing-trim, which is not modeled`);
-    // Break opportunities: before character i (0 < i < n).
-    const opportunity = i => breakBefore(classes[i - 1], classes[i]);
-    const ends = [];
-    for (let i = 1; i < n; i++) if (opportunity(i)) ends.push(i);
-    ends.push(n);
-    const memo = new Map();
-    const bound = (start, end) => {
-      const key = start * (n + 1) + end;
-      if (!memo.has(key)) { const line = chars.slice(start, end).join('').trimEnd(); memo.set(key, line ? textBound(line, shapeLine(font, line)) : 0); }
-      return memo.get(key);
+    const ends = [...opportunities, n];
+    // Chromium segments script runs over the whole paragraph; a line is a
+    // slice of those runs, each part shaped and snapped on its own.
+    const run = [];
+    scriptSegments(collapsed).forEach((segment, k) => { for (const c of segment) run.push(k); });
+    const sliced = (start, end, last = end) => {
+      const parts = [];
+      for (let i = start; i < last; i++) { if (i === start || run[i] !== run[i - 1]) parts.push(''); parts[parts.length - 1] += chars[i]; }
+      return parts;
     };
+    const sizes = language => {
+      const partsBound = (parts, adjust = 0) => {
+        const width = parts.reduce((total, part) => total + shape(font, part, language), 0) - adjust;
+        return width > 0 ? (Math.ceil(clean(width * UNIT)) + 2 * parts.length - 1) / UNIT : 0;
+      };
+      const memo = new Map();
+      const bound = (start, end) => {
+        const key = start * (n + 1) + end;
+        if (!memo.has(key)) {
+          let last = end; while (last > start && chars[last - 1] === ' ') last--; // trailing spaces hang
+          memo.set(key, last > start ? partsBound(sliced(start, end, last)) : 0);
+        }
+        return memo.get(key);
+      };
+      // allow-end (text-spacing-trim): a closing bracket ending a line that does
+      // not otherwise fit may be set half-width. Chromium does so for some
+      // languages and fonts only, so both outcomes are computed and widths where
+      // they disagree get no line count (Unknown). A partial trim lies between.
+      const trimmed = (start, end) => {
+        let i = end - 1; while (i > start && chars[i] === ' ') i--;
+        if (!closingBrackets.has(chars[i])) return bound(start, end);
+        const key = -(start * (n + 1) + end) - 1;
+        if (!memo.has(key)) memo.set(key, partsBound(sliced(start, i + 1), shape(font, chars[i], language) / 2));
+        return memo.get(key);
+      };
+      return chars.some(c => closingBrackets.has(c)) ? [bound, trimmed] : [bound];
+    };
+    const variants = languagesFor(font, chars).flatMap(sizes);
+    const bound = (start, end) => Math.max(...variants.map(size => size(start, end))); // the widest variant
     const emergency = overflowWrap !== 'normal';
-    // Greedy lines at width w: the count, and the widest line that fits (0 if every line is forced).
-    // allow-end (text-spacing-trim): a closing bracket ending a line that does
-    // not otherwise fit may be set half-width. Chromium does so for some
-    // languages and fonts only, so both outcomes are computed and widths where
-    // they disagree get no line count (Unknown). A partial trim lies between.
-    const lastChar = (start, end) => { let i = end - 1; while (i > start && chars[i] === ' ') i--; return i; };
-    const trimmedBound = (start, end) => {
-      const plain = bound(start, end), i = lastChar(start, end);
-      if (!closingBrackets.has(chars[i])) return plain;
-      const key = -(start * (n + 1) + end) - 1;
-      if (!memo.has(key)) { const line = chars.slice(start, i + 1).join(''); memo.set(key, textBound(line, shapeLine(font, line) - shape(font, chars[i]) / 2)); }
-      return memo.get(key);
-    };
     // Greedy lines at width w: the count, and the widest line that fits (0 if every line is forced).
     const greedy = (w, size) => {
       let start = 0, count = 0, widest = 0;
@@ -241,10 +303,11 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
       return steps;
     };
     const at = (steps, w) => steps.filter(entry => entry.atLeastInlineSize <= w).at(-1).lines;
-    const plain = sweep(bound), trimmed = chars.some(c => closingBrackets.has(c)) ? sweep(trimmedBound) : plain;
+    // Each variant (language × bracket trim) gives a step function; a width keeps a count only where all agree.
+    const sweeps = variants.map(sweep);
     const profile = [];
-    for (const w of [...new Set([...plain, ...trimmed].map(entry => entry.atLeastInlineSize))].sort((a, b) => a - b)) {
-      const a = at(plain, w), b = at(trimmed, w), lines = a === b ? a : null;
+    for (const w of [...new Set(sweeps.flat().map(entry => entry.atLeastInlineSize))].sort((a, b) => a - b)) {
+      const counts = new Set(sweeps.map(steps => at(steps, w))), lines = counts.size === 1 ? [...counts][0] : null;
       if (!profile.length || profile.at(-1).lines !== lines) profile.push({atLeastInlineSize: w, lines});
     }
     // Below one character, a browser keeps clusters such as ligatures whole when

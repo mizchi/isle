@@ -11,6 +11,7 @@ import {scriptRuns, scriptSegments} from '../packages/css-verifier/src/text.mjs'
 const fixtures = new URL('../packages/css-verifier/text-metrics/fixtures/', import.meta.url).pathname;
 const metrics = await loadTextMetrics({fonts: {'Noto Sans JP': {file: fixtures + 'japanese-variable.ttf'}, Roboto: {file: fixtures + 'roboto-variable.ttf'}}});
 const jp = {family: 'Noto Sans JP', size: 16, lineHeight: 24, weight: 400};
+const ro = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
 const layout = (...args) => spawnSync(process.execPath, ['tools/isle.mjs', 'layout', ...args], {encoding: 'utf8'});
 
 test('the bound snaps shaped advances to 1/64 px and adds one unit', () => {
@@ -49,7 +50,8 @@ test('inputs the model cannot cover are rejected instead of guessed', () => {
     [() => metrics.domainBounds({font: jp, characters: '日', maxLength: 0}), /maxLength/],
     [() => metrics.resolveBoxes({'.a': {text: {font: jp, content: '日本'}, minInlineSize: 10}}), /derives its own sizes/],
     [() => metrics.resolveBoxes({'.a': {text: {font: jp, characters: '日本', maxLength: 4}, wrap: 'normal'}}), /fixed content/],
-    [() => metrics.breakLines({font: jp, text: '日本 "語"'}), /U\+0022/],
+    [() => metrics.breakLines({font: jp, text: '日本$1'}), /\$ next to a non-ASCII character follows ICU's numeric rule/],
+    [() => metrics.breakLines({font: ro, text: 'café, ok'}), /Latin-1 letter next to ASCII punctuation/],
     [() => metrics.breakLines({font: jp, text: '日本語。」'}), /Adjacent fullwidth punctuation 。」 is trimmed by text-spacing-trim/],
     [() => metrics.breakLines({font: jp, text: '日本', overflowWrap: 'break-all'}), /overflow-wrap/],
   ]) assert.throws(input, error => error.code === 'U_LAYOUT_TEXT_METRICS' && pattern.test(error.message));
@@ -119,7 +121,6 @@ test('wrapping text yields an exact line-count profile over the content width', 
 });
 
 test('Latin words break at spaces; trailing spaces hang and the widest word is the minimum', () => {
-  const ro = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
   const lines = metrics.breakLines({font: ro, text: 'Hello world office'});
   assert.equal(lines.minContent, Math.max(...['Hello', 'world', 'office'].map(word => metrics.measureText({font: ro, text: word}).bound)));
   const two = metrics.measureText({font: ro, text: 'Hello world'}).bound;
@@ -169,4 +170,15 @@ test('script runs follow Script_Extensions: ー joins the kana after a kanji, pu
   assert.deepEqual(scriptSegments('「日本」と123ABC'), ['「日本」', 'と123', 'ABC']);
   // Shaped run by run, so ー and ア kern as in Chromium (16 + 15.36).
   assert.equal(metrics.measureText({font: jp, text: '日ーア'}).width, 16 + metrics.measureText({font: jp, text: 'ーア'}).width);
+});
+
+test('ASCII punctuation follows Chromium: hyphens break before letters, and before digits only inside a word', () => {
+  const pieces = text => metrics.breakLines({font: ro, text}).profile[0].lines; // narrowest: one piece per line
+  assert.equal(pieces('well-known'), 2);  // well- / known
+  assert.equal(pieces('ABCD-1234'), 2);   // ABCD- / 1234
+  assert.equal(pieces('x -1'), 2);        // x / -1: a minus sign stays with its number
+  assert.equal(pieces('(Hello)'), 1);     // brackets stay with the word
+  assert.equal(pieces('a/b?c'), 2);       // a/b? / c: Chromium breaks after ? before a letter
+  assert.equal(pieces('Hello, world!'), 2);
+  assert.equal(metrics.breakLines({font: jp, text: '日本(ABC)です'}).profile[0].lines, 5); // 日 / 本 / (ABC) / で / す
 });

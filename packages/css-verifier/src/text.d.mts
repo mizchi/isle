@@ -6,7 +6,7 @@ export type TextContract =
 export interface TextShaper {
   load(data: Uint8Array): number;
   info(handle: number): { unitsPerEm: number; axes: { tag: string; min: number; default: number; max: number }[] };
-  shape(handle: number, text: string, size: number, axes: Record<string, number>): unknown;
+  shape(handle: number, text: string, size: number, axes: Record<string, number>, language?: string): unknown;
 }
 export interface FontEntry { data: Uint8Array; weight?: number; sha256?: string; file?: string }
 export interface LineProfile { text: string; width: number; minContent: number; overflowWrap: 'normal' | 'anywhere' | 'break-word'; profile: { atLeastInlineSize: number; lines: number }[] }
@@ -24,4 +24,9 @@ export interface TextMetrics {
 export const layoutAllowance: { unit: number; rule: string };
 /** Shaped advance snapped up to 1/64 px plus one 1/64 px unit. */
 export function upperBound(width: number): number;
+/** Break opportunities of collapsed text (a break before each index); throws U_LAYOUT_TEXT_METRICS outside the model. */
+export function breakOpportunities(text: string): number[];
+/** Script runs as Chromium segments them (Script_Extensions). */
+export function scriptSegments(text: string): string[];
+export function scriptRuns(text: string): number;
 export function createTextMetrics(input: { fonts: Record<string, FontEntry>; shaper: TextShaper; limits?: { characters?: number; maxLength?: number } }): TextMetrics;
