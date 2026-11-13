@@ -1,14 +1,16 @@
 # Isle UI 言語 設計ドラフト
 
-状態: prototype v0 を実装、詳細仕様は検討中。更新日: 2026-11-05。以下には未実装の構文・型名・ABI の提案も含む。**現在動く部分言語と制限は [記述ガイド](prototype-guide.md)、実行手順は [README](../README.md) を正本にする。** 既存 framework の実装、研究、Web 標準の根拠と採否は [調査レポート](../reports/UI%20フレームワーク%20最新技術%20設計検討.md) にまとめる。
+状態: prototype v0 を実装、詳細仕様は検討中。更新日: 2026-11-13。以下には過去の比較案と未実装の構文・型名・ABI の提案も含む。**現在の目的は[目的と設計原則](project-purpose.md)、動く部分言語と制限は[記述ガイド](prototype-guide.md)、実行手順は[README](../README.md)、後続の実装計画は[ADR](adr/README.md)を正本にする。** 既存frameworkの調査は[調査レポート](../reports/UI%20フレームワーク%20最新技術%20設計検討.md)にまとめる。別環境での再開は[引き継ぎ手順](handoff.md)を参照する。
 
 ## 1. 確定方針と今回の提案
+
+2026-11-13の目的は、**Qwik型の事前コンパイルとresumeを基盤とするUIライブラリと、CSSのレイアウト契約をcomponentの型システムへ組み込む実装**である。CSSの必要領域、親子の割当、状態間の配置を静的に検査し、記号的レンダラによるLayout Instability検証へ段階的に進む。現行の閉じたprofileと将来の保証を区別する。
 
 ユーザーと確定した方針は、resume を基本にすること、Qwik の TSX／`$` 変換境界を専用文法で明確にすること、静的解析のための制約を許容すること、できるだけ portable にすること、チャンク分割は Vite／Rolldown に組み込むこと、型付けに Content Mapper を使うこと、server component と client component を明示的に分けて非同期関数のセキュリティ境界を検査可能にすることである。現行実装は MoonBit frontend と JS codegen / adapter を使う。
 
 2026-11-05 に、UI の依存・効果・寿命を静的に解析し、再開可能なコードと状態遷移モデルを生成する言語として進める方針を採用した。型付き状態・遷移、effect / capability、task の競合方針と scope、差分 collection、accessibility の操作契約、外部 DOM の所有境界、IR からのモデル抽出を目指す。QRL 相当のコード取得・評価・活性化・commit の時期を compiler が計画し、CSS の必要性解析と Vite / Rolldown の分割・配信へつなぐ。[解決時期の最適化](resolution-optimizer.md)で実装済みの auto 計画と後続の制約グラフを区別する。
 
-現行 v0 は **TypeScript 風の閉じた専用構文**である。次段階は宣言と境界を独立した DSL、処理本体を `inline(ts)` / `inline(moonbit)`、stylesheet を `inline(css)` で記述する方針とする（§2.1〜2.3）。DSL が実行側・状態・依存・公開 API を所有し、処理言語にその意味を依存させない。`live` の型と CSS を含む到達可能性解析は次段階の設計案で、v0 parser には未実装である。形式モデルは **MoonBit＋mizchi/veri 0.2.1** を用い、必要な意味保存の定理に Lean を追加する。UI の DSL、処理本体、コンパイラ本体、形式モデルの言語は別に選ぶ。依存・toolchain と検査対象は [形式手法の採用方針](formal-methods.md) に記録する。
+現行v0は **TypeScript風の閉じた専用構文**である。処理本体はTS前提で`inline(ts)`を要求せず、名前付き`event`と`on:click`等の属性を使う。CSSはtemplate内の`<style>`に記述する。§2.1〜2.3の`inline(ts)` / `inline(moonbit)` / `inline(css)`は過去の比較案として残す。DSLが実行側・状態・依存・公開APIを所有する方針は維持する。read-only live propsは[ADR-0008](adr/0008-readonly-live-props.md)の未実装計画である。形式モデルは **MoonBit＋mizchi/veri 0.2.1** を用い、必要な意味保存の定理にLeanを追加する。アプリの記述言語、コンパイラの実装言語、形式モデルの言語を区別する。依存・toolchainと検査対象は[形式手法の採用方針](formal-methods.md)に記録する。
 
 本稿は、共通の必要性解析、owner と cleanup、compute／commit 分離、resource ごとの revision、event の能力分類、closed state shape、codec 検証、生成物の説明を追加提案する。採用提案とユーザーが明示した要件を同じ確定度で扱わない。
 
@@ -28,11 +30,9 @@ schema は言語共通の値契約に絞り、認可後の非同期検証は act
 export client component Counter(initial: number) {
   state count: number = initial;
   derive doubled: number = count * 2;
+  event increment(e: EventSnapshot<MouseEvent>) { count += 1; }
 
-  <button>
-    on click { count += 1; }
-    {count} / {doubled}
-  </button>
+  <button on:click={increment}>{count} / {doubled}</button>
 }
 ```
 
@@ -40,7 +40,7 @@ export client component Counter(initial: number) {
 
 `derive` は静的な read set を持つ純粋な計算とする。初期版の許可範囲は演算と解析済み helper に限定し、未知 call を戻り値の TS 型だけで pure と判定しない。state の deep proxy mutation、cell の外部流出、任意 alias による変更、同期 dependency cycle は拒否する提案とする。import helper の信頼契約は、検証済みであることとは別に表示する。
 
-`on` は client の再開入口である。free variable を保存値、state 参照、import symbol に分類する。命名規約や `$` suffix から境界を推測せず、grammar と解析結果で定義する。browser DOM、network、clock、random、storage などの能力と実行 phase を区別する。一般的な effect 多相や任意 Promise の保存は初期目標にしない。
+`event`宣言と`on:...`属性がclientの再開入口を定める。free variableを保存値、state参照、import symbolに分類する。命名規約や`$` suffixから境界を推測せず、grammarと解析結果で定義する。browser DOM、network、clock、random、storageなどの能力と実行phaseを区別する。一般的なeffect多相や任意Promiseの保存は初期目標にしない。
 
 SSR で計算された通常のデータは、schema に適合すれば client に渡せる。server-only は DB handle、秘密を扱う capability など、明示的に境界を越えられない値を指す。SSR 由来という理由だけでデータを禁止せず、server capability の capture は拒否する。
 
@@ -52,7 +52,7 @@ client component の初期 HTML は SSR 可能だが、browser 用の state / ev
 
 ### 2.1 宣言 DSL と処理本体を分ける案
 
-以下は次段階の設計案であり、v0 parser には未実装。v0 の inline `on` ブロックは維持し、実装の置換前に記述・読解課題で比較する。
+以下は過去の比較案であり、現行構文の利用手順ではない。現在は名前付き`event`と属性の`on:...`を使い、TS本体に`inline(ts)`を要求しない。sourceにMoonBitを埋め込むbackendは現在の実装範囲に含めない。
 
 DSL の対象はファイル直下だけではなく、component 内の props / state / derive / event / template、server action の input / output / policy / effects まで含む。動的な式・分岐・ループなどは処理本体へ置く。一般言語の export、命名規約、関数呼び出しから RPC や遅延実行を推測しない。
 

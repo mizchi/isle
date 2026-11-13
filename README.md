@@ -6,7 +6,11 @@ English · [日本語](README.ja.md)
 
 [Open the playground](https://mizchi.github.io/isle/playground/) to edit Isle, props and CSS, run the compiler locally in your browser, and inspect SSR HTML, resume modules and analysis. Includes counters, keyed lists, nested components and SSR-only examples. [Browser API](docs/playground.md).
 
-Build server-rendered apps and embeddable Web Components with resumable interactions. Write state, views and event boundaries in `.isle`; the compiler generates targeted DOM updates and lets Vite / Rolldown split the code you ship.
+Isle is a Qwik-style, ahead-of-time compiled UI library built around resumability. Its goal is to make CSS layout contracts part of the component type system: check the space a component requires, the layout it implements and the changes between its states before shipping it.
+
+Build server-rendered apps and embeddable Web Components with resumable interactions. Write state, views, event boundaries and layout contracts in `.isle`; the compiler generates targeted DOM updates and lets Vite / Rolldown split the code you ship. Current checks cover constrained CSS profiles; static Layout Instability verification is planned in the [ADRs](docs/adr/README.md).
+
+[Project purpose](docs/project-purpose.md) · [Development handoff](docs/handoff.md)
 
 <picture>
   <source media="(max-width: 760px)" srcset="docs/overview/figures/isle-overview.en.mobile.png">
@@ -125,6 +129,9 @@ This build generates the initial HTML at build time. Request-time server actions
 - [Template CSS](docs/inline-css.md) uses static, scoped `<style>` blocks. Checked builds use Z3 to reject layout violations within declared width/height ranges; the playground runs Z3 Wasm on demand. [CSS variables](docs/css-variables.md) resolve statically within the checked subset.
 - [Shorthand checks](docs/css-shorthands.md) reject overlapping shorthand/longhand writes in the same rule, including implicit resets. Put intentional overrides in separate rules; checks add no app runtime.
 - [`layout SafeGrid`](docs/layout-contract-language.md) declares component input ranges and fit guarantees. Vite, the CLI and the playground check actual allocations against them; declarations add no application runtime.
+- The CSS verification core is an independent [`@mizchi/css-verifier`](packages/css-verifier/README.md) package with box-tree and static-HTML inputs. Isle is an adapter to it; the package is not yet published.
+- [`noshift/1`](docs/layout-transitions.md) attaches `@noshift` to a DOM element and checks its box presence, position and size across finite state candidates in Vite, the CLI and playground. The component's `layout` declares the environment; selector contracts remain available. Browser CLS values and intermediate frames are outside the contract.
+- [`layout PositionedGrid`](examples/layout-contracts/positioned.isle) checks named local coordinate spaces, absolute-box containment and peer overlay separation. [Child contracts](examples/layout-contracts/positioned-components.isle) connect public roots while checking private layouts recursively. Unsupported transforms or scrolling remain Unknown.
 - [`Show`, `For`, `Switch` / `Match` and `ErrorBoundary`](docs/control-components.md) compile to selective updates. Put each row's `key` on its returned root, or a `Fragment` for multiple roots. Props passed into a client component are immutable initial values.
 - Server actions declare schemas, authorization and effects. Provide your authentication, policies and operations through a server host. Static hosting alone does not execute actions.
 - `resources` connects an ordinary setup module to an interactive component's lifetime. CSS imported by that module is prepared before setup; removal disposes owned resources.
@@ -144,6 +151,7 @@ Browser output targets ES2023 and native DOM / ESM / fetch. It ships no MoonBit/
 | `@isle/prototype/layout` | Analyze declared CSS/Grid contracts |
 | `@isle/prototype/layout/z3` / `layout/z3/node` | Verify layout models with Z3 in a Worker / Node; return proofs or counterexamples |
 | `@isle/prototype/layout/contracts` / `layout/contracts/node` | Separate contracts, CSS facts and conformance obligations; check declared instances |
+| `@isle/prototype/layout/noshift` / `layout/noshift/node` | Lower source noshift declarations to finite candidates and verify stable target rectangles/presence |
 | `@isle/prototype/resources` | Resource-owner APIs and types |
 | `pnpm exec isle` | Inspect source, manifests, cost budgets and layout contracts |
 

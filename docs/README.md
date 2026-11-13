@@ -1,6 +1,8 @@
 # Isle ユーザーガイド
 
-Isle は、サーバーで生成した HTML を表示し、操作された UI だけを再開するフレームワークです。`.isle` ファイルに状態・表示・イベントと server action の境界を書き、Vite / Rolldown でブラウザー向けのコードを生成します。
+Isleは、Qwik型の事前コンパイルとresumeを基盤とするUIライブラリです。CSSのレイアウト契約をcomponentの型システムへ組み込むことを目的としています。`.isle`ファイルに状態・表示・イベント・server actionの境界とlayout契約を書き、Vite/Rolldownでブラウザー向けのコードを生成します。
+
+[目的と設計原則](project-purpose.md)に設計の判断基準を、[別環境への引き継ぎ](handoff.md)にcheckoutからの開発手順と現在の実装範囲をまとめています。
 
 現在はプロトタイプです。[npm 配布物の導入手順](../README.ja.md#はじめる)を起点に、Vite アプリへ組み込みます。ブラウザー向け出力は ES2023 と標準の DOM / ESM / fetch を使い、MoonBit や Wasm のランタイムは必要ありません。アプリのビルドにも MoonBit・Z3 は不要です。機能別の [examples](../examples/README.ja.md) にはソース・設定・操作・検査方法を用意しています。
 
@@ -23,6 +25,8 @@ Isle は、サーバーで生成した HTML を表示し、操作された UI �
 - [CSS略記と上書き](css-shorthands.md)：同一ルールのstrict検査、暗黙リセット、意図的なoverride、対応するカスケード。
 - [CSS 変数の解析](css-variables.md)：`var()`、継承・カスケード、循環、fallback と移植性の制約。
 - [レイアウト契約の形式化](layout-contract-language.md)：ContractIR・LayoutIR・ObligationIR、被覆と適合、親子の要求。
+- [汎用CSS検証と静的モデルの方針](static-ui-verification.md)：独立コア、Isle adapter、動的寸法の前提と保証範囲。
+- [状態間のレイアウト契約](layout-transitions.md)：noshift/1、位置・寸法・存在の比較、被覆と反例、ブラウザーなしの検査。
 - [Form とアクセシビリティ](forms.md)：入力制約、非同期検証、エラー、pending、reset。
 - [チャンクとプロファイル](chunk-profiling.md)：イベント名、manifest、User Timing。
 - [静的な負荷予測](static-profiling.md)：入口ごとの仕事量、更新の波及、debug 情報、性能 budget。
@@ -35,11 +39,13 @@ Isle は、サーバーで生成した HTML を表示し、操作された UI �
 
 コンポーネントは HTML root または別の component を root とし、タグで入れ子にできます。children には描画専用の `RenderFragment` を使います。ページの入口を Vite の `mounts` に配置します。HTML の標準要素や通常の CSS を使えます。
 
-`.isle` は TypeScript の式・型を基にした専用言語です。`Show` / `Switch` / key 付き `For` / 同期の `ErrorBoundary` は [制御構文の範囲](control-flow.md) で対応しています。任意の TypeScript、import、ユーザー定義関数、File・複数選択フォームは未対応です。client 境界を越える reactive props は未対応で、不変の初期値に限定します。`inline(ts)` / `inline(moonbit)` / `inline(css)`、Content Mapper、一般の async server render は設計段階です。
+`.isle` は TypeScript の式・型を基にした専用言語です。`Show` / `Switch` / key 付き `For` / 同期の `ErrorBoundary` は [制御構文の範囲](control-flow.md) で対応しています。任意の TypeScript、import、ユーザー定義関数、File・複数選択フォームは未対応です。client 境界を越える reactive props は未対応で、不変の初期値に限定します。処理本体はTS前提で`inline(ts)`は不要、CSSはtemplate内の`<style>`に記述します。Content Mapperと一般のasync server renderは未実装です。
 
 リリース前のため、構文・API は変更することがあります。通常ページの HTML・snapshot・分割コードは同じビルドで配布します。widget にはバージョンと配布モードの照合があり、異なる版の共有 runtime へ自動的に接続しません。
 
 内部設計や検証へ進む場合は、[設計書](design.md)、[形式モデル](../models/README.md)、[評価シナリオ](../evals/README.md)、[ベンチマーク](../benchmarks/README.md)を参照してください。設計書には未実装の提案も含まれます。
+
+[ADRと実装計画](adr/README.md)には、Layout Instabilityの静的検証方針と、反例の説明、動的寸法、予約領域、keyの寿命、検証cache、静的コントラスト、live props、分岐factory分割の計画を記録しています。各案の依存関係、TDD手順、eval、完了条件を確認できます。
 
 - [テンプレートの制御構文](control-flow.md): 同期の実装範囲、closed array / record、key と寿命、将来の resource 契約。
 

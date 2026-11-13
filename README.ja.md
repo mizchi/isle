@@ -6,7 +6,11 @@
 
 [Playground を開く](https://mizchi.github.io/isle/playground/)。ブラウザー内で Isle・props・CSS を編集してコンパイルし、その場で操作できます。SSR HTML、resume 用モジュール、解析結果も確認できます。カウンター、キー付きリスト、入れ子、SSR 専用の例を用意しています。[ブラウザー API](docs/playground.md)。
 
-SSR するアプリと、外部サイトへ埋め込む Web Components を、操作時に再開する UI として作れます。`.isle` に状態・表示・イベントの境界を書くと、コンパイラが更新先を絞った DOM コードを生成し、Vite / Rolldown が配信コードを分割します。
+Isleは、Qwik型の事前コンパイルとresumeを基盤とするUIライブラリです。CSSのレイアウト契約をcomponentの型システムへ組み込み、必要な領域、実装する配置、状態間の変化を配信前に検査することを目的としています。
+
+SSRするアプリと、外部サイトへ埋め込むWeb Componentsを、操作時に再開するUIとして作れます。`.isle`に状態・表示・イベントの境界とレイアウト契約を書くと、コンパイラが更新先を絞ったDOMコードを生成し、Vite/Rolldownが配信コードを分割します。現行のCSS検査は制約したprofileを対象とし、Layout Instabilityの静的検証は[ADR](docs/adr/README.md)に計画を記録しています。
+
+[目的と設計原則](docs/project-purpose.md) · [別環境への引き継ぎ](docs/handoff.md)
 
 <picture>
   <source media="(max-width: 760px)" srcset="docs/overview/figures/isle-overview.mobile.png">
@@ -125,6 +129,9 @@ export default defineConfig({
 - [テンプレート内 CSS](docs/inline-css.md) は静的な `<style>` をスコープします。チェック付きビルドは宣言した幅・高さ範囲を Z3 で検査し、playground は Z3 Wasm を必要時に読み込みます。[CSS 変数](docs/css-variables.md)も検査対象の部分集合で静的解決します。
 - [CSS略記の検査](docs/css-shorthands.md)で、同一ルール内の暗黙リセットを含む干渉を拒否します。意図的な上書きは別ルールに分けます。アプリのランタイムは増えません。
 - [`layout SafeGrid`](docs/layout-contract-language.md) で component の入力範囲と fit 保証を宣言します。Vite・CLI・playground が実際の割当を検査し、アプリのランタイムには追加しません。
+- CSS検証コアは独立した[`@mizchi/css-verifier`](packages/css-verifier/README.md)として分離しています。汎用box tree・静的HTMLからも検査でき、Isleはそのadapterです（パッケージは未公開）。
+- [`noshift/1`](docs/layout-transitions.md) はDOM要素へ`@noshift`を付け、状態間のboxの存在・位置・寸法を検査します。環境はcomponentの`layout`で宣言し、Vite・CLI・playgroundが有限な候補を比較します。selector指定も維持し、CLS値や中間frameは保証に含めません。
+- [`layout PositionedGrid`](examples/layout-contracts/positioned.isle) で名前付きの局所座標系、absoluteの包含、overlay同士の非重複を検査します。[子契約](examples/layout-contracts/positioned-components.isle)では公開rootを接続し、privateな内部も再帰的に検査します。未対応のtransformやscrollはUnknownです。
 - [`Show`・`For`・`Switch` / `Match`・`ErrorBoundary`](docs/control-components.md) で構造を保って部分更新します。行のルート、または複数要素をまとめる `Fragment` に `key` を指定します。client component の props は不変の初期値です。
 - server action には schema・認可・effect を宣言します。実認証・policy・operation は利用側の server host に実装し、静的配信とは別に接続します。
 - `resources` で通常の setup module を component の寿命に接続します。import した CSS は setup の前に準備され、削除時には所有リソースを破棄します。
@@ -144,6 +151,7 @@ export default defineConfig({
 | `@isle/prototype/layout` | 宣言した CSS / Grid 契約の解析 |
 | `@isle/prototype/layout/z3` / `layout/z3/node` | Worker / Node で Z3 検査を行い、証明結果か反例を返す |
 | `@isle/prototype/layout/contracts` / `layout/contracts/node` | 契約・CSS の事実・証明義務を分離し、宣言した instance を検査 |
+| `@isle/prototype/layout/noshift` / `layout/noshift/node` | sourceのnoshift宣言を有限な候補へ接続し、位置・寸法・存在の安定を検査 |
 | `@isle/prototype/resources` | resource owner の API と型 |
 | `pnpm exec isle` | source・manifest・cost budget・layout 契約の検査 |
 
