@@ -31,6 +31,7 @@
 //   landmark-name    → W_A11Y_LANDMARK_NAME     two navigation landmarks render at once and not both are named
 //   role-valid       → E_A11Y_ROLE              a role token that is not a WAI-ARIA role
 //   interactive-role-focusable → E_A11Y_ROLE_FOCUS a rendered element with an interactive role that cannot take focus
+//   link-in-text-block → E_A11Y_LINK_IN_TEXT    a link inside text with no underline and under 3:1 against the text (SC 1.4.1)
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, width as domainWidth } from './region.mjs';
@@ -39,7 +40,7 @@ import { intersect } from './integrity.mjs';
 
 export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable',
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
-  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable'];
+  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -96,7 +97,7 @@ export const contrastRatio = (a, b) => { const [x, y] = [luminance(a), luminance
 /** The paint facts of one computed style, kept on each geometry row. */
 export function paintFacts(style) {
   return { color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
-    visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position };
+    visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'] };
 }
 const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(String(value)); return m && (m[2] ? Number(m[1]) / 100 : Number(m[1])) >= 1; };
 /**
@@ -513,6 +514,24 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     if (!(row.box.focusable === true || row.box.tabIndex >= 0 || ['button', 'input', 'select', 'textarea'].includes(row.box.tag) || (row.box.tag === 'a' && row.box.focusable !== false)))
       report(findings, 'E_A11Y_ROLE_FOCUS', 'error', `${row.box.label} has role ${roleOf(row.box)} but cannot take focus; add tabindex="0"`, row, row.region, { rule: 'interactive-role-focusable' });
 
+  // focus-area for inline content: an inline box with no text or image (and no horizontal edges, which
+  // inline content requires) has no width.
+  for (const row of geometry.filter(row => row.inlineFlow && focusable(row) && !hiddenFrom(row.path) && !hasText({ ...row.box, named: false })))
+    report(findings, 'E_A11Y_FOCUS_AREA', 'error', `${row.box.label} can take focus but is an empty inline box with no area to show it`, row, row.region, { rule: 'focus-area' });
+
+  // link-in-text-block: a link inside running text is told apart without color alone.
+  for (const row of geometry.filter(row => row.inlineFlow && row.box.tag === 'a' && row.box.focusable !== false && visible(row) && !hiddenFrom(row.path))) {
+    const leaf = row.chain.at(-2), own = row.chain.at(-1);
+    const lines = value => String(value ?? 'none').split(/\s+/);
+    if (lines(own.decoration).some(line => line !== 'none') && !lines(own.decoration).every(line => lines(leaf.decoration).includes(line))) continue;
+    const link = parseColor(own.color), text = parseColor(leaf.color);
+    if (!link || !text || String(own.color).toLowerCase() === 'canvastext') { report(unknowns, 'U_A11Y_LINK_IN_TEXT', 'unknown', `${row.box.label}: the link or text color is not a modeled color`, row, row.region, { rule: 'link-in-text-block' }); continue; }
+    const backdropOf = backdrop(row.chain.slice(0, -1));
+    if (backdropOf.unknown) { report(unknowns, 'U_A11Y_LINK_IN_TEXT', 'unknown', `${row.box.label}: ${backdropOf.unknown}`, row, row.region, { rule: 'link-in-text-block' }); continue; }
+    const ratio = contrastRatio(over(link, backdropOf.bg), over(text, backdropOf.bg));
+    if (ratio < 3) report(findings, 'E_A11Y_LINK_IN_TEXT', 'error', `${row.box.label} is told apart from the text only by color (${ratio.toFixed(2)}:1, below 3:1) and has no underline`, row, row.region, { rule: 'link-in-text-block', ratio });
+  }
+
   // target-size: SC 2.5.8 (AA, 24px, with the spacing exception) or SC 2.5.5 (AAA, 44px, no spacing exception).
   // Violations are collected per target, then the declared exceptions are applied.
   const violations = new Map(), undecided = new Map();
@@ -520,7 +539,8 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   const S = q(targetSize), radius = div(S, q(2));
   const center = row => ({ inline: sum(row.origin.inline, times(row.inline, q(1 / 2))), block: sum(row.origin.block, times(row.block, q(1 / 2))) });
   const undersized = row => { const narrow = below(row.region, row.inline, scalar(S)), wide = row.region && clip(row.region, diff(row.inline, scalar(S))); return [narrow, below(wide, row.block, scalar(S))].filter(Boolean); };
-  const exposed = geometry.filter(row => interactive(row) && visible(row) && !hiddenFrom(row.path));
+  // Inline targets (in a sentence) are exempt from SC 2.5.8 and 2.5.5.
+  const exposed = geometry.filter(row => interactive(row) && visible(row) && !hiddenFrom(row.path) && !row.inlineFlow);
   for (const target of exposed) {
     const small = undersized(target);
     if (!small.length) continue;

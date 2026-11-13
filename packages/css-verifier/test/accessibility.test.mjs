@@ -17,12 +17,12 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
 const toolbar = (link, label = {}) => ({tag: 'main', classes: ['bar'], children: [{tag: 'a', classes: ['b'], focusable: true, ...link, children: [{tag: 'span', classes: ['label'], text: true, ...label}]}]});
-const barCSS = extra => `.bar { display: grid; grid-template-columns: 120px; grid-template-rows: 40px; background: #fff; color: #000; }\n.b { display: grid; grid-template-columns: minmax(0, 1fr); }\n${extra}`;
+const barCSS = extra => `.bar { display: grid; grid-template-columns: 120px; grid-template-rows: 40px; background: #fff; color: #000; }\n.b { display: grid; grid-template-columns: minmax(0, 1fr); color: inherit; }\n${extra}`;
 const boxes = {'.label': text};
 
 test('accessible-name: a link whose only text is display: none has no name where that holds', () => {
@@ -454,4 +454,34 @@ test('roles: unknown tokens, and interactive roles that cannot take focus or hav
   assert.equal(find(run(div({role: 'button', named: true, tabIndex: 0, focusable: true}), css), 'E_A11Y_ROLE_FOCUS').length, 0);
   assert.equal(find(run(div({role: 'button', tabIndex: 0, focusable: true}), css), 'E_A11Y_NAME').length, 1);
   assert.equal(run(div({role: 'dynamic'}), css).status, 'unknown');
+});
+
+// Inline content: phrasing elements inside a text leaf keep their own styles and DOM facts.
+const para = (inline, extra = {}) => page([{tag: 'p', classes: ['p'], text: true, children: inline, ...extra}]);
+const paraCSS = extra => `.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 40px; background: #fff; color: #222; }\n.p { font-size: 16px; line-height: 20px; }\n${extra}`;
+const pb = {'.p': {minInlineSize: 1, intrinsicBlockSize: 20}};
+const link = (extra = {}) => ({tag: 'a', classes: ['k'], text: true, focusable: true, ...extra});
+
+test('link-in-text-block (SC 1.4.1): a link in text needs an underline or 3:1 against the text', () => {
+  // The UA underline distinguishes it; the UA link color itself is not resolved, so set one.
+  assert.equal(find(run(para([link()]), paraCSS('.k { color: #0645ad; }'), {boxes: pb}), 'E_A11Y_LINK_IN_TEXT').length, 0);
+  const plain = run(para([link()]), paraCSS('.k { color: #333; text-decoration: none; }'), {boxes: pb});
+  assert.deepEqual(find(plain, 'E_A11Y_LINK_IN_TEXT').map(d => d.box), ['.k']);
+  assert.equal(find(run(para([link()]), paraCSS('.p { color: #000; }\n.k { color: #e0e0e0; text-decoration: none; }\n.page { background: #333; }'), {boxes: pb}), 'E_A11Y_LINK_IN_TEXT').length, 0);
+  // Without an author color the UA link color (and so contrast) is unknown.
+  assert.equal(run(para([link()]), paraCSS(''), {boxes: pb}).status, 'unknown');
+});
+
+test('inline content: contrast and names per inline element, the inline target-size exception', () => {
+  const grey = run(para([{tag: 'span', classes: ['s'], text: true}]), paraCSS('.s { color: #aaa; }'), {boxes: pb});
+  assert.deepEqual(find(grey, 'E_A11Y_CONTRAST').map(d => d.box), ['.s']);
+  // An inline link is exempt from SC 2.5.8 (in a sentence), however small.
+  assert.equal(find(run(para([link()]), paraCSS('.k { color: #0645ad; }'), {boxes: pb}), 'E_A11Y_TARGET_SIZE').length, 0);
+  const empty = run(para([{tag: 'a', classes: ['k'], focusable: true}]), paraCSS('.k { color: #0645ad; }'), {boxes: pb});
+  assert.deepEqual(find(empty, 'E_A11Y_NAME').map(d => d.box), ['.k']);
+});
+
+test('inline content that would change the measured text is Unknown', () => {
+  for (const extra of ['.k { color: #0645ad; display: inline-block; }', '.k { color: #0645ad; padding: 0 4px; }', '.k { color: #0645ad; position: relative; }'])
+    assert.equal(run(para([link()]), paraCSS(extra), {boxes: pb}).status, 'unknown', extra);
 });

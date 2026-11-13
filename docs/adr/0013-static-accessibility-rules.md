@@ -1,6 +1,6 @@
 # ADR-0013: DOM と CSS を組み合わせた静的アクセシビリティ検査
 
-- 状態: 実装中(28規則、HTML adapter・Isle template・Vite・playground に接続)
+- 状態: 実装中(29規則、HTML adapter・Isle template・Vite・playground に接続)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: ユーザー指示「思いつく限りのCSSとDOMを組み合わせた静的検査パターンを実装したい」。ADR-0007(静的コントラスト契約)の text-contrast を含む
@@ -47,6 +47,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | landmark-name | 2つの navigation landmark が同時に描画され、両方に名前がない(名前の文字列の比較はしない) | W_A11Y_LANDMARK_NAME(警告) |
 | role-valid | `role` の最初の token が WAI-ARIA の role でない | E_A11Y_ROLE |
 | interactive-role-focusable | widget role(button・link・checkbox など)の要素が描画されるのにフォーカスできない。名前の規則も widget role に適用する | E_A11Y_ROLE_FOCUS |
+| link-in-text-block | 文中のリンクが下線を持たず、周囲の文字色との比が 3:1 未満(SC 1.4.1、色だけで区別) | E_A11Y_LINK_IN_TEXT |
 | target-size | SC 2.5.8:24px 未満の操作対象で、border box の中心に置いた 24px の円が他の操作対象の box か、他の小さい対象の円と交わる(spacing 例外を満たさない) | E_A11Y_TARGET_SIZE |
 
 ### target-size の円(非線形)の扱い
@@ -72,6 +73,18 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 ADR-0012 の target-undersized(vlmkit と同じく spacing を考えない)とは別の規則である。
 
 違反は checks の義務ではないため、Z3 のモデルにはその違反領域が空でないことの確認として入る(`rule` を持つ診断)。
+
+### inline 要素(文中のリンクなど)
+
+text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`・`small`・`img`・`output`)だけなら、それらは leaf の **inline の内容** として扱う
+(box tree の `inline`)。レイアウトの子にはしないので、leaf の寸法契約が内容全体の上界のままであるために次を要求し、満たさなければ Unknown:
+`display: inline`・`position: static`・左右の padding・border・margin が 0、フォント由来の契約を持つ leaf ではフォントを変えないこと。
+各 inline 要素は計算値と DOM の事実を持つ行(矩形なし)になり、名前・コントラスト・alt・フォーカスの規則の対象になる。
+
+- 2.5.8 の inline 例外:文中の操作対象は target-size の対象外。
+- 空の inline 要素は幅がないので、フォーカスできれば focus-area の違反(Chromium と一致)。
+- リンクの UA スタイル:`a[href]` の色は UA のリンク色で、親から継承しない。以前は継承すると見なしていた(誤り)。
+  作者が `color` を指定しない限りコントラストは Unknown。UA の下線(`text-decoration-line: underline`)はモデルにした。
 
 ### form control と画像
 
@@ -111,6 +124,7 @@ ADR-0007 の制約に従う。
 
 - `z-index`、`position: fixed/sticky`、`transform`、filter・blend、`color-scheme`・forced colors、`:focus` などの状態の擬似クラス。
 - 文字列そのものに依存する規則(label-in-name など)。box tree はテキストの有無だけを持つ。
+- inline 要素の位置と寸法(行への分割はモデルにない)。
 - 2.5.8 の spacing 例外(24px の円の距離は線形でない)。target-undersized(ADR-0012)は spacing を考慮しない。
 - Chromium 130 以降は focusable な子のない scroller を自動でフォーカス可能にする。scrollable-region-focusable は axe と同じ DOM の定義で判定する。
 
@@ -118,15 +132,14 @@ ADR-0007 の制約に従う。
 
 | 検査 | 内容 |
 | --- | --- |
-| `packages/css-verifier/test/accessibility.test.mjs` | 43件(list・radio・landmark・role を含む。画像・form control・in-flow の覆いを含む。equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
+| `packages/css-verifier/test/accessibility.test.mjs` | 46件(inline の内容を含む。list・radio・landmark・role を含む。画像・form control・in-flow の覆いを含む。equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
 | `tests/layout-accessibility.test.mjs` | Isle template の静的・動的な属性 |
 | `tests/layout-build.test.mjs` | Vite の `layout.accessibility`:名前のない button で build が失敗し、証明書に契約が残る |
-| `e2e/layout-accessibility.spec.mjs` | 26構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
+| `e2e/layout-accessibility.spec.mjs` | 27構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
 
 結果は `evals/results/layout-accessibility/report.json` に残る。
 
 ## 次の段階
 
-1. playground の preset と、Isle の例(`examples/layout-contracts`)。
 2. `fieldset`/`legend`(UA のレイアウトが通常の block と異なる)と table。
-3. inline box のモデル(文中のリンクの inline 例外を判定するため)。
+3. inline 要素の幾何(位置と寸法。focus-obscured などの位置の規則を文中の要素に広げるため)。

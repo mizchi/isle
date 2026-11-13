@@ -33,6 +33,9 @@ export function accessibilityFacts(tag, attributes) {
   return {...(role ? {role} : {}), ...(inputName !== undefined ? {inputName} : {}), ...(alt !== undefined ? {alt} : {}), ...(inputType ? {inputType} : {}), ...(labelFor !== undefined ? {labelFor} : {}), ...(placeholder ? {placeholder} : {}), ...(equivalent ? {equivalent} : {}), ...(essential ? {essential} : {}), ...(labelledBy === 'dynamic' || labelledBy?.length ? {labelledBy} : {}), ...(references === 'dynamic' || references.length ? {references} : {}), ...(tabIndex !== undefined ? {tabIndex} : {}), ...(named ? {named} : {}), ...(ariaHidden ? {ariaHidden} : {}), ...(focusable !== undefined ? {focusable} : {})};
 }
 
+export const phrasingTags = new Set(['a', 'span', 'strong', 'em', 'b', 'i', 'small', 'img', 'output']);
+const phrasing = box => phrasingTags.has(box.tag) && (box.children ?? []).every(phrasing) && !(box.inline ?? []).length;
+
 const fields=new Set(['tag','id','lang','named','ariaHidden','focusable','references','labelledBy','tabIndex','equivalent','essential','alt','inputType','labelFor','placeholder','role','inputName','classes','children','text','whitespace','path','source','owner','documentRoot','layoutContracts','targets','targetIdentity']);
 const object=value=>value!==null && typeof value==='object' && !Array.isArray(value);
 
@@ -68,6 +71,8 @@ export function normalizeTree(tree,name) {
     const unknown=(code,message)=>diagnostics.push({code,severity:'unknown',message,box:box.label,path,source:box.source});
     if(!boxTags.has(box.tag)) unknown('U_LAYOUT_ELEMENT',`Native or foreign element needs a size adapter: ${box.tag}`);
     box.children=(input.children ?? []).map((child,i)=>visit(child,path,i,depth+1));
+    // Phrasing children of a text leaf are inline content of that leaf (not layout children).
+    if(box.text && box.children.length && box.children.every(phrasing)) { box.inline=box.children; box.children=[]; }
     if(box.text && box.children.length) unknown('U_LAYOUT_STRUCTURE','Wrap text in an explicit leaf instead of creating anonymous grid items');
     return box;
   }

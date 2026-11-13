@@ -70,8 +70,11 @@ const cases = [
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff}.ok,.bad,.mixed,.g{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px;margin:0;padding:0}.i1,.i2,.i3,.d{display:block}.r1,.r2,.r3,.r4{${button}inline-size:30px;block-size:30px}@media (width < 600px){.n2{display:none}}`},
   {name: 'aria-roles', html: '<div class="page"><div class="a" role="buton"></div><div class="b" role="button" aria-label="Go"></div><div class="c" role="button" tabindex="0" aria-label="Ok"></div><div class="d" role="checkbox" tabindex="0"></div></div>',
     css: '.page{display:grid;grid-template-columns:100px;grid-auto-rows:30px;background:#fff}.a,.b,.c,.d{display:block}'},
+  {name: 'links-in-text', html: '<div class="page"><p class="p1">Read the <a class="u" href="#a">guide</a> first.</p><p class="p2">Or the <a class="c" href="#b">notes</a> or <a class="v" href="#c">faq</a>.</p><p class="p3">An <span class="g">aside</span> and <a class="e" href="#d"></a>.</p></div>',
+    css: `.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;background:#fff;color:#222;${type}}.p1,.p2,.p3{display:block}.u{color:#0645ad}.c{color:#333;text-decoration:none}.v{color:#0645ad;text-decoration:none}.g{color:#aaa}.e{color:#0645ad}@media (width < 600px){.c{text-decoration:underline}}`,
+    boxes: {'.p1': label, '.p2': label, '.p3': label}},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block'];
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
   && (!row.heightRange || (height >= row.heightRange.min && height <= row.heightRange.max));
 
@@ -95,7 +98,7 @@ async function runtime(page, sample) {
   });
   for (const element of elements) {
     const fact = facts[element.path];
-    if (fact.display === 'none' || fact.rect.w === 0) continue;
+    if (fact.display === 'none') continue; // zero-size elements are still exposed and need names
     const isLink = element.tag === 'a' && await (await handle(element.path)).evaluate(node => node.hasAttribute('href'));
     const widget = await (await handle(element.path)).evaluate(node => /^(?:button|link|checkbox|radio|switch|tab|menuitem|menuitemcheckbox|menuitemradio|option|slider|spinbutton|textbox|searchbox|combobox|treeitem|gridcell)$/.test((node.getAttribute('role') ?? '').trim().split(/\s+/)[0]));
     if (element.tag === 'button' || isLink || widget) {
@@ -195,7 +198,9 @@ async function runtime(page, sample) {
   const spacing = await page.evaluate(({size, level}) => {
     const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
     const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible' && !node.closest('[aria-hidden="true"]'); };
-    const targets = [...document.body.firstElementChild.querySelectorAll('a[href], button, input:not([type=hidden]), select, textarea'), ...(document.body.firstElementChild.matches('a[href], button, input:not([type=hidden]), select, textarea') ? [document.body.firstElementChild] : [])].filter(shown).map(n => ({n, r: n.getBoundingClientRect()}));
+    // The inline exception: targets in a sentence (display: inline) are exempt.
+    const targetsAll = [...document.body.firstElementChild.querySelectorAll('a[href], button, input:not([type=hidden]), select, textarea'), ...(document.body.firstElementChild.matches('a[href], button, input:not([type=hidden]), select, textarea') ? [document.body.firstElementChild] : [])].filter(shown).map(n => ({n, r: n.getBoundingClientRect()}));
+    const targets = targetsAll.filter(t => getComputedStyle(t.n).display !== 'inline');
     const small = t => t.r.width < size || t.r.height < size, centre = t => [t.r.x + t.r.width / 2, t.r.y + t.r.height / 2];
     const failing = t => {
       if (!small(t)) return false;
@@ -244,6 +249,24 @@ async function runtime(page, sample) {
     return out;
   });
   for (const [rule, key] of [['list-structure', 'list'], ['radio-group', 'radio'], ['landmark-name', 'nav']]) for (const path of structure2[key]) found.get(rule).add(path);
+  const inText = await page.evaluate(() => {
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const parse = value => { const m = value.match(/[\d.]+/g).map(Number); return {r: m[0], g: m[1], b: m[2], a: m[3] ?? 1}; };
+    const over = (t, b) => { const a = t.a + b.a * (1 - t.a); const mix = k => (t[k] * t.a + b[k] * b.a * (1 - t.a)) / a; return {r: mix('r'), g: mix('g'), b: mix('b'), a}; };
+    const lum = c => { const f = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+    const out = [];
+    for (const a of document.body.firstElementChild.querySelectorAll('a[href]')) {
+      const style = getComputedStyle(a), parent = a.parentElement, parentStyle = getComputedStyle(parent);
+      if (style.display !== 'inline' || ![...parent.childNodes].some(n => n.nodeType === 3 && n.data.trim()) || style.visibility !== 'visible') continue;
+      if (style.textDecorationLine.includes('underline') && !parentStyle.textDecorationLine.includes('underline')) continue;
+      const layers = []; for (let n = parent; n; n = n.parentElement) layers.push(parse(getComputedStyle(n).backgroundColor));
+      let bg = {r: 255, g: 255, b: 255, a: 1}; for (const layer of layers.reverse()) bg = over(layer, bg);
+      const [x, y] = [lum(over(parse(style.color), bg)), lum(over(parse(parentStyle.color), bg))].sort((p, q) => q - p);
+      if ((x + 0.05) / (y + 0.05) < 3) out.push(pathOf(a));
+    }
+    return out;
+  });
+  for (const path of inText) found.get('link-in-text-block').add(path);
   // Roles: Chromium's computed AX role must be the authored one; widget roles need focus.
   for (const element of elements) {
     const info = await (await handle(element.path)).evaluate(node => ({role: (node.getAttribute('role') ?? '').trim().split(/\s+/)[0], tabIndex: node.tabIndex, shown: getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility === 'visible'}));

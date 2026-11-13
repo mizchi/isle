@@ -34,7 +34,8 @@
     "radio-group",
     "landmark-name",
     "role-valid",
-    "interactive-role-focusable"
+    "interactive-role-focusable",
+    "link-in-text-block"
   ],
   "scope": "Static accessibility rules vs the browser (AX tree names, hit testing, focus, rects, computed colors; vlmkit a11y contrast at 1280).",
   "cases": [
@@ -182,6 +183,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -323,6 +329,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -477,6 +488,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -625,6 +641,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -770,6 +791,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -909,6 +935,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -1059,6 +1090,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1200,6 +1236,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -1354,6 +1395,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1502,6 +1548,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -1647,6 +1698,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1786,6 +1842,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -1940,6 +2001,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2085,6 +2151,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -2245,6 +2316,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2396,6 +2472,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -2548,6 +2629,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2691,6 +2777,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -2847,6 +2938,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2994,6 +3090,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -3150,6 +3251,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3297,6 +3403,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -3475,6 +3586,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3644,6 +3760,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -3796,6 +3917,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3939,6 +4065,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -4091,6 +4222,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4234,6 +4370,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -4384,6 +4525,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4525,6 +4671,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -4695,6 +4846,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4856,6 +5012,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -5014,6 +5175,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5163,6 +5329,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -5319,6 +5490,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5469,6 +5645,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -5616,6 +5797,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5757,6 +5943,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -5908,6 +6099,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6050,6 +6246,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -6205,6 +6406,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6351,6 +6557,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -6505,6 +6716,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6650,6 +6866,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -6808,6 +7029,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6957,6 +7183,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -7133,6 +7364,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7300,6 +7536,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -7473,6 +7714,11 @@
           [],
           [],
           []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7637,6 +7883,11 @@
           []
         ],
         "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
           [],
           [],
           []
@@ -7803,6 +8054,11 @@
           [
             "Page/1"
           ]
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7962,6 +8218,360 @@
           ],
           [
             "Page/1"
+          ]
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "links-in-text",
+      "static": {
+        "accessible-name": [
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ]
+        ],
+        "text-contrast": [
+          [
+            "Page/2/0"
+          ],
+          [
+            "Page/2/0"
+          ],
+          [
+            "Page/2/0"
+          ]
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ]
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [
+            "Page/1/0",
+            "Page/1/1"
+          ],
+          [
+            "Page/1/0",
+            "Page/1/1"
+          ],
+          [
+            "Page/1/1"
+          ]
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ]
+        ],
+        "text-contrast": [
+          [
+            "Page/2/0"
+          ],
+          [
+            "Page/2/0"
+          ],
+          [
+            "Page/2/0"
+          ]
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ],
+          [
+            "Page/2/1"
+          ]
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [
+            "Page/1/0",
+            "Page/1/1"
+          ],
+          [
+            "Page/1/0",
+            "Page/1/1"
+          ],
+          [
+            "Page/1/1"
           ]
         ]
       }

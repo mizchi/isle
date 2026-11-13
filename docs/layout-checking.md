@@ -300,13 +300,13 @@ button / a の target 寸法(`E_LAYOUT_TARGET_SIZE`)はエラー、overflow で�
 ## DOM と CSS を組み合わせたアクセシビリティ規則(opt-in)
 
 `accessibility: true`(または `{contrast: 'AAA'}`)を渡すと、DOM の事実(名前、`aria-hidden`、id、木の順序)と
-CSS の結果(`display`・`visibility`・`pointer-events`・色・配置)を組み合わせた28規則を viewport の全域で判定する
+CSS の結果(`display`・`visibility`・`pointer-events`・色・配置)を組み合わせた29規則を viewport の全域で判定する
 ([ADR-0013](adr/0013-static-accessibility-rules.md))。名前のない button/link、コントラスト不足、覆われた・重なった操作対象、
 `aria-hidden` の内側のフォーカス、空の見出しと階層の飛び、入れ子の操作対象、重複 id と存在しない参照、
-フォーカスできない scroll 領域、alt のない画像、ラベルのない form field(隠れた label は名前にならない)、どこも指さない `label[for]`、ul/ol 以外の li、WAI-ARIA にない role、フォーカスできない widget role、320px での横スクロール、完全に隠れるフォーカス、面積のない focusable、
+フォーカスできない scroll 領域、alt のない画像、ラベルのない form field(隠れた label は名前にならない)、どこも指さない `label[for]`、ul/ol 以外の li、下線も 3:1 の色差もない文中のリンク、WAI-ARIA にない role、フォーカスできない widget role、320px での横スクロール、完全に隠れるフォーカス、面積のない focusable、
 `pointer-events: none` の操作対象、SC 2.5.8 の target size(24px 未満でも 24px の円が他と交わらなければ合格する spacing 例外、`data-a11y-equivalent` で宣言して検証する equivalent 例外、`data-a11y-essential` の免除を含む。`targetLevel: 'AAA'` で SC 2.5.5 の 44px)をエラーに、表示順と DOM 順の不一致・正の tabindex・複数の main・まとまっていない同名の radio・名前のない複数の nav・12px 未満の文字を警告にする。
 メディアクエリで変わる状態は区間として報告する(例:`@media (width < 600px)` で label を隠すと、その区間で名前がない)。
-動的な属性値、画像の背景、`opacity`、宣言されていない色は Unknown。Vite では `layout.accessibility` で検査付き build の失敗条件に加わる。
+文中の `a`・`span` などは text の inline の内容として扱い(inline のままで左右の余白がないこと)、文中の操作対象は target size の対象外。リンクの色は UA のリンク色なので、`color` を指定しない限りコントラストは Unknown。動的な属性値、画像の背景、`opacity`、宣言されていない色は Unknown。Vite では `layout.accessibility` で検査付き build の失敗条件に加わる。
 
 ## 反例の出典
 
