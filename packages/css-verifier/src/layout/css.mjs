@@ -73,14 +73,15 @@ function expand(property, value) {
     if (!wide.has(value)) px(value); return [[property.replace('inline-start', 'left').replace('inline-end', 'right').replace('block-start', 'top').replace('block-end', 'bottom'), value]];
   }
   if (/^margin(?:-(?:inline|block|left|right|top|bottom|inline-start|inline-end|block-start|block-end))?$/.test(property)) {
-    if (!wide.has(value)) {
-      const parts = postcss.list.space(value);
-      const maximum = property === 'margin' ? 4 : ['margin-inline', 'margin-block'].includes(property) ? 2 : 1;
-      if (!parts.length || parts.length > maximum) throw new Error(`${property} requires 1..${maximum} values`);
-      if (!parts.every(v => cmp(px(v), q(0)) === 0)) throw new Error('Only zero margins are supported');
-    }
-    const sides = property === 'margin' ? ['left', 'right', 'top', 'bottom'] : property === 'margin-inline' ? ['left', 'right'] : property === 'margin-block' ? ['top', 'bottom'] : [property.slice(7).replace('inline-start', 'left').replace('inline-end', 'right').replace('block-start', 'top').replace('block-end', 'bottom')];
-    return sides.map(side => [`margin-${side}`, wide.has(value) ? value : '0']);
+    const sides = property === 'margin' ? ['top', 'right', 'bottom', 'left'] : property === 'margin-inline' ? ['left', 'right'] : property === 'margin-block' ? ['top', 'bottom'] : [property.slice(7).replace('inline-start', 'left').replace('inline-end', 'right').replace('block-start', 'top').replace('block-end', 'bottom')];
+    if (wide.has(value)) return sides.map(side => [`margin-${side}`, value]);
+    const parts = postcss.list.space(value);
+    const maximum = property === 'margin' ? 4 : ['margin-inline', 'margin-block'].includes(property) ? 2 : 1;
+    if (!parts.length || parts.length > maximum) throw new Error(`${property} requires 1..${maximum} values`);
+    // Zero, or auto (only flex items may use it on their main axis; checked by the engine).
+    const margin = v => v === 'auto' ? 'auto' : cmp(px(v), q(0)) === 0 ? '0' : (() => { throw new Error('Only zero or auto margins are supported'); })();
+    const values = property === 'margin' ? [parts[0], parts[1] ?? parts[0], parts[2] ?? parts[0], parts[3] ?? parts[1] ?? parts[0]] : sides.length === 2 ? [parts[0], parts[1] ?? parts[0]] : [parts[0]];
+    return sides.map((side, i) => [`margin-${side}`, margin(values[i])]);
   }
   if (property === 'border' || property === 'border-inline' || property === 'border-block') {
     const sides = property === 'border' ? ['left', 'right', 'top', 'bottom'] : property === 'border-inline' ? ['left', 'right'] : ['top', 'bottom'];

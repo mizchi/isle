@@ -7,7 +7,7 @@ import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
 import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
 import {textFontMismatch, fittingLength} from './text-font.mjs';
-import {validateFlexContainer, validateFlexLine, flexTrack} from './flex.mjs';
+import {validateFlexContainer, flexItem, crossAlignment, distribution, flexUnknown} from './flex.mjs';
 import {fact, sizeChain, sizeProperties, trackProperties, contractFact, explanation} from './explain.mjs';
 
 const zero = q(0), one = q(1), minusOne = q(-1);
@@ -117,6 +117,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     return [...p.yes.map(region => ({ region, value: a })), ...p.no.map(region => ({ region, value: b }))];
   };
   const clamp = (region, value) => maximum(region, value, scalar(0));
+  // Flex sizes: constants compared without splitting a region.
+  const constantLess = (a, b) => cmp(evaluate(a, { x: zero, y: zero }), evaluate(b, { x: zero, y: zero })) < 0 && cmp(a.x, zero) === 0 && cmp(a.y, zero) === 0 && cmp(b.x, zero) === 0 && cmp(b.y, zero) === 0;
+  const maximumConstant = (a, b) => { if ([a, b].some(v => cmp(v.x, zero) || cmp(v.y, zero))) throw flexUnknown('A content-dependent minimum with a different base is outside the subset'); return constantLess(a, b) ? b : a; };
   function intrinsic(box, content, region) {
     const value = box.contract?.intrinsicBlockSize;
     if (typeof value === 'number') return [{ region, value: scalar(value) }];
@@ -143,8 +146,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (style.display === 'contents') throw new Error('display: contents on the analyzed root or with text needs its parent box and anonymous items');
     if (!['block', 'grid', 'flex'].includes(style.display)) throw new Error(`Unsupported display: ${style.display}`);
     if (['grid', 'flex'].includes(style.display) && box.text) throw new Error('Wrap text in an explicit leaf; anonymous grid/flex text items need a layout adapter');
-    if (['margin-left', 'margin-right'].some(key => style[key] !== '0')) throw new Error('Only known zero inline margins are supported');
-    if (block && ['margin-top', 'margin-bottom'].some(key => style[key] !== '0')) throw new Error('Reset native block margins explicitly before block checking');
+    // Main-axis auto margins of flex items absorb free space (resolved by the flex line).
+    const marginOk = (key, axis) => style[key] === '0' || (style[key] === 'auto' && available.flexItem?.main === axis);
+    if (['margin-left', 'margin-right'].some(key => !marginOk(key, 'inline'))) throw new Error(available.flexItem && ['margin-left', 'margin-right'].some(key => style[key] === 'auto') ? 'Cross-axis auto margins of a flex item are outside the subset' : 'Only known zero inline margins are supported');
+    if (block && ['margin-top', 'margin-bottom'].some(key => !marginOk(key, 'block'))) throw new Error(available.flexItem && ['margin-top', 'margin-bottom'].some(key => style[key] === 'auto') ? 'Cross-axis auto margins of a flex item are outside the subset' : 'Reset native block margins explicitly before block checking');
     if (!['static', 'relative', 'absolute'].includes(style.position) || style['writing-mode'] !== 'horizontal-tb' || style.direction !== 'ltr') throw new Error('Only static/relative/local-absolute horizontal-tb / ltr boxes are supported');
     if (style.position === 'relative' && ['left','right','top','bottom'].some(key=>!['auto','0','0px'].includes(style[key]))) throw new Error('Relative positioning spaces require zero offsets');
     if (style.position === 'absolute' && (!block || ['inline-size','block-size'].some(key=>style[key]==='auto') || style['grid-column']!=='auto' || style['grid-row']!=='auto')) throw new Error('Absolute boxes require both explicit sizes, both-axis analysis and auto Grid placement');
@@ -175,7 +180,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // A column flex item's minimum is resolved by the flex line (its track is never smaller).
       } else if (!['auto', '0', '0px'].includes(style['min-block-size']) && !available.flexBlockMinimum) throw new Error('CSS min-block-size clamping is not modeled');
     }
-    if (block && (!['normal', 'stretch'].includes(style['align-items']) || !['auto', 'normal', 'stretch'].includes(style['align-self']) || !['normal', 'stretch', 'start'].includes(style['align-content']))) throw new Error('Only stretch items and normal/stretch/start content alignment are supported');
+    // Flex containers and items validate their alignment in the flex model.
+    if (block && ((style.display !== 'flex' && !['normal', 'stretch'].includes(style['align-items'])) || (!available.flexItem && !['auto', 'normal', 'stretch'].includes(style['align-self'])) || (style.display !== 'flex' && !['normal', 'stretch', 'start'].includes(style['align-content'])))) throw new Error('Only stretch items and normal/stretch/start content alignment are supported');
     return true;
   }
 
@@ -192,42 +198,217 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       return { region, values, required: overhead };
     });
   }
-  // Single-line flex (css-flexbox-1 §9.7): fixed items keep their size;
-  // flexible items get their padding/border plus a share of the positive free
-  // space (factor sums below 1 leave space unused). A flexible item whose
-  // share is below its minimum is frozen there and the free space is
-  // redistributed; each round splits the region by every item's condition.
-  // Negative free space makes the TRACKS check fail.
-  function flexLine(region, available, definitions, gap, bases) {
-    validateFlexLine(definitions);
+  // One flex line (css-flexbox-1 §9.7) as a finite case split. Items carry
+  // affine outer `base`/`minimum` sizes. The region is split by the sign of
+  // the free space (grow or shrink mode) and, every round, by "target ≥
+  // minimum" for each unfrozen item; violators freeze at their minimum and the
+  // rest is redistributed. Frozen items never thaw, so it ends within
+  // items+1 rounds. Returns outer sizes and the remaining free space.
+  function resolveFlexLine(region, available, items, gap) {
+    const hypothetical = items.map(item => item.minimum === item.base ? item.base : maximumConstant(item.base, item.minimum));
+    const sumHypothetical = sum(total(hypothetical), scalar(gap));
+    const modes = partition(region, diff(available, sumHypothetical), '>');
     const results = [];
-    let states = [{ region, frozen: new Set() }];
-    for (let round = 0; states.length && round <= definitions.length; round++) {
-      const next = [];
-      for (const state of states) {
-        const used = definitions.map((track, index) => state.frozen.has(index) ? scalar(track.minimum) : bases[index]);
-        const overhead = sum(total(used), scalar(gap));
-        const unfrozen = definitions.map((track, index) => track.weight && !state.frozen.has(index) ? index : -1).filter(index => index >= 0);
-        const weights = unfrozen.map(index => definitions[index].weight).reduce(add, zero);
-        const denominator = cmp(weights, one) < 0 ? one : weights;
-        for (const { region: freeRegion, value: free } of clamp(state.region, diff(available, overhead))) {
-          const values = definitions.map((track, index) => unfrozen.includes(index) ? sum(bases[index], times(free, div(track.weight, denominator))) : used[index]);
-          // Split by each unfrozen item with a positive minimum: share ≥ minimum or not.
-          let parts = [{ region: freeRegion, violators: [] }];
-          for (const index of unfrozen.filter(index => definitions[index].minimum)) parts = bounded(parts.flatMap(part => {
-            const split = partition(part.region, diff(values[index], scalar(definitions[index].minimum)), '>=');
+    for (const [mode, regions] of [['grow', modes.yes], ['shrink', modes.no]]) for (const start of regions) {
+      // Initially frozen (§9.7 step 2): zero factor; in shrink mode also an item whose base is below its minimum.
+      const frozen = new Map();
+      items.forEach((item, index) => {
+        const factor = mode === 'grow' ? item.grow : item.shrink;
+        // Content-sized items cannot shrink below their base (= their minimum). With
+        // only minimum violations the result does not depend on the freezing order.
+        if (cmp(factor, zero) === 0 || (mode === 'shrink' && (item.content || (item.minimum !== item.base && constantLess(item.base, item.minimum))))) frozen.set(index, hypothetical[index]);
+      });
+      let states = [{ region: start, frozen }];
+      for (let round = 0; states.length && round <= items.length; round++) {
+        const next = [];
+        for (const state of states) {
+          const unfrozen = items.map((_, index) => index).filter(index => !state.frozen.has(index));
+          const used = items.map((item, index) => state.frozen.get(index) ?? item.base);
+          const free = diff(available, sum(total(used), scalar(gap)));
+          const factors = unfrozen.map(index => mode === 'grow' ? items[index].grow : items[index].shrink);
+          const factorSum = factors.reduce(add, zero);
+          // §9.7 step 4b scales by the initial free space when factors sum below 1; only the first round without freezing is modeled.
+          const mayFreeze = unfrozen.some(index => !items[index].content && constantLess(items[index].base, items[index].minimum));
+          const shrinks = mode === 'shrink' && unfrozen.some(index => cmp(items[index].shrink, zero) > 0 && cmp(items[index].innerBase, zero) > 0);
+          if (unfrozen.length && cmp(factorSum, one) < 0 && (round > 0 || (mode === 'grow' && mayFreeze) || shrinks)) throw flexUnknown('Flex factors summing below 1 with freezing or shrinking are outside the subset');
+          let targets;
+          if (mode === 'grow') targets = items.map((item, index) => state.frozen.has(index) ? used[index] : sum(item.base, times(free, div(item.grow, cmp(factorSum, one) < 0 ? one : factorSum))));
+          else {
+            // Shrinking is proportional to the scaled factor shrink × inner base size.
+            if (unfrozen.some(index => items[index].automaticBelowBase)) throw flexUnknown('An item whose automatic minimum depends on its content would shrink; set an explicit minimum or flex-shrink: 0');
+            const scaled = unfrozen.map(index => mul(items[index].shrink, items[index].innerBase));
+            const scaledSum = scaled.reduce(add, zero);
+            targets = items.map((item, index) => {
+              if (state.frozen.has(index)) return used[index];
+              const k = unfrozen.indexOf(index);
+              return cmp(scaledSum, zero) === 0 ? item.base : sum(item.base, times(free, div(scaled[k], scaledSum)));
+            });
+          }
+          let parts = [{ region: state.region, violators: [] }];
+          for (const index of unfrozen) if (items[index].minimum !== items[index].base) parts = bounded(parts.flatMap(part => {
+            const split = partition(part.region, diff(targets[index], items[index].minimum), '>=');
             return [...split.yes.map(r => ({ region: r, violators: part.violators })), ...split.no.map(r => ({ region: r, violators: [...part.violators, index] }))];
           }));
           for (const part of parts) {
-            if (!part.violators.length) results.push({ region: part.region, values, required: overhead });
-            else next.push({ region: part.region, frozen: new Set([...state.frozen, ...part.violators]) });
+            if (!part.violators.length) results.push({ region: part.region, values: targets, free: diff(available, sum(total(targets), scalar(gap))), mode });
+            else next.push({ region: part.region, frozen: new Map([...state.frozen, ...part.violators.map(index => [index, items[index].minimum])]) });
           }
+        }
+        states = bounded(next);
+      }
+      if (states.length) throw new Error('Flex freezing did not converge');
+    }
+    return results;
+  }
+  // ---- flex layout (ADR-0011) ----------------------------------------------
+  const constantItem = item => ({ ...item, base: scalar(item.base), minimum: scalar(item.minimum), innerBase: sub(item.base, item.edges) });
+  // Greedy line breaking by outer hypothetical sizes (constants), split by width thresholds.
+  function breakLines(region, available, hypothetical, gap) {
+    const n = hypothetical.length, done = [];
+    let states = [{ region, start: 0, lines: [] }];
+    while (states.length) {
+      const next = [];
+      for (const state of states) {
+        if (state.start >= n) { done.push(state); continue; }
+        const pending = [{ region: state.region, end: state.start + 1 }];
+        while (pending.length) {
+          const p = pending.pop();
+          const line = [...Array(p.end - state.start).keys()].map(k => state.start + k);
+          if (p.end >= n) { next.push({ region: p.region, start: n, lines: [...state.lines, line] }); continue; }
+          const need = add(hypothetical.slice(state.start, p.end + 1).reduce(add, zero), mul(gap, q(p.end - state.start)));
+          const split = partition(p.region, diff(available, scalar(need)), '>=');
+          for (const r of split.yes) pending.push({ region: r, end: p.end + 1 });
+          for (const r of split.no) next.push({ region: r, start: p.end, lines: [...state.lines, line] });
         }
       }
       states = bounded(next);
     }
-    if (states.length) throw new Error('Flex freezing did not converge');
-    return results;
+    return bounded(done);
+  }
+  // Main-axis start offsets of a line's items: auto margins absorb positive free
+  // space, otherwise justify-content distributes it. null = not modeled there.
+  function mainStarts(region, values, free, flags, gap, main, justify) {
+    const count = values.length, autos = flags.reduce((n, f) => n + Number(f.autoStart) + Number(f.autoEnd), 0);
+    const place = (lead, extra, margin) => {
+      let position = lead; const starts = [];
+      values.forEach((value, i) => {
+        if (flags[i].autoStart) position = sum(position, margin);
+        starts.push(position);
+        position = sum(sum(position, value), sum(scalar(gap), extra));
+        if (flags[i].autoEnd) position = sum(position, margin);
+      });
+      return starts;
+    };
+    const none = scalar(0), d = distribution(justify, main, count);
+    if (!autos && cmp(d.lead, zero) === 0 && cmp(d.extra, zero) === 0) return [{ region, starts: place(none, none, none) }];
+    const split = partition(region, free, '>='), out = [];
+    for (const r of split.yes) out.push({ region: r, starts: autos ? place(none, none, times(free, div(one, q(autos)))) : place(times(free, d.lead), times(free, d.extra), none) });
+    // Negative free space: auto margins are zero and justify falls back or is not modeled.
+    for (const r of split.no) out.push({ region: r, starts: d.negative === 'start' ? place(none, none, none) : null });
+    return out;
+  }
+  function layoutFlex({ box, style, region, inline, contentInline, knownBlock, blockEdges, available, parents, ancestors, contentOrigin, collect, emit }) {
+    const out = [], { main, wrap } = validateFlexContainer(style);
+    const fitInline = (box.contract?.overflow ?? 'fit') === 'fit', fitBlock = (box.contract?.overflowBlock ?? 'fit') === 'fit';
+    const mainGap = gapSize(style[main === 'inline' ? 'column-gap' : 'row-gap']), crossGap = gapSize(style[main === 'inline' ? 'row-gap' : 'column-gap']);
+    const explainTracks = axis => () => explanation(sizeChain([...parents, { box, style }], axis, { hostInset: options.hostInset }), trackProperties(axis).map(property => fact(box, style, property)));
+    const gaps = (gap, count) => mul(gap, q(Math.max(0, count - 1)));
+    for (const state of collect(region)) {
+      if (state.children.some(child => child.style.position === 'absolute')) throw flexUnknown('Absolute children of a flex container use flex static positions');
+      const model = state.children.map(child => {
+        try {
+          const align = crossAlignment(style['align-items'], child.style['align-self']);
+          // A column item that is not stretched is as wide as its own px width.
+          if (main === 'block' && align !== 'stretch' && !/^\d+(?:\.\d+)?px$/.test(child.style['inline-size'])) throw flexUnknown('A column item that is not stretched (align) shrink-wraps its content; give it a px width');
+          return { child, item: flexItem(child.style, { empty: !child.box.text && !child.box.children.length, axis: main }), align };
+        } catch (error) { error.box ??= child.box; throw error; }
+      });
+      const inheritedOf = entry => entry.child.inherited ?? style;
+      const itemAvailable = (entry, extra) => ({ ...extra, flexItem: { main }, ...(main === 'block' ? { flexBlockMinimum: true } : {}),
+        ...(entry.align !== 'stretch' ? (main === 'inline' ? { alignBlock: entry.align } : { alignInline: entry.align }) : {}) });
+      if (main === 'inline') {
+        const items = model.map(entry => constantItem(entry.item));
+        const hypothetical = items.map(item => maximumConstant(item.base, item.minimum)).map(v => v.b);
+        const sets = wrap ? breakLines(state.region, contentInline, hypothetical, mainGap) : [{ region: state.region, lines: model.length ? [model.map((_, i) => i)] : [] }];
+        for (const set of sets) {
+          let combos = [{ region: set.region, lines: [] }];
+          for (const indices of set.lines) combos = bounded(combos.flatMap(c => resolveFlexLine(c.region, contentInline, indices.map(i => items[i]), gaps(mainGap, indices.length))
+            .flatMap(r => mainStarts(r.region, r.values, r.free, indices.map(i => items[i]), mainGap, main, style['justify-content'])
+              .map(m => ({ region: m.region, lines: [...c.lines, { indices, values: r.values, starts: m.starts }] })))));
+          for (const combo of combos) {
+            for (const line of combo.lines) if (emit) obligation(contentInline, sum(total(line.values), scalar(gaps(mainGap, line.indices.length))), box, combo.region, 'E_LAYOUT_TRACKS', 'inline', fitInline, explainTracks('inline'));
+            if (!block) {
+              let endings = [combo.region];
+              for (const line of combo.lines) line.indices.forEach((i, k) => { endings = bounded(endings.flatMap(r => solve(model[i].child.box, itemAvailable(model[i], { inline: line.values[k], fitInline }), r, ancestors, inheritedOf(model[i]), emit).map(result => result.region))); });
+              for (const r of endings) out.push(finish(box, style, r, inline, contentInline, null, null, available, parents, emit));
+              continue;
+            }
+            // Cross sizes of the lines: a definite single line is the container; otherwise the tallest item.
+            let measured = [{ region: combo.region, sizes: combo.lines.map(() => scalar(0)) }];
+            if (wrap || !knownBlock) combo.lines.forEach((line, l) => line.indices.forEach((i, k) => {
+              measured = bounded(measured.flatMap(m => solve(model[i].child.box, itemAvailable(model[i], { inline: line.values[k] }), m.region, ancestors, inheritedOf(model[i]), false)
+                .flatMap(result => maximum(result.region, m.sizes[l], result.block).map(mx => ({ region: mx.region, sizes: m.sizes.map((v, j) => j === l ? mx.value : v) })))));
+            }));
+            else measured = [{ region: combo.region, sizes: [knownBlock] }];
+            for (const m of measured) {
+              const crossGaps = scalar(gaps(crossGap, combo.lines.length)), used = sum(total(m.sizes), crossGaps);
+              let stretched = [{ region: m.region, sizes: m.sizes }];
+              if (wrap && knownBlock && ['normal', 'stretch'].includes(style['align-content'])) stretched = clamp(m.region, diff(knownBlock, used)).map(({ region: r, value: extra }) => ({ region: r, sizes: m.sizes.map(v => sum(v, times(extra, div(one, q(combo.lines.length))))) }));
+              for (const st of stretched) {
+                const contentBlock = knownBlock ?? used, blockSize = sum(contentBlock, blockEdges);
+                if (emit && knownBlock) obligation(knownBlock, used, box, st.region, 'E_LAYOUT_TRACKS', 'block', fitBlock, explainTracks('block'));
+                let endings = [st.region], lineStart = scalar(0);
+                combo.lines.forEach((line, l) => {
+                  const top = lineStart;
+                  line.indices.forEach((i, k) => {
+                    const origin = line.starts ? offset(contentOrigin, line.starts[k], top) : null;
+                    endings = bounded(endings.flatMap(r => solve(model[i].child.box, itemAvailable(model[i], { inline: line.values[k], block: st.sizes[l], origin, fitInline, fitBlock }), r, ancestors, inheritedOf(model[i]), emit).map(result => result.region)));
+                  });
+                  lineStart = sum(sum(lineStart, st.sizes[l]), scalar(crossGap));
+                });
+                for (const r of endings) out.push(finish(box, style, r, inline, contentInline, blockSize, contentBlock, available, parents, emit));
+              }
+            }
+          }
+        }
+        continue;
+      }
+      // Column: the main axis is the block axis; items are as wide as the content box unless aligned.
+      if (!block) {
+        let endings = [state.region];
+        for (const entry of model) endings = bounded(endings.flatMap(r => solve(entry.child.box, itemAvailable(entry, { inline: contentInline, fitInline }), r, ancestors, inheritedOf(entry), emit).map(result => result.region)));
+        for (const r of endings) out.push(finish(box, style, r, inline, contentInline, null, null, available, parents, emit));
+        continue;
+      }
+      // Measure content-sized items (their block size is both base and minimum).
+      let measured = [{ region: state.region, items: model.map(entry => entry.item.base === 'content' ? null : constantItem(entry.item)) }];
+      model.forEach((entry, i) => {
+        if (entry.item.base !== 'content') return;
+        measured = bounded(measured.flatMap(m => solve(entry.child.box, itemAvailable(entry, { inline: contentInline }), m.region, ancestors, inheritedOf(entry), false)
+          .map(result => ({ region: result.region, items: m.items.map((v, j) => j === i ? { ...entry.item, base: result.block, minimum: result.block, content: true } : v) }))));
+      });
+      for (const m of measured) {
+        let lines;
+        if (knownBlock) lines = resolveFlexLine(m.region, knownBlock, m.items, gaps(mainGap, m.items.length));
+        else {
+          if (m.items.some(item => cmp(item.grow, zero) > 0)) throw flexUnknown('Flexible items in a column with an indefinite height grow from their content; give the container a definite height');
+          const values = m.items.map(item => item.content ? item.base : maximumConstant(item.base, item.minimum));
+          lines = [{ region: m.region, values, free: scalar(0) }];
+        }
+        for (const line of lines) for (const placed of mainStarts(line.region, line.values, line.free, m.items, mainGap, main, style['justify-content'])) {
+          const used = sum(total(line.values), scalar(gaps(mainGap, line.values.length)));
+          const contentBlock = knownBlock ?? used, blockSize = sum(contentBlock, blockEdges);
+          if (emit && knownBlock) obligation(knownBlock, used, box, placed.region, 'E_LAYOUT_TRACKS', 'block', fitBlock, explainTracks('block'));
+          let endings = [placed.region];
+          model.forEach((entry, i) => {
+            const origin = placed.starts ? offset(contentOrigin, scalar(0), placed.starts[i]) : null;
+            endings = bounded(endings.flatMap(r => solve(entry.child.box, itemAvailable(entry, { inline: contentInline, block: line.values[i], origin, fitInline, fitBlock }), r, ancestors, inheritedOf(entry), emit).map(result => result.region)));
+          });
+          for (const r of endings) out.push(finish(box, style, r, inline, contentInline, blockSize, contentBlock, available, parents, emit));
+        }
+      }
+    }
+    return out;
   }
   function finish(box, style, region, inline, contentInline, blockSize, contentBlock, available, parents, emit) {
     const contract = box.contract ?? {};
@@ -286,7 +467,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function resolvedOrigin(style,available,inline,blockSize,parents) {
     if(!block || parents.some(p=>p.clipped || p.subgrid) || ['overflow-x','overflow-y'].some(key=>style[key]!=='visible') ||
       ['grid-template-columns','grid-template-rows'].some(key=>style[key]==='subgrid')) return null;
-    if(style.position!=='absolute') return available.origin ?? null;
+    if(style.position!=='absolute') {
+      // Cross-axis alignment of a flex item that is not stretched.
+      let origin = available.origin ?? null;
+      if (origin && available.alignBlock !== undefined) origin = blockSize ? { inline: origin.inline, block: sum(origin.block, times(diff(available.block, blockSize), available.alignBlock)) } : null;
+      if (origin && available.alignInline !== undefined) origin = { inline: sum(origin.inline, times(diff(available.inline, inline), available.alignInline)), block: origin.block };
+      return origin;
+    }
     const containing=available.containingBlock;
     if(!containing?.origin || !blockSize) return null;
     const local=absoluteOrigin(style,containing,{inline,block:blockSize});
@@ -352,7 +539,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           let fixedBlock = null;
           if (block) {
             if (style['block-size'] !== 'auto') fixedBlock = length(style['block-size'], available.block);
-            else if (!available.root && available.block) fixedBlock = available.block;
+            else if (!available.root && available.block && available.alignBlock === undefined) fixedBlock = available.block;
             else if (style['container-type'] === 'size') fixedBlock = blockEdges;
             if (style['block-size'] !== 'auto' && style['box-sizing'] === 'content-box') fixedBlock = sum(fixedBlock, cssBlockEdges);
           }
@@ -381,7 +568,6 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               if (!['grid', 'flex'].includes(style.display)) { issue('E_LAYOUT_CONTAINER', 'Layout containers must use grid or the flex subset', box, bs.region); continue; }
               const isFlex = style.display === 'flex';
               if (!isFlex && style['grid-auto-flow'] !== 'row') throw new Error('Only sparse row auto-placement is supported');
-              const mainAxis = isFlex ? validateFlexContainer(style) : undefined, isColumn = mainAxis === 'block';
               // Child boxes per region. display: contents is replaced by its
               // children, which inherit from it (the element tree) but are
               // laid out as items of this container.
@@ -405,33 +591,34 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                 for (const state of states) for (const child of state.children) if (child.style.order !== '0') throw Object.assign(new Error('order changes the item sequence; only order: 0 is modeled'), { code: isFlex ? 'U_LAYOUT_FLEX' : undefined });
                 return states;
               };
-              const sharedColumns = isFlex ? undefined : inheritedAxes.inline;
+              if (isFlex) { for (const result of layoutFlex({ box, style, region: geometryRegion, inline, contentInline, knownBlock, blockEdges, available, parents, ancestors, contentOrigin, collect, emit })) results.push(result); continue; }
+              const sharedColumns = inheritedAxes.inline;
               // Flex: the items' flex properties define one row of tracks.
-              const plans = isFlex ? collect(geometryRegion).map(state => {
-                const inFlow = state.children.filter(child => child.style.position !== 'absolute');
-                if (inFlow.length !== state.children.length) throw Object.assign(new Error('Absolute children of a flex container use flex static positions'), { code: 'U_LAYOUT_FLEX' });
-                const track = (child, axis) => { try { return flexTrack(child.style, { empty: !child.box.text && !child.box.children.length, axis }); } catch (error) { error.box ??= child.box; throw error; } };
-                // A column has one stretched column track; its items are main-axis rows (checked only with block analysis).
-                if (isColumn) return { region: state.region, children: state.children, columns: [{ stretched: true }], rows: block ? inFlow.map(child => track(child, 'block')) : undefined };
-                return { region: state.region, children: state.children, columns: inFlow.map(child => track(child, 'inline')) };
-              }) : [{ region: geometryRegion, columns: sharedColumns ? sharedColumns.values.map(value => ({ definite: value })) :
+              const plans = [{ region: geometryRegion, columns: sharedColumns ? sharedColumns.values.map(value => ({ definite: value })) :
                 style['grid-template-columns'] === 'none' ? [] : tracks(style['grid-template-columns'] ?? 'none') }];
               for (const plan of plans) {
               const columns = plan.columns;
               const columnGap = gapSize(style['column-gap'], sharedColumns);
               const columnBases = columns.map(track => scalar(track.fixed ?? track.edges ?? zero));
               const columnLayouts = sharedColumns ? [{ region: plan.region, values: sharedColumns.values, required: trackArea(sharedColumns.values, columnGap, 0, columns.length) }] :
-                isColumn ? [{ region: plan.region, values: [contentInline], required: scalar(0) }] : isFlex ? flexLine(plan.region, contentInline, columns, mul(columnGap, q(Math.max(0, columns.length - 1))), columnBases) : flex(plan.region, contentInline, columns, mul(columnGap, q(Math.max(0, columns.length - 1))), columnBases, false);
-              for (const cs of columnLayouts) {
+                flex(plan.region, contentInline, columns, mul(columnGap, q(Math.max(0, columns.length - 1))), columnBases, false);
+              // justify-content distributes free space between tracks (positions only).
+              const justified = columnLayouts.flatMap(cs => {
+                const d = sharedColumns ? { lead: zero, extra: zero, negative: 'start' } : distribution(style['justify-content'], 'inline', columns.length);
+                if (cmp(d.lead, zero) === 0 && cmp(d.extra, zero) === 0) return [{ ...cs, shift: { lead: scalar(0), extra: scalar(0) } }];
+                const free = diff(contentInline, sum(total(cs.values), scalar(mul(columnGap, q(Math.max(0, columns.length - 1))))));
+                const split = partition(cs.region, free, '>=');
+                return [...split.yes.map(region => ({ ...cs, region, shift: { lead: times(free, d.lead), extra: times(free, d.extra) } })),
+                  ...split.no.map(region => ({ ...cs, region, shift: d.negative === 'start' ? { lead: scalar(0), extra: scalar(0) } : null }))];
+              });
+              for (const cs of justified) {
                 if (emit) obligation(contentInline, cs.required, box, cs.region, 'E_LAYOUT_TRACKS', 'inline', (box.contract?.overflow ?? 'fit') === 'fit', () => explanation(sizeChain([...parents, { box, style }], 'inline', { hostInset: options.hostInset }), trackProperties('inline').map(property => fact(box, style, property))));
-                const childStates = isFlex ? [{ region: cs.region, children: plan.children }] : collect(cs.region);
+                const childStates = collect(cs.region);
                 for (const children of childStates) {
                   if (!block && children.children.some(child=>child.style.position==='absolute')) throw new Error('Absolute boxes require both-axis analysis');
                   if (!columns.length && children.children.some(child=>child.style.position!=='absolute')) throw new Error('In-flow Grid children require explicit supported columns');
                   let placed;
-                  // Flex items fill the single line in order; grid placement properties do not apply.
-                  try { placed = isFlex ? children.children.map((child, index) => isColumn ? { ...child, start: 0, span: 1, row: index, rowSpan: 1 } : { ...child, start: index, span: 1, row: 0, rowSpan: 1 }) :
-                    place(children.children.filter(child=>child.style.position!=='absolute'), columns.length, { subgridColumns: Boolean(sharedColumns), rows: inheritedAxes.block?.values.length }).map(item => ({ ...item, inherited: children.children.find(child => child.box === item.box).inherited })); }
+                  try { placed = place(children.children.filter(child=>child.style.position!=='absolute'), columns.length, { subgridColumns: Boolean(sharedColumns), rows: inheritedAxes.block?.values.length }).map(item => ({ ...item, inherited: children.children.find(child => child.box === item.box).inherited })); }
                   catch (error) { error.region = children.region; throw error; }
                   const areaInline = item => trackArea(cs.values, columnGap, item.start, item.span);
                   const childColumns = item => trackSlice(cs.values, columnGap, box, item.start, item.span);
@@ -443,11 +630,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   }
                   const rowCount = placed.length ? Math.max(...placed.map(item => item.row + item.rowSpan)) : 0;
                   const sharedRows = inheritedAxes.block;
-                  // The line of a single-line flex container with a definite cross size is that size (css-flexbox-1 §9.4 step 15).
-                  let rows = sharedRows ? sharedRows.values.map(value => ({ definite: value })) : isColumn ? [...plan.rows] : isFlex ? (knownBlock ? [{ definite: knownBlock }] : []) : style['grid-template-rows'] === 'none' ? [] : tracks(style['grid-template-rows'], true);
+                  let rows = sharedRows ? sharedRows.values.map(value => ({ definite: value })) : style['grid-template-rows'] === 'none' ? [] : tracks(style['grid-template-rows'], true);
                   const explicitRowCount = rows.length;
-                  // A single-line flex container is one auto row stretched to a definite cross size.
-                  const implicit = sharedRows ? [] : tracks(isFlex ? 'auto' : style['grid-auto-rows'], true);
+                  const implicit = sharedRows ? [] : tracks(style['grid-auto-rows'], true);
                   while (rows.length < rowCount) rows.push(implicit[(rows.length - explicitRowCount) % implicit.length]);
                   if (rows.length > 2048) throw new Error('Grid row limit exceeded');
                   const rowGap = gapSize(style['row-gap'], sharedRows), gaps = mul(rowGap, q(Math.max(0, rows.length - 1)));
@@ -455,7 +640,6 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     (item.rowSpan > 1 || item.style['grid-template-rows'] === 'subgrid')) {
                     throw subgridError('Intrinsic row contributions across subgrids or row spans are not modeled; use independently sized parent rows', item.box, children.region, 'block');
                   }
-                  if (isColumn && !knownBlock && rows.some(row => row.weight)) throw Object.assign(new Error('Flexible items in a column with an indefinite height grow from their content; give the container a definite height'), { code: 'U_LAYOUT_FLEX', region: children.region });
                   let measurements = [{ region: children.region, bases: rows.map(row => row.definite ?? scalar(row.fixed ?? row.edges ?? zero)) }];
                   for (const item of placed.filter(item => rows[item.row].auto || (!knownBlock && rows[item.row].weight))) {
                     measurements = bounded(measurements.flatMap(m => solve(item.box, { inline: areaInline(item), tracks: { inline: childColumns(item) } }, m.region, ancestors, item.inherited ?? style, false).flatMap(measured => maximum(measured.region, m.bases[item.row], measured.block).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))));
@@ -466,7 +650,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       const divisor = cmp(rows[i].weight, one) > 0 ? rows[i].weight : one;
                       fractions = fractions.flatMap(f => maximum(f.region, f.value, times(m.bases[i], div(one, divisor))));
                     }
-                    const layouts = sharedRows ? [{ region: m.region, values: sharedRows.values, required: trackArea(sharedRows.values, rowGap, 0, rows.length) }] : knownBlock ? (isColumn ? flexLine(m.region, knownBlock, rows, gaps, m.bases) : flex(m.region, knownBlock, rows, gaps, m.bases, isFlex || style['align-content'] !== 'start')) : fractions.map(f => {
+                    const layouts = sharedRows ? [{ region: m.region, values: sharedRows.values, required: trackArea(sharedRows.values, rowGap, 0, rows.length) }] : knownBlock ? flex(m.region, knownBlock, rows, gaps, m.bases, style['align-content'] !== 'start') : fractions.map(f => {
                       const values = rows.map((row, i) => row.weight ? times(f.value, row.weight) : m.bases[i]);
                       return { region: f.region, values, required: sum(total(values), scalar(gaps)) };
                     });
@@ -475,8 +659,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       const finalAncestors = [...parents, { ...own, block: contentBlock, paddingBlock:diff(blockSize,scalar(add(px(style['border-top']),px(style['border-bottom'])))) }];
                       if (emit) obligation(contentBlock, rs.required, box, rs.region, 'E_LAYOUT_TRACKS', 'block', (box.contract?.overflowBlock ?? 'fit') === 'fit', () => explanation(sizeChain([...parents, { box, style }], 'block', { hostInset: options.hostBlockInset }), trackProperties('block').map(property => fact(box, style, property))));
                       let endings = [rs.region];
-                      for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: areaInline(item), block: trackArea(rs.values, rowGap, item.row, item.rowSpan), ...(isColumn ? { flexBlockMinimum: true } : {}),
-                        origin:offset(contentOrigin,trackStart(cs.values,columnGap,item.start),trackStart(rs.values,rowGap,item.row)),
+                      for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: areaInline(item), block: trackArea(rs.values, rowGap, item.row, item.rowSpan),
+                        origin:cs.shift ? offset(contentOrigin,sum(sum(trackStart(cs.values,columnGap,item.start),cs.shift.lead),times(cs.shift.extra,q(item.start))),trackStart(rs.values,rowGap,item.row)) : null,
                         tracks: { inline: childColumns(item), block: trackSlice(rs.values, rowGap, box, item.row, item.rowSpan) },
                         fitInline: (box.contract?.overflow ?? 'fit') === 'fit', fitBlock: (box.contract?.overflowBlock ?? 'fit') === 'fit' }, r, finalAncestors, item.inherited ?? style, emit).map(result => result.region)));
                       for (const item of children.children.filter(child=>child.style.position==='absolute')) endings = bounded(endings.flatMap(r => {

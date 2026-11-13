@@ -35,12 +35,40 @@ const cases = [
   {name: 'scroll container items have a zero automatic minimum', html: '<main class="row"><div class="a"><div class="w"></div></div><div class="b"></div></main>',
     css: '.row{display:flex;block-size:30px}.a{flex:1 1 0;overflow:hidden;display:grid;grid-template-columns:500px}.b{flex:1 1 0;min-width:0}',
     boxes: {'.a': {overflow: 'clip'}}},
+  {name: 'justify-content: flex-end', html: '<main class="row"><div class="a"></div><div class="b"></div><div class="c"></div></main>',
+    css: '.row{display:flex;block-size:30px;column-gap:6px;justify-content:flex-end}.a,.b,.c{flex:none;width:50px}'},
+  {name: 'justify-content: center', html: '<main class="row"><div class="a"></div><div class="b"></div><div class="c"></div></main>',
+    css: '.row{display:flex;block-size:30px;column-gap:6px;justify-content:center}.a,.b,.c{flex:none;width:50px}'},
+  {name: 'justify-content: space-between', html: '<main class="row"><div class="a"></div><div class="b"></div><div class="c"></div></main>',
+    css: '.row{display:flex;block-size:30px;column-gap:6px;justify-content:space-between}.a,.b,.c{flex:none;width:50px}'},
+  {name: 'justify-content: space-around', html: '<main class="row"><div class="a"></div><div class="b"></div><div class="c"></div></main>',
+    css: '.row{display:flex;block-size:30px;column-gap:6px;justify-content:space-around}.a,.b,.c{flex:none;width:50px}'},
+  {name: 'justify-content: space-evenly', html: '<main class="row"><div class="a"></div><div class="b"></div><div class="c"></div></main>',
+    css: '.row{display:flex;block-size:30px;column-gap:6px;justify-content:space-evenly}.a,.b,.c{flex:none;width:50px}'},
+  {name: 'navigation with a main-axis auto margin', html: '<main class="row"><div class="logo"></div><nav class="nav"></nav><div class="me"></div></main>',
+    css: '.row{display:flex;block-size:48px;column-gap:8px;padding:0 12px}.logo{flex:none;width:60px}.nav{flex:none;width:60px;margin-left:auto}.me{flex:none;width:40px}'},
+  {name: 'cross-axis alignment in a row', html: '<main class="row"><div class="a"></div><div class="b"><div></div></div><div class="c"></div></main>',
+    css: '.row{display:flex;block-size:60px;align-items:center}.a{flex:none;width:40px;block-size:20px}.b{flex:1 1 0;min-width:0;align-self:flex-end;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:24px}.c{flex:none;width:10px;align-self:stretch}'},
+  {name: 'wrapping cards with gaps', html: '<main class="row"><div class="card"><div></div></div><div class="card"><div></div></div><div class="card"><div></div></div></main>',
+    css: '.row{display:flex;flex-wrap:wrap;column-gap:16px;row-gap:12px}.card{flex:1 1 200px;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:30px}',
+    // Line-break thresholds: 2·200 + 16 and 3·200 + 32.
+    widths: [415, 416, 631, 632]},
+  {name: 'wrapping fixed chips in a definite container', html: '<main class="row"><div class="x"></div><div class="x"></div><div class="x"></div><div class="x"></div></main>',
+    css: '.row{display:flex;flex-wrap:wrap;column-gap:10px;row-gap:5px;block-size:200px}.x{flex:none;width:150px;block-size:20px}',
+    widths: [309, 310, 469, 470]},
+  {name: 'shrinking items with px bases', html: '<main class="row"><div class="a"></div><div class="b"></div></main>',
+    css: '.row{display:flex;block-size:20px}.a{flex:0 1 400px;min-width:0}.b{flex:0 3 300px;min-width:100px}'},
+  {name: 'column with centered fixed-width items', html: '<main class="page"><div class="a"></div><div class="b"></div></main>',
+    css: '.page{display:flex;flex-direction:column;block-size:100%;align-items:center;justify-content:space-evenly}.a{flex:none;width:120px;block-size:40px}.b{flex:none;width:80px;block-size:60px;align-self:flex-end}', fullHeight: true},
+  {name: 'grid tracks centered by justify-content', html: '<main class="grid"><div></div><div></div></main>',
+    css: '.grid{display:grid;grid-template-columns:60px 60px;column-gap:10px;grid-template-rows:20px;justify-content:center}'},
 ];
 const evaluate = (affine, width, height) => {
   const value = text => { const [n, d = '1'] = text.split('/'); return Number(n) / Number(d); };
   return value(affine.coefficient) * width + value(affine.heightCoefficient ?? '0') * height + value(affine.constant);
 };
-const inside = (range, value) => value >= range.min && value <= range.max;
+// Region ends may be open: a threshold belongs to exactly one side.
+const inside = (range, value) => (range.minInclusive === false ? value > range.min : value >= range.min) && (range.maxInclusive === false ? value < range.max : value <= range.max);
 
 for (const sample of cases) {
   test(`${sample.name}: model rectangles match Chromium`, async ({page}) => {
@@ -48,7 +76,7 @@ for (const sample of cases) {
     const report = analyzeHTML(sample.html, {name: 'Case', css, viewport: {min: 200, max: 900, height: {min: 300, max: 600}}, ...(sample.boxes ? {boxes: sample.boxes} : {})});
     expect(report.status, JSON.stringify(report.diagnostics)).toBe(sample.expected ?? 'verified');
     let compared = 0;
-    for (const [width, height] of [[200, 300], [321, 400], [480, 450], [777, 600]]) {
+    for (const [width, height] of [[200, 300], [321, 400], [480, 450], [777, 600], ...(sample.widths ?? []).map(width => [width, 400])]) {
       await page.setViewportSize({width, height});
       await page.setContent(`<!doctype html><style>html,body{margin:0}${sample.fullHeight ? 'html,body{height:100%}' : ''}${css}</style>${sample.html}`);
       const rows = report.sizes.filter(row => row.rect && inside(row.range, width) && (!row.heightRange || inside(row.heightRange, height)));

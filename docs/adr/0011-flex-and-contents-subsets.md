@@ -1,6 +1,6 @@
 # ADR-0011: flex と display: contents の安全なサブセット
 
-- 状態: 実装中(row/column・nowrap の flex、正の min の凍結、scroll container の item、contents。wrap は未着手)
+- 状態: 実装中(row/column の flex、row の wrap、grow/shrink と凍結、justify-content・auto margin・交差軸の揃え、contents)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: ユーザー指示「grid/flex や contents のサブセットで動かし、徐々に安全に書ける範囲を増やす」
@@ -42,6 +42,28 @@ Grid の配置プロパティは flex item に適用しない。
 item 内の溢れは item の box 契約の overflow 方針、行の溢れは container の方針で照合する。
 片方の軸が visible / clip 以外なら他方の visible は auto に計算される点も、既存の計算値規則のとおり扱う。
 
+### 一般化した主軸(grow / shrink)
+
+item は「外側の flex base size、grow、shrink、外側の最小サイズ」で表す。仮の主軸サイズは max(base, min)。
+その合計と container の内容サイズで grow モード(合計 < 内容)と shrink モードに区間を分け、§9.7 を再現する。
+- 初期凍結: 係数0の item。shrink モードでは base が min 未満の item と、column の内容サイズ item(base = min で縮めない)。
+- grow: 未凍結の item に `base + 余白 × grow / max(1, Σgrow)`。shrink: `base + 余白 × (shrink × 内側の base) / Σ`。
+- 各段階で min を下回る item を全て凍結して配り直す。min のみの制約では結果は凍結順に依存しない(水位合わせの解)。
+- 係数の和が1未満で凍結や縮小が起きる場合(§9.7 step 4b)、内容に依存する自動最小を持つ item が縮む場合は unknown。
+
+### flex-wrap(row)
+
+仮の主軸サイズ(定数)と gap で貪欲に行を分け、各 item を追加できるかの閾値で区間を分ける。
+行ごとに主軸を解く。行の高さは item の測定値の最大(stretch の item も内容の高さで寄与)。
+定義済みの高さでは `align-content` normal / stretch で余りを行に等分し、flex-start / start はそのまま。その他は unknown。
+
+### 位置: justify-content、auto margin、交差軸の揃え
+
+サイズは変えずに位置だけを決める。主軸の auto margin は正の余白を等分し、このとき justify-content は効かない。
+justify-content は余白を lead と item 間の追加に分ける。余白が負の区間では、space-between 等の flex-start に戻る値だけ位置を出し、
+center 等(unsafe な溢れ)は位置を出さない。交差軸は stretch(伸長)か、item の高さで決まる係数(0, 1/2, 1)でずらす。
+Grid の justify-content も固定 track に同じ配分を適用する(前回まで Grid ではこの値を無視していた不具合を修正)。
+
 ### column
 
 主軸は block 軸。交差軸の幅は全 item が container の内容幅へ伸長する(normal / stretch のみ)。
@@ -67,9 +89,10 @@ text(匿名 box)、契約・noshift の対象、解析 root、領域で変わる
 | 検査 | 内容 |
 | --- | --- |
 | `packages/css-verifier/test/flex-contents.test.mjs` | 固定+伸縮、比の配分と padding、Σgrow < 1、固定 item の溢れ、サブセット外10種の unknown、交差軸の伸長、contents の平坦化と継承 |
-| `e2e/layout-flex.spec.mjs` | 13構成(column 3件、凍結3件、scroll container 1件を含む)×4 viewport で、モデルの矩形(位置・寸法)が Chromium と1/64 px以内で一致。伸縮 item の padding を落とす変異、column で border を落とす変異、凍結を無効にする変異を検出 |
+| `e2e/layout-flex.spec.mjs` | 25構成×4 viewport(行分割の閾値ちょうどの幅を追加)で、モデルの矩形(位置・寸法)が Chromium と1/64 px以内で一致。伸縮 item の padding を落とす変異、column で border を落とす変異、凍結を無効にする変異、縮小を base に比例させない変異、行分割の閾値を1pxずらす変異、center の係数・交差軸の揃えを壊す変異を検出 |
 | `evals/scenarios/layout-rejections` | `flex` の例を「初期値の item → U_LAYOUT_FLEX、伸縮 item に書くと verified」へ更新 |
 
 ## 次の段階
 
-1. `justify-content` の他の値(位置のみ変わる)、`flex-wrap` は行分割の場合分けが必要。
+1. `wrap-reverse`・column の wrap・`*-reverse`、% の basis(affine な base)。
+2. 交差軸の auto margin、baseline(フォントの metrics が必要)。
