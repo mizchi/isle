@@ -293,7 +293,9 @@ test('checked builds enforce the accessibility rules and warn on visual order', 
   const output = await (await fixture(t, {source:bar, css:style(), options:{mounts:[{component:'Four',props:{}}],wrapMounts:false,layout:{css:'./app.css',viewport,accessibility:true}}}))();
   const certificate = JSON.parse(artifact(output, 'isle.layout.json').source);
   assert.equal(certificate.contracts.accessibility, true);
-  assert.deepEqual(certificate.report.accessibility.warnings, []);
+  // A checked build delivers a whole page: page rules apply (this toolbar page has no h1).
+  assert.ok(certificate.report.accessibility.warnings.every(w => ['W_A11Y_PAGE_H1', 'W_A11Y_REGION'].includes(w.code)), JSON.stringify(certificate.report.accessibility.warnings.map(w => w.code)));
+  assert.ok(certificate.report.accessibility.warnings.some(w => w.code === 'W_A11Y_PAGE_H1'));
   const unnamed = await fixture(t, {source:bar.replace(' aria-label="Close"', ''), css:style(), options:{mounts:[{component:'Four',props:{}}],wrapMounts:false,layout:{css:'./app.css',viewport,accessibility:true}}});
   await assert.rejects(unnamed, error => /E_ISLE_LAYOUT/.test(error.message) && /E_A11Y_NAME/.test(error.message));
 });

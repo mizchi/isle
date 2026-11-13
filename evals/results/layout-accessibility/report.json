@@ -41,7 +41,17 @@
     "fieldset-name",
     "label-in-name",
     "link-purpose",
-    "link-text"
+    "link-text",
+    "role-parent",
+    "aria-attr",
+    "aria-value",
+    "presentation-conflict",
+    "empty-th",
+    "input-button-name",
+    "autocomplete",
+    "scope",
+    "p-as-heading",
+    "orientation"
   ],
   "scope": "Static accessibility rules vs the browser (AX tree names, hit testing, focus, rects, computed colors; vlmkit a11y contrast at 1280).",
   "cases": [
@@ -224,6 +234,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -400,6 +460,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -589,6 +699,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -772,6 +932,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -952,6 +1162,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1126,6 +1386,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -1311,6 +1621,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1487,6 +1847,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -1676,6 +2086,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1859,6 +2319,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -2039,6 +2549,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2213,6 +2773,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -2402,6 +3012,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2582,6 +3242,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -2783,6 +3493,56 @@
           [
             "Page/1"
           ]
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2978,6 +3738,56 @@
           [
             "Page/1"
           ]
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -3162,6 +3972,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3340,6 +4200,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -3531,6 +4441,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3713,6 +4673,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -3904,6 +4914,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4086,6 +5146,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -4299,6 +5409,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4503,6 +5663,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -4690,6 +5900,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4868,6 +6128,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -5055,6 +6365,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5233,6 +6593,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -5418,6 +6828,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5594,6 +7054,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -5799,6 +7309,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5995,6 +7555,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -6188,6 +7798,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6372,6 +8032,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -6563,6 +8273,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6748,6 +8508,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -6930,6 +8740,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7106,6 +8966,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -7292,6 +9202,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7469,6 +9429,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -7659,6 +9669,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7840,6 +9900,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -8029,6 +10139,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8209,6 +10369,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -8402,6 +10612,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8586,6 +10846,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -8797,6 +11107,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8999,6 +11359,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -9207,6 +11617,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9406,6 +11866,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -9607,6 +12117,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9799,6 +12359,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -10008,6 +12618,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -10208,6 +12868,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -10410,6 +13120,56 @@
           [],
           [],
           []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -10603,6 +13363,56 @@
           []
         ],
         "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
           [],
           [],
           []
@@ -10808,6 +13618,56 @@
           [
             "Page/4"
           ]
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -11007,6 +13867,1088 @@
           [
             "Page/4"
           ]
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "aria-forms-and-orientation",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "aria-attr": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "aria-value": [
+          [
+            "Page/2"
+          ],
+          [
+            "Page/2"
+          ],
+          [
+            "Page/2"
+          ]
+        ],
+        "presentation-conflict": [
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ]
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [
+            "Page/6"
+          ],
+          [
+            "Page/6"
+          ],
+          [
+            "Page/6"
+          ]
+        ],
+        "autocomplete": [
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ]
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [
+            "Page/8"
+          ],
+          [
+            "Page/8"
+          ],
+          [
+            "Page/8"
+          ]
+        ],
+        "orientation": [
+          [
+            "Page/10"
+          ],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "aria-attr": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "aria-value": [
+          [
+            "Page/2"
+          ],
+          [
+            "Page/2"
+          ],
+          [
+            "Page/2"
+          ]
+        ],
+        "presentation-conflict": [
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ]
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [
+            "Page/6"
+          ],
+          [
+            "Page/6"
+          ],
+          [
+            "Page/6"
+          ]
+        ],
+        "autocomplete": [
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ]
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [
+            "Page/8"
+          ],
+          [
+            "Page/8"
+          ],
+          [
+            "Page/8"
+          ]
+        ],
+        "orientation": [
+          [
+            "Page/10"
+          ],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "table-scope-and-empty-header",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [
+            "Page/0/0/0"
+          ],
+          [
+            "Page/0/0/0"
+          ],
+          [
+            "Page/0/0/0"
+          ]
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [
+            "Page/0/0/0",
+            "Page/1/0/0"
+          ],
+          [
+            "Page/0/0/0",
+            "Page/1/0/0"
+          ],
+          [
+            "Page/0/0/0",
+            "Page/1/0/0"
+          ]
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [
+            "Page/0/0/0"
+          ],
+          [
+            "Page/0/0/0"
+          ],
+          [
+            "Page/0/0/0"
+          ]
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [
+            "Page/0/0/0",
+            "Page/1/0/0"
+          ],
+          [
+            "Page/0/0/0",
+            "Page/1/0/0"
+          ],
+          [
+            "Page/0/0/0",
+            "Page/1/0/0"
+          ]
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
         ]
       }
     }

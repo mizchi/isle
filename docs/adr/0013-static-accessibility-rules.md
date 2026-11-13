@@ -1,6 +1,6 @@
 # ADR-0013: DOM と CSS を組み合わせた静的アクセシビリティ検査
 
-- 状態: 実装中(35規則、HTML adapter・Isle template・Vite・playground に接続)
+- 状態: 実装中(60規則、HTML adapter・Isle template・Vite・playground に接続)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: ユーザー指示「思いつく限りのCSSとDOMを組み合わせた静的検査パターンを実装したい」。ADR-0007(静的コントラスト契約)の text-contrast を含む
@@ -54,6 +54,21 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | label-in-name | control の `aria-label` が、描画され可視のテキスト(text 行ごと)を含まない(SC 2.5.3、大文字小文字と空白を畳んで比較) | E_A11Y_LABEL_IN_NAME |
 | link-purpose | 同じ名前のリンクが別の href を指し、同時に描画される | W_A11Y_LINK_PURPOSE(警告) |
 | link-text | 行き先を表さない汎用のリンク文言(click here・read more・こちら・詳細 など) | W_A11Y_LINK_TEXT(警告) |
+| role-parent / role-children | WAI-ARIA 1.2 の必須の文脈(tab は tablist の中、list は listitem だけを持つ など)。暗黙の role を HTML-AAM で求め、generic な要素は透過 | E_A11Y_ROLE_PARENT / E_A11Y_ROLE_CHILDREN |
+| role-attr | role に必須の状態(checkbox の `aria-checked`、slider の `aria-valuenow` など。同じ意味のネイティブ要素は除く) | E_A11Y_ROLE_ATTR |
+| aria-attr / aria-value | ARIA 1.2 にない `aria-*`、真偽値・三値の属性の不正な値 | E_A11Y_ARIA_ATTR / E_A11Y_ARIA_VALUE |
+| presentation-conflict | `role=none/presentation` がフォーカス可能な要素や名前付きの要素にあり、無視される | E_A11Y_PRESENTATION_CONFLICT |
+| empty-th | 描画される th に可視のテキストも名前もない | E_A11Y_EMPTY_TH |
+| redundant-alt | 画像の alt が隣のテキストと同じ | W_A11Y_REDUNDANT_ALT(警告) |
+| title-only | field の名前が title だけ | W_A11Y_TITLE_ONLY(警告) |
+| input-button-name | `input type=button` に value がない | E_A11Y_INPUT_BUTTON_NAME |
+| autocomplete | HTML の autofill の文法にない token(SC 1.3.5) | E_A11Y_AUTOCOMPLETE |
+| scope | th 以外の scope、row/col/rowgroup/colgroup 以外の値 | E_A11Y_SCOPE |
+| html-lang / lang-valid | root の html に lang がない、言語タグとして不正な lang(SC 3.1.1/3.1.2) | E_A11Y_HTML_LANG / E_A11Y_LANG_VALID |
+| page-h1 / region / bypass | root が html/body のとき:h1 が描画されない領域、landmark の外の内容、main より前の nav に skip link がない | W_A11Y_PAGE_H1 / W_A11Y_REGION / W_A11Y_BYPASS(警告) |
+| landmark-top-level / duplicate-landmark | main・complementary が他の landmark の中、同時に描画される2つの banner/contentinfo | 警告 |
+| p-as-heading | 太字(600以上)か 1.2 倍以上の文字の p が、普通の p の前にある(見出しを CSS で装う) | W_A11Y_P_AS_HEADING(警告) |
+| orientation | main が片方の向き(`(orientation: landscape/portrait)`)でだけ描画されない(SC 1.3.4) | E_A11Y_ORIENTATION |
 | target-size | SC 2.5.8:24px 未満の操作対象で、border box の中心に置いた 24px の円が他の操作対象の box か、他の小さい対象の円と交わる(spacing 例外を満たさない) | E_A11Y_TARGET_SIZE |
 
 ### target-size の円(非線形)の扱い
@@ -79,6 +94,14 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 ADR-0012 の target-undersized(vlmkit と同じく spacing を考えない)とは別の規則である。
 
 違反は checks の義務ではないため、Z3 のモデルにはその違反領域が空でないことの確認として入る(`rule` を持つ診断)。
+
+### axe-core と WCAG からの網羅
+
+axe-core の規則と WCAG 2.2 の達成基準を一つずつ見て、静的に決まるものを取り込んだ(上の表)。
+`(orientation: …)` の media query を加えた(portrait は height ≥ width、landscape は width > height で、2次元の領域として厳密)。
+2次元の領域は幅と高さの区間の積ではないので、診断に領域の制約(`region`)を付けた。
+取り込まなかったもの:text spacing(SC 1.4.12、letter/word spacing による幅の増加がモデルにない)、hover/focus で現れる内容
+(SC 1.4.13、`:hover` などの擬似クラスは未対応)、document title・meta viewport・frame・media(要素がモデルにない)。
 
 ### table と fieldset
 
@@ -147,11 +170,13 @@ ADR-0007 の制約に従う。
 
 | 検査 | 内容 |
 | --- | --- |
-| `packages/css-verifier/test/accessibility.test.mjs` | 53件(テキストの比較を含む。table と fieldset を含む。inline の内容を含む。list・radio・landmark・role を含む。画像・form control・in-flow の覆いを含む。equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
+| `packages/css-verifier/test/accessibility.test.mjs` | 59件(ARIA の構造と値、page の規則、orientation を含む。テキストの比較を含む。table と fieldset を含む。inline の内容を含む。list・radio・landmark・role を含む。画像・form control・in-flow の覆いを含む。equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
 | `tests/layout-accessibility.test.mjs` | Isle template の静的・動的な属性 |
 | `tests/layout-build.test.mjs` | Vite の `layout.accessibility`:名前のない button で build が失敗し、証明書に契約が残る |
-| `e2e/layout-accessibility.spec.mjs` | 29構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
+| `e2e/layout-accessibility.spec.mjs` | 31構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
 
+autocomplete は Chromium の IDL 属性(不正な token は `''` に正規化される)、orientation は実際の viewport での計算値と照合した。
+page の規則(html-lang など)は box tree の単体テストで検査する(eval は body の中の断片を描画する)。
 結果は `evals/results/layout-accessibility/report.json` に残る。
 
 ## 次の段階

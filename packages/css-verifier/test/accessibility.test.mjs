@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -560,4 +560,84 @@ test('HTML adapter: direct text, aria-label and href become text facts', async (
   const css = reset + '.page { display: grid; grid-template-columns: 200px; grid-auto-rows: 30px; background: #fff; color: #000; }\n.go { display: block; color: inherit; }\n';
   const report = analyzeHTML('<main class="page"><a class="go" href="/s" aria-label="Find">Search</a></main>', {name: 'Page', css, viewport: domain, accessibility: true, boxes: {'.go': {minInlineSize: 1, intrinsicBlockSize: 20}}});
   assert.deepEqual(find(report, 'E_A11Y_LABEL_IN_NAME').map(d => d.box), ['.go']);
+});
+
+// ARIA structure and values, content and page rules.
+const divs = (...kids) => page(kids);
+const plainCSS = pageCSS('.page { background: #fff; color: #000; }\n.x, .y, .z { display: block; }\n');
+const x = (extra = {}, kids) => ({tag: 'div', classes: ['x'], ...extra, ...(kids ? {children: kids} : {})});
+
+test('role-parent and role-children: required ARIA context', () => {
+  assert.deepEqual(find(run(divs(x({role: 'tab', tabIndex: 0, focusable: true, named: true})), plainCSS), 'E_A11Y_ROLE_PARENT').map(d => d.role), ['tab']);
+  const list = run(divs({tag: 'div', classes: ['y'], role: 'tablist', children: [x({role: 'tab', tabIndex: 0, focusable: true, named: true})]}), pageCSS('.page, .y { display: grid; grid-template-columns: 100px; grid-auto-rows: 30px; background: #fff; color: #000; }\n.x { display: block; }\n'));
+  assert.equal(find(list, 'E_A11Y_ROLE_PARENT').length, 0);
+  const wrong = run(divs({tag: 'div', classes: ['y'], role: 'list', children: [x({role: 'button', tabIndex: 0, focusable: true, named: true})]}), pageCSS('.page, .y { display: grid; grid-template-columns: 100px; grid-auto-rows: 30px; background: #fff; color: #000; }\n.x { display: block; }\n'));
+  assert.deepEqual(find(wrong, 'E_A11Y_ROLE_CHILDREN').map(d => d.box), ['.y']);
+});
+
+test('ARIA attributes: required for the role, known names, valid boolean values, presentation conflicts', () => {
+  assert.deepEqual(find(run(divs(x({role: 'checkbox', tabIndex: 0, focusable: true, named: true})), plainCSS), 'E_A11Y_ROLE_ATTR').map(d => d.attribute), ['aria-checked']);
+  assert.equal(find(run(divs(x({role: 'checkbox', tabIndex: 0, focusable: true, named: true, aria: {'aria-checked': 'false'}})), plainCSS), 'E_A11Y_ROLE_ATTR').length, 0);
+  assert.deepEqual(find(run(divs(x({aria: {'aria-lable': 'x'}})), plainCSS), 'E_A11Y_ARIA_ATTR').map(d => d.attribute), ['aria-lable']);
+  assert.deepEqual(find(run(divs(x({aria: {'aria-expanded': 'yes'}})), plainCSS), 'E_A11Y_ARIA_VALUE').map(d => d.attribute), ['aria-expanded']);
+  assert.equal(find(run(divs({tag: 'button', classes: ['x'], role: 'presentation', named: true}), pageCSS('.x { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n')), 'E_A11Y_PRESENTATION_CONFLICT').length, 1);
+  assert.equal(find(run(divs(x({role: 'img'})), plainCSS), 'E_A11Y_NAME').length, 1);
+});
+
+test('content: empty th, redundant alt, title-only labels, input buttons, autocomplete and scope', () => {
+  const t = run(table([cell()]).children ? {...table([cell()]), children: [{tag: 'thead', classes: ['h'], children: [{tag: 'tr', classes: ['r'], children: [{tag: 'th', classes: ['c']}]}]}, table([cell()]).children[1]]} : null, tableCSS(''), {boxes: {'.d': tb['.d']}});
+  assert.deepEqual(find(t, 'E_A11Y_EMPTY_TH').map(d => d.box), ['.c']);
+  const img = run(divs({tag: 'a', classes: ['y'], focusable: true, href: '/h', text: true, textContent: 'Home', children: [{tag: 'img', classes: ['pic'], alt: 'Home'}]}), fieldCSS + '.y { display: grid; grid-template-columns: minmax(0, 1fr); color: inherit; }\n');
+  // (a text leaf with an inline image)
+  assert.ok(img.accessibility.warnings.some(w => w.code === 'W_A11Y_REDUNDANT_ALT') || img.status === 'unknown');
+  const field = extra => run(divs({tag: 'input', classes: ['f'], inputType: 'text', focusable: true, ...extra}), fieldCSS);
+  assert.ok(field({named: true, nameSource: 'title'}).accessibility.warnings.some(w => w.code === 'W_A11Y_TITLE_ONLY'));
+  assert.deepEqual(find(field({named: true, autocomplete: 'emial'}), 'E_A11Y_AUTOCOMPLETE').map(d => d.value), ['emial']);
+  assert.equal(find(field({named: true, autocomplete: 'section-a shipping email'}), 'E_A11Y_AUTOCOMPLETE').length, 0);
+  assert.equal(find(field({inputType: 'button'}), 'E_A11Y_INPUT_BUTTON_NAME').length, 1);
+  assert.equal(find(field({inputType: 'button', value: 'Go'}), 'E_A11Y_INPUT_BUTTON_NAME').length, 0);
+  assert.deepEqual(find(run(table([cell({scope: 'col'})]), tableCSS(''), {boxes: tb}), 'E_A11Y_SCOPE').map(d => d.box), ['.d']);
+});
+
+const doc = (kids, extra = {}) => ({tag: 'html', classes: ['doc'], ...extra, children: [{tag: 'body', classes: ['bd'], children: kids}]});
+const docCSS = extra => `.doc, .bd { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 30px; inline-size: 100%; block-size: auto; margin: 0; padding: 0; background: #fff; color: #000; }\n.m, .n { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 30px; }\n.h1, .p, .k { display: block; font-size: 16px; font-weight: 400; line-height: 20px; color: inherit; }\n${extra}`;
+const db2 = {'.h1': {minInlineSize: 1, intrinsicBlockSize: 20}, '.p': {minInlineSize: 1, intrinsicBlockSize: 20}, '.k': {minInlineSize: 1, intrinsicBlockSize: 20}};
+// Contracts only for the classes a tree has.
+const prun = (tree, css) => run(tree, css, {boxes: only(tree, db2)});
+const only = (tree, contracts) => { const names = new Set(); (function walk(b) { for (const c of b.classes ?? []) names.add(`.${c}`); for (const k of b.children ?? []) walk(k); })(tree); return Object.fromEntries(Object.entries(contracts).filter(([k]) => names.has(k))); };
+
+test('page rules: html lang, a rendered h1, landmarks around content, a skip link before navigation', () => {
+  const main = (...kids) => ({tag: 'main', classes: ['m'], id: 'main', children: kids});
+  const good = doc([{tag: 'a', classes: ['k'], focusable: true, href: '#main', text: true, textContent: 'Skip to content'}, {tag: 'nav', classes: ['n'], named: true}, main({tag: 'h1', classes: ['h1'], text: true, textContent: 'Title'})], {lang: 'en'});
+  const report = prun(good, docCSS(''));
+  assert.deepEqual(report.diagnostics.filter(d => d.code.startsWith('E_A11Y')), []);
+  assert.deepEqual(report.accessibility.warnings.map(w => w.code), []);
+  assert.deepEqual(find(prun({...good, lang: undefined}, docCSS('')), 'E_A11Y_HTML_LANG').map(d => d.box), ['.doc']);
+  assert.deepEqual(find(prun({...good, lang: 'english!'}, docCSS('')), 'E_A11Y_LANG_VALID').map(d => d.box), ['.doc']);
+  const noH1 = prun(good, docCSS('@media (width < 600px) { .h1 { display: none; } }'));
+  assert.equal(noH1.accessibility.warnings.find(w => w.code === 'W_A11Y_PAGE_H1').range.maxExact, '600');
+  const outside = prun(doc([{tag: 'p', classes: ['p'], text: true, textContent: 'Loose'}, main({tag: 'h1', classes: ['h1'], text: true})], {lang: 'en'}), docCSS(''));
+  assert.deepEqual(outside.accessibility.warnings.filter(w => w.code === 'W_A11Y_REGION').map(w => w.box), ['.p']);
+  const noSkip = prun(doc([{tag: 'nav', classes: ['n'], named: true, children: [{tag: 'a', classes: ['k'], focusable: true, href: '/a', text: true}]}, main({tag: 'h1', classes: ['h1'], text: true})], {lang: 'en'}), docCSS(''));
+  assert.ok(noSkip.accessibility.warnings.some(w => w.code === 'W_A11Y_BYPASS'));
+});
+
+test('landmark nesting and duplicate banners', () => {
+  const css = docCSS('.hd, .ft, .as { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 30px; }\n');
+  const nested = prun(doc([{tag: 'main', classes: ['m'], children: [{tag: 'aside', classes: ['as']}, {tag: 'h1', classes: ['h1'], text: true}]}], {lang: 'en'}), css);
+  assert.deepEqual(nested.accessibility.warnings.filter(w => w.code === 'W_A11Y_LANDMARK_TOP_LEVEL').map(w => w.box), ['.as']);
+  const twice = prun(doc([{tag: 'header', classes: ['hd']}, {tag: 'header', classes: ['hd']}, {tag: 'main', classes: ['m'], children: [{tag: 'h1', classes: ['h1'], text: true}]}], {lang: 'en'}), css);
+  assert.ok(twice.accessibility.warnings.some(w => w.code === 'W_A11Y_DUPLICATE_LANDMARK'));
+});
+
+test('p-as-heading and orientation lock: CSS that changes what the DOM says', () => {
+  const ps = page([{tag: 'p', classes: ['p'], text: true}, {tag: 'p', classes: ['q'], text: true}]);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; }\n.p, .q { display: block; font-size: 16px; font-weight: 400; line-height: 20px; }\n${extra}`);
+  const pb2 = {'.p': {minInlineSize: 1, intrinsicBlockSize: 20}, '.q': {minInlineSize: 1, intrinsicBlockSize: 20}};
+  assert.deepEqual(run(ps, css('.p { font-weight: 700; }'), {boxes: pb2}).accessibility.warnings.filter(w => w.code === 'W_A11Y_P_AS_HEADING').map(w => w.box), ['.p']);
+  assert.equal(run(ps, css(''), {boxes: pb2}).accessibility.warnings.filter(w => w.code === 'W_A11Y_P_AS_HEADING').length, 0);
+  // Content shown only in portrait (height > width): SC 1.3.4.
+  const locked = run({tag: 'div', classes: ['page'], children: [{tag: 'main', classes: ['m']}]}, pageCSS('.m { display: block; }\n@media (orientation: landscape) { .m { display: none; } }\n'), {viewport: {min: 320, max: 1280, height: {min: 400, max: 900}}});
+  const [lock] = find(locked, 'E_A11Y_ORIENTATION');
+  assert.equal(lock.missing, 'landscape');
 });

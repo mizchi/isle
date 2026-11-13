@@ -24,7 +24,9 @@ export function parseCondition(params, kind) {
       const value = term.trim().slice(1, -1).trim();
       const push = (feature, relation, size) => atoms.push({ feature: feature.toLowerCase(), relation, value: q(size) });
       let m;
-      if ((m = value.match(/^(min|max)-(width|height|inline-size|block-size)\s*:\s*(\d+(?:\.\d{1,6})?)px$/i))) push(m[2], m[1].toLowerCase() === 'min' ? '>=' : '<=', m[3]);
+      // orientation: portrait is height >= width, landscape is width > height (Media Queries 4).
+      if (kind === 'media' && (m = value.match(/^orientation\s*:\s*(portrait|landscape)$/i))) atoms.push({ feature: 'orientation', relation: m[1].toLowerCase() === 'portrait' ? '>=' : '>', value: q(0), orientation: m[1].toLowerCase() });
+      else if ((m = value.match(/^(min|max)-(width|height|inline-size|block-size)\s*:\s*(\d+(?:\.\d{1,6})?)px$/i))) push(m[2], m[1].toLowerCase() === 'min' ? '>=' : '<=', m[3]);
       else if ((m = value.match(/^(width|height|inline-size|block-size)\s*(<=|>=|<|>|=)\s*(\d+(?:\.\d{1,6})?)px$/i))) push(m[1], m[2], m[3]);
       else if ((m = value.match(/^(\d+(?:\.\d{1,6})?)px\s*(<=|<)\s*(width|height|inline-size|block-size)(?:\s*(<=|<)\s*(\d+(?:\.\d{1,6})?)px)?$/i))) {
         push(m[3], m[2] === '<' ? '>' : '>=', m[1]); if (m[4]) push(m[3], m[4], m[5]);

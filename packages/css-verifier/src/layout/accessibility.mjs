@@ -38,15 +38,33 @@
 //   label-in-name    → E_A11Y_LABEL_IN_NAME     an aria-label that does not contain the control's visible text (SC 2.5.3)
 //   link-purpose     → W_A11Y_LINK_PURPOSE      two links with the same name to different hrefs render together
 //   link-text        → W_A11Y_LINK_TEXT         generic link text (click here, read more, こちら, …)
+//   role-parent / role-children → E_A11Y_ROLE_PARENT / E_A11Y_ROLE_CHILDREN  required ARIA context (WAI-ARIA 1.2)
+//   role-attr        → E_A11Y_ROLE_ATTR         a required state for the role (aria-checked, aria-valuenow, …)
+//   aria-attr / aria-value → E_A11Y_ARIA_ATTR / E_A11Y_ARIA_VALUE  unknown aria-* names, invalid true/false/mixed values
+//   presentation-conflict → E_A11Y_PRESENTATION_CONFLICT role none/presentation on a focusable or ARIA-labelled element
+//   empty-th         → E_A11Y_EMPTY_TH          a rendered th with no visible text or name
+//   redundant-alt    → W_A11Y_REDUNDANT_ALT     an image alt that repeats the text next to it
+//   title-only       → W_A11Y_TITLE_ONLY        a field named only by its title
+//   input-button-name → E_A11Y_INPUT_BUTTON_NAME input type=button with no value
+//   autocomplete     → E_A11Y_AUTOCOMPLETE      tokens outside the HTML autofill grammar (SC 1.3.5)
+//   scope            → E_A11Y_SCOPE             scope on a td, or not row/col/rowgroup/colgroup
+//   html-lang / lang-valid → E_A11Y_HTML_LANG / E_A11Y_LANG_VALID  a document without lang, or an invalid language tag (SC 3.1.1)
+//   page-h1 / region / bypass → W_A11Y_PAGE_H1 / W_A11Y_REGION / W_A11Y_BYPASS  page roots: no rendered h1, text outside landmarks, no skip link before navigation
+//   landmark-top-level / duplicate-landmark → W_A11Y_LANDMARK_TOP_LEVEL / W_A11Y_DUPLICATE_LANDMARK
+//   p-as-heading     → W_A11Y_P_AS_HEADING      a paragraph styled as a heading (bold or larger) before ordinary text
+//   orientation      → E_A11Y_ORIENTATION       main content only renders in one orientation (SC 1.3.4)
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
-import { scalar, sum, diff, times, sample, clip, width as domainWidth } from './region.mjs';
+import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
+import { languageTag } from './text-font.mjs';
 import { q, add, mul, cmp, div } from './linear.mjs';
 import { intersect } from './integrity.mjs';
 
 export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable',
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
-  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text'];
+  'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text',
+  'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
+  'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -235,7 +253,8 @@ export function circleReach(region, dx, dy, r) {
 export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin }) {
   const findings = [], warnings = [], unknowns = [], notes = [], exempted = [];
   const witness = region => { const p = sample(region); return { viewport: number(p.x), viewportExact: exact(p.x), ...(block ? { viewportHeight: number(p.y), viewportHeightExact: exact(p.y) } : {}) }; };
-  const report = (list, code, severity, message, row, region, extra) => list.push({ code, severity, message, box: row.box.label, path: row.path, source: row.box.source, ...ranges(region), witness: witness(region), ...extra });
+  // `region` keeps the exact constraints: a 2-D region (e.g. width > height) is not the product of its two ranges.
+  const report = (list, code, severity, message, row, region, extra) => list.push({ code, severity, message, box: row.box.label, path: row.path, source: row.box.source, ...ranges(region), ...(block ? { regionConstraints: serialize(region).constraints } : {}), witness: witness(region), ...extra });
   const visible = row => row.paint.visibility === 'visible';
   // Interactive: buttons, links with href (or a dynamic one), and form fields (not type=hidden or disabled-hidden).
   const field = box => ['select', 'textarea'].includes(box.tag) || (box.tag === 'input' && box.inputType !== 'hidden');
@@ -264,7 +283,9 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     return box.named;
   };
   // Hidden targets (visibility, or aria-hidden content) are not exposed and need no name.
-  for (const target of geometry.filter(row => control(row) && visible(row) && nameOf(row.box) !== true && !hiddenFrom(row.path))) {
+  // Roles that require a name even when not focusable (WAI-ARIA 1.2 name required).
+  const namedRoles = new Set(['img', 'dialog', 'alertdialog', 'progressbar', 'meter', 'tooltip', 'tree', 'treegrid', 'grid', 'table', 'radiogroup', 'listbox', 'menu', 'menubar', 'tablist', 'toolbar', 'region', 'form']);
+  for (const target of geometry.filter(row => (control(row) || (row.box.role && namedRoles.has(roleOf(row.box)) && ['img', 'dialog', 'alertdialog', 'progressbar', 'meter', 'tooltip'].includes(roleOf(row.box)))) && visible(row) && nameOf(row.box) !== true && !hiddenFrom(row.path))) {
     const texts = geometry.filter(row => speaks(row) && (row.path === target.path || isAncestor(target.path, row.path)));
     let missing = [target.region];
     for (const text of texts) missing = missing.flatMap(region => subtract(region, text.region));
@@ -470,7 +491,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     const wrapped = ancestorsOf(row.path).find(a => a.tag === 'label');
     const pointed = box.id ? labels.filter(l => l.labelFor === box.id) : [];
     const dynamic = name === 'dynamic' || box.inputType === 'dynamic' || labels.some(l => l.labelFor === 'dynamic');
-    if (name === true) continue;
+    if (name === true) { if (box.nameSource === 'title' && !wrapped && !pointed.length) report(warnings, 'W_A11Y_TITLE_ONLY', 'warning', `${box.label} is named only by its title, which is not shown persistently`, row, row.region, { rule: 'title-only' }); continue; }
     // A label names its field only where the label's text renders and is visible (Chromium; unlike aria-labelledby).
     let missing = [row.region];
     for (const label of [wrapped, ...pointed].filter(Boolean)) for (const text of geometry.filter(t => speaks(t) && t.box !== box && (t.path === label.path || isAncestor(label.path, t.path)) && !isAncestor(box.path, t.path)))
@@ -596,6 +617,140 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   }
   const generic = /^(?:click here|here|read more|more|learn more|link|this|go|details|こちら|ここ|詳細|詳しくはこちら|もっと見る|続きを読む|クリック)$/;
   for (const row of links) { const name = linkName(row.box); if (name && generic.test(name)) report(warnings, 'W_A11Y_LINK_TEXT', 'warning', `${row.box.label} is named ${JSON.stringify(name)}, which does not say where it goes`, row, row.region, { rule: 'link-text' }); }
+
+  // --- WAI-ARIA 1.2 structure and values ---
+  const implicitRole = box => {
+    const explicit = roleOf(box);
+    if (explicit && ariaRoles.has(explicit)) return explicit;
+    const t = box.tag;
+    if (t === 'a') return box.focusable !== false ? 'link' : 'generic';
+    if (/^h[1-6]$/.test(t)) return 'heading';
+    if (t === 'input') return { checkbox: 'checkbox', radio: 'radio', button: 'button', submit: 'button', reset: 'button', image: 'button', range: 'slider', search: 'searchbox' }[box.inputType] ?? 'textbox';
+    return { button: 'button', nav: 'navigation', main: 'main', aside: 'complementary', article: 'article', ul: 'list', ol: 'list', li: 'listitem', table: 'table', thead: 'rowgroup', tbody: 'rowgroup', tfoot: 'rowgroup', tr: 'row', th: 'columnheader', td: 'cell', img: box.alt === '' ? 'presentation' : 'img', select: 'combobox', textarea: 'textbox', p: 'paragraph', fieldset: 'group', output: 'status' }[t] ?? 'generic';
+  };
+  const transparent = role => ['generic', 'none', 'presentation'].includes(role);
+  const requiredParent = { listitem: ['list', 'directory'], option: ['listbox', 'group'], tab: ['tablist'], menuitem: ['menu', 'menubar', 'group'], menuitemcheckbox: ['menu', 'menubar', 'group'], menuitemradio: ['menu', 'menubar', 'group'], treeitem: ['tree', 'group'], row: ['table', 'grid', 'treegrid', 'rowgroup'], cell: ['row'], gridcell: ['row'], columnheader: ['row'], rowheader: ['row'], rowgroup: ['table', 'grid', 'treegrid'] };
+  const requiredChildren = { list: ['listitem'], listbox: ['option', 'group'], tablist: ['tab'], menu: ['menuitem', 'menuitemcheckbox', 'menuitemradio', 'group', 'separator'], menubar: ['menuitem', 'menuitemcheckbox', 'menuitemradio', 'group', 'separator'], tree: ['treeitem', 'group'], grid: ['row', 'rowgroup'], table: ['row', 'rowgroup', 'caption'], row: ['cell', 'gridcell', 'columnheader', 'rowheader'] };
+  const parentRole = box => { for (const a of ancestorsOf(box.path)) { const r = implicitRole(a); if (!transparent(r)) return r; } return null; };
+  const ownedChildren = box => (box.children ?? []).flatMap(child => transparent(implicitRole(child)) && child.tag !== 'caption' ? ownedChildren(child) : [child]);
+  for (const box of all.filter(b => !hiddenFrom(b.path))) {
+    const role = roleOf(box);
+    if (!role || !ariaRoles.has(role)) continue;
+    if (requiredParent[role] && !requiredParent[role].includes(parentRole(box))) report(findings, 'E_A11Y_ROLE_PARENT', 'error', `${box.label} has role ${role} outside ${requiredParent[role].join('/')}`, whole(box), domain, { rule: 'role-parent', role });
+    if (requiredChildren[role]) for (const child of ownedChildren(box)) if (!requiredChildren[role].includes(implicitRole(child)) && child.tag !== 'caption')
+      report(findings, 'E_A11Y_ROLE_CHILDREN', 'error', `${box.label} (role ${role}) owns ${child.label}, which is not ${requiredChildren[role].join('/')}`, whole(box), domain, { rule: 'role-children', child: child.path });
+  }
+  const requiredAttributes = { checkbox: ['aria-checked'], radio: ['aria-checked'], switch: ['aria-checked'], menuitemcheckbox: ['aria-checked'], menuitemradio: ['aria-checked'], slider: ['aria-valuenow'], scrollbar: ['aria-controls', 'aria-valuenow'], combobox: ['aria-expanded'], heading: ['aria-level'], meter: ['aria-valuenow'] };
+  const nativeFor = { checkbox: b => b.tag === 'input' && b.inputType === 'checkbox', radio: b => b.tag === 'input' && b.inputType === 'radio', heading: b => /^h[1-6]$/.test(b.tag), slider: b => b.tag === 'input' && b.inputType === 'range', combobox: b => b.tag === 'select' };
+  const ariaAttributes = new Set('activedescendant atomic autocomplete braillelabel brailleroledescription busy checked colcount colindex colindextext colspan controls current describedby description details disabled dropeffect errormessage expanded flowto grabbed haspopup hidden invalid keyshortcuts label labelledby level live modal multiline multiselectable orientation owns placeholder posinset pressed readonly relevant required roledescription rowcount rowindex rowindextext rowspan selected setsize sort valuemax valuemin valuenow valuetext'.split(' ').map(n => `aria-${n}`));
+  const booleans = new Set(['aria-hidden', 'aria-disabled', 'aria-modal', 'aria-multiline', 'aria-multiselectable', 'aria-readonly', 'aria-required', 'aria-atomic', 'aria-busy']);
+  const optionals = new Set(['aria-expanded', 'aria-selected']), tristates = new Set(['aria-checked', 'aria-pressed']);
+  for (const box of all) {
+    const role = roleOf(box), aria = box.aria ?? {};
+    for (const attribute of requiredAttributes[role] ?? []) if (!(attribute in aria) && !nativeFor[role]?.(box)) report(findings, 'E_A11Y_ROLE_ATTR', 'error', `${box.label} has role ${role} without ${attribute}`, whole(box), domain, { rule: 'role-attr', attribute });
+    for (const [attribute, raw] of Object.entries(aria)) {
+      if (!ariaAttributes.has(attribute)) { report(findings, 'E_A11Y_ARIA_ATTR', 'error', `${box.label} has ${attribute}, which is not an ARIA attribute`, whole(box), domain, { rule: 'aria-attr', attribute }); continue; }
+      if (raw === 'dynamic') { if (booleans.has(attribute) || optionals.has(attribute) || tristates.has(attribute)) report(unknowns, 'U_A11Y_ARIA_VALUE', 'unknown', `${box.label}: a dynamic ${attribute} may be invalid`, whole(box), domain, { rule: 'aria-value', attribute }); continue; }
+      const v = raw.trim().toLowerCase();
+      const ok = booleans.has(attribute) ? ['true', 'false'].includes(v) : optionals.has(attribute) ? ['true', 'false', 'undefined'].includes(v) : tristates.has(attribute) ? ['true', 'false', 'mixed', 'undefined'].includes(v) : true;
+      if (!ok) report(findings, 'E_A11Y_ARIA_VALUE', 'error', `${box.label} has ${attribute}=${JSON.stringify(raw)}, not a valid value`, whole(box), domain, { rule: 'aria-value', attribute });
+    }
+    const global = ['aria-label', 'aria-labelledby', 'aria-describedby', 'aria-live', 'aria-owns', 'aria-controls'].some(a => a in aria) || (box.named === true && box.nameSource !== 'title');
+    if (['none', 'presentation'].includes(role) && (box.focusable === true || box.tabIndex >= 0 || ['button', 'input', 'select', 'textarea'].includes(box.tag) || global))
+      report(findings, 'E_A11Y_PRESENTATION_CONFLICT', 'error', `${box.label} has role ${role} but is focusable or labelled, so the role is ignored`, whole(box), domain, { rule: 'presentation-conflict' });
+  }
+
+  // --- content ---
+  for (const head of geometry.filter(row => row.box.tag === 'th' && visible(row) && !hiddenFrom(row.path) && nameOf(row.box) !== true)) {
+    let missing = [head.region];
+    for (const text of geometry.filter(row => speaks(row) && (row.path === head.path || isAncestor(head.path, row.path)))) missing = missing.flatMap(region => subtract(region, text.region));
+    for (const region of missing) report(findings, 'E_A11Y_EMPTY_TH', 'error', `${head.box.label} is an empty table header here`, head, region, { rule: 'empty-th' });
+  }
+  for (const row of geometry.filter(row => row.box.tag === 'img' && row.inlineFlow && typeof row.box.alt === 'string' && row.box.alt && row.box.alt !== 'dynamic')) {
+    const leaf = treeBoxes.get(row.parentText);
+    if (leaf?.textContent && leaf.textContent !== 'dynamic' && normalize(leaf.textContent) === normalize(row.box.alt)) report(warnings, 'W_A11Y_REDUNDANT_ALT', 'warning', `${row.box.label} has alt ${JSON.stringify(row.box.alt)}, which repeats the text beside it`, row, row.region, { rule: 'redundant-alt' });
+  }
+  for (const row of geometry.filter(row => row.box.tag === 'input' && visible(row) && !hiddenFrom(row.path))) {
+    if (row.box.inputType === 'button' && (row.box.value === undefined || (row.box.value !== 'dynamic' && !row.box.value.trim())) && nameOf(row.box) !== true) report(findings, 'E_A11Y_INPUT_BUTTON_NAME', 'error', `${row.box.label} is an input button without a value`, row, row.region, { rule: 'input-button-name' });
+  }
+  const fieldNames = new Set('name honorific-prefix given-name additional-name family-name honorific-suffix nickname username new-password current-password one-time-code organization-title organization street-address address-line1 address-line2 address-line3 address-level4 address-level3 address-level2 address-level1 country country-name postal-code cc-name cc-given-name cc-additional-name cc-family-name cc-number cc-exp cc-exp-month cc-exp-year cc-csc cc-type transaction-currency transaction-amount language bday bday-day bday-month bday-year sex url photo tel tel-country-code tel-national tel-area-code tel-local tel-local-prefix tel-local-suffix tel-extension email impp'.split(' '));
+  const contactFields = new Set(['tel', 'tel-country-code', 'tel-national', 'tel-area-code', 'tel-local', 'tel-local-prefix', 'tel-local-suffix', 'tel-extension', 'email', 'impp']);
+  const autofill = raw => {
+    let t = raw.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (t.length === 1 && ['on', 'off'].includes(t[0])) return true;
+    if (t.at(-1) === 'webauthn') t = t.slice(0, -1);
+    if (t[0]?.startsWith('section-') && t[0].length > 8) t = t.slice(1);
+    if (['shipping', 'billing'].includes(t[0])) t = t.slice(1);
+    if (['home', 'work', 'mobile', 'fax', 'pager'].includes(t[0])) { t = t.slice(1); if (!contactFields.has(t[0])) return false; }
+    return t.length === 1 && fieldNames.has(t[0]);
+  };
+  for (const box of all.filter(b => typeof b.autocomplete === 'string' && b.autocomplete !== 'dynamic' && ['input', 'select', 'textarea'].includes(b.tag)))
+    if (!autofill(box.autocomplete)) report(findings, 'E_A11Y_AUTOCOMPLETE', 'error', `${box.label} has autocomplete=${JSON.stringify(box.autocomplete)}, outside the HTML autofill tokens`, whole(box), domain, { rule: 'autocomplete', value: box.autocomplete });
+  for (const box of all.filter(b => b.scope !== undefined && b.scope !== 'dynamic'))
+    if (box.tag !== 'th' || !['row', 'col', 'rowgroup', 'colgroup'].includes(box.scope.trim().toLowerCase())) report(findings, 'E_A11Y_SCOPE', 'error', `${box.label} has scope=${JSON.stringify(box.scope)}${box.tag !== 'th' ? ' on a non-header cell' : ''}`, whole(box), domain, { rule: 'scope' });
+
+  // --- language ---
+  if (root.tag === 'html' && (root.lang === undefined || !String(root.lang).trim())) report(findings, 'E_A11Y_HTML_LANG', 'error', `${root.label} has no lang attribute`, whole(root), domain, { rule: 'html-lang' });
+  for (const box of all.filter(b => b.lang && b.lang !== '<dynamic>' && !languageTag.test(b.lang))) report(findings, 'E_A11Y_LANG_VALID', 'error', `${box.label} has lang=${JSON.stringify(box.lang)}, which is not a language tag`, whole(box), domain, { rule: 'lang-valid' });
+
+  // --- page roots (html or body) ---
+  const pageRoot = ['html', 'body'].includes(root.tag);
+  const landmarkRole = box => { const r = implicitRole(box); if (['main', 'navigation', 'complementary', 'search', 'form', 'region', 'banner', 'contentinfo'].includes(r)) return r; if ((box.tag === 'header' || box.tag === 'footer') && !ancestorsOf(box.path).some(a => ['article', 'aside', 'main', 'nav', 'section'].includes(a.tag))) return box.tag === 'header' ? 'banner' : 'contentinfo'; if (box.tag === 'section' && nameOf(box) === true) return 'region'; return null; };
+  if (pageRoot) {
+    const h1s = geometry.filter(row => row.box.tag === 'h1' && visible(row) && !hiddenFrom(row.path));
+    let noH1 = [domain];
+    for (const row of h1s) noH1 = noH1.flatMap(region => subtract(region, row.region));
+    for (const region of noH1) report(warnings, 'W_A11Y_PAGE_H1', 'warning', 'no h1 renders here', whole(root), region, { rule: 'page-h1' });
+    for (const row of geometry.filter(row => row.box.text && visible(row) && !hiddenFrom(row.path))) {
+      const inLandmark = [row.box, ...ancestorsOf(row.path)].some(b => landmarkRole(b));
+      const skipLink = row.box.tag === 'a' && typeof row.box.href === 'string' && row.box.href.startsWith('#');
+      if (!inLandmark && !skipLink) report(warnings, 'W_A11Y_REGION', 'warning', `${row.box.label} is content outside any landmark`, row, row.region, { rule: 'region' });
+    }
+    const ordered = [...all].sort((a, b) => treeOrder(a.path, b.path));
+    const firstNav = ordered.find(b => landmarkRole(b) === 'navigation'), firstMain = ordered.find(b => landmarkRole(b) === 'main');
+    if (firstNav && firstMain && treeOrder(firstNav.path, firstMain.path) < 0) {
+      const firstFocusable = ordered.find(b => b.focusable === true || (b.tag === 'button' && b.focusable !== false));
+      const target = firstFocusable?.href?.startsWith('#') ? byId.get(firstFocusable.href.slice(1)) : null;
+      const skips = target && (target === firstMain || isAncestor(firstMain.path, target.path) || isAncestor(target.path, firstMain.path) || target.path === firstMain.path);
+      if (!skips) report(warnings, 'W_A11Y_BYPASS', 'warning', 'navigation comes before main, and the first focusable element is not a skip link to it', whole(firstNav), domain, { rule: 'bypass' });
+    }
+  }
+  // Landmarks: main and complementary at top level; one banner and one contentinfo at a time.
+  for (const row of geometry.filter(row => ['main', 'complementary'].includes(landmarkRole(row.box)) && visible(row) && !hiddenFrom(row.path))) {
+    const inside = ancestorsOf(row.path).find(a => landmarkRole(a));
+    if (inside) report(warnings, 'W_A11Y_LANDMARK_TOP_LEVEL', 'warning', `${row.box.label} (${landmarkRole(row.box)}) is inside ${inside.label}; keep it at the top level`, row, row.region, { rule: 'landmark-top-level', parent: inside.path });
+  }
+  for (const kind of ['banner', 'contentinfo']) {
+    const rows = geometry.filter(row => landmarkRole(row.box) === kind && visible(row) && !hiddenFrom(row.path));
+    for (let i = 0; i < rows.length; i++) for (let j = i + 1; j < rows.length; j++) {
+      if (rows[i].path === rows[j].path) continue;
+      const region = intersect(rows[i].region, rows[j].region);
+      if (region) report(warnings, 'W_A11Y_DUPLICATE_LANDMARK', 'warning', `${rows[j].box.label} is a second ${kind} landmark`, rows[j], region, { rule: 'duplicate-landmark', other: rows[i].path });
+    }
+  }
+
+  // --- CSS that changes what the DOM says ---
+  for (const row of geometry.filter(row => row.box.tag === 'p' && row.box.text && visible(row))) {
+    const parentBox = boxOf.get(row.path.slice(0, row.path.lastIndexOf('/'))), siblings = parentBox?.children ?? [];
+    const next = siblings[siblings.indexOf(row.box) + 1];
+    if (next?.tag !== 'p') continue;
+    for (const after of geometry.filter(r => r.box === next && visible(r))) {
+      const region = intersect(row.region, after.region);
+      if (!region) continue;
+      const bold = weight(row.paint.fontWeight) >= 600 && weight(after.paint.fontWeight) < 600;
+      const a = px(row.paint.fontSize), b = px(after.paint.fontSize), bigger = a !== undefined && b !== undefined && a >= b * 1.2;
+      if (bold || bigger) report(warnings, 'W_A11Y_P_AS_HEADING', 'warning', `${row.box.label} is styled as a heading (${bold ? 'bold' : 'larger'}) but is a paragraph`, row, region, { rule: 'p-as-heading' });
+    }
+  }
+  if (block) {
+    const portrait = clip(domain, diff(height, domainWidth)), landscape = clip(domain, diff(domainWidth, height), true);
+    const mains = geometry.filter(row => landmarkRole(row.box) === 'main' && !hiddenFrom(row.path));
+    if (portrait && landscape && mains.length) {
+      const shows = part => mains.some(row => intersect(row.region, part));
+      for (const [name, part, other] of [['landscape', landscape, portrait], ['portrait', portrait, landscape]])
+        if (!shows(part) && shows(other)) report(findings, 'E_A11Y_ORIENTATION', 'error', `the main content does not render in ${name} viewports`, whole(mains[0].box), part, { rule: 'orientation', missing: name });
+    }
+  }
 
   // target-size: SC 2.5.8 (AA, 24px, with the spacing exception) or SC 2.5.5 (AAA, 44px, no spacing exception).
   // Violations are collected per target, then the declared exceptions are applied.

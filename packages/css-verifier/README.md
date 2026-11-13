@@ -109,7 +109,11 @@ geometry: accessible names, text contrast, occluded and overlapping targets,
 focusable content under aria-hidden, headings, nested interactive elements,
 duplicate ids and dangling references, image alt, form labels (a label names
 its field only where its text renders), dangling label[for], links in text told apart only by color, aria-labels that omit the visible
-text (label-in-name; boxes carry `textContent`, `ariaLabel`, `href`), tables whose headers do not render
+text (label-in-name; boxes carry `textContent`, `ariaLabel`, `href`),
+WAI-ARIA required context/states/attribute names/values, presentation
+conflicts, empty th, input buttons without value, autocomplete tokens, scope,
+html lang, main content hidden in one orientation (`orientation` media
+queries are supported), tables whose headers do not render
 and dangling td headers, list structure, unknown roles, widget roles that cannot
 take focus, focusable scroll regions, reflow at
 320px, obscured focus, zero-size focus, pointer-disabled targets and SC 2.5.8

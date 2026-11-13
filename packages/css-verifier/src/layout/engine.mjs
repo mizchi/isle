@@ -92,6 +92,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (!target) return { groups: [], target: undefined };
     }
     const groups = condition.groups.map(group => group.map(atom => {
+      if (atom.feature === 'orientation') {
+        if (!target.block) throw new Error('An orientation query needs the viewport height domain');
+        return { slack: atom.orientation === 'portrait' ? diff(target.block, target.inline) : diff(target.inline, target.block), relation: atom.relation };
+      }
       const size = inlineFeature(atom.feature) ? target.inline : target.block;
       if (!size) throw new Error('Height condition needs a known container/viewport block size');
       return { slack: diff(size, scalar(atom.value)), relation: atom.relation };

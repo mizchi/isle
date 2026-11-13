@@ -79,10 +79,18 @@ const cases = [
   {name: 'link-texts', html: '<div class="page"><a class="a1" href="/s" aria-label="Find">Search</a><a class="a2" href="/s2" aria-label="Search the site">Search</a><a class="a3" href="/p1">Pricing</a><a class="a4" href="/p2">Pricing</a><a class="a5" href="/m">Read more</a><nav class="n1" aria-label="Main"></nav><nav class="n2" aria-label="main"></nav></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff;color:#000;${type}}.a1,.a2,.a3,.a4,.a5{display:block;color:inherit}@media (width < 600px){.a4{display:none}}`,
     boxes: {'.a1': label, '.a2': label, '.a3': label, '.a4': label, '.a5': label}},
+  {name: 'aria-forms-and-orientation', html: '<div class="page"><div class="t1" role="tab" tabindex="0" aria-label="Tab" aria-selected="true"></div><div class="a1" aria-lable="x"></div><div class="a2" aria-expanded="yes"></div><button class="b1" role="presentation" aria-label="Go"></button><input class="f1" type="email" autocomplete="emial" aria-label="Email"><input class="f2" type="email" autocomplete="shipping email" aria-label="Ship"><input class="f3" type="button"><input class="f4" type="button" value="Go"><p class="p1">Title</p><p class="p2">Body</p><main class="m"></main></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff;color:#000;${type}}.t1,.a1,.a2,.m{display:block}.b1,.f1,.f2,.f3,.f4{${button}inline-size:200px;block-size:30px}.p1,.p2{display:block;font-weight:400}.p1{font-weight:700}@media (orientation: landscape){.m{display:none}}`,
+    boxes: {'.p1': label, '.p2': label}},
+  {name: 'table-scope-and-empty-header', html: '<table class="t"><thead class="h"><tr class="r"><th class="c" scope="column"></th><th class="c2" scope="col">B</th></tr></thead><tbody class="b"><tr class="r"><td class="d" scope="row">1</td><td class="d">2</td></tr></tbody></table>',
+    css: `.t{display:grid;grid-template-columns:100px 100px;grid-auto-rows:24px;background:#fff;color:#000;${type}}.h,.b,.r{display:contents}.c,.c2,.d{display:block;font-weight:700;text-align:left}`, boxes: {'.c2': label, '.d': label}},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation'];
+const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+// Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
-  && (!row.heightRange || (height >= row.heightRange.min && height <= row.heightRange.max));
+  && (!row.heightRange || (height >= row.heightRange.min && height <= row.heightRange.max))
+  && (!row.regionConstraints || row.regionConstraints.every(c => { const slack = value(c.coefficient) * width + value(c.heightCoefficient ?? '0') * height + value(c.constant); return c.strict ? slack > 1e-9 : slack >= -1e-9; }));
 
 // Paths of the static report ("Page/0/1") as element selectors under body.
 async function runtime(page, sample) {
@@ -302,6 +310,37 @@ async function runtime(page, sample) {
     return out;
   });
   for (const [rule, key] of [['label-in-name', 'inName'], ['link-purpose', 'purpose'], ['link-text', 'generic']]) for (const path of texts[key]) found.get(rule).add(path);
+  const batch = await page.evaluate(() => {
+    const out = {parent: [], attr: [], value: [], conflict: [], autocomplete: [], scope: [], heading: [], orientation: []};
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const all = [document.body.firstElementChild, ...document.body.firstElementChild.querySelectorAll('*')];
+    const known = new Set('activedescendant atomic autocomplete braillelabel brailleroledescription busy checked colcount colindex colindextext colspan controls current describedby description details disabled dropeffect errormessage expanded flowto grabbed haspopup hidden invalid keyshortcuts label labelledby level live modal multiline multiselectable orientation owns placeholder posinset pressed readonly relevant required roledescription rowcount rowindex rowindextext rowspan selected setsize sort valuemax valuemin valuenow valuetext'.split(' '));
+    for (const n of all) {
+      const role = (n.getAttribute('role') ?? '').trim().split(/\s+/)[0];
+      if (role === 'tab' && !n.parentElement.closest('[role=tablist]')) out.parent.push(pathOf(n));
+      for (const a of n.getAttributeNames().filter(a => a.startsWith('aria-'))) {
+        if (!known.has(a.slice(5))) out.attr.push(pathOf(n));
+        else if (a === 'aria-expanded' && !['true', 'false', 'undefined'].includes(n.getAttribute(a))) out.value.push(pathOf(n));
+      }
+      if (['none', 'presentation'].includes(role) && (n.matches('button, input, select, textarea, a[href]') || n.hasAttribute('aria-label'))) out.conflict.push(pathOf(n));
+      if (n.hasAttribute('autocomplete') && n.autocomplete === '') out.autocomplete.push(pathOf(n)); // Chromium normalizes invalid tokens to ''
+      if (n.hasAttribute('scope') && (n.tagName !== 'TH' || !['row', 'col', 'rowgroup', 'colgroup'].includes(n.getAttribute('scope')))) out.scope.push(pathOf(n));
+      if (n.tagName === 'P' && n.nextElementSibling?.tagName === 'P' && Number(getComputedStyle(n).fontWeight) >= 600 && Number(getComputedStyle(n.nextElementSibling).fontWeight) < 600) out.heading.push(pathOf(n));
+    }
+    const main = document.querySelector('main');
+    if (main && innerWidth > innerHeight && getComputedStyle(main).display === 'none') out.orientation.push(pathOf(main));
+    return out;
+  });
+  for (const [rule, key] of [['role-parent', 'parent'], ['aria-attr', 'attr'], ['aria-value', 'value'], ['presentation-conflict', 'conflict'], ['autocomplete', 'autocomplete'], ['scope', 'scope'], ['p-as-heading', 'heading'], ['orientation', 'orientation']]) for (const path of batch[key]) found.get(rule).add(path);
+  // Empty headers and input buttons: Chromium's AX names.
+  for (const element of elements) {
+    const kind = await (await handle(element.path)).evaluate(node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return ''; return node.matches('th') ? 'th' : node.matches('input[type=button]') ? 'button' : ''; });
+    if (!kind) continue;
+    const {result} = await client.send('Runtime.evaluate', {expression: `(() => { let n = document.body.firstElementChild; for (const i of ${JSON.stringify(element.path.split('/').slice(1).map(Number))}) n = n.children[i]; return n; })()`});
+    const {node} = await client.send('DOM.describeNode', {objectId: result.objectId});
+    const {nodes} = await client.send('Accessibility.getPartialAXTree', {backendNodeId: node.backendNodeId, fetchRelatives: false});
+    if (!(nodes[0]?.name?.value ?? '').trim()) found.get(kind === 'th' ? 'empty-th' : 'input-button-name').add(element.path);
+  }
   // Roles: Chromium's computed AX role must be the authored one; widget roles need focus.
   for (const element of elements) {
     const info = await (await handle(element.path)).evaluate(node => ({role: (node.getAttribute('role') ?? '').trim().split(/\s+/)[0], tabIndex: node.tabIndex, shown: getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility === 'visible'}));
@@ -309,7 +348,8 @@ async function runtime(page, sample) {
     const {result} = await client.send('Runtime.evaluate', {expression: `(() => { let n = document.body.firstElementChild; for (const i of ${JSON.stringify(element.path.split('/').slice(1).map(Number))}) n = n.children[i]; return n; })()`});
     const {node} = await client.send('DOM.describeNode', {objectId: result.objectId});
     const {nodes} = await client.send('Accessibility.getPartialAXTree', {backendNodeId: node.backendNodeId, fetchRelatives: false});
-    if (nodes[0]?.role?.value !== info.role) found.get('role-valid').add(element.path);
+    // none/presentation on a focusable element is overridden by conflict resolution (presentation-conflict).
+    if (!['none', 'presentation'].includes(info.role) && nodes[0]?.role?.value !== info.role) found.get('role-valid').add(element.path);
     if (info.shown && /^(?:button|link|checkbox|radio|switch|tab|menuitem|menuitemcheckbox|menuitemradio|option|slider|spinbutton|textbox|searchbox|combobox|treeitem|gridcell)$/.test(info.role) && info.tabIndex < 0) found.get('interactive-role-focusable').add(element.path);
   }
   for (const path of media.dangling) found.get('label-for').add(path);
