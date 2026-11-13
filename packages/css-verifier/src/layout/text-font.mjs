@@ -1,0 +1,63 @@
+// Font contracts for text boxes whose size bounds were derived from a font
+// (see `/text`). The core never measures text: it checks that the computed
+// CSS uses exactly the declared font settings, and reports how much of a
+// declared text domain fits at a counterexample. Pure and framework-free.
+import {q, cmp} from './linear.mjs';
+import {fontShorthand} from './css.mjs';
+
+const fontKeys = new Set(['family', 'size', 'lineHeight', 'weight', 'style']);
+const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance']);
+const finite = (value, min, max) => typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;
+
+export function validateFontContract(font) {
+  if (!font || typeof font !== 'object' || Object.keys(font).some(key => !fontKeys.has(key))) throw new Error('Invalid font contract');
+  if (typeof font.family !== 'string' || !font.family.trim() || font.family.length > 256) throw new Error('Invalid font family');
+  if (!finite(font.size, 1, 4096) || !finite(font.lineHeight, 0, 1_000_000) || (font.weight !== undefined && !finite(font.weight, 1, 1000))) throw new Error('Invalid font metrics contract');
+  if (font.style !== undefined && font.style !== 'normal') throw new Error('Only normal font-style is modeled');
+}
+
+export function validateTextMetrics(metrics) {
+  if (!metrics || typeof metrics !== 'object' || Object.keys(metrics).some(key => !metricKeys.has(key)) || !['content', 'domain'].includes(metrics.kind)) throw new Error('Invalid text metrics');
+  if (metrics.kind === 'domain') {
+    const {bounds, maxLength} = metrics;
+    if (!Number.isSafeInteger(maxLength) || maxLength < 1 || !Array.isArray(bounds) || bounds.length !== maxLength + 1 || bounds[0] !== 0) throw new Error('Invalid text domain bounds');
+    for (let i = 1; i < bounds.length; i++) if (!finite(bounds[i], bounds[i - 1], 1_000_000)) throw new Error('Text domain bounds must be finite and non-decreasing');
+  }
+}
+
+const family = value => value.split(',')[0].trim().replace(/^(['"])(.*)\1$/, '$2').toLowerCase();
+const pxValue = value => { const m = /^(\d+(?:\.\d+)?)px$/.exec(value); return m ? Number(m[1]) : undefined; };
+const weightValue = value => value === 'normal' ? 400 : value === 'bold' ? 700 : /^\d+(?:\.\d+)?$/.test(value) ? Number(value) : undefined;
+
+/**
+ * The computed font of `style` must equal the contract. Returns a reason when
+ * the derived metrics cannot apply (the caller reports Unknown), else null.
+ */
+export function textFontMismatch(style, font) {
+  for (const key of ['font-family', 'font-size', 'line-height', 'font-weight', 'font-style', 'font-stretch', 'font-variant']) {
+    if (style[key] === fontShorthand) return 'The font shorthand is not modeled; use font-family/font-size/line-height/font-weight longhands';
+  }
+  if (style['font-family'] === 'ua-default') return 'font-family is the user-agent default; declare the measured family';
+  if (family(style['font-family']) !== font.family.trim().toLowerCase()) return `font-family ${style['font-family']} differs from the measured family ${font.family}; fallback fonts are not modeled`;
+  const size = pxValue(style['font-size']);
+  if (size === undefined) return `font-size ${style['font-size']} must be a px length`;
+  if (size !== font.size) return `font-size ${style['font-size']} differs from the measured ${font.size}px`;
+  const lineHeight = pxValue(style['line-height']) ?? (/^\d+(?:\.\d+)?$/.test(style['line-height']) ? Number(style['line-height']) * size : undefined);
+  if (lineHeight === undefined) return `line-height ${style['line-height']} must be a px length or a number; normal depends on font and platform metrics`;
+  if (Math.abs(lineHeight - font.lineHeight) > 1e-9) return `line-height ${style['line-height']} differs from the measured ${font.lineHeight}px`;
+  const weight = weightValue(style['font-weight']);
+  if (weight === undefined) return `font-weight ${style['font-weight']} must be absolute`;
+  if (weight !== (font.weight ?? 400)) return `font-weight ${weight} differs from the measured ${font.weight ?? 400}`;
+  if (style['font-style'] !== (font.style ?? 'normal')) return `font-style ${style['font-style']} differs from the measured ${font.style ?? 'normal'}`;
+  if (style['font-stretch'] !== 'normal' || style['font-variant'] !== 'normal') return 'font-stretch and font-variant must be normal';
+  if (style['text-transform'] !== 'none') return `text-transform ${style['text-transform']} changes the measured characters`;
+  for (const key of ['letter-spacing', 'word-spacing']) if (!['normal', '0', '0px'].includes(style[key])) return `${key} must be normal`;
+  return null;
+}
+
+/** Largest domain length whose bound fits `offered` (an exact rational). */
+export function fittingLength(metrics, offered) {
+  let n = 0;
+  for (let i = 1; i < metrics.bounds.length; i++) if (cmp(q(metrics.bounds[i]), offered) <= 0) n = i;
+  return n;
+}

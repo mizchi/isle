@@ -1,0 +1,15 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.card {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-rows: 24px 24px;
+  column-gap: 8px;
+  padding: 0 16px;
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+.avatar { grid-column: 1; grid-row: 1 / span 2; }
+.name { grid-column: 2; grid-row: 1; }
+.title { grid-column: 2; grid-row: 2; }
+.name, .title { white-space: nowrap; }

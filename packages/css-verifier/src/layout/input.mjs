@@ -1,9 +1,10 @@
 import { q, cmp } from './linear.mjs';
 import { simpleSelector } from './css.mjs';
+import { validateFontContract, validateTextMetrics } from './text-font.mjs';
 export const boxTags = new Set('html body button div main aside section article nav header footer p span a strong em b i small h1 h2 h3 h4 h5 h6 output label'.split(' '));
 const ancestorTags=new Set([...boxTags].filter(tag=>tag!=='button'));
 const supportedOptions = new Set(['name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars']);
-const supportedContract = new Set(['minInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock']);
+const supportedContract = new Set(['minInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock', 'font', 'textMetrics']);
 function finiteSize(value, name) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1_000_000) throw new Error(`Invalid layout ${name}`);
   return q(value);
@@ -53,6 +54,11 @@ export function validateOptions(options) {
       } else finiteSize(contract.intrinsicBlockSize, 'intrinsicBlockSize');
     }
     if (contract.wrap !== undefined && !['normal', 'anywhere', 'nowrap'].includes(contract.wrap)) throw new Error('Invalid wrap contract');
+    if (contract.font !== undefined) validateFontContract(contract.font);
+    if (contract.textMetrics !== undefined) {
+      validateTextMetrics(contract.textMetrics);
+      if (!contract.font || contract.minInlineSize === undefined) throw new Error('Derived text metrics require the font contract and minInlineSize they were derived for');
+    }
     if (contract.overflow !== undefined && !['fit', 'scroll', 'clip', 'visible'].includes(contract.overflow)) throw new Error('Invalid overflow contract');
     if (contract.overflowBlock !== undefined && !['fit', 'scroll', 'clip', 'visible'].includes(contract.overflowBlock)) throw new Error('Invalid block overflow contract');
   }

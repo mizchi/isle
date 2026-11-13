@@ -10,6 +10,14 @@ css-verifier-check: check-types
     node --test packages/css-verifier/test/explanations.test.mjs tests/layout-explanations.test.mjs
     node evals/scenarios/layout-explanations/check.mjs
 
+# Build-time text metrics backed by mizchi/font (MoonBit -> JS). Never shipped to app runtime.
+css-text-build:
+    cd packages/css-verifier/text-metrics && moon build --target js --release
+
+css-text-check: css-text-build
+    node --test tests/css-text-metrics.test.mjs packages/css-verifier/test/text-font.test.mjs
+    pnpm exec playwright test --config playwright.layout.config.mjs e2e/layout-text-fonts.spec.mjs
+
 # Development-only differential oracle backed by mizchi/css (MoonBit -> JS).
 css-oracle-build:
     cd packages/css-verifier/oracle && moon build --target js --release
@@ -96,7 +104,7 @@ verify:
     moon prove models/permit
     node models/check-negative.mjs
 
-test: build-compiler
+test: build-compiler css-text-build
     moon test --target js --deny-warn
     pnpm test
 

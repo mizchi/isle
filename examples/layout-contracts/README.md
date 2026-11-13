@@ -87,3 +87,13 @@ just noshift-check
 ```
 
 [API and scope / 保証範囲](../../docs/layout-transitions.md) · [Evaluation / 評価結果](../../evals/results/layout-transitions/declared.json)
+
+## Font-derived text / フォントから導出するテキスト幅
+
+[text-fonts.isle](text-fonts.isle), [text-fonts.css](text-fonts.css) and [text-fonts.json](text-fonts.json) map `Noto Sans JP` to a subset font and declare a name of up to 12 characters from a fixed character set, plus a fixed title. The widths come from [mizchi/font](https://github.com/mizchi/font) shaping, not from trusted numbers. The name may overflow below `17921/64`px and the summary reports how many characters still fit. Run `just css-text-check` for the tests and the Chromium comparison. Only single-line (`white-space: nowrap`) text is modeled; see [ADR-0010](../../docs/adr/0010-font-derived-text-metrics.md).
+
+名前欄に最大12文字、題名に固定文字列を宣言し、幅をフォントのshapingから導出する例です。名前欄は `17921/64`px 未満で溢れ得ると報告し、その幅で収まる文字数も示します。
+
+```sh
+node tools/isle.mjs layout examples/layout-contracts/text-fonts.isle examples/layout-contracts/text-fonts.json --summary
+```

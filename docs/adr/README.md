@@ -6,7 +6,7 @@
 上位の目的は[Qwik型の事前コンパイルUIとCSSレイアウト契約の型システムへの統合](../project-purpose.md)。
 環境の再構築と作業の再開は[引き継ぎ手順](../handoff.md)を参照する。
 
-0002は **実装中**(コアとCLI)、他は **Proposed**。計画の記録と機能の実装承認を区別する。
+0002は **実装中**(コアとCLI)、0010は **実装中**(1行テキスト)、他は **Proposed**。計画の記録と機能の実装承認を区別する。
 GitHub Issueは未作成で、各文書の「Issue化」を承認後の起票に使う。
 記載した新しい型・profile・成果物名は設計案であり、現在の公開APIではない。
 
@@ -23,6 +23,7 @@ GitHub Issueは未作成で、各文書の「Issue化」を承認後の起票に
 | [0007](0007-static-contrast-contracts.md) | 6 | 単色・不透明な色の静的コントラスト検査 | 既存CSSカスケード |
 | [0008](0008-readonly-live-props.md) | 7 | client境界を越える読み取り専用live入力 | 既存ValuePhasePlan・owner管理 |
 | [0009](0009-lazy-region-factory-chunks.md) | 8 | 分岐factoryのCodeRef化と遅延チャンク分割 | 既存resume計画・manifest |
+| [0010](0010-font-derived-text-metrics.md) | 追加の指示 | mizchi/fontによる1行テキストの幅・高さの導出 | 既存CSS検証コア |
 
 0001は上位の設計方針であり、残るADRの完了を一括して宣言するものではない。
 0006・0007は独立して進められる。0008・0009も互いの完了を必須条件にしない。

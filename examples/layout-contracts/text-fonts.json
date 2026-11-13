@@ -1,0 +1,24 @@
+{
+  "component": "ProfileCard",
+  "css": "./text-fonts.css",
+  "ancestors": [{ "tag": "html" }, { "tag": "body" }],
+  "viewport": { "min": 240, "max": 1000, "height": { "min": 200, "max": 600 } },
+  "fonts": {
+    "Noto Sans JP": { "file": "../../packages/css-verifier/text-metrics/fixtures/japanese-variable.ttf" }
+  },
+  "boxes": {
+    ".name": {
+      "text": {
+        "font": { "family": "Noto Sans JP", "size": 16, "lineHeight": 24, "weight": 400 },
+        "characters": "日本語のテキスト幅検査折り返しを確認します英",
+        "maxLength": 12
+      }
+    },
+    ".title": {
+      "text": {
+        "font": { "family": "Noto Sans JP", "size": 16, "lineHeight": 24, "weight": 400 },
+        "content": "日本語のテキスト幅検査"
+      }
+    }
+  }
+}

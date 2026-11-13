@@ -51,6 +51,10 @@ export function sizeChain(chain, axis, {hostInset = 0} = {}) {
 }
 
 export function contractFact(box, property) {
+  const metrics = box.contract.textMetrics;
+  // Font-derived bounds shift trust from the caller to the font file and shaper.
+  if (metrics && property === 'minInlineSize') return {kind: 'contract', path: box.path, box: box.label, owner: box.owner, property, value: box.contract[property], selector: box.contractSelector,
+    trusted: true, derivedFrom: `${box.contract.font.family} ${box.contract.font.size}px/${box.contract.font.weight ?? 400} ${metrics.kind === 'domain' ? `${metrics.maxLength} × ${JSON.stringify(metrics.widest)}` : JSON.stringify(metrics.text)}`};
   return {kind: 'contract', path: box.path, box: box.label, owner: box.owner, property, value: box.contract[property], selector: box.contractSelector, trusted: true};
 }
 

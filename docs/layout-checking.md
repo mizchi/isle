@@ -300,6 +300,38 @@ E_LAYOUT_ITEM_SIZE: .cell requires 40px but receives 53/2px on inline axis at vi
 
 検査は`packages/css-verifier/test/explanations.test.mjs`と[説明のeval](../evals/scenarios/layout-explanations/check.mjs)。playgroundの模式図とnoshift反例への接続は未実装。
 
+## フォントから導出するテキスト寸法
+
+`layout.json`の`fonts`にCSSのfamilyとフォントファイルを対応させ、text boxへ`text`契約を書くと、
+[mizchi/font](https://github.com/mizchi/font)のshapingで幅を導出する([ADR-0010](adr/0010-font-derived-text-metrics.md))。
+固定文字列(`content`)と、文字集合と最大文字数(`characters`・`maxLength`)を扱う。
+
+```json
+"fonts": { "Noto Sans JP": { "file": "./fonts/NotoSansJP.ttf" } },
+"boxes": {
+  ".name": { "text": { "font": { "family": "Noto Sans JP", "size": 16, "lineHeight": 24, "weight": 400 },
+                       "characters": "日本語のテキスト…ABC123", "maxLength": 12 } }
+}
+```
+
+導出した幅は`minInlineSize`、1行の高さは`intrinsicBlockSize`、`wrap: "nowrap"`になり、既存の検査が全てのviewportで照合する。
+反例には収まる文字数が付く。[例](../examples/layout-contracts/text-fonts.json)では、名前欄の割当が`V − 88`、12文字の上界が`192 + 1/64`pxなので、
+viewport `[240, 17921/64)`で溢れ得ると報告する。
+
+```text
+E_LAYOUT_CONTENT: .name requires 12289/64px but receives 22017/128px on inline axis at viewport 33281/128px × 400px
+  text: up to 10 of 12 characters fit here (widest "日"); 11 or more may overflow
+  required by: .name minInlineSize 192.015625px (derived from Noto Sans JP 16px/400 12 × "日" ".name")
+```
+
+上界はshapingのadvanceを1/64 pxへ切り上げ、さらに1/64 pxを加える。Chromiumの実測は常に`[advance, 上界]`に入る。
+文字集合は各文字と全ての順序対をshapingし、`n·最大advance + (n−1)·最大対調整`を上界にする。
+
+導出した値はCSSの計算値と照合する。family(先頭)、px の font-size、px か数値の line-height、絶対値の font-weight、
+normal の font-style/stretch/variant、`text-transform: none`、normal の letter/word-spacing が契約と一致しなければ`U_LAYOUT_TEXT_FONT`のunknownにする。
+mediaで font-size を変えると、その領域だけunknownになる。`font`shorthand、`line-height: normal`、UA既定のfamily・size、
+未収録グリフ(フォールバック)、RTL、結合文字、`white-space`がnowrap以外の折り返しは対象外。
+
 ## mizchi/cssとのcascade差分検査
 
 [mizchi/css](https://github.com/mizchi/css)はMoonBitの独立したCSS parser・selector・cascade・computed style実装である。開発用の差分オラクルとして`packages/css-verifier/oracle/`でJSへbuildし、同じCSSとbox treeについて、共通の部分集合の計算値を比較する。対象はdisplay・position・box-sizing・overflow・size・padding/border/margin・gap・Grid track。

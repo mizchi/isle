@@ -1,0 +1,7 @@
+component ProfileCard(name: string) {
+  <main class="card">
+    <div class="avatar"></div>
+    <p class="name">{name}</p>
+    <p class="title">日本語のテキスト幅検査</p>
+  </main>
+}

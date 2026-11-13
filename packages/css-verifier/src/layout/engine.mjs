@@ -6,6 +6,7 @@ import { tracks, place } from './grid.mjs';
 import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
 import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
+import {textFontMismatch, fittingLength} from './text-font.mjs';
 import {fact, sizeChain, sizeProperties, trackProperties, contractFact, explanation} from './explain.mjs';
 
 const zero = q(0), one = q(1), minusOne = q(-1);
@@ -54,7 +55,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   for (const rule of rules) rule.layerName = rule.layer === null ? undefined : layers[rule.layer];
   const bounded = values => { spend(values.length); if (values.length > 512) throw new Error('Layout state limit exceeded'); return values; };
 
-  function obligation(available, required, box, region, code, axis, enabled = true, explain) {
+  function obligation(available, required, box, region, code, axis, enabled = true, explain, annotate) {
     checks.push({ box: box.label, path: box.path, code, axis, ...ranges(region), available: affine(available), required: affine(required), enforced: enabled });
     if (!enabled) return;
     const failed = clip(region, diff(required, available), true);
@@ -65,6 +66,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       ...ranges(failed), signature: JSON.stringify([box.path, code, axis, affine(available), affine(required)]),
       witness: { viewport: number(p.x), viewportExact: exact(p.x), ...(block ? { viewportHeight: number(p.y), viewportHeightExact: exact(p.y) } : {}), available: number(offered), required: number(need) },
       ...(explain ? { explanation: explain() } : {}),
+      ...(annotate ? annotate(offered) : {}),
     });
   }
 
@@ -132,6 +134,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function validate(style, box, region, emit) {
     if (style.display === 'none') return false;
     if(box.whitespace && !['normal','nowrap'].includes(style['white-space'])) throw new Error('Preserved whitespace needs explicit text geometry from the input adapter');
+    // Derived text metrics apply only to the exact font they were measured with.
+    if (box.contract?.font) { const reason = textFontMismatch(style, box.contract.font); if (reason) throw Object.assign(new Error(reason), {code: 'U_LAYOUT_TEXT_FONT'}); }
     if(box.tag==='button' && (style.appearance!=='none' || style.display!=='block')) throw new Error('Checked buttons require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets');
     if (['left', 'right', 'inline-start', 'inline-end'].includes(style.float)) { issue('E_LAYOUT_FLOAT', 'float is forbidden in checked layout', box, region); return false; }
     if (style.float !== 'none') throw new Error('Unsupported float value');
@@ -199,7 +203,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const item = axis => () => explanation(offered(axis)(), own(axis));
       const content = (axis, property) => () => explanation(sizeChain(self, axis, { hostInset: options.hostInset }), [contractFact(box, property)]);
       obligation(available.inline, inline, box, region, 'E_LAYOUT_ITEM_SIZE', 'inline', available.fitInline !== false, item('inline'));
-      if (contract.minInlineSize !== undefined) obligation(contentInline, scalar(contract.minInlineSize), box, region, 'E_LAYOUT_CONTENT', 'inline', (contract.overflow ?? 'fit') === 'fit', content('inline', 'minInlineSize'));
+      // A text domain reports how many characters still fit at the witness.
+      const domain = contract.textMetrics?.kind === 'domain' ? offeredInline => ({ text: { maxLength: contract.textMetrics.maxLength, fitsUpTo: fittingLength(contract.textMetrics, offeredInline), widest: contract.textMetrics.widest } }) : undefined;
+      if (contract.minInlineSize !== undefined) obligation(contentInline, scalar(contract.minInlineSize), box, region, 'E_LAYOUT_CONTENT', 'inline', (contract.overflow ?? 'fit') === 'fit', content('inline', 'minInlineSize'), domain);
       if (block) {
         if (available.block) obligation(available.block, blockSize, box, region, 'E_LAYOUT_ITEM_SIZE', 'block', available.fitBlock !== false, item('block'));
         if (contract.minBlockSize !== undefined) obligation(contentBlock, scalar(contract.minBlockSize), box, region, 'E_LAYOUT_CONTENT', 'block', (contract.overflowBlock ?? 'fit') === 'fit', content('block', 'minBlockSize'));

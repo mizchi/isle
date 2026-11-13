@@ -101,6 +101,29 @@ tracks, gaps and the item's placement up to a definite length or the viewport;
 `{kind: 'contract', trusted: true}`. Explanations are attached after the
 geometry is decided and never change the status, regions or proof.
 
+## Derive text sizes from a font
+
+`/text/node` measures text with [mizchi/font](https://github.com/mizchi/font)
+0.8.0 (OpenType shaping, MoonBit compiled to JS, build-time only) and resolves
+`{text}` box contracts into size contracts:
+
+```js
+import {loadTextMetrics} from '@mizchi/css-verifier/text/node';
+const metrics = await loadTextMetrics({fonts: {'Noto Sans JP': {file: 'NotoSansJP.ttf'}}});
+const font = {family: 'Noto Sans JP', size: 16, lineHeight: 24, weight: 400};
+const report = analyzeLayout(tree, metrics.resolveOptions({
+  ...options,
+  boxes: {'.name': {text: {font, characters: '日本語ABC123', maxLength: 12}}},
+}));
+```
+
+The bound is the shaped advance rounded up to 1/64 px plus 1/64 px (Chromium's
+LayoutUnit). A character domain bounds every string of up to `maxLength`
+characters by the widest character and the largest pair adjustment; findings
+report `text.fitsUpTo`. The core checks that the computed CSS font equals the
+measured one and otherwise reports Unknown. Only single-line (`nowrap`) text
+is modeled. Build the FFI with `just css-text-build`.
+
 ## Differential cascade oracle (development only)
 
 `oracle/` builds [mizchi/css](https://github.com/mizchi/css), an independent

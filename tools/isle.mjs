@@ -43,7 +43,17 @@ if (process.argv.slice(2).some(arg => ['--help', '-h'].includes(arg))) {
           const path = resolve(directory, file);
           return { file: path, css: await readFile(path, 'utf8') };
         }));
-        const report = analyzeLayout(result.ir, declaredLayoutOptions(result.ir,{ ...options, reset, cssFile, css: options.css ? await readFile(cssFile, 'utf8') : '' }));
+        // Font-derived text contracts: map CSS families to font files, then
+        // resolve `text` box contracts into size contracts (build-time only).
+        const {fonts, ...layoutOptions} = options;
+        let resolved = layoutOptions;
+        if (fonts !== undefined) {
+          if (!fonts || typeof fonts !== 'object' || Array.isArray(fonts) || Object.values(fonts).some(entry => typeof entry?.file !== 'string' || Object.keys(entry).some(key => !['file', 'weight'].includes(key)))) throw new Error('layout.json fonts must map a CSS family to {file, weight?}');
+          const {loadTextMetrics} = await import('../packages/css-verifier/src/text-node.mjs');
+          const metrics = await loadTextMetrics({fonts: Object.fromEntries(Object.entries(fonts).map(([family, entry]) => [family, {...entry, file: resolve(directory, entry.file)}]))});
+          resolved = metrics.resolveOptions(layoutOptions);
+        }
+        const report = analyzeLayout(result.ir, declaredLayoutOptions(result.ir,{ ...resolved, reset, cssFile, css: options.css ? await readFile(cssFile, 'utf8') : '' }));
         if(report.layoutBindings?.length) {
           report.declarations=await verifyDeclaredLayouts(report);
           if(report.declarations.some(p=>p.status==='unknown')) report.status='unknown';

@@ -2,9 +2,9 @@
   "version": 1,
   "status": "consistent",
   "measured": {
-    "commit": "5f43922083ab00adc2770b6bca19a759edd6394f",
-    "dirty": false,
-    "node": "v22.23.4",
+    "commit": "1b656413760194fbf3f7e3c58586fea48d9ac748",
+    "dirty": true,
+    "node": "v24.22.3",
     "oracle": "mizchi/css@0.8.1"
   },
   "input": {

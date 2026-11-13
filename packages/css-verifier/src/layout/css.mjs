@@ -17,7 +17,13 @@ const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset
 const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content']);
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
-const decoration = /^(?:color|background(?:-(?:color|image|position|size|repeat|clip|origin|attachment))?|border-(?:color|radius)|outline(?:-(?:color|style|width|offset))?|box-shadow|text-shadow|font(?:-(?:family|size|weight|style|stretch|variant))?|line-height|text-(?:align|decoration|transform)|cursor|opacity|visibility)$/;
+const decoration = /^(?:color|background(?:-(?:color|image|position|size|repeat|clip|origin|attachment))?|border-(?:color|radius)|outline(?:-(?:color|style|width|offset))?|box-shadow|text-shadow|text-(?:align|decoration)|cursor|opacity|visibility)$/;
+// Inherited text properties. They are kept as specified strings and only
+// interpreted for boxes whose contract derives text metrics from a font.
+export const textProperties = ['font-family', 'font-size', 'line-height', 'font-weight', 'font-style', 'font-stretch', 'font-variant', 'text-transform', 'letter-spacing', 'word-spacing'];
+const textPropertySet = new Set(textProperties);
+/** Marker for longhands set by the `font` shorthand, which is not modeled. */
+export const fontShorthand = 'font-shorthand';
 function expand(property, value) {
   property = aliases[property] ?? property;
   property = insets[property] ?? property;
@@ -35,7 +41,7 @@ function expand(property, value) {
   if (property==='scrollbar-color') return [];
   if (property === 'all') {
     if (!wide.has(value)) throw new Error('Unsupported all reset');
-    return [...geometry, ...['left', 'right', 'top', 'bottom'].flatMap(side => [side, `padding-${side}`, `margin-${side}`, `border-${side}`])].filter(key => key !== 'direction').map(key => [key, value]);
+    return [...geometry, ...textProperties, ...['left', 'right', 'top', 'bottom'].flatMap(side => [side, `padding-${side}`, `margin-${side}`, `border-${side}`])].filter(key => key !== 'direction').map(key => [key, value]);
   }
   if (property === 'gap' && wide.has(value)) return [['row-gap', value], ['column-gap', value]];
   if (property === 'overflow' && wide.has(value)) return [['overflow-x', value], ['overflow-y', value]];
@@ -83,6 +89,11 @@ function expand(property, value) {
     if (p.length > 2 || !p[0]) throw new Error('Unsupported container shorthand');
     return [['container-name', p[0].toLowerCase() === 'none' ? 'none' : p[0]], ['container-type', (p[1] ?? 'normal').toLowerCase()]];
   }
+  if (textPropertySet.has(property)) {
+    if (['letter-spacing', 'word-spacing'].includes(property) && !wide.has(value) && !['normal', '0', '0px'].includes(value)) throw new Error(`Unsupported ${property}: ${value}`);
+    return [[property, value]];
+  }
+  if (property === 'font') return textProperties.filter(key => key.startsWith('font-') || key === 'line-height').map(key => [key, wide.has(value) ? value : fontShorthand]);
   if (decoration.test(property)) return [];
   throw new Error(`Unsupported layout property: ${property}`);
 }
@@ -154,6 +165,10 @@ export function parseLayoutCSS(sheets, diagnostic) {
   return { rules, layers };
 }
 
+// The UA default family and the user's default font size are not author
+// facts: `medium` and `ua-default` stay unresolved for text metrics.
+const textInitial = { 'font-family': 'ua-default', 'font-size': 'medium', 'line-height': 'normal', 'font-weight': 'normal', 'font-style': 'normal', 'font-stretch': 'normal', 'font-variant': 'normal', 'text-transform': 'none', 'letter-spacing': 'normal', 'word-spacing': 'normal' };
+
 export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
   const values = {
     display: ['span', 'a', 'strong', 'em', 'b', 'i', 'small', 'output', 'label'].includes(box.tag) ? 'inline' : 'block',
@@ -172,6 +187,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
     'overflow-wrap': inherited['overflow-wrap'] ?? 'normal', float: 'none', position: 'static',
     left:'auto',right:'auto',top:'auto',bottom:'auto',
     'writing-mode': inherited['writing-mode'] ?? 'horizontal-tb', direction: inherited.direction ?? 'ltr',
+    ...Object.fromEntries(textProperties.map(key => [key, inherited[key] ?? textInitial[key]])),
   };
   const defaults={...values};
   if(box.tag==='button') {
@@ -179,8 +195,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
     for(const key of ['display','box-sizing','min-inline-size','min-block-size']) values[key]='ua';
   }
   const ua = { ...values };
-  const initial = { ...defaults, display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
-  const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction']);
+  const initial = { ...defaults, ...textInitial, display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
+  const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', ...textProperties]);
   const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={};
   const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};
   for (const rule of rules) {

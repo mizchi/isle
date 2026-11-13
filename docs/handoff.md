@@ -52,6 +52,7 @@ CSSコア単独のテストはworkspace package内にあり、rootのテスト�
 | --- | --- |
 | 独立CSS package、npm consumer、Z3、反例の出典 | `just css-verifier-check` |
 | mizchi/cssとのcascade差分(MoonBit必要) | `just css-oracle-check` |
+| フォントから導出するテキスト寸法(MoonBit必要) | `just css-text-check` |
 | noshift、DOM注釈、key、CLI/Vite、有限case eval | `just noshift-check` |
 | 宣言した親子のlayout契約 | `just layout-contract-check` |
 | browser compilerとplayground | `just playground-check` |
@@ -150,6 +151,7 @@ CLS、任意のtext/paint、未対応のscroll/transform等を保証したとは
 | `pnpm --filter @mizchi/css-verifier test` | 33件成功 |
 | `just css-oracle-check`(mizchi/css 0.8.1) | 12件成功。30,000ケース全て一致、比較対象外0件(guaranteed-invalidな`var()`をunsetとして扱う変更後)、変異6種を全て検出 |
 | `evals/scenarios/layout-explanations/check.mjs` | 5/5 |
+| `just css-text-check` | Node 7件・コア5件・Chromium 3件成功。実測幅は全て`[advance, 上界]`、上界の余裕は2/64 px以下 |
 | layout-transitionsのcheck/declared/dom/keys eval | 9/5/7/8成功、結果JSON不変、増分0 byte |
 | `e2e/layout-contract.spec.mjs` | 2件成功 |
 | `just check-types` | **環境要因で失敗**。`@types/node`がlockfileの直接依存になく、viteの型の`Buffer`が解決できない(40件、全て`node_modules`内)。リポジトリ側の型エラーは0件 |
