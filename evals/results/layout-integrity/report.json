@@ -12,7 +12,7 @@
     "clipped-content",
     "text-collision"
   ],
-  "scope": "Static integrity rules vs vlmkit check integrity (runtime). text-collision compares boxes statically and glyphs at runtime, so only runtime ⇒ static is required for it.",
+  "scope": "Static integrity rules vs vlmkit check integrity (runtime). Exempted overlays count on both sides; text-clipped counts as clipped-content. Text with a font-derived contract is compared by its painted line and must agree; other text is compared by its border box and only runtime ⇒ static is required.",
   "cases": [
     {
       "name": "rigid-row",
@@ -251,6 +251,100 @@
     },
     {
       "name": "badge-over-title",
+      "static": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          false,
+          true
+        ],
+        "text-collision": [
+          false,
+          false,
+          true
+        ]
+      },
+      "runtime": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          false,
+          true
+        ],
+        "text-collision": [
+          false,
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "name": "spilling-label",
+      "static": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          false,
+          false,
+          true
+        ]
+      },
+      "runtime": {
+        "page-overflow-x": [
+          false,
+          false,
+          false
+        ],
+        "container-protrusion": [
+          false,
+          false,
+          false
+        ],
+        "clipped-content": [
+          false,
+          false,
+          false
+        ],
+        "text-collision": [
+          false,
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "name": "box-only-label",
       "static": {
         "page-overflow-x": [
           false,

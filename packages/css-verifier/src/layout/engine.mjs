@@ -452,7 +452,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const ownOrigin = origin ?? resolvedOrigin({...style,'overflow-x':'visible','overflow-y':'visible'},available,inline,blockSize,parents);
       geometry.push({ box, path: box.path, region, origin: ownOrigin, inline, block: blockSize, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
-        overflow: ['hidden','clip'].includes(overflowValue) ? 'clip' : ['auto','scroll'].includes(overflowValue) ? 'scroll' : 'visible', overflowValue });
+        overflow: ['hidden','clip'].includes(overflowValue) ? 'clip' : ['auto','scroll'].includes(overflowValue) ? 'scroll' : 'visible', overflowValue,
+        // Where a single line of text starts inside the box (font-derived text extents).
+        content: { left: add(px(style['border-left']), px(style['padding-left'])), top: add(px(style['border-top']), px(style['padding-top'])), inline: contentInline },
+        textAlign: style['text-align'] });
       const rect=origin && blockSize ? {inlineStart:affine(origin.inline),blockStart:affine(origin.block),inlineSize:affine(inline),blockSize:affine(blockSize)} : null;
       sizes.push({ box: box.label, path: box.path, position:style.position, ...positioned,...(rect ? {rect} : {}), boxSizing: style['box-sizing'], boxSizingSource: style.$sources['box-sizing'],
         paddingInlineSize:affine(diff(inline,scalar(add(px(style['border-left']),px(style['border-right']))))),
@@ -725,11 +728,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     else merged.push({ ...finding });
   }
   diagnostics.push(...merged.map(({ signature, ...finding }) => finding));
-  let integrityWarnings = [];
+  let integrityWarnings = [], integrityExempted = [];
   if (options.integrity && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeIntegrity({ geometry, waived }, { block, targetSize: options.integrity.targetSize ?? 24, ranges });
     diagnostics.push(...judged.findings);
-    integrityWarnings = judged.warnings;
+    integrityWarnings = judged.warnings; integrityExempted = judged.exempted;
   }
   const status = diagnostics.some(d => d.severity === 'unknown') ? 'unknown' : diagnostics.length ? 'violated' : 'verified';
   return { version: 1, ok: status === 'verified', status, component,
@@ -742,5 +745,5 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     elements:boxes.map(({path,tag,id,classes,owner,targets,targetIdentity})=>({path,tag,...(id ? {id} : {}),classes,owner,...(targets?.length ? {targets} : {}),...(targetIdentity ? {targetIdentity} : {})})),
     ...(boxes.some(box=>box.layoutContracts?.length) ? {layoutBindings:boxes.flatMap(box=>(box.layoutContracts ?? []).map(declaration=>({path:box.path,declaration})))} : {}),
     ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}),
-    ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, warnings: integrityWarnings } } : {}) };
+    ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, warnings: integrityWarnings, exempted: integrityExempted } } : {}) };
 }

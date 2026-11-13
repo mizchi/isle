@@ -17,10 +17,10 @@ const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset
 const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
-const decoration = /^(?:color|background(?:-(?:color|image|position|size|repeat|clip|origin|attachment))?|border-(?:color|radius)|outline(?:-(?:color|style|width|offset))?|box-shadow|text-shadow|text-(?:align|decoration)|cursor|opacity|visibility)$/;
+const decoration = /^(?:color|background(?:-(?:color|image|position|size|repeat|clip|origin|attachment))?|border-(?:color|radius)|outline(?:-(?:color|style|width|offset))?|box-shadow|text-shadow|text-decoration|cursor|opacity|visibility)$/;
 // Inherited text properties. They are kept as specified strings and only
 // interpreted for boxes whose contract derives text metrics from a font.
-export const textProperties = ['font-family', 'font-size', 'line-height', 'font-weight', 'font-style', 'font-stretch', 'font-variant', 'text-transform', 'letter-spacing', 'word-spacing'];
+export const textProperties = ['font-family', 'font-size', 'line-height', 'font-weight', 'font-style', 'font-stretch', 'font-variant', 'text-transform', 'letter-spacing', 'word-spacing', 'text-align'];
 const textPropertySet = new Set(textProperties);
 /** Marker for longhands set by the `font` shorthand, which is not modeled. */
 export const fontShorthand = 'font-shorthand';
@@ -197,7 +197,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
 
 // The UA default family and the user's default font size are not author
 // facts: `medium` and `ua-default` stay unresolved for text metrics.
-const textInitial = { 'font-family': 'ua-default', 'font-size': 'medium', 'line-height': 'normal', 'font-weight': 'normal', 'font-style': 'normal', 'font-stretch': 'normal', 'font-variant': 'normal', 'text-transform': 'none', 'letter-spacing': 'normal', 'word-spacing': 'normal' };
+const textInitial = { 'font-family': 'ua-default', 'font-size': 'medium', 'line-height': 'normal', 'font-weight': 'normal', 'font-style': 'normal', 'font-stretch': 'normal', 'font-variant': 'normal', 'text-transform': 'none', 'letter-spacing': 'normal', 'word-spacing': 'normal', 'text-align': 'start' };
 
 export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
   const values = {

@@ -294,7 +294,7 @@ E_LAYOUT_CONTENT .body
 `integrity: true`(または `{targetSize: 24}`)を渡すと、`vlmkit check integrity` のボックスモデルの規則を viewport の全域で静的に判定する([ADR-0012](adr/0012-static-integrity-rules.md))。
 ページの横溢れ(`E_LAYOUT_PAGE_OVERFLOW`)、子の親からのはみ出し(`E_LAYOUT_PROTRUSION`)、テキスト box の重なり(`E_LAYOUT_TEXT_COLLISION`)、
 button / a の target 寸法(`E_LAYOUT_TARGET_SIZE`)はエラー、overflow で切れる内容(`W_LAYOUT_CLIPPED`)と入れ子のスクロール(`W_LAYOUT_NESTED_SCROLL`)は警告になる。
-契約で溢れを許した場合も報告する。vlmkit の4px閾値は持たず、text-collision は border box で判定する。vlmkit との差分は `e2e/layout-integrity.spec.mjs` で確認する。
+契約で溢れを許した場合も報告する。vlmkit の4px閾値は持たない。text-collision は、フォント由来のテキスト契約を持つ leaf では描かれる1行の範囲(上界の幅を `text-align` で配置し、入りきらなければ行頭寄せ)、それ以外は border box で判定し、absolute の box が関わる重なりは免除として記録する。vlmkit との差分は `e2e/layout-integrity.spec.mjs` で確認する。
 
 ## 反例の出典
 

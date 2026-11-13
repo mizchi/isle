@@ -39,10 +39,48 @@ test('text-collision finds an absolutely positioned label over a text leaf', () 
   const tree = {tag: 'main', classes: ['card'], children: [{tag: 'p', classes: ['title'], text: true}, {tag: 'span', classes: ['badge'], text: true}]};
   const css = '.card { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 40px; position: relative; block-size: 40px; }\n.title { white-space: nowrap; }\n.badge { display: block; position: absolute; top: 0; right: 0; inline-size: 60px; block-size: 20px; white-space: nowrap; }\n';
   const boxes = {'.title': {minInlineSize: 10, overflow: 'clip', overflowBlock: 'clip'}, '.badge': {minInlineSize: 10, overflow: 'clip', overflowBlock: 'clip'}};
-  const report = run(tree, css, {boxes});
+  const report = run(tree, css.replace('.title { white-space: nowrap; }', '.title { white-space: nowrap; overflow: hidden; }').replace('white-space: nowrap; }\n', 'white-space: nowrap; overflow: hidden; }\n'), {boxes});
+  // A positioned box is an authored overlay: recorded, not an error (as vlmkit exempts it).
+  assert.ok(!find(report, 'E_LAYOUT_TEXT_COLLISION'), JSON.stringify(report.diagnostics));
+  const exemption = report.integrity.exempted.find(e => e.code === 'E_LAYOUT_TEXT_COLLISION');
+  assert.equal(exemption.other, 'Page/1');
+  assert.match(exemption.reason, /overlay/);
+});
+
+// Hand-written font-derived contracts (ADR-0010): a single line `width` px wide.
+const font = {family: 'Roboto', size: 16, lineHeight: 20, weight: 400};
+const line = width => ({minInlineSize: width, intrinsicBlockSize: 20, wrap: 'nowrap', font, textMetrics: {kind: 'content', text: 'x', width}});
+const textCSS = '.t { white-space: nowrap; font-family: Roboto; font-size: 16px; line-height: 20px; }\n';
+
+test('font-derived text extents find text that spills into its neighbour', () => {
+  const tree = {tag: 'main', classes: ['row'], children: [{tag: 'p', classes: ['t', 'a'], text: true}, {tag: 'p', classes: ['t', 'b'], text: true}]};
+  const css = textCSS + '.row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }\n';
+  // a's 400px line overflows its half (overflow allowed) and reaches b's 100px line below V = 800.
+  const report = run(tree, css, {boxes: {'.a': {...line(400), overflow: 'visible'}, '.b': line(100)}});
   const collision = find(report, 'E_LAYOUT_TEXT_COLLISION');
-  assert.ok(collision, JSON.stringify(report.diagnostics));
-  assert.equal(collision.other, 'Page/1');
+  assert.deepEqual(collision.basis, ['text', 'text']);
+  assert.equal(collision.range.maxExact, '800');
+  // The same boxes with border-box extents never overlap: grid cells are disjoint.
+  const boxes = run(tree, css, {boxes: {'.a': {minInlineSize: 10, intrinsicBlockSize: 20, overflow: 'visible'}, '.b': {minInlineSize: 10, intrinsicBlockSize: 20}}});
+  assert.ok(!find(boxes, 'E_LAYOUT_TEXT_COLLISION'));
+});
+
+test('text-align places the line, and an overflowing line is start-aligned', () => {
+  const tree = {tag: 'main', classes: ['stack'], children: [{tag: 'p', classes: ['t', 'a'], text: true}, {tag: 'p', classes: ['t', 'b'], text: true}]};
+  // Two rows overlapped on purpose by a negative-free trick is not possible in-flow, so
+  // place b absolutely over a and read the exempted overlap regions.
+  const css = textCSS + '.stack { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 20px; position: relative; block-size: 20px; }\n.b { display: block; position: absolute; top: 0; left: 0; inline-size: 100px; block-size: 20px; }\n';
+  const exempted = align => run(tree, css + `.a { text-align: ${align}; }\n`, {boxes: {'.a': line(200), '.b': line(50)}}).integrity.exempted.filter(e => e.code === 'E_LAYOUT_TEXT_COLLISION');
+  // start: a's line [0, 200) meets b's [0, 50) everywhere.
+  assert.equal(exempted('start')[0].range.minExact, '320');
+  // end: a's line [V-200, V) meets b only while V - 200 < 50.
+  assert.equal(exempted('end').length, 0);
+  // center: [(V-200)/2, (V+200)/2) meets [0, 50) while (V-200)/2 < 50, i.e. V < 300 — outside the domain.
+  assert.equal(exempted('center').length, 0);
+  const narrow = align => run(tree, css + `.a { text-align: ${align}; }\n`, {viewport: {...domain, min: 100}, boxes: {'.a': line(200), '.b': line(50)}}).integrity.exempted.filter(e => e.code === 'E_LAYOUT_TEXT_COLLISION');
+  // Below 200px the 200px line overflows and is start-aligned, so it meets b again.
+  assert.equal(narrow('end')[0].range.maxExact, '250');
+  assert.equal(narrow('center')[0].range.maxExact, '300');
 });
 
 test('target-undersized requires 24px buttons in both axes', () => {

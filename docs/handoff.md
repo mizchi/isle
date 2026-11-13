@@ -53,7 +53,7 @@ CSSコア単独のテストはworkspace package内にあり、rootのテスト�
 | 独立CSS package、npm consumer、Z3、反例の出典 | `just css-verifier-check` |
 | mizchi/cssとのcascade差分(MoonBit必要) | `just css-oracle-check` |
 | フォントから導出するテキスト寸法(MoonBit必要) | `just css-text-check` |
-| integrity 規則(`packages/css-verifier/test/integrity.test.mjs`、`e2e/layout-integrity.spec.mjs`) | コア5件。vlmkit 0.24.0 と6構成×3幅で規則ごとに一致(text-collision は vlmkit ⇒ 静的のみ) |
+| integrity 規則(`packages/css-verifier/test/integrity.test.mjs`、`e2e/layout-integrity.spec.mjs`) | コア7件。vlmkit 0.24.0 と8構成×3幅で規則ごとに一致(フォント契約のあるテキストは text-collision も一致、契約のない text は vlmkit ⇒ 静的のみ) |
 | flex/contents サブセット(`packages/css-verifier/test/flex-contents.test.mjs`、`e2e/layout-flex.spec.mjs`) | コア24件、Chromium 25ケースで矩形が1/64 px以内で一致。flexの比較はmizchi/css 0.8.2で既定に含める |
 | noshift、DOM注釈、key、CLI/Vite、有限case eval | `just noshift-check` |
 | 宣言した親子のlayout契約 | `just layout-contract-check` |
