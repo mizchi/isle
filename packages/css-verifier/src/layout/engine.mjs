@@ -177,6 +177,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto'))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
     // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
+    if (/^scale/.test(style.transform) && ((box.children ?? []).length || box.inline?.length)) throw Object.assign(new Error('scale is modeled on leaf boxes only (it would scale every descendant)'), { code: 'U_LAYOUT_CSS' });
     if (style.transform !== 'none' && !options.accessibility && !options.integrity) throw Object.assign(new Error(`transform ${style.transform} moves the painted box; it is modeled for the accessibility and integrity checks only`), { code: 'U_LAYOUT_CSS' });
     if (['left', 'right', 'inline-start', 'inline-end'].includes(style.float)) { issue('E_LAYOUT_FLOAT', 'float is forbidden in checked layout', box, region); return false; }
     if (style.float !== 'none') throw new Error('Unsupported float value');
@@ -558,8 +559,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const origin=resolvedOrigin(style,available,inline,blockSize,parents);
       const overflowValue=[style['overflow-x'],style['overflow-y']].find(v=>v!=='visible') ?? 'visible';
       // A box's own overflow clips its content, not its border box.
-      const ownOrigin = origin ?? resolvedOrigin({...style,'overflow-x':'visible','overflow-y':'visible'},available,inline,blockSize,parents);
-      geometry.push({ box, path: box.path, region, origin: ownOrigin, inline, block: blockSize, position: style.position,
+      const unscaledOrigin = origin ?? resolvedOrigin({...style,'overflow-x':'visible','overflow-y':'visible'},available,inline,blockSize,parents);
+      const painted = scaled(style, unscaledOrigin, inline, blockSize), ownOrigin = painted.origin;
+      geometry.push({ box, path: box.path, region, origin: ownOrigin, inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
         overflow: ['hidden','clip'].includes(overflowValue) ? 'clip' : ['auto','scroll'].includes(overflowValue) ? 'scroll' : 'visible', overflowValue,
         // Where a single line of text starts inside the box (font-derived text extents).
@@ -574,7 +576,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         ...(style['animation-name'] !== 'none' ? { reducedMotion: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set(['prefers-reduced-motion:reduce'])).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
         ...(focusableBox(box) ? { focusStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, focusState).map(s => ({ region: s.region, paint: paintFacts(s.style), authorOutline: Boolean(s.style.$sources['outline-style']) })) } : {}) });
       if (box.inline?.length) inlineContent(box, style, region, [...parents, { box, style }], geometry.at(-1).chain, geometry.at(-1));
-      const rect=origin && blockSize ? {inlineStart:affine(origin.inline),blockStart:affine(origin.block),inlineSize:affine(inline),blockSize:affine(blockSize)} : null;
+      const shown = scaled(style, origin, inline, blockSize);
+      const rect=shown.origin && shown.block ? {inlineStart:affine(shown.origin.inline),blockStart:affine(shown.origin.block),inlineSize:affine(shown.inline),blockSize:affine(shown.block)} : null;
       sizes.push({ box: box.label, path: box.path, position:style.position, ...positioned,...(rect ? {rect} : {}), boxSizing: style['box-sizing'], boxSizingSource: style.$sources['box-sizing'],
         paddingInlineSize:affine(diff(inline,scalar(add(px(style['border-left']),px(style['border-right']))))),
         ...(blockSize ? {paddingBlockSize:affine(diff(blockSize,scalar(add(px(style['border-top']),px(style['border-bottom'])))))} : {}),
@@ -603,6 +606,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // Root-relative border coordinates. Scroll offsets/gutter placement and shared
   // subgrid line offsets are deliberately outside the first transition profile.
   // A px translate moves the box (and, through its origin, its descendants) after layout.
+  // A scale (leaves only) shrinks or grows the painted rectangle about its centre: (origin, size) after it.
+  function scaled(style, origin, inline, blockSize) {
+    const m = /^scale\(([\d.]+), ([\d.]+)\)$/.exec(style.transform ?? 'none');
+    if (!m) return { origin, inline, block: blockSize };
+    const sx = q(m[1]), sy = q(m[2]), half = div(one, q(2));
+    return { origin: origin && blockSize ? offset(origin, times(inline, mul(sub(one, sx), half)), times(blockSize, mul(sub(one, sy), half))) : null, inline: times(inline, sx), block: blockSize ? times(blockSize, sy) : blockSize };
+  }
   function translated(style, origin) {
     const m = /^translate\((-?[\d.]+)px, (-?[\d.]+)px\)$/.exec(style.transform ?? 'none');
     return origin && m ? offset(origin, scalar(q(m[1])), scalar(q(m[2]))) : origin;

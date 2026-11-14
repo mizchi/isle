@@ -1054,4 +1054,7 @@ test('a px translate moves a box and its descendants; other transforms are Unkno
   assert.equal(find(moved, 'E_A11Y_OCCLUDED').length, 0);
   assert.equal(moved.sizes.find(r => r.box === '.b' && r.rect).rect.blockStart.constant, '50');
   for (const t of ['rotate(3deg)', 'translate(10%, 0)', 'scale(2)']) assert.equal(run(tree, css(`.w { transform: ${t}; }`)).status, 'unknown', t);
+  // A scale on a leaf shrinks its painted box about the centre: a half-size cover misses the button's ends.
+  const half = run(tree, css('.b { transform: scale(.5); }'));
+  assert.deepEqual(['inlineStart', 'inlineSize', 'blockStart', 'blockSize'].map(k => half.sizes.find(r => r.box === '.b' && r.rect).rect[k].constant), ['50', '100', '10', '20']);
 });

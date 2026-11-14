@@ -147,10 +147,16 @@ function expand(property, value) {
     if (wide.has(value) || value === 'none') return [[property, value]];
     const t = /^translate\(\s*(-?\d+(?:\.\d{1,6})?px|0)\s*(?:,\s*(-?\d+(?:\.\d{1,6})?px|0)\s*)?\)$/.exec(value) ?? /^translatex\(\s*(-?\d+(?:\.\d{1,6})?px|0)\s*\)$/.exec(value);
     const y = /^translatey\(\s*(-?\d+(?:\.\d{1,6})?px|0)\s*\)$/.exec(value);
-    if (!t && !y) throw new Error(`Unsupported transform: ${value} (only px translate is modeled)`);
+    // scale(s), scale(sx, sy), scaleX(s), scaleY(s) with positive factors, about the default centre.
+    const num = '((?:\\d+(?:\\.\\d{1,6})?|\\.\\d{1,6}))';
+    const sc = new RegExp(`^scale\\(\\s*${num}\\s*(?:,\\s*${num}\\s*)?\\)$`).exec(value), sx = new RegExp(`^scalex\\(\\s*${num}\\s*\\)$`).exec(value), sy = new RegExp(`^scaley\\(\\s*${num}\\s*\\)$`).exec(value);
+    const f = v => v.startsWith('.') ? `0${v}` : v;
+    if (sc || sx || sy) return [[property, sc ? `scale(${f(sc[1])}, ${f(sc[2] ?? sc[1])})` : sx ? `scale(${f(sx[1])}, 1)` : `scale(1, ${f(sy[1])})`]];
+    if (!t && !y) throw new Error(`Unsupported transform: ${value} (only px translate and scale are modeled)`);
     const n = v => v === undefined || v === '0' ? '0px' : v;
     return [[property, y ? `translate(0px, ${n(y[1])})` : `translate(${n(t[1])}, ${n(t[2])})`]];
   }
+  if (property === 'transform-origin') { if (!wide.has(value) && !['center', '50% 50%', 'center center'].includes(value)) throw new Error(`Unsupported transform-origin: ${value}`); return []; }
   if (property === 'isolation') { if (!wide.has(value) && !['auto', 'isolate'].includes(value)) throw new Error(`Unsupported isolation: ${value}`); return [[property, value]]; }
   if (property === 'z-index') { if (!wide.has(value) && !/^(?:auto|-?\d+)$/.test(value)) throw new Error(`Unsupported z-index: ${value}`); return [[property, value]]; }
   if (paintProperties.includes(property)) {
