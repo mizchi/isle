@@ -917,7 +917,7 @@ test('content taller than a table cell is Unknown, not overflow (the row grows)'
   assert.deepEqual(report.diagnostics.map(d => d.code), ['U_LAYOUT_TABLE']);
 });
 
-test('nested px rowspans grow shorter spans first; a span starting inside another is Unknown', () => {
+test('nested px rowspans grow shorter spans first; rows that start a rowspan take the excess first', () => {
   const tableView = {min: 420, max: 1280, height: {min: 400, max: 900}};
   const rect = (report, cls) => report.sizes.find(r => r.box === `.${cls}` && r.rect).rect;
   const td = (cls, rowSpan) => ({tag: 'td', classes: [cls], ...(rowSpan ? {rowSpan} : {})});
@@ -927,5 +927,9 @@ test('nested px rowspans grow shorter spans first; a span starting inside anothe
   const nested = run(table([[td('a', 3), td('b', 2), td('c')], [td('c')], [td('x'), td('c')]]), css, {viewport: tableView});
   assert.equal(nested.status, 'verified', JSON.stringify(nested.diagnostics));
   assert.equal(rect(nested, 'x').blockSize.constant, '549/32');
-  assert.equal(run(table([[td('a', 2), td('c'), td('c')], [td('c'), td('b', 2)], [td('c'), td('c')]]), css, {viewport: tableView}).status, 'unknown');
+  // A span starting inside a (both two rows): the excess goes to that row (Chromium: rows that start a rowspan first).
+  const inside = run(table([[td('a', 2), td('c'), td('c')], [td('m'), td('b', 2)], [td('n'), td('c')]]), css.replace('.a { block-size: 120px;', '.a { block-size: 100px;').replace('.b { block-size: 60px;', '.b { block-size: 30px;'), {viewport: tableView});
+  assert.equal(inside.status, 'verified', JSON.stringify(inside.diagnostics));
+  assert.equal(rect(inside, 'm').blockSize.constant, '90');
+  assert.equal(rect(inside, 'n').blockStart.constant, '100');
 });

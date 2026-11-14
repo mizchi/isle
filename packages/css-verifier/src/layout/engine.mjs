@@ -651,7 +651,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     for (const row of rows) {
       const rs = styles(row, region, parents, style, false, false);
       const heights = new Set(row.children.filter(cell => !cell.tableRowSpan).map(cell => rs.flatMap(r => styles(cell, r.region, parents, r.style, false, false)).map(c => c.style['block-size']).join('|')));
-      if (heights.size > 1) fail('Cells of one row with different block-size values are not modeled (table cells stretch to the row)');
+      // With rowspan the rows become explicit tracks (the tallest cell) and cells stretch; otherwise a grid item would not.
+      if (heights.size > 1 && !rows.some(row => row.children.some(cell => cell.tableRowSpan))) fail('Cells of one row with different block-size values are not modeled (table cells stretch to the row)');
     }
     const [h, v = h] = String(style['border-spacing']).split(/\s+/).map(part => px(part));
     // A rowspan cell is stretched over its rows; it must not size them (Chromium and grid distribute differently).
@@ -665,18 +666,19 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (rows.some(row => row.children.some(cell => cell.tableRowSpan))) rowTracks = rows.map(row => {
       const own = row.children.filter(cell => !cell.tableRowSpan);
       if (!own.length) return zero;
-      const cs = one(styles(own[0], region, parents, one(styles(row, region, parents, style, false, false)), false, false));
-      if (!/^\d+(?:\.\d+)?px$/.test(cs['block-size'])) fail('With rowspan, every row needs cells with a px block-size');
-      const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-      return cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']);
+      const rowStyle = one(styles(row, region, parents, style, false, false));
+      return own.map(cell => {
+        const cs = one(styles(cell, region, parents, rowStyle, false, false));
+        if (!/^\d+(?:\.\d+)?px$/.test(cs['block-size'])) fail('With rowspan, every row needs cells with a px block-size');
+        const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+        return cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']);
+      }).reduce((a, b) => cmp(a, b) >= 0 ? a : b);
     });
     // A taller rowspan cell grows its rows in proportion to their heights (all to the last row when they are 0),
     // each share floored to 1/64px and the rest to the last row (measured in Chromium). Spans may not overlap.
     if (rowTracks) {
-      // Spans grow in order of their length (shorter first, measured with nested spans); a span that starts
-      // inside another one's rows (not at its first row) distributes differently in Chromium: Unknown.
+      // Spans grow in order of their length (shorter first; measured with nested spans).
       const spans = rows.flatMap((row, r) => row.children.filter(cell => cell.tableRowSpan).map(cell => ({ cell, row, r, n: cell.tableRowSpan })));
-      for (const a of spans) for (const b of spans) if (a !== b && b.r > a.r && b.r < a.r + a.n) fail('A rowspan cell that starts inside another rowspan is not modeled');
       for (const { cell, row, r, n } of spans.toSorted((a, b) => a.n - b.n)) {
         const cs = one(styles(cell, region, parents, one(styles(row, region, parents, style, false, false)), false, false));
         if (cs['block-size'] === 'auto') continue;
@@ -684,9 +686,24 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const target = sub(cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']), mul(v, q(n - 1)));
         const spanned = rowTracks.slice(r, r + n), total = spanned.reduce(add, zero);
         if (cmp(target, total) <= 0) continue;
+        // Chromium's DistributeExcessBlockSizeToRows for a rowspan (rows here all have fixed heights, so none is
+        // unconstrained): (1) rows after the first that start a rowspan share the excess equally; else (2) all rows
+        // empty: the last takes it; else (3) the non-empty rows grow in proportion to their heights. Shares are
+        // LayoutUnits (1/64px, truncated); the last receiving row takes the remainder.
         const floor64 = value => div(q(String(Math.floor(number(mul(value, q(64))) + 1e-9))), q(64));
-        const grown = cmp(total, zero) === 0 ? [...spanned.slice(0, -1), target] : spanned.slice(0, -1).map(h => floor64(div(mul(h, target), total)));
-        if (cmp(total, zero) !== 0) grown.push(sub(target, grown.reduce(add, zero)));
+        const excess = sub(target, total), grown = [...spanned];
+        const starting = spanned.map((_, k) => k).filter(k => k > 0 && spans.some(other => other.r === r + k));
+        const nonEmpty = spanned.map((h, k) => k).filter(k => cmp(spanned[k], zero) > 0);
+        const share = (receivers, weight) => {
+          let given = zero;
+          receivers.forEach((k, i) => {
+            const part = i === receivers.length - 1 ? sub(excess, given) : floor64(weight(k));
+            grown[k] = add(grown[k], part); given = add(given, part);
+          });
+        };
+        if (starting.length) share(starting, () => div(excess, q(starting.length)));
+        else if (!nonEmpty.length) share([n - 1], () => excess);
+        else share(nonEmpty, k => div(mul(spanned[k], excess), total));
         rowTracks.splice(r, n, ...grown);
       }
       rowTracks = rowTracks.map(value => `${number(value)}px`);
