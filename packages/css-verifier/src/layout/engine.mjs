@@ -2,6 +2,7 @@ import { q, add, sub, mul, cmp, div, exact, number } from './linear.mjs';
 import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rectangle, clip, partition, projection, serialize } from './region.mjs';
 import { validateOptions } from './input.mjs';
 import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize } from './css.mjs';
+import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place } from './grid.mjs';
 import { compileSelector } from './selectors.mjs';
 import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
@@ -226,6 +227,26 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const relevant = rules.filter(rule => rule.selectors.some(selector => matches(selector, box, state)));
     const contexts = new Map();
     for (const rule of relevant) for (const condition of rule.contexts) if (!contexts.has(condition)) contexts.set(condition, context(condition, ancestors));
+    // An img in a picture: the first earlier source with a srcset whose media matches (and whose type Chromium
+    // decodes) is selected; its media conditions split the region like a media rule.
+    const pictureSources = (() => {
+      const picture = box.tag === 'img' && !box.pseudo ? ancestors.at(-1)?.box : null;
+      if (picture?.tag !== 'picture') return [];
+      return (picture.children ?? []).slice(0, picture.children.indexOf(box)).filter(child => child.tag === 'source' && child.imageSize?.srcset !== undefined).map(source => {
+        const facts = source.imageSize;
+        if ([facts.srcset, facts.media, facts.type].includes('dynamic')) throw Object.assign(new Error(`${box.label}: a picture source with a dynamic srcset, media or type is not modeled`), { code: 'U_LAYOUT_IMAGE' });
+        if (facts.type !== undefined && !/^image\/(?:avif|webp|png|jpeg|gif|svg\+xml)$/i.test(facts.type.trim())) throw Object.assign(new Error(`${box.label}: a picture source of type ${facts.type} may not be decoded`), { code: 'U_LAYOUT_IMAGE' });
+        let condition = null;
+        if (facts.media !== undefined && facts.media.trim() && facts.media.trim().toLowerCase() !== 'all') {
+          try { condition = parseCondition(facts.media, 'media'); } catch (error) { throw Object.assign(new Error(`${box.label}: source media ${facts.media}: ${error.message}`), { code: 'U_LAYOUT_IMAGE' }); }
+          if (condition.groups.flat().some(atom => atom.preference)) throw Object.assign(new Error(`${box.label}: a preference media query on a picture source is not modeled`), { code: 'U_LAYOUT_IMAGE' });
+          contexts.set(condition, context(condition, ancestors));
+        }
+        // One candidate URL (optionally 1x): its file's natural size is the loaded size.
+        const single = /^\s*(\S+)(?:\s+1x)?\s*$/.exec(facts.srcset);
+        return { condition, facts, src: single && !single[1].endsWith(',') ? single[1] : null };
+      });
+    })();
     let regions = [region];
     const split = new Set();
     for (const compiled of contexts.values()) for (const atom of compiled.groups.flat()) {
@@ -243,17 +264,20 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (gridItem && inherited && style.display === 'inline') style.display = 'block';
       // An img's width/height attributes are presentational hints (below every author rule) for its width and height,
       // and set its aspect-ratio to auto w / h (HTML rendering §15.4.3; measured).
-      if (box.tag === 'img' && box.imageSize && !box.pseudo) {
-        const { width: w, height: hgt } = box.imageSize;
+      const chosen = pictureSources.find(source => !source.condition || activeContext(contexts.get(source.condition)));
+      // A selected source with width or height attributes is the image's dimension source; else the img's own.
+      const imageFacts = chosen ? { ...((chosen.facts.width !== undefined || chosen.facts.height !== undefined) ? { width: chosen.facts.width, height: chosen.facts.height } : { width: box.imageSize?.width, height: box.imageSize?.height }), src: chosen.src ?? 'dynamic' } : box.imageSize;
+      if (box.tag === 'img' && imageFacts && !box.pseudo) {
+        const { width: w, height: hgt } = imageFacts;
         if (Number.isFinite(w) && style['inline-size'] === 'auto' && !style.$sources['inline-size']) style = { ...style, 'inline-size': `${w}px` };
         if (Number.isFinite(hgt) && style['block-size'] === 'auto' && !style.$sources['block-size']) style = { ...style, 'block-size': `${hgt}px` };
         if (Number.isFinite(w) && Number.isFinite(hgt) && w > 0 && hgt > 0 && style['aspect-ratio'] === 'auto' && !style.$sources['aspect-ratio']) style = { ...style, 'aspect-ratio': `auto ${w}/${hgt}` };
         // The loaded image's natural size (a static file read at build time) against what was reserved before it loads.
-        const natural = typeof box.imageSize.src === 'string' ? options.images?.[box.imageSize.src] : undefined;
+        const natural = typeof imageFacts.src === 'string' ? options.images?.[imageFacts.src] : undefined;
         if (style['block-size'] === 'auto' && natural) {
           const reserved = /^auto (\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/.exec(style['aspect-ratio']);
-          if (style['aspect-ratio'] === 'auto') style = { ...style, 'aspect-ratio': `auto ${natural.width}/${natural.height}`, $imageUnreserved: natural };
-          else if (reserved && Number(reserved[1]) * natural.height !== Number(reserved[2]) * natural.width) style = { ...style, $imageRatioMismatch: { natural, reserved: `${reserved[1]}/${reserved[2]}` } };
+          if (style['aspect-ratio'] === 'auto') style = { ...style, 'aspect-ratio': `auto ${natural.width}/${natural.height}`, $imageUnreserved: { ...natural, src: imageFacts.src } };
+          else if (reserved && Number(reserved[1]) * natural.height !== Number(reserved[2]) * natural.width) style = { ...style, $imageRatioMismatch: { src: imageFacts.src, natural, reserved: `${reserved[1]}/${reserved[2]}` } };
         }
       }
       // A user-agent checkbox or radio (appearance auto, size, padding, border and minimum untouched): Chromium draws it
@@ -312,8 +336,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // Replaced elements and text fields have intrinsic sizes the model does not compute.
     // Layout shifts from images (Layout Instability, measured): an img without a reserved height gets one when it
     // loads; one whose reserved ratio differs from the file's changes height when it loads.
-    if (box.tag === 'img' && style.$imageUnreserved && emit) issue('E_LAYOUT_IMAGE_UNRESERVED', `${box.label} has no reserved height: it shifts the layout when ${box.imageSize.src} loads; add width="${style.$imageUnreserved.width}" height="${style.$imageUnreserved.height}" (the file's size) or an aspect-ratio`, box, region);
-    if (box.tag === 'img' && style.$imageRatioMismatch && emit) issue('E_LAYOUT_IMAGE_RATIO', `${box.label} reserves the ratio ${style.$imageRatioMismatch.reserved} but ${box.imageSize.src} is ${style.$imageRatioMismatch.natural.width}×${style.$imageRatioMismatch.natural.height}: its height changes when it loads`, box, region);
+    if (box.tag === 'img' && style.$imageUnreserved && emit) issue('E_LAYOUT_IMAGE_UNRESERVED', `${box.label} has no reserved height: it shifts the layout when ${style.$imageUnreserved.src} loads; add width="${style.$imageUnreserved.width}" height="${style.$imageUnreserved.height}" (the file's size) or an aspect-ratio`, box, region);
+    if (box.tag === 'img' && style.$imageRatioMismatch && emit) issue('E_LAYOUT_IMAGE_RATIO', `${box.label} reserves the ratio ${style.$imageRatioMismatch.reserved} but ${style.$imageRatioMismatch.src} is ${style.$imageRatioMismatch.natural.width}×${style.$imageRatioMismatch.natural.height}: its height changes when it loads`, box, region);
     if (box.tag === 'img' && !box.pseudo && style['block-size'] === 'auto' && !ratioOf(style) && block) throw Object.assign(new Error(`${box.label} has no reserved height (no height, aspect-ratio or width/height attributes) and its file's size is not known; it shifts the layout when it loads`), { code: 'U_LAYOUT_IMAGE' });
     // An img may leave its block-size auto when an aspect-ratio (CSS or its width/height attributes) gives it.
     if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto' && !(box.tag === 'img' && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);

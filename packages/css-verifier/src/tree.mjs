@@ -26,7 +26,7 @@ export function accessibilityFacts(tag, attributes) {
   // Image sizes (img and picture's source): the width/height attributes (non-negative integers, presentational
   // hints and the default aspect-ratio), the src, and a source's media.
   const dimension = name => has(name) && value(name) !== undefined && /^\s*\d+\s*$/.test(value(name)) ? Number(value(name)) : has(name) ? 'dynamic' : undefined;
-  const imageSize = ['img', 'source'].includes(tag) ? Object.fromEntries([['width', dimension('width')], ['height', dimension('height')], ['src', has('src') ? (value('src') ?? 'dynamic') : undefined], ['srcset', has('srcset') ? (value('srcset') ?? 'dynamic') : undefined], ['media', has('media') ? (value('media') ?? 'dynamic') : undefined]].filter(([, v]) => v !== undefined)) : undefined;
+  const imageSize = ['img', 'source'].includes(tag) ? Object.fromEntries([['width', dimension('width')], ['height', dimension('height')], ['src', has('src') ? (value('src') ?? 'dynamic') : undefined], ['srcset', has('srcset') ? (value('srcset') ?? 'dynamic') : undefined], ['media', has('media') ? (value('media') ?? 'dynamic') : undefined], ['type', tag === 'source' && has('type') ? (value('type') ?? 'dynamic') : undefined]].filter(([, v]) => v !== undefined)) : undefined;
   // Images and form fields: alt (text, '' for decorative, 'dynamic'), label[for], placeholder.
   const alt = (tag === 'img' || (tag === 'input' && value('type')?.trim().toLowerCase() === 'image')) && has('alt') ? (value('alt') === undefined ? 'dynamic' : value('alt').trim()) : undefined;
   const labelFor = tag === 'label' && has('for') ? (value('for') === undefined ? 'dynamic' : value('for').trim()) : undefined;

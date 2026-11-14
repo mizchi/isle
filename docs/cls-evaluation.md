@@ -164,5 +164,5 @@ CLS の計算にも最適化にも寄与しない。アクセシビリティの�
 | 2 | ~~T~~ 実装済み:`noshift` で transform を無視する(レイアウトの矩形 `layoutRect` で比較。Chromium の CLS と 5 例で一致) | 測定で裏付けがある。transform で送るカルーセルとアニメーションをすぐ証明可能にする |
 | 3 | C2・C3:カルーセルの状態ごとの高さと、初期化前後の `noshift` | 既存の `noshift` と状態の列挙の組み合わせで済む |
 | 4 | ~~H~~ 実装済み:配置を変える `:hover` を CLS の候補として報告する(`E_LAYOUT_HOVER_SHIFT`。Chromium の CLS と 6 例で一致) | `:focus` の配置し直しを流用できる |
-| 5 | B3・B4:`picture` の media ごとの比と、失敗時の代替表示 | media の区間分けと、要素の種類の規則で済む |
+| 5 | ~~B3~~ 実装済み:`picture` の media ごとの比(B4 の inline の代替表示は、検査器が `img` に `display: block` を要求するので対象外) | media の区間分けと、要素の種類の規則で済む |
 | 6 | A:配置のアニメーションの score の上限(ADR-0001 M2・M3) | score は非線形なので、上界の設計が要る。最も大きい |

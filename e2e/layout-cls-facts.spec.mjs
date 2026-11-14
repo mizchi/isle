@@ -5,12 +5,13 @@ import {test, expect} from '@playwright/test';
 import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
 
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR42mNk+M9Qz0AEYBxVSAAAAP//AwAOfQkB4x7nNgAAAABJRU5ErkJggg==', 'base64'); // 2×1
+const square = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'); // 1×1
 const observe = `window.__shifts=[];new PerformanceObserver(list=>{for(const e of list.getEntries()) window.__shifts.push({value:e.value,input:e.hadRecentInput})}).observe({type:'layout-shift',buffered:true});`;
 
-async function shifts(page, body, {script = '', wait = 1500, act} = {}) {
-  await page.setViewportSize({width: 800, height: 600});
+async function shifts(page, body, {script = '', wait = 1500, act, width = 800} = {}) {
+  await page.setViewportSize({width, height: 600});
   // A 600ms delay makes the image arrive after the first frames; broken.png answers 404 after the same delay.
-  await page.route('**/slow.png', async route => { await new Promise(r => setTimeout(r, 600)); await route.fulfill({body: png, contentType: 'image/png'}); });
+  await page.route(/\/(?:slow|wide|narrow)\.png$/, async route => { await new Promise(r => setTimeout(r, 600)); await route.fulfill({body: route.request().url().endsWith('/narrow.png') ? square : png, contentType: 'image/png'}); });
   await page.route('**/broken.png', async route => { await new Promise(r => setTimeout(r, 600)); await route.fulfill({status: 404, body: 'x'}); });
   await page.route('http://cls.test/', route => route.fulfill({contentType: 'text/html', body: `<!doctype html><html lang="en"><head><script>${observe}</script></head><body style="margin:0">${body}<script>${script}</script></body></html>`}));
   await page.goto('http://cls.test/');
@@ -101,5 +102,23 @@ test('static :hover layout-shift findings agree with Chromium', async ({page}) =
     const predicted = report.diagnostics.some(d => d.code === 'E_LAYOUT_HOVER_SHIFT');
     const measured = await shifts(page, `<style>${base + rule}</style>${html}`, {act: async p => { await p.mouse.move(700, 590); await p.waitForTimeout(300); await p.mouse.move(400, y); }});
     expect(measured.score > 0, `${name}: static ${predicted}, Chromium ${measured.score}`).toBe(predicted);
+  }
+});
+
+test('picture: static per-media source reservations agree with Chromium layout shifts', async ({page}) => {
+  // wide.png is 2×1 (it matches a 1600×800 reservation), narrow.png 1×1 (it matches the img's 800×800).
+  const css = '*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}picture{display:grid;grid-template-columns:minmax(0,1fr)}img{display:block;width:100%;height:auto}.t{block-size:20px}';
+  const images = {'/wide.png': {width: 2, height: 1}, '/narrow.png': {width: 1, height: 1}};
+  const cases = [
+    ['sized sources', '<source media="(min-width: 600px)" srcset="/wide.png" width="1600" height="800"><img src="/narrow.png" width="800" height="800" alt="">'],
+    ['unsized wide source', '<source media="(min-width: 600px)" srcset="/wide.png"><img src="/narrow.png" width="800" height="800" alt="">'],
+  ];
+  for (const [name, inner] of cases) for (const width of [800, 400]) {
+    const html = `<div class="page"><picture>${inner}</picture><p class="t">below</p></div>`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: width, max: width, height: {min: 600, max: 600}}, images, boxes: {'.t': {minInlineSize: 1, intrinsicBlockSize: 20}}});
+    const predicted = report.diagnostics.some(d => /^E_LAYOUT_IMAGE_/.test(d.code));
+    expect(report.diagnostics.filter(d => d.severity === 'unknown'), name).toEqual([]);
+    const measured = await shifts(page, `<style>${css}</style>${html}`, {width});
+    expect(measured.score > 0, `${name} at ${width}: static ${predicted}, Chromium ${measured.score}`).toBe(predicted);
   }
 });
