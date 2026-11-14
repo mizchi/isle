@@ -150,8 +150,8 @@ const cases = [
   {name: 'visual-presentation-aaa', html: '<div class="page"><p class="a">Tight lines wrap here</p><p class="b">Justified lines wrap here</p><p class="c">Loose lines wrap here</p><div class="j"><p class="d">Inherited justify</p></div></div>',
     css: `.page{display:grid;grid-template-columns:300px;background:#fff;color:#000;${type}}.a,.b,.c,.d{display:block;block-size:48px}.a{line-height:20px}.b,.c,.d{line-height:24px}.b,.j{text-align:justify}.j{display:grid;grid-template-columns:minmax(0,1fr)}`,
     accessibility: {contrast: 'AAA'}, boxes: {'.a': label, '.b': label, '.c': label, '.d': label}},
-  {name: 'flashing-boxes', html: '<div class="page"><div class="f1"></div><div class="f2"></div><div class="f3"></div><div class="f4"></div></div>',
-    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:auto;background:#fff}.f1,.f2,.f3,.f4{display:block;inline-size:200px;block-size:200px;background:#000}.f1{animation:blink .2s infinite}.f2{animation:blink 1s infinite}.f3{inline-size:100px;block-size:100px;animation:blink .2s infinite}.f4{animation:fade .2s infinite alternate}@keyframes blink{0%{background-color:#000}50%{background-color:#fff}100%{background-color:#000}}@keyframes fade{from{opacity:1}to{opacity:0}}`, skip: ['motion']},
+  {name: 'flashing-boxes', html: '<div class="page"><div class="f1"></div><div class="f2"></div><div class="f3"></div><div class="f4"></div><div class="f5"></div><div class="f6"></div></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:auto;background:#fff}.f5{display:block;inline-size:200px;block-size:200px;background:#c00;animation:red .2s infinite}.f6{display:block;inline-size:200px;block-size:200px;background:#00c;animation:blue .2s infinite}@keyframes red{0%{background-color:#c00}50%{background-color:#f00}100%{background-color:#c00}}@keyframes blue{0%{background-color:#00c}50%{background-color:#00f}100%{background-color:#00c}}.f1,.f2,.f3,.f4{display:block;inline-size:200px;block-size:200px;background:#000}.f1{animation:blink .2s infinite}.f2{animation:blink 1s infinite}.f3{inline-size:100px;block-size:100px;animation:blink .2s infinite}.f4{animation:fade .2s infinite alternate}@keyframes blink{0%{background-color:#000}50%{background-color:#fff}100%{background-color:#000}}@keyframes fade{from{opacity:1}to{opacity:0}}`, skip: ['motion']},
   {name: 'fragment-under-header', html: '<div class="page"><div class="h"></div><a class="l1" href="#s1" aria-label="A"></a><a class="l2" href="#s2" aria-label="B"></a><div class="gap"></div><h2 class="t1" id="s1" aria-label="One"></h2><div class="gap"></div><h2 class="t2" id="s2" aria-label="Two"></h2><div class="tall"></div></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:sticky;top:0;block-size:60px;background:#333}.l1,.l2{display:block;block-size:30px}.gap{block-size:1000px}.t1,.t2{display:block;block-size:40px}.t2{scroll-margin-top:70px}.tall{block-size:1500px}`, skip: ['empty-heading', 'focus-scrolled-under']},
   {name: 'fixed-sidebar-hides', html: '<div class="page"><nav class="side" aria-label="Side"></nav><div class="gap"></div><div class="row"><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button></div><div class="tall"></div></div>',
@@ -799,12 +799,14 @@ async function runtime(page, sample) {
       const layers = []; for (let n = node.parentElement; n; n = n.parentElement) layers.push(rgba(getComputedStyle(n).backgroundColor));
       let behind = {r: 255, g: 255, b: 255, a: 1}; for (const layer of layers.reverse()) behind = over(layer, behind);
       const base = {bg: node.style.backgroundColor || null};
-      const levels = frames.map(f => { const c = rgba(f.backgroundColor ?? style.backgroundColor); c.a *= Math.min(1, Number(f.opacity ?? style.opacity)); return lum(over(c, behind)); });
-      if (frames[0].offset > 0) levels.unshift(lum(over(rgba(style.backgroundColor), behind)));
-      if (frames.at(-1).offset < 1) levels.push(lum(over(rgba(style.backgroundColor), behind)));
-      const big = (x, y) => Math.abs(x - y) >= 0.1 && Math.min(x, y) < 0.8;
-      let changes = 0; for (let i = 1; i < levels.length; i++) if (big(levels[i - 1], levels[i])) changes++;
-      const count = timing.iterations, wraps = count > 1 && !/alternate/.test(timing.direction) && big(levels.at(-1), levels[0]);
+      const colors = frames.map(f => { const c = rgba(f.backgroundColor ?? style.backgroundColor); c.a *= Math.min(1, Number(f.opacity ?? style.opacity)); return over(c, behind); });
+      if (frames[0].offset > 0) colors.unshift(over(rgba(style.backgroundColor), behind));
+      if (frames.at(-1).offset < 1) colors.push(over(rgba(style.backgroundColor), behind));
+      const levels = colors.map(lum);
+      const red = c => { const [r, g, b] = [c.r / 255, c.g / 255, c.b / 255]; return {saturated: r + g + b > 0 && r / (r + g + b) >= 0.8, value: Math.max(0, r - g - b) * 320}; };
+      const big = (i, j) => (Math.abs(levels[i] - levels[j]) >= 0.1 && Math.min(levels[i], levels[j]) < 0.8) || ((red(colors[i]).saturated || red(colors[j]).saturated) && Math.abs(red(colors[i]).value - red(colors[j]).value) > 20);
+      let changes = 0; for (let i = 1; i < levels.length; i++) if (big(i - 1, i)) changes++;
+      const count = timing.iterations, wraps = count > 1 && !/alternate/.test(timing.direction) && big(levels.length - 1, 0);
       const per = changes + (wraps ? 1 : 0), perSecond = per / (timing.duration / 1000) / 2, total = per * Math.min(count, 1e9) / 2;
       const r = node.getBoundingClientRect();
       animation.play();

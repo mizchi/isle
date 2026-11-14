@@ -1335,14 +1335,17 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     const shade = step => {
       const color = parseColor(step.props['background-color'] ?? own.backgroundColor), op = step.props.opacity ?? own.opacity ?? '1';
       const alpha = /^(?:\d+(?:\.\d+)?|\.\d+)%?$/.test(String(op)) ? (String(op).endsWith('%') ? parseFloat(op) / 100 : Number(op)) : null;
-      return color && alpha !== null && !behind.unknown ? luminance(over({ ...color, a: color.a * Math.min(1, alpha) }, behind.bg)) : null;
+      return color && alpha !== null && !behind.unknown ? over({ ...color, a: color.a * Math.min(1, alpha) }, behind.bg) : null;
     };
-    const levels = steps.map(shade);
+    const colors = steps.map(shade), levels = colors.map(c => c && luminance(c));
     if (levels.some(level => level === null)) { report(unknowns, 'U_A11Y_FLASH', 'unknown', `${row.box.label}: the colors of animation ${a.name} are not modeled, so whether it flashes is unknown`, row, row.region, { rule: 'flash' }); continue; }
-    const big = (x, y) => Math.abs(x - y) >= 0.1 && Math.min(x, y) < 0.8;
-    let changes = 0; for (let i = 1; i < levels.length; i++) if (big(levels[i - 1], levels[i])) changes++;
+    // A general flash change (luminance) or a red flash change: a saturated red (R/(R+G+B) ≥ 0.8) on either side and
+    // the (R − G − B) × 320 value (sRGB 0–1, negative as 0) moving by more than 20.
+    const red = c => { const [r, g, b] = [c.r / 255, c.g / 255, c.b / 255]; return { saturated: r + g + b > 0 && r / (r + g + b) >= 0.8, value: Math.max(0, r - g - b) * 320 }; };
+    const change = (i, j) => { const [x, y] = [levels[i], levels[j]], [p, q] = [red(colors[i]), red(colors[j])]; return (Math.abs(x - y) >= 0.1 && Math.min(x, y) < 0.8) || ((p.saturated || q.saturated) && Math.abs(p.value - q.value) > 20); };
+    let changes = 0; for (let i = 1; i < levels.length; i++) if (change(i - 1, i)) changes++;
     // Repeating without alternate jumps from the last frame back to the first.
-    const wraps = count > 1 && !/alternate/.test(String(a.direction)) && big(levels.at(-1), levels[0]);
+    const wraps = count > 1 && !/alternate/.test(String(a.direction)) && change(levels.length - 1, 0);
     const perIteration = changes + (wraps ? 1 : 0), perSecond = perIteration / duration / 2, total = (perIteration * Math.min(count, 1e9)) / 2;
     if (!(perSecond > 3) || !(total > 3)) continue;
     const width = constant(row.inline), heightValue = constant(row.block);

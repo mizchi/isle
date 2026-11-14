@@ -1501,3 +1501,12 @@ test('flash: a large box that flashes more than three times a second', () => {
   assert.deepEqual(codes('soft 0.1s infinite alternate'), []); // too small a luminance change
   assert.deepEqual(codes('blink 0.2s 2'), []); // two flashes in all
 });
+
+test('flash: a saturated red flash counts even with a small luminance change', () => {
+  const tree = page([{tag: 'div', classes: ['f']}]);
+  const css = frames => pageCSS(`.page { background: #fff; grid-auto-rows: auto; }\n.f { inline-size: 200px; block-size: 200px; background: #400; animation: pulse 0.2s infinite; }\n@keyframes pulse { ${frames} }`);
+  const codes = frames => run(tree, css(frames)).diagnostics.filter(d => d.rule === 'flash').map(d => d.code);
+  // #c00 ↔ #f00 moves luminance by 0.08 only (no general flash) but is a red flash; the same in blue is neither.
+  assert.deepEqual(codes('0% { background-color: #c00; } 50% { background-color: #f00; } 100% { background-color: #c00; }'), ['E_A11Y_FLASH']);
+  assert.deepEqual(codes('0% { background-color: #00c; } 50% { background-color: #00f; } 100% { background-color: #00c; }'), []);
+});
