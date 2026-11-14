@@ -95,13 +95,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -165,7 +165,7 @@ export function paintFacts(style) {
   return { color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
     isolation: style.isolation, transform: style.transform, scrollMargin: { top: style['scroll-margin-top'], bottom: style['scroll-margin-bottom'] }, scrollPadding: { top: style['scroll-padding-top'], bottom: style['scroll-padding-bottom'] }, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], outlineColor: style['outline-color'], outlineOffset: style['outline-offset'], clippedAway: style['clip-path'] === 'empty' || (style.clip === 'empty' && ['absolute', 'fixed'].includes(style.$fixed ? 'fixed' : style.position)), borderColors: { top: style['border-top-color'], right: style['border-right-color'], bottom: style['border-bottom-color'], left: style['border-left-color'] }, boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
-    animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] } };
+    animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] , direction: style['animation-direction'] } };
 }
 const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(String(value)); return m && (m[2] ? Number(m[1]) / 100 : Number(m[1])) >= 1; };
 /**
@@ -294,7 +294,7 @@ export function circleReach(region, dx, dy, r) {
   return { yes, maybe };
 }
 
-export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0, viewportBlock = null, scrollPaddingDeclared = false }) {
+export function judgeAccessibility({ geometry, waived = [], root, domain }, { keyframeFrames = new Map(), contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0, viewportBlock = null, scrollPaddingDeclared = false }) {
   const findings = [], warnings = [], unknowns = [], notes = [], exempted = [];
   // Generated boxes (::before/::after) paint and receive the pointer (for their element), but carry no DOM semantics.
   const everything = geometry;
@@ -1320,6 +1320,34 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   for (const row of geometry.filter(row => lasting(row.paint.animation) && visible(row) && !hiddenFrom(row.path))) {
     const still = (row.reducedMotion ?? []).filter(s => lasting(s.paint.animation) || (s.paint.animation && s.paint.animation.playState !== 'paused' && seconds(s.paint.animation.duration) > 0 && s.paint.animation.count === 'infinite'));
     for (const s of still) report(warnings, 'W_A11Y_MOTION', 'warning', `${row.box.label} runs animation ${row.paint.animation.name} (${row.paint.animation.duration} × ${row.paint.animation.count}) and prefers-reduced-motion: reduce does not stop it; moving content over 5s needs a pause mechanism`, row, s.region, { rule: 'motion', animation: row.paint.animation });
+  }
+  // flash (SC 2.3.1): an animation whose frames swing the box's composited luminance by 0.1 or more (the darker side
+  // below 0.8) is a pair of opposing changes per flash. Over three flashes in a second, on a box of at least the WCAG
+  // small-safe area (21824 px², a quarter of 341 × 256), is an error. Frames give background-color and opacity.
+  const flashSeconds = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(ms|s)$/.exec(String(value)); return m ? Number(m[1]) / (m[2] === 'ms' ? 1000 : 1) : null; };
+  const constant = a => a && a.x.n === 0n && a.y.n === 0n ? number(a.b) : null;
+  for (const row of placed.filter(row => row.paint.animation && visible(row) && !hiddenFrom(row.path) && row.chain && keyframeFrames?.get(row.paint.animation.name)?.length)) {
+    const a = row.paint.animation, duration = flashSeconds(a.duration), count = a.count === 'infinite' ? Infinity : Number(a.count);
+    if (!(duration > 0) || a.playState === 'paused' || !(count > 0)) continue;
+    const frames = keyframeFrames.get(a.name), own = row.chain.at(-1);
+    const steps = [...(frames[0].offset > 0 ? [{ offset: 0, props: {} }] : []), ...frames, ...(frames.at(-1).offset < 1 ? [{ offset: 1, props: {} }] : [])];
+    const behind = backdrop([...row.chain.slice(0, -1), { color: '#000', backgroundColor: 'transparent', backgroundImage: 'none', opacity: '1' }]);
+    const shade = step => {
+      const color = parseColor(step.props['background-color'] ?? own.backgroundColor), op = step.props.opacity ?? own.opacity ?? '1';
+      const alpha = /^(?:\d+(?:\.\d+)?|\.\d+)%?$/.test(String(op)) ? (String(op).endsWith('%') ? parseFloat(op) / 100 : Number(op)) : null;
+      return color && alpha !== null && !behind.unknown ? luminance(over({ ...color, a: color.a * Math.min(1, alpha) }, behind.bg)) : null;
+    };
+    const levels = steps.map(shade);
+    if (levels.some(level => level === null)) { report(unknowns, 'U_A11Y_FLASH', 'unknown', `${row.box.label}: the colors of animation ${a.name} are not modeled, so whether it flashes is unknown`, row, row.region, { rule: 'flash' }); continue; }
+    const big = (x, y) => Math.abs(x - y) >= 0.1 && Math.min(x, y) < 0.8;
+    let changes = 0; for (let i = 1; i < levels.length; i++) if (big(levels[i - 1], levels[i])) changes++;
+    // Repeating without alternate jumps from the last frame back to the first.
+    const wraps = count > 1 && !/alternate/.test(String(a.direction)) && big(levels.at(-1), levels[0]);
+    const perIteration = changes + (wraps ? 1 : 0), perSecond = perIteration / duration / 2, total = (perIteration * Math.min(count, 1e9)) / 2;
+    if (!(perSecond > 3) || !(total > 3)) continue;
+    const width = constant(row.inline), heightValue = constant(row.block);
+    if (width === null || heightValue === null) { report(unknowns, 'U_A11Y_FLASH', 'unknown', `${row.box.label} flashes ${perSecond.toFixed(1)} times a second; its area varies, so whether it passes the small-flash threshold is not decided`, row, row.region, { rule: 'flash' }); continue; }
+    if (width * heightValue >= 21824) report(findings, 'E_A11Y_FLASH', 'error', `${row.box.label} flashes ${perSecond.toFixed(1)} times a second over ${width}×${heightValue}px (SC 2.3.1 allows three)`, row, row.region, { rule: 'flash', perSecond });
   }
   // blink: marquee and blink move or flash with no pause mechanism.
   for (const row of geometry.filter(row => ['marquee', 'blink'].includes(row.box.tag) && visible(row)))

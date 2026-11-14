@@ -150,6 +150,8 @@ const cases = [
   {name: 'visual-presentation-aaa', html: '<div class="page"><p class="a">Tight lines wrap here</p><p class="b">Justified lines wrap here</p><p class="c">Loose lines wrap here</p><div class="j"><p class="d">Inherited justify</p></div></div>',
     css: `.page{display:grid;grid-template-columns:300px;background:#fff;color:#000;${type}}.a,.b,.c,.d{display:block;block-size:48px}.a{line-height:20px}.b,.c,.d{line-height:24px}.b,.j{text-align:justify}.j{display:grid;grid-template-columns:minmax(0,1fr)}`,
     accessibility: {contrast: 'AAA'}, boxes: {'.a': label, '.b': label, '.c': label, '.d': label}},
+  {name: 'flashing-boxes', html: '<div class="page"><div class="f1"></div><div class="f2"></div><div class="f3"></div><div class="f4"></div></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:auto;background:#fff}.f1,.f2,.f3,.f4{display:block;inline-size:200px;block-size:200px;background:#000}.f1{animation:blink .2s infinite}.f2{animation:blink 1s infinite}.f3{inline-size:100px;block-size:100px;animation:blink .2s infinite}.f4{animation:fade .2s infinite alternate}@keyframes blink{0%{background-color:#000}50%{background-color:#fff}100%{background-color:#000}}@keyframes fade{from{opacity:1}to{opacity:0}}`, skip: ['motion']},
   {name: 'fragment-under-header', html: '<div class="page"><div class="h"></div><a class="l1" href="#s1" aria-label="A"></a><a class="l2" href="#s2" aria-label="B"></a><div class="gap"></div><h2 class="t1" id="s1" aria-label="One"></h2><div class="gap"></div><h2 class="t2" id="s2" aria-label="Two"></h2><div class="tall"></div></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:sticky;top:0;block-size:60px;background:#333}.l1,.l2{display:block;block-size:30px}.gap{block-size:1000px}.t1,.t2{display:block;block-size:40px}.t2{scroll-margin-top:70px}.tall{block-size:1500px}`, skip: ['empty-heading', 'focus-scrolled-under']},
   {name: 'fixed-sidebar-hides', html: '<div class="page"><nav class="side" aria-label="Side"></nav><div class="gap"></div><div class="row"><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button></div><div class="tall"></div></div>',
@@ -173,7 +175,7 @@ const cases = [
   {name: 'clickable-lists-and-markup', html: '<div class="page"><div class="card"></div><button class="b" aria-label="Go"></button><ul class="l"><li class="i"></li></ul><ul class="l2" role="list"><li class="i"></li></ul><dl class="d"><dt class="dt"></dt><p class="p"></p></dl><marquee class="m"></marquee><a class="k1" href="#1" accesskey="s" aria-label="One"></a><a class="k2" href="#2" accesskey="s" aria-label="Two"></a><img class="im" src="data:," alt="Map" ismap></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.card{display:block;cursor:pointer}.b{${button}cursor:pointer;inline-size:24px;block-size:24px}.l,.l2,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;list-style:none}.i,.dt,.p{display:block}.m{display:block;inline-size:200px;block-size:24px}.k1,.k2{display:block}.im{display:block;inline-size:24px;block-size:24px}`},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash'];
 const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
 // Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -781,6 +783,37 @@ async function runtime(page, sample) {
     return [...out];
   }, elements.map(e => e.path));
   for (const path of hidden) found.get('fixed-hides-content').add(path);
+  // Flashes (SC 2.3.1) from the browser's animations: getKeyframes() colors and opacity over the composited backdrop,
+  // the computed timing, and the rendered area.
+  const flashes = await page.evaluate(() => {
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const probe = document.createElement('div'); document.body.appendChild(probe);
+    const rgba = value => { probe.style.backgroundColor = ''; probe.style.backgroundColor = value; const m = getComputedStyle(probe).backgroundColor.match(/[\d.]+/g).map(Number); return {r: m[0], g: m[1], b: m[2], a: m[3] ?? 1}; };
+    const over = (t, b) => { const a = t.a + b.a * (1 - t.a); const mix = k => (t[k] * t.a + b[k] * b.a * (1 - t.a)) / a; return {r: mix('r'), g: mix('g'), b: mix('b'), a}; };
+    const lum = c => { const f = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+    const out = [];
+    for (const animation of document.getAnimations()) {
+      const node = animation.effect.target; if (!node || !node.getClientRects().length) continue;
+      const timing = animation.effect.getComputedTiming(), frames = animation.effect.getKeyframes(), style = getComputedStyle(node);
+      animation.pause(); // measure the base values without the running frame
+      const layers = []; for (let n = node.parentElement; n; n = n.parentElement) layers.push(rgba(getComputedStyle(n).backgroundColor));
+      let behind = {r: 255, g: 255, b: 255, a: 1}; for (const layer of layers.reverse()) behind = over(layer, behind);
+      const base = {bg: node.style.backgroundColor || null};
+      const levels = frames.map(f => { const c = rgba(f.backgroundColor ?? style.backgroundColor); c.a *= Math.min(1, Number(f.opacity ?? style.opacity)); return lum(over(c, behind)); });
+      if (frames[0].offset > 0) levels.unshift(lum(over(rgba(style.backgroundColor), behind)));
+      if (frames.at(-1).offset < 1) levels.push(lum(over(rgba(style.backgroundColor), behind)));
+      const big = (x, y) => Math.abs(x - y) >= 0.1 && Math.min(x, y) < 0.8;
+      let changes = 0; for (let i = 1; i < levels.length; i++) if (big(levels[i - 1], levels[i])) changes++;
+      const count = timing.iterations, wraps = count > 1 && !/alternate/.test(timing.direction) && big(levels.at(-1), levels[0]);
+      const per = changes + (wraps ? 1 : 0), perSecond = per / (timing.duration / 1000) / 2, total = per * Math.min(count, 1e9) / 2;
+      const r = node.getBoundingClientRect();
+      animation.play();
+      if (perSecond > 3 && total > 3 && r.width * r.height >= 21824) out.push(pathOf(node));
+    }
+    probe.remove();
+    return out;
+  });
+  for (const path of flashes) found.get('flash').add(path);
   // Fragment jumps: scrollIntoView() on the #id target (fragment navigation aligns its top, with scroll-margin and
   // scroll-padding); its top line inside a fixed or sticky painted bar.
   const jumps = await page.evaluate(() => {

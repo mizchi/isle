@@ -78,6 +78,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | clickable-look | `cursor: pointer` をその要素で(継承ではなく)指定したのに、フォーカスも interactive な role もない(SC 2.1.1。click handler は木の外なので警告) | W_A11Y_CLICK_LOOK |
 | list-style-semantics | role のない ul/ol の li が全て `list-style-type: none`(WebKit/VoiceOver は list として読まない。nav の中は除く) | W_A11Y_LIST_STYLE |
 | motion | 5 秒を超える(か無限の)animation を `prefers-reduced-motion: reduce` でも止めない(SC 2.2.2・2.3.3) | W_A11Y_MOTION |
+| flash | animation の keyframes の background-color・opacity で、箱の合成した相対輝度が 0.1 以上(暗い側 0.8 未満)変わる変化を数え、2 回の変化を 1 回の flash として毎秒 3 回を超え(合計でも 3 回を超え)、箱の面積が小さい flash の基準(21824 px²、341×256 の 1/4)以上(SC 2.3.1)。alternate でない繰り返しは最後から最初への跳びも数える。面積が定数でなければ Unknown。Chromium の照合は getAnimations() の keyframes と計算された timing で測る | E_A11Y_FLASH |
 | blink | 描画される marquee(SC 2.2.2) | E_A11Y_BLINK |
 | definition-list | dl の子が dt・dd・それらの div 以外、または dl の外の dt/dd | E_A11Y_DL |
 | accesskeys | 同じ accesskey を複数の要素が持つ | W_A11Y_ACCESSKEY |
