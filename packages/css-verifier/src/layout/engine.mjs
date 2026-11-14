@@ -574,7 +574,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // Inside an overflow: clip box positions are exact but parts may be clipped away: the other rules see no
       // position (as before), focus-clipped reads clipOrigin.
       const underClip = parents.some(p => p.clipScope);
-      geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, clipOrigin: ownOrigin, inline: painted.inline, block: painted.block, position: style.position,
+      geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
         // overflow: clip clips without scrolling (hidden still scrolls a focused descendant into view).
         clipAxes: { inline: style['overflow-x'] === 'clip', block: style['overflow-y'] === 'clip' },
@@ -610,17 +610,20 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const L = sum(origin.inline, scalar(add(px(style['border-left']), px(style['padding-left'])))), R = diff(sum(origin.inline, inline), scalar(add(px(style['border-right']), px(style['padding-right']))));
         const childOf = path => path.slice(0, path.lastIndexOf('/')) === box.path;
         const rows = geometry.slice(box.$starts.geometry), sizeRows = sizes.slice(box.$starts.sizes);
-        if (rows.some(row => isDescendant(box.path, row.path) && row.position === 'absolute' && intersectRegions(row.region, region))) throw Object.assign(new Error(`${box.label} is rtl with absolutely positioned descendants (physical insets) — not modeled`), { code: 'U_LAYOUT_GEOMETRY' });
-        for (const child of rows.filter(row => childOf(row.path) && intersectRegions(row.region, region) && (row.origin || row.clipOrigin))) {
+        // An absolute child is placed by physical insets: the container does not mirror it.
+        for (const child of rows.filter(row => childOf(row.path) && row.position !== 'absolute' && intersectRegions(row.region, region) && (row.origin || row.clipOrigin))) {
           const at = child.origin ?? child.clipOrigin, dx = diff(diff(sum(L, R), times(at.inline, q(2))), child.inline);
-          const moved = row => row === child || (isDescendant(child.path, row.path) && intersectRegions(row.region, child.region));
+          // An absolute box keeps its physical place unless its containing block moves with this child.
+          const within = path => path === child.path || isDescendant(child.path, path);
+          const stays = rows.filter(row => row.position === 'absolute' && row !== child && isDescendant(child.path, row.path) && !(row.containingPath && within(row.containingPath))).map(row => row.path);
+          const moved = row => (row === child || (isDescendant(child.path, row.path) && intersectRegions(row.region, child.region))) && !stays.some(path => row.path === path || isDescendant(path, row.path));
           const shift = o => o ? { inline: sum(o.inline, dx), block: o.block } : o;
           for (const row of rows.filter(row => moved(row) && !row.$mirrored?.has(box.path))) {
             row.origin = shift(row.origin); row.clipOrigin = shift(row.clipOrigin);
             if (row.bounds) row.bounds = row.bounds.map(piece => ({ ...piece, outer: piece.outer && { ...piece.outer, origin: shift(piece.outer.origin) }, inner: piece.inner && { ...piece.inner, origin: shift(piece.inner.origin) } }));
             (row.$mirrored ??= new Set()).add(box.path);
           }
-          for (const row of sizeRows.filter(row => row.$shown && (row.path === child.path || isDescendant(child.path, row.path)) && intersectRegions(row.$shown.region, child.region))) {
+          for (const row of sizeRows.filter(row => row.$shown && (row.path === child.path || isDescendant(child.path, row.path)) && !stays.some(path => row.path === path || isDescendant(path, row.path)) && intersectRegions(row.$shown.region, child.region))) {
             row.$shown = { ...row.$shown, origin: shift(row.$shown.origin) };
             if (row.rect && row.$shown.origin) row.rect = { ...row.rect, inlineStart: affine(row.$shown.origin.inline) };
           }
