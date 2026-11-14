@@ -100,10 +100,17 @@ export function flexItem(style, { empty = false, axis = 'inline' } = {}) {
     return { ...item, base: 'content', minimum: 'content' };
   }
   item.base = outer(base, own, contentBox);
+  // max-width on a row's main axis (px): items above it freeze there (§9.7). Others stay outside the subset.
+  if (style[axis === 'inline' ? 'max-inline-size' : 'max-block-size'] !== 'none') {
+    const max = style[axis === 'inline' ? 'max-inline-size' : 'max-block-size'];
+    if (axis !== 'inline' || !/^\d+(?:\.\d+)?px$/.test(max)) unknown(`A flex item's max size ${max} is outside the subset (px max-width on a row only)`);
+    item.maximum = outer(px(max), own, contentBox);
+  }
   if (style[n.min] !== 'auto') item.minimum = outer(px(style[n.min]), own, contentBox);
   else if (!automatic) item.minimum = own;
   else if (basis === 'auto') {
     // min(content size, specified size) ≤ the base: safe while it never shrinks.
+    if (item.maximum !== undefined) unknown('An automatic minimum together with a max size depends on the content');
     item.minimum = own; item.automaticBelowBase = true;
   } else unknown(`The automatic minimum size of a flex item depends on its content; set ${n.minLabel}, or make it a scroll container`);
   return item;

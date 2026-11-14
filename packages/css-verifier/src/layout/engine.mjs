@@ -247,7 +247,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
       // max-inline-size in px clamps the preferred width (CSS 2 §10.4: max(min, min(preferred, max))); flex items and
       // other max sizes are not modeled.
-      if (style[`max-${axis}-size`] !== 'none' && !(axis === 'inline' && (/^\d+(?:\.\d+)?px$/.test(style['max-inline-size']) || (/^\d+(?:\.\d+)?%$/.test(style['max-inline-size']) && available.inline)) && !available.flexItem && style.display !== 'table')) throw new Error('CSS max size clamping is not modeled');
+      if (style[`max-${axis}-size`] !== 'none' && !(axis === 'inline' && (/^\d+(?:\.\d+)?px$/.test(style['max-inline-size']) || (/^\d+(?:\.\d+)?%$/.test(style['max-inline-size']) && available.inline && !available.flexItem)) && (!available.flexItem || available.flexItem.main === 'inline') && style.display !== 'table')) throw new Error('CSS max size clamping is not modeled');
       if (axis === 'inline') {
         if (style['min-inline-size'] !== 'auto') px(style['min-inline-size']);
       // A column flex item's minimum is resolved by the flex line (its track is never smaller).
@@ -293,7 +293,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // rest is redistributed. Frozen items never thaw, so it ends within
   // items+1 rounds. Returns outer sizes and the remaining free space.
   function resolveFlexLine(region, available, items, gap) {
-    const hypothetical = items.map(item => item.minimum === item.base ? item.base : maximumConstant(item.base, item.minimum));
+    // The hypothetical main size: the base clamped by the maximum, then the minimum (min wins over max).
+    const capped = item => item.maximum && constantLess(item.maximum, item.base) ? item.maximum : item.base;
+    const hypothetical = items.map(item => item.minimum === item.base && !item.maximum ? item.base : maximumConstant(capped(item), item.minimum));
     const sumHypothetical = sum(total(hypothetical), scalar(gap));
     const modes = partition(region, diff(available, sumHypothetical), '>');
     const results = [];
@@ -304,7 +306,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const factor = mode === 'grow' ? item.grow : item.shrink;
         // Content-sized items cannot shrink below their base (= their minimum). With
         // only minimum violations the result does not depend on the freezing order.
-        if (cmp(factor, zero) === 0 || (mode === 'shrink' && (item.content || (item.minimum !== item.base && constantLess(item.base, item.minimum))))) frozen.set(index, hypothetical[index]);
+        if (cmp(factor, zero) === 0 || (mode === 'shrink' && (item.content || (item.minimum !== item.base && constantLess(item.base, item.minimum)))) || (mode === 'grow' && item.maximum && constantLess(item.maximum, item.base))) frozen.set(index, hypothetical[index]);
       });
       let states = [{ region: start, frozen }];
       for (let round = 0; states.length && round <= items.length; round++) {
@@ -332,14 +334,32 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               return cmp(scaledSum, zero) === 0 ? item.base : sum(item.base, times(free, div(scaled[k], scaledSum)));
             });
           }
-          let parts = [{ region: state.region, violators: [] }];
-          for (const index of unfrozen) if (items[index].minimum !== items[index].base) parts = bounded(parts.flatMap(part => {
-            const split = partition(part.region, diff(targets[index], items[index].minimum), '>=');
-            return [...split.yes.map(r => ({ region: r, violators: part.violators })), ...split.no.map(r => ({ region: r, violators: [...part.violators, index] }))];
-          }));
+          // §9.7 step 4d–e: clamp each target into [min, max]; by the sign of the total violation freeze the min
+          // violators (positive), the max violators (negative) or all of them (zero).
+          let parts = [{ region: state.region, under: [], over: [] }];
+          for (const index of unfrozen) {
+            if (items[index].minimum !== items[index].base) parts = bounded(parts.flatMap(part => {
+              const split = partition(part.region, diff(targets[index], items[index].minimum), '>=');
+              return [...split.yes.map(r => ({ ...part, region: r })), ...split.no.map(r => ({ ...part, region: r, under: [...part.under, index] }))];
+            }));
+            if (items[index].maximum) parts = bounded(parts.flatMap(part => {
+              if (part.under.includes(index)) return [part];
+              const split = partition(part.region, diff(items[index].maximum, targets[index]), '>=');
+              return [...split.yes.map(r => ({ ...part, region: r })), ...split.no.map(r => ({ ...part, region: r, over: [...part.over, index] }))];
+            }));
+          }
           for (const part of parts) {
-            if (!part.violators.length) results.push({ region: part.region, values: targets, free: diff(available, sum(total(targets), scalar(gap))), mode });
-            else next.push({ region: part.region, frozen: new Map([...state.frozen, ...part.violators.map(index => [index, items[index].minimum])]) });
+            if (!part.under.length && !part.over.length) { results.push({ region: part.region, values: targets, free: diff(available, sum(total(targets), scalar(gap))), mode }); continue; }
+            const clampOf = index => part.under.includes(index) ? items[index].minimum : items[index].maximum;
+            if (!part.over.length || !part.under.length) { next.push({ region: part.region, frozen: new Map([...state.frozen, ...[...part.under, ...part.over].map(index => [index, clampOf(index)])]) }); continue; }
+            const violation = [...part.under, ...part.over].map(index => diff(clampOf(index), targets[index])).reduce((a, b) => sum(a, b));
+            const positive = partition(part.region, violation, '>');
+            for (const r of positive.yes) next.push({ region: r, frozen: new Map([...state.frozen, ...part.under.map(index => [index, items[index].minimum])]) });
+            for (const rest of positive.no) {
+              const negative = partition(rest, diff(scalar(zero), violation), '>');
+              for (const r of negative.yes) next.push({ region: r, frozen: new Map([...state.frozen, ...part.over.map(index => [index, items[index].maximum])]) });
+              for (const r of negative.no) next.push({ region: r, frozen: new Map([...state.frozen, ...[...part.under, ...part.over].map(index => [index, clampOf(index)])]) });
+            }
           }
         }
         states = bounded(next);
@@ -349,7 +369,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     return results;
   }
   // ---- flex layout (ADR-0011) ----------------------------------------------
-  const constantItem = item => ({ ...item, base: scalar(item.base), minimum: scalar(item.minimum), innerBase: sub(item.base, item.edges) });
+  const constantItem = item => ({ ...item, base: scalar(item.base), minimum: scalar(item.minimum), maximum: item.maximum !== undefined ? scalar(item.maximum) : null, innerBase: sub(item.base, item.edges) });
   // Greedy line breaking by outer hypothetical sizes (constants), split by width thresholds.
   function breakLines(region, available, hypothetical, gap) {
     const n = hypothetical.length, done = [];

@@ -1156,3 +1156,20 @@ test('an auto-width automatic table shrinks to its content like Chromium', async
     }
   }
 });
+
+test('flex items freeze at their px max-width like Chromium', async ({page}) => {
+  const css = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.row{display:flex;column-gap:10px;block-size:20px}.a,.b,.c{flex:1 1 0px;min-width:0}.a{max-width:200px}.b{max-width:150px;min-width:120px}.c{flex-grow:2}`;
+  const html = '<div class="row"><div class="a"></div><div class="b"></div><div class="c"></div></div>';
+  const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280, height: {min: 600, max: 1000}}});
+  expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+  for (const width of [1280, 800, 500, 375, 320]) {
+    await page.setViewportSize({width, height: 800});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    for (const cls of ['a', 'b', 'c']) {
+      const browser = await page.evaluate(c => document.querySelector(`.${c}`).getBoundingClientRect().width, cls);
+      const row = report.sizes.find(r => r.box === `.${cls}` && r.range && width >= r.range.min && width <= r.range.max);
+      const statics = value(row.inlineSize.constant) + value(row.inlineSize.coefficient ?? '0') * width;
+      expect(Math.abs(statics - browser), `.${cls} at ${width}: static ${statics} vs browser ${browser}`).toBeLessThan(0.02);
+    }
+  }
+});
