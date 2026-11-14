@@ -60,3 +60,14 @@ test('a sticky box whose parent ends at its bottom cannot stick (W_LAYOUT_STICKY
   // The parent's padding is outside its content box: no room either.
   assert.deepEqual(inert(run('<div class="page"><div class="w2"><header class="h"></header></div><div class="c"></div></div>')), [['.h', '.w2']]);
 });
+
+test('a sticky box inside an overflow: hidden ancestor never sticks to the page (W_LAYOUT_STICKY_SCROLLER)', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.h{position:sticky;top:0;height:50px}.c{height:2000px}.x{overflow:hidden}.y{overflow:clip}`;
+  const run = cls => analyzeHTML(`<html lang="en"><body><div class="page ${cls}"><header class="h"></header><div class="c"></div></div></body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, integrity: true, boxes: {[`.${cls}`]: {overflow: 'clip', overflowBlock: 'clip'}}});
+  const hidden = run('x');
+  assert.notEqual(hidden.status, 'unknown');
+  assert.deepEqual(hidden.layoutWarnings.map(w => [w.code, w.box, w.scroller]), [['W_LAYOUT_STICKY_SCROLLER', '.h', '.page.x']]);
+  // overflow: clip is not a scroll container: the box sticks to the page through it (not modeled: Unknown).
+  assert.equal(run('y').status, 'unknown');
+});

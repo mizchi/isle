@@ -906,6 +906,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // Inside an overflow: clip box positions are exact but parts may be clipped away: the other rules see no
       // position (as before), focus-clipped reads clipOrigin.
       const underClip = parents.some(p => p.clipScope);
+      // Sticky inside an overflow: hidden box (a scroll container nobody scrolls): it sticks to that box, not to the page,
+      // so it never sticks; at the initial scroll position it is where the flow puts it (a warning, laid out as relative).
+      const scroller = [...parents].reverse().find(p => p.style && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible'));
+      if (style.$sticky && scroller && ['overflow-x', 'overflow-y'].every(key => scroller.style[key] === 'hidden') && !parents.some(p => p !== scroller && p.style && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible'))) {
+        if (!layoutWarnings.some(w => w.code === 'W_LAYOUT_STICKY_SCROLLER' && w.path === box.path)) layoutWarnings.push({ code: 'W_LAYOUT_STICKY_SCROLLER', severity: 'warning', box: box.label, path: box.path, scroller: scroller.box.label,
+          message: `${box.label} is position: sticky inside ${scroller.box.label}, which has overflow: hidden: it sticks to that box, which does not scroll, so it never sticks to the page. Use overflow: clip on the ancestor, or move the sticky box out of it`, ...ranges(region) });
+        style = { ...style, $sticky: false };
+      }
       if (style.$sticky && parents.some(p => p.clipped || p.clipScope || (p.style && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible')))) throw Object.assign(new Error(`${box.label} is position: sticky inside a scrolling or clipping ancestor, which it would stick to`), { code: 'U_LAYOUT_CSS' });
       if (style['animation-name'] !== 'none' && style['animation-play-state'] !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(style['animation-duration']) && keyframeFrames.get(style['animation-name'])?.some(frame => frame.layout)) animated.push({ box, region, name: style['animation-name'], position: style.position });
       // Font swap: text in a web font (an @font-face family first in font-family) whose box takes its height from the

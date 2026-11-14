@@ -268,14 +268,15 @@ test('video: width/height attributes and aspect-ratio reserve the box like Chrom
 
 test('sticky boxes without room in their parent never stick, as the static warning says', async ({page}) => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
-  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.h{position:sticky;top:0;height:50px;background:#fff}.w{${g}}.tall{${g};height:300px}.c{height:2000px}`;
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.h{position:sticky;top:0;height:50px;background:#fff}.w{${g}}.tall{${g};height:300px}.c{height:2000px}.hid{${g};overflow:hidden}`;
   for (const [name, body] of [
     ['wrapped in its own height', '<div class="page"><div class="w"><header class="h"></header></div><div class="c"></div></div>'],
     ['a child of the scrolling content', '<div class="page"><header class="h"></header><div class="c"></div></div>'],
     ['in a 300px section', '<div class="page"><section class="tall"><header class="h"></header></section><div class="c"></div></div>'],
+    ['inside an overflow: hidden page', '<div class="page" style=""><div class="hid"><header class="h"></header><div class="c"></div></div></div>'],
   ]) {
-    const report = analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css, viewport: {min: 800, max: 800, height: {min: 600, max: 600}}, integrity: true});
-    const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_STICKY_INERT');
+    const report = analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css, viewport: {min: 800, max: 800, height: {min: 600, max: 600}}, integrity: true, ...(body.includes('hid') ? {boxes: {'.hid': {overflow: 'clip', overflowBlock: 'clip'}}} : {})});
+    const warned = (report.layoutWarnings ?? []).some(w => ['W_LAYOUT_STICKY_INERT', 'W_LAYOUT_STICKY_SCROLLER'].includes(w.code));
     await page.setViewportSize({width: 800, height: 600});
     await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${body}</body></html>`);
     // Scroll a little (the header would stick at 0 if it could) and read its top.
