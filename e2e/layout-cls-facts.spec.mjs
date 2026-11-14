@@ -122,3 +122,30 @@ test('picture: static per-media source reservations agree with Chromium layout s
     expect(measured.score > 0, `${name} at ${width}: static ${predicted}, Chromium ${measured.score}`).toBe(predicted);
   }
 });
+
+test('device pixel ratio branches: resolution media and density srcset agree with Chromium', async ({browser}) => {
+  // a.png is 2×1, b.png 1×1, c.png 4×1: the img reserves 400×200 (2:1), so only a 2:1 candidate keeps it.
+  const files = {'/a.png': png, '/b.png': square, '/c.png': Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAQAAAABCAYAAAD5PA/NAAAAC0lEQVR4nGNoQAMARBEIAeFsWJgAAAAASUVORK5CYII=', 'base64')};
+  const images = {'/a.png': {width: 2, height: 1}, '/b.png': {width: 1, height: 1}, '/c.png': {width: 4, height: 1}};
+  const css = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}img{display:block;width:400px;height:auto}.b{height:10px;background:#000}@media (min-resolution: 2dppx){.b{height:30px}}@media (max-resolution: 96dpi){.b{width:100px}}';
+  const ratios = [1, 1.5, 2, 3];
+  for (const srcset of ['/b.png 2x', '/a.png 1x, /c.png 3x', '/b.png 1.5x, /a.png 3x']) {
+    const html = `<div class="page"><img src="/a.png" srcset="${srcset}" width="400" height="200" alt=""><div class="b"></div></div>`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 800, max: 800, height: {min: 600, max: 600}}, images, devicePixelRatios: ratios});
+    expect(report.diagnostics.filter(d => d.severity === 'unknown'), srcset).toEqual([]);
+    for (const ratio of ratios) {
+      const context = await browser.newContext({deviceScaleFactor: ratio, viewport: {width: 800, height: 600}});
+      const page = await context.newPage();
+      await page.route(/\/[abc]\.png$/, async route => { await new Promise(r => setTimeout(r, 600)); await route.fulfill({body: files[new URL(route.request().url()).pathname], contentType: 'image/png'}); });
+      await page.route('http://cls.test/', route => route.fulfill({contentType: 'text/html', body: `<!doctype html><html lang="en"><head><script>${observe}</script><style>${css}</style></head><body style="margin:0">${html}</body></html>`}));
+      await page.goto('http://cls.test/');
+      await page.waitForTimeout(1500);
+      const measured = await page.evaluate(() => ({score: window.__shifts.reduce((a, e) => a + e.value, 0), b: [document.querySelector('.b').getBoundingClientRect().width, document.querySelector('.b').getBoundingClientRect().height], src: document.querySelector('img').currentSrc}));
+      await context.close();
+      const predicted = report.diagnostics.some(d => /^E_LAYOUT_IMAGE_/.test(d.code) && d.devicePixelRatio === ratio);
+      expect(measured.score > 0, `${srcset} at ${ratio}x: static ${predicted}, Chromium ${measured.score} (${measured.src})`).toBe(predicted);
+      const row = report.sizes.find(r => r.box === '.b' && r.devicePixelRatio === ratio);
+      expect([Number(row.inlineSize.constant || 0) + Number(row.inlineSize.coefficient ?? 0) * 800, Number(row.blockSize.constant)], `.b at ${ratio}x`).toEqual(measured.b);
+    }
+  }
+});

@@ -193,6 +193,26 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     });
   }
 
+  // The file an img or source loads: its one srcset candidate, or (under a device pixel ratio) the smallest density at
+  // least that ratio, else the densest. An img's src is its 1x candidate. 'dynamic' when not decided (w descriptors,
+  // several candidates without a ratio, a dynamic attribute).
+  function loadedSource(srcset, src) {
+    if (srcset === undefined) return src;
+    if (srcset === 'dynamic') return 'dynamic';
+    const list = [];
+    for (const part of srcset.split(',').map(p => p.trim()).filter(Boolean)) {
+      const m = /^(\S+)(?:\s+(\d+(?:\.\d+)?)x)?$/.exec(part);
+      if (!m || list.some(c => c.density === Number(m[2] ?? 1))) return 'dynamic';
+      list.push({ url: m[1], density: Number(m[2] ?? 1) });
+    }
+    if (typeof src === 'string' && src !== 'dynamic' && !list.some(c => c.density === 1)) list.push({ url: src, density: 1 });
+    if (list.length === 1) return list[0].url;
+    const ratio = options.$devicePixelRatio;
+    if (!list.length) return 'dynamic';
+    if (ratio === undefined) return { candidates: list.map(c => c.url) };
+    const sorted = [...list].sort((a, b) => a.density - b.density);
+    return (sorted.find(c => c.density >= ratio) ?? sorted.at(-1)).url;
+  }
   function context(condition, ancestors) {
     let target;
     if (condition.kind === 'media') target = { inline: width, block: options.viewport.height ? height : null };
@@ -203,6 +223,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (!target) return { groups: [], target: undefined };
     }
     const groups = condition.groups.map(group => group.map(atom => {
+      // Device resolution: a constant under the analysed device pixel ratio (the devicePixelRatios option).
+      if (atom.feature === 'resolution') {
+        if (options.$devicePixelRatio === undefined) throw Object.assign(new Error('A resolution media query needs the devicePixelRatios option'), { code: 'U_LAYOUT_QUERY' });
+        return { slack: scalar(sub(q(String(options.$devicePixelRatio)), atom.value)), relation: atom.relation };
+      }
       if (atom.feature === 'orientation') {
         if (!target.block) throw new Error('An orientation query needs the viewport height domain');
         return { slack: atom.orientation === 'portrait' ? diff(target.block, target.inline) : diff(target.inline, target.block), relation: atom.relation };
@@ -242,9 +267,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           if (condition.groups.flat().some(atom => atom.preference)) throw Object.assign(new Error(`${box.label}: a preference media query on a picture source is not modeled`), { code: 'U_LAYOUT_IMAGE' });
           contexts.set(condition, context(condition, ancestors));
         }
-        // One candidate URL (optionally 1x): its file's natural size is the loaded size.
-        const single = /^\s*(\S+)(?:\s+1x)?\s*$/.exec(facts.srcset);
-        return { condition, facts, src: single && !single[1].endsWith(',') ? single[1] : null };
+        return { condition, facts, src: loadedSource(facts.srcset) };
       });
     })();
     let regions = [region];
@@ -266,13 +289,19 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // and set its aspect-ratio to auto w / h (HTML rendering §15.4.3; measured).
       const chosen = pictureSources.find(source => !source.condition || activeContext(contexts.get(source.condition)));
       // A selected source with width or height attributes is the image's dimension source; else the img's own.
-      const imageFacts = chosen ? { ...((chosen.facts.width !== undefined || chosen.facts.height !== undefined) ? { width: chosen.facts.width, height: chosen.facts.height } : { width: box.imageSize?.width, height: box.imageSize?.height }), src: chosen.src ?? 'dynamic' } : box.imageSize;
+      const imageFacts = chosen ? { ...((chosen.facts.width !== undefined || chosen.facts.height !== undefined) ? { width: chosen.facts.width, height: chosen.facts.height } : { width: box.imageSize?.width, height: box.imageSize?.height }), src: chosen.src } : box.imageSize && { ...box.imageSize, src: loadedSource(box.imageSize.srcset, box.imageSize.src) };
       if (box.tag === 'img' && imageFacts && !box.pseudo) {
         const { width: w, height: hgt } = imageFacts;
         if (Number.isFinite(w) && style['inline-size'] === 'auto' && !style.$sources['inline-size']) style = { ...style, 'inline-size': `${w}px` };
         if (Number.isFinite(hgt) && style['block-size'] === 'auto' && !style.$sources['block-size']) style = { ...style, 'block-size': `${hgt}px` };
         if (Number.isFinite(w) && Number.isFinite(hgt) && w > 0 && hgt > 0 && style['aspect-ratio'] === 'auto' && !style.$sources['aspect-ratio']) style = { ...style, 'aspect-ratio': `auto ${w}/${hgt}` };
         // The loaded image's natural size (a static file read at build time) against what was reserved before it loads.
+        // Several density candidates without a device pixel ratio: decided only when every candidate file has one ratio.
+        if (imageFacts.src?.candidates) {
+          const sizes = imageFacts.src.candidates.map(url => options.images?.[url]);
+          if (sizes.every(Boolean) && sizes.some(size => size.width * sizes[0].height !== size.height * sizes[0].width)) throw Object.assign(new Error(`${box.label}: its srcset candidates have different ratios, so its loaded height depends on the device pixel ratio; give the devicePixelRatios option`), { code: 'U_LAYOUT_IMAGE' });
+          imageFacts.src = sizes.every(Boolean) ? imageFacts.src.candidates[0] : 'dynamic';
+        }
         const natural = typeof imageFacts.src === 'string' ? options.images?.[imageFacts.src] : undefined;
         if (style['block-size'] === 'auto' && natural) {
           const reserved = /^auto (\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/.exec(style['aspect-ratio']);
