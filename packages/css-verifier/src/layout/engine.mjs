@@ -589,19 +589,51 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (sections.findIndex(s => s.tag === 'tfoot') >= 0 && sections.findIndex(s => s.tag === 'tfoot') !== sections.length - 1) fail('tfoot must come last (it renders after the bodies)');
     const rows = sections.flatMap(section => section.children ?? []);
     if (!rows.length || rows.some(row => row.tag !== 'tr' || !(row.children ?? []).length || row.children.some(cell => !['td', 'th'].includes(cell.tag)))) fail('Every row is a tr of td/th cells');
-    const spanOf = cell => { if (cell.rowSpan !== undefined && cell.rowSpan !== 1) fail('rowspan is not modeled'); if (cell.colSpan === 'dynamic') fail('A dynamic colspan decides the columns'); return cell.colSpan ?? 1; };
+    const spanOf = cell => { if (cell.colSpan === 'dynamic' || cell.rowSpan === 'dynamic') fail('A dynamic colspan/rowspan decides the cells'); return cell.colSpan ?? 1; };
     const columns = rows[0].children.map(spanOf).reduce((a, b) => a + b, 0);
-    if (rows.some(row => row.children.map(spanOf).reduce((a, b) => a + b, 0) !== columns)) fail('Every row needs the same number of columns (cells plus colspan)');
+    // Occupancy: a rowspan cell takes its columns in the following rows of its row group.
+    const taken = new Map();
+    for (const section of sections) {
+      const groupRows = section.children ?? [];
+      groupRows.forEach((row, r) => {
+        let column = 0;
+        const busy = c => taken.get(`${row.path}:${c}`);
+        for (const cell of row.children) {
+          while (busy(column)) column++;
+          const n = spanOf(cell), down = cell.rowSpan ?? 1;
+          if (r + down > groupRows.length) fail('A rowspan past the end of its row group is not modeled');
+          for (let k = 0; k < down; k++) for (let c = column; c < column + n; c++) taken.set(`${groupRows[r + k].path}:${c}`, true);
+          if (down > 1) cell.tableRowSpan = down;
+          column += n;
+        }
+      });
+    }
+    if (rows.some(row => Array.from({ length: columns + 1 }, (_, c) => taken.get(`${row.path}:${c}`)).filter(Boolean).length !== columns)) fail('Every row needs the same number of columns (cells, colspan and rowspan)');
     for (const box of [...sections, ...rows]) box.tablePart = true;
     for (const row of rows) for (const cell of row.children) cell.tableCell = true;
     // Cells stretch to their row: a fixed block-size must be shared by the row's cells (a grid item would not stretch).
     for (const row of rows) {
       const rs = styles(row, region, parents, style, false, false);
-      const heights = new Set(row.children.map(cell => rs.flatMap(r => styles(cell, r.region, parents, r.style, false, false)).map(c => c.style['block-size']).join('|')));
+      const heights = new Set(row.children.filter(cell => !cell.tableRowSpan).map(cell => rs.flatMap(r => styles(cell, r.region, parents, r.style, false, false)).map(c => c.style['block-size']).join('|')));
       if (heights.size > 1) fail('Cells of one row with different block-size values are not modeled (table cells stretch to the row)');
     }
+    // A rowspan cell is stretched over its rows; it must not size them (Chromium and grid distribute differently).
+    for (const row of rows) for (const cell of row.children.filter(cell => cell.tableRowSpan)) {
+      const block = new Set(styles(cell, region, parents, style, false, false).map(c => c.style['block-size']));
+      if ([...block].some(b => b !== 'auto') || cell.text || cell.contract || (cell.children ?? []).length) fail('A rowspan cell is modeled only when it is empty with block-size: auto');
+    }
+    // With a rowspan the rows become explicit tracks: each row's other cells give its px height (border box).
+    let rowTracks = null;
+    if (rows.some(row => row.children.some(cell => cell.tableRowSpan))) rowTracks = rows.map(row => {
+      const own = row.children.filter(cell => !cell.tableRowSpan);
+      if (!own.length) fail('A row covered only by rowspan cells has no modeled height');
+      const cs = one(styles(own[0], region, parents, one(styles(row, region, parents, style, false, false)), false, false));
+      if (!/^\d+(?:\.\d+)?px$/.test(cs['block-size'])) fail('With rowspan, every row needs cells with a px block-size');
+      const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+      return `${number(cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']))}px`;
+    });
     // The first row's cell widths decide the columns.
-    const one = list => { if (list.length !== 1) fail('Table styles that vary across viewport regions are not modeled'); return list[0].style; };
+    function one(list) { if (list.length !== 1) fail('Table styles that vary across viewport regions are not modeled'); return list[0].style; }
     const sectionStyle = one(styles(sections[0], region, parents, style, false, false)), rowStyle = one(styles(rows[0], region, parents, sectionStyle, false, false));
     const [h, v = h] = String(style['border-spacing']).split(/\s+/).map(part => px(part));
     // A first-row cell spanning n columns gives each (w − (n − 1)·spacing) / n (measured).
@@ -620,7 +652,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (caption) {
       if (cmp(h, zero) !== 0 || cmp(v, zero) !== 0 || ['left', 'right', 'top', 'bottom'].some(side => cmp(px(style[`padding-${side}`]), zero) !== 0 || cmp(px(style[`border-${side}`]), zero) !== 0))
         fail('A table caption is modeled only with border-spacing 0 and no table padding or border');
-      caption.tableCaption = { columns, rows: rows.length };
+      caption.tableCaption = { columns, rows: rows.length, side: one(styles(caption, region, parents, style, false, false))['caption-side'] };
     }
     const tracks = widths.every(Boolean) ? widths.map(w => `minmax(0, ${number(w)}fr)`) : widths.map(w => w ? `${number(w)}px` : 'minmax(0, 1fr)');
     const spacingEdges = { 'padding-left': add(px(style['padding-left']), h), 'padding-right': add(px(style['padding-right']), h), 'padding-top': add(px(style['padding-top']), v), 'padding-bottom': add(px(style['padding-bottom']), v) };
@@ -630,14 +662,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (!/^\d+(?:\.\d+)?px$/.test(inlineSize)) fail('A content-box fixed table needs a px inline-size');
       inlineSize = `${number(sub(px(inlineSize), add(h, h)))}px`;
     }
-    const grid = { ...style, 'inline-size': inlineSize, display: 'grid', 'grid-template-columns': tracks.join(' '), 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'column-gap': `${number(h)}px`, 'row-gap': `${number(v)}px`,
+    const grid = { ...style, 'inline-size': inlineSize, display: 'grid', 'grid-template-columns': tracks.join(' '), 'grid-template-rows': rowTracks ? (caption ? (caption.tableCaption.side === 'bottom' ? [...rowTracks, 'auto'] : ['auto', ...rowTracks]).join(' ') : rowTracks.join(' ')) : 'none', 'grid-auto-rows': 'auto', 'column-gap': `${number(h)}px`, 'row-gap': `${number(v)}px`,
       ...Object.fromEntries(Object.entries(spacingEdges).map(([key, value]) => [key, `${number(value)}px`])), tableColumns: widths.every(Boolean) ? widths.reduce(add, zero) : null, tableGaps: mul(h, q(columns - 1)) };
     return grid;
   }
   // Cells fill their column (and span colspan columns); a caption is a full-width first or last row.
   function tablePlacement(box, style) {
-    if (box.tableCell && style.display === 'table-cell') return { ...style, display: 'block', 'inline-size': 'auto', ...(box.colSpan > 1 ? { 'grid-column': `span ${box.colSpan}` } : {}) };
-    if (box.tableCaption && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.columns}`, 'grid-row': String(style['caption-side'] === 'bottom' ? box.tableCaption.rows + 1 : 1) };
+    if (box.tableCell && style.display === 'table-cell') return { ...style, display: 'block', 'inline-size': 'auto', ...(box.colSpan > 1 ? { 'grid-column': `span ${box.colSpan}` } : {}), ...(box.tableRowSpan ? { 'grid-row': `span ${box.tableRowSpan}` } : {}) };
+    if (box.tableCaption && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.columns}`, 'grid-row': String(box.tableCaption.side === 'bottom' ? box.tableCaption.rows + 1 : 1) };
     return style;
   }
   // Rendered legend: display block, static, explicit px inline-size and block-size, no block margins.

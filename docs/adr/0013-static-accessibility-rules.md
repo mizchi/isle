@@ -145,7 +145,7 @@ letter-spacing が 0 でないとき Chromium は任意の ligature を切る(CS
 ### table と fieldset
 
 table 系の要素は、作者が grid・`contents`・block に組み替えた場合と、次の**固定 table レイアウト**の部分集合を検査する。
-`table-layout: fixed`・`border-collapse: separate`・明示した inline-size・thead/tbody/tfoot と同じ列数の行(rowspan なし)なら、
+`table-layout: fixed`・`border-collapse: separate`・明示した inline-size・thead/tbody/tfoot と同じ列数の行なら、
 CSS 2.2 §17.5.2.1 の固定 table は次の grid と同じになることを Chromium で測って確かめた:1行目の cell の幅が列を決め、px の列は幅を比例で分け
 (`minmax(0, w fr)`)、auto の列は残り(`minmax(0, 1fr)`)、`border-spacing` は gap と padding の内側の余白、行は最も高い cell の高さ、cell は列と行に広がる
 (cell の inline-size は列の幅になる)。content-box の table は端の spacing を幅の内側に持つ。px の列の和より狭い table は幅を超えて広がるので
@@ -153,7 +153,9 @@ CSS 2.2 §17.5.2.1 の固定 table は次の grid と同じになることを Ch
 `colspan` の cell は `span n` の grid item で、1行目の幅 w の cell は各列に (w − (n−1)·spacing)/n を与える(Chromium で測定)。
 `caption` は table の枠の外(上か下、`caption-side`)で table と同じ幅になり、table 要素の矩形は caption を含む:
 `border-spacing: 0` で table の border と padding がないときだけ、全列にまたがる最初(か最後)の行として扱う。
-それ以外の table(自動レイアウト、rowspan、spacing のある caption など)は Unknown。
+`rowspan` は、中身がなく高さ auto の cell が行グループの中でだけ広がるとき `grid-row: span n` として扱い、行は他の cell の px の高さを明示した track にする
+(Chromium と grid では span する cell の余りの配り方が違うので、行の高さを決める rowspan cell は Unknown)。
+それ以外の table(自動レイアウト、中身のある rowspan、spacing のある caption など)は Unknown。
 `color-scheme` プロパティ:作者が書いた `Canvas`/`CanvasText` は要素の used color scheme で解決する(Chromium の dark は #121212/#fff)。
 UA の既定色は ADR-0007 のまま Unknown。`light dark` を宣言した CSS も dark で再判定する。Vite の `meta name=color-scheme`(light 以外)は未対応として拒否する。th は UA の bold と中央寄せを持つので、作者が指定するまで未解決にする。
 Chromium(このバージョン)は display を変えても table の role を保つことを確かめた(Safari は過去に失っていた)。
@@ -233,5 +235,5 @@ page の規則(html-lang など)は box tree の単体テストで検査する(e
 
 ## 次の段階
 
-2. 自動 table レイアウト(cell の内容幅による列幅)と rowspan。
+2. 自動 table レイアウト(cell の内容幅による列幅)と、行の高さを決める rowspan。
 3. inline 要素の幾何(位置と寸法。focus-obscured などの位置の規則を文中の要素に広げるため)。

@@ -821,5 +821,13 @@ test('fixed tables with colspan and a caption', () => {
   const bottom = run(tree(true), css + '.t { caption-side: bottom; }', {viewport: tableView});
   assert.equal(rect(bottom, 'cap').blockStart.constant, '60');
   assert.equal(run(tree(true), css + '.t { border-spacing: 2px; }', {viewport: tableView}).status, 'unknown');
+  // rowspan: an empty auto-height cell over two rows; a rowspan past its row group stays Unknown.
   assert.equal(run({tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r'], children: [cell('a', {rowSpan: 2})]}]}]}, css, {viewport: tableView}).status, 'unknown');
+  const tall = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [
+    {tag: 'tr', classes: ['r'], children: [cell('s', {rowSpan: 2}), cell('p')]}, {tag: 'tr', classes: ['r'], children: [cell('q')]}]}]};
+  const spanned = run(tall, css + '.s { block-size: auto; inline-size: 100px; }', {viewport: tableView});
+  assert.equal(spanned.status, 'verified', JSON.stringify(spanned.diagnostics));
+  assert.equal(rect(spanned, 's').blockSize.constant, '60');
+  assert.equal(rect(spanned, 'q').inlineStart.constant, '100');
+  assert.equal(run(tall, css + '.s { inline-size: 100px; }', {viewport: tableView}).status, 'unknown');
 });
