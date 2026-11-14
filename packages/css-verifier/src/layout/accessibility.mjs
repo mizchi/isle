@@ -97,6 +97,17 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
   'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics'];
 
+// Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
+// viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
+// legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
+const tierLists = {
+  core: ['text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
+  legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
+};
+export const ruleTier = rule => Object.entries(tierLists).find(([, list]) => list.includes(rule))?.[0] ?? 'dom';
+export const accessibilityProfiles = { all: () => true, core: rule => ['core', 'dom'].includes(ruleTier(rule)) };
+
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
   black: '#000000', white: '#ffffff', red: '#ff0000', green: '#008000', blue: '#0000ff', yellow: '#ffff00', cyan: '#00ffff', aqua: '#00ffff',

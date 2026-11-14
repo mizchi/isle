@@ -73,6 +73,6 @@ WCAG の達成基準そのものではなく、達成方法(Technique)や推測�
 
 ## 次の一手(提案)
 
-1. `accessibility` の option に profile を設ける。既定を A+B とし、C と D は `profile: 'strict'` などで明示したときだけ出す。
+1. ~~profile を設ける~~ 実装済み。`accessibility: {profile: 'core'}` は A と B だけを出す。既定の `'all'` は従来どおり全規則を出す(既定を変えるかは未決)。どの profile でも、各行に `tier`(`core` / `dom` / `heuristic` / `legacy`)が付く。分類の表は `packages/css-verifier/src/layout/accessibility.mjs` の `tierLists` にある。
 2. A の各規則について、実在のサイトを模した構成での検出数と誤検知数を測る。今の e2e は規則ごとに作った最小構成なので、頻度と誤検知率は測れていない。axe-core との重複の実測(同じ構成で axe を走らせて突き合わせる)も、このとき行う。
 3. 今後の規則の追加は A の性質(CSS の結果に依存し、区間や状態で証明できるもの)に絞る。B〜D に当たるものは lint に任せる。

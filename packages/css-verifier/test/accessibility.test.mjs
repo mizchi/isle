@@ -1232,3 +1232,17 @@ test('focus-semantics: a focusable element with no interactive role', () => {
   assert.equal(warn(run(div({tabIndex: -1, focusable: false}), css)).length, 0);
   assert.equal(warn(run(div({role: 'region', named: true}), css)).length, 0);
 });
+
+test('profile core drops heuristic and legacy rules; every row carries its tier', () => {
+  const tree = page([{tag: 'div', classes: ['d'], tabIndex: 0, focusable: true}, {tag: 'marquee', classes: ['m']}, {tag: 'button', classes: ['b']}]);
+  const css = pageCSS(`.page { background: #fff; grid-auto-rows: 30px; }\n.d { inline-size: 30px; block-size: 30px; }\n.m { display: block; inline-size: 30px; block-size: 30px; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; inline-size: 30px; block-size: 30px; }`);
+  const all = run(tree, css), core = run(tree, css, {accessibility: {profile: 'core'}});
+  const rules = report => [...report.diagnostics, ...report.accessibility.warnings].map(d => d.rule).filter(Boolean);
+  assert.ok(rules(all).includes('blink'));
+  assert.ok(!rules(core).includes('blink'));
+  assert.ok(rules(core).includes('accessible-name') && rules(core).includes('focus-semantics'));
+  assert.equal(all.diagnostics.find(d => d.rule === 'accessible-name').tier, 'core');
+  assert.equal(all.accessibility.warnings.find(d => d.rule === 'focus-semantics').tier, 'dom');
+  assert.equal(core.accessibility.profile, 'core');
+  assert.ok(!core.accessibility.rules.includes('visual-order'));
+});
