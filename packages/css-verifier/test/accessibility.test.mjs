@@ -1571,3 +1571,14 @@ test('automatic tables size content columns between their min- and max-content w
   // Between (60 ≤ 200 < 400): each grows from its minimum by its share of max − min (60 : 280) of the 140 left.
   assert.ok(Math.abs(at('200px', 'a') - (40 + 140 * 60 / 340)) < 1e-9);
 });
+
+test('max-inline-size in px clamps a box\'s width', () => {
+  const tree = page([{tag: 'div', classes: ['c']}]);
+  const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: 20px; }\n.c { max-inline-size: 600px; }\n${extra}`);
+  const width = (extra, at) => { const r = run(tree, css(extra)); assert.notEqual(r.status, 'unknown', JSON.stringify(r.diagnostics)); const row = r.sizes.find(s => s.box === '.c' && at >= s.range.min && at <= s.range.max); return Number(row.inlineSize.constant.split('/').reduce((n, d) => n / d)) + Number((row.inlineSize.coefficient ?? '0').split('/').reduce((n, d) => n / d)) * at; };
+  assert.equal(width('', 1000), 600);
+  assert.equal(width('', 400), 400);
+  // content-box adds the padding to the cap; min-inline-size still wins over it.
+  assert.equal(width('.c { box-sizing: content-box; padding: 0 10px; }', 1000), 620);
+  assert.equal(width('.c { min-inline-size: 700px; }', 1000), 700);
+});

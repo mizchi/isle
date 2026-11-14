@@ -163,6 +163,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     return [...p.yes.map(region => ({ region, value: a })), ...p.no.map(region => ({ region, value: b }))];
   };
   const clamp = (region, value) => maximum(region, value, scalar(0));
+  const minimumOf = (region, a, b) => {
+    const p = partition(region, diff(b, a), '>=');
+    return [...p.yes.map(region => ({ region, value: a })), ...p.no.map(region => ({ region, value: b }))];
+  };
   // A box paints when it has a border or a background (vlmkit's painted-parent filter).
   const paints = style => ['left','right','top','bottom'].some(side => cmp(px(style[`border-${side}`]), zero) > 0) || style['background-image'] !== 'none' ||
     !/^(?:transparent|initial|unset|revert|rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*0\s*\)|#(?:[\da-f]{3}0|[\da-f]{6}00)|hsla\([^)]*,\s*0\s*\))$/.test(style['background-color']);
@@ -241,7 +245,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (style['block-size'] !== 'auto' || style['grid-template-rows'] !== 'none') throw new Error('Enable block checking for explicit block sizes or row tracks');
         continue;
       }
-      if (style[`max-${axis}-size`] !== 'none') throw new Error('CSS max size clamping is not modeled');
+      // max-inline-size in px clamps the preferred width (CSS 2 §10.4: max(min, min(preferred, max))); flex items and
+      // other max sizes are not modeled.
+      if (style[`max-${axis}-size`] !== 'none' && !(axis === 'inline' && /^\d+(?:\.\d+)?px$/.test(style['max-inline-size']) && !available.flexItem && style.display !== 'table')) throw new Error('CSS max size clamping is not modeled');
       if (axis === 'inline') {
         if (style['min-inline-size'] !== 'auto') px(style['min-inline-size']);
       // A column flex item's minimum is resolved by the flex line (its track is never smaller).
@@ -1043,7 +1049,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (caption) {
       caption.tableCaption = { columns, rows: rows.length, side: one(styles(caption, region, parents, style, false, false))['caption-side'] };
     }
-    let autoWidth = null, autoMinimum = null, contentTracks = null;
+    let autoWidth = null, autoMinimum = null, contentTracks = null, contentShrink = null;
     if (automatic) {
       if (caption || rows.some(row => row.children.some(cell => (cell.colSpan ?? 1) > 1 || cell.tableRowSpan))) fail('Automatic table layout is modeled without captions, colspan or rowspan');
       const rowStyles = rows.map(row => one(styles(row, region, parents, one(styles(sections.find(sec => sec.children.includes(row)), region, parents, style, false, false)), false, false)));
@@ -1083,7 +1089,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (style['inline-size'] === 'auto' && parentDisplay === 'flex') fail('An automatic table with an auto width in a flex container is sized by content');
       if (contentColumns) {
         for (const range of ranges) if (cmp(range.max, range.min) < 0) range.max = range.min;
-        if (style['inline-size'] === 'auto' && parentDisplay !== 'grid') fail('An automatic table with content-sized columns and an auto width shrinks to its content; give it a width');
+        if (style['inline-size'] === 'auto' && parentDisplay === 'flex') fail('An automatic table with an auto width in a flex container is sized by content');
+        // An auto width outside a grid area shrinks to fit: as wide as the available width, at most its columns'
+        // max-content widths plus its edges (a max-inline-size on the equivalent grid).
+        if (style['inline-size'] === 'auto' && parentDisplay !== 'grid') contentShrink = add(ranges.map(range => range.max).reduce(add, zero), edges);
         contentTracks = ranges.map(range => `-isle-auto-table(${number(range.min)},${number(range.max)})`).join(' ');
       } else if (style['inline-size'] === 'auto' && parentDisplay === 'grid') autoMinimum = widths.filter(Boolean).reduce(add, zero);
       else if (style['inline-size'] === 'auto') {
@@ -1095,7 +1104,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const spacingEdges = { 'padding-left': add(px(style['padding-left']), h), 'padding-right': add(px(style['padding-right']), h), 'padding-top': add(px(style['padding-top']), v), 'padding-bottom': add(px(style['padding-bottom']), v) };
     // A content-box table's width includes the edge spacing (measured): the grid's content width is W − 2·spacing.
     let inlineSize = autoWidth ? `${number(autoWidth)}px` : style['inline-size'];
-    if (autoWidth) style = { ...style, 'box-sizing': 'border-box' };
+    if (autoWidth || contentShrink) style = { ...style, 'box-sizing': 'border-box', ...(contentShrink ? { 'max-inline-size': `${number(contentShrink)}px` } : {}) };
     else if (style['box-sizing'] === 'content-box') {
       if (!/^\d+(?:\.\d+)?px$/.test(inlineSize)) fail('A content-box fixed table needs a px inline-size');
       inlineSize = `${number(sub(px(inlineSize), add(h, h)))}px`;
@@ -1213,7 +1222,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (style['inline-size'] !== 'auto' && style['box-sizing'] === 'content-box') preferred = sum(preferred, cssInlineEdges);
         const minimum = style['min-inline-size'] === 'auto' ? zero : px(style['min-inline-size']);
         const minimumBorderBox = sum(scalar(minimum), style['box-sizing'] === 'content-box' ? cssInlineEdges : scalar(0));
-        const preferredStates = cmp(minimum, zero) > 0 ? maximum(state.region, preferred, minimumBorderBox) : [{ region: state.region, value: preferred }];
+        const capped = style['max-inline-size'] !== 'none' ? minimumOf(state.region, preferred, sum(scalar(px(style['max-inline-size'])), style['box-sizing'] === 'content-box' ? cssInlineEdges : scalar(0))) : [{ region: state.region, value: preferred }];
+        const preferredStates = capped.flatMap(c => cmp(minimum, zero) > 0 ? maximum(c.region, c.value, minimumBorderBox) : [c]);
         const edgeExplanation = axis => () => explanation(sizeChain([...parents, { box, style }], axis, { hostInset: options.hostInset }), sizeProperties(axis).filter(property => /^(?:padding|border)-/.test(property)).map(property => fact(box, style, property)));
         for (const proposal of preferredStates) if (emit) obligation(proposal.value, inlineEdges, box, proposal.region, 'E_LAYOUT_BOX_EDGES', 'inline', true, edgeExplanation('inline'));
         const contentStates = preferredStates.flatMap(proposal => clamp(proposal.region, diff(proposal.value, inlineEdges)));

@@ -1118,3 +1118,41 @@ test('automatic tables share width between min- and max-content like Chromium', 
     statics.forEach((v, i) => expect(Math.abs(v - browser[i]), `column ${i} at ${width}: static ${v} vs browser ${browser[i]}`).toBeLessThan(0.05));
   }
 });
+
+test('max-width in px clamps widths like Chromium', async ({page}) => {
+  const css = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:20px}.a{max-width:600px}.b{max-width:500px;padding:0 20px;box-sizing:content-box}.c{max-width:300px;min-width:400px}`;
+  const html = '<div class="page"><div class="a"></div><div class="b"></div><div class="c"></div></div>';
+  const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280}});
+  expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+  for (const width of [1280, 700, 550, 375]) {
+    await page.setViewportSize({width, height: 800});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    for (const cls of ['a', 'b', 'c']) {
+      const browser = await page.evaluate(c => document.querySelector(`.${c}`).getBoundingClientRect().width, cls);
+      const row = report.sizes.find(r => r.box === `.${cls}` && r.range && width >= r.range.min && width <= r.range.max);
+      const statics = value(row.inlineSize.constant) + value(row.inlineSize.coefficient ?? '0') * width;
+      expect(Math.abs(statics - browser), `.${cls} at ${width}: static ${statics} vs browser ${browser}`).toBeLessThan(0.01);
+    }
+  }
+});
+
+test('an auto-width automatic table shrinks to its content like Chromium', async ({page}) => {
+  const cells = ['Short words here', 'A longer sentence that keeps going'];
+  const css = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.t{border-spacing:4px;border:2px solid #000}td{padding:0 3px;font-family:sans-serif;font-size:16px;line-height:20px;vertical-align:top}`;
+  const html = `<table class="t"><tbody><tr>${cells.map((c, i) => `<td class="c${i}">${c}</td>`).join('')}</tr></tbody></table>`;
+  await page.setContent(`<!doctype html><html lang="en"><head><style>.probe{display:inline-block;font-family:sans-serif;font-size:16px;line-height:20px}</style></head><body>${cells.map((c, i) => `<div><span class="probe" id="mn${i}" style="width:min-content">${c}</span></div><div><span class="probe" id="mx${i}" style="width:max-content">${c}</span></div>`).join('')}</body></html>`);
+  const ranges = await page.evaluate(n => Array.from({length: n}, (_, i) => [document.getElementById(`mn${i}`).getBoundingClientRect().width, document.getElementById(`mx${i}`).getBoundingClientRect().width]), cells.length);
+  const boxes = Object.fromEntries(ranges.map(([min, max], i) => [`.c${i}`, {minInlineSize: min, maxInlineSize: max, overflowBlock: 'visible'}]));
+  const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280}, boxes});
+  expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+  for (const width of [1280, 400, 340]) {
+    await page.setViewportSize({width, height: 800});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    for (const cls of ['t', 'c0', 'c1']) {
+      const browser = await page.evaluate(c => document.querySelector(`.${c}`).getBoundingClientRect().width, cls);
+      const row = report.sizes.find(r => r.box === `.${cls}` && r.range && width >= r.range.min && width <= r.range.max);
+      const statics = value(row.inlineSize.constant) + value(row.inlineSize.coefficient ?? '0') * width;
+      expect(Math.abs(statics - browser), `.${cls} at ${width}: static ${statics} vs browser ${browser}`).toBeLessThan(0.05);
+    }
+  }
+});
