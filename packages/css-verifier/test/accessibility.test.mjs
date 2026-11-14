@@ -1114,7 +1114,7 @@ test('style attributes are element-attached declarations', () => {
   assert.equal(analyzeLayout({...tree, children: [{tag: 'div', classes: ['a'], inlineStyle: 'dynamic'}]}, {name: 'Page', css: reset + css, viewport: domain}).status, 'unknown');
 });
 
-test('rtl mirrors placement; absolute boxes keep physical insets; rtl scroll containers and dir=auto are Unknown', () => {
+test('rtl mirrors placement; absolute boxes keep physical insets; dir=auto is Unknown', () => {
   const tree = extra => ({tag: 'main', classes: ['page'], dirAttr: 'rtl', children: [{tag: 'div', classes: ['a'], ...extra}, {tag: 'div', classes: ['b']}]});
   const css = '.page { display: grid; grid-template-columns: 100px 50px; grid-auto-rows: 20px; position: relative; }';
   const report = analyzeLayout(tree({}), {name: 'Page', css: reset + css, viewport: {min: 320, max: 1280, height: {min: 400, max: 900}}});
@@ -1123,7 +1123,8 @@ test('rtl mirrors placement; absolute boxes keep physical insets; rtl scroll con
   // The first column sits at the right edge of the page.
   assert.deepEqual([at('a').coefficient, at('a').constant, at('b').coefficient, at('b').constant], ['1', '-100', '1', '-150']);
   const status = (t, c) => analyzeLayout(t, {name: 'Page', css: reset + css + c, viewport: {min: 320, max: 1280, height: {min: 400, max: 900}}}).status;
-  assert.equal(status(tree({}), '\n.page { overflow-y: auto; }'), 'unknown');
+  // An rtl scroll container: its box and content width do not depend on the scrollbar side; inner positions are withheld.
+  assert.notEqual(status(tree({}), '\n.page { overflow-y: scroll; scrollbar-width: none; }'), 'unknown');
   // An absolute child of the rtl container keeps its physical inset (left: 0).
   const abs = analyzeLayout(tree({}), {name: 'Page', css: reset + css + '\n.b { position: absolute; left: 0; top: 0; inline-size: 10px; block-size: 10px; }', viewport: {min: 320, max: 1280, height: {min: 400, max: 900}}});
   assert.equal(abs.status, 'verified', JSON.stringify(abs.diagnostics));

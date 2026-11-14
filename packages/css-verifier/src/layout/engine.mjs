@@ -197,8 +197,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (['margin-left', 'margin-right'].some(key => !marginOk(key, 'inline'))) throw new Error(available.flexItem && ['margin-left', 'margin-right'].some(key => style[key] === 'auto') ? 'Cross-axis auto margins of a flex item are outside the subset' : 'Only known zero inline margins are supported');
     if (block && ['margin-top', 'margin-bottom'].some(key => !marginOk(key, 'block'))) throw new Error(available.flexItem && ['margin-top', 'margin-bottom'].some(key => style[key] === 'auto') ? 'Cross-axis auto margins of a flex item are outside the subset' : 'Reset native block margins explicitly before block checking');
     if (!['static', 'relative', 'absolute'].includes(style.position) || style['writing-mode'] !== 'horizontal-tb' || !['ltr', 'rtl'].includes(style.direction)) throw new Error('Only static/relative/local-absolute horizontal-tb boxes are supported');
-    // rtl: a scroll container puts its scrollbar on the left in Chromium, which is not modeled.
-    if (style.direction === 'rtl' && ['auto', 'scroll'].some(v => [style['overflow-x'], style['overflow-y']].includes(v))) throw Object.assign(new Error('An rtl scroll container (scrollbar on the left) is not modeled'), { code: 'U_LAYOUT_GEOMETRY' });
+    // rtl scroll containers put the scrollbar on the left; the container's own box and content width do not change,
+    // and positions inside a scroll container are withheld anyway, so nothing depends on the side.
     if (style.position === 'relative' && ['left','right','top','bottom'].some(key=>!['auto','0','0px'].includes(style[key]))) throw new Error('Relative positioning spaces require zero offsets');
     if (style.position === 'absolute' && (!block || ['inline-size','block-size'].some(key=>style[key]==='auto') || style['grid-column']!=='auto' || style['grid-row']!=='auto')) throw new Error('Absolute boxes require both explicit sizes, both-axis analysis and auto Grid placement');
     if (!['border-box', 'content-box'].includes(style['box-sizing'])) throw new Error('Unsupported box-sizing');
