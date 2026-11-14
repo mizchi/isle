@@ -149,3 +149,24 @@ test('device pixel ratio branches: resolution media and density srcset agree wit
     }
   }
 });
+
+test('static animation layout-shift findings agree with Chromium', async ({page}) => {
+  const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
+  const html = '<div class="page"><div class="a"></div><div class="b"></div></div>';
+  const base = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:40px;background:#ccc}.b{height:40px;background:#444}';
+  for (const [name, rule] of [
+    ['margin-top', '@keyframes m{from{margin-top:0}to{margin-top:100px}}.a{animation:m .5s infinite}'],
+    ['margin-left', '@keyframes m{to{margin-left:50px}}.a{animation:m .5s infinite alternate}'],
+    ['transform', '@keyframes m{from{transform:translateY(0)}to{transform:translateY(100px)}}.a{animation:m .5s infinite}'],
+    ['height of the first box', '@keyframes m{from{height:40px}to{height:80px}}.a{animation:m .5s infinite}'],
+    ['height of the last box', '@keyframes m{from{height:40px}to{height:80px}}.b{animation:m .5s infinite}'],
+    ['width from the start edge', '@keyframes m{50%{width:50%}}.a{animation:m .5s infinite}'],
+    ['padding', '@keyframes m{to{padding-top:20px}}.a{animation:m .5s infinite}'],
+  ]) {
+    const report = analyzeHTML(html, {name: 'Page', viewport, css: base + rule});
+    expect(report.status === 'unknown', `${name}: ${JSON.stringify(report.diagnostics)}`).toBe(false);
+    const predicted = report.diagnostics.some(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT');
+    const measured = await shifts(page, `<style>${base + rule}</style>${html}`);
+    expect(measured.score > 0, `${name}: static ${predicted}, Chromium ${measured.score}`).toBe(predicted);
+  }
+});

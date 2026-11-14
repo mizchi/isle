@@ -308,8 +308,11 @@ export function parseLayoutCSS(sheets, diagnostic) {
           const offset = at.trim().toLowerCase() === 'from' ? 0 : at.trim().toLowerCase() === 'to' ? 1 : /^\d+(?:\.\d+)?%$/.test(at.trim()) ? parseFloat(at) / 100 : null;
           if (offset === null) continue;
           const props = {};
-          for (const d of frame.nodes ?? []) if (d.type === 'decl') { const prop = d.prop.toLowerCase(), value = d.value.trim().toLowerCase(); if (prop === 'background-color' || prop === 'background') props['background-color'] = value; if (prop === 'opacity') props.opacity = value; }
-          frames.push({ offset, props });
+          // Declarations that lay out (not paint, transform or the other compositor-only properties): each such frame
+          // is laid out again to find layout shifts.
+          const layout = [];
+          for (const d of frame.nodes ?? []) if (d.type === 'decl') { const prop = d.prop.toLowerCase(), value = d.value.trim().toLowerCase(); if (prop === 'background-color' || prop === 'background') props['background-color'] = value; if (prop === 'opacity') props.opacity = value; if (!prop.startsWith('--') && !statePaint.test(prop) && !/^(?:transform|translate|scale|rotate|filter|backdrop-filter|will-change|offset(?:-.*)?)$/.test(prop)) layout.push(`${d.prop}:${d.value}`); }
+          frames.push({ offset, props, ...(layout.length ? { layout: layout.join(';') } : {}) });
         }
         keyframeFrames.set(name, frames.sort((a, b) => a.offset - b.offset));
         continue;

@@ -5,7 +5,7 @@ export const boxTags = new Set('html body button div main aside section article 
 // Form controls and images have UA intrinsic sizes and padding: checked only with resets and explicit sizes.
 export const controlTags = new Set(['button', 'input', 'select', 'textarea']), replacedTags = new Set(['img', 'input', 'select', 'textarea']);
 const ancestorTags=new Set([...boxTags].filter(tag=>!['button', 'img', 'input', 'select', 'textarea'].includes(tag)));
-const supportedOptions = new Set(['name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility', 'images', 'devicePixelRatios', '$devicePixelRatio']);
+const supportedOptions = new Set(['name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility', 'images', 'devicePixelRatios', '$devicePixelRatio', '$animationFrame']);
 const supportedContract = new Set(['minInlineSize', 'maxInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock', 'font', 'textMetrics', 'textRuns']);
 function finiteSize(value, name) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1_000_000) throw new Error(`Invalid layout ${name}`);
@@ -20,6 +20,8 @@ export function validateOptions(options) {
     || options.devicePixelRatios.some(r => typeof r !== 'number' || !/^\d{1,2}(?:\.\d{1,3})?$/.test(String(r)) || r <= 0) || new Set(options.devicePixelRatios).size !== options.devicePixelRatios.length)) throw new Error('Invalid devicePixelRatios option: 1 to 8 distinct positive numbers (dppx, at most three decimals)');
   // $devicePixelRatio (internal): the one ratio of an analysed case, from devicePixelRatios.
   if (options.$devicePixelRatio !== undefined && !options.devicePixelRatios?.includes(options.$devicePixelRatio)) throw new Error('Invalid layout options');
+  // $animationFrame (internal): the re-layout of one box at one keyframe's layout declarations.
+  if (options.$animationFrame !== undefined && (typeof options.$animationFrame?.path !== 'string' || typeof options.$animationFrame?.css !== 'string')) throw new Error('Invalid layout options');
   // images: the natural size of static image files by src (read at build time), {src: {width, height}} in pixels.
   if (options.images !== undefined && (!options.images || typeof options.images !== 'object' || Array.isArray(options.images) || Object.keys(options.images).length > 1024
     || Object.values(options.images).some(size => !size || Object.keys(size).some(k => !['width', 'height'].includes(k)) || !Number.isSafeInteger(size.width) || !Number.isSafeInteger(size.height) || size.width <= 0 || size.height <= 0))) throw new Error('Invalid images option: {src: {width, height}} with positive integer pixels');

@@ -113,10 +113,11 @@ function length(value, parent, style) {
 export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSheets=[], inputDiagnostics=[], preferences=[]) {
   // A hovered re-layout (hover-at:<path>) still needs its own untransformed re-layout, so it keeps a pristine copy.
   const hovered = preferences.find(p => p.startsWith('hover-at:'))?.slice(9);
-  const pristine = (options.accessibility || options.integrity || /:hover/i.test(String(options.css ?? '')) || inlineSheets.length) && preferences.every(p => p.startsWith('hover-at:')) ? structuredClone(root) : null;
+  const pristine = (options.accessibility || options.integrity || /:hover|@(?:-webkit-)?keyframes/i.test(String(options.css ?? '')) || inlineSheets.length) && preferences.every(p => p.startsWith('hover-at:')) ? structuredClone(root) : null;
   // The untransformed re-layout (CSS transforms removed): the layout boxes, which is what a layout shift compares.
   const untransformed = preferences.includes('untransformed');
   let sawTransform = false;
+  const animated = []; // boxes with a running animation whose keyframes lay out: {box, region, name}
   const domain = validateOptions(options), block = options.block ?? Boolean(options.viewport.height);
   const component = options.name ?? 'Document';
   const h = options.viewport.height ?? { min: 0, max: 0 };
@@ -164,6 +165,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (box.inlineStyle === 'dynamic') { unknown('U_LAYOUT_CSS', `${box.label}: a dynamic style attribute decides its styles`, undefined, box); continue; }
     const attached = parseLayoutCSS([{ css: `*{${box.inlineStyle}}`, file: `${box.label} style attribute` }], (code, message, line, file, detail) => { if (detail) diagnostics.push({ code, message, ...detail }); else unknown(code, message, line, box, file); }).rules;
     for (const rule of attached) { rule.selectors = [{ source: `${box.label} [style]`, parts: [{ kind: 'path', value: box.path }], specificity: [0, 0, 0] }]; rule.attached = true; rules.push(rule); }
+  }
+  // An animation frame re-layout: the keyframe's layout declarations apply to that one box (animations override the
+  // author's normal declarations, like an element-attached rule).
+  if (options.$animationFrame) {
+    const frame = parseLayoutCSS([{ css: `*{${options.$animationFrame.css}}`, file: 'keyframe' }], (code, message) => unknown(code, message)).rules;
+    for (const rule of frame) { rule.selectors = [{ source: `${options.$animationFrame.path} [keyframe]`, parts: [{ kind: 'path', value: options.$animationFrame.path }], specificity: [0, 0, 0] }]; rule.attached = true; rules.push(rule); }
   }
   for (const rule of rules) rule.layerName = rule.layer === null ? undefined : layers[rule.layer];
   const bounded = values => { spend(values.length); if (values.length > 512) throw new Error('Layout state limit exceeded'); return values; };
@@ -831,6 +838,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // position (as before), focus-clipped reads clipOrigin.
       const underClip = parents.some(p => p.clipScope);
       if (style.$sticky && parents.some(p => p.clipped || p.clipScope || (p.style && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible')))) throw Object.assign(new Error(`${box.label} is position: sticky inside a scrolling or clipping ancestor, which it would stick to`), { code: 'U_LAYOUT_CSS' });
+      if (style['animation-name'] !== 'none' && style['animation-play-state'] !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(style['animation-duration']) && keyframeFrames.get(style['animation-name'])?.some(frame => frame.layout)) animated.push({ box, region, name: style['animation-name'], position: style.position });
       geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
         // overflow: clip clips without scrolling (hidden still scrolls a focused descendant into view).
@@ -1777,12 +1785,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   diagnostics.push(...merged.map(({ signature, ...finding }) => finding));
   let integrityWarnings = [], integrityExempted = [], accessibilityWarnings = [], accessibilityNotes = [], accessibilityExempted = [];
-  if (options.integrity && !untransformed && hovered === undefined && !diagnostics.some(d => d.severity === 'unknown')) {
+  if (options.integrity && !untransformed && hovered === undefined && !options.$animationFrame && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeIntegrity({ geometry, waived }, { block, targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', ranges });
     diagnostics.push(...judged.findings);
     integrityWarnings = judged.warnings; integrityExempted = judged.exempted;
   }
-  if (options.accessibility && !untransformed && hovered === undefined && !diagnostics.some(d => d.severity === 'unknown')) {
+  if (options.accessibility && !untransformed && hovered === undefined && !options.$animationFrame && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { keyframeFrames, hostInset: options.hostInset ?? 0, hostBlockInset: options.hostBlockInset ?? 0, viewportBlock: block && options.viewport.height ? height : null, scrollPaddingDeclared: rules.some(rule => rule.declarations.some(d => /^scroll-padding-(?:top|bottom)$/.test(d.property))), viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), ranges, block });
     diagnostics.push(...judged.findings, ...judged.unknowns);
     // Dark color scheme: when the CSS has prefers-color-scheme: dark rules, the contrast rules run
@@ -1835,7 +1843,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // Layout shifts from :hover rules that change layout: each box such a rule matches is hovered in a re-layout, and
   // every box's layout start position (inlineStart, blockStart) is compared on the same condition region. An affine
   // difference vanishes on a convex region exactly when it vanishes at its vertices, so the check is exact.
-  if (pristine && hovered === undefined && rules.some(rule => rule.hoverLayout) && !diagnostics.some(d => d.severity === 'unknown')) {
+  if (pristine && hovered === undefined && !options.$animationFrame && rules.some(rule => rule.hoverLayout) && !diagnostics.some(d => d.severity === 'unknown')) {
     const hoverRules = rules.filter(rule => rule.hoverLayout);
     const targets = []; (function walk(box) { if (hoverRules.some(rule => rule.selectors.some(selector => matches(selector, box, new Set(['hover']))))) targets.push(box); for (const child of box.children ?? []) walk(child); })(root);
     // Rows correspond by path and condition polygon (its vertices; constraints may repeat redundant bounds).
@@ -1859,6 +1867,59 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const { field, v, delta } = moved[0];
         diagnostics.push({ code: 'E_LAYOUT_HOVER_SHIFT', severity: 'error', box: row.box, path: row.path, hovered: target.label, hoveredPath: target.path, field, delta: exact(delta),
           message: `Hovering ${target.label} moves ${row.box} (${field} by ${number(delta)}px at viewport ${number(v.x)}px${block ? ` × ${number(v.y)}px` : ''}): a layout shift without an excusing input. Change paint or transform on :hover, or reserve the space`, ...ranges(shared) });
+      }
+    }
+  }
+  // Layout shifts from CSS animations of layout properties (margin, size, insets, padding, …; transform and opacity
+  // never shift, measured): the page is laid out at each keyframe's declarations, and any box whose layout start
+  // moves where the animation runs is reported. Frames between keyframes are not enumerated: a shift at a keyframe
+  // is a shift every iteration (an infinite animation shifts every frame; docs/cls-evaluation.md).
+  if (pristine && hovered === undefined && !options.$animationFrame && animated.length && !diagnostics.some(d => d.severity === 'unknown')) {
+    const r = v => { const [n, d = '1'] = String(v ?? '0').split('/'); return div(q(n), q(d)); };
+    const at = (a, w, h) => add(add(r(a.constant), mul(r(a.coefficient), w)), mul(r(a.heightCoefficient), h));
+    const rect = row => row.layoutRect !== undefined ? row.layoutRect : row.rect;
+    const seen = new Set();
+    for (const entry of animated) {
+      const id = `${entry.box.path}|${entry.name}`;
+      if (seen.has(id) || seen.size >= 32) continue;
+      seen.add(id);
+      const where = animated.filter(other => `${other.box.path}|${other.name}` === id).map(other => other.region);
+      const reported = new Set();
+      for (const frame of keyframeFrames.get(entry.name).filter(frame => frame.layout)) {
+        const label = `${entry.name} at ${number(q(String(Math.round(frame.offset * 1e4) / 100)))}%`;
+        // A nonzero px margin-top/left (the checked layout has zero margins) moves an in-flow box's own start: a shift
+        // without a re-layout (margins are outside the layout subset).
+        const starts = Object.fromEntries(frame.layout.split(';').flatMap(decl => {
+          const [prop, ...rest] = decl.split(':'), value = rest.join(':').trim(), parts = value.split(/\s+/), name = prop.trim().toLowerCase();
+          if (name === 'margin') return [['blockStart', parts[0]], ['inlineStart', parts[3] ?? parts[1] ?? parts[0]]];
+          if (name === 'margin-block' || name === 'margin-top' || name === 'margin-block-start') return [['blockStart', parts[0]]];
+          if (name === 'margin-inline' || name === 'margin-left' || name === 'margin-inline-start') return [['inlineStart', parts[0]]];
+          return [];
+        }));
+        const shifted = Object.entries(starts).find(([, value]) => /^-?\d+(?:\.\d+)?px$/.test(value) && Number.parseFloat(value) !== 0);
+        if (shifted && !reported.has(entry.box.path) && !['absolute', 'fixed'].includes(entry.position)) {
+          reported.add(entry.box.path);
+          diagnostics.push({ code: 'E_LAYOUT_ANIMATION_SHIFT', severity: 'error', box: entry.box.label, path: entry.box.path, animated: entry.box.label, animatedPath: entry.box.path, animation: entry.name, offset: frame.offset, field: shifted[0], delta: exact(q(shifted[1].replace(/px$/, ''))),
+            message: `Animation ${label} on ${entry.box.label} sets a ${shifted[1]} start margin, which moves it (${shifted[0]}): a layout shift while it runs. Animate transform (translate) instead of margin`, ...ranges(entry.region) });
+          continue;
+        }
+        const moved = analyzeBoxTree(pristine, { ...options, $animationFrame: { path: entry.box.path, css: frame.layout } }, scrollbarProfile, budget, inlineSheets, [], preferences);
+        if (moved.status === 'unknown') { diagnostics.push({ code: 'U_LAYOUT_ANIMATION_SHIFT', severity: 'unknown', message: `${entry.box.label}: the layout at keyframe ${label} is not decided (${moved.diagnostics.find(d => d.severity === 'unknown')?.message ?? 'unknown'})`, box: entry.box.label, path: entry.box.path }); continue; }
+        const undecided = [...sizes, ...moved.sizes].find(row => !rect(row) || !row.$shown?.region);
+        if (undecided) { diagnostics.push({ code: 'U_LAYOUT_ANIMATION_SHIFT', severity: 'unknown', message: `${entry.box.label}: the layout of ${undecided.box} at keyframe ${label} cannot be compared (it has no layout rectangle)`, box: entry.box.label, path: entry.box.path }); continue; }
+        for (const row of sizes) for (const other of moved.sizes.filter(o => o.path === row.path)) {
+          if (reported.has(row.path)) continue;
+          for (const running of where) {
+            const both = intersect(row.$shown.region, other.$shown.region), shared = both && intersect(both, running);
+            if (!shared) continue;
+            const change = ['inlineStart', 'blockStart'].flatMap(field => shared.vertices.map(v => ({ field, v, delta: sub(at(rect(other)[field], v.x, v.y), at(rect(row)[field], v.x, v.y)) })).filter(c => cmp(c.delta, zero) !== 0).slice(0, 1))[0];
+            if (!change) continue;
+            reported.add(row.path);
+            diagnostics.push({ code: 'E_LAYOUT_ANIMATION_SHIFT', severity: 'error', box: row.box, path: row.path, animated: entry.box.label, animatedPath: entry.box.path, animation: entry.name, offset: frame.offset, field: change.field, delta: exact(change.delta),
+              message: `Animation ${label} on ${entry.box.label} moves ${row.box} (${change.field} by ${number(change.delta)}px at viewport ${number(change.v.x)}px${block ? ` × ${number(change.v.y)}px` : ''}): a layout shift while it runs (every frame it moves). Animate transform (translate/scale) instead of layout properties`, ...ranges(shared) });
+            break;
+          }
+        }
       }
     }
   }
