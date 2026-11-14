@@ -916,3 +916,16 @@ test('content taller than a table cell is Unknown, not overflow (the row grows)'
   const report = run(tree, '.t { table-layout: fixed; inline-size: 400px; background: #fff; color: #000; }\n.d { block-size: 20px; }', {viewport: {min: 420, max: 1280, height: {min: 400, max: 900}}, boxes: {'.d': {minInlineSize: 10, intrinsicBlockSize: 40}}});
   assert.deepEqual(report.diagnostics.map(d => d.code), ['U_LAYOUT_TABLE']);
 });
+
+test('nested px rowspans grow shorter spans first; a span starting inside another is Unknown', () => {
+  const tableView = {min: 420, max: 1280, height: {min: 400, max: 900}};
+  const rect = (report, cls) => report.sizes.find(r => r.box === `.${cls}` && r.rect).rect;
+  const td = (cls, rowSpan) => ({tag: 'td', classes: [cls], ...(rowSpan ? {rowSpan} : {})});
+  const table = rows => ({tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: rows.map(children => ({tag: 'tr', classes: ['r'], children}))}]});
+  const css = '.t { table-layout: fixed; inline-size: 300px; border-spacing: 0; }\ntd { padding: 0; block-size: 10px; }\n.a { block-size: 120px; inline-size: 50px; }\n.b { block-size: 60px; inline-size: 50px; }';
+  // b (two rows) first: 10, 10 → 30, 30; then a over 30, 30, 10 → 120.
+  const nested = run(table([[td('a', 3), td('b', 2), td('c')], [td('c')], [td('x'), td('c')]]), css, {viewport: tableView});
+  assert.equal(nested.status, 'verified', JSON.stringify(nested.diagnostics));
+  assert.equal(rect(nested, 'x').blockSize.constant, '549/32');
+  assert.equal(run(table([[td('a', 2), td('c'), td('c')], [td('c'), td('b', 2)], [td('c'), td('c')]]), css, {viewport: tableView}).status, 'unknown');
+});

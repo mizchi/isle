@@ -159,7 +159,9 @@ table の背景は table の box だけを塗り caption の下には描かれ�
 (以前は table の背景の上として判定していた:誤り)。vlmkit の contrast も DOM の祖先の背景を重ねるので、この case は描画した画素で確かめた。
 `rowspan` は、中身がなく高さ auto の cell が行グループの中でだけ広がるとき `grid-row: span n` として扱い、行は他の cell の px の高さを明示した track にする
 px の高さの rowspan cell(中身は自由)が行の和より高いときは、Chromium と同じく行の高さの比で増やす(行が全て 0 なら最後の行へ、
-各行の分は 1/64px に切り捨て残りを最後の行、spacing は先に引く。測定)。重なる px の rowspan と auto の高さの中身のある rowspan は Unknown。
+各行の分は 1/64px に切り捨て残りを最後の行、spacing は先に引く。測定)。同じ行から始まり入れ子になる rowspan は短い span から順に配る
+(入れ子の2つの table で測定と一致)。他の rowspan の途中の行から始まる rowspan は Chromium が別の配り方をする(1行に全部入る例を測った)ので Unknown、
+auto の高さの中身のある rowspan も Unknown。
 明示した行の track では cell は行に伸びる(Chromium の cell は行の高さになる)。
 table の cell は高さを超える内容で溢れず行が伸びるので、block 方向の内容の不足は E_LAYOUT_CONTENT ではなく U_LAYOUT_TABLE にした(以前は誤って溢れと報告していた)。
 **自動 table レイアウト**(`table-layout: auto`)は、内容が列を広げられないときだけ固定 table と同じになる(Chromium で測定):
@@ -260,5 +262,5 @@ page の規則(html-lang など)は box tree の単体テストで検査する(e
 
 ## 次の段階
 
-2. 内容で列幅が決まる自動 table レイアウトと、内容で高さの決まる rowspan。
+2. 内容で列幅が決まる自動 table レイアウト、内容で高さの決まる rowspan、他の rowspan の途中から始まる rowspan。
 3. inline 要素の幾何(位置と寸法。focus-obscured などの位置の規則を文中の要素に広げるため)。

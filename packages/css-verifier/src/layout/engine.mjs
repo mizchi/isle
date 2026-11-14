@@ -673,11 +673,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // A taller rowspan cell grows its rows in proportion to their heights (all to the last row when they are 0),
     // each share floored to 1/64px and the rest to the last row (measured in Chromium). Spans may not overlap.
     if (rowTracks) {
-      const used = new Set();
-      for (const [r, row] of rows.entries()) for (const cell of row.children.filter(cell => cell.tableRowSpan)) {
-        const n = cell.tableRowSpan, cs = one(styles(cell, region, parents, one(styles(row, region, parents, style, false, false)), false, false));
+      // Spans grow in order of their length (shorter first, measured with nested spans); a span that starts
+      // inside another one's rows (not at its first row) distributes differently in Chromium: Unknown.
+      const spans = rows.flatMap((row, r) => row.children.filter(cell => cell.tableRowSpan).map(cell => ({ cell, row, r, n: cell.tableRowSpan })));
+      for (const a of spans) for (const b of spans) if (a !== b && b.r > a.r && b.r < a.r + a.n) fail('A rowspan cell that starts inside another rowspan is not modeled');
+      for (const { cell, row, r, n } of spans.toSorted((a, b) => a.n - b.n)) {
+        const cs = one(styles(cell, region, parents, one(styles(row, region, parents, style, false, false)), false, false));
         if (cs['block-size'] === 'auto') continue;
-        for (let k = r; k < r + n; k++) { if (used.has(k)) fail('Overlapping px rowspan cells are not modeled'); used.add(k); }
         const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
         const target = sub(cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']), mul(v, q(n - 1)));
         const spanned = rowTracks.slice(r, r + n), total = spanned.reduce(add, zero);
