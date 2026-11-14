@@ -991,12 +991,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const empty = !cell.text && !cell.contract && !(cell.children ?? []).length;
       // An auto-height text cell whose height profile is known at its (constant) width counts as that height.
       const measured = cell.text && !(cell.children ?? []).length && cell.contract?.intrinsicBlockSize !== undefined;
-      // Children that are childless, textless blocks of a px block-size stack: the cell's content height is their sum.
+      // Children that are blocks of a px block-size stack: the cell's content height is their sum. A child's own
+      // content (text or children) does not change its px height; its overflow is that child's layout to check.
       const stackedHeight = () => {
         if (cell.text || cell.contract || !(cell.children ?? []).length) return null;
         let total = zero;
         for (const child of cell.children) {
-          if (child.text || child.contract || (child.children ?? []).length || child.inline?.length) return null;
+          if (child.tag === 'table' || child.tableCell) return null;
           const cs = one(styles(child, region, [...parents, { box: cell, style }], style, false, false));
           if (cs.display === 'none') continue;
           if (!/^\d+(?:\.\d+)?px$/.test(cs['block-size']) || cs.position !== 'static' || ['margin-top', 'margin-bottom'].some(key => !['0', '0px'].includes(cs[key]))) return null;
