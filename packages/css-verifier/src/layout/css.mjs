@@ -370,7 +370,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   if(box.popover===true) values.display='none';
   // [dir=ltr|rtl] { direction } (UA, inherited): author CSS may override; dir=auto depends on the text.
   if(box.dirAttr==='ltr' || box.dirAttr==='rtl') values.direction=box.dirAttr;
-  else if(box.dirAttr!==undefined) throw Object.assign(new Error(`dir=${box.dirAttr} depends on the text direction, which is not modeled`),{code:'U_LAYOUT_ELEMENT'});
+  else if(box.dirAttr!==undefined) throw Object.assign(new Error(box.dirAttr==='auto' ? 'dir=auto: own text and children both have strong characters, whose order is not known' : `dir=${box.dirAttr} is not a direction`),{code:'U_LAYOUT_ELEMENT'});
   if(box.popover===true && ['html','body'].includes(box.tag)) throw Object.assign(new Error(`A popover on ${box.tag} would hide the whole page`),{code:'U_LAYOUT_ELEMENT'});
   if(box.popover==='dynamic') throw Object.assign(new Error('A dynamic popover attribute decides whether it renders'),{code:'U_LAYOUT_ELEMENT'});
   if(box.hiddenAttr==='until-found' || box.hiddenAttr==='dynamic') throw Object.assign(new Error(`hidden=${box.hiddenAttr === 'dynamic' ? '(dynamic)' : 'until-found'} is outside the modeled rendering`),{code:'U_LAYOUT_ELEMENT'});

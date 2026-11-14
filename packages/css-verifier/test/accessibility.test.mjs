@@ -1114,7 +1114,7 @@ test('style attributes are element-attached declarations', () => {
   assert.equal(analyzeLayout({...tree, children: [{tag: 'div', classes: ['a'], inlineStyle: 'dynamic'}]}, {name: 'Page', css: reset + css, viewport: domain}).status, 'unknown');
 });
 
-test('rtl mirrors placement; absolute boxes keep physical insets; dir=auto is Unknown', () => {
+test('rtl mirrors placement; absolute boxes keep physical insets; dir=auto follows the first strong character', () => {
   const tree = extra => ({tag: 'main', classes: ['page'], dirAttr: 'rtl', children: [{tag: 'div', classes: ['a'], ...extra}, {tag: 'div', classes: ['b']}]});
   const css = '.page { display: grid; grid-template-columns: 100px 50px; grid-auto-rows: 20px; position: relative; }';
   const report = analyzeLayout(tree({}), {name: 'Page', css: reset + css, viewport: {min: 320, max: 1280, height: {min: 400, max: 900}}});
@@ -1129,5 +1129,9 @@ test('rtl mirrors placement; absolute boxes keep physical insets; dir=auto is Un
   const abs = analyzeLayout(tree({}), {name: 'Page', css: reset + css + '\n.b { position: absolute; left: 0; top: 0; inline-size: 10px; block-size: 10px; }', viewport: {min: 320, max: 1280, height: {min: 400, max: 900}}});
   assert.equal(abs.status, 'verified', JSON.stringify(abs.diagnostics));
   assert.deepEqual([abs.sizes.find(r => r.box === '.b' && r.rect).rect.inlineStart.coefficient, abs.sizes.find(r => r.box === '.b' && r.rect).rect.inlineStart.constant], ['0', '0']);
-  assert.equal(status({...tree({}), dirAttr: 'auto'}, ''), 'unknown');
+  // dir=auto: the first strong character decides (Hebrew → rtl; digits are neutral; no strong character → ltr).
+  const auto = text => analyzeLayout({tag: 'main', classes: ['page'], dirAttr: 'auto', children: [{tag: 'p', classes: ['a'], text: true, textContent: text}, {tag: 'div', classes: ['b']}]}, {name: 'Page', css: reset + css, viewport: {min: 320, max: 1280, height: {min: 400, max: 900}}, boxes: {'.a': {minInlineSize: 1, intrinsicBlockSize: 20}}}).sizes.find(r => r.box === '.a' && r.rect).rect.inlineStart.constant;
+  assert.deepEqual([auto('שלום world'), auto('123 hello'), auto('123 !')], ['-100', '0', '0']);
+  // Own strong text and strong text in children: their order is not kept, so Unknown.
+  assert.equal(status({tag: 'main', classes: ['page'], dirAttr: 'auto', text: true, textContent: 'abc', children: [{tag: 'div', classes: ['a'], text: true, textContent: 'שלום'}, {tag: 'div', classes: ['b']}]}, ''), 'unknown');
 });

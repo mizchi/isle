@@ -112,6 +112,21 @@ export function normalizeTree(tree,name) {
     return box;
   }
   const root=visit(tree,undefined,0,0);
+  // dir=auto: the first strong character of the element's text, skipping descendants with their own dir (HTML
+  // directionality; measured in Chromium). The order of an element's own text and its children is not kept, so an
+  // element with both strong own text and strong text in children stays auto (Unknown).
+  const rtl=/[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF\u{10800}-\u{10FFF}\u{1E800}-\u{1EFFF}]/u, letter=/\p{L}/u;
+  const strong=text=>{ for(const ch of text ?? '') { if(rtl.test(ch)) return 'rtl'; if(letter.test(ch)) return 'ltr'; } return null; };
+  const first=(box,top)=>{
+    if(!top && box.dirAttr!==undefined) return null;
+    const own=strong(box.textContent), kids=[...(box.children ?? []),...(box.inline ?? [])].map(child=>first(child,false)).filter(Boolean);
+    if(kids.includes('ambiguous') || (own && kids.length)) return 'ambiguous';
+    return own ?? kids[0] ?? null;
+  };
+  (function resolve(box) {
+    if(box.dirAttr==='auto') { const found=first(box,true); if(found!=='ambiguous') box.dirAttr=found ?? 'ltr'; }
+    for(const child of [...(box.children ?? []),...(box.inline ?? [])]) resolve(child);
+  })(root);
   // inert: the subtree takes no focus and is hidden from assistive technology (Chromium: skipped by Tab, ignored in the AX tree).
   (function walk(box,inert) {
     if(box.inert==='dynamic') diagnostics.push({code:'U_LAYOUT_ELEMENT',severity:'unknown',message:`${box.tag}: a dynamic inert attribute decides focus and exposure`});
