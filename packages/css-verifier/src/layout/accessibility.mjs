@@ -76,6 +76,7 @@
 //   focus-clipped    → E_A11Y_FOCUS_CLIPPED     a focusable box entirely outside an overflow: clip ancestor (it cannot scroll into view)
 //   hidden-overridden → W_A11Y_HIDDEN_OVERRIDDEN an element with the hidden attribute that renders (author display overrides [hidden])
 //   state-mismatch   → W_A11Y_STATE_MISMATCH    aria-expanded (or a tab's aria-selected) disagrees with whether its aria-controls target renders
+//   focus-transparent → W_A11Y_FOCUS_TRANSPARENT a focusable box that stays at opacity 0 (itself or an ancestor) when focused: its own focus indicator cannot show
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -89,7 +90,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -867,6 +868,11 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       const outline = !state.authorOutline || (!['none', 'hidden'].includes(f.outlineStyle) && !['0', '0px'].includes(String(f.outlineWidth)));
       const changed = (f.boxShadow !== 'none' && f.boxShadow !== b.boxShadow) || f.color !== b.color || f.backgroundColor !== b.backgroundColor || f.backgroundImage !== b.backgroundImage || f.decoration !== b.decoration;
       if (!outline && !changed) report(findings, 'E_A11Y_FOCUS_VISIBLE', 'error', `${row.box.label} shows no focus indicator: the outline is removed and nothing else changes on focus`, row, region, { rule: 'focus-visible' });
+      // focus-transparent: at opacity 0 (itself when focused, or an ancestor) the box's own indicator is invisible.
+      // A sibling may still show focus (input:focus + label), which is not checked: a warning.
+      const zero = value => /^(?:0|0?\.0+|0%)$/.test(String(value).trim());
+      if (zero(f.opacity) || row.chain.slice(0, -1).some(layer => zero(layer.opacity)))
+        report(warnings, 'W_A11Y_FOCUS_TRANSPARENT', 'warning', `${row.box.label} stays at opacity 0 when focused, so its own focus indicator is invisible; another element must show where focus is`, row, region, { rule: 'focus-transparent' });
     }
   }
 
