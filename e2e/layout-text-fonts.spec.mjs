@@ -437,3 +437,28 @@ test('a measured text rowspan cell in a viewport-wide table follows its line cou
   }
   expect(heights.size, 'the rows grow differently across widths').toBeGreaterThan(1);
 });
+
+// Inline bounds in a table cell follow its vertical-align (middle by default) inside a taller row.
+test('inline bounds in a table cell follow vertical-align', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const font = {family: 'Roboto', size: 16, lineHeight: 20, weight: 400};
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  for (const [align, wrap, content] of [['', 'nowrap', 'Read the guide.'], ['top', 'nowrap', 'Read the guide.'], ['bottom', 'nowrap', 'Read the guide.'], ['', 'normal', 'Read the guide before the long upgrade of the cluster.']]) {
+    const at = content.indexOf('guide');
+    const html = `<table class="t"><tbody><tr><td class="p">${content.slice(0, at)}<a class="u" href="#x">guide</a>${content.slice(at + 5)}</td><td class="c"></td></tr></tbody></table>`;
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.t{table-layout:fixed;inline-size:300px;border-spacing:0;background:#fff;color:#000}td{padding:0}.p{block-size:90px;font-family:"Roboto";font-size:16px;line-height:20px;font-weight:400;${wrap === 'nowrap' ? 'white-space:nowrap;' : ''}${align ? `vertical-align:${align};` : ''}}.u{color:#000}.c{block-size:90px}`;
+    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': 'guide'}}, ...(wrap === 'normal' ? {wrap: 'normal'} : {})}});
+    const report = analyzeHTML(html, {name: 'Case', css, viewport: {min: 320, max: 900, height: {min: 400, max: 600}}, boxes});
+    const bound = (report.inlineBounds ?? []).find(row => row.range.min <= 500 && 500 <= row.range.max && (row.range.maxInclusive !== false || 500 < row.range.max));
+    expect(bound, `${align || 'middle'} ${wrap}: ${JSON.stringify(report.diagnostics)}`).toBeTruthy();
+    await page.setViewportSize({width: 500, height: 500});
+    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const r = await page.evaluate(() => { const b = document.querySelector('.u').getBoundingClientRect(); return {y: b.y, h: b.height}; });
+    const top = value(bound.outer.blockStart.constant), bottom = top + value(bound.outer.blockSize.constant);
+    const innerTop = value(bound.inner.blockStart.constant), innerBottom = innerTop + value(bound.inner.blockSize.constant);
+    const tag = `${align || 'middle'} ${wrap}`;
+    expect(r.y, `${tag} top`).toBeGreaterThanOrEqual(top - 1e-9); expect(r.y + r.h, `${tag} bottom`).toBeLessThanOrEqual(bottom + 1e-9);
+    expect(r.y, `${tag} inner top`).toBeLessThanOrEqual(innerTop + 1e-9); expect(r.y + r.h, `${tag} inner bottom`).toBeGreaterThanOrEqual(innerBottom - 1e-9);
+  }
+});

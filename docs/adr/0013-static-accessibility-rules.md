@@ -212,6 +212,9 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
   全ての variant の layout を求め、全てが同じ行に載せる区間だけ、outer は和、inner は共通部分にする。`overflow-wrap: anywhere` は
   最も広い文字より広い幅から(それより狭い幅は profile も Unknown)。Chromium で 120〜900px を 13px 刻みで調べ、1行に載る幅では描画が
   outer に入り inner を覆い、矩形のない幅では実際に行をまたいで分かれていた(閉じ括弧の trim と anywhere の長い単語を含む)。
+- **table cell の中**:cell は行の高さに伸び、行は `vertical-align` で揃う(UA は tbody/tr が middle、td/th はそれを継承。以前は baseline としていた:誤り)。
+  top・middle・bottom は行数 × line-height の高さを content box の中でずらし(Chromium で測定)、baseline は行全体の揃えなので矩形を出さない
+  (以前は cell の上端に置いていたので、高い行の中のリンクの位置が誤っていた)。
 
 ### form control と画像
 

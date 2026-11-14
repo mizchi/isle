@@ -381,9 +381,10 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         const below = k + 1 < cuts.length ? cuts[k + 1] : null;
         // Variant v (languages × trims in breakLines order) at width w.
         const placed = lines.layouts.map((list, v) => place(list.filter(l => l.atLeastInlineSize <= w).at(-1), languages[Math.floor(v / (lines.layouts.length / languages.length))]));
-        if (placed.some(p => !p) || new Set(placed.map(p => p.line)).size > 1) { steps.push({atLeastInlineSize: w, below, split: true}); return; }
+        const counts = lines.layouts.map(list => list.filter(l => l.atLeastInlineSize <= w).at(-1).breaks.length);
+        if (placed.some(p => !p) || new Set(placed.map(p => p.line)).size > 1 || new Set(counts).size > 1) { steps.push({atLeastInlineSize: w, below, split: true}); return; }
         const hull = key => [Math.min(...placed.map(p => p[key][0])), Math.max(...placed.map(p => p[key][1]))];
-        steps.push({atLeastInlineSize: w, below, line: placed[0].line, start: hull('start'), end: hull('end'), top: hull('top'), bottom: hull('bottom')});
+        steps.push({atLeastInlineSize: w, below, line: placed[0].line, lines: counts[0], start: hull('start'), end: hull('end'), top: hull('top'), bottom: hull('bottom')});
       });
       if (lines.floor > 0) steps.unshift({atLeastInlineSize: 0, below: lines.floor, split: true});
       out[selector] = steps;

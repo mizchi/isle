@@ -458,17 +458,25 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (!(metrics.kind === 'content' && leaf.contract.wrap === 'nowrap') && metrics.kind !== 'lines') return null;
     const entry = Object.entries(metrics.inline).find(([selector]) => matches(compileSelector(selector), child));
     if (!entry) return null;
-    const x = sum(leafRow.origin.inline, scalar(leafRow.content.left)), y = sum(leafRow.origin.block, scalar(leafRow.content.top));
+    const x = sum(leafRow.origin.inline, scalar(leafRow.content.left));
+    // A table cell aligns its lines by vertical-align within its (stretched) content box (measured: middle by default).
+    const L = leaf.contract.font?.lineHeight, align = leaf.tableCell ? leafStyle['vertical-align'] : 'top';
+    if (!['top', 'middle', 'bottom'].includes(align) || (align !== 'top' && (!leafRow.block || !L))) return null;
+    const contentBlock = leafRow.block && diff(leafRow.block, scalar(['top', 'bottom'].map(side => add(px(leafStyle[`padding-${side}`]), px(leafStyle[`border-${side}`]))).reduce(add, zero)));
+    const shift = lines => align === 'top' ? scalar(zero) : times(diff(contentBlock, scalar(mul(q(String(L)), q(lines)))), align === 'middle' ? div(q(1), q(2)) : q(1));
+    let y = sum(leafRow.origin.block, scalar(leafRow.content.top));
     const rect = (x0, x1, y0, y1) => cmp(x1, x0) > 0 && cmp(y1, y0) > 0 ? { origin: { inline: sum(x, scalar(x0)), block: sum(y, scalar(y0)) }, inline: scalar(sub(x1, x0)), block: scalar(sub(y1, y0)) } : null;
     const piece = (b, r) => ({ region: r, outer: rect(sixtyfourths(b.start[0], Math.floor), sixtyfourths(b.end[1], Math.ceil), sixtyfourths(b.top[0], Math.floor), sixtyfourths(b.bottom[1], Math.ceil)),
       inner: rect(sixtyfourths(b.start[1], Math.ceil), sixtyfourths(b.end[0], Math.floor), sixtyfourths(b.top[1], Math.ceil), sixtyfourths(b.bottom[0], Math.floor)) });
-    if (metrics.kind === 'content') return [piece(entry[1], region)];
+    const base = y;
+    if (metrics.kind === 'content') { y = sum(base, shift(1)); return [piece(entry[1], region)]; }
     const content = leafRow.content.inline, out = [];
     for (const step of entry[1]) {
       if (step.split) continue;
       let r = clip(region, diff(content, scalar(sixtyfourths(step.atLeastInlineSize, Math.round))));
       if (r && step.below !== null) r = clip(r, diff(scalar(sixtyfourths(step.below, Math.round)), content), true);
-      if (r) out.push(piece(step, r));
+      if (r && align !== 'top' && step.lines === undefined) return null;
+      if (r) { y = sum(base, shift(step.lines ?? 1)); out.push(piece(step, r)); }
     }
     return out;
   }

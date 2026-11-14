@@ -40,7 +40,7 @@ export function validateTextMetrics(metrics) {
     const box = b => b && Object.keys(b).every(k => ['start', 'end', 'top', 'bottom'].includes(k)) && ['start', 'end', 'top', 'bottom'].every(k => pair(b[k]));
     // lines: per width interval [atLeastInlineSize, below) the bounds on one line, or split across lines.
     const step = (b, i, all) => b && finite(b.atLeastInlineSize, 0, 1_000_000) && (b.below === null ? i === all.length - 1 : finite(b.below, b.atLeastInlineSize, 1_000_000) && i < all.length - 1 && all[i + 1].atLeastInlineSize >= b.below - 1e-9)
-      && (b.split === true ? Object.keys(b).every(k => ['atLeastInlineSize', 'below', 'split'].includes(k)) : Number.isSafeInteger(b.line) && b.line >= 0 && box(Object.fromEntries(Object.entries(b).filter(([k]) => !['atLeastInlineSize', 'below', 'line'].includes(k)))));
+      && (b.split === true ? Object.keys(b).every(k => ['atLeastInlineSize', 'below', 'split'].includes(k)) : Number.isSafeInteger(b.line) && b.line >= 0 && (b.lines === undefined || (Number.isSafeInteger(b.lines) && b.lines > b.line)) && box(Object.fromEntries(Object.entries(b).filter(([k]) => !['atLeastInlineSize', 'below', 'line', 'lines'].includes(k)))));
     if (!['content', 'lines'].includes(metrics.kind) || !metrics.inline || typeof metrics.inline !== 'object' || Array.isArray(metrics.inline) || Object.keys(metrics.inline).length > 32
       || Object.values(metrics.inline).some(b => metrics.kind === 'content' ? !box(b) : !(Array.isArray(b) && b.length && b.length <= 257 && b[0].atLeastInlineSize === 0 && b.every(step)))) throw new Error('Invalid inline bounds');
   }
