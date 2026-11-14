@@ -670,12 +670,34 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // bottom-aligned at the row's top (measured; empty cells take no part): the only non-empty one sits at the top.
       const soleBaseline = cs['vertical-align'] === 'baseline' && !spanning && row.children.every(other => other === cell || (!other.text && !other.contract && !(other.children ?? []).length) || one(styles(other, region, parents, rowStyle, false, false))['vertical-align'] !== 'baseline');
       if (soleBaseline) cell.tableBaselineTop = true;
+      else if (cs['vertical-align'] === 'baseline' && !spanning) cell.tableBaselineGroup = { row: r, style: cs };
       else if (!['top', 'middle', 'bottom'].includes(cs['vertical-align']) && !(alone && cs['block-size'] === 'auto')) fail(`${cell.label} has vertical-align: ${cs['vertical-align']} with other baseline cells in its row; baseline alignment across cells is not modeled`);
       for (const child of cell.children) for (const c of styles(child, region, parents, cs, false, false)) {
         if (c.style.display === 'none') continue;
         if (!['block', 'grid', 'flex'].includes(c.style.display) || c.style.position !== 'static' || c.style.float !== 'none') fail(`${child.label} in a table cell must be a static block-level box (block flow of inline content is not modeled)`);
       }
       cell.tableFlow = true;
+    }
+    // Several baseline cells with content: each baseline is padding-top + content height (no line boxes); with px
+    // children the heights are constants, and each cell moves down by (largest baseline − its own).
+    const contentHeight = cell => (cell.children ?? []).map(child => {
+      const cs = one(styles(child, region, parents, cell.tableBaselineGroup.style, false, false));
+      if (cs.display === 'none') return zero;
+      if (!/^\d+(?:\.\d+)?px$/.test(cs['block-size'])) fail(`${child.label}: baseline-aligned cells are modeled when their children have px heights`);
+      const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+      return cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']);
+    }).reduce(add, zero);
+    for (const [r, row] of rows.entries()) {
+      const group = row.children.filter(cell => cell.tableBaselineGroup);
+      if (!group.length) continue;
+      if (row.children.some(cell => !cell.tableBaselineGroup && (cell.text || cell.contract) && one(styles(cell, region, parents, style, false, false))['vertical-align'] === 'baseline')) fail('Baseline cells with text (line boxes) are not modeled');
+      const baselines = group.map(cell => add(px(cell.tableBaselineGroup.style['padding-top']), contentHeight(cell)));
+      const top = baselines.reduce((a, b) => cmp(a, b) >= 0 ? a : b);
+      group.forEach((cell, i) => {
+        cell.tableBaselineShift = sub(top, baselines[i]);
+        // A moved cell with a fixed height could need a taller row (the table grows it, the grid would not): Unknown.
+        if (cmp(cell.tableBaselineShift, zero) > 0 && cell.tableBaselineGroup.style['block-size'] !== 'auto') fail(`${cell.label}: a baseline-shifted cell with a fixed block-size is not modeled`);
+      });
     }
     for (const box of [...sections, ...rows]) box.tablePart = true;
     for (const row of rows) for (const cell of row.children) cell.tableCell = true;
@@ -878,7 +900,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   // Cells fill their column (and span colspan columns); a caption is a full-width first or last row.
   function tablePlacement(box, style) {
-    if (box.tableFlow && style.display === 'table-cell') style = { ...style, display: 'grid', 'grid-template-columns': 'minmax(0, 1fr)', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'align-content': box.tableBaselineTop ? 'start' : { middle: 'center', bottom: 'end' }[style['vertical-align']] ?? 'start', 'row-gap': '0', 'column-gap': '0', 'grid-auto-flow': 'row', $fromCell: true };
+    if (box.tableFlow && style.display === 'table-cell') style = { ...style, display: 'grid', 'grid-template-columns': 'minmax(0, 1fr)', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', ...(box.tableBaselineShift ? { 'padding-top': `${number(add(px(style['padding-top']), box.tableBaselineShift))}px` } : {}), 'align-content': box.tableBaselineTop || box.tableBaselineShift ? 'start' : { middle: 'center', bottom: 'end' }[style['vertical-align']] ?? 'start', 'row-gap': '0', 'column-gap': '0', 'grid-auto-flow': 'row', $fromCell: true };
     if (box.tableCell && (style.display === 'table-cell' || style.$fromCell) && box.tableArea) return { ...style, display: style.$fromCell ? style.display : 'block', 'inline-size': 'auto', ...(box.tableStretch ? { 'block-size': 'auto' } : {}), 'grid-column': `${box.tableArea.column} / span ${box.tableArea.span}`, 'grid-row': `${box.tableArea.row} / span ${box.tableArea.down}` };
     if (box.tableCaption?.interleaved && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.interleaved.columns}`, 'grid-row': String(box.tableCaption.interleaved.row) };
     if (box.tableCell && style.$fromCell) return { ...style, 'inline-size': 'auto', ...(box.tableStretch ? { 'block-size': 'auto' } : {}), ...(box.colSpan > 1 ? { 'grid-column': `span ${box.colSpan}` } : {}), ...(box.tableRowSpan ? { 'grid-row': `span ${box.tableRowSpan}` } : {}) };

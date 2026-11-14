@@ -981,6 +981,10 @@ test('table cells with block children lay them out in block flow', () => {
   assert.equal(rect(run(tree({}), css('td { block-size: 90px; }\n.c { vertical-align: bottom; }'), {viewport: tableView}), 'k1').blockStart.constant, '40');
   // The only non-empty baseline cell of its row sits at the top (no line boxes: its content bottom is the baseline).
   assert.equal(rect(run(tree({}), css('td { block-size: 90px; }\n.c { vertical-align: baseline; }'), {viewport: tableView}), 'k1').blockStart.constant, '0');
-  // Two baseline cells with content are aligned to each other: Unknown.
+  // Two baseline cells with px children: content bottoms aligned (50 and 30 → the second moves down 20).
+  const both = run(tree({children: [{tag: 'div', classes: ['k1']}]}), css('td { vertical-align: baseline; }'), {viewport: tableView});
+  assert.equal(both.status, 'verified', JSON.stringify(both.diagnostics));
+  assert.equal(both.sizes.filter(r => r.box === '.k1' && r.rect).map(r => r.rect.blockStart.constant).sort().join(','), '0,20');
+  // With a fixed cell height the move could need a taller row: Unknown.
   assert.equal(run(tree({children: [{tag: 'div', classes: ['k1']}]}), css('td { block-size: 90px; vertical-align: baseline; }'), {viewport: tableView}).status, 'unknown');
 });

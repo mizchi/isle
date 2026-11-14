@@ -173,7 +173,9 @@ block-level の子(block・grid・flex、static、float なし、margin 0)だけ
 に置き、`vertical-align` の top・middle・bottom を grid の `align-content` の start・center・end にする。grid の engine に
 `align-content: center | end`(高さの決まった grid で、伸ばさない行を余白の半分か全部だけずらす。溢れるときは負にずれる)を加えた。
 baseline は、line box のない cell が content の下端を baseline にし、行の baseline の cell どうしが行の上で下端揃えになる(測定。空の cell は加わらない)ので、
-行で唯一の中身のある baseline の cell は上端に置く。中身のある baseline の cell が複数ある行は Unknown、text と子要素が混ざる cell(inline formatting)も Unknown。
+行で唯一の中身のある baseline の cell は上端に置く。中身のある baseline の cell が複数あるときは、子が全て px の高さなら baseline(padding-top + 中身の高さ)
+が定数なので、各 cell を(最大の baseline − 自分の baseline)だけ下げる(padding-top に足す。高さを固定した cell が下がる場合と text の baseline cell は Unknown)。
+3つの baseline の cell(padding と高さが違う)で Chromium と一致した。text と子要素が混ざる cell(inline formatting)も Unknown。
 行を決める cell、全て top の cell、高い行の middle・bottom の cell、grid の center・end(溢れる場合を含む)で Chromium と一致した。
 明示した行の track では cell は行に伸びる(Chromium の cell は行の高さになる)。
 table の cell は高さを超える内容で溢れず行が伸びるので、block 方向の内容の不足は E_LAYOUT_CONTENT ではなく U_LAYOUT_TABLE にした(以前は誤って溢れと報告していた)。
