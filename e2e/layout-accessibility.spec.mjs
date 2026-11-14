@@ -125,10 +125,12 @@ const cases = [
   {name: 'invalid-fields-and-messages', html: '<div class="page"><input class="f1" type="text" aria-label="Email" aria-invalid="true" aria-errormessage="e1"><p class="e" id="e1">Enter an email</p><input class="f2" type="text" aria-label="Name" aria-invalid="true" aria-errormessage="e2"><p class="e h" id="e2">Enter a name</p><input class="f3" type="text" aria-label="City" aria-invalid="true"></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff;color:#000;${type}}.f1,.f2,.f3{${button}inline-size:200px;block-size:30px}.e{display:block}.h{display:none}@media (width < 600px){.e{display:none}}`,
     boxes: {'.e': label}},
+  {name: 'modal-dialog-background', html: '<div class="page"><div class="bg"><button class="o1" aria-label="Back"></button><a class="o2" href="/x" aria-label="Home"></a></div><div class="iz" inert><button class="o3" aria-label="Hidden"></button></div><div class="d" role="dialog" aria-modal="true" aria-label="Settings"><button class="i" aria-label="Close"></button></div></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:auto;background:#fff}.bg,.iz,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px}.o1,.o3,.i{${button}}.o2{display:block}@media (width < 600px){.d{display:none}}`},
   {name: 'clickable-lists-and-markup', html: '<div class="page"><div class="card"></div><button class="b" aria-label="Go"></button><ul class="l"><li class="i"></li></ul><ul class="l2" role="list"><li class="i"></li></ul><dl class="d"><dt class="dt"></dt><p class="p"></p></dl><marquee class="m"></marquee><a class="k1" href="#1" accesskey="s" aria-label="One"></a><a class="k2" href="#2" accesskey="s" aria-label="Two"></a><img class="im" src="data:," alt="Map" ismap></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.card{display:block;cursor:pointer}.b{${button}cursor:pointer;inline-size:24px;block-size:24px}.l,.l2,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;list-style:none}.i,.dt,.p{display:block}.m{display:block;inline-size:200px;block-size:24px}.k1,.k2{display:block}.im{display:block;inline-size:24px;block-size:24px}`},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background'];
 const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
 // Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -222,7 +224,8 @@ async function runtime(page, sample) {
     const out = {scroll: [], reflow: [], obscured: [], area: []};
     const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
     const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible'; };
-    const focusable = node => shown(node) && (node.matches('a[href], button:not([disabled]), input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled])') || node.tabIndex >= 0 && node.hasAttribute('tabindex'));
+    // An inert subtree takes no focus.
+    const focusable = node => shown(node) && !node.closest('[inert]') && (node.matches('a[href], button:not([disabled]), input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled])') || node.tabIndex >= 0 && node.hasAttribute('tabindex'));
     const all = [document.body.firstElementChild, ...document.body.firstElementChild.querySelectorAll('*')];
     for (const n of all) {
       const style = getComputedStyle(n);
@@ -532,6 +535,20 @@ async function runtime(page, sample) {
     if (out) clippedFocus.push(element.path);
   }
   for (const path of clippedFocus) found.get('focus-clipped').add(path);
+  // Modal background: with a rendered aria-modal dialog, Tab reaches these focusable elements outside it.
+  if (await page.evaluate(() => [...document.querySelectorAll('[aria-modal="true"]')].some(d => d.getClientRects().length > 0))) {
+    await page.evaluate(() => document.activeElement?.blur());
+    const reached = new Set();
+    for (let i = 0; i < 30; i++) {
+      await page.keyboard.press('Tab');
+      const path = await page.evaluate(() => { const root = document.body.firstElementChild, a = document.activeElement; if (!a || !root.contains(a) || a === root) return null;
+        if ([...document.querySelectorAll('[aria-modal="true"]')].some(d => d.getClientRects().length > 0 && d.contains(a))) return null;
+        const path = []; for (let n = a; n !== root; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); });
+      if (path) reached.add(path);
+    }
+    await page.evaluate(() => document.activeElement?.blur());
+    for (const path of reached) found.get('modal-background').add(path);
+  }
   // Invalid fields: Chromium's AX invalid state; the error message must render (or at least be referenced).
   for (const element of elements.filter(e => facts[e.path].display !== 'none' && facts[e.path].visibility === 'visible')) {
     const info = await (await handle(element.path)).evaluate(node => ({errormessage: node.getAttribute('aria-errormessage'), describedby: node.getAttribute('aria-describedby'), invalid: node.getAttribute('aria-invalid')}));

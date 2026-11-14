@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -1187,4 +1187,15 @@ test('error-message: an invalid field points at a message that renders', () => {
   assert.equal(warn(run(tree({'aria-invalid': 'true', 'aria-errormessage': 'err'}), css(''), {boxes: b}), 'W_A11Y_ERROR_HIDDEN').length, 0);
   assert.deepEqual(warn(run(tree({'aria-invalid': 'true', 'aria-errormessage': 'err'}), css('.e { display: none; }'), {boxes: b}), 'W_A11Y_ERROR_HIDDEN').map(d => d.box), ['.f']);
   assert.deepEqual(warn(run(tree({'aria-invalid': 'true'}), css(''), {boxes: b}), 'W_A11Y_INVALID_NO_MESSAGE').map(d => d.box), ['.f']);
+});
+
+test('modal-background: focus escapes an aria-modal dialog unless the background is inert', () => {
+  const warn = (report, code) => report.accessibility.warnings.filter(d => d.code === code);
+  const btn = cls => ({tag: 'button', classes: [cls], named: true});
+  const tree = inert => page([{tag: 'div', classes: ['bg'], ...(inert ? {inert: true} : {}), children: [btn('o')]}, {tag: 'div', classes: ['d'], role: 'dialog', named: true, aria: {'aria-modal': 'true'}, children: [btn('i')]}]);
+  const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: 30px; }\n.bg, .d { display: grid; grid-template-columns: minmax(0, 1fr); }\n.o, .i { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n${extra}`);
+  assert.deepEqual(warn(run(tree(false), css('')), 'W_A11Y_MODAL_BACKGROUND').map(d => d.box), ['.o']);
+  assert.equal(warn(run(tree(true), css('')), 'W_A11Y_MODAL_BACKGROUND').length, 0);
+  // A closed (not rendered) dialog leaves the page alone.
+  assert.equal(warn(run(tree(false), css('.d { display: none; }')), 'W_A11Y_MODAL_BACKGROUND').length, 0);
 });

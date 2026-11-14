@@ -78,6 +78,7 @@
 //   state-mismatch   → W_A11Y_STATE_MISMATCH    aria-expanded (or a tab's aria-selected) disagrees with whether its aria-controls target renders
 //   focus-transparent → W_A11Y_FOCUS_TRANSPARENT a focusable box that stays at opacity 0 (itself or an ancestor) when focused: its own focus indicator cannot show
 //   error-message    → W_A11Y_ERROR_HIDDEN / W_A11Y_INVALID_NO_MESSAGE  aria-invalid="true" whose aria-errormessage does not render, or with no message at all (SC 3.3.1)
+//   modal-background → W_A11Y_MODAL_BACKGROUND  focusable content outside a rendered aria-modal dialog that is neither inert nor aria-hidden
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -91,7 +92,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -1112,6 +1113,17 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       let missing = [row.region];
       for (const r of renderedRows(target)) missing = missing.flatMap(region => subtract(region, r.region));
       for (const region of missing) report(warnings, 'W_A11Y_ERROR_HIDDEN', 'warning', `${row.box.label} is aria-invalid="true" but its error message #${id} does not render here`, row, region, { rule: 'error-message', message: id });
+    }
+  }
+
+  // modal-background: while an aria-modal dialog renders, focus can still Tab out to content that is not inert or
+  // aria-hidden (a script may trap it; that is outside the tree, so a warning).
+  for (const dialog of geometry.filter(row => ['dialog', 'alertdialog'].includes(roleOf(row.box)) && row.box.aria?.['aria-modal']?.trim() === 'true' && visible(row) && !hiddenFrom(row.path))) {
+    const outside = placed.concat(geometry.filter(row => !row.origin)).filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo && row.path !== dialog.path && !isAncestor(dialog.path, row.path) && intersect(row.region, dialog.region));
+    const seen = new Set();
+    for (const row of outside) {
+      if (seen.has(row.path)) continue; seen.add(row.path);
+      report(warnings, 'W_A11Y_MODAL_BACKGROUND', 'warning', `${row.box.label} can take focus outside the modal ${dialog.box.label}; make the background inert (or aria-hidden and unfocusable)`, row, intersect(row.region, dialog.region), { rule: 'modal-background', dialog: dialog.path });
     }
   }
 
