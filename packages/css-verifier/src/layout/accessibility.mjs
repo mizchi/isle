@@ -95,13 +95,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -644,6 +644,26 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
         }
       }
     }
+  }
+
+  // visual-presentation (SC 1.4.8, AAA; only when an AAA level is asked): a text block that wraps (taller than one line)
+  // and is justified, or whose line spacing is below 1.5 × its font size. line-height normal uses the font contract's
+  // line height when there is one; otherwise it is noted, not judged.
+  if (contrast === 'AAA' || targetLevel === 'AAA') {
+    let normalSkipped = false;
+    for (const row of placed.filter(row => row.box.text && visible(row) && row.block)) {
+      const size = Number(String(row.fontSize).replace(/px$/, '')), value = String(row.lineHeight ?? 'normal');
+      if (!(size > 0)) continue;
+      const m = /^(\d+(?:\.\d+)?|\.\d+)(px|%|em)?$/.exec(value);
+      const contractLine = row.box.contract?.font?.lineHeight;
+      const ratio = m ? (m[2] === 'px' ? Number(m[1]) / size : m[2] === '%' ? Number(m[1]) / 100 : Number(m[1])) : value === 'normal' && contractLine ? contractLine / size : null;
+      if (ratio === null) { normalSkipped = true; continue; }
+      const wraps = below(row.region, scalar(ratio * size), row.block);
+      if (!wraps) continue;
+      if (row.textAlign === 'justify') report(warnings, 'W_A11Y_JUSTIFIED', 'warning', `${row.box.label} is justified text that wraps (SC 1.4.8)`, row, wraps, { rule: 'visual-presentation' });
+      if (ratio < 1.5) report(warnings, 'W_A11Y_LINE_SPACING', 'warning', `${row.box.label} wraps with line spacing ${Math.round(ratio * 100) / 100} × its font size, below 1.5 (SC 1.4.8)`, row, wraps, { rule: 'visual-presentation' });
+    }
+    if (normalSkipped) notes.push('visual-presentation: text with line-height normal and no font contract is not checked for SC 1.4.8 line spacing');
   }
 
   // fixed-hides-content: a fixed bar that touches the viewport's top (bottom) edge and entirely covers content at scroll

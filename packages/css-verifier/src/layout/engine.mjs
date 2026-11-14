@@ -600,7 +600,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         overflow: ['hidden','clip'].includes(overflowValue) ? 'clip' : ['auto','scroll'].includes(overflowValue) ? 'scroll' : 'visible', overflowValue,
         // Where a single line of text starts inside the box (font-derived text extents).
         content: { left: add(px(style['border-left']), px(style['padding-left'])), top: add(px(style['border-top']), px(style['padding-top'])), inline: contentInline },
-        textAlign: style['text-align'], painted: paints(style),
+        textAlign: style['text-align'], lineHeight: style['line-height'], painted: paints(style),
         // z-index applies to positioned boxes and to grid/flex items.
         zIndex: style['z-index'] !== 'auto' && (style.position !== 'static' || ['grid', 'flex'].includes(parents.at(-1)?.style.display)) ? Number(style['z-index']) : null,
         paint: paintFacts(style), chain: [...ancestorPaint, ...parents.map((parent, i) => captionBackdrop(parent, parents[i + 1]?.box ?? box, paintFacts(parent.style))), paintFacts(style)],
