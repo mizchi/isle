@@ -41,7 +41,7 @@ axe が同じ観点を持つ規則でも、axe は開いた1つの幅・1つの�
 
 実装は小さく誤検知もほぼないので残す。ただし、これらが価値の中心ではない。
 
-duplicate-id, aria-reference, role-valid, role-parent / role-children, role-attr, aria-attr / aria-value, presentation-conflict, nested-interactive, interactive-role-focusable, positive-tabindex, image-alt, input-button-name, input-image-alt, label-for, td-headers, table-headers, scope, autocomplete, html-lang / lang-valid, document-title / meta-viewport, frame-title, video-caption, list-structure, definition-list, error-message, native-aria-conflict, focus-semantics
+duplicate-id, aria-reference, role-valid, role-parent / role-children, role-attr, aria-attr / aria-value, presentation-conflict, nested-interactive, interactive-role-focusable, positive-tabindex, image-alt, input-button-name, input-image-alt, label-for, td-headers, table-headers, scope, autocomplete, html-lang / lang-valid, document-title / meta-viewport, touch-zoom(html・body の `touch-action`), frame-title, video-caption, list-structure, definition-list, error-message, native-aria-conflict, focus-semantics
 
 ## C. ヒューリスティック:正当な設計も報告しうる(警告のまま。既定から外す候補)
 

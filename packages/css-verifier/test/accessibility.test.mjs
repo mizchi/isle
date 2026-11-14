@@ -4,6 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {analyzeLayout} from '../src/index.mjs';
+import {analyzeHTML} from '../src/html.mjs';
 
 const reset = '* { box-sizing: border-box; margin: 0; }\n';
 const domain = {min: 320, max: 1280, height: {min: 400, max: 900}};
@@ -17,7 +18,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -1661,4 +1662,20 @@ test('image layout shifts: an unreserved image, and a reserved ratio that differ
   assert.deepEqual(codes({width: 400, height: 300}).filter(c => c.startsWith('E_LAYOUT_IMAGE')), ['E_LAYOUT_IMAGE_RATIO']);
   // Without the file's size an unreserved image is Unknown.
   assert.equal(run(tree({}), css).status, 'unknown');
+});
+
+test('meta-viewport and touch-zoom: zoom disabled by the viewport meta tag or by touch-action on the page root', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const page = (meta, css = '') => analyzeHTML(`<!doctype html><html lang="en"><head><meta name="viewport" content="${meta}"><title>T</title></head><body><main class="page"><div class="x"></div></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.x{height:20px}${css}`, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, accessibility: true});
+  const codes = report => report.diagnostics.filter(d => ['E_A11Y_META_VIEWPORT', 'E_A11Y_TOUCH_ZOOM'].includes(d.code)).map(d => d.code);
+  assert.deepEqual(codes(page('width=device-width, initial-scale=1')), []);
+  assert.deepEqual(codes(page('width=device-width, user-scalable=no')), ['E_A11Y_META_VIEWPORT']);
+  assert.deepEqual(codes(page('width=device-width, maximum-scale=1')), ['E_A11Y_META_VIEWPORT']);
+  assert.deepEqual(codes(page('width=device-width, maximum-scale=2')), []);
+  assert.deepEqual(codes(page('width=device-width', 'body{touch-action:none}')), ['E_A11Y_TOUCH_ZOOM']);
+  assert.deepEqual(codes(page('width=device-width', 'html{touch-action:pan-x pan-y}')), ['E_A11Y_TOUCH_ZOOM']);
+  for (const value of ['manipulation', 'pan-y pinch-zoom', 'auto']) assert.deepEqual(codes(page('width=device-width', `body{touch-action:${value}}`)), [], value);
+  // A widget's own touch-action (a slider, a canvas) is not the page's.
+  assert.deepEqual(codes(page('width=device-width', '.x{touch-action:none}')), []);
 });

@@ -21,6 +21,9 @@ export function htmlBoxTree(html) {
   const documentNode=asBody ? parse(asHtml ? (/^\s*<!doctype/i.test(html) ? html.trim() : `<!doctype html>${html.trim()}`) : `<!doctype html><html><head></head>${html.trim()}</html>`,{onParseError:error=>unknown(`HTML parse recovery: ${error.code}`)}).childNodes.find(n=>n.tagName==='html') : null;
   if(asHtml) {
     if(documentNode.childNodes.some(n=>n.tagName==='head' && n.childNodes.some(c=>c.tagName && !['meta','title'].includes(c.tagName)))) unknown('A head with elements other than meta and title is not modeled (pass styles as the css option)');
+    // The viewport meta tag (zoom restrictions: the meta-viewport rule) is kept as a fact of the html root.
+    const meta=documentNode.childNodes.find(n=>n.tagName==='head')?.childNodes.find(c=>c.tagName==='meta' && c.attrs.some(a=>a.name==='name' && a.value.trim().toLowerCase()==='viewport'));
+    var metaViewport=meta?.attrs.find(a=>a.name==='content')?.value;
     documentNode.childNodes=documentNode.childNodes.filter(n=>n.tagName!=='head');
   }
   const fragment=asHtml ? documentNode : asBody ? documentNode.childNodes.find(n=>n.tagName==='body') : parseFragment(html,{onParseError:error=>unknown(`HTML parse recovery: ${error.code}`)});
@@ -44,5 +47,7 @@ export function htmlBoxTree(html) {
       runs:(()=>{ let i=0; return node.childNodes.flatMap(n=>n.tagName ? [i++] : n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value) ? [n.value.replace(/[\t\n\r ]+/g,' ').trim()] : []); })(),
       children:node.childNodes.filter(n=>n.tagName).map(child=>convert(child,depth+1))};
   }
-  return {tree:convert(roots[0]),diagnostics};
+  const tree=convert(roots[0]);
+  if(asHtml && metaViewport!==undefined) tree.metaViewport=metaViewport;
+  return {tree,diagnostics};
 }

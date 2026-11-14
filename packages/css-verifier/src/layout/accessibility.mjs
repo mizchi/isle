@@ -49,6 +49,8 @@
 //   autocomplete     → E_A11Y_AUTOCOMPLETE      tokens outside the HTML autofill grammar (SC 1.3.5)
 //   scope            → E_A11Y_SCOPE             scope on a td, or not row/col/rowgroup/colgroup
 //   html-lang / lang-valid → E_A11Y_HTML_LANG / E_A11Y_LANG_VALID  a document without lang, or an invalid language tag (SC 3.1.1)
+//   meta-viewport    → E_A11Y_META_VIEWPORT     the viewport meta tag disables zoom (user-scalable=no, or maximum-scale below 2) (SC 1.4.4)
+//   touch-zoom       → E_A11Y_TOUCH_ZOOM        touch-action on html or body leaves out pinch-zoom (none, or pan-* only) (SC 1.4.4)
 //   page-h1 / region / bypass → W_A11Y_PAGE_H1 / W_A11Y_REGION / W_A11Y_BYPASS  page roots: no rendered h1, text outside landmarks, no skip link before navigation
 //   landmark-top-level / duplicate-landmark → W_A11Y_LANDMARK_TOP_LEVEL / W_A11Y_DUPLICATE_LANDMARK
 //   p-as-heading     → W_A11Y_P_AS_HEADING      a paragraph styled as a heading (bold or larger) before ordinary text
@@ -93,7 +95,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
   'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text',
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
-  'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
+  'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
   'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance'];
 
@@ -162,7 +164,7 @@ export const contrastRatio = (a, b) => { const [x, y] = [luminance(a), luminance
 
 /** The paint facts of one computed style, kept on each geometry row. */
 export function paintFacts(style) {
-  return { color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
+  return { touchAction: style['touch-action'], color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
     isolation: style.isolation, transform: style.transform, scrollMargin: { top: style['scroll-margin-top'], bottom: style['scroll-margin-bottom'] }, scrollPadding: { top: style['scroll-padding-top'], bottom: style['scroll-padding-bottom'] }, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], outlineColor: style['outline-color'], outlineOffset: style['outline-offset'], clippedAway: style['clip-path'] === 'empty' || (style.clip === 'empty' && ['absolute', 'fixed'].includes(style.$fixed ? 'fixed' : style.position)), borderColors: { top: style['border-top-color'], right: style['border-right-color'], bottom: style['border-bottom-color'], left: style['border-left-color'] }, boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
     animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] , direction: style['animation-direction'] } };
@@ -990,6 +992,18 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
 
   // --- language ---
   if (root.tag === 'html' && (root.lang === undefined || !String(root.lang).trim())) report(findings, 'E_A11Y_HTML_LANG', 'error', `${root.label} has no lang attribute`, whole(root), domain, { rule: 'html-lang' });
+  // --- zoom ---
+  if (root.tag === 'html' && typeof root.metaViewport === 'string') {
+    const settings = Object.fromEntries(root.metaViewport.split(/[,;]/).map(part => part.split('=').map(x => x.trim().toLowerCase())).filter(([key]) => key));
+    const maximum = settings['maximum-scale'] !== undefined ? Number.parseFloat(settings['maximum-scale']) : null;
+    const reasons = [...(['no', '0'].includes(settings['user-scalable']) ? ['user-scalable=no'] : []), ...(maximum !== null && Number.isFinite(maximum) && maximum < 2 ? [`maximum-scale=${settings['maximum-scale']}`] : [])];
+    if (reasons.length) report(findings, 'E_A11Y_META_VIEWPORT', 'error', `The viewport meta tag disables zooming (${reasons.join(', ')}): text cannot be enlarged to 200% on touch devices`, whole(root), domain, { rule: 'meta-viewport', content: root.metaViewport });
+  }
+  // touch-action on the root or body applies to every gesture on the page: without pinch-zoom, the page cannot be zoomed.
+  for (const row of geometry.filter(row => (row.box === root && root.tag === 'html') || (row.box.tag === 'body' && root.children?.includes(row.box)) || (row.box === root && root.tag === 'body'))) {
+    const action = String(row.paint?.touchAction ?? 'auto');
+    if (action !== 'auto' && action !== 'manipulation' && !/\bpinch-zoom\b/.test(action)) report(findings, 'E_A11Y_TOUCH_ZOOM', 'error', `${row.box.label} has touch-action: ${action}, which disables pinch-zoom for the whole page`, row, row.region, { rule: 'touch-zoom', value: action });
+  }
   for (const box of all.filter(b => b.lang && b.lang !== '<dynamic>' && !languageTag.test(b.lang))) report(findings, 'E_A11Y_LANG_VALID', 'error', `${box.label} has lang=${JSON.stringify(box.lang)}, which is not a language tag`, whole(box), domain, { rule: 'lang-valid' });
 
   // --- page roots (html or body) ---

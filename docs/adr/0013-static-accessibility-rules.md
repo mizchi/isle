@@ -67,6 +67,8 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | autocomplete | HTML の autofill の文法にない token(SC 1.3.5) | E_A11Y_AUTOCOMPLETE |
 | scope | th 以外の scope、row/col/rowgroup/colgroup 以外の値 | E_A11Y_SCOPE |
 | html-lang / lang-valid | root の html に lang がない、言語タグとして不正な lang(SC 3.1.1/3.1.2) | E_A11Y_HTML_LANG / E_A11Y_LANG_VALID |
+| meta-viewport | viewport の meta tag が拡大を禁じる(`user-scalable=no`、`maximum-scale` が 2 未満)。`analyzeHTML` に `<html>` から始まる文書を渡したとき、head の meta を html の事実として持つ(SC 1.4.4) | E_A11Y_META_VIEWPORT |
+| touch-zoom | html か body の `touch-action` が pinch-zoom を含まない(`none`、`pan-*` だけ)。ページ全体のピンチズームが止まる。部品自身の `touch-action`(スライダーなど)は対象外(SC 1.4.4) | E_A11Y_TOUCH_ZOOM |
 | page-h1 / region / bypass | root が html/body のとき:h1 が描画されない領域、landmark の外の内容、main より前の nav に skip link がない | W_A11Y_PAGE_H1 / W_A11Y_REGION / W_A11Y_BYPASS(警告) |
 | landmark-top-level / duplicate-landmark | main・complementary が他の landmark の中、同時に描画される2つの banner/contentinfo | 警告 |
 | p-as-heading | 太字(600以上)か 1.2 倍以上の文字の p が、普通の p の前にある(見出しを CSS で装う) | W_A11Y_P_AS_HEADING(警告) |
