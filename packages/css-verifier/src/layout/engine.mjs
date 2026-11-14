@@ -1000,9 +1000,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           if (child.tag === 'table' || child.tableCell) return null;
           const cs = one(styles(child, region, [...parents, { box: cell, style }], style, false, false));
           if (cs.display === 'none') continue;
-          if (!/^\d+(?:\.\d+)?px$/.test(cs['block-size']) || cs.position !== 'static' || ['margin-top', 'margin-bottom'].some(key => !['0', '0px'].includes(cs[key]))) return null;
+          // An auto-height text leaf with a constant measured height (intrinsicBlockSize as a number) counts as that.
+          const measuredLeaf = cs['block-size'] === 'auto' && child.text && !(child.children ?? []).length && typeof child.contract?.intrinsicBlockSize === 'number';
+          if ((!/^\d+(?:\.\d+)?px$/.test(cs['block-size']) && !measuredLeaf) || cs.position !== 'static' || ['margin-top', 'margin-bottom'].some(key => !['0', '0px'].includes(cs[key]))) return null;
           const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-          total = add(total, cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']));
+          total = add(total, measuredLeaf ? add(q(String(child.contract.intrinsicBlockSize)), edges) : cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']));
         }
         return total;
       };

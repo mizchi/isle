@@ -1242,13 +1242,13 @@ test('an arbitrary rotation covers what lies inside its rendered bounding box', 
 });
 
 test('a rowspan cell of stacked px blocks grows its rows like Chromium', async ({page}) => {
-  const css = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.t{table-layout:fixed;inline-size:300px;border-spacing:2px}td{padding:0}.a{inline-size:100px}.b{inline-size:194px}.r1,.r2{block-size:20px}.x,.y{display:block;block-size:50px}.y{display:grid;grid-template-columns:minmax(0,1fr)}.z{block-size:30px}`;
-  const html = '<table class="t"><tbody><tr><td class="a" rowspan="2"><div class="x"></div><div class="y"><div class="z"></div></div></td><td class="b r1"></td></tr><tr><td class="r2"></td></tr></tbody></table>';
-  const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280, height: {min: 600, max: 1000}}});
+  const css = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.t{table-layout:fixed;inline-size:300px;border-spacing:2px}td{padding:0}.a{inline-size:100px}.b{inline-size:194px}.r1,.r2{block-size:20px}.x,.y{display:block;block-size:50px}.y{display:grid;grid-template-columns:minmax(0,1fr)}.z{block-size:30px}.w{display:block;font-family:sans-serif;font-size:16px;line-height:20px;padding:5px 0;white-space:nowrap}`;
+  const html = '<table class="t"><tbody><tr><td class="a" rowspan="2"><div class="x"></div><div class="y"><div class="z"></div></div><p class="w">AB</p></td><td class="b r1"></td></tr><tr><td class="r2"></td></tr></tbody></table>';
+  const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280, height: {min: 600, max: 1000}}, boxes: {'.w': {minInlineSize: 1, intrinsicBlockSize: 20}}});
   expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
   await page.setViewportSize({width: 1280, height: 800});
   await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
-  for (const cls of ['a', 'b.r1', 'r2', 'x', 'y', 'z']) {
+  for (const cls of ['a', 'b.r1', 'r2', 'x', 'y', 'z', 'w']) {
     const browser = await page.evaluate(c => { const r = document.querySelector(`.${c}`).getBoundingClientRect(); return [r.top, r.height]; }, cls);
     const row = report.sizes.find(r => r.box === `.${cls}` && r.rect);
     const statics = [value(row.rect.blockStart.constant), value(row.rect.blockSize.constant)];
