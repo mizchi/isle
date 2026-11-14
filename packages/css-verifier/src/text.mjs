@@ -333,18 +333,19 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     const minContent = overflowWrap === 'anywhere' ? widestCharacter : Math.max(0, ...pieces.map(([a, b]) => bound(a, b)));
     // Line layouts (break positions) per width interval: greedy breaks stay the same on [widest, w].
     // Only one variant (no language or bracket-trim ambiguity) without emergency breaks has a fixed layout.
-    let layouts = null;
-    if (variants.length === 1 && !emergency) {
-      layouts = [];
+    // One list per variant (language × bracket trim); with emergency breaks the layouts start at the widest character.
+    const layouts = variants.map(size => {
+      const list = [];
       for (let w = Infinity; ;) {
-        const breaks = [], {widest} = greedy(w, variants[0], breaks);
-        layouts.push({atLeastInlineSize: widest, below: w, breaks});
-        if (widest === 0 || layouts.length > 256) break;
+        const breaks = [], {widest} = greedy(w, size, breaks);
+        list.push({atLeastInlineSize: widest, below: w, breaks});
+        if (widest === 0 || list.length > 512) break;
         w = widest - 1 / UNIT;
       }
-      layouts.reverse(); layouts[0].atLeastInlineSize = 0;
-    }
-    return {text: collapsed, width, minContent, overflowWrap, profile, layouts, chars};
+      list.reverse(); list[0].atLeastInlineSize = 0;
+      return list;
+    });
+    return {text: collapsed, width, minContent, overflowWrap, profile, layouts, floor, chars};
   }
 
   /**
@@ -359,22 +360,33 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
    * its bounds within that line (as inlineBounds); a piece split across lines has none there.
    */
   function wrappedInlineBounds({font, text, lang, inline, lines}) {
-    if (!lines.layouts) fail('Inline bounds in wrapping text need one line layout (no language or bracket-trim variants, overflow-wrap: normal)');
-    const collapsed = lines.text, out = {};
+    const collapsed = lines.text, out = {}, cp = [...collapsed];
+    const languages = languagesFor(font, codepoints(collapsed), lang);
+    // The width axis split at every variant's layout boundary; each piece holds where every variant keeps the element on one line.
+    const cuts = [...new Set([lines.floor, ...lines.layouts.flatMap(list => list.map(l => l.atLeastInlineSize))])].filter(w => w >= lines.floor).sort((a, b) => a - b);
     for (const [selector, piece] of Object.entries(inline ?? {})) {
       const part = collapse(piece), at = collapsed.indexOf(part);
       if (!part || at < 0 || collapsed.indexOf(part, at + 1) >= 0) fail(`${selector}: inline text ${JSON.stringify(piece)} must occur exactly once in the content`);
-      // Offsets are in UTF-16 units of the collapsed text; layouts break at code point indices.
-      const cp = [...collapsed], start = [...collapsed.slice(0, at)].length, end = start + [...part].length;
-      out[selector] = lines.layouts.map(layout => {
+      const start = [...collapsed.slice(0, at)].length, end = start + [...part].length;
+      const place = (layout, language) => {
         const line = layout.breaks.findIndex(e => e > start), from = line ? layout.breaks[line - 1] : 0;
-        const piece = {atLeastInlineSize: layout.atLeastInlineSize, below: Number.isFinite(layout.below) ? layout.below + 1 / UNIT : null};
-        if (end > layout.breaks[line]) return {...piece, split: true};
+        if (end > layout.breaks[line]) return null;
         let to = layout.breaks[line]; while (to > end && cp[to - 1] === ' ') to--;
-        const bounds = inlineBounds({font, text: cp.slice(from, to).join(''), lang, inline: {[selector]: part}}, start - from)[selector];
+        const b = inlineBounds({font, text: cp.slice(from, to).join(''), lang: language, inline: {[selector]: part}}, start - from)[selector];
         const shift = line * font.lineHeight;
-        return {...piece, line, ...bounds, top: bounds.top.map(v => v + shift), bottom: bounds.bottom.map(v => v + shift)};
+        return {line, ...b, top: b.top.map(v => v + shift), bottom: b.bottom.map(v => v + shift)};
+      };
+      const steps = [];
+      cuts.forEach((w, k) => {
+        const below = k + 1 < cuts.length ? cuts[k + 1] : null;
+        // Variant v (languages × trims in breakLines order) at width w.
+        const placed = lines.layouts.map((list, v) => place(list.filter(l => l.atLeastInlineSize <= w).at(-1), languages[Math.floor(v / (lines.layouts.length / languages.length))]));
+        if (placed.some(p => !p) || new Set(placed.map(p => p.line)).size > 1) { steps.push({atLeastInlineSize: w, below, split: true}); return; }
+        const hull = key => [Math.min(...placed.map(p => p[key][0])), Math.max(...placed.map(p => p[key][1]))];
+        steps.push({atLeastInlineSize: w, below, line: placed[0].line, start: hull('start'), end: hull('end'), top: hull('top'), bottom: hull('bottom')});
       });
+      if (lines.floor > 0) steps.unshift({atLeastInlineSize: 0, below: lines.floor, split: true});
+      out[selector] = steps;
     }
     return out;
   }

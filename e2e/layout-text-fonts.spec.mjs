@@ -350,14 +350,17 @@ test('inline link occlusion and obscured focus agree with Chromium', async ({pag
 test('inline bounds in wrapping text follow the line layout', async ({page}) => {
   const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
-  for (const {font, content, piece} of [
+  for (const {font, content, piece, anywhere} of [
     {font: {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content: 'Read the full installation guide before you start the upgrade of the cluster.', piece: 'installation guide'},
     {font: jp, content: '日本語のテキストを折り返して幅を確認します英ABC 123', piece: 'ABC'},
+    // Bracket trim (text-spacing-trim) gives two line layouts; bounds hold where both keep the link on one line.
+    {font: jp, content: '日本語（テキスト）を確認します英ABC', piece: '確認'},
+    {font: {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content: 'See supercalifragilisticexpialidocious and antidisestablishmentarianism today.', piece: 'antidisestablishmentarianism', anywhere: true},
   ]) {
     const at = content.indexOf(piece);
     const html = `<div class="page"><p class="p">${content.slice(0, at)}<a class="u" href="#x">${piece}</a>${content.slice(at + piece.length)}</p></div>`;
-    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:0 10px;background:#fff;color:#000}.p{font-family:"${font.family}";font-size:${font.size}px;line-height:${font.lineHeight}px;font-weight:${font.weight}}.u{color:#000}`;
-    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': piece}}, wrap: 'normal'}});
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:0 10px;background:#fff;color:#000}.p{font-family:"${font.family}";font-size:${font.size}px;line-height:${font.lineHeight}px;font-weight:${font.weight}${anywhere ? ';overflow-wrap:anywhere' : ''}}.u{color:#000}`;
+    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': piece}}, wrap: anywhere ? 'anywhere' : 'normal'}});
     const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 120, max: 900, height: {min: 600, max: 600}}, boxes});
     expect(report.inlineBounds?.length, JSON.stringify(report.diagnostics)).toBeGreaterThan(0);
     let split = 0, placed = 0;
@@ -382,5 +385,6 @@ test('inline bounds in wrapping text follow the line layout', async ({page}) => 
       }
     }
     expect(placed, `${font.family}: some widths place the link on one line`).toBeGreaterThan(0);
+    if (anywhere) expect(split, 'anywhere: narrow widths split the long word').toBeGreaterThan(0);
   }
 });

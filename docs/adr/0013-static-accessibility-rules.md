@@ -195,9 +195,10 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
   outer の中にあり inner を覆い(`e2e/layout-text-fonts.spec.mjs`)、3つの覆い方で hit test と一致した。
 - **折り返す文字列**(`wrap: 'normal'`):greedy な改行は sweep の各区間 [最も広い行, w] で同じなので、区間ごとの改行位置が決まる。
   inline 要素はその区間で載る行と、行の中での位置(上と同じ測り方、上下は行番号 × line-height だけずらす)を持ち、engine は leaf の content 幅で
-  region を分ける。行をまたいで分かれる区間には矩形を置かない(その幅では検査しない)。言語や閉じ括弧の trim で改行が揺れる文字列と
-  `overflow-wrap: anywhere` は対象外。Chromium で 120〜900px を 13px 刻みで調べ、1行に載る幅では描画が outer に入り inner を覆い、
-  矩形のない幅では実際に行をまたいで分かれていた。
+  region を分ける。行をまたいで分かれる区間には矩形を置かない(その幅では検査しない)。言語や閉じ括弧の trim で改行が揺れる文字列は
+  全ての variant の layout を求め、全てが同じ行に載せる区間だけ、outer は和、inner は共通部分にする。`overflow-wrap: anywhere` は
+  最も広い文字より広い幅から(それより狭い幅は profile も Unknown)。Chromium で 120〜900px を 13px 刻みで調べ、1行に載る幅では描画が
+  outer に入り inner を覆い、矩形のない幅では実際に行をまたいで分かれていた(閉じ括弧の trim と anywhere の長い単語を含む)。
 
 ### form control と画像
 
