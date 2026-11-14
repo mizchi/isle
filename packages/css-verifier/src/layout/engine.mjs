@@ -196,7 +196,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const marginOk = (key, axis) => style[key] === '0' || (style[key] === 'auto' && available.flexItem?.main === axis);
     if (['margin-left', 'margin-right'].some(key => !marginOk(key, 'inline'))) throw new Error(available.flexItem && ['margin-left', 'margin-right'].some(key => style[key] === 'auto') ? 'Cross-axis auto margins of a flex item are outside the subset' : 'Only known zero inline margins are supported');
     if (block && ['margin-top', 'margin-bottom'].some(key => !marginOk(key, 'block'))) throw new Error(available.flexItem && ['margin-top', 'margin-bottom'].some(key => style[key] === 'auto') ? 'Cross-axis auto margins of a flex item are outside the subset' : 'Reset native block margins explicitly before block checking');
-    if (!['static', 'relative', 'absolute'].includes(style.position) || style['writing-mode'] !== 'horizontal-tb' || style.direction !== 'ltr') throw new Error('Only static/relative/local-absolute horizontal-tb / ltr boxes are supported');
+    if (!['static', 'relative', 'absolute'].includes(style.position) || style['writing-mode'] !== 'horizontal-tb' || !['ltr', 'rtl'].includes(style.direction)) throw new Error('Only static/relative/local-absolute horizontal-tb boxes are supported');
+    // rtl: a scroll container puts its scrollbar on the left in Chromium, which is not modeled.
+    if (style.direction === 'rtl' && ['auto', 'scroll'].some(v => [style['overflow-x'], style['overflow-y']].includes(v))) throw Object.assign(new Error('An rtl scroll container (scrollbar on the left) is not modeled'), { code: 'U_LAYOUT_GEOMETRY' });
     if (style.position === 'relative' && ['left','right','top','bottom'].some(key=>!['auto','0','0px'].includes(style[key]))) throw new Error('Relative positioning spaces require zero offsets');
     if (style.position === 'absolute' && (!block || ['inline-size','block-size'].some(key=>style[key]==='auto') || style['grid-column']!=='auto' || style['grid-row']!=='auto')) throw new Error('Absolute boxes require both explicit sizes, both-axis analysis and auto Grid placement');
     if (!['border-box', 'content-box'].includes(style['box-sizing'])) throw new Error('Unsupported box-sizing');
@@ -602,6 +604,28 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         ...(blockSize ? {blockSize:affine(blockSize)} : {}),...(contentBlock ? {contentBlockSize:affine(contentBlock)} : {}),...ranges(region) };
       Object.defineProperty(sizeRow, '$shown', { value: { region, ...shown }, writable: true, enumerable: false });
       sizes.push(sizeRow);
+      // rtl: the container places its children mirrored in its content box (each child's subtree moves; its own
+      // interior follows its own direction). Absolute descendants use physical insets, so they are not modeled here.
+      if (style.direction === 'rtl' && box.children.length && origin && box.$starts) {
+        const L = sum(origin.inline, scalar(add(px(style['border-left']), px(style['padding-left'])))), R = diff(sum(origin.inline, inline), scalar(add(px(style['border-right']), px(style['padding-right']))));
+        const childOf = path => path.slice(0, path.lastIndexOf('/')) === box.path;
+        const rows = geometry.slice(box.$starts.geometry), sizeRows = sizes.slice(box.$starts.sizes);
+        if (rows.some(row => isDescendant(box.path, row.path) && row.position === 'absolute' && intersectRegions(row.region, region))) throw Object.assign(new Error(`${box.label} is rtl with absolutely positioned descendants (physical insets) — not modeled`), { code: 'U_LAYOUT_GEOMETRY' });
+        for (const child of rows.filter(row => childOf(row.path) && intersectRegions(row.region, region) && (row.origin || row.clipOrigin))) {
+          const at = child.origin ?? child.clipOrigin, dx = diff(diff(sum(L, R), times(at.inline, q(2))), child.inline);
+          const moved = row => row === child || (isDescendant(child.path, row.path) && intersectRegions(row.region, child.region));
+          const shift = o => o ? { inline: sum(o.inline, dx), block: o.block } : o;
+          for (const row of rows.filter(row => moved(row) && !row.$mirrored?.has(box.path))) {
+            row.origin = shift(row.origin); row.clipOrigin = shift(row.clipOrigin);
+            if (row.bounds) row.bounds = row.bounds.map(piece => ({ ...piece, outer: piece.outer && { ...piece.outer, origin: shift(piece.outer.origin) }, inner: piece.inner && { ...piece.inner, origin: shift(piece.inner.origin) } }));
+            (row.$mirrored ??= new Set()).add(box.path);
+          }
+          for (const row of sizeRows.filter(row => row.$shown && (row.path === child.path || isDescendant(child.path, row.path)) && intersectRegions(row.$shown.region, child.region))) {
+            row.$shown = { ...row.$shown, origin: shift(row.$shown.origin) };
+            if (row.rect && row.$shown.origin) row.rect = { ...row.rect, inlineStart: affine(row.$shown.origin.inline) };
+          }
+        }
+      }
       // A scale maps the painted descendants too: r ↦ C + s·(r − C) about the box's centre C (affine, s constant).
       const matrix = linearOf(style);
       if (matrix && (box.children.length || box.inline?.length) && origin && blockSize && box.$starts) {

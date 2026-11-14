@@ -1113,3 +1113,17 @@ test('style attributes are element-attached declarations', () => {
   assert.deepEqual([size('a'), size('b')], ['80', '10']);
   assert.equal(analyzeLayout({...tree, children: [{tag: 'div', classes: ['a'], inlineStyle: 'dynamic'}]}, {name: 'Page', css: reset + css, viewport: domain}).status, 'unknown');
 });
+
+test('rtl mirrors placement; rtl scroll containers, absolute descendants and dir=auto are Unknown', () => {
+  const tree = extra => ({tag: 'main', classes: ['page'], dirAttr: 'rtl', children: [{tag: 'div', classes: ['a'], ...extra}, {tag: 'div', classes: ['b']}]});
+  const css = '.page { display: grid; grid-template-columns: 100px 50px; grid-auto-rows: 20px; position: relative; }';
+  const report = analyzeLayout(tree({}), {name: 'Page', css: reset + css, viewport: {min: 320, max: 1280, height: {min: 400, max: 900}}});
+  assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
+  const at = cls => report.sizes.find(r => r.box === `.${cls}` && r.rect).rect.inlineStart;
+  // The first column sits at the right edge of the page.
+  assert.deepEqual([at('a').coefficient, at('a').constant, at('b').coefficient, at('b').constant], ['1', '-100', '1', '-150']);
+  const status = (t, c) => analyzeLayout(t, {name: 'Page', css: reset + css + c, viewport: {min: 320, max: 1280, height: {min: 400, max: 900}}}).status;
+  assert.equal(status(tree({}), '\n.page { overflow-y: auto; }'), 'unknown');
+  assert.equal(status(tree({}), '\n.b { position: absolute; left: 0; top: 0; inline-size: 10px; block-size: 10px; }'), 'unknown');
+  assert.equal(status({...tree({}), dirAttr: 'auto'}, ''), 'unknown');
+});
