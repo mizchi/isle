@@ -174,7 +174,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       }
@@ -223,7 +223,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       }
@@ -326,7 +326,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       },
@@ -335,66 +335,8 @@
         "constant": "0"
       },
       "required": {
-        "coefficient": "0",
+        "coefficient": "1",
         "constant": "0"
-      },
-      "enforced": true
-    },
-    {
-      "box": ".card",
-      "path": "Card",
-      "code": "E_LAYOUT_TRACKS",
-      "axis": "block",
-      "range": {
-        "min": 320,
-        "max": 1000,
-        "minInclusive": true,
-        "maxInclusive": true,
-        "minExact": "320",
-        "maxExact": "1000"
-      },
-      "heightRange": {
-        "min": 200,
-        "max": 600,
-        "minInclusive": true,
-        "maxInclusive": true,
-        "minExact": "200",
-        "maxExact": "600"
-      },
-      "region": {
-        "vertices": [
-          {
-            "width": "320",
-            "height": "200"
-          },
-          {
-            "width": "1000",
-            "height": "200"
-          },
-          {
-            "width": "1000",
-            "height": "600"
-          },
-          {
-            "width": "320",
-            "height": "600"
-          }
-        ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "0",
-            "strict": false
-          }
-        ]
-      },
-      "available": {
-        "coefficient": "0",
-        "constant": "24"
-      },
-      "required": {
-        "coefficient": "0",
-        "constant": "24"
       },
       "enforced": true
     },
@@ -442,7 +384,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       },
@@ -500,7 +442,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       },
@@ -558,7 +500,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       },
@@ -616,7 +558,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       },
@@ -674,7 +616,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       },
@@ -732,7 +674,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       },
@@ -790,7 +732,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       },
@@ -848,7 +790,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       },
@@ -906,7 +848,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       },
@@ -1023,7 +965,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       }
@@ -1129,7 +1071,7 @@
           {
             "coefficient": "1",
             "constant": "0",
-            "strict": false
+            "strict": true
           }
         ]
       }

@@ -577,3 +577,19 @@ for (const hidden of [true, false]) {
     expect(exposed, 'Chromium keeps the content of an aria-hidden body exposed').toBe(true);
   });
 }
+
+// Generated overlays (::after with content "" and position absolute): Chromium hit-tests them as their element.
+test('generated ::after overlays occlude like Chromium hit testing', async ({page}) => {
+  const html = '<main class="page"><div class="card"><div class="x"></div></div><button class="b1" aria-label="One"></button><button class="b2" aria-label="Two"></button></main>';
+  for (const [cover, occluded] of [['inline-size:200px;block-size:80px', ['Page/1']], ['inline-size:200px;block-size:40px', []], ['inline-size:200px;block-size:120px;pointer-events:none', []], ['inline-size:200px;block-size:120px', ['Page/1', 'Page/2']]]) {
+    const css = `${reset}.page{display:grid;grid-template-columns:200px;grid-auto-rows:40px;position:relative;background:#fff}.card{display:grid;grid-template-columns:minmax(0,1fr)}.b1,.b2{${button}}.card::after{content:"";position:absolute;left:0;top:0;${cover}}`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true});
+    expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+    const statics = [...new Set(report.diagnostics.filter(d => d.code === 'E_A11Y_OCCLUDED').map(d => d.path))].sort();
+    await page.setViewportSize({width: 800, height: 800});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const browser = await page.evaluate(() => [...document.querySelectorAll('button')].filter(b => { const r = b.getBoundingClientRect(); for (let x = r.left + 0.5; x < r.right; x += 4) for (let y = r.top + 0.5; y < r.bottom; y += 4) if (document.elementFromPoint(x, y) !== b) return true; return false; }).map(b => `Page/${[...b.parentElement.children].indexOf(b)}`));
+    expect(statics, cover).toEqual(occluded);
+    expect(browser.sort(), cover).toEqual(occluded);
+  }
+});

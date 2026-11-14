@@ -147,7 +147,7 @@
           {
             "code": "U_LAYOUT_FLEX",
             "severity": "unknown",
-            "message": "A shrinkable item with a nonzero basis is outside the subset; use flex-shrink: 0",
+            "message": "flex-basis: auto with an auto width uses the content size; give a px width or basis",
             "box": ".text",
             "path": "Card/0",
             "source": {
@@ -159,7 +159,7 @@
         "matched": {
           "code": "U_LAYOUT_FLEX",
           "severity": "unknown",
-          "message": "A shrinkable item with a nonzero basis is outside the subset; use flex-shrink: 0",
+          "message": "flex-basis: auto with an auto width uses the content size; give a px width or basis",
           "box": ".text",
           "path": "Card/0",
           "source": {
@@ -1785,29 +1785,33 @@
       "pass": true,
       "expected": {
         "status": "unknown",
-        "code": "U_LAYOUT_CSS"
+        "code": "U_LAYOUT_PSEUDO"
       },
       "reject": {
         "exitCode": 1,
         "status": "unknown",
         "diagnostics": [
           {
-            "code": "U_LAYOUT_CSS",
+            "code": "U_LAYOUT_PSEUDO",
             "severity": "unknown",
-            "message": "Unsupported layout property: content",
-            "css": {
-              "file": "/home/user/isle/evals/results/layout-rejections/generated-content/reject/app.css",
-              "line": 2
+            "message": ".text::before generates a box outside a grid or flex container (or text); generated content there is not modeled",
+            "box": ".text",
+            "path": "Card/0",
+            "source": {
+              "start": 38,
+              "end": 40
             }
           }
         ],
         "matched": {
-          "code": "U_LAYOUT_CSS",
+          "code": "U_LAYOUT_PSEUDO",
           "severity": "unknown",
-          "message": "Unsupported layout property: content",
-          "css": {
-            "file": "/home/user/isle/evals/results/layout-rejections/generated-content/reject/app.css",
-            "line": 2
+          "message": ".text::before generates a box outside a grid or flex container (or text); generated content there is not modeled",
+          "box": ".text",
+          "path": "Card/0",
+          "source": {
+            "start": 38,
+            "end": 40
           }
         }
       },

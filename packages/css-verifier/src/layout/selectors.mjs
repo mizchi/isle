@@ -45,7 +45,9 @@ export function compileSelector(source, depth = 0) {
 /** `state` is the set of user-action states that hold (e.g. focus): a state selector matches only then. */
 export function matches(selector, box, state) {
   if (typeof selector === 'string') selector = compileSelector(selector);
-  if (selector.pseudoElement) return false;
+  // ::before/::after rules apply only to that pseudo-element (state '::before'), and other rules not to it.
+  const pseudo = [...(state ?? [])].find(s => s === '::before' || s === '::after');
+  if (selector.pseudoElement ? `::${selector.pseudoElement}` !== pseudo : pseudo) return false;
   if (selector.state && !state?.has(selector.state)) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :

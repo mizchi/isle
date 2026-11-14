@@ -1006,3 +1006,19 @@ test('input-image-alt, fragment-target and page-main', () => {
   assert.equal(warn(run(body(true), '.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 20px; }'), 'W_A11Y_NO_MAIN').length, 0);
   assert.equal(warn(run(body(false), '.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 20px; }'), 'W_A11Y_NO_MAIN').length, 1);
 });
+
+test('generated boxes: an empty absolute ::after overlay covers what it paints over; generated text is Unknown', () => {
+  const tree = {tag: 'main', classes: ['page'], children: [{tag: 'div', classes: ['card'], children: [{tag: 'div', classes: ['x']}]}, {tag: 'button', classes: ['b'], named: true}]};
+  const css = extra => `.page { display: grid; grid-template-columns: 200px; grid-auto-rows: 40px; position: relative; background: #fff; }\n.card { display: grid; grid-template-columns: minmax(0, 1fr); }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n${extra}`;
+  assert.equal(find(run(tree, css('')), 'E_A11Y_OCCLUDED').length, 0);
+  const over = run(tree, css('.card::after { content: ""; position: absolute; left: 0; top: 0; inline-size: 200px; block-size: 80px; }'));
+  assert.deepEqual(find(over, 'E_A11Y_OCCLUDED').map(d => [d.box, d.cover]), [['.b', 'Page/0/1']]);
+  // Out of the way (above the button), or not hit-testable: nothing.
+  assert.equal(find(run(tree, css('.card::after { content: ""; position: absolute; left: 0; top: 0; inline-size: 200px; block-size: 40px; }')), 'E_A11Y_OCCLUDED').length, 0);
+  assert.equal(find(run(tree, css('.card::after { content: ""; position: absolute; left: 0; top: 0; inline-size: 200px; block-size: 80px; pointer-events: none; }')), 'E_A11Y_OCCLUDED').length, 0);
+  assert.equal(run(tree, css('.card::before { content: "→"; }')).status, 'unknown');
+  // A pseudo-element of a list item is not a list item.
+  const list = {tag: 'main', classes: ['page'], children: [{tag: 'ul', classes: ['l'], children: [{tag: 'li', classes: ['i'], children: [{tag: 'span', classes: ['t']}]}]}]};
+  const listCSS = css('.l { display: grid; grid-template-columns: minmax(0, 1fr); padding: 0; } .i { display: grid; grid-template-columns: minmax(0, 1fr); position: relative; } .t { display: block; block-size: 20px; } .i::before { content: ""; position: absolute; left: 0; top: 0; inline-size: 6px; block-size: 6px; background: #000; }');
+  assert.equal(find(run(list, listCSS), 'E_A11Y_LIST').length, 0);
+});

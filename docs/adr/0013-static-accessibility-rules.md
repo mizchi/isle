@@ -145,6 +145,15 @@ letter-spacing が 0 でないとき Chromium は任意の ligature を切る(CS
   `animation` の shorthand(1つ)と longhand の name・duration・iteration-count・play-state を保持し、`@keyframes` は名前だけ読む(定義のない名前は動かない)。
   `transition` は paint として無視する。
 
+### 生成 content(`::before`・`::after`)
+
+`::before`/`::after` の規則は、その疑似要素だけに効く(疑似要素の状態で cascade する)。`content` が none/normal なら箱はない。
+`content: ""` で `position: absolute` と px の寸法を持つ疑似要素(装飾の層、カードを覆う overlay など)は、要素の最初か最後の子として
+置き、描かれる順と hit test に加わる(Chromium は疑似要素の上の点を元の要素として hit test する)。DOM の意味(role・名前・list など)はなく、
+規則は覆う箱としてだけ使う。文字を生成する `content` と、流れの中に生成される箱は inline の箱を作るので Unknown(U_LAYOUT_PSEUDO)。leaf・文中の inline 要素・
+grid/flex でない箱の生成 content も Unknown(以前は `content` 自体が未対応で Unknown だった。leaf の生成 content を見逃さないよう全ての箱で確かめる)。
+overlay が button を覆う・覆わない・`pointer-events: none`・2つを覆う、の4通りで Chromium の hit test と一致した。
+
 ### table と fieldset
 
 table 系の要素は、作者が grid・`contents`・block に組み替えた場合と、次の**固定 table レイアウト**の部分集合を検査する。

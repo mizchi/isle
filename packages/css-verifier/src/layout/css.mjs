@@ -57,7 +57,8 @@ function expand(property, value) {
   }
   if (property === 'gap' && wide.has(value)) return [['row-gap', value], ['column-gap', value]];
   if (property === 'overflow' && wide.has(value)) return [['overflow-x', value], ['overflow-y', value]];
-  if (property === 'content' && ['none', 'normal'].includes(value)) return [];
+  // Generated content: none/normal (no box), an empty string, or text (whose box is not modeled).
+  if (property === 'content') { if (['none', 'normal'].includes(value)) return [['content', 'none']]; if (/^(?:""|'')$/.test(value)) return [['content', 'empty']]; if (/^(?:"[^"]*"|'[^']*')$/.test(value)) return [['content', 'text']]; throw new Error(`Unsupported content: ${value}`); }
   if (property === 'gap') {
     const parts = postcss.list.space(value); if (parts.length > 2) throw new Error('Unsupported gap');
     parts.forEach(part => { if (part !== 'normal') px(part); }); return [['row-gap', parts[0]], ['column-gap', parts.at(-1)]];

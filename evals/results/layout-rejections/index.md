@@ -13,7 +13,7 @@
 |PASS|[intrinsic-fr](intrinsic-fr/reject/app.css)|unknown|[U_LAYOUT_GEOMETRY](intrinsic-fr/reject/report.json)|[verified](intrinsic-fr/accept/app.css)|
 |PASS|[css-variable](css-variable/reject/app.css)|unknown|[U_LAYOUT_VARIABLE](css-variable/reject/report.json)|[verified](css-variable/accept/app.css)|
 |PASS|[inherit-boundary](inherit-boundary/reject/app.css)|unknown|[U_LAYOUT_GEOMETRY](inherit-boundary/reject/report.json)|[verified](inherit-boundary/accept/app.css)|
-|PASS|[generated-content](generated-content/reject/app.css)|unknown|[U_LAYOUT_CSS](generated-content/reject/report.json)|[verified](generated-content/accept/app.css)|
+|PASS|[generated-content](generated-content/reject/app.css)|unknown|[U_LAYOUT_PSEUDO](generated-content/reject/report.json)|[verified](generated-content/accept/app.css)|
 |PASS|[nested-layer](nested-layer/reject/app.css)|unknown|[U_LAYOUT_LAYER](nested-layer/reject/report.json)|[verified](nested-layer/accept/app.css)|
 |PASS|[revert-layer](revert-layer/reject/app.css)|unknown|[U_LAYOUT_CSS](revert-layer/reject/report.json)|[verified](revert-layer/accept/app.css)|
 |PASS|[missing-auto-height](missing-auto-height/reject/app.css)|unknown|[U_LAYOUT_GEOMETRY](missing-auto-height/reject/report.json)|[verified](missing-auto-height/accept/app.css)|

@@ -274,6 +274,9 @@ export function circleReach(region, dx, dy, r) {
 
 export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin }) {
   const findings = [], warnings = [], unknowns = [], notes = [], exempted = [];
+  // Generated boxes (::before/::after) paint and receive the pointer (for their element), but carry no DOM semantics.
+  const everything = geometry;
+  geometry = geometry.filter(row => !row.box.pseudo);
   const witness = region => { const p = sample(region); return { viewport: number(p.x), viewportExact: exact(p.x), ...(block ? { viewportHeight: number(p.y), viewportHeightExact: exact(p.y) } : {}) }; };
   // `region` keeps the exact constraints: a 2-D region (e.g. width > height) is not the product of its two ranges.
   const report = (list, code, severity, message, row, region, extra) => list.push({ code, severity, message, box: row.box.label, path: row.path, source: row.box.source, ...ranges(region), ...(block ? { regionConstraints: serialize(region).constraints } : {}), witness: witness(region), ...extra });
@@ -283,9 +286,9 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   // Widget roles that need focus and a name (WAI-ARIA 1.2), on any element.
   const widgetRoles = new Set(['button', 'link', 'checkbox', 'radio', 'switch', 'tab', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'option', 'slider', 'spinbutton', 'textbox', 'searchbox', 'combobox', 'treeitem', 'gridcell']);
   const roleOf = box => box.role && box.role !== 'dynamic' ? box.role.split(/\s+/)[0] : undefined;
-  const control = row => row.box.tag === 'button' || (row.box.tag === 'a' && row.box.focusable !== false) || widgetRoles.has(roleOf(row.box));
-  const interactive = row => control(row) || field(row.box);
-  const placed = geometry.filter(row => row.origin && row.block);
+  const control = row => !row.box.pseudo && (row.box.tag === 'button' || (row.box.tag === 'a' && row.box.focusable !== false) || widgetRoles.has(roleOf(row.box)));
+  const interactive = row => control(row) || (!row.box.pseudo && field(row.box));
+  const placed = everything.filter(row => row.origin && row.block);
   const boxes = new Map(geometry.map(row => [row.path, row.box]));
   // aria-hidden on any ancestor in the box tree (display: contents elements have no geometry row).
   const treeBoxes = new Map(); (function walk(box) { treeBoxes.set(box.path, box); for (const child of [...(box.children ?? []), ...(box.inline ?? [])]) walk(child); })(root);
@@ -336,7 +339,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   }
 
   // occluded-target: a hit-testable box from a later paint layer covers a target.
-  const layer = row => { for (let p = row.path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') { const r = geometry.find(g => g.path === p); if (r && r.position !== 'static') return p; } return null; };
+  const layer = row => { for (let p = row.path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') { const r = everything.find(g => g.path === p); if (r && r.position !== 'static') return p; } return null; };
   const paintsAbove = (cover, above, target, own) => {
     if (!above) return !own && treeOrder(cover.path, target.path) > 0;
     return !(own && (isAncestor(above, own) || above === own || treeOrder(above, own) < 0));

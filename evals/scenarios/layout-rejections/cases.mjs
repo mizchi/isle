@@ -100,7 +100,7 @@ export const cases = [
       source: 'component Card() { <main class="card"><span class="marker">*</span><p class="text">Content</p></main> }',
       options: { ...options, css: baseCSS, boxes: { ...options.boxes, '.marker': { minInlineSize: 8, minBlockSize: 24, intrinsicBlockSize: 24 } } },
     },
-    expected: expected('unknown', 'U_LAYOUT_CSS'),
+    expected: expected('unknown', 'U_LAYOUT_PSEUDO'),
     note: '対応版は実 DOM の leaf として表す。配置や accessibility まで同値という主張ではない。',
   },
   {

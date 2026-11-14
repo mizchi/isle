@@ -46,7 +46,7 @@
     {
       "code": "U_LAYOUT_FLEX",
       "severity": "unknown",
-      "message": "A shrinkable item with a nonzero basis is outside the subset; use flex-shrink: 0",
+      "message": "flex-basis: auto with an auto width uses the content size; give a px width or basis",
       "box": ".text",
       "path": "Card/0",
       "source": {

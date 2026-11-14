@@ -113,6 +113,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function styles(box, region, ancestors, inherited, emit, gridItem = true, state) {
     spend(rules.length + 1);
     if (preferences.length) state = new Set([...(state ?? []), ...preferences]);
+    if (box.pseudo) state = new Set([...(state ?? []), `::${box.pseudo}`]);
     const relevant = rules.filter(rule => rule.selectors.some(selector => matches(selector, box, state)));
     const contexts = new Map();
     for (const rule of relevant) for (const condition of rule.contexts) if (!contexts.has(condition)) contexts.set(condition, context(condition, ancestors));
@@ -447,6 +448,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // they have no horizontal padding, border or margin (and keep a font-derived contract's font).
   // Each gets its own computed style and DOM facts as a row without a rectangle.
   const fontKeys = ['font-family', 'font-size', 'font-weight', 'font-style', 'line-height', 'letter-spacing', 'word-spacing', 'text-transform'];
+  // Generated content outside a grid/flex container (a leaf, inline content, or a container whose children are
+  // not collected here) has no modeled box: Unknown unless it generates nothing.
+  function generatedElsewhere(box, region, parents, inheritedStyle) {
+    if (box.pseudo) return;
+    for (const kind of ['before', 'after']) {
+      const pbox = { ...box, path: `${box.path}/${kind === 'before' ? -1 : (box.children ?? []).length}`, label: `${box.label}::${kind}`, children: [], pseudo: kind };
+      for (const c of styles(pbox, region, parents, inheritedStyle, false, false, new Set([`::${kind}`])))
+        if ((c.style.content ?? 'none') !== 'none' && c.style.display !== 'none') throw Object.assign(new Error(`${pbox.label} generates a box outside a grid or flex container (or text); generated content there is not modeled`), { code: 'U_LAYOUT_PSEUDO' });
+    }
+  }
   // Measured bounds of an inline element in one line of fixed text (textMetrics.inline): an outer
   // rectangle it stays inside and an inner one it always covers, from the leaf's content box.
   const sixtyfourths = (value, round) => div(q(String(round(value * 64))), q(64));
@@ -484,6 +495,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     for (const child of leaf.inline) for (const state of styles(child, region, parents.map(p => ({ ...p, names: [] })), parents.at(-1).style, false, false)) {
       const style = state.style;
       if (style.display === 'none') continue;
+      generatedElsewhere(child, state.region, parents, style);
       if (style.display !== 'inline' || style.position !== 'static' || style.float !== 'none') throw Object.assign(new Error(`${child.label} inside text must stay display: inline and static to keep the text's measured size`), { code: 'U_LAYOUT_INLINE' });
       // auto margins of inline boxes compute to 0.
       for (const side of ['left', 'right']) for (const key of [`padding-${side}`, `border-${side}`, `margin-${side}`]) if (!['0', '0px', ...(key.startsWith('margin') ? ['auto'] : [])].includes(String(style[key]))) throw Object.assign(new Error(`${child.label} inside text has horizontal ${key}; inline box edges change the measured text`), { code: 'U_LAYOUT_INLINE' });
@@ -966,6 +978,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         let { style } = state;
         // A fixed table is laid out as its equivalent grid (rows and sections as contents, cells as blocks).
         if (box.tag === 'table' && style.display === 'table') style = tableAsGrid(box, style, state.region, parents, emit, available);
+        if (!['grid', 'flex'].includes(style.display) && style.display !== 'none') generatedElsewhere(box, state.region, [...parents, { box, style }], style);
         // A cell's width seeds its column (the cell fills the column); its height stretches to the row.
         style = tablePlacement(box, style);
         if (!validate(style, box, state.region, emit, available)) continue;
@@ -1054,7 +1067,22 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   for (const state of states) delete state.contents;
                   for (const grandchild of child.children) visit(grandchild, contentsStyle);
                 };
+                // ::before/::after: an empty, absolutely positioned box with explicit sizes (decorative layers, overlays)
+                // takes part as a child painted before or after the others; generated text is not modeled.
+                const pseudo = kind => {
+                  const pbox = { ...box, tag: box.tag, path: `${box.path}/${kind === 'before' ? -1 : box.children.length}`, label: `${box.label}::${kind}`, children: [], inline: undefined, text: false, contract: undefined, pseudo: kind,
+                    named: undefined, focusable: false, tabIndex: undefined, role: undefined, href: undefined, ariaHidden: undefined, id: undefined };
+                  states = bounded(states.flatMap(s => styles(pbox, s.region, ancestors, style, false, false, new Set([`::${kind}`])).map(c => {
+                    const content = c.style.content ?? 'none';
+                    if (content === 'none' || c.style.display === 'none') return { region: c.region, children: s.children };
+                    if (content === 'text') throw Object.assign(new Error(`${pbox.label} generates text; its inline box is not modeled`), { code: 'U_LAYOUT_PSEUDO' });
+                    if (c.style.position !== 'absolute') throw Object.assign(new Error(`${pbox.label} is generated in flow; only absolutely positioned generated boxes are modeled`), { code: 'U_LAYOUT_PSEUDO' });
+                    return { region: c.region, children: kind === 'before' ? [{ box: pbox, style: c.style, inherited: style }, ...s.children] : [...s.children, { box: pbox, style: c.style, inherited: style }] };
+                  })));
+                };
+                if (!box.pseudo) pseudo('before');
                 for (const child of box.children) if (child !== rendered?.box) visit(child, style);
+                if (!box.pseudo) pseudo('after');
                 for (const state of states) for (const child of state.children) if (child.style.order !== '0') throw Object.assign(new Error('order changes the item sequence; only order: 0 is modeled'), { code: isFlex ? 'U_LAYOUT_FLEX' : undefined });
                 return states;
               };
