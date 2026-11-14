@@ -165,7 +165,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // A fieldset's rendered legend sits in its border: modeled only when the fieldset generates no box.
     if(box.tag==='fieldset' && style.display!=='contents' && (box.children ?? []).some(child => child.tag === 'legend')) throw new Error('A fieldset with a legend is laid out with the legend in its border; use display: contents on the fieldset or leave the legend out');
     // Replaced elements and text fields have intrinsic sizes the model does not compute.
-    if(['img', 'input', 'select', 'textarea'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto'))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
+    if(['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto'))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     if (['left', 'right', 'inline-start', 'inline-end'].includes(style.float)) { issue('E_LAYOUT_FLOAT', 'float is forbidden in checked layout', box, region); return false; }
     if (style.float !== 'none') throw new Error('Unsupported float value');
     if (style.display === 'contents') throw new Error('display: contents on the analyzed root or with text needs its parent box and anonymous items');

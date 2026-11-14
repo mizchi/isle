@@ -233,7 +233,8 @@ const textInitial = { 'font-family': 'ua-default', 'font-size': 'medium', 'line-
 
 export function computeStyle(rules, box, active, inherited = {}, {spend, state}={}) {
   const values = {
-    display: ['span', 'a', 'strong', 'em', 'b', 'i', 'small', 'output', 'label', 'img'].includes(box.tag) ? 'inline' : 'block',
+    // Media: track/source never render; audio renders only with controls.
+    display: ['track', 'source'].includes(box.tag) || (box.tag === 'audio' && !box.controls) ? 'none' : ['span', 'a', 'strong', 'em', 'b', 'i', 'small', 'output', 'label', 'img', 'iframe', 'video', 'audio'].includes(box.tag) ? 'inline' : 'block',
     'box-sizing': 'content-box', 'inline-size': 'auto', 'min-inline-size': 'auto', 'max-inline-size': 'none',
     'padding-left': '0', 'padding-right': '0', 'border-left': '0', 'border-right': '0',
     'padding-top': '0', 'padding-bottom': '0', 'border-top': '0', 'border-bottom': '0',

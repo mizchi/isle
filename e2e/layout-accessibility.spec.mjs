@@ -87,8 +87,10 @@ const cases = [
   {name: 'focus-hover-and-spacing', html: '<div class="page"><button class="b1">Plain</button><button class="b2">No ring</button><button class="b3">Shadow</button><button class="b4">Pale hover</button><p class="t1">Clipped line</p><p class="t2">Roomy line</p></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-template-rows:30px 30px 30px 30px 20px 24px;background:#fff;color:#000;${type}}.b1,.b2,.b3,.b4{${button}inline-size:200px;block-size:30px;background:#fff;color:#000}.b2,.b3{outline:none}.b3:focus-visible{box-shadow:0 0 0 3px #1a73e8}.b4:hover{color:#bbb}.t1,.t2{display:block;font-family:"Noto Sans JP";font-size:16px;line-height:20px;font-weight:400;white-space:nowrap;overflow:hidden}`,
     boxes: {'.b1': label, '.b2': label, '.b3': label, '.b4': label, '.t1': {...label, font: {family: 'Noto Sans JP', size: 16, lineHeight: 20, weight: 400}, wrap: 'nowrap', textMetrics: {kind: 'content', text: 'x', width: 1}, overflow: 'clip', overflowBlock: 'clip'}, '.t2': {...label, font: {family: 'Noto Sans JP', size: 16, lineHeight: 20, weight: 400}, wrap: 'nowrap', textMetrics: {kind: 'content', text: 'x', width: 1}, overflow: 'clip', overflowBlock: 'clip'}}},
+  {name: 'frames-and-media', html: '<div class="page"><iframe class="f1" src="about:blank"></iframe><iframe class="f2" src="about:blank" title="Map"></iframe><video class="v1" controls></video><video class="v2" controls autoplay><track kind="captions" src="data:text/vtt,WEBVTT"></video><video class="v3" autoplay muted><track kind="subtitles" src="data:text/vtt,WEBVTT"></video><audio class="a1" autoplay></audio></div>',
+    css: '.page{display:grid;grid-template-columns:160px;grid-auto-rows:100px;background:#fff}.f1,.f2,.v1,.v2,.v3{display:block;inline-size:160px;block-size:90px;border:0}'},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio'];
 const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
 // Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -364,6 +366,16 @@ async function runtime(page, sample) {
     style.remove(); return out;
   });
   for (const path of spaced) found.get('text-spacing').add(path);
+  const mediaFacts = await page.evaluate(() => {
+    const out = {frame: [], caption: [], autoplay: []};
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible'; };
+    for (const n of document.body.firstElementChild.querySelectorAll('iframe')) if (shown(n) && !(n.getAttribute('title') ?? n.getAttribute('aria-label') ?? '').trim()) out.frame.push(pathOf(n));
+    for (const n of document.body.firstElementChild.querySelectorAll('video')) if (shown(n) && ![...n.querySelectorAll('track')].some(t => ['captions', 'subtitles'].includes(t.kind))) out.caption.push(pathOf(n));
+    for (const n of document.body.firstElementChild.querySelectorAll('video, audio')) if (n.autoplay && !n.muted) out.autoplay.push(pathOf(n));
+    return out;
+  });
+  for (const [rule, key] of [['frame-title', 'frame'], ['video-caption', 'caption'], ['autoplay-audio', 'autoplay']]) for (const path of mediaFacts[key]) found.get(rule).add(path);
   // Empty headers and input buttons: Chromium's AX names.
   for (const element of elements) {
     const kind = await (await handle(element.path)).evaluate(node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return ''; return node.matches('th') ? 'th' : node.matches('input[type=button]') ? 'button' : ''; });

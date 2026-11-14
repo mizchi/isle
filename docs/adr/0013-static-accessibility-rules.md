@@ -1,6 +1,6 @@
 # ADR-0013: DOM と CSS を組み合わせた静的アクセシビリティ検査
 
-- 状態: 実装中(65規則、HTML adapter・Isle template・Vite・playground に接続)
+- 状態: 実装中(68規則、HTML adapter・Isle template・Vite・playground に接続)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: ユーザー指示「思いつく限りのCSSとDOMを組み合わせた静的検査パターンを実装したい」。ADR-0007(静的コントラスト契約)の text-contrast を含む
@@ -71,7 +71,10 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | orientation | main が片方の向き(`(orientation: landscape/portrait)`)でだけ描画されない(SC 1.3.4) | E_A11Y_ORIENTATION |
 | focus-visible | フォーカス時に何も変わらない:作者が outline を消し、box-shadow・色・背景も変わらない(SC 2.4.7)。作者が outline-style を指定しなければ UA の focus ring があるとする | E_A11Y_FOCUS_VISIBLE |
 | state-contrast | `:hover`・`:focus` の色での文字のコントラスト | E_A11Y_STATE_CONTRAST |
-| text-spacing | フォント由来の契約を持ち clip する text が、line-height を 1.5 × font-size にすると同じ行数でも入らない(SC 1.4.12。字間・語間の拡大は行を増やすだけなので確定した違反) | E_A11Y_TEXT_SPACING |
+| text-spacing | フォント由来の契約を持ち clip する text が、line-height を 1.5 × font-size にすると同じ行数でも入らない(SC 1.4.12。字間・語間の拡大は行を増やすだけなので確定した違反)。1行の固定文字列は letter-spacing 0.12em × 文字数と word-spacing 0.16em × 空白数だけ幅が増え、clip する box より広くなれば違反(inline 軸) | E_A11Y_TEXT_SPACING |
+| frame-title | 描画される iframe に title も名前もない(SC 4.1.2) | E_A11Y_FRAME_TITLE |
+| video-caption | 描画される video に kind=captions/subtitles の track がない(SC 1.2.2) | E_A11Y_VIDEO_CAPTION |
+| autoplay-audio | muted でない autoplay の video/audio(SC 1.4.2) | W_A11Y_AUTOPLAY_AUDIO(警告) |
 | document-title / meta-viewport | 検査付き Vite build で配信する文書:空でない `<title>` がない(SC 2.4.2)、`user-scalable=no` か `maximum-scale < 2`(SC 1.4.4) | E_A11Y_DOCUMENT_TITLE / E_A11Y_META_VIEWPORT |
 | target-size | SC 2.5.8:24px 未満の操作対象で、border box の中心に置いた 24px の円が他の操作対象の box か、他の小さい対象の円と交わる(spacing 例外を満たさない) | E_A11Y_TARGET_SIZE |
 
@@ -112,7 +115,8 @@ engine はフォーカスできる box の focus 状態、操作対象の hover 
 `outline`(style と width)と `box-shadow` を計算値に保持するようにした。
 
 取り込まなかったもの:hover/focus で**現れる**内容(SC 1.4.13。表示を変える状態の規則は幾何に効くので Unknown)、
-字間・語間を広げたときの幅(SC 1.4.12 の残り)、frame・media(要素がモデルにない)。
+折り返す text や文字の集合の字間・語間による幅(行の再分割が core にない)。
+`iframe`・`video`・`audio`(controls のあるときだけ box)・`track`・`source` を box tag に加えた(iframe・video・audio は display block と寸法の明示が必要)。
 
 ### table と fieldset
 
@@ -181,10 +185,10 @@ ADR-0007 の制約に従う。
 
 | 検査 | 内容 |
 | --- | --- |
-| `packages/css-verifier/test/accessibility.test.mjs` | 62件(focus・hover・text spacing を含む。ARIA の構造と値、page の規則、orientation を含む。テキストの比較を含む。table と fieldset を含む。inline の内容を含む。list・radio・landmark・role を含む。画像・form control・in-flow の覆いを含む。equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
+| `packages/css-verifier/test/accessibility.test.mjs` | 64件(frame・media・字間を含む。focus・hover・text spacing を含む。ARIA の構造と値、page の規則、orientation を含む。テキストの比較を含む。table と fieldset を含む。inline の内容を含む。list・radio・landmark・role を含む。画像・form control・in-flow の覆いを含む。equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
 | `tests/layout-accessibility.test.mjs` | Isle template の静的・動的な属性 |
 | `tests/layout-build.test.mjs` | Vite の `layout.accessibility`:名前のない button で build が失敗し、証明書に契約が残る。title がない・zoom を禁じる viewport で失敗する |
-| `e2e/layout-accessibility.spec.mjs` | 32構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
+| `e2e/layout-accessibility.spec.mjs` | 33構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
 
 focus-visible と state-contrast は CDP の `CSS.forcePseudoState` で強制した状態の計算値(UA の focus ring を含む)、text-spacing は `line-height: 1.5 !important` を注入した `scrollHeight`、autocomplete は Chromium の IDL 属性(不正な token は `''` に正規化される)、orientation は実際の viewport での計算値と照合した。
 page の規則(html-lang など)は box tree の単体テストで検査する(eval は body の中の断片を描画する)。

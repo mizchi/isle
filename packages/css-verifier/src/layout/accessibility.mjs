@@ -56,6 +56,9 @@
 //   focus-visible    → E_A11Y_FOCUS_VISIBLE     focus shows no change: outline removed, no box-shadow/color/background change (SC 2.4.7)
 //   text-spacing     → E_A11Y_TEXT_SPACING      clipped text that no longer fits at line-height 1.5 × font size (SC 1.4.12)
 //   state-contrast   → E_A11Y_STATE_CONTRAST    text contrast in the :hover or :focus paint of a control
+//   frame-title      → E_A11Y_FRAME_TITLE       a rendered iframe without a title or name (SC 4.1.2)
+//   video-caption    → E_A11Y_VIDEO_CAPTION     a rendered video without a captions/subtitles track (SC 1.2.2)
+//   autoplay-audio   → W_A11Y_AUTOPLAY_AUDIO    autoplaying media that is not muted (SC 1.4.2)
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -67,7 +70,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
   'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text',
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
-  'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast'];
+  'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -781,6 +784,16 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     }
   }
 
+  // text-spacing, inline axis: a fixed single-line string grows by letter-spacing 0.12em per character
+  // and word-spacing 0.16em per space; a clipping box narrower than that cuts it.
+  for (const row of geometry.filter(row => row.box.contract?.font && row.box.contract.textMetrics?.kind === 'content' && row.box.contract.wrap === 'nowrap' && row.overflow === 'clip' && visible(row))) {
+    const text = row.box.contract.textMetrics.text ?? '', size = row.box.contract.font.size;
+    const extra = 0.12 * size * [...text].length + 0.16 * size * (text.match(/ /g) ?? []).length;
+    const needed = Math.ceil((row.box.contract.minInlineSize + extra) * 64) / 64;
+    const failed = below(row.region, row.content.inline, scalar(q(needed)));
+    if (failed) report(findings, 'E_A11Y_TEXT_SPACING', 'error', `${row.box.label} clips its text with letter-spacing 0.12em and word-spacing 0.16em (needs ${needed}px)`, row, failed, { rule: 'text-spacing', axis: 'inline', required: needed });
+  }
+
   // text-spacing: a font-measured leaf that clips must still fit its lines at line-height 1.5 × font size
   // (more letter/word spacing can only add lines, so this is a definite failure).
   for (const row of geometry.filter(row => row.box.contract?.font && row.overflow === 'clip' && row.contentBlockSize && visible(row))) {
@@ -792,9 +805,22 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       let region = clip(row.region, diff(row.content.inline, scalar(steps[i].atLeastInlineSize)));
       if (steps[i + 1]) region = below(region, row.content.inline, scalar(steps[i + 1].atLeastInlineSize));
       const failed = below(region, row.contentBlockSize, scalar(q(Math.round(steps[i].lines * spaced * 1e6) / 1e6)));
-      if (failed) report(findings, 'E_A11Y_TEXT_SPACING', 'error', `${row.box.label} clips its ${steps[i].lines} line(s) when line-height is 1.5 × ${font.size}px (${steps[i].lines * spaced}px)`, row, failed, { rule: 'text-spacing', lines: steps[i].lines, required: steps[i].lines * spaced });
+      if (failed) report(findings, 'E_A11Y_TEXT_SPACING', 'error', `${row.box.label} clips its ${steps[i].lines} line(s) when line-height is 1.5 × ${font.size}px (${steps[i].lines * spaced}px)`, row, failed, { rule: 'text-spacing', axis: 'block', lines: steps[i].lines, required: steps[i].lines * spaced });
     }
   }
+
+  // Frames and media.
+  for (const row of geometry.filter(row => visible(row) && !hiddenFrom(row.path) && ['iframe', 'video', 'audio'].includes(row.box.tag))) {
+    const box = row.box;
+    if (box.tag === 'iframe' && nameOf(box) !== true) report(nameOf(box) === 'dynamic' ? unknowns : findings, nameOf(box) === 'dynamic' ? 'U_A11Y_FRAME_TITLE' : 'E_A11Y_FRAME_TITLE', nameOf(box) === 'dynamic' ? 'unknown' : 'error', `${box.label} is a frame without a title`, row, row.region, { rule: 'frame-title' });
+    if (box.tag === 'video') {
+      const kinds = (box.children ?? []).filter(child => child.tag === 'track').map(child => child.trackKind);
+      if (kinds.includes('dynamic')) report(unknowns, 'U_A11Y_VIDEO_CAPTION', 'unknown', `${box.label}: a dynamic track kind decides whether it has captions`, row, row.region, { rule: 'video-caption' });
+      else if (!kinds.some(kind => ['captions', 'subtitles'].includes(kind))) report(findings, 'E_A11Y_VIDEO_CAPTION', 'error', `${box.label} has no captions track`, row, row.region, { rule: 'video-caption' });
+    }
+  }
+  for (const box of all.filter(b => ['video', 'audio'].includes(b.tag) && b.autoplay && !b.muted && !hiddenFrom(b.path)))
+    report(warnings, 'W_A11Y_AUTOPLAY_AUDIO', 'warning', `${box.label} plays automatically with sound; mute it or offer a control within 3 seconds`, whole(box), domain, { rule: 'autoplay-audio' });
 
   // target-size: SC 2.5.8 (AA, 24px, with the spacing exception) or SC 2.5.5 (AAA, 44px, no spacing exception).
   // Violations are collected per target, then the declared exceptions are applied.

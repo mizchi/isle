@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -672,4 +672,28 @@ test('state-contrast: hover and focus colors keep the contrast minimum', () => {
   assert.equal(find(run(tree, css('.b:hover { color: #333; }'), {boxes: b}), 'E_A11Y_STATE_CONTRAST').length, 0);
   assert.deepEqual(find(run(tree, css('.b:hover { color: #bbb; }'), {boxes: b}), 'E_A11Y_STATE_CONTRAST').map(d => d.state), ['hover']);
   assert.deepEqual(find(run(tree, css('.b:focus { background: #000; }'), {boxes: b}), 'E_A11Y_STATE_CONTRAST').map(d => d.state), ['focus']);
+});
+
+// Frames and media; text-spacing widths.
+const mediaCSS = extra => pageCSS(`.page { background: #fff; color: #000; grid-auto-rows: 100px; }\n.v { display: block; inline-size: 160px; block-size: 90px; }\n${extra}`);
+test('frame-title, video-caption and autoplay-audio', () => {
+  assert.deepEqual(find(run(page([{tag: 'iframe', classes: ['v']}]), mediaCSS('')), 'E_A11Y_FRAME_TITLE').map(d => d.box), ['.v']);
+  assert.equal(find(run(page([{tag: 'iframe', classes: ['v'], named: true}]), mediaCSS('')), 'E_A11Y_FRAME_TITLE').length, 0);
+  const video = (extra = {}, tracks = []) => page([{tag: 'video', classes: ['v'], controls: true, ...extra, children: tracks}]);
+  assert.deepEqual(find(run(video(), mediaCSS('')), 'E_A11Y_VIDEO_CAPTION').map(d => d.box), ['.v']);
+  assert.equal(find(run(video({}, [{tag: 'track', classes: ['k'], trackKind: 'captions'}]), mediaCSS('')), 'E_A11Y_VIDEO_CAPTION').length, 0);
+  assert.ok(run(video({autoplay: true}, [{tag: 'track', classes: ['k'], trackKind: 'captions'}]), mediaCSS('')).accessibility.warnings.some(w => w.code === 'W_A11Y_AUTOPLAY_AUDIO'));
+  assert.equal(run(video({autoplay: true, muted: true}, [{tag: 'track', classes: ['k'], trackKind: 'captions'}]), mediaCSS('')).accessibility.warnings.filter(w => w.code === 'W_A11Y_AUTOPLAY_AUDIO').length, 0);
+  // Sizes stay explicit: a video without them is Unknown.
+  assert.equal(run(video(), pageCSS('.v { display: block; }')).status, 'unknown');
+});
+
+test('text-spacing: letter 0.12em and word 0.16em spacing widen clipped single-line text', () => {
+  const font = {family: 'Noto Sans JP', size: 10, lineHeight: 20, weight: 400};
+  // "ab cd": 5 characters, 1 space: + 5 × 1.2 + 1 × 1.6 = 7.6px over the measured 40px.
+  const contract = {minInlineSize: 40, intrinsicBlockSize: 20, wrap: 'nowrap', font, textMetrics: {kind: 'content', text: 'ab cd', width: 39.9}, overflow: 'clip', overflowBlock: 'clip'};
+  const css = w => pageCSS(`.page { grid-template-columns: ${w}px; grid-template-rows: 40px; background: #fff; color: #000; }\n.t { font-family: "Noto Sans JP"; font-size: 10px; line-height: 20px; font-weight: 400; white-space: nowrap; overflow: hidden; }\n`);
+  const tree = page([{tag: 'p', classes: ['t'], text: true}]);
+  assert.deepEqual(find(run(tree, css(45), {boxes: {'.t': contract}}), 'E_A11Y_TEXT_SPACING').map(d => d.axis), ['inline']);
+  assert.equal(find(run(tree, css(48), {boxes: {'.t': contract}}), 'E_A11Y_TEXT_SPACING').length, 0);
 });
