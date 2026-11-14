@@ -147,9 +147,9 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     // CSS font-weight selects the wght coordinate of a variable font.
     return {...found, axes: axis ? {wght: weight} : {}};
   };
-  const shape = (font, text, language = 'und') => {
+  const shape = (font, text, language = 'und', ligatures = true) => {
     const {handle, axes} = lookup(font);
-    const shaped = shaper.shape(handle, text, font.size, axes, language);
+    const shaped = shaper.shape(handle, text, font.size, axes, language, ligatures);
     if (shaped.error) fail(`Shaping failed: ${shaped.error}`);
     if (shaped.missing_codepoints.length) fail(`Font ${font.family} lacks ${shaped.missing_codepoints.map(c => `U+${c.toString(16).toUpperCase().padStart(4, '0')}`).join(', ')}; fallback fonts are not modeled`);
     if (shaped.runs.some(run => run.direction !== 'ltr')) fail('Only left-to-right text is modeled');
@@ -220,7 +220,8 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
    * is never smaller than the browser's (a larger first line can only fit
    * when the modeled one does).
    */
-  function breakLines({font, text, overflowWrap = 'normal', lang}) {
+  /** spacing: extra px per character (letter-spacing) and per space (word-spacing), e.g. WCAG 1.4.12. */
+  function breakLines({font, text, overflowWrap = 'normal', lang, spacing}) {
     checkLang(lang);
     if (lang !== undefined && !breaksModeled(lang)) fail(`lang ${lang}: line breaking is verified for ${[...breakingLanguages].join(', ')}`);
     if (typeof text !== 'string') fail('Text content must be a string');
@@ -246,7 +247,9 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     };
     const sizes = language => {
       const partsBound = (parts, adjust = 0) => {
-        const width = parts.reduce((total, part) => total + shape(font, part, language), 0) - adjust;
+        const extra = spacing ? parts.reduce((total, part) => total + [...part].length * spacing.letter + (part.match(/ /g) ?? []).length * spacing.word, 0) : 0;
+        // Non-zero letter-spacing disables optional ligatures (CSS Text 3 §8.2), as Chromium does.
+        const width = parts.reduce((total, part) => total + shape(font, part, language, !spacing?.letter), 0) - adjust + extra;
         return width > 0 ? (Math.ceil(clean(width * UNIT)) + 2 * parts.length - 1) / UNIT : 0;
       };
       const memo = new Map();
@@ -347,7 +350,10 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         if (rest.wrap === 'anywhere' && text.overflowWrap !== undefined && text.overflowWrap !== 'anywhere') fail(`${selector}: wrap anywhere measures overflow-wrap: anywhere`);
         const lines = breakLines({font, text: text.content, overflowWrap, lang: text.lang});
         out[selector] = {...rest, minInlineSize: lines.minContent, intrinsicBlockSize: lines.profile.map(entry => ({atLeastInlineSize: entry.atLeastInlineSize, blockSize: entry.lines === null ? null : entry.lines * font.lineHeight})),
-          font: fontContract, textMetrics: {kind: 'lines', text: lines.text, width: lines.width, minContent: lines.minContent, overflowWrap, profile: lines.profile, ...(text.lang !== undefined ? {lang: text.lang} : {}), font: provenance(font), allowance: layoutAllowance.rule}};
+          font: fontContract, textMetrics: {kind: 'lines', text: lines.text, width: lines.width, minContent: lines.minContent, overflowWrap, profile: lines.profile, ...(text.lang !== undefined ? {lang: text.lang} : {}),
+            // WCAG 1.4.12 text spacing: the same text with letter-spacing 0.12em and word-spacing 0.16em.
+            spacedProfile: breakLines({font, text: text.content, overflowWrap, lang: text.lang, spacing: {letter: 0.12 * font.size, word: 0.16 * font.size}}).profile,
+            font: provenance(font), allowance: layoutAllowance.rule}};
         continue;
       }
       let metrics, width;

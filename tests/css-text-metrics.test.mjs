@@ -200,3 +200,13 @@ test('a text contract with lang is measured in that language only', () => {
 test('region subtags keep the modeled break rules', () => {
   assert.ok(metrics.breakLines({font: jp, text: '日本語', lang: 'ja-JP'}).profile.length > 1);
 });
+
+test('text spacing: letter and word spacing make wrapped text take more lines', () => {
+  const text = 'Hello world office AV To WMW';
+  const plain = metrics.breakLines({font: ro, text}), spaced = metrics.breakLines({font: ro, text, spacing: {letter: 0.12 * 16, word: 0.16 * 16}});
+  const lines = (profile, w) => profile.filter(e => e.atLeastInlineSize <= w).at(-1).lines;
+  for (const w of [60, 90, 120, 200]) assert.ok(lines(spaced.profile, w) >= lines(plain.profile, w), String(w));
+  assert.ok(spaced.profile.at(-1).atLeastInlineSize > plain.profile.at(-1).atLeastInlineSize);
+  const {'.a': resolved} = metrics.resolveBoxes({'.a': {wrap: 'normal', text: {font: ro, content: text}}});
+  assert.deepEqual(resolved.textMetrics.spacedProfile, spaced.profile);
+});

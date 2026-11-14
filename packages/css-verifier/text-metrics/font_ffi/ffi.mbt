@@ -67,6 +67,7 @@ pub fn shape(
   size : Double,
   axes : String,
   language : String,
+  ligatures : Bool,
 ) -> String {
   guard handle >= 0 && handle < fonts.length() else {
     return "{\"error\":\"invalid font handle\"}"
@@ -81,7 +82,8 @@ pub fn shape(
     })
   }
   // `language` selects locl substitutions (BCP 47, "und" when unknown).
-  let shaped = fonts[handle].shape_text(text, size, language~, axis_values=coordinates) catch {
+  // ligatures=false: CSS letter-spacing turns optional ligatures off.
+  let shaped = fonts[handle].shape_text(text, size, language~, ligatures~, axis_values=coordinates) catch {
     _ => return "{\"error\":\"shaping failed\"}"
   }
   shaped.to_json().stringify()

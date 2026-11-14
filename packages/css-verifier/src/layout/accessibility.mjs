@@ -59,6 +59,7 @@
 //   frame-title      → E_A11Y_FRAME_TITLE       a rendered iframe without a title or name (SC 4.1.2)
 //   video-caption    → E_A11Y_VIDEO_CAPTION     a rendered video without a captions/subtitles track (SC 1.2.2)
 //   autoplay-audio   → W_A11Y_AUTOPLAY_AUDIO    autoplaying media that is not muted (SC 1.4.2)
+//   hover-only       → E_A11Y_HOVER_ONLY        a control hidden (opacity 0 / visibility hidden) that :hover reveals and focus does not
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -70,7 +71,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
   'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text',
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
-  'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio'];
+  'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -772,6 +773,18 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     }
   }
 
+  // hover-only (SC 2.1.1, 1.4.13): content a pointer can reveal must be revealed by focus as well.
+  const shown = paint => paint.visibility === 'visible' && !/^(?:0|0?\.0+|0%)$/.test(String(paint.opacity));
+  for (const row of geometry.filter(row => row.hoverStates && !hiddenFrom(row.path) && !shown(row.paint))) {
+    for (const hover of row.hoverStates.filter(state => shown(state.paint))) {
+      const revealed = intersect(row.region, hover.region);
+      if (!revealed) continue;
+      let hidden = [revealed];
+      for (const focus of (row.focusStates ?? []).filter(state => shown(state.paint))) hidden = hidden.flatMap(region => subtract(region, focus.region));
+      for (const region of hidden) report(findings, 'E_A11Y_HOVER_ONLY', 'error', `${row.box.label} appears on :hover but stays hidden when focused, so keyboard users cannot see it`, row, region, { rule: 'hover-only' });
+    }
+  }
+
   // state-contrast: a text control keeps the contrast minimum when hovered or focused.
   for (const row of geometry.filter(row => row.box.text && visible(row) && (row.hoverStates || row.focusStates))) {
     for (const [name, states] of [['hover', row.hoverStates ?? []], ['focus', row.focusStates ?? []]]) for (const state of states) {
@@ -799,7 +812,8 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   for (const row of geometry.filter(row => row.box.contract?.font && row.overflow === 'clip' && row.contentBlockSize && visible(row))) {
     const font = row.box.contract.font, metrics = row.box.contract.textMetrics;
     const spaced = Math.max(font.lineHeight, 1.5 * font.size);
-    const steps = metrics?.kind === 'lines' ? metrics.profile : [{ atLeastInlineSize: 0, lines: 1 }];
+    // With a measured spaced profile (letter 0.12em, word 0.16em), the line count under all of SC 1.4.12.
+    const steps = metrics?.kind === 'lines' ? (metrics.spacedProfile ?? metrics.profile) : [{ atLeastInlineSize: 0, lines: 1 }];
     for (let i = 0; i < steps.length; i++) {
       if (steps[i].lines === null) continue;
       let region = clip(row.region, diff(row.content.inline, scalar(steps[i].atLeastInlineSize)));

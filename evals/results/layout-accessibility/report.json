@@ -57,7 +57,8 @@
     "text-spacing",
     "frame-title",
     "video-caption",
-    "autoplay-audio"
+    "autoplay-audio",
+    "hover-only"
   ],
   "scope": "Static accessibility rules vs the browser (AX tree names, hit testing, focus, rects, computed colors; vlmkit a11y contrast at 1280).",
   "cases": [
@@ -320,6 +321,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -576,6 +582,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -845,6 +856,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1108,6 +1124,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -1368,6 +1389,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1622,6 +1648,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -1887,6 +1918,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2143,6 +2179,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -2412,6 +2453,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2675,6 +2721,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -2935,6 +2986,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3189,6 +3245,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -3458,6 +3519,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3718,6 +3784,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -3999,6 +4070,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4271,6 +4347,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -4538,6 +4619,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4796,6 +4882,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -5067,6 +5158,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5329,6 +5425,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -5600,6 +5701,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5862,6 +5968,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -6155,6 +6266,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6439,6 +6555,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -6706,6 +6827,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6964,6 +7090,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -7231,6 +7362,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7489,6 +7625,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -7754,6 +7895,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8010,6 +8156,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -8295,6 +8446,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8571,6 +8727,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -8844,6 +9005,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9108,6 +9274,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -9379,6 +9550,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9644,6 +9820,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -9906,6 +10087,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -10162,6 +10348,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -10428,6 +10619,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -10685,6 +10881,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -10955,6 +11156,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -11216,6 +11422,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -11485,6 +11696,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -11745,6 +11961,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -12018,6 +12239,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -12282,6 +12508,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -12573,6 +12804,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -12855,6 +13091,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -13143,6 +13384,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -13422,6 +13668,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -13703,6 +13954,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -13975,6 +14231,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -14264,6 +14525,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -14544,6 +14810,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -14826,6 +15097,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -15099,6 +15375,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -15384,6 +15665,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -15660,6 +15946,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -15967,6 +16258,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -16268,6 +16564,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -16543,6 +16844,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -16812,6 +17118,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -17093,6 +17404,11 @@
           [],
           [],
           []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -17365,6 +17681,11 @@
           []
         ],
         "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
           [],
           [],
           []
@@ -17649,6 +17970,11 @@
             "Page/3",
             "Page/5"
           ]
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -17926,6 +18252,550 @@
           [
             "Page/3",
             "Page/5"
+          ]
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "hover-revealed-actions",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
+        ],
+        "frame-title": [
+          [],
+          [],
+          []
+        ],
+        "video-caption": [
+          [],
+          [],
+          []
+        ],
+        "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
+        ],
+        "frame-title": [
+          [],
+          [],
+          []
+        ],
+        "video-caption": [
+          [],
+          [],
+          []
+        ],
+        "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
           ]
         ]
       }

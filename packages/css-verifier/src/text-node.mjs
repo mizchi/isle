@@ -17,7 +17,7 @@ export async function loadShaper(path = textMetricsPath) {
   return {
     load: data => ffi.load_font(data instanceof Uint8Array ? data : new Uint8Array(data)),
     info: handle => JSON.parse(ffi.font_info(handle)),
-    shape: (handle, text, size, axes, language = 'und') => JSON.parse(ffi.shape(handle, text, size, JSON.stringify(axes ?? {}), language)),
+    shape: (handle, text, size, axes, language = 'und', ligatures = true) => JSON.parse(ffi.shape(handle, text, size, JSON.stringify(axes ?? {}), language, ligatures)),
   };
 }
 

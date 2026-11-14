@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -696,4 +696,10 @@ test('text-spacing: letter 0.12em and word 0.16em spacing widen clipped single-l
   const tree = page([{tag: 'p', classes: ['t'], text: true}]);
   assert.deepEqual(find(run(tree, css(45), {boxes: {'.t': contract}}), 'E_A11Y_TEXT_SPACING').map(d => d.axis), ['inline']);
   assert.equal(find(run(tree, css(48), {boxes: {'.t': contract}}), 'E_A11Y_TEXT_SPACING').length, 0);
+});
+
+test('hover-only: a control that hover reveals must also show on focus', () => {
+  assert.deepEqual(find(fbtn('.b { opacity: 0; }\n.b:hover { opacity: 1; }'), 'E_A11Y_HOVER_ONLY').map(d => d.box), ['.b']);
+  assert.equal(find(fbtn('.b { opacity: 0; }\n.b:hover { opacity: 1; }\n.b:focus { opacity: 1; }'), 'E_A11Y_HOVER_ONLY').length, 0);
+  assert.equal(find(fbtn('.b { opacity: 0; }\n.b:hover, .b:focus-visible { opacity: 1; }'), 'E_A11Y_HOVER_ONLY').length, 0);
 });

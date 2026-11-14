@@ -255,3 +255,29 @@ test('lang-specific line profiles match Chromium in that language', async ({page
     }
   }
 });
+
+// WCAG 1.4.12 text spacing: Chromium wraps with letter-spacing 0.12em and word-spacing 0.16em.
+test('spaced line profiles (letter 0.12em, word 0.16em) match Chromium', async ({page}) => {
+  test.setTimeout(240_000);
+  await page.setContent(`<!doctype html><html lang="en"><style>${face}body{margin:0}</style><body></body></html>`);
+  for (const [font, text] of [[ro, 'Hello world office AV To WMW 0123456789 Hello world'], [jp, '日本語のテキスト幅検査。折り返しを確認します。'], [jp, '英語ABC 123 日本語のテキスト幅検査。']]) {
+    const spacing = {letter: 0.12 * font.size, word: 0.16 * font.size};
+    const lines = metrics.breakLines({font, text, spacing});
+    const widths = [...new Set(lines.profile.flatMap(e => [-3, -1, 0, 1].map(d => e.atLeastInlineSize + d / 64)))].filter(w => w > lines.profile[0].atLeastInlineSize).sort((a, b) => a - b);
+    const rendered = await page.evaluate(async ({font, text, widths, spacing}) => {
+      await document.fonts.load(`${font.weight} ${font.size}px "${font.family}"`, text);
+      const element = document.createElement('div');
+      Object.assign(element.style, {fontFamily: `"${font.family}"`, fontSize: `${font.size}px`, lineHeight: `${font.lineHeight}px`, fontWeight: String(font.weight), letterSpacing: `${spacing.letter}px`, wordSpacing: `${spacing.word}px`});
+      element.textContent = text; document.body.append(element);
+      const out = widths.map(w => { element.style.width = `${w}px`; return element.getBoundingClientRect().height / font.lineHeight; });
+      element.remove(); return out;
+    }, {font, text, widths, spacing});
+    const slack = (2 * scriptRuns(text) + 1) / 64 + 2 / 64;
+    widths.forEach((w, i) => {
+      const modeled = lines.profile.filter(e => e.atLeastInlineSize <= w).at(-1).lines;
+      if (modeled === null) return;
+      expect(rendered[i], `${text} at ${w}px: Chromium ≤ model`).toBeLessThanOrEqual(modeled);
+      if (!lines.profile.some(e => w < e.atLeastInlineSize && w >= e.atLeastInlineSize - slack)) expect(rendered[i], `${text} at ${w}px`).toBe(modeled);
+    });
+  }
+});

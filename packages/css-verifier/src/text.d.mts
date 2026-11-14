@@ -6,7 +6,7 @@ export type TextContract =
 export interface TextShaper {
   load(data: Uint8Array): number;
   info(handle: number): { unitsPerEm: number; axes: { tag: string; min: number; default: number; max: number }[] };
-  shape(handle: number, text: string, size: number, axes: Record<string, number>, language?: string): unknown;
+  shape(handle: number, text: string, size: number, axes: Record<string, number>, language?: string, ligatures?: boolean): unknown;
 }
 export interface FontEntry { data: Uint8Array; weight?: number; sha256?: string; file?: string }
 export interface LineProfile { text: string; width: number; minContent: number; overflowWrap: 'normal' | 'anywhere' | 'break-word'; profile: { atLeastInlineSize: number; lines: number | null }[] }
