@@ -130,6 +130,8 @@ const cases = [
   {name: 'new-window-links-and-forms', html: '<div class="page"><a class="l1" href="/a" target="_blank">Docs</a><a class="l2" href="/b" target="_blank">Docs (opens in a new tab)</a><form class="f1"><input class="i" type="text" aria-label="Q"></form><form class="f2"><input class="i" type="text" aria-label="Q"><button class="s">Go</button></form><form class="f3"><input class="i" type="text" aria-label="Q"><button class="s" type="button">Go</button></form></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:auto;background:#fff;color:#000;${type}}.l1,.l2{display:block;color:#000}.f1,.f2,.f3{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px}.i,.s{${button}inline-size:200px;block-size:30px}`,
     boxes: {'.l1': label, '.l2': label, '.s': label}},
+  {name: 'fixed-footer-hides', html: '<div class="page"><div class="gap"></div><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><div class="f"></div></div>',
+    css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.f{position:fixed;bottom:0;left:0;inline-size:100%;block-size:60px;background:#333}.gap{block-size:1500px}.b1,.b2{${button}inline-size:100px;block-size:30px}`},
   {name: 'fixed-header-focus', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><button class="b3" aria-label="C"></button><div class="tall"></div></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:fixed;top:0;left:0;inline-size:100%;block-size:60px;background:#333}.gap{block-size:1000px}.tall{block-size:1500px}.b1,.b2,.b3{${button}inline-size:100px;block-size:40px}.b2{scroll-margin-top:60px}.b3{block-size:80px}`},
   {name: 'skip-link-under-cover', html: '<div class="page"><a class="s" href="#m" aria-label="Skip"></a><a class="s2" href="#m" aria-label="Skip"></a><div class="cover"></div><main class="m" id="m"></main></div>',
@@ -143,7 +145,7 @@ const cases = [
   {name: 'clickable-lists-and-markup', html: '<div class="page"><div class="card"></div><button class="b" aria-label="Go"></button><ul class="l"><li class="i"></li></ul><ul class="l2" role="list"><li class="i"></li></ul><dl class="d"><dt class="dt"></dt><p class="p"></p></dl><marquee class="m"></marquee><a class="k1" href="#1" accesskey="s" aria-label="One"></a><a class="k2" href="#2" accesskey="s" aria-label="Two"></a><img class="im" src="data:," alt="Map" ismap></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.card{display:block;cursor:pointer}.b{${button}cursor:pointer;inline-size:24px;block-size:24px}.l,.l2,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;list-style:none}.i,.dt,.p{display:block}.m{display:block;inline-size:200px;block-size:24px}.k1,.k2{display:block}.im{display:block;inline-size:24px;block-size:24px}`},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content'];
 const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
 // Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -152,6 +154,8 @@ const holds = (row, width) => row.range && (row.range.minInclusive === false ? w
 
 // Paths of the static report ("Page/0/1") as element selectors under body.
 async function runtime(page, sample) {
+  // setContent keeps the previous document's scroll and focus; every oracle measures at scroll 0, unfocused.
+  await page.evaluate(() => { document.activeElement?.blur(); scrollTo(0, 0); });
   const level = sample.accessibility?.targetLevel ?? 'AA', size = level === 'AAA' ? 44 : 24;
   const client = await page.context().newCDPSession(page);
   const found = new Map(rules.map(rule => [rule, new Set()]));
@@ -234,6 +238,7 @@ async function runtime(page, sample) {
     for (const path of structure[key]) found.get(rule).add(path);
   // Batch 3: scroll containers, reflow, obscured focus, zero focus area.
   const focusStuff = await page.evaluate(() => {
+    document.activeElement?.blur(); scrollTo(0, 0); // earlier oracles focus (and scroll to) elements
     const out = {scroll: [], reflow: [], obscured: [], area: []};
     const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
     const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible'; };
@@ -576,6 +581,28 @@ async function runtime(page, sample) {
   for (const path of await page.evaluate(() => { const root = document.body.firstElementChild, pathOf = node => { const path = []; for (let n = node; n !== root; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
     return [...root.querySelectorAll('form')].filter(f => getComputedStyle(f).display !== 'none').filter(f => { const els = [...f.elements];
       return els.some(e => e.matches('input:not([type=hidden]):not([type=submit]):not([type=image]):not([type=button]):not([type=reset]), select, textarea')) && !els.some(e => e.matches('button:not([type=button]):not([type=reset]), input[type=submit], input[type=image]')); }).map(pathOf); })) found.get('form-submit').add(path);
+  // Hidden for good behind a fixed bar: covered at scroll 0 by a bar on the top edge, or at the largest scroll by a bar
+  // on the bottom edge (text leaves and focusable elements).
+  const hidden = await page.evaluate(paths => {
+    const at = path => { let n = document.body.firstElementChild; for (const i of path.split('/').slice(1).map(Number)) n = n.children[i]; return n; };
+    const bars = [...document.querySelectorAll('*')].filter(n => getComputedStyle(n).position === 'fixed' && getComputedStyle(n).backgroundColor !== 'rgba(0, 0, 0, 0)');
+    const out = new Set();
+    if (!bars.length) return [];
+    const inside = (r, b) => r.left >= b.left && r.right <= b.right && r.top >= b.top && r.bottom <= b.bottom;
+    for (const [s, edge] of [[0, 'top'], [document.documentElement.scrollHeight - innerHeight, 'bottom']]) {
+      scrollTo(0, s);
+      for (const path of paths) {
+        const node = at(path);
+        const speaks = [...node.childNodes].some(c => c.nodeType === 3 && c.textContent.trim()) || node.tabIndex >= 0;
+        if (!speaks || bars.some(bar => bar.contains(node)) || !node.getClientRects().length) continue;
+        const r = node.getBoundingClientRect();
+        if (bars.some(bar => { const b = bar.getBoundingClientRect(); return (edge === 'top' ? b.top <= 0 : b.bottom >= innerHeight) && inside(r, b) && bar.contains(document.elementFromPoint((r.left + r.right) / 2, (r.top + r.bottom) / 2)); })) out.add(path);
+      }
+    }
+    scrollTo(0, 0);
+    return [...out];
+  }, elements.map(e => e.path));
+  for (const path of hidden) found.get('fixed-hides-content').add(path);
   // Behind a fixed bar: some scroll offset where focus() does not scroll and the element lies inside a fixed box.
   const under = await page.evaluate(paths => {
     const at = path => { let n = document.body.firstElementChild; for (const i of path.split('/').slice(1).map(Number)) n = n.children[i]; return n; };
@@ -600,7 +627,7 @@ async function runtime(page, sample) {
     const off = await (await handle(element.path)).evaluate(node => {
       if (!(node.tabIndex >= 0) || !node.getClientRects().length || getComputedStyle(node).visibility !== 'visible') return false;
       node.focus(); if (document.activeElement !== node) return false;
-      const r = node.getBoundingClientRect(); node.blur();
+      const r = node.getBoundingClientRect(); node.blur(); scrollTo(0, 0);
       return r.right <= 0 || r.bottom <= 0;
     });
     if (off) found.get('focus-offscreen').add(element.path);

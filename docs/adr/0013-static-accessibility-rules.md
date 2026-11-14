@@ -97,6 +97,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | focus-semantics | tabindex >= 0 でフォーカスを受けるのに、対話的なロールを持たない要素(Chromium では generic として読み上げられる。スクロールコンテナは除く) | W_A11Y_FOCUS_SEMANTICS |
 | focus-offscreen | フォーカスを受ける箱が viewport の開始端より前(`left: -9999px` など)に完全にある。負の方向の溢れはスクロールできず、`:focus`/`:focus-visible` の規則が inset で absolute の箱を戻す場合(`:focus { left: 0 }`、accessibility の検査だけで扱い、他の証明は Unknown)はその位置で判定する。戻さなければフォーカスしても見えない(SC 2.4.7)。root の位置は host の inset で決まる | E_A11Y_FOCUS_OFFSCREEN |
 | focus-scrolled-under | `position: fixed` の塗りのある箱(ヘッダー・フッター)が、フォーカスを受ける箱を完全に覆うスクロール位置があり、その位置で箱が scrollport(viewport の scroll-padding で縮め、箱の scroll-margin で広げて判定)の内側にある。Chromium は内側の要素をスクロールしないので、Tab で focus しても見えない(SC 2.4.11、Chromium で測定)。スクロール位置 s は 0 から(root の高さ − viewport の高さ)まで。viewport の scroll-padding が root の外(html)で指定されると Unknown(U_A11Y_SCROLL_PADDING) | E_A11Y_FOCUS_SCROLLED_UNDER |
+| fixed-hides-content | 画面の上端(下端)に接する `position: fixed` の塗りのある箱が、スクロール位置 0(最大のスクロール位置)で text や操作対象を完全に覆う。スクロールしても裏に入るか画面の外に出るだけなので、どのスクロール位置でも読めず操作もできない(fixed のフッターに page の padding がない、など) | E_A11Y_FIXED_HIDES |
 | aria-hidden-body | body の `aria-hidden="true"`。Chromium は body の aria-hidden を無視する(AX tree で測定)ので他の規則は中身を公開されたものとして扱い、尊重する UA では文書全体が隠れることを警告する | W_A11Y_ARIA_HIDDEN_BODY |
 | frame-title | 描画される iframe に title も名前もない(SC 4.1.2) | E_A11Y_FRAME_TITLE |
 | video-caption | 描画される video に kind=captions/subtitles の track がない(SC 1.2.2) | E_A11Y_VIDEO_CAPTION |

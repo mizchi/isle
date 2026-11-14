@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -1302,4 +1302,16 @@ test('the focus rules judge a skip link where its :focus rule moves it', () => {
   assert.equal(find(run(tree, css('.skip:focus { left: 0; }\n.cover { background: transparent; }')), 'E_A11Y_FOCUS_OBSCURED').length, 0);
   assert.equal(find(run(tree, css('.skip:focus { left: 0; z-index: 1; }')), 'E_A11Y_FOCUS_OBSCURED').length, 0);
   assert.equal(find(run(tree, css('.skip:focus { left: 0; z-index: -1; }')), 'E_A11Y_FOCUS_OBSCURED').length, 1);
+});
+
+test('fixed-hides-content: a fixed footer covering the end of the page at every scroll position', () => {
+  const tree = page([{tag: 'div', classes: ['gap']}, {tag: 'button', classes: ['b'], named: true}, {tag: 'footer', classes: ['f']}]);
+  const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: auto; }\n.f { position: fixed; bottom: 0; left: 0; inline-size: 100%; block-size: 60px; background: #333; }\n.gap { block-size: 2000px; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; block-size: 40px; }\n${extra}`);
+  const hits = extra => find(run(tree, css(extra)), 'E_A11Y_FIXED_HIDES').map(d => d.box);
+  assert.deepEqual(hits(''), ['.b']);
+  // Padding the page by the bar lets the last content scroll out; a short page keeps it above the bar.
+  assert.deepEqual(hits('.page { padding-bottom: 60px; }'), []);
+  assert.deepEqual(hits('.gap { block-size: 100px; }'), []);
+  // A bar off the bottom edge does not hide what scrolls past it.
+  assert.deepEqual(hits('.f { bottom: 100px; }'), []);
 });
