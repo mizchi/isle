@@ -657,7 +657,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // Percentages scale with the box's own size: t0 + W·u + H·v.
     const needsH = cmp(m[8], zero) !== 0 || cmp(m[9], zero) !== 0;
     if (needsH && !size?.block) return null;
-    const along = k => sum(sum(scalar(m[4 + k]), times(size.inline, m[6 + k])), needsH ? times(size.block, m[8 + k]) : scalar(zero));
+    // em: the element's font-size, which must be a px value.
+    const needsEm = cmp(m[10], zero) !== 0 || cmp(m[11], zero) !== 0;
+    if (needsEm && !/^\d+(?:\.\d{1,6})?px$/.test(style['font-size'])) throw Object.assign(new Error(`An em translation needs a px font-size (got ${style['font-size']})`), { code: 'U_LAYOUT_CSS' });
+    const em = needsEm ? px(style['font-size']) : zero;
+    const along = k => sum(sum(sum(scalar(m[4 + k]), times(size.inline, m[6 + k])), needsH ? times(size.block, m[8 + k]) : scalar(zero)), scalar(mul(em, m[10 + k])));
     return offset(origin, along(0), along(1));
   }
   function resolvedOrigin(style,available,inline,blockSize,parents) {
