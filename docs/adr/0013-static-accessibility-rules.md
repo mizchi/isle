@@ -73,6 +73,14 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | state-contrast | `:hover`・`:focus` の色での文字のコントラスト | E_A11Y_STATE_CONTRAST |
 | text-spacing | フォント由来の契約を持ち clip する text が、line-height を 1.5 × font-size にすると同じ行数でも入らない(SC 1.4.12。字間・語間の拡大は行を増やすだけなので確定した違反)。1行の固定文字列は letter-spacing 0.12em × 文字数と word-spacing 0.16em × 空白数だけ幅が増え、clip する box より広くなれば違反(inline 軸) | E_A11Y_TEXT_SPACING |
 | hover-only | 基本の状態で隠れた(opacity 0 か visibility hidden)control が `:hover` で現れ、focus では現れない(SC 2.1.1・1.4.13) | E_A11Y_HOVER_ONLY |
+| clickable-look | `cursor: pointer` をその要素で(継承ではなく)指定したのに、フォーカスも interactive な role もない(SC 2.1.1。click handler は木の外なので警告) | W_A11Y_CLICK_LOOK |
+| list-style-semantics | role のない ul/ol の li が全て `list-style-type: none`(WebKit/VoiceOver は list として読まない。nav の中は除く) | W_A11Y_LIST_STYLE |
+| motion | 5 秒を超える(か無限の)animation を `prefers-reduced-motion: reduce` でも止めない(SC 2.2.2・2.3.3) | W_A11Y_MOTION |
+| blink | 描画される marquee(SC 2.2.2) | E_A11Y_BLINK |
+| definition-list | dl の子が dt・dd・それらの div 以外、または dl の外の dt/dd | E_A11Y_DL |
+| accesskeys | 同じ accesskey を複数の要素が持つ | W_A11Y_ACCESSKEY |
+| server-side-image-map | `img ismap`(座標を送るだけで keyboard では使えない、SC 2.1.1) | W_A11Y_ISMAP |
+| aria-hidden-body | body の `aria-hidden="true"` | E_A11Y_ARIA_HIDDEN_BODY |
 | frame-title | 描画される iframe に title も名前もない(SC 4.1.2) | E_A11Y_FRAME_TITLE |
 | video-caption | 描画される video に kind=captions/subtitles の track がない(SC 1.2.2) | E_A11Y_VIDEO_CAPTION |
 | autoplay-audio | muted でない autoplay の video/audio(SC 1.4.2) | W_A11Y_AUTOPLAY_AUDIO(警告) |
@@ -120,6 +128,19 @@ engine はフォーカスできる box の focus 状態、操作対象の hover 
 折り返す固定文字列は、フォント層で字間 0.12em・語間 0.16em を加えた行の profile(`spacedProfile`)も求め、text-spacing はその行数で判定する。
 letter-spacing が 0 でないとき Chromium は任意の ligature を切る(CSS Text 3)ので、FFI の shaping に `ligatures` を渡して同じにした。
 `iframe`・`video`・`audio`(controls のあるときだけ box)・`track`・`source` を box tag に加えた(iframe・video・audio は display block と寸法の明示が必要)。
+
+### 利用者の設定(`prefers-*`・`forced-colors`)
+
+`@media (prefers-reduced-motion: …)`・`(prefers-color-scheme: …)`・`(prefers-contrast: …)`・`(forced-colors: …)` を、幅の条件ではなく**状態**として扱う
+(`:hover` と同じく paint と animation だけを変えてよい。幾何を変える規則は U_LAYOUT_QUERY)。基本の解析は既定値
+(no-preference・light・none)で行い、幾何はその下で証明する。
+
+- dark:CSS に `prefers-color-scheme: dark` の規則があれば、同じ木を dark の状態でもう一度解析し、コントラストの規則
+  (text-contrast・state-contrast・link-in-text-block・focus-visible)の結果を `preference: 'prefers-color-scheme: dark'` 付きで加える。
+  light と同じ finding は1つにまとめ `alsoUnder` に dark を記す。system color(canvas/canvastext)は light のまま:`color-scheme` プロパティは範囲外。
+- reduced motion:animation のある box は `prefers-reduced-motion: reduce` の状態の paint も計算し、motion が使う。
+  `animation` の shorthand(1つ)と longhand の name・duration・iteration-count・play-state を保持し、`@keyframes` は名前だけ読む(定義のない名前は動かない)。
+  `transition` は paint として無視する。
 
 ### table と fieldset
 

@@ -1,7 +1,7 @@
 import postcss from 'postcss';
 import {findCSSWriteConflicts,cssWriteConflictMessage} from '../css-writes.mjs';
 import { q, cmp } from './linear.mjs';
-import { parseCondition } from './conditions.mjs';
+import { parseCondition, preferenceValues } from './conditions.mjs';
 import {customName,variableValue,variableEnvironment,substituteDeclaration} from './variables.mjs';
 
 import { compileSelector, matches, greaterRank } from './selectors.mjs';
@@ -17,12 +17,12 @@ const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset
 const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
-const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-(?:color|radius)|outline-(?:color|offset)|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|cursor)$/;
+const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-(?:color|radius)|outline-(?:color|offset)|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|transition(?:-(?:property|duration|delay|timing-function|behavior))?|animation-(?:delay|direction|fill-mode|timing-function)|list-style-(?:position|image))$/;
 // Properties a :hover/:focus rule may set: they repaint without changing geometry.
-const statePaint = /^(?:color|background(?:-.*)?|border-(?:color|radius)|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events)$/;
+const statePaint = /^(?:color|background(?:-.*)?|border-(?:color|radius)|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?)$/;
 // Paint and hit-testing facts for the accessibility rules (never geometry).
-export const paintProperties = ['color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'box-shadow'];
-const inheritedPaint = ['color', 'visibility', 'pointer-events'];
+export const paintProperties = ['color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state'];
+const inheritedPaint = ['color', 'visibility', 'pointer-events', 'cursor', 'list-style-type'];
 // Inherited text properties. They are kept as specified strings and only
 // interpreted for boxes whose contract derives text metrics from a font.
 export const textProperties = ['font-family', 'font-size', 'line-height', 'font-weight', 'font-style', 'font-stretch', 'font-variant', 'text-transform', 'letter-spacing', 'word-spacing', 'text-align'];
@@ -122,6 +122,21 @@ function expand(property, value) {
     const lines = postcss.list.space(value).filter(p => ['underline', 'overline', 'line-through', 'none'].includes(p));
     return [['text-decoration-line', lines.length ? lines.join(' ') : 'none']];
   }
+  if (property === 'list-style') {
+    if (wide.has(value)) return [['list-style-type', value]];
+    const parts = postcss.list.space(value).filter(p => !/^(?:inside|outside|url\(.*|none)$/.test(p) || p === 'none');
+    return [['list-style-type', parts.find(p => p !== 'none') ?? (parts.includes('none') ? 'none' : 'disc')]];
+  }
+  if (property === 'animation') {
+    const keys = ['animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state'];
+    if (wide.has(value)) return keys.map(key => [key, value]);
+    if (postcss.list.comma(value).length > 1) throw new Error('Use one animation per declaration');
+    const parts = postcss.list.space(value), times = parts.filter(p => /^-?(?:\d+(?:\.\d+)?|\.\d+)m?s$/.test(p));
+    const count = parts.find(p => p === 'infinite' || /^(?:\d+(?:\.\d+)?|\.\d+)$/.test(p)), state = parts.find(p => ['running', 'paused'].includes(p));
+    const keyword = /^(?:infinite|running|paused|normal|reverse|alternate|alternate-reverse|none|forwards|backwards|both|linear|ease|ease-in|ease-out|ease-in-out|step-start|step-end|(?:cubic-bezier|steps|linear)\(.*)$/;
+    const name = parts.find(p => !times.includes(p) && p !== count && !keyword.test(p)) ?? (parts.includes('none') ? 'none' : 'none');
+    return [['animation-name', name], ['animation-duration', times[0] ?? '0s'], ['animation-iteration-count', count ?? '1'], ['animation-play-state', state ?? 'running']];
+  }
   if (paintProperties.includes(property)) {
     if (property === 'visibility' && !wide.has(value) && !['visible', 'hidden', 'collapse'].includes(value)) throw new Error(`Unsupported visibility: ${value}`);
     if (property === 'pointer-events' && !wide.has(value) && !['auto', 'none'].includes(value)) throw new Error(`Unsupported pointer-events: ${value}`);
@@ -161,10 +176,10 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const rules = [], layers = [];
+  const rules = [], layers = [], keyframes = new Set();
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0;
-  const visit = (nodes, contexts, layer, filename, depth = 0) => {
+  const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
     const problem = (code, message, line) => diagnostic(code, message, line, filename);
     if (depth > 32) { problem('U_LAYOUT_LIMIT', 'Conditional nesting limit exceeded'); return; }
     for (const node of nodes) {
@@ -175,16 +190,24 @@ export function parseLayoutCSS(sheets, diagnostic) {
         const names = node.params.trim() ? postcss.list.comma(node.params) : [];
         if (names.some(name => !/^[a-zA-Z_][\w-]*$/.test(name)) || (node.nodes && names.length > 1) || (!node.nodes && !names.length)) { problem('U_LAYOUT_LAYER', 'Use flat named layers or anonymous blocks', node.source.start.line); continue; }
         const indices = names.map(layerIndex);
-        if (node.nodes) visit(node.nodes, contexts, indices[0] ?? layerIndex(`@anonymous:${layers.length}`), filename, depth + 1);
+        if (node.nodes) visit(node.nodes, contexts, indices[0] ?? layerIndex(`@anonymous:${layers.length}`), filename, depth + 1, preferences);
         continue;
       }
+      // @keyframes only names an animation (paint); its frames are not modeled.
+      if (node.type === 'atrule' && /^(?:-webkit-)?keyframes$/i.test(node.name)) { keyframes.add(node.params.trim().replace(/^["']|["']$/g, '')); continue; }
       if (node.type === 'atrule') {
         if (!['media', 'container'].includes(node.name.toLowerCase()) || !node.nodes) { problem('U_LAYOUT_CSS', `Unsupported @${node.name}`, node.source.start.line); continue; }
         try {
           const condition = parseCondition(node.params, node.name.toLowerCase());
+          const wanted = condition.groups.flat().filter(atom => atom.preference);
+          if (wanted.length) {
+            if (condition.groups.length !== 1 || wanted.length !== condition.groups[0].length || new Set(wanted.map(atom => atom.feature)).size !== wanted.length) throw new Error('Preference media queries (prefers-*, forced-colors) must be a single group of distinct preferences, without size features');
+            visit(node.nodes, contexts, layer, filename, depth + 1, [...preferences, ...wanted.map(({ feature, preference }) => ({ feature, value: preference }))]);
+            continue;
+          }
           // Provenance for explanations only; never consulted by the proof.
           condition.params = node.params.trim(); condition.css = {file: filename, line: node.source.start.line};
-          if (condition.groups.length) visit(node.nodes, [...contexts, condition], layer, filename, depth + 1);
+          if (condition.groups.length) visit(node.nodes, [...contexts, condition], layer, filename, depth + 1, preferences);
         } catch (error) { problem('U_LAYOUT_QUERY', error.message, node.source.start.line); }
         continue;
       }
@@ -194,6 +217,8 @@ export function parseLayoutCSS(sheets, diagnostic) {
         selectors = node.selectors.map(selector => compileSelector(selector));
       } catch (error) { problem('U_LAYOUT_SELECTOR', error.message, node.source.start.line); continue; }
       // A state rule (:hover, :focus, …) may only repaint: the layout is proved for the base state.
+      // Preference rules (prefers-reduced-motion, prefers-color-scheme, …) likewise: layout is proved under the default preferences.
+      if (preferences.length && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_QUERY', `Preference media rules may only change paint and animation; ${node.selector} changes layout`, node.source.start.line); continue; }
       if (selectors.some(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `State selector rules may only change paint (color, background, outline, box-shadow, text-decoration); ${node.selector} changes layout`, node.source.start.line); continue; }
       const declarations = [];
       const authored=node.nodes.filter(declaration=>declaration.type==='decl');
@@ -219,13 +244,15 @@ export function parseLayoutCSS(sheets, diagnostic) {
           }
         } catch (error) { problem(error.code ?? 'U_LAYOUT_CSS', error.message, declaration.source.start.line); }
       }
-      rules.push({ selectors, contexts, declarations, layer, file: filename });
+      rules.push({ selectors, contexts, declarations, layer, file: filename, ...(preferences.length ? { preferences } : {}) });
     }
   };
   for (const sheet of sheets) {
     try { const root = postcss.parse(sheet.css, { from: sheet.file }); visit(root.nodes, [], null, sheet.file); }
     catch (error) { diagnostic('U_LAYOUT_CSS', error.reason ?? error.message, error.line, sheet.file); }
   }
+  // An animation-name without @keyframes runs no animation.
+  for (const rule of rules) for (const declaration of rule.declarations) if (declaration.property === 'animation-name' && !wide.has(declaration.value) && declaration.value !== 'none' && !keyframes.has(declaration.value)) declaration.value = 'none';
   return { rules, layers };
 }
 
@@ -248,6 +275,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
     'column-gap': 'normal', 'grid-column': 'auto', 'grid-row': 'auto',
     'background-color': 'transparent', 'background-image': 'none',
     'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none',
+    cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running',
     'table-layout': 'auto', 'border-collapse': inherited['border-collapse'] ?? 'separate', 'border-spacing': inherited['border-spacing'] ?? (box.tag === 'table' ? '2px' : '0'), 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline',
     color: box.tag === 'a' && box.focusable !== false ? 'ua-link' : inherited.color ?? 'canvastext', 'text-decoration-line': box.tag === 'a' && box.focusable !== false ? 'underline' : 'none', visibility: inherited.visibility ?? 'visible', 'pointer-events': inherited['pointer-events'] ?? 'auto', opacity: '1',
     'flex-direction': 'row', 'flex-wrap': 'nowrap', 'flex-grow': '0', 'flex-shrink': '1', 'flex-basis': 'auto', 'justify-content': 'normal', order: '0',
@@ -261,8 +289,12 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   };
   const defaults={...values};
   // Lists: UA margins and the start padding for markers; li defaults to display: list-item (unsupported).
-  if(['ul', 'ol'].includes(box.tag)) { values['margin-top']='ua'; values['margin-bottom']='ua'; values['padding-left']='ua'; }
+  if(['ul', 'ol'].includes(box.tag)) { values['list-style-type'] = box.tag === 'ol' ? 'decimal' : 'disc'; values['margin-top']='ua'; values['margin-bottom']='ua'; values['padding-left']='ua'; }
   if(box.tag==='li') values.display='list-item';
+  // dl margins and the dd indent (1em / 40px) stay UA until reset; marquee is inline-block.
+  if(box.tag==='dl') { values['margin-top']='ua'; values['margin-bottom']='ua'; }
+  if(box.tag==='dd') values['margin-left']='ua';
+  if(box.tag==='marquee') values.display='inline-block';
   // Tables keep their UA table-* display (unsupported) until the author restyles them; th is bold and centred.
   const tableDisplay = {table: 'table', caption: 'table-caption', thead: 'table-header-group', tbody: 'table-row-group', tfoot: 'table-footer-group', tr: 'table-row', th: 'table-cell', td: 'table-cell'};
   if (tableDisplay[box.tag]) values.display = tableDisplay[box.tag];
@@ -283,12 +315,14 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   if (['em', 'i'].includes(box.tag)) values['font-style'] = 'ua';
   if (box.tag === 'small') values['font-size'] = 'ua';
   const ua = { ...values };
-  const initial = { ...defaults, ...textInitial, 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
+  const initial = { ...defaults, ...textInitial, 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
   const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', 'border-collapse', 'border-spacing', 'caption-side', 'empty-cells', ...textProperties, ...inheritedPaint]);
   const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={};
   const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};
+  // A preference rule holds when the state names its value, or the value is the default.
+  const preferred = rule => (rule.preferences ?? []).every(({ feature, value }) => ([...(state ?? [])].find(s => s.startsWith(`${feature}:`))?.slice(feature.length + 1) ?? preferenceValues[feature][0]) === value);
   for (const rule of rules) {
-    if (!active(rule)) {
+    if (!active(rule) || !preferred(rule)) {
       // Matching declarations whose conditions are false here: explanation data.
       const selector = rule.selectors.find(selector => matches(selector, box, state));
       if (selector) for (const declaration of rule.declarations) (dormant[declaration.property] ??= []).push({file: declaration.file, line: declaration.line, selector: selector.source, ...(rule.layerName ? {layer: rule.layerName} : {}), specified: declaration.specified ?? declaration.value, ...conditions(rule)});

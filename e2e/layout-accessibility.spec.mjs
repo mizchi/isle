@@ -91,8 +91,14 @@ const cases = [
     css: '.page{display:grid;grid-template-columns:160px;grid-auto-rows:100px;background:#fff}.f1,.f2,.v1,.v2,.v3{display:block;inline-size:160px;block-size:90px;border:0}'},
   {name: 'hover-revealed-actions', html: '<div class="page"><button class="h1" aria-label="Delete"></button><button class="h2" aria-label="Edit"></button></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff}.h1,.h2{${button}inline-size:200px;block-size:30px;opacity:0}.h1:hover,.h2:hover,.h2:focus-visible{opacity:1}`},
+  // User preferences: the dark scheme is checked for contrast; reduced motion must stop long animations.
+  {name: 'dark-scheme-and-motion', html: '<div class="page"><p class="t1">Always readable</p><p class="t2">Pale in dark</p><div class="spin"></div><div class="calm"></div><div class="ghost"></div></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff;color:#000;${type}}.t1,.t2,.spin,.calm,.ghost{display:block}.spin,.calm{animation:spin 1s linear infinite}.ghost{animation:nothing 1s infinite}@keyframes spin{to{opacity:.5}}@media (prefers-reduced-motion: reduce){.calm{animation:none}}@media (prefers-color-scheme: dark){.page{background:#111;color:#eee}.t2{color:#555}}`,
+    boxes: {'.t1': label, '.t2': label}, schemes: ['dark']},
+  {name: 'clickable-lists-and-markup', html: '<div class="page"><div class="card"></div><button class="b" aria-label="Go"></button><ul class="l"><li class="i"></li></ul><ul class="l2" role="list"><li class="i"></li></ul><dl class="d"><dt class="dt"></dt><p class="p"></p></dl><marquee class="m"></marquee><a class="k1" href="#1" accesskey="s" aria-label="One"></a><a class="k2" href="#2" accesskey="s" aria-label="Two"></a><img class="im" src="data:," alt="Map" ismap></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.card{display:block;cursor:pointer}.b{${button}cursor:pointer;inline-size:24px;block-size:24px}.l,.l2,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;list-style:none}.i,.dt,.p{display:block}.m{display:block;inline-size:200px;block-size:24px}.k1,.k2{display:block}.im{display:block;inline-size:24px;block-size:24px}`},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map'];
 const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
 // Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -427,6 +433,33 @@ async function runtime(page, sample) {
     walk(document.body.firstElementChild, 'Page'); return out;
   });
   for (const path of low) found.get('text-contrast').add(path);
+  // Pointer cursors, list markers, marquee, definition lists, accesskeys and ismap from the DOM and computed styles.
+  const markup = await page.evaluate(() => {
+    const root = document.body.firstElementChild, all = [root, ...root.querySelectorAll('*')], out = {click: [], listStyle: [], blink: [], dl: [], keys: [], ismap: []};
+    const pathOf = node => { const path = []; for (let n = node; n !== root; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible' && !node.closest('[aria-hidden="true"]'); };
+    const operable = 'a[href],button,input,select,textarea,label,summary,option,[tabindex]:not([tabindex^="-"]),[role=button],[role=link],[role=checkbox],[role=radio],[role=switch],[role=tab],[role=menuitem],[role=option],[role=slider],[role=textbox],[role=combobox]';
+    for (const n of all) if (shown(n) && getComputedStyle(n).cursor === 'pointer' && getComputedStyle(n.parentElement).cursor !== 'pointer' && !n.closest(operable)) out.click.push(pathOf(n));
+    for (const n of all.filter(n => /^(?:UL|OL)$/.test(n.tagName) && shown(n) && !n.hasAttribute('role') && !n.closest('nav'))) { const items = [...n.children].filter(c => c.tagName === 'LI' && shown(c)); if (items.length && items.every(c => getComputedStyle(c).listStyleType === 'none')) out.listStyle.push(pathOf(n)); }
+    for (const n of all) if (/^(?:MARQUEE|BLINK)$/.test(n.tagName) && shown(n)) out.blink.push(pathOf(n));
+    const group = c => /^(?:DT|DD)$/.test(c.tagName);
+    for (const n of all.filter(shown)) {
+      if (n.tagName === 'DL' && !n.hasAttribute('role') && [...n.children].some(c => !group(c) && !/^(?:SCRIPT|TEMPLATE)$/.test(c.tagName) && !(c.tagName === 'DIV' && [...c.children].every(group)))) out.dl.push(pathOf(n));
+      if (group(n) && !(n.parentElement.tagName === 'DL' || (n.parentElement.tagName === 'DIV' && n.parentElement.parentElement?.tagName === 'DL'))) out.dl.push(pathOf(n));
+    }
+    const seen = new Set(); for (const n of all) { const key = n.getAttribute('accesskey')?.trim().toLowerCase(); if (!key) continue; if (seen.has(key)) out.keys.push(pathOf(n)); seen.add(key); }
+    for (const n of all) if (n.tagName === 'IMG' && n.isMap && shown(n)) out.ismap.push(pathOf(n));
+    return out;
+  });
+  for (const [rule, key] of [['clickable-look', 'click'], ['list-style-semantics', 'listStyle'], ['blink', 'blink'], ['definition-list', 'dl'], ['accesskeys', 'keys'], ['server-side-image-map', 'ismap']]) for (const path of markup[key]) found.get(rule).add(path);
+  // Motion: with prefers-reduced-motion: reduce, the animations still running past 5s.
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  const moving = await page.evaluate(() => {
+    const root = document.body.firstElementChild, pathOf = node => { const path = []; for (let n = node; n !== root; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    return document.getAnimations().filter(a => { const t = a.effect.getComputedTiming(); return a.playState === 'running' && (t.iterations === Infinity || t.duration * t.iterations > 5000); }).map(a => pathOf(a.effect.target));
+  });
+  await page.emulateMedia({reducedMotion: 'no-preference'});
+  for (const path of moving) found.get('motion').add(path);
   return found;
 }
 
@@ -441,7 +474,8 @@ for (const sample of cases) {
     const css = reset + sample.css;
     const report = analyzeHTML(sample.html, {name: 'Page', css, viewport: {min: sample.min ?? 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: sample.accessibility ?? true, ...(sample.boxes ? {boxes: sample.boxes} : {})});
     expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
-    const rows = [...report.diagnostics, ...report.accessibility.warnings].filter(row => rules.includes(row.rule));
+    const rows = [...report.diagnostics, ...report.accessibility.warnings].filter(row => rules.includes(row.rule) && !row.preference);
+    const darkRows = report.diagnostics.filter(row => row.rule === 'text-contrast' && (row.preference === 'prefers-color-scheme: dark' || row.alsoUnder?.includes('prefers-color-scheme: dark')));
     const document = `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>${css}</style></head><body>${sample.html}</body></html>`;
     const row = {name: sample.name, static: {}, runtime: {}};
     for (const width of sample.widths ?? widths) {
@@ -452,6 +486,15 @@ for (const sample of cases) {
         const expected = [...found.get(rule)].sort(), actual = [...new Set(rows.filter(r => r.rule === rule && holds(r, width)).map(r => r.path))].sort();
         (row.static[rule] ??= []).push(actual); (row.runtime[rule] ??= []).push(expected);
         expect(actual, `${rule} at ${width}`).toEqual(expected);
+      }
+      // Dark scheme: the same contrast oracle under emulated prefers-color-scheme: dark.
+      if (sample.schemes?.includes('dark')) {
+        await page.emulateMedia({colorScheme: 'dark'});
+        const dark = await runtime(page, sample);
+        await page.emulateMedia({colorScheme: 'light'});
+        const expected = [...dark.get('text-contrast')].sort(), actual = [...new Set(darkRows.filter(r => holds(r, width)).map(r => r.path))].sort();
+        (row.static['text-contrast (dark)'] ??= []).push(actual); (row.runtime['text-contrast (dark)'] ??= []).push(expected);
+        expect(actual, `text-contrast (dark) at ${width}`).toEqual(expected);
       }
     }
     // The independent contrast gate at its own viewport (1280×900).

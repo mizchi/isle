@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -741,4 +741,48 @@ test('a content-box fixed table keeps its edge spacing inside its width', () => 
   const sizes = Object.fromEntries(report.sizes.filter(r => r.rect).map(r => [r.box, r.rect]));
   assert.equal(sizes['.t'].inlineSize.constant, '410'); // as measured in Chromium
   assert.equal(sizes['.c'].inlineSize.constant, '294');
+});
+
+// User preferences are paint-only states; the layout is proved under the defaults.
+test('prefers-color-scheme: dark rules are checked for contrast as well', () => {
+  const tree = page([{tag: 'p', classes: ['t'], text: true}]);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; }\n.t { font-size: 16px; }\n${extra}`);
+  const b = {'.t': text};
+  assert.equal(find(run(tree, css('@media (prefers-color-scheme: dark) { .page { background: #000; color: #eee; } }'), {boxes: b}), 'E_A11Y_CONTRAST').length, 0);
+  const dark = find(run(tree, css('@media (prefers-color-scheme: dark) { .page { background: #111; color: #444; } }'), {boxes: b}), 'E_A11Y_CONTRAST');
+  assert.deepEqual(dark.map(d => [d.box, d.preference]), [['.t', 'prefers-color-scheme: dark']]);
+  // Preference rules may not change layout.
+  assert.equal(run(tree, css('@media (prefers-reduced-motion: reduce) { .t { display: none; } }'), {boxes: b}).status, 'unknown');
+});
+
+test('motion: long animations must stop under prefers-reduced-motion: reduce', () => {
+  const tree = page([{tag: 'div', classes: ['spin']}]);
+  const warn = (report, code) => report.accessibility.warnings.filter(d => d.code === code);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; grid-auto-rows: 20px; }\n.spin { animation: spin 1s linear infinite; }\n@keyframes spin { to { opacity: 0.5; } }\n${extra}`);
+  assert.deepEqual(warn(run(tree, css('')), 'W_A11Y_MOTION').map(d => d.box), ['.spin']);
+  assert.equal(warn(run(tree, css('@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }')), 'W_A11Y_MOTION').length, 0);
+  // No @keyframes, no animation; under five seconds in total is fine.
+  assert.equal(warn(run(tree, pageCSS('.page { grid-auto-rows: 20px; }\n.spin { animation: spin 1s infinite; }\n')), 'W_A11Y_MOTION').length, 0);
+  assert.equal(warn(run(tree, pageCSS('.page { grid-auto-rows: 20px; }\n.spin { animation: pop 2s 2; transition: color 0.2s; }\n@keyframes pop { to { opacity: 0.5; } }\n')), 'W_A11Y_MOTION').length, 0);
+});
+
+test('clickable-look, list-style semantics, blink, dl, accesskeys, ismap and aria-hidden body', () => {
+  const warn = (report, code) => report.accessibility.warnings.filter(d => d.code === code);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; grid-auto-rows: 20px; }\n${extra}`);
+  assert.deepEqual(warn(run(page([{tag: 'div', classes: ['card']}]), css('.card { cursor: pointer; }')), 'W_A11Y_CLICK_LOOK').map(d => d.box), ['.card']);
+  // A button, or a child that inherits the pointer, is fine.
+  assert.equal(warn(run(page([{tag: 'button', classes: ['card'], named: true, children: [{tag: 'span', classes: ['x']}]}]), css('.card { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; cursor: pointer; }')), 'W_A11Y_CLICK_LOOK').length, 0);
+  const list = role => page([{tag: 'ul', classes: ['l'], ...(role ? {role} : {}), children: [{tag: 'li', classes: ['i']}]}]);
+  const listCSS = css('.l { display: grid; grid-template-columns: minmax(0, 1fr); padding: 0; list-style: none; grid-auto-rows: 20px; }\n.i { display: block; }');
+  assert.deepEqual(warn(run(list(), listCSS), 'W_A11Y_LIST_STYLE').map(d => d.box), ['.l']);
+  assert.equal(warn(run(list('list'), listCSS), 'W_A11Y_LIST_STYLE').length, 0);
+  assert.deepEqual(find(run(page([{tag: 'marquee', classes: ['m']}]), css('.m { display: block; inline-size: 100px; block-size: 20px; }')), 'E_A11Y_BLINK').map(d => d.box), ['.m']);
+  const dl = page([{tag: 'dl', classes: ['d'], children: [{tag: 'dt', classes: ['t']}, {tag: 'p', classes: ['p']}]}]);
+  assert.deepEqual(find(run(dl, css('.d { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 20px; }')), 'E_A11Y_DL').map(d => d.box), ['.d']);
+  assert.deepEqual(find(run(page([{tag: 'dd', classes: ['x']}]), css('')), 'E_A11Y_DL').map(d => d.box), ['.x']);
+  const keys = page([{tag: 'a', classes: ['a'], focusable: true, href: '/a', accessKey: 's', named: true}, {tag: 'a', classes: ['b'], focusable: true, href: '/b', accessKey: 's', named: true}]);
+  assert.deepEqual(warn(run(keys, css('.a, .b { display: block; }')), 'W_A11Y_ACCESSKEY').map(d => d.box), ['.b']);
+  assert.deepEqual(warn(run(page([{tag: 'img', classes: ['m'], alt: 'map', ismap: true}]), css('.m { display: block; inline-size: 20px; block-size: 20px; }')), 'W_A11Y_ISMAP').map(d => d.box), ['.m']);
+  const hiddenBody = {tag: 'body', classes: ['page'], ariaHidden: true, children: [{tag: 'div', classes: ['x']}]};
+  assert.deepEqual(find(run(hiddenBody, '.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 20px; }'), 'E_A11Y_ARIA_HIDDEN_BODY').map(d => d.box), ['.page']);
 });

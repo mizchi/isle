@@ -26,7 +26,9 @@ function length(value, parent) {
   return scalar(px(value));
 }
 
-export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSheets=[], inputDiagnostics=[]) {
+// `preferences` (internal) names non-default user preferences, e.g. 'prefers-color-scheme:dark'.
+export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSheets=[], inputDiagnostics=[], preferences=[]) {
+  const pristine = options.accessibility && !preferences.length ? structuredClone(root) : null;
   const domain = validateOptions(options), block = options.block ?? Boolean(options.viewport.height);
   const component = options.name ?? 'Document';
   const h = options.viewport.height ?? { min: 0, max: 0 };
@@ -104,6 +106,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function styles(box, region, ancestors, inherited, emit, gridItem = true, state) {
     spend(rules.length + 1);
+    if (preferences.length) state = new Set([...(state ?? []), ...preferences]);
     const relevant = rules.filter(rule => rule.selectors.some(selector => matches(selector, box, state)));
     const contexts = new Map();
     for (const rule of relevant) for (const condition of rule.contexts) if (!contexts.has(condition)) contexts.set(condition, context(condition, ancestors));
@@ -164,7 +167,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(['button', 'input', 'select', 'textarea'].includes(box.tag) && (style.appearance!=='none' || style.display!=='block')) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);
     // A fieldset's rendered legend sits in its border: modeled only when the fieldset generates no box.
     // Replaced elements and text fields have intrinsic sizes the model does not compute.
-    if(['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto'))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
+    if(['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto'))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     if (['left', 'right', 'inline-start', 'inline-end'].includes(style.float)) { issue('E_LAYOUT_FLOAT', 'float is forbidden in checked layout', box, region); return false; }
     if (style.float !== 'none') throw new Error('Unsupported float value');
     if (style.display === 'contents') throw new Error('display: contents on the analyzed root or with text needs its parent box and anonymous items');
@@ -496,6 +499,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         contentBlockSize: contentBlock ?? null, fontSize: style['font-size'],
         // The focused paint (paint-only :focus/:focus-visible/:focus-within rules) of focusable boxes.
         ...(focusableBox(box) || box.tag === 'a' ? { hoverStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, hoverState).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
+        ...(style['animation-name'] !== 'none' ? { reducedMotion: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set(['prefers-reduced-motion:reduce'])).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
         ...(focusableBox(box) ? { focusStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, focusState).map(s => ({ region: s.region, paint: paintFacts(s.style), authorOutline: Boolean(s.style.$sources['outline-style']) })) } : {}) });
       if (box.inline?.length) inlineContent(box, style, region, [...parents, { box, style }], geometry.at(-1).chain);
       const rect=origin && blockSize ? {inlineStart:affine(origin.inline),blockStart:affine(origin.block),inlineSize:affine(inline),blockSize:affine(blockSize)} : null;
@@ -867,6 +871,20 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   if (options.accessibility && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), ranges, block });
     diagnostics.push(...judged.findings, ...judged.unknowns);
+    // Dark color scheme: when the CSS has prefers-color-scheme: dark rules, the contrast rules run
+    // again with them (paint only, so the geometry is the same). System colors stay the light ones:
+    // the color-scheme property is outside the subset.
+    if (pristine && rules.some(rule => rule.preferences?.some(p => p.feature === 'prefers-color-scheme' && p.value === 'dark'))) {
+      const dark = analyzeBoxTree(pristine, { ...options, integrity: undefined }, scrollbarProfile, budget, inlineSheets, [], ['prefers-color-scheme:dark']);
+      const contrastCodes = new Set(['E_A11Y_CONTRAST', 'U_A11Y_CONTRAST', 'E_A11Y_STATE_CONTRAST', 'E_A11Y_LINK_IN_TEXT', 'U_A11Y_LINK_IN_TEXT', 'E_A11Y_FOCUS_VISIBLE']);
+      // A finding that holds in both schemes is reported once, with `alsoUnder`.
+      const same = (a, b) => a.code === b.code && a.path === b.path && a.message === b.message && JSON.stringify([a.range, a.heightRange, a.regionConstraints, a.state]) === JSON.stringify([b.range, b.heightRange, b.regionConstraints, b.state]);
+      for (const d of dark.diagnostics.filter(d => contrastCodes.has(d.code))) {
+        const light = diagnostics.find(l => same(l, d));
+        if (light) light.alsoUnder = [...(light.alsoUnder ?? []), 'prefers-color-scheme: dark'];
+        else diagnostics.push({ ...d, preference: 'prefers-color-scheme: dark', message: `${d.message} (prefers-color-scheme: dark)` });
+      }
+    }
     accessibilityWarnings = judged.warnings; accessibilityNotes = judged.notes; accessibilityExempted = judged.exempted;
   }
   const status = diagnostics.some(d => d.severity === 'unknown') ? 'unknown' : diagnostics.length ? 'violated' : 'verified';

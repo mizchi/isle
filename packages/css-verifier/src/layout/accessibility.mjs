@@ -60,6 +60,14 @@
 //   video-caption    → E_A11Y_VIDEO_CAPTION     a rendered video without a captions/subtitles track (SC 1.2.2)
 //   autoplay-audio   → W_A11Y_AUTOPLAY_AUDIO    autoplaying media that is not muted (SC 1.4.2)
 //   hover-only       → E_A11Y_HOVER_ONLY        a control hidden (opacity 0 / visibility hidden) that :hover reveals and focus does not
+//   clickable-look   → W_A11Y_CLICK_LOOK        cursor: pointer set on an element that is neither focusable nor interactive (SC 2.1.1)
+//   list-style-semantics → W_A11Y_LIST_STYLE   ul/ol with list-style-type: none and no role=list (WebKit drops the list role)
+//   motion           → W_A11Y_MOTION            an animation running over 5s that prefers-reduced-motion: reduce does not stop (SC 2.2.2, 2.3.3)
+//   blink            → E_A11Y_BLINK             rendered marquee/blink (SC 2.2.2)
+//   definition-list  → E_A11Y_DL                dl children other than dt/dd/div groups, or dt/dd outside dl
+//   accesskeys       → W_A11Y_ACCESSKEY         the same accesskey on more than one element
+//   server-side-image-map → W_A11Y_ISMAP       img ismap needs a pointer (SC 2.1.1)
+//   aria-hidden-body → E_A11Y_ARIA_HIDDEN_BODY  aria-hidden="true" on body hides the whole document
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -71,7 +79,8 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
   'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text',
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
-  'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only'];
+  'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
+  'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -129,7 +138,8 @@ export const contrastRatio = (a, b) => { const [x, y] = [luminance(a), luminance
 export function paintFacts(style) {
   return { color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
-    outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], boxShadow: style['box-shadow'] };
+    outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
+    animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] } };
 }
 const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(String(value)); return m && (m[2] ? Number(m[1]) / 100 : Number(m[1])) >= 1; };
 /**
@@ -916,6 +926,48 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     for (const hit of doubtfulPieces) report(unknowns, 'U_A11Y_TARGET_SIZE', 'unknown', `${box.label} is under ${targetSize}px and ${hit.reason}`, row, hit.region, { rule: 'target-size', ...(hit.other ? { other: hit.other.path } : {}) });
   }
 
+
+  // clickable-look: a pointer cursor set on this element (not inherited) promises a click target;
+  // without focus or an interactive role a keyboard cannot reach it (any click handler is outside the tree).
+  for (const row of geometry.filter(row => row.paint.cursor === 'pointer' && row.chain?.at(-2)?.cursor !== 'pointer' && visible(row) && !hiddenFrom(row.path))) {
+    const box = row.box;
+    if (interactive(row) || box.focusable === true || box.focusable === 'dynamic' || box.tabIndex >= 0 || ['label', 'summary', 'option'].includes(box.tag) || ancestorsOf(row.path).some(a => interactive({ box: a }) || a.tag === 'label')) continue;
+    report(warnings, 'W_A11Y_CLICK_LOOK', 'warning', `${box.label} has cursor: pointer but is neither focusable nor an interactive role; if it handles clicks, keyboard users cannot reach it`, row, row.region, { rule: 'clickable-look' });
+  }
+  // list-style-semantics: WebKit (VoiceOver) exposes a list without markers as no list, unless role=list (outside nav).
+  for (const row of geometry.filter(row => ['ul', 'ol'].includes(row.box.tag) && visible(row) && !hiddenFrom(row.path) && row.box.role === undefined && !ancestorsOf(row.path).some(a => a.tag === 'nav'))) {
+    const items = geometry.filter(item => item.box.tag === 'li' && item.path.slice(0, item.path.lastIndexOf('/')) === row.path && intersect(item.region, row.region));
+    if (items.length && items.every(item => item.paint.listStyleType === 'none'))
+      report(warnings, 'W_A11Y_LIST_STYLE', 'warning', `${row.box.label} has list-style-type: none; Safari/VoiceOver then drops its list semantics unless it has role="list"`, row, row.region, { rule: 'list-style-semantics' });
+  }
+  // motion: an animation longer than 5s (or infinite) needs a way to stop; prefers-reduced-motion: reduce should stop it.
+  const seconds = value => { const m = /^(-?(?:\d+(?:\.\d+)?|\.\d+))(m?s)$/.exec(String(value)); return m ? Number(m[1]) / (m[2] === 'ms' ? 1000 : 1) : null; };
+  const lasting = a => a && a.playState !== 'paused' && seconds(a.duration) > 0 && (a.count === 'infinite' || seconds(a.duration) * Number(a.count) > 5);
+  for (const row of geometry.filter(row => lasting(row.paint.animation) && visible(row) && !hiddenFrom(row.path))) {
+    const still = (row.reducedMotion ?? []).filter(s => lasting(s.paint.animation) || (s.paint.animation && s.paint.animation.playState !== 'paused' && seconds(s.paint.animation.duration) > 0 && s.paint.animation.count === 'infinite'));
+    for (const s of still) report(warnings, 'W_A11Y_MOTION', 'warning', `${row.box.label} runs animation ${row.paint.animation.name} (${row.paint.animation.duration} × ${row.paint.animation.count}) and prefers-reduced-motion: reduce does not stop it; moving content over 5s needs a pause mechanism`, row, s.region, { rule: 'motion', animation: row.paint.animation });
+  }
+  // blink: marquee and blink move or flash with no pause mechanism.
+  for (const row of geometry.filter(row => ['marquee', 'blink'].includes(row.box.tag) && visible(row)))
+    report(findings, 'E_A11Y_BLINK', 'error', `${row.box.label} is a <${row.box.tag}>, which moves or blinks without a way to pause it`, row, row.region, { rule: 'blink' });
+  // definition-list: dl contains dt/dd groups (optionally wrapped in div); dt/dd live in dl.
+  for (const row of geometry.filter(row => visible(row) && !hiddenFrom(row.path))) {
+    const box = row.box, parentBox = boxOf.get(row.path.slice(0, row.path.lastIndexOf('/')));
+    const grouped = child => ['dt', 'dd'].includes(child.tag);
+    if (box.tag === 'dl' && box.role === undefined && (box.children ?? []).some(child => !grouped(child) && !['script', 'template'].includes(child.tag) && !(child.tag === 'div' && (child.children ?? []).every(grouped))))
+      report(findings, 'E_A11Y_DL', 'error', `${box.label} has a child that is not dt, dd or a div of them`, row, row.region, { rule: 'definition-list' });
+    if (['dt', 'dd'].includes(box.tag) && !(parentBox?.tag === 'dl' || (parentBox?.tag === 'div' && boxOf.get(parentBox.path.slice(0, parentBox.path.lastIndexOf('/')))?.tag === 'dl')))
+      report(findings, 'E_A11Y_DL', 'error', `${box.label} is outside a dl`, row, row.region, { rule: 'definition-list' });
+  }
+  // accesskeys: one key, one element.
+  const keyed = new Map();
+  for (const box of treeBoxes.values()) if (box.accessKey && box.accessKey !== 'dynamic') keyed.set(box.accessKey, [...(keyed.get(box.accessKey) ?? []), box]);
+  for (const [key, list] of keyed) for (const box of list.slice(1)) report(warnings, 'W_A11Y_ACCESSKEY', 'warning', `${box.label} repeats accesskey ${JSON.stringify(key)} of ${list[0].label}`, whole(box), domain, { rule: 'accesskeys', accessKey: key });
+  // server-side-image-map: ismap sends pointer coordinates only.
+  for (const row of geometry.filter(row => row.box.tag === 'img' && row.box.ismap && visible(row) && !hiddenFrom(row.path)))
+    report(warnings, 'W_A11Y_ISMAP', 'warning', `${row.box.label} is a server-side image map (ismap); its regions cannot be reached by keyboard`, row, row.region, { rule: 'server-side-image-map' });
+  // aria-hidden-body: hides the document from assistive technology.
+  for (const box of treeBoxes.values()) if (box.tag === 'body' && box.ariaHidden === true) report(findings, 'E_A11Y_ARIA_HIDDEN_BODY', 'error', `${box.label} has aria-hidden="true", which hides the whole document`, whole(box), domain, { rule: 'aria-hidden-body' });
 
   return { findings: dedupe(findings), warnings: dedupe(warnings), unknowns: dedupe(unknowns), exempted: dedupe(exempted), notes };
 }
