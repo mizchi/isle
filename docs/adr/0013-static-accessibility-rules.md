@@ -158,7 +158,8 @@ letter-spacing が 0 でないとき Chromium は任意の ligature を切る(CS
 (translate・scale・90° 回転)は p ↦ C + A(p − C) + t(A は各行に非零が1つ、t は各 translate を前の線形部分で写した和)に正確に合成する
 (順序で結果が変わる列、90°・180°・−90° の回転と子を持つ回転で一致)。% の translate は箱自身の border box の寸法に比例するので t = t₀ + W·u + H·v として持つ(中央寄せの `translate(-50%, -50%)`、回転の後の % で一致)。
 `em` の translate は要素の font-size(px であること)に比例する項 F·e を足す(継承した font-size と scale の後の em で一致)。
-それ以外の角度と skew は矩形が軸に沿わないので Unknown、rem などの単位と px でない font-size の em も Unknown。
+`rem` は解析する木の root が html で font-size が px のときその値(Chromium で body の font-size ではなく html の値になることを確認)。
+それ以外の角度と skew は矩形が軸に沿わないので Unknown、component の root での rem と px でない font-size の em も Unknown。
 描画と hit test の座標を動かすものなので accessibility・integrity の検査でだけ扱い、レイアウトの証明(transition・no-shift・座標の契約)では従来どおり Unknown。
 以前は z-index 自体が未対応で Unknown、opacity による context は考えていなかった。7通りの z-index/opacity と、5通りの入れ子(isolation を含む)で Chromium の hit test と一致した。
 

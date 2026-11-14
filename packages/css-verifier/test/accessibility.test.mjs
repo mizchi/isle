@@ -1055,6 +1055,10 @@ test('px translate and scale move a box and its descendants; other transforms ar
   assert.equal(moved.sizes.find(r => r.box === '.b' && r.rect).rect.blockStart.constant, '50');
   // em: the element's px font-size; a UA (unknown) font-size stays Unknown.
   assert.equal(run(tree, css('.w { font-size: 10px; transform: translate(2em, 0); }')).sizes.find(r => r.box === '.b' && r.rect).rect.inlineStart.constant, '20');
+  // rem: the html root's px font-size (a component root has none).
+  const doc = {tag: 'html', classes: ['root'], lang: 'en', documentRoot: true, children: [{tag: 'body', classes: ['body'], children: [tree]}]};
+  const docCSS = '.root { font-size: 8px; display: grid; grid-template-columns: minmax(0, 1fr); } .body { display: grid; grid-template-columns: minmax(0, 1fr); }\n' + css('.w { transform: translate(3rem, 0); }');
+  assert.equal(run(doc, docCSS).sizes.find(r => r.box === '.b' && r.rect).rect.inlineStart.constant, '24');
   for (const t of ['rotate(3deg)', 'rotate(45deg)', 'skewX(5deg)', 'translate(1em, 0)', 'translate(1rem, 0)']) assert.equal(run(tree, css(`.w { transform: ${t}; }`)).status, 'unknown', t);
   // Percentages are of the box's own size: -50% of the 200 × 40 wrapper.
   const pct = run(tree, css('.w { transform: translate(-50%, 25%); }')).sizes.find(r => r.box === '.b' && r.rect).rect;

@@ -661,7 +661,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const needsEm = cmp(m[10], zero) !== 0 || cmp(m[11], zero) !== 0;
     if (needsEm && !/^\d+(?:\.\d{1,6})?px$/.test(style['font-size'])) throw Object.assign(new Error(`An em translation needs a px font-size (got ${style['font-size']})`), { code: 'U_LAYOUT_CSS' });
     const em = needsEm ? px(style['font-size']) : zero;
-    const along = k => sum(sum(sum(scalar(m[4 + k]), times(size.inline, m[6 + k])), needsH ? times(size.block, m[8 + k]) : scalar(zero)), scalar(mul(em, m[10 + k])));
+    // rem: the root element's font-size, known only when the analysed root is html with a px font-size.
+    const needsRem = cmp(m[12], zero) !== 0 || cmp(m[13], zero) !== 0;
+    if (needsRem && !rootFontSize) throw Object.assign(new Error('A rem translation needs the html root with a px font-size in the analysed tree'), { code: 'U_LAYOUT_CSS' });
+    const rem = needsRem ? rootFontSize : zero;
+    const along = k => sum(sum(sum(scalar(m[4 + k]), times(size.inline, m[6 + k])), needsH ? times(size.block, m[8 + k]) : scalar(zero)), scalar(add(mul(em, m[10 + k]), mul(rem, m[12 + k]))));
     return offset(origin, along(0), along(1));
   }
   function resolvedOrigin(style,available,inline,blockSize,parents) {
@@ -1046,6 +1050,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     finish(rendered.box, rendered.style, region, inline, diff(inline, scalar(rendered.horizontal)), block, diff(block, scalar(rendered.vertical)),
       { inline, block, ...(legendOrigin ? { origin: legendOrigin } : {}) }, ancestors, emit);
   }
+  let rootFontSize = null;
   function solve(box, available, region, parents = [], inherited, emit = true) {
     let results = [];
     if (emit) box.$starts = { geometry: geometry.length, sizes: sizes.length };
@@ -1062,6 +1067,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       };
       for (const state of styles(box, region, parents, inherited, emit, !available.root).flatMap(tableStates)) {
         let { style } = state;
+        if (box.tag === 'html' && !parents.length && /^\d+(?:\.\d{1,6})?px$/.test(style['font-size'])) rootFontSize = px(style['font-size']);
         // A fixed table is laid out as its equivalent grid (rows and sections as contents, cells as blocks).
         if (box.tag === 'table' && style.display === 'table') style = tableAsGrid(box, style, state.region, parents, emit, available);
         if (!['grid', 'flex'].includes(style.display) && style.display !== 'none') { const generatedText = generatedElsewhere(box, state.region, [...parents, { box, style }], style); if (generatedText) box.generated = generatedText; }
