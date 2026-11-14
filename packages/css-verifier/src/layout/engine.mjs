@@ -562,6 +562,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // Where a single line of text starts inside the box (font-derived text extents).
         content: { left: add(px(style['border-left']), px(style['padding-left'])), top: add(px(style['border-top']), px(style['padding-top'])), inline: contentInline },
         textAlign: style['text-align'], painted: paints(style),
+        // z-index applies to positioned boxes and to grid/flex items.
+        zIndex: style['z-index'] !== 'auto' && (style.position !== 'static' || ['grid', 'flex'].includes(parents.at(-1)?.style.display)) ? Number(style['z-index']) : null,
         paint: paintFacts(style), chain: [...ancestorPaint, ...parents.map((parent, i) => captionBackdrop(parent, parents[i + 1]?.box ?? box, paintFacts(parent.style))), paintFacts(style)],
         contentBlockSize: contentBlock ?? null, fontSize: style['font-size'],
         // The focused paint (paint-only :focus/:focus-visible/:focus-within rules) of focusable boxes.

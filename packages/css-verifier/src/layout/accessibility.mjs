@@ -349,7 +349,25 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
 
   // occluded-target: a hit-testable box from a later paint layer covers a target.
   const layer = row => { for (let p = row.path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') { const r = everything.find(g => g.path === p); if (r && r.position !== 'static') return p; } return null; };
+  // Stacking contexts (CSS 2 Appendix E): a box with an integer z-index, or with opacity below 1, paints with its
+  // descendants as one layer of the root context: negative z, then in-flow boxes, then z 0/auto positioned layers
+  // (tree order), then positive z. Within one context the tree-order rules below apply. Nested contexts: Unknown.
+  const rowAt = path => everything.find(g => g.path === path);
+  const parentPath = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '';
+  const createsContext = r => r.zIndex !== null && r.zIndex !== undefined || !opaqueValue(r.paint.opacity);
+  const contextOf = row => { for (let p = row.path; p; p = parentPath(p)) { const r = rowAt(p); if (r && createsContext(r)) return r; } return null; };
+  const nested = new Set();
+  for (const row of everything.filter(createsContext)) { const outer = contextOf({ path: parentPath(row.path) }); if (outer) nested.add(row.path); }
+  for (const path of nested) report(unknowns, 'U_A11Y_STACKING', 'unknown', `${rowAt(path).box.label} creates a stacking context inside another; nested stacking order is not modeled`, rowAt(path), rowAt(path).region, { rule: 'occluded-target' });
+  const stackKey = row => {
+    const c = contextOf(row);
+    if (c) { const z = c.zIndex ?? 0; return { tier: z < 0 ? 1 : z > 0 ? 4 : 3, z, path: c.path, context: c.path }; }
+    const l = layer(row);
+    return l ? { tier: 3, z: 0, path: l } : { tier: 2, z: 0, path: row.path };
+  };
   const paintsAbove = (cover, above, target, own) => {
+    const a = stackKey(cover), b = stackKey(target);
+    if ((a.context || b.context) && a.context !== b.context) return a.tier !== b.tier ? a.tier > b.tier : a.z !== b.z ? a.z > b.z : treeOrder(a.path, b.path) > 0;
     if (!above) return !own && treeOrder(cover.path, target.path) > 0;
     return !(own && (isAncestor(above, own) || above === own || treeOrder(above, own) < 0));
   };

@@ -1035,3 +1035,13 @@ test('generated text names a control; icon-font glyphs do not', () => {
   // A leaf without px sizes: generated text may change its size.
   assert.equal(run(tree, css('.b { inline-size: auto; }\n.b::before { content: "Save"; }')).status, 'unknown');
 });
+
+test('z-index stacking contexts decide what covers a target', () => {
+  const tree = {tag: 'main', classes: ['page'], children: [{tag: 'button', classes: ['b'], named: true}, {tag: 'div', classes: ['c']}]};
+  const css = extra => `.page { display: grid; grid-template-columns: 200px; grid-auto-rows: 40px; position: relative; background: #fff; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n.c { position: absolute; left: 0; top: 0; inline-size: 100px; block-size: 40px; background: #eee; }\n${extra}`;
+  assert.equal(find(run(tree, css('')), 'E_A11Y_OCCLUDED').length, 1);
+  assert.equal(find(run(tree, css('.b { position: relative; z-index: 1; }')), 'E_A11Y_OCCLUDED').length, 0);
+  assert.equal(find(run(tree, css('.c { z-index: -1; }')), 'E_A11Y_OCCLUDED').length, 0);
+  assert.equal(find(run(tree, css('.c { z-index: 1; }\n.b { position: relative; z-index: 1; }')), 'E_A11Y_OCCLUDED').length, 1);
+  assert.equal(run(tree, css('.c { z-index: "x"; }')).status, 'unknown');
+});

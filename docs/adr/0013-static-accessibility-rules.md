@@ -145,6 +145,13 @@ letter-spacing が 0 でないとき Chromium は任意の ligature を切る(CS
   `animation` の shorthand(1つ)と longhand の name・duration・iteration-count・play-state を保持し、`@keyframes` は名前だけ読む(定義のない名前は動かない)。
   `transition` は paint として無視する。
 
+### 重なり順(z-index と stacking context)
+
+`z-index`(auto か整数。配置した箱と grid/flex の item に効く)と 1 未満の `opacity` は stacking context を作り、子孫ごと root の context の
+1つの層として描かれる(CSS 2 付録 E):負の z、通常の流れの箱、z 0/auto の配置した層(tree 順)、正の z。覆う箱と対象が別の context なら
+(段、z、tree 順)で比べ、同じ context の中は従来の tree 順の規則。context の中の context(入れ子)は U_A11Y_STACKING。
+以前は z-index 自体が未対応で Unknown、opacity による context は考えていなかった。7通りの z-index/opacity の組み合わせで Chromium の hit test と一致した。
+
 ### 生成 content(`::before`・`::after`)
 
 `::before`/`::after` の規則は、その疑似要素だけに効く(疑似要素の状態で cascade する)。`content` が none/normal なら箱はない。

@@ -606,3 +606,22 @@ test('generated ::after overlays occlude like Chromium hit testing', async ({pag
     expect(browser.sort(), cover).toEqual(occluded);
   }
 });
+
+// Stacking contexts: z-index (positioned boxes) and opacity decide what covers a target, as in Chromium's hit testing.
+test('z-index and opacity stacking decide occlusion like Chromium', async ({page}) => {
+  const html = '<main class="page"><button class="b1" aria-label="One"></button><button class="b2" aria-label="Two"></button><div class="c"></div><div class="d"></div></main>';
+  const base = `${reset}.page{display:grid;grid-template-columns:200px;grid-auto-rows:40px;position:relative;background:#fff}.b1,.b2{${button}}.c{position:absolute;left:0;top:0;inline-size:100px;block-size:80px;background:#eee}.d{position:absolute;left:50px;top:20px;inline-size:100px;block-size:40px;background:#ddd}`;
+  for (const extra of ['', '.b1{position:relative;z-index:1}', '.c{z-index:-1}', '.c{z-index:2}.b2{position:relative;z-index:3}', '.d{z-index:1}.c{z-index:2}', '.b1{opacity:.5}', '.c{z-index:0}.b1{position:relative;z-index:0}']) {
+    const css = base + extra;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true});
+    expect(report.status === 'unknown', `${extra}: ${JSON.stringify(report.diagnostics)}`).toBe(false);
+    const statics = [...new Set(report.diagnostics.filter(d => d.code === 'E_A11Y_OCCLUDED').map(d => d.path))].sort();
+    await page.setViewportSize({width: 800, height: 800});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const browser = await page.evaluate(() => [...document.querySelectorAll('button')].filter(b => { const r = b.getBoundingClientRect(); for (let x = r.left + 0.5; x < r.right; x += 4) for (let y = r.top + 0.5; y < r.bottom; y += 4) if (document.elementFromPoint(x, y) !== b) return true; return false; }).map(b => `Page/${[...b.parentElement.children].indexOf(b)}`));
+    expect(statics, extra || 'none').toEqual(browser.sort());
+  }
+  // A stacking context inside another is not modeled.
+  const nested = analyzeHTML('<main class="page"><div class="w"><button class="b" aria-label="B"></button></div></main>', {name: 'Page', css: `${reset}.page{display:grid;grid-template-columns:200px;grid-auto-rows:40px;background:#fff}.w{display:grid;grid-template-columns:minmax(0,1fr);position:relative;z-index:1}.b{${button}position:relative;z-index:2}`, viewport: {min: 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true});
+  expect(nested.diagnostics.map(d => d.code)).toContain('U_A11Y_STACKING');
+});
