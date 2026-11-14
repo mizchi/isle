@@ -170,3 +170,26 @@ test('static animation layout-shift findings agree with Chromium', async ({page}
     expect(measured.score > 0, `${name}: static ${predicted}, Chromium ${measured.score}`).toBe(predicted);
   }
 });
+
+test('static carousel slide-switch findings agree with Chromium layout shifts', async ({page}) => {
+  const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const base = `*{box-sizing:border-box;margin:0}.page{${g}}.c{${g}}.s1{height:100px;background:#ccc}.s2{height:150px;background:#999}.below{height:40px;background:#444}`;
+  const carousel = slides => `<div class="page"><section class="c" aria-roledescription="carousel" aria-label="News">${slides}</section><div class="below"></div></div>`;
+  const hiddenSlides = carousel('<div class="s1" aria-roledescription="slide"></div><div class="s2" aria-roledescription="slide" hidden></div>');
+  const classSlides = carousel('<div class="s1 slide is-active" aria-roledescription="slide"></div><div class="s2 slide" aria-roledescription="slide"></div>');
+  const toggleHidden = "setTimeout(() => { const [a, b] = document.querySelectorAll('[aria-roledescription=slide]'); a.hidden = true; b.hidden = false; }, 300)";
+  const toggleClass = "setTimeout(() => { const [a, b] = document.querySelectorAll('[aria-roledescription=slide]'); a.classList.remove('is-active'); b.classList.add('is-active'); }, 300)";
+  for (const [name, html, css, script] of [
+    ['hidden, different heights', hiddenSlides, '', toggleHidden],
+    ['hidden, fixed carousel height', hiddenSlides, '.c{height:160px}', toggleHidden],
+    ['class, display none', classSlides, '.slide{display:none}.is-active{display:grid}', toggleClass],
+    ['class, stacked in one cell', classSlides, '.slide{grid-row:1;grid-column:1;visibility:hidden}.is-active{visibility:visible}', toggleClass],
+  ]) {
+    const report = analyzeHTML(html, {name: 'Page', viewport, css: base + css});
+    expect(report.status === 'unknown', `${name}: ${JSON.stringify(report.diagnostics)}`).toBe(false);
+    const predicted = report.diagnostics.some(d => d.code === 'E_LAYOUT_CAROUSEL_SHIFT');
+    const measured = await shifts(page, `<style>${base + css}</style>${html}`, {script});
+    expect(measured.score > 0, `${name}: static ${predicted}, Chromium ${measured.score}`).toBe(predicted);
+  }
+});

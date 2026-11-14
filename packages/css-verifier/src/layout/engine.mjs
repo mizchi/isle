@@ -103,6 +103,29 @@ function lengthPieces(value, parent, region, style) {
     return [...p.yes.map(r => ({ region: r, value: piece.value })), ...p.no.map(r => ({ region: r, value: scalar(zero) }))];
   });
 }
+// Where a box's layout start differs between two layouts of the same page: rows of the same path are compared on
+// the intersection of their condition regions (and `within`), at its vertices (an affine difference vanishes on a
+// convex region exactly when it vanishes there). Returns the first change per path, or null when a compared row has
+// no layout rectangle.
+function layoutStartMoves(before, after, keep = () => true, within = null) {
+  const rect = row => row.layoutRect !== undefined ? row.layoutRect : row.rect;
+  const r = v => { const [n, d = '1'] = String(v ?? '0').split('/'); return div(q(n), q(d)); };
+  const at = (a, w, h) => add(add(r(a.constant), mul(r(a.coefficient), w)), mul(r(a.heightCoefficient), h));
+  const rows = before.filter(keep), others = after.filter(keep);
+  const undecided = [...rows, ...others].find(row => !rect(row) || !row.$shown?.region);
+  if (undecided) return { undecided };
+  const moves = [];
+  for (const row of rows) for (const other of others.filter(o => o.path === row.path)) {
+    if (moves.some(m => m.row.path === row.path)) break;
+    for (const limit of within ?? [null]) {
+      const both = intersect(row.$shown.region, other.$shown.region), shared = both && (limit ? intersect(both, limit) : both);
+      if (!shared) continue;
+      const change = ['inlineStart', 'blockStart'].flatMap(field => shared.vertices.map(v => ({ field, v, delta: sub(at(rect(other)[field], v.x, v.y), at(rect(row)[field], v.x, v.y)) })).filter(c => cmp(c.delta, zero) !== 0).slice(0, 1))[0];
+      if (change) { moves.push({ row, shared, ...change }); break; }
+    }
+  }
+  return { moves };
+}
 function length(value, parent, style) {
   if (/^\d+(?:\.\d+)?%$/.test(value) && !parent) throw new Error('Percentage block size needs a definite containing size; intrinsic percentage cycles are not modeled');
   const pieces = lengthPieces(value, parent, null, style);
@@ -113,7 +136,8 @@ function length(value, parent, style) {
 export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSheets=[], inputDiagnostics=[], preferences=[]) {
   // A hovered re-layout (hover-at:<path>) still needs its own untransformed re-layout, so it keeps a pristine copy.
   const hovered = preferences.find(p => p.startsWith('hover-at:'))?.slice(9);
-  const pristine = (options.accessibility || options.integrity || /:hover|@(?:-webkit-)?keyframes/i.test(String(options.css ?? '')) || inlineSheets.length) && preferences.every(p => p.startsWith('hover-at:')) ? structuredClone(root) : null;
+  const carouselIn = box => /^carousel$/i.test(String(box.aria?.['aria-roledescription'] ?? '').trim()) || (box.children ?? []).some(carouselIn);
+  const pristine = (options.accessibility || options.integrity || /:hover|@(?:-webkit-)?keyframes/i.test(String(options.css ?? '')) || inlineSheets.length || carouselIn(root)) && preferences.every(p => p.startsWith('hover-at:')) ? structuredClone(root) : null;
   // The untransformed re-layout (CSS transforms removed): the layout boxes, which is what a layout shift compares.
   const untransformed = preferences.includes('untransformed');
   let sawTransform = false;
@@ -1785,12 +1809,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   diagnostics.push(...merged.map(({ signature, ...finding }) => finding));
   let integrityWarnings = [], integrityExempted = [], accessibilityWarnings = [], accessibilityNotes = [], accessibilityExempted = [];
-  if (options.integrity && !untransformed && hovered === undefined && !options.$animationFrame && !diagnostics.some(d => d.severity === 'unknown')) {
+  if (options.integrity && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeIntegrity({ geometry, waived }, { block, targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', ranges });
     diagnostics.push(...judged.findings);
     integrityWarnings = judged.warnings; integrityExempted = judged.exempted;
   }
-  if (options.accessibility && !untransformed && hovered === undefined && !options.$animationFrame && !diagnostics.some(d => d.severity === 'unknown')) {
+  if (options.accessibility && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { keyframeFrames, hostInset: options.hostInset ?? 0, hostBlockInset: options.hostBlockInset ?? 0, viewportBlock: block && options.viewport.height ? height : null, scrollPaddingDeclared: rules.some(rule => rule.declarations.some(d => /^scroll-padding-(?:top|bottom)$/.test(d.property))), viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), ranges, block });
     diagnostics.push(...judged.findings, ...judged.unknowns);
     // Dark color scheme: when the CSS has prefers-color-scheme: dark rules, the contrast rules run
@@ -1843,7 +1867,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // Layout shifts from :hover rules that change layout: each box such a rule matches is hovered in a re-layout, and
   // every box's layout start position (inlineStart, blockStart) is compared on the same condition region. An affine
   // difference vanishes on a convex region exactly when it vanishes at its vertices, so the check is exact.
-  if (pristine && hovered === undefined && !options.$animationFrame && rules.some(rule => rule.hoverLayout) && !diagnostics.some(d => d.severity === 'unknown')) {
+  if (pristine && hovered === undefined && !options.$animationFrame && !options.$slideVariant && rules.some(rule => rule.hoverLayout) && !diagnostics.some(d => d.severity === 'unknown')) {
     const hoverRules = rules.filter(rule => rule.hoverLayout);
     const targets = []; (function walk(box) { if (hoverRules.some(rule => rule.selectors.some(selector => matches(selector, box, new Set(['hover']))))) targets.push(box); for (const child of box.children ?? []) walk(child); })(root);
     // Rows correspond by path and condition polygon (its vertices; constraints may repeat redundant bounds).
@@ -1874,7 +1898,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // never shift, measured): the page is laid out at each keyframe's declarations, and any box whose layout start
   // moves where the animation runs is reported. Frames between keyframes are not enumerated: a shift at a keyframe
   // is a shift every iteration (an infinite animation shifts every frame; docs/cls-evaluation.md).
-  if (pristine && hovered === undefined && !options.$animationFrame && animated.length && !diagnostics.some(d => d.severity === 'unknown')) {
+  if (pristine && hovered === undefined && !options.$animationFrame && !options.$slideVariant && animated.length && !diagnostics.some(d => d.severity === 'unknown')) {
     const r = v => { const [n, d = '1'] = String(v ?? '0').split('/'); return div(q(n), q(d)); };
     const at = (a, w, h) => add(add(r(a.constant), mul(r(a.coefficient), w)), mul(r(a.heightCoefficient), h));
     const rect = row => row.layoutRect !== undefined ? row.layoutRect : row.rect;
@@ -1920,6 +1944,50 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             break;
           }
         }
+      }
+    }
+  }
+  // Carousels (the WAI-ARIA pattern: aria-roledescription="carousel" with "slide" descendants): with each slide shown
+  // in turn, nothing outside the slides may move, or switching slides is a layout shift (slides of different heights
+  // move the content below; measured). The shown slide is the one without the hidden attribute, or the one carrying
+  // a class no other slide has; each variant moves that marker to another slide.
+  if (pristine && hovered === undefined && !options.$animationFrame && !options.$slideVariant && !diagnostics.some(d => d.severity === 'unknown')) {
+    const role = (box, name) => String(box.aria?.['aria-roledescription'] ?? '').trim().toLowerCase() === name;
+    const carousels = []; (function walk(box) { if (role(box, 'carousel')) carousels.push(box); for (const child of box.children ?? []) walk(child); })(root);
+    for (const carousel of carousels.slice(0, 8)) {
+      const slides = []; (function walk(box) { for (const child of box.children ?? []) { if (role(child, 'slide')) slides.push(child); else if (!role(child, 'carousel')) walk(child); } })(carousel);
+      if (slides.length < 2) continue;
+      const fail = message => diagnostics.push({ code: 'U_LAYOUT_CAROUSEL_SHIFT', severity: 'unknown', message: `${carousel.label}: ${message}`, box: carousel.label, path: carousel.path });
+      const shownByHidden = slides.filter(slide => slide.hiddenAttr !== true);
+      // A state class (active, is-current, selected, show, …) that exactly one slide carries marks the shown slide.
+      const stateClass = /(?:^|[-_])(?:active|current|selected|show|shown|visible|open)$/i;
+      const unique = slides.map(slide => slide.classes.filter(c => stateClass.test(c) && !slides.some(other => other !== slide && other.classes.includes(c))));
+      let marker;
+      if (slides.some(slide => slide.hiddenAttr === 'dynamic' || slide.hiddenAttr === 'until-found' || [...slide.classes].some(c => c === 'dynamic'))) { fail('a slide with a dynamic hidden attribute or class is not enumerated'); continue; }
+      if (shownByHidden.length === 1) marker = { kind: 'hidden' };
+      else if (unique.filter(list => list.length).length === 1) marker = { kind: 'class', name: unique.find(list => list.length)[0], from: slides[unique.findIndex(list => list.length)].path };
+      else if (shownByHidden.length !== slides.length) { fail('the shown slide is not identified (one slide without hidden, or one with a state class such as active that no other slide has)'); continue; }
+      else marker = null; // every slide shown at once (a scrolling track): switching does not change the layout
+      if (!marker) continue;
+      const inSlide = path => slides.some(slide => path === slide.path || path.startsWith(slide.path + '/'));
+      const variants = [];
+      for (const target of slides.slice(0, 16)) {
+        const copy = structuredClone(pristine);
+        const find = (box, path) => box.path === path ? box : (box.children ?? []).map(child => find(child, path)).find(Boolean);
+        const list = slides.map(slide => find(copy, slide.path));
+        if (marker.kind === 'hidden') list.forEach(slide => { if (slide.path === target.path) delete slide.hiddenAttr; else slide.hiddenAttr = true; });
+        else list.forEach(slide => { slide.classes = slide.classes.filter(c => c !== marker.name); if (slide.path === target.path) slide.classes.push(marker.name); });
+        variants.push({ target, report: analyzeBoxTree(copy, { ...options, $slideVariant: true }, scrollbarProfile, budget, inlineSheets, [], preferences) });
+      }
+      const failed = variants.find(v => v.report.status === 'unknown');
+      if (failed) { fail(`its layout with ${failed.target.label} shown is not decided (${failed.report.diagnostics.find(d => d.severity === 'unknown')?.message ?? 'unknown'})`); continue; }
+      const first = variants[0];
+      for (const variant of variants.slice(1)) {
+        const result = layoutStartMoves(first.report.sizes, variant.report.sizes, row => !inSlide(row.path));
+        if (result.undecided) { fail(`${result.undecided.box} has no layout rectangle to compare across slides`); break; }
+        for (const move of result.moves) diagnostics.push({ code: 'E_LAYOUT_CAROUSEL_SHIFT', severity: 'error', box: move.row.box, path: move.row.path, carousel: carousel.label, carouselPath: carousel.path, from: first.target.label, to: variant.target.label, field: move.field, delta: exact(move.delta),
+          message: `Switching ${carousel.label} from ${first.target.label} to ${variant.target.label} moves ${move.row.box} (${move.field} by ${number(move.delta)}px at viewport ${number(move.v.x)}px${block ? ` × ${number(move.v.y)}px` : ''}): slides of different sizes shift the page. Give the slide area a fixed height or aspect-ratio, or stack the slides in one grid cell`, ...ranges(move.shared) });
+        if (result.moves.length) break;
       }
     }
   }
