@@ -60,6 +60,10 @@ const cases = [
     css: '.row{display:flex;block-size:20px}.a{flex:0 1 400px;min-width:0}.b{flex:0 3 300px;min-width:100px}'},
   {name: 'column with centered fixed-width items', html: '<main class="page"><div class="a"></div><div class="b"></div></main>',
     css: '.page{display:flex;flex-direction:column;block-size:100%;align-items:center;justify-content:space-evenly}.a{flex:none;width:120px;block-size:40px}.b{flex:none;width:80px;block-size:60px;align-self:flex-end}', fullHeight: true},
+  {name: 'fieldset with a rendered legend in a thin border', html: '<main class="page"><fieldset class="fs"><legend class="lg"></legend><div class="a"></div><div class="b"></div></fieldset></main>',
+    css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.fs{display:grid;grid-template-columns:minmax(0,1fr) 40px;grid-template-rows:30px;border:2px solid red;padding:5px 7px;min-inline-size:0;margin:0}.lg{display:block;inline-size:80px;block-size:20px;padding:0}'},
+  {name: 'fieldset with a legend centred in a thick border', html: '<main class="page"><fieldset class="fs"><legend class="lg"></legend><div class="a"></div></fieldset></main>',
+    css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.fs{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:24px;border:30px solid red;padding:0;min-inline-size:0;margin:0}.lg{display:block;inline-size:60px;block-size:20px;padding:2px;border:1px solid red;box-sizing:content-box}'},
   {name: 'grid tracks centered by justify-content', html: '<main class="grid"><div></div><div></div></main>',
     css: '.grid{display:grid;grid-template-columns:60px 60px;column-gap:10px;grid-template-rows:20px;justify-content:center}'},
 ];

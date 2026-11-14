@@ -163,7 +163,6 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (box.contract?.font) { const reason = textFontMismatch(style, box.contract.font) ?? textLangMismatch(style.$lang, box.contract.textMetrics?.lang) ?? (box.contract.textMetrics?.kind === 'lines' ? textLinesMismatch(style, box.contract) : null); if (reason) throw Object.assign(new Error(reason), {code: 'U_LAYOUT_TEXT_FONT'}); }
     if(['button', 'input', 'select', 'textarea'].includes(box.tag) && (style.appearance!=='none' || style.display!=='block')) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);
     // A fieldset's rendered legend sits in its border: modeled only when the fieldset generates no box.
-    if(box.tag==='fieldset' && style.display!=='contents' && (box.children ?? []).some(child => child.tag === 'legend')) throw new Error('A fieldset with a legend is laid out with the legend in its border; use display: contents on the fieldset or leave the legend out');
     // Replaced elements and text fields have intrinsic sizes the model does not compute.
     if(['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto'))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     if (['left', 'right', 'inline-start', 'inline-end'].includes(style.float)) { issue('E_LAYOUT_FLOAT', 'float is forbidden in checked layout', box, region); return false; }
@@ -572,12 +571,43 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     return { axes, regions: geometryRegions };
   }
 
+  // Rendered legend: display block, static, explicit px inline-size and block-size, no block margins.
+  function renderedLegend(box, style, region, parents) {
+    if (box.tag !== 'fieldset' || style.display === 'contents') return null;
+    const legendBox = (box.children ?? []).find(child => child.tag === 'legend');
+    if (!legendBox) return null;
+    const states = styles(legendBox, region, parents, style, false, false);
+    if (states.length !== 1) throw Object.assign(new Error('The legend style varies across viewport regions; the rendered legend needs one size'), { code: 'U_LAYOUT_LEGEND' });
+    const ls = states[0].style;
+    if (ls.display === 'none') return { box: legendBox, hidden: true, effectiveTop: px(style['border-top']) };
+    if (ls.display !== 'block' || ls.position !== 'static' || ls.float !== 'none' || ['inline-size', 'block-size'].some(key => !/^\d+(?:\.\d+)?px$/.test(ls[key])) || !['0', '0px'].includes(ls['margin-top']) || !['0', '0px'].includes(ls['margin-bottom']) || ls['margin-left'] === 'auto' || ls['margin-right'] === 'auto')
+      throw Object.assign(new Error('A rendered legend needs display: block, an explicit px inline-size and block-size and no block or auto margins (its width is otherwise shrink-to-fit)'), { code: 'U_LAYOUT_LEGEND' });
+    const vertical = add(add(px(ls['padding-top']), px(ls['padding-bottom'])), add(px(ls['border-top']), px(ls['border-bottom'])));
+    const horizontal = add(add(px(ls['padding-left']), px(ls['padding-right'])), add(px(ls['border-left']), px(ls['border-right'])));
+    const blockSize = ls['box-sizing'] === 'content-box' ? add(px(ls['block-size']), vertical) : px(ls['block-size']);
+    const inlineSize = ls['box-sizing'] === 'content-box' ? add(px(ls['inline-size']), horizontal) : px(ls['inline-size']);
+    const top = px(style['border-top']);
+    return { box: legendBox, style: ls, blockSize, inlineSize, vertical, horizontal, effectiveTop: cmp(blockSize, top) > 0 ? blockSize : top,
+      // The legend sits at border-left + padding-left + margin-left; a thicker border is centred on it.
+      offset: { inline: add(add(px(style['border-left']), px(style['padding-left'])), px(ls['margin-left'])), block: cmp(top, blockSize) > 0 ? div(sub(top, blockSize), q(2)) : zero } };
+  }
+  function placeLegend(rendered, origin, region, ancestors, emit) {
+    if (rendered.hidden) return;
+    const inline = scalar(rendered.inlineSize), block = scalar(rendered.blockSize);
+    const legendOrigin = origin ? { inline: sum(origin.inline, scalar(rendered.offset.inline)), block: sum(origin.block, scalar(rendered.offset.block)) } : null;
+    finish(rendered.box, rendered.style, region, inline, diff(inline, scalar(rendered.horizontal)), block, diff(block, scalar(rendered.vertical)),
+      { inline, block, ...(legendOrigin ? { origin: legendOrigin } : {}) }, ancestors, emit);
+  }
   function solve(box, available, region, parents = [], inherited, emit = true) {
     let results = [];
     try {
       for (const state of styles(box, region, parents, inherited, emit, !available.root)) {
-        const { style } = state;
+        let { style } = state;
         if (!validate(style, box, state.region, emit, available)) continue;
+        // A fieldset's first legend is rendered in its block-start border (HTML §15.3.13): it is not a
+        // layout child, and the fieldset's effective border-top is max(border-top, legend height).
+        const rendered = renderedLegend(box, style, state.region, parents);
+        if (rendered) style = { ...style, 'border-top': `${number(rendered.effectiveTop)}px` };
         if (box.tag==='body' && parents.at(-1)?.box.documentRoot && inherited['overflow-x']==='visible' && inherited['overflow-y']==='visible' && inherited['container-type']==='normal' && style['container-type']==='normal' && (style['overflow-x']!=='visible' || style['overflow-y']!=='visible')) throw Object.assign(new Error('Body overflow propagation requires explicit overflow on html; set html overflow to auto or hidden'),{code:'U_LAYOUT_SCROLLBAR'});
         const incoming=available;
         for (const frame of scrollbarFrames(style,scrollbarProfile,box.documentRoot)) {
@@ -619,6 +649,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               paddingBlock:knownBlock ? diff(sum(knownBlock,blockEdges),scalar(add(px(style['border-top']),px(style['border-bottom'])))) : null,
               type: style['container-type'], names: style['container-name'] === 'none' ? [] : style['container-name'].split(/\s+/) };
             const ancestors = [...parents, own];
+            if (rendered) placeLegend(rendered, origin, bs.region, ancestors, emit);
             const { axes: inheritedAxes, regions: geometryRegions } = subgridGeometry(style, box, available, bs.region, emit);
             for (const geometryRegion of geometryRegions) {
               // Even an empty Grid has explicit tracks and contributes their
@@ -650,7 +681,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   for (const state of states) delete state.contents;
                   for (const grandchild of child.children) visit(grandchild, contentsStyle);
                 };
-                for (const child of box.children) visit(child, style);
+                for (const child of box.children) if (child !== rendered?.box) visit(child, style);
                 for (const state of states) for (const child of state.children) if (child.style.order !== '0') throw Object.assign(new Error('order changes the item sequence; only order: 0 is modeled'), { code: isFlex ? 'U_LAYOUT_FLEX' : undefined });
                 return states;
               };

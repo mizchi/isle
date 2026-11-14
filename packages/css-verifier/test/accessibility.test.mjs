@@ -703,3 +703,14 @@ test('hover-only: a control that hover reveals must also show on focus', () => {
   assert.equal(find(fbtn('.b { opacity: 0; }\n.b:hover { opacity: 1; }\n.b:focus { opacity: 1; }'), 'E_A11Y_HOVER_ONLY').length, 0);
   assert.equal(find(fbtn('.b { opacity: 0; }\n.b:hover, .b:focus-visible { opacity: 1; }'), 'E_A11Y_HOVER_ONLY').length, 0);
 });
+
+test('a rendered legend with explicit sizes is laid out in the fieldset border and names the group', () => {
+  const radio = cls => ({tag: 'input', classes: [cls], inputType: 'radio', inputName: 'x', focusable: true, named: true});
+  const css = '.fs { display: grid; grid-template-columns: 30px 30px; grid-template-rows: 30px; margin: 0; padding: 0; border: 2px solid #000; min-inline-size: 0; background: #fff; color: #000; }\n.lg { display: block; inline-size: 60px; block-size: 20px; padding: 0; font-size: 16px; line-height: 20px; }\n.a, .b { appearance: none; display: block; inline-size: 30px; block-size: 30px; padding: 0; border: 0; min-width: 0; min-height: 0; }\n';
+  const report = run({tag: 'fieldset', classes: ['fs'], children: [{tag: 'legend', classes: ['lg'], text: true}, radio('a'), radio('b')]}, css, {boxes: {'.lg': {minInlineSize: 1, intrinsicBlockSize: 20}}});
+  assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
+  const legend = report.sizes.find(row => row.box === '.lg' && row.rect), first = report.sizes.find(row => row.box === '.a' && row.rect);
+  assert.equal(legend.rect.blockStart.constant, '0');
+  assert.equal(first.rect.blockStart.constant, '20'); // content starts at max(border 2px, legend 20px)
+  assert.equal(report.accessibility.warnings.filter(w => w.code === 'W_A11Y_FIELDSET_NAME').length, 0);
+});

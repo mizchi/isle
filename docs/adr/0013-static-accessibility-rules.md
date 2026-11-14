@@ -126,8 +126,11 @@ letter-spacing が 0 でないとき Chromium は任意の ligature を切る(CS
 table 系の要素(`table`・`caption`・`thead`・`tbody`・`tfoot`・`tr`・`th`・`td`)は UA の `display: table-*` のまま(未対応、Unknown)で、
 作者が grid・`contents`・block に組み替えた場合だけ検査する。th は UA の bold と中央寄せを持つので、作者が指定するまで未解決にする。
 Chromium(このバージョン)は display を変えても table の role を保つことを確かめた(Safari は過去に失っていた)。
-fieldset は UA の border・padding・margin・`min-inline-size` を reset する必要があり、legend を持つ fieldset は
-legend が border の上に置かれるので `display: contents` のときだけ検査する(それ以外は Unknown)。
+fieldset は UA の border・padding・margin・`min-inline-size` を reset する必要がある。最初の legend は border の中に描かれる
+(rendered legend)。Chromium で測った規則をモデルにした:legend は border-left + padding-left の位置、block は max(0, (border-top − L)/2)、
+fieldset の内容は max(border-top, L) + padding-top から始まる(L は legend の高さ)。legend は grid/flex の item にならない。
+legend には display block・px の inline-size と block-size・block 方向と auto の margin なしを要求する(幅は shrink-to-fit なので)。
+満たさなければ Unknown。`display: contents` の fieldset では legend は普通の box。
 `display: contents` と `none` を領域で切り替える要素はサブセットの外なので、header を隠す場合は th 自体を隠す。
 
 ### inline 要素(文中のリンクなど)
@@ -199,5 +202,5 @@ page の規則(html-lang など)は box tree の単体テストで検査する(e
 
 ## 次の段階
 
-2. 描画される legend(fieldset の border に重なる配置)と、ネイティブの table レイアウト。
+2. ネイティブの table レイアウト。
 3. inline 要素の幾何(位置と寸法。focus-obscured などの位置の規則を文中の要素に広げるため)。
