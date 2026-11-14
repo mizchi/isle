@@ -1364,7 +1364,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     integrityWarnings = judged.warnings; integrityExempted = judged.exempted;
   }
   if (options.accessibility && !diagnostics.some(d => d.severity === 'unknown')) {
-    const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), ranges, block });
+    const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { hostInset: options.hostInset ?? 0, hostBlockInset: options.hostBlockInset ?? 0, viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), ranges, block });
     diagnostics.push(...judged.findings, ...judged.unknowns);
     // Dark color scheme: when the CSS has prefers-color-scheme: dark rules, the contrast rules run
     // again with them (paint only, so the geometry is the same). System colors stay the light ones:

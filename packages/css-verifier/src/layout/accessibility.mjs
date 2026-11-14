@@ -95,13 +95,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -294,7 +294,7 @@ export function circleReach(region, dx, dy, r) {
   return { yes, maybe };
 }
 
-export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin }) {
+export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0 }) {
   const findings = [], warnings = [], unknowns = [], notes = [], exempted = [];
   // Generated boxes (::before/::after) paint and receive the pointer (for their element), but carry no DOM semantics.
   const everything = geometry;
@@ -565,6 +565,15 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       for (const region of outside) report(findings, 'E_A11Y_FOCUS_CLIPPED', 'error', `${target.box.label} lies outside ${clipper.box.label}, whose overflow: clip never scrolls it into view when focused`, target, region, { rule: 'focus-clipped', clipper: clipper.path });
       if (outside.length) break;
     }
+  }
+
+  // focus-offscreen: a focusable box entirely before the viewport's start edge (left: -9999px and the like). Overflow
+  // toward negative coordinates is not scrollable, and a state rule cannot move it back (state rules only repaint, or
+  // the layout is Unknown), so the focused element is never on screen (SC 2.4.7). The root sits at the host insets.
+  for (const target of placed.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo)) {
+    const before = atMost(target.region, right(target), scalar(-hostInset)), above = block ? atMost(target.region, bottom(target), scalar(-hostBlockInset)) : null;
+    const outside = [...(before ? [before] : []), ...(above ? (before ? subtract(above, before) : [above]) : [])];
+    for (const region of outside) report(findings, 'E_A11Y_FOCUS_OFFSCREEN', 'error', `${target.box.label} takes focus but lies entirely off screen (before the viewport's start edge), so the focused element is never visible`, target, region, { rule: 'focus-offscreen' });
   }
 
   // focus-obscured: a later painted box contains a focusable box. focus-area: nothing to show focus on.
