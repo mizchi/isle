@@ -81,6 +81,7 @@
 //   modal-background → W_A11Y_MODAL_BACKGROUND  focusable content outside a rendered aria-modal dialog that is neither inert nor aria-hidden
 //   new-window       → W_A11Y_NEW_WINDOW        a link opening a new window/tab (target=_blank) whose name does not say so (G201)
 //   form-submit      → W_A11Y_FORM_SUBMIT       a form with fields but no submit button (SC 3.2.2)
+//   native-aria-conflict → W_A11Y_NATIVE_ARIA_CONFLICT an ARIA state that contradicts the native one (required/disabled/checked), which Chromium announces instead
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -94,7 +95,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -1143,6 +1144,20 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     const fields = inside.filter(b => ['input', 'select', 'textarea'].includes(b.tag) && !['hidden', 'submit', 'image', 'button', 'reset'].includes(b.inputType));
     const submit = inside.some(b => (b.tag === 'button' && !['button', 'reset'].includes(b.buttonType ?? 'submit')) || (b.tag === 'input' && ['submit', 'image', 'dynamic'].includes(b.inputType)));
     if (fields.length && !submit) report(warnings, 'W_A11Y_FORM_SUBMIT', 'warning', `${row.box.label} has fields but no submit button`, row, row.region, { rule: 'form-submit' });
+  }
+
+  // native-aria-conflict: ARIA in HTML forbids aria-required/aria-disabled/aria-checked that contradict the native
+  // attribute; Chromium announces the native state, so the ARIA one is silently wrong (measured).
+  for (const box of treeBoxes.values()) {
+    const aria = box.aria ?? {}, native = box.nativeStates ?? {};
+    const conflicts = [['required', 'aria-required'], ['disabled', 'aria-disabled'], ['checked', 'aria-checked']].filter(([name, attr]) => {
+      const value = aria[attr]?.trim();
+      if (value === undefined || value === 'dynamic' || (name === 'checked' && !['checkbox', 'radio'].includes(box.inputType))) return false;
+      // aria-required/aria-disabled "true" without the native attribute is allowed (it adds the state); a native
+      // checkbox or radio always has its own checked state.
+      return name === 'checked' ? (native.checked === true) !== (value === 'true') : native[name] === true && value === 'false';
+    });
+    for (const [name, attr] of conflicts) report(warnings, 'W_A11Y_NATIVE_ARIA_CONFLICT', 'warning', `${box.label} has ${attr}="${aria[attr].trim()}" but is ${native[name] ? '' : 'not '}${name} natively; the native state is announced`, whole(box), domain, { rule: 'native-aria-conflict', attribute: attr });
   }
 
   // page-main: a page needs a main landmark wherever it renders.

@@ -91,6 +91,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | modal-background | `aria-modal="true"` の dialog が描画される区間で、その外にある inert でも aria-hidden でもない focusable。Tab で focus がモーダルの外に出る(閉じ込める script は木の外なので警告) | W_A11Y_MODAL_BACKGROUND |
 | new-window | `target="_blank"` のリンクで、名前に新しいウィンドウ・タブで開くことが示されていない(G201) | W_A11Y_NEW_WINDOW |
 | form-submit | 入力欄があるのに送信のボタン(既定の type の button、input submit/image)がない form(SC 3.2.2) | W_A11Y_FORM_SUBMIT |
+| native-aria-conflict | ネイティブの属性と矛盾する aria-required / aria-disabled / aria-checked(Chromium はネイティブの状態を読み上げ、ARIA の値は無視される。ARIA in HTML) | W_A11Y_NATIVE_ARIA_CONFLICT |
 | aria-hidden-body | body の `aria-hidden="true"`。Chromium は body の aria-hidden を無視する(AX tree で測定)ので他の規則は中身を公開されたものとして扱い、尊重する UA では文書全体が隠れることを警告する | W_A11Y_ARIA_HIDDEN_BODY |
 | frame-title | 描画される iframe に title も名前もない(SC 4.1.2) | E_A11Y_FRAME_TITLE |
 | video-caption | 描画される video に kind=captions/subtitles の track がない(SC 1.2.2) | E_A11Y_VIDEO_CAPTION |
