@@ -991,8 +991,24 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const empty = !cell.text && !cell.contract && !(cell.children ?? []).length;
       // An auto-height text cell whose height profile is known at its (constant) width counts as that height.
       const measured = cell.text && !(cell.children ?? []).length && cell.contract?.intrinsicBlockSize !== undefined;
-      if (block.size !== 1 || !(([...block][0] === 'auto' && (empty || measured)) || /^\d+(?:\.\d+)?px$/.test([...block][0]))) fail('A rowspan cell is modeled when it is empty or measured text with block-size: auto, or has a px block-size');
+      // Children that are childless, textless blocks of a px block-size stack: the cell's content height is their sum.
+      const stackedHeight = () => {
+        if (cell.text || cell.contract || !(cell.children ?? []).length) return null;
+        let total = zero;
+        for (const child of cell.children) {
+          if (child.text || child.contract || (child.children ?? []).length || child.inline?.length) return null;
+          const cs = one(styles(child, region, [...parents, { box: cell, style }], style, false, false));
+          if (cs.display === 'none') continue;
+          if (!/^\d+(?:\.\d+)?px$/.test(cs['block-size']) || cs.position !== 'static' || ['margin-top', 'margin-bottom'].some(key => !['0', '0px'].includes(cs[key]))) return null;
+          const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+          total = add(total, cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']));
+        }
+        return total;
+      };
+      const stacked = [...block][0] === 'auto' && !empty && !measured ? stackedHeight() : null;
+      if (block.size !== 1 || !(([...block][0] === 'auto' && (empty || measured || stacked !== null)) || /^\d+(?:\.\d+)?px$/.test([...block][0]))) fail('A rowspan cell is modeled when it is empty, measured text or a stack of px-height blocks with block-size: auto, or has a px block-size');
       if ([...block][0] === 'auto' && measured) cell.tableMeasuredSpan = true;
+      if (stacked !== null) cell.tableStackedSpan = stacked;
     }
     // The first row's cell widths decide the columns.
     function one(list) { if (list.length !== 1) fail('Table styles that vary across viewport regions are not modeled'); return list[0].style; }
@@ -1057,7 +1073,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const spans = rows.flatMap((row, r) => row.children.filter(cell => cell.tableRowSpan).map(cell => {
         const cs = one(styles(cell, region, parents, one(styles(row, region, parents, style, false, false)), false, false));
         const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-        const min = cs['block-size'] !== 'auto' ? (cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size'])) : cell.tableMeasuredSpan ? add(measuredHeight(cell, cs, r), edges) : zero;
+        const min = cs['block-size'] !== 'auto' ? (cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size'])) : cell.tableMeasuredSpan ? add(measuredHeight(cell, cs, r), edges) : cell.tableStackedSpan !== undefined ? add(cell.tableStackedSpan, edges) : zero;
         return { cell, row, r, n: cell.tableRowSpan, min };
       }));
       const inside = (a, b) => a.r >= b.r && a.r + a.n <= b.r + b.n;
@@ -1067,7 +1083,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const ordered = [...spans].sort((a, b) => before(a, b) ? -1 : before(b, a) ? 1 : 0);
       for (const { cell, row, r, n } of ordered) {
         const cs = one(styles(cell, region, parents, one(styles(row, region, parents, style, false, false)), false, false));
-        if (cs['block-size'] === 'auto' && !cell.tableMeasuredSpan) continue;
+        if (cs['block-size'] === 'auto' && !cell.tableMeasuredSpan && cell.tableStackedSpan === undefined) continue;
         const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
         const target = sub(spans.find(sp => sp.cell === cell).min, mul(v, q(n - 1)));
         const spanned = rowTracks.slice(r, r + n), total = spanned.reduce(add, zero);
