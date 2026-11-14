@@ -159,8 +159,9 @@ table の背景は table の box だけを塗り caption の下には描かれ�
 (以前は table の背景の上として判定していた:誤り)。vlmkit の contrast も DOM の祖先の背景を重ねるので、この case は描画した画素で確かめた。
 `rowspan` は、中身がなく高さ auto の cell が行グループの中でだけ広がるとき `grid-row: span n` として扱い、行は他の cell の px の高さを明示した track にする
 px の高さの rowspan cell(中身は自由)が行の和より高いときは、Chromium と同じく行の高さの比で増やす(行が全て 0 なら最後の行へ、
-各行の分は 1/64px に切り捨て残りを最後の行、spacing は先に引く。測定)。同じ行から始まり入れ子になる rowspan は短い span から順に配る
-(入れ子の2つの table で測定と一致)。配り方は Chromium の `DistributeExcessBlockSizeToRows`(table_layout_utils.cc)の rowspan の場合に合わせた:
+各行の分は 1/64px に切り捨て残りを最後の行、spacing は先に引く。測定)。rowspan を配る順は Chromium の `RowspanCell::operator<`(table_layout_algorithm_types.h、旧来の高さ配分の順)に合わせた:
+同じ行の span は min block size の大きい方、入れ子は内側、それ以外は開始行の低い方が先。この比較は一般には strict weak order でないので、
+対象の span の上で一貫しないとき(推移律・反対称が破れる)は Unknown。交差する span で Chromium と一致した。配り方は Chromium の `DistributeExcessBlockSizeToRows`(table_layout_utils.cc)の rowspan の場合に合わせた:
 span の2行目以降で別の rowspan が始まる行があればそこへ等分、行が全て空なら最後の行、それ以外は空でない行に高さの比で(端数は最後に受け取る行)。
 以前は余りを span の最後の行に渡していたので、最後の行が空のとき誤っていた。auto の高さの中身のある rowspan は Unknown。
 明示した行の track では cell は行に伸びる(Chromium の cell は行の高さになる)。

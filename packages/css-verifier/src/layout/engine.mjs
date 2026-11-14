@@ -677,9 +677,21 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // A taller rowspan cell grows its rows in proportion to their heights (all to the last row when they are 0),
     // each share floored to 1/64px and the rest to the last row (measured in Chromium). Spans may not overlap.
     if (rowTracks) {
-      // Spans grow in order of their length (shorter first; measured with nested spans).
-      const spans = rows.flatMap((row, r) => row.children.filter(cell => cell.tableRowSpan).map(cell => ({ cell, row, r, n: cell.tableRowSpan })));
-      for (const { cell, row, r, n } of spans.toSorted((a, b) => a.n - b.n)) {
+      // Chromium's RowspanCell order (table_layout_algorithm_types.h, the legacy height-distribution order):
+      // same rows → larger min block size first; a span enclosed in another first; else the lower start row.
+      // It is not a strict weak order in general, so it is used only where it is consistent on these spans.
+      const spans = rows.flatMap((row, r) => row.children.filter(cell => cell.tableRowSpan).map(cell => {
+        const cs = one(styles(cell, region, parents, one(styles(row, region, parents, style, false, false)), false, false));
+        const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+        const min = cs['block-size'] === 'auto' ? zero : cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']);
+        return { cell, row, r, n: cell.tableRowSpan, min };
+      }));
+      const inside = (a, b) => a.r >= b.r && a.r + a.n <= b.r + b.n;
+      const before = (a, b) => a.r === b.r && a.n === b.n ? cmp(a.min, b.min) > 0 : inside(a, b) ? true : inside(b, a) ? false : a.r < b.r;
+      for (const a of spans) for (const b of spans) for (const c of spans) if (before(a, b) && before(b, c) && !before(a, c)) fail('These rowspan cells have no consistent Chromium distribution order');
+      for (const a of spans) for (const b of spans) if (a !== b && before(a, b) && before(b, a)) fail('These rowspan cells have no consistent Chromium distribution order');
+      const ordered = [...spans].sort((a, b) => before(a, b) ? -1 : before(b, a) ? 1 : 0);
+      for (const { cell, row, r, n } of ordered) {
         const cs = one(styles(cell, region, parents, one(styles(row, region, parents, style, false, false)), false, false));
         if (cs['block-size'] === 'auto') continue;
         const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
