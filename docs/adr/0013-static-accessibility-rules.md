@@ -89,6 +89,8 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | focus-transparent | focus しても自分か祖先が opacity 0 のままの focusable。自分の focus の表示は見えない(自作 checkbox で隣の label に focus を見せる `input:focus + label` は静的に確かめないので警告) | W_A11Y_FOCUS_TRANSPARENT |
 | error-message | `aria-invalid="true"` の field の `aria-errormessage` の先が描画されない区間(W_A11Y_ERROR_HIDDEN)、何が誤りかを示す参照(errormessage・describedby)がない(W_A11Y_INVALID_NO_MESSAGE)(SC 3.3.1) | W_A11Y_ERROR_HIDDEN / W_A11Y_INVALID_NO_MESSAGE |
 | modal-background | `aria-modal="true"` の dialog が描画される区間で、その外にある inert でも aria-hidden でもない focusable。Tab で focus がモーダルの外に出る(閉じ込める script は木の外なので警告) | W_A11Y_MODAL_BACKGROUND |
+| new-window | `target="_blank"` のリンクで、名前に新しいウィンドウ・タブで開くことが示されていない(G201) | W_A11Y_NEW_WINDOW |
+| form-submit | 入力欄があるのに送信のボタン(既定の type の button、input submit/image)がない form(SC 3.2.2) | W_A11Y_FORM_SUBMIT |
 | aria-hidden-body | body の `aria-hidden="true"`。Chromium は body の aria-hidden を無視する(AX tree で測定)ので他の規則は中身を公開されたものとして扱い、尊重する UA では文書全体が隠れることを警告する | W_A11Y_ARIA_HIDDEN_BODY |
 | frame-title | 描画される iframe に title も名前もない(SC 4.1.2) | E_A11Y_FRAME_TITLE |
 | video-caption | 描画される video に kind=captions/subtitles の track がない(SC 1.2.2) | E_A11Y_VIDEO_CAPTION |
