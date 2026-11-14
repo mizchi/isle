@@ -1,6 +1,6 @@
 # ADR-0013: DOM と CSS を組み合わせた静的アクセシビリティ検査
 
-- 状態: 実装中(60規則、HTML adapter・Isle template・Vite・playground に接続)
+- 状態: 実装中(65規則、HTML adapter・Isle template・Vite・playground に接続)
 - 日付: 2026-11-13
 - Issue: 未作成
 - 対応する提案: ユーザー指示「思いつく限りのCSSとDOMを組み合わせた静的検査パターンを実装したい」。ADR-0007(静的コントラスト契約)の text-contrast を含む
@@ -69,6 +69,10 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | landmark-top-level / duplicate-landmark | main・complementary が他の landmark の中、同時に描画される2つの banner/contentinfo | 警告 |
 | p-as-heading | 太字(600以上)か 1.2 倍以上の文字の p が、普通の p の前にある(見出しを CSS で装う) | W_A11Y_P_AS_HEADING(警告) |
 | orientation | main が片方の向き(`(orientation: landscape/portrait)`)でだけ描画されない(SC 1.3.4) | E_A11Y_ORIENTATION |
+| focus-visible | フォーカス時に何も変わらない:作者が outline を消し、box-shadow・色・背景も変わらない(SC 2.4.7)。作者が outline-style を指定しなければ UA の focus ring があるとする | E_A11Y_FOCUS_VISIBLE |
+| state-contrast | `:hover`・`:focus` の色での文字のコントラスト | E_A11Y_STATE_CONTRAST |
+| text-spacing | フォント由来の契約を持ち clip する text が、line-height を 1.5 × font-size にすると同じ行数でも入らない(SC 1.4.12。字間・語間の拡大は行を増やすだけなので確定した違反) | E_A11Y_TEXT_SPACING |
+| document-title / meta-viewport | 検査付き Vite build で配信する文書:空でない `<title>` がない(SC 2.4.2)、`user-scalable=no` か `maximum-scale < 2`(SC 1.4.4) | E_A11Y_DOCUMENT_TITLE / E_A11Y_META_VIEWPORT |
 | target-size | SC 2.5.8:24px 未満の操作対象で、border box の中心に置いた 24px の円が他の操作対象の box か、他の小さい対象の円と交わる(spacing 例外を満たさない) | E_A11Y_TARGET_SIZE |
 
 ### target-size の円(非線形)の扱い
@@ -100,8 +104,15 @@ ADR-0012 の target-undersized(vlmkit と同じく spacing を考えない)と�
 axe-core の規則と WCAG 2.2 の達成基準を一つずつ見て、静的に決まるものを取り込んだ(上の表)。
 `(orientation: …)` の media query を加えた(portrait は height ≥ width、landscape は width > height で、2次元の領域として厳密)。
 2次元の領域は幅と高さの区間の積ではないので、診断に領域の制約(`region`)を付けた。
-取り込まなかったもの:text spacing(SC 1.4.12、letter/word spacing による幅の増加がモデルにない)、hover/focus で現れる内容
-(SC 1.4.13、`:hover` などの擬似クラスは未対応)、document title・meta viewport・frame・media(要素がモデルにない)。
+### 状態の擬似クラス(`:hover`・`:focus` など)
+
+末尾の `:hover`・`:active`・`:focus`・`:focus-visible`・`:focus-within` を状態として compile する。基本の状態では一致しない。
+状態の規則が paint 以外(幾何に効くプロパティ)を宣言すると Unknown のまま:証明した幾何は基本の状態のものだから。
+engine はフォーカスできる box の focus 状態、操作対象の hover 状態の paint を計算し、focus-visible・state-contrast が使う。
+`outline`(style と width)と `box-shadow` を計算値に保持するようにした。
+
+取り込まなかったもの:hover/focus で**現れる**内容(SC 1.4.13。表示を変える状態の規則は幾何に効くので Unknown)、
+字間・語間を広げたときの幅(SC 1.4.12 の残り)、frame・media(要素がモデルにない)。
 
 ### table と fieldset
 
@@ -170,12 +181,12 @@ ADR-0007 の制約に従う。
 
 | 検査 | 内容 |
 | --- | --- |
-| `packages/css-verifier/test/accessibility.test.mjs` | 59件(ARIA の構造と値、page の規則、orientation を含む。テキストの比較を含む。table と fieldset を含む。inline の内容を含む。list・radio・landmark・role を含む。画像・form control・in-flow の覆いを含む。equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
+| `packages/css-verifier/test/accessibility.test.mjs` | 62件(focus・hover・text spacing を含む。ARIA の構造と値、page の規則、orientation を含む。テキストの比較を含む。table と fieldset を含む。inline の内容を含む。list・radio・landmark・role を含む。画像・form control・in-flow の覆いを含む。equivalent・essential・AAA を含む。円の近似が内側・外側で正しく、未決の帯が 0.05px 未満であることを含む)。各規則の違反・非違反・メディアクエリの区間、Unknown になる条件、HTML adapter の属性 |
 | `tests/layout-accessibility.test.mjs` | Isle template の静的・動的な属性 |
-| `tests/layout-build.test.mjs` | Vite の `layout.accessibility`:名前のない button で build が失敗し、証明書に契約が残る |
-| `e2e/layout-accessibility.spec.mjs` | 31構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
+| `tests/layout-build.test.mjs` | Vite の `layout.accessibility`:名前のない button で build が失敗し、証明書に契約が残る。title がない・zoom を禁じる viewport で失敗する |
+| `e2e/layout-accessibility.spec.mjs` | 32構成を 1280/768/375px(reflow は 320/340/375)で Chromium と照合し、全規則で一致。名前は AX tree(CDP)、重なりと覆いは hit testing、フォーカスは `focus()`、順序は矩形、コントラストは計算値の色。1280px では `vlmkit check a11y contrast` とも一致 |
 
-autocomplete は Chromium の IDL 属性(不正な token は `''` に正規化される)、orientation は実際の viewport での計算値と照合した。
+focus-visible と state-contrast は CDP の `CSS.forcePseudoState` で強制した状態の計算値(UA の focus ring を含む)、text-spacing は `line-height: 1.5 !important` を注入した `scrollHeight`、autocomplete は Chromium の IDL 属性(不正な token は `''` に正規化される)、orientation は実際の viewport での計算値と照合した。
 page の規則(html-lang など)は box tree の単体テストで検査する(eval は body の中の断片を描画する)。
 結果は `evals/results/layout-accessibility/report.json` に残る。
 

@@ -53,6 +53,9 @@
 //   landmark-top-level / duplicate-landmark → W_A11Y_LANDMARK_TOP_LEVEL / W_A11Y_DUPLICATE_LANDMARK
 //   p-as-heading     → W_A11Y_P_AS_HEADING      a paragraph styled as a heading (bold or larger) before ordinary text
 //   orientation      → E_A11Y_ORIENTATION       main content only renders in one orientation (SC 1.3.4)
+//   focus-visible    → E_A11Y_FOCUS_VISIBLE     focus shows no change: outline removed, no box-shadow/color/background change (SC 2.4.7)
+//   text-spacing     → E_A11Y_TEXT_SPACING      clipped text that no longer fits at line-height 1.5 × font size (SC 1.4.12)
+//   state-contrast   → E_A11Y_STATE_CONTRAST    text contrast in the :hover or :focus paint of a control
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -64,7 +67,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
   'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text',
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
-  'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation'];
+  'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -121,7 +124,8 @@ export const contrastRatio = (a, b) => { const [x, y] = [luminance(a), luminance
 /** The paint facts of one computed style, kept on each geometry row. */
 export function paintFacts(style) {
   return { color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
-    visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'] };
+    visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
+    outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], boxShadow: style['box-shadow'] };
 }
 const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(String(value)); return m && (m[2] ? Number(m[1]) / 100 : Number(m[1])) >= 1; };
 /**
@@ -749,6 +753,46 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       const shows = part => mains.some(row => intersect(row.region, part));
       for (const [name, part, other] of [['landscape', landscape, portrait], ['portrait', portrait, landscape]])
         if (!shows(part) && shows(other)) report(findings, 'E_A11Y_ORIENTATION', 'error', `the main content does not render in ${name} viewports`, whole(mains[0].box), part, { rule: 'orientation', missing: name });
+    }
+  }
+
+  // focus-visible: the focused state must look different. The UA :focus-visible ring applies unless an
+  // author rule sets outline-style; then an outline, a box-shadow, or a color/background change must show.
+  for (const row of geometry.filter(row => row.focusStates && visible(row) && !hiddenFrom(row.path))) {
+    for (const state of row.focusStates) {
+      const region = intersect(row.region, state.region);
+      if (!region) continue;
+      const f = state.paint, b = row.paint;
+      const outline = !state.authorOutline || (!['none', 'hidden'].includes(f.outlineStyle) && !['0', '0px'].includes(String(f.outlineWidth)));
+      const changed = (f.boxShadow !== 'none' && f.boxShadow !== b.boxShadow) || f.color !== b.color || f.backgroundColor !== b.backgroundColor || f.backgroundImage !== b.backgroundImage || f.decoration !== b.decoration;
+      if (!outline && !changed) report(findings, 'E_A11Y_FOCUS_VISIBLE', 'error', `${row.box.label} shows no focus indicator: the outline is removed and nothing else changes on focus`, row, region, { rule: 'focus-visible' });
+    }
+  }
+
+  // state-contrast: a text control keeps the contrast minimum when hovered or focused.
+  for (const row of geometry.filter(row => row.box.text && visible(row) && (row.hoverStates || row.focusStates))) {
+    for (const [name, states] of [['hover', row.hoverStates ?? []], ['focus', row.focusStates ?? []]]) for (const state of states) {
+      const region = intersect(row.region, state.region);
+      if (!region || (state.paint.color === row.paint.color && state.paint.backgroundColor === row.paint.backgroundColor)) continue;
+      const result = backdrop([...row.chain.slice(0, -1), state.paint]);
+      if (result.unknown) { report(unknowns, 'U_A11Y_CONTRAST', 'unknown', `${row.box.label} (${name}): ${result.unknown}`, row, region, { rule: 'state-contrast' }); continue; }
+      const ratio = contrastRatio(result.fg, result.bg), required = large(state.paint) ? (contrast === 'AAA' ? 4.5 : 3) : (contrast === 'AAA' ? 7 : 4.5);
+      if (ratio < required) report(findings, 'E_A11Y_STATE_CONTRAST', 'error', `${row.box.label} has contrast ${ratio.toFixed(2)}:1 when ${name === 'hover' ? 'hovered' : 'focused'}, below ${required}:1`, row, region, { rule: 'state-contrast', state: name, ratio, required });
+    }
+  }
+
+  // text-spacing: a font-measured leaf that clips must still fit its lines at line-height 1.5 × font size
+  // (more letter/word spacing can only add lines, so this is a definite failure).
+  for (const row of geometry.filter(row => row.box.contract?.font && row.overflow === 'clip' && row.contentBlockSize && visible(row))) {
+    const font = row.box.contract.font, metrics = row.box.contract.textMetrics;
+    const spaced = Math.max(font.lineHeight, 1.5 * font.size);
+    const steps = metrics?.kind === 'lines' ? metrics.profile : [{ atLeastInlineSize: 0, lines: 1 }];
+    for (let i = 0; i < steps.length; i++) {
+      if (steps[i].lines === null) continue;
+      let region = clip(row.region, diff(row.content.inline, scalar(steps[i].atLeastInlineSize)));
+      if (steps[i + 1]) region = below(region, row.content.inline, scalar(steps[i + 1].atLeastInlineSize));
+      const failed = below(region, row.contentBlockSize, scalar(q(Math.round(steps[i].lines * spaced * 1e6) / 1e6)));
+      if (failed) report(findings, 'E_A11Y_TEXT_SPACING', 'error', `${row.box.label} clips its ${steps[i].lines} line(s) when line-height is 1.5 × ${font.size}px (${steps[i].lines * spaced}px)`, row, failed, { rule: 'text-spacing', lines: steps[i].lines, required: steps[i].lines * spaced });
     }
   }
 

@@ -6,7 +6,7 @@ export const greaterRank = (a, b) => { for (let i = 0; i < a.length; i++) if (a[
 const combine = (a, b) => a.map((value, i) => value + b[i]);
 export function compileSelector(source, depth = 0) {
   if (depth > 8 || !source.trim()) throw new Error('Selector nesting limit or empty selector');
-  let rest = source.trim(), specificity = [0, 0, 0], pseudoElement;
+  let rest = source.trim(), specificity = [0, 0, 0], pseudoElement, state;
   const parts = [];
   const tag = rest.match(/^(?:[a-zA-Z][\w-]*|\*)/);
   if (tag) {
@@ -22,6 +22,9 @@ export function compileSelector(source, depth = 0) {
     }
     const root = rest.match(/^:root(?![\w-])/i);
     if (root) { parts.push({ kind: 'root' }); specificity[1]++; rest = rest.slice(root[0].length); continue; }
+    // A trailing user-action state (paint-only rules; see parseLayoutCSS).
+    const action = rest.match(/^:(hover|active|focus|focus-visible|focus-within)$/i);
+    if (action) { state = action[1].toLowerCase(); specificity[1]++; rest = ''; continue; }
     const pseudo = rest.match(/^::?(before|after)$/i);
     if (pseudo) { pseudoElement = pseudo[1].toLowerCase(); specificity[2]++; rest = ''; continue; }
     const fn = rest.match(/^:(where|is)\(/i);
@@ -37,11 +40,13 @@ export function compileSelector(source, depth = 0) {
     }
     throw new Error(`Unsupported selector: ${source}`);
   }
-  return { source, parts, specificity, pseudoElement };
+  return { source, parts, specificity, pseudoElement, ...(state ? { state } : {}) };
 }
-export function matches(selector, box) {
+/** `state` is the set of user-action states that hold (e.g. focus): a state selector matches only then. */
+export function matches(selector, box, state) {
   if (typeof selector === 'string') selector = compileSelector(selector);
   if (selector.pseudoElement) return false;
+  if (selector.state && !state?.has(selector.state)) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
     part.kind === 'root' ? box.documentRoot === true : part.choices.some(choice => matches(choice, box)));

@@ -102,9 +102,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     }));
     return { groups, target: target.box?.label, path: target.box?.path };
   }
-  function styles(box, region, ancestors, inherited, emit, gridItem = true) {
+  function styles(box, region, ancestors, inherited, emit, gridItem = true, state) {
     spend(rules.length + 1);
-    const relevant = rules.filter(rule => rule.selectors.some(selector => matches(selector, box)));
+    const relevant = rules.filter(rule => rule.selectors.some(selector => matches(selector, box, state)));
     const contexts = new Map();
     for (const rule of relevant) for (const condition of rule.contexts) if (!contexts.has(condition)) contexts.set(condition, context(condition, ancestors));
     let regions = [region];
@@ -119,7 +119,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const p = sample(r), activeContext = compiled => compiled.groups.some(group => group.every(atom => compare(cmp(evaluate(atom.slack, p), zero), atom.relation)));
       const active = rule => rule.contexts.every(condition => activeContext(contexts.get(condition)));
       let style;
-      try {style=computeStyle(relevant,box,active,inherited,{spend});}
+      try {style=computeStyle(relevant,box,active,inherited,{spend,state});}
       catch(error) {error.box ??= box;throw error;}
       if (gridItem && inherited && style.display === 'inline') style.display = 'block';
       if (emit) for (const entry of style.$invalid) invalidSubstitutions.push({ box: box.label, path: box.path, property: entry.property, longhands: entry.longhands, css: { file: entry.file, line: entry.line }, reason: entry.code === 'U_LAYOUT_VARIABLE_CYCLE' ? 'cycle' : 'guaranteed-invalid', message: entry.message, resolution: 'unset', ...ranges(r) });
@@ -453,6 +453,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (child.children?.length) inlineContent({ ...child, inline: child.children, contract: leaf.contract }, style, state.region, [...parents, { box: child, style }], own);
     }
   }
+  const focusState = new Set(['focus', 'focus-visible', 'focus-within']), hoverState = new Set(['hover']);
+  const focusableBox = box => box.focusable === true || box.tabIndex >= 0 || (['button', 'select', 'textarea'].includes(box.tag) && box.focusable !== false) || (box.tag === 'input' && box.focusable !== false && box.inputType !== 'hidden');
   function finish(box, style, region, inline, contentInline, blockSize, contentBlock, available, parents, emit) {
     const contract = box.contract ?? {};
     if (emit) {
@@ -491,7 +493,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // Where a single line of text starts inside the box (font-derived text extents).
         content: { left: add(px(style['border-left']), px(style['padding-left'])), top: add(px(style['border-top']), px(style['padding-top'])), inline: contentInline },
         textAlign: style['text-align'], painted: paints(style),
-        paint: paintFacts(style), chain: [...ancestorPaint, ...parents.map(parent => paintFacts(parent.style)), paintFacts(style)] });
+        paint: paintFacts(style), chain: [...ancestorPaint, ...parents.map(parent => paintFacts(parent.style)), paintFacts(style)],
+        contentBlockSize: contentBlock ?? null, fontSize: style['font-size'],
+        // The focused paint (paint-only :focus/:focus-visible/:focus-within rules) of focusable boxes.
+        ...(focusableBox(box) || box.tag === 'a' ? { hoverStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, hoverState).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
+        ...(focusableBox(box) ? { focusStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, focusState).map(s => ({ region: s.region, paint: paintFacts(s.style), authorOutline: Boolean(s.style.$sources['outline-style']) })) } : {}) });
       if (box.inline?.length) inlineContent(box, style, region, [...parents, { box, style }], geometry.at(-1).chain);
       const rect=origin && blockSize ? {inlineStart:affine(origin.inline),blockStart:affine(origin.block),inlineSize:affine(inline),blockSize:affine(blockSize)} : null;
       sizes.push({ box: box.label, path: box.path, position:style.position, ...positioned,...(rect ? {rect} : {}), boxSizing: style['box-sizing'], boxSizingSource: style.$sources['box-sizing'],

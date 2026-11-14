@@ -11,7 +11,7 @@ const source = 'export component Four() { <main class="row"><div class="cell"></
 const css = '*{box-sizing:border-box;margin:0}.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}.cell{min-width:40px}';
 const responsive = '@media(width < 160px){.row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}';
 const viewport = { min:80, max:300, height:{ min:200, max:600 } };
-const html = '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><!--isle:ssr--></body></html>';
+const html = '<!doctype html><html lang="en"><head><title>Test</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><!--isle:ssr--></body></html>';
 const hash = value => createHash('sha256').update(value).digest('hex');
 async function fixture(t, overrides = {}) {
   const directory = await mkdtemp(join(tmpdir(), 'isle-layout-build-'));
@@ -298,4 +298,15 @@ test('checked builds enforce the accessibility rules and warn on visual order', 
   assert.ok(certificate.report.accessibility.warnings.some(w => w.code === 'W_A11Y_PAGE_H1'));
   const unnamed = await fixture(t, {source:bar.replace(' aria-label="Close"', ''), css:style(), options:{mounts:[{component:'Four',props:{}}],wrapMounts:false,layout:{css:'./app.css',viewport,accessibility:true}}});
   await assert.rejects(unnamed, error => /E_ISLE_LAYOUT/.test(error.message) && /E_A11Y_NAME/.test(error.message));
+});
+
+test('checked builds check the document title and a zoomable viewport', async t => {
+  const bar = 'export component Four() { <main class="bar"><button class="b" aria-label="Close"></button></main> }';
+  const css = '*{box-sizing:border-box;margin:0}.bar{display:grid;grid-template-columns:40px;grid-template-rows:40px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0}';
+  const page = head => `<!doctype html><html lang="en"><head>${head}</head><body><!--isle:ssr--></body></html>`;
+  const build = head => fixture(t, {source:bar, css, html:page(head), options:{mounts:[{component:'Four',props:{}}],wrapMounts:false,layout:{css:'./app.css',viewport,accessibility:true}}});
+  await (await build('<title>Toolbar</title><meta name="viewport" content="width=device-width,initial-scale=1">'))();
+  await assert.rejects(await build('<meta name="viewport" content="width=device-width,initial-scale=1">'), /E_A11Y_DOCUMENT_TITLE/);
+  await assert.rejects(await build('<title>Toolbar</title><meta name="viewport" content="width=device-width,user-scalable=no">'), /E_A11Y_META_VIEWPORT/);
+  await assert.rejects(await build('<title>Toolbar</title><meta name="viewport" content="width=device-width,maximum-scale=1">'), /E_A11Y_META_VIEWPORT/);
 });

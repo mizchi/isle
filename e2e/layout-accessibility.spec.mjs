@@ -84,8 +84,11 @@ const cases = [
     boxes: {'.p1': label, '.p2': label}},
   {name: 'table-scope-and-empty-header', html: '<table class="t"><thead class="h"><tr class="r"><th class="c" scope="column"></th><th class="c2" scope="col">B</th></tr></thead><tbody class="b"><tr class="r"><td class="d" scope="row">1</td><td class="d">2</td></tr></tbody></table>',
     css: `.t{display:grid;grid-template-columns:100px 100px;grid-auto-rows:24px;background:#fff;color:#000;${type}}.h,.b,.r{display:contents}.c,.c2,.d{display:block;font-weight:700;text-align:left}`, boxes: {'.c2': label, '.d': label}},
+  {name: 'focus-hover-and-spacing', html: '<div class="page"><button class="b1">Plain</button><button class="b2">No ring</button><button class="b3">Shadow</button><button class="b4">Pale hover</button><p class="t1">Clipped line</p><p class="t2">Roomy line</p></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-template-rows:30px 30px 30px 30px 20px 24px;background:#fff;color:#000;${type}}.b1,.b2,.b3,.b4{${button}inline-size:200px;block-size:30px;background:#fff;color:#000}.b2,.b3{outline:none}.b3:focus-visible{box-shadow:0 0 0 3px #1a73e8}.b4:hover{color:#bbb}.t1,.t2{display:block;font-family:"Noto Sans JP";font-size:16px;line-height:20px;font-weight:400;white-space:nowrap;overflow:hidden}`,
+    boxes: {'.b1': label, '.b2': label, '.b3': label, '.b4': label, '.t1': {...label, font: {family: 'Noto Sans JP', size: 16, lineHeight: 20, weight: 400}, wrap: 'nowrap', textMetrics: {kind: 'content', text: 'x', width: 1}, overflow: 'clip', overflowBlock: 'clip'}, '.t2': {...label, font: {family: 'Noto Sans JP', size: 16, lineHeight: 20, weight: 400}, wrap: 'nowrap', textMetrics: {kind: 'content', text: 'x', width: 1}, overflow: 'clip', overflowBlock: 'clip'}}},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing'];
 const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
 // Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -332,6 +335,35 @@ async function runtime(page, sample) {
     return out;
   });
   for (const [rule, key] of [['role-parent', 'parent'], ['aria-attr', 'attr'], ['aria-value', 'value'], ['presentation-conflict', 'conflict'], ['autocomplete', 'autocomplete'], ['scope', 'scope'], ['p-as-heading', 'heading'], ['orientation', 'orientation']]) for (const path of batch[key]) found.get(rule).add(path);
+  // Forced :focus/:focus-visible/:hover through CDP, compared with the base computed style.
+  await client.send('DOM.enable'); await client.send('CSS.enable'); await client.send('DOM.getDocument', {depth: -1});
+  const parse = v => { const m = v.match(/[\d.]+/g).map(Number); return {r: m[0], g: m[1], b: m[2], a: m[3] ?? 1}; };
+  const lum = c => { const f = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  for (const element of elements) {
+    if (!(await (await handle(element.path)).evaluate(node => node.matches('button:not([disabled]), a[href], input:not([type=hidden]), select, textarea, [tabindex]') && getComputedStyle(node).display !== 'none'))) continue;
+    const {result} = await client.send('Runtime.evaluate', {expression: `(() => { let n = document.body.firstElementChild; for (const i of ${JSON.stringify(element.path.split('/').slice(1).map(Number))}) n = n.children[i]; return n; })()`});
+    const {nodeId} = await client.send('DOM.requestNode', {objectId: result.objectId});
+    const read = () => (handle(element.path)).then(h => h.evaluate(node => { const s = getComputedStyle(node); return {outlineStyle: s.outlineStyle, outlineWidth: s.outlineWidth, boxShadow: s.boxShadow, color: s.color, background: s.backgroundColor, text: [...node.childNodes].some(c => c.nodeType === 3 && c.data.trim())}; }));
+    const base = await read();
+    await client.send('CSS.forcePseudoState', {nodeId, forcedPseudoClasses: ['focus', 'focus-visible', 'focus-within']});
+    const focus = await read();
+    await client.send('CSS.forcePseudoState', {nodeId, forcedPseudoClasses: ['hover']});
+    const hover = await read();
+    await client.send('CSS.forcePseudoState', {nodeId, forcedPseudoClasses: []});
+    const ring = !['none', 'hidden'].includes(focus.outlineStyle) && focus.outlineWidth !== '0px';
+    const changed = (focus.boxShadow !== 'none' && focus.boxShadow !== base.boxShadow) || focus.color !== base.color || focus.background !== base.background;
+    if (!ring && !changed) found.get('focus-visible').add(element.path);
+    for (const state of [hover, focus]) if (base.text && (state.color !== base.color || state.background !== base.background) && ratio(parse(state.color), parse(state.background === 'rgba(0, 0, 0, 0)' ? 'rgb(255, 255, 255)' : state.background)) < 4.5) found.get('state-contrast').add(element.path);
+  }
+  // Text spacing: line-height 1.5 on clipping text boxes.
+  const spaced = await page.evaluate(() => {
+    const style = document.createElement('style'); style.textContent = '* { line-height: 1.5 !important; }'; document.head.append(style);
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const out = [...document.body.firstElementChild.querySelectorAll('*')].filter(n => ['hidden', 'clip'].includes(getComputedStyle(n).overflowY) && [...n.childNodes].some(c => c.nodeType === 3 && c.data.trim()) && n.scrollHeight > n.clientHeight).map(pathOf);
+    style.remove(); return out;
+  });
+  for (const path of spaced) found.get('text-spacing').add(path);
   // Empty headers and input buttons: Chromium's AX names.
   for (const element of elements) {
     const kind = await (await handle(element.path)).evaluate(node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return ''; return node.matches('th') ? 'th' : node.matches('input[type=button]') ? 'button' : ''; });

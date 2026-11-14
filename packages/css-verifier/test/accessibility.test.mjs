@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -640,4 +640,36 @@ test('p-as-heading and orientation lock: CSS that changes what the DOM says', ()
   const locked = run({tag: 'div', classes: ['page'], children: [{tag: 'main', classes: ['m']}]}, pageCSS('.m { display: block; }\n@media (orientation: landscape) { .m { display: none; } }\n'), {viewport: {min: 320, max: 1280, height: {min: 400, max: 900}}});
   const [lock] = find(locked, 'E_A11Y_ORIENTATION');
   assert.equal(lock.missing, 'landscape');
+});
+
+// Focus indicator (SC 2.4.7) from paint-only :focus rules, and text spacing (SC 1.4.12).
+const fbtn = css => run(page([{tag: 'button', classes: ['b'], named: true}]), pageCSS(`.page { background: #fff; color: #000; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n${css}`));
+test('focus-visible: removing the outline without another focus style hides focus', () => {
+  assert.equal(find(fbtn(''), 'E_A11Y_FOCUS_VISIBLE').length, 0); // the UA focus ring
+  assert.deepEqual(find(fbtn('.b { outline: none; }'), 'E_A11Y_FOCUS_VISIBLE').map(d => d.box), ['.b']);
+  assert.deepEqual(find(fbtn('.b:focus { outline: 0; }'), 'E_A11Y_FOCUS_VISIBLE').map(d => d.box), ['.b']);
+  assert.equal(find(fbtn('.b { outline: none; }\n.b:focus-visible { box-shadow: 0 0 0 3px #1a73e8; }'), 'E_A11Y_FOCUS_VISIBLE').length, 0);
+  assert.equal(find(fbtn('.b { outline: none; }\n.b:focus { outline: 2px solid #1a73e8; }'), 'E_A11Y_FOCUS_VISIBLE').length, 0);
+  assert.equal(find(fbtn('.b { outline: none; background: #fff; }\n.b:focus { background: #ffd; }'), 'E_A11Y_FOCUS_VISIBLE').length, 0);
+  // A state rule that changes layout stays Unknown: the proof covers the base state only.
+  assert.equal(fbtn('.b:hover { padding: 4px; }').status, 'unknown');
+});
+
+test('text-spacing: clipped text that no longer fits at line-height 1.5', () => {
+  const font = {family: 'Noto Sans JP', size: 16, lineHeight: 20, weight: 400};
+  const contract = {minInlineSize: 50, intrinsicBlockSize: 20, wrap: 'nowrap', font, textMetrics: {kind: 'content', text: 'x', width: 49}, overflow: 'clip', overflowBlock: 'clip'};
+  const tree = page([{tag: 'p', classes: ['t'], text: true}]);
+  const css = h => pageCSS(`.page { background: #fff; color: #000; grid-template-rows: ${h}px; grid-auto-rows: auto; }\n.t { font-family: "Noto Sans JP"; font-size: 16px; line-height: 20px; font-weight: 400; white-space: nowrap; overflow: hidden; }\n`);
+  // One line at 1.5 × 16 = 24px needs a 24px box.
+  assert.deepEqual(find(run(tree, css(20), {boxes: {'.t': contract}}), 'E_A11Y_TEXT_SPACING').map(d => d.box), ['.t']);
+  assert.equal(find(run(tree, css(24), {boxes: {'.t': contract}}), 'E_A11Y_TEXT_SPACING').length, 0);
+});
+
+test('state-contrast: hover and focus colors keep the contrast minimum', () => {
+  const tree = page([{tag: 'button', classes: ['b'], named: true, text: true}]);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; font-size: 16px; background: #fff; color: #000; }\n${extra}`);
+  const b = {'.b': {minInlineSize: 1, intrinsicBlockSize: 20}};
+  assert.equal(find(run(tree, css('.b:hover { color: #333; }'), {boxes: b}), 'E_A11Y_STATE_CONTRAST').length, 0);
+  assert.deepEqual(find(run(tree, css('.b:hover { color: #bbb; }'), {boxes: b}), 'E_A11Y_STATE_CONTRAST').map(d => d.state), ['hover']);
+  assert.deepEqual(find(run(tree, css('.b:focus { background: #000; }'), {boxes: b}), 'E_A11Y_STATE_CONTRAST').map(d => d.state), ['focus']);
 });

@@ -17,9 +17,11 @@ const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset
 const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
-const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-(?:color|radius)|outline(?:-(?:color|style|width|offset))?|box-shadow|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|cursor)$/;
+const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-(?:color|radius)|outline-(?:color|offset)|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|cursor)$/;
+// Properties a :hover/:focus rule may set: they repaint without changing geometry.
+const statePaint = /^(?:color|background(?:-.*)?|border-(?:color|radius)|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events)$/;
 // Paint and hit-testing facts for the accessibility rules (never geometry).
-export const paintProperties = ['color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line'];
+export const paintProperties = ['color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'box-shadow'];
 const inheritedPaint = ['color', 'visibility', 'pointer-events'];
 // Inherited text properties. They are kept as specified strings and only
 // interpreted for boxes whose contract derives text metrics from a font.
@@ -107,6 +109,12 @@ function expand(property, value) {
   if (property === 'font') return textProperties.filter(key => key.startsWith('font-') || key === 'line-height').map(key => [key, wide.has(value) ? value : fontShorthand]);
   // Paint only: whether a box draws a background (integrity `protrusion: 'painted'`).
   if (property === 'background-color' || property === 'background-image') return [[property, value]];
+  if (property === 'outline') {
+    if (wide.has(value)) return [['outline-style', value], ['outline-width', value]];
+    const parts = postcss.list.space(value), style = parts.find(p => /^(?:none|auto|solid|dotted|dashed|double|groove|ridge|inset|outset|hidden)$/.test(p)) ?? 'none';
+    const widthPart = parts.find(p => /^(?:\d+(?:\.\d+)?px|0|thin|medium|thick)$/.test(p)) ?? 'medium';
+    return [['outline-style', style], ['outline-width', widthPart]];
+  }
   if (property === 'text-decoration') {
     if (wide.has(value)) return [['text-decoration-line', value]];
     const lines = postcss.list.space(value).filter(p => ['underline', 'overline', 'line-through', 'none'].includes(p));
@@ -183,6 +191,8 @@ export function parseLayoutCSS(sheets, diagnostic) {
         if (node.type !== 'rule') throw new Error(`Unsupported CSS node: ${node.type}`);
         selectors = node.selectors.map(selector => compileSelector(selector));
       } catch (error) { problem('U_LAYOUT_SELECTOR', error.message, node.source.start.line); continue; }
+      // A state rule (:hover, :focus, …) may only repaint: the layout is proved for the base state.
+      if (selectors.some(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `State selector rules may only change paint (color, background, outline, box-shadow, text-decoration); ${node.selector} changes layout`, node.source.start.line); continue; }
       const declarations = [];
       const authored=node.nodes.filter(declaration=>declaration.type==='decl');
       const conflicts=findCSSWriteConflicts(authored.map(declaration=>declaration.prop));
@@ -221,7 +231,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
 // facts: `medium` and `ua-default` stay unresolved for text metrics.
 const textInitial = { 'font-family': 'ua-default', 'font-size': 'medium', 'line-height': 'normal', 'font-weight': 'normal', 'font-style': 'normal', 'font-stretch': 'normal', 'font-variant': 'normal', 'text-transform': 'none', 'letter-spacing': 'normal', 'word-spacing': 'normal', 'text-align': 'start' };
 
-export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
+export function computeStyle(rules, box, active, inherited = {}, {spend, state}={}) {
   const values = {
     display: ['span', 'a', 'strong', 'em', 'b', 'i', 'small', 'output', 'label', 'img'].includes(box.tag) ? 'inline' : 'block',
     'box-sizing': 'content-box', 'inline-size': 'auto', 'min-inline-size': 'auto', 'max-inline-size': 'none',
@@ -234,6 +244,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
     'container-type': 'normal', 'container-name': 'none', 'align-items': 'normal', 'align-self': 'auto', 'align-content': 'normal',
     'column-gap': 'normal', 'grid-column': 'auto', 'grid-row': 'auto',
     'background-color': 'transparent', 'background-image': 'none',
+    'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none',
     color: box.tag === 'a' && box.focusable !== false ? 'ua-link' : inherited.color ?? 'canvastext', 'text-decoration-line': box.tag === 'a' && box.focusable !== false ? 'underline' : 'none', visibility: inherited.visibility ?? 'visible', 'pointer-events': inherited['pointer-events'] ?? 'auto', opacity: '1',
     'flex-direction': 'row', 'flex-wrap': 'nowrap', 'flex-grow': '0', 'flex-shrink': '1', 'flex-basis': 'auto', 'justify-content': 'normal', order: '0',
     'overflow-x': 'visible', 'overflow-y': 'visible', 'white-space': inherited['white-space'] ?? 'normal',
@@ -266,19 +277,19 @@ export function computeStyle(rules, box, active, inherited = {}, {spend}={}) {
   if (['em', 'i'].includes(box.tag)) values['font-style'] = 'ua';
   if (box.tag === 'small') values['font-size'] = 'ua';
   const ua = { ...values };
-  const initial = { ...defaults, ...textInitial, color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
+  const initial = { ...defaults, ...textInitial, 'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
   const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', ...textProperties, ...inheritedPaint]);
   const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={};
   const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};
   for (const rule of rules) {
     if (!active(rule)) {
       // Matching declarations whose conditions are false here: explanation data.
-      const selector = rule.selectors.find(selector => matches(selector, box));
+      const selector = rule.selectors.find(selector => matches(selector, box, state));
       if (selector) for (const declaration of rule.declarations) (dormant[declaration.property] ??= []).push({file: declaration.file, line: declaration.line, selector: selector.source, ...(rule.layerName ? {layer: rule.layerName} : {}), specified: declaration.specified ?? declaration.value, ...conditions(rule)});
       continue;
     }
     for (const selector of rule.selectors) {
-      if (!matches(selector, box)) continue;
+      if (!matches(selector, box, state)) continue;
       for (const declaration of rule.declarations) {
         const layer = rule.layer === null ? (declaration.important ? -Infinity : Infinity) : declaration.important ? -rule.layer : rule.layer;
         const rank = [declaration.important, layer, ...selector.specificity];

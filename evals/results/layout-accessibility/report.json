@@ -51,7 +51,10 @@
     "autocomplete",
     "scope",
     "p-as-heading",
-    "orientation"
+    "orientation",
+    "focus-visible",
+    "state-contrast",
+    "text-spacing"
   ],
   "scope": "Static accessibility rules vs the browser (AX tree names, hit testing, focus, rects, computed colors; vlmkit a11y contrast at 1280).",
   "cases": [
@@ -284,6 +287,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -510,6 +528,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -749,6 +782,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -982,6 +1030,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -1212,6 +1275,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1436,6 +1514,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -1671,6 +1764,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1897,6 +2005,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -2136,6 +2259,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2369,6 +2507,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -2599,6 +2752,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2823,6 +2991,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -3062,6 +3245,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3292,6 +3490,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -3543,6 +3756,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3785,6 +4013,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -4022,6 +4265,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4250,6 +4508,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -4491,6 +4764,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4723,6 +5011,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -4964,6 +5267,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5196,6 +5514,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -5459,6 +5792,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5713,6 +6061,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -5950,6 +6313,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6178,6 +6556,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -6415,6 +6808,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6643,6 +7051,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -6878,6 +7301,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7104,6 +7542,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -7359,6 +7812,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7605,6 +8073,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -7848,6 +8331,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8082,6 +8580,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -8323,6 +8836,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8558,6 +9086,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -8790,6 +9333,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9016,6 +9574,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -9252,6 +9825,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9479,6 +10067,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -9719,6 +10322,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9950,6 +10568,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -10189,6 +10822,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -10419,6 +11067,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -10662,6 +11325,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -10896,6 +11574,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -11157,6 +11850,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -11409,6 +12117,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -11667,6 +12390,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -11916,6 +12654,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -12167,6 +12920,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -12409,6 +13177,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -12668,6 +13451,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -12918,6 +13716,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -13170,6 +13983,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -13413,6 +14241,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -13668,6 +14511,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -13914,6 +14772,21 @@
           []
         ],
         "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
           [],
           [],
           []
@@ -14191,6 +15064,21 @@
           ],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -14462,6 +15350,21 @@
           ],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -14707,6 +15610,21 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -14949,6 +15867,544 @@
           [],
           [],
           []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "focus-hover-and-spacing",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "state-contrast": [
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ]
+        ],
+        "text-spacing": [
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ]
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "state-contrast": [
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ],
+          [
+            "Page/3"
+          ]
+        ],
+        "text-spacing": [
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ]
         ]
       }
     }
