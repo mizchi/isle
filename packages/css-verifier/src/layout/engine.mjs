@@ -2,7 +2,7 @@ import { q, add, sub, mul, cmp, div, exact, number } from './linear.mjs';
 import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rectangle, clip, partition, projection, serialize } from './region.mjs';
 import { validateOptions } from './input.mjs';
 import { parseLayoutCSS, computeStyle, matches, px } from './css.mjs';
-import { tracks, place } from './grid.mjs';
+import { tracks, tracks as gridTracks, place } from './grid.mjs';
 import { compileSelector } from './selectors.mjs';
 import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
 import { scrollbarFrames } from './scrollbars.mjs';
@@ -1014,6 +1014,30 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               // A line-count profile depends on the cell's width: measured later, with the column widths.
               if (typeof child.contract.intrinsicBlockSize === 'number') total = add(total, add(q(String(child.contract.intrinsicBlockSize)), edges));
               else cell.stackedProfiles.push({ profile: child.contract.intrinsicBlockSize, edges, sideEdges });
+              continue;
+            }
+            // A row flex (nowrap, items stretched): as tall as its tallest item, each a px height or a constant
+            // measured text leaf.
+            const itemHeight = (item, itemStyle) => {
+              const e = ['top', 'bottom'].map(key => add(px(itemStyle[`padding-${key}`]), px(itemStyle[`border-${key}`]))).reduce(add, zero);
+              if (/^\d+(?:\.\d+)?px$/.test(itemStyle['block-size']) && !(item.children ?? []).length) return itemStyle['box-sizing'] === 'content-box' ? add(px(itemStyle['block-size']), e) : px(itemStyle['block-size']);
+              if (itemStyle['block-size'] === 'auto' && item.text && !(item.children ?? []).length && typeof item.contract?.intrinsicBlockSize === 'number') return add(q(String(item.contract.intrinsicBlockSize)), e);
+              return null;
+            };
+            const items = (child.children ?? []).map(item => ({ item, style: one(styles(item, region, [...ancestors, { box: child, style: cs }], cs, false, false)) })).filter(entry => entry.style.display !== 'none');
+            if (cs.display === 'flex' && ['row', 'row-reverse'].includes(cs['flex-direction']) && cs['flex-wrap'] === 'nowrap' && !child.text && !child.contract && items.length) {
+              const heights = items.map(({ item, style: itemStyle }) => ['margin-top', 'margin-bottom'].every(key => ['0', '0px'].includes(itemStyle[key])) ? itemHeight(item, itemStyle) : null);
+              if (heights.some(h => h === null)) return null;
+              total = add(total, add(heights.reduce((a, b) => cmp(a, b) >= 0 ? a : b), edges));
+              continue;
+            }
+            // A grid with px rows only and every item in its declared cells: the rows and gaps are its height.
+            if (cs.display === 'grid' && cs['grid-template-rows'] !== 'none' && !child.text && !child.contract) {
+              let rowList, columnCount;
+              try { rowList = gridTracks(cs['grid-template-rows']); columnCount = cs['grid-template-columns'] === 'none' ? 1 : gridTracks(cs['grid-template-columns']).length; } catch { return null; }
+              if (rowList.some(t => t.fixed === undefined) || items.length > rowList.length * columnCount || items.some(({ style: itemStyle }) => itemStyle['grid-row'] !== 'auto' || itemStyle['grid-column'] !== 'auto')) return null;
+              const gap = ['0', 'normal'].includes(cs['row-gap']) ? zero : px(cs['row-gap']);
+              total = add(total, add(add(rowList.map(t => t.fixed).reduce(add, zero), mul(gap, q(rowList.length - 1))), edges));
               continue;
             }
             const oneColumn = cs.display === 'grid' && ['none', 'minmax(0,1fr)', '1fr', 'auto'].includes(String(cs['grid-template-columns']).replace(/\s+/g, '')) && cs['grid-template-rows'] === 'none' && ['0', '0px', 'normal'].includes(cs['row-gap']);

@@ -256,7 +256,7 @@ table の cell は高さを超える内容で溢れず行が伸びるので、bl
 UA の `table { border-collapse: separate; border-spacing: 2px }` は table 自身の規則で、親からは継承しない(以前は継承していた。root 以外の table で誤り)。
 px の幅を持たない列だけの自動 table で、中身のある各 cell が葉で、信頼する min-content 幅(`minInlineSize`)と max-content 幅(`maxInlineSize`)を契約に持つときは、内容で列幅を決める。列の範囲は cell の最大(cell の端を含む)で、table の内側の幅 S が min の和より小さければ各列は min(table は溢れる)、min の和と max の和の間では各列が min から (max − min) の比で伸び、max の和以上では max の比で分ける。S について区分的に線形なので、viewport の区間を分けて厳密に表す(Chromium で 0.02px 以内に一致、測定)。auto の幅の table は grid の領域では伸び、それ以外(分析の root)では内容に縮む:使える幅と、列の max-content の和に端を足した幅の小さい方(同等の grid の max-inline-size)。
 px の列が混ざるとき(内容のある auto の列が1つ以上)は、px の列の範囲を [内容の最小, px] とし、Chromium の配り方(測定)に従う:最小の和までは全列が最小、次に px の列が (px − 最小) の比で px まで、次に auto の列が (max − min) の比で max まで、その先は auto の列が max の比で分ける。
-rowspan の cell は、空・計測した text・px の高さ・px の高さの block か、計測した auto の高さの text の葉(定数の高さ、または幅ごとの行数。行数はその cell の幅から求め、区間を分ける)の積み重ね(内容の高さはその和。px の子の中身は子自身の高さを変えない。auto の高さで1列・gap 0・暗黙の行の grid は、それ自身が積み重ねなら入れ子にできる)のとき扱い、行を Chromium の配り方で伸ばす(測定)。
+rowspan の cell は、空・計測した text・px の高さ・px の高さの block か、計測した auto の高さの text の葉(定数の高さ、または幅ごとの行数。行数はその cell の幅から求め、区間を分ける)の積み重ね(内容の高さはその和。px の子の中身は子自身の高さを変えない。auto の高さで1列・gap 0・暗黙の行の grid は、それ自身が積み重ねなら入れ子にできる。auto の高さの横の flex(nowrap)は px か定数の計測高さの item の最大、px の行だけの grid(item が宣言したセルに収まる)は行と gap の和)のとき扱い、行を Chromium の配り方で伸ばす(測定)。
 それ以外の table(積み重ねでない内容で高さが決まる子を持つ rowspan など)は Unknown。
 `color-scheme` プロパティ:作者が書いた `Canvas`/`CanvasText` は要素の used color scheme で解決する(Chromium の dark は #121212/#fff)。
 UA の既定色は ADR-0007 のまま Unknown。`light dark` を宣言した CSS も dark で再判定する。Vite の `meta name=color-scheme`(light 以外)は未対応として拒否する。th は UA の bold と中央寄せを持つので、作者が指定するまで未解決にする。
