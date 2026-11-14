@@ -66,10 +66,12 @@ function lengthPieces(value, parent, region, style) {
       return pick(args, fn[1] === 'max');
     }
     if (text[i] === '(') { i++; const v = sumExpr(); space(); if (text[i++] !== ')') fail(); return v; }
-    const m = /^([+-]?(?:\d+(?:\.\d+)?|\.\d+))(px|%|vw|vh|vmin|vmax|rem|em)?/.exec(text.slice(i));
+    // s/l/d viewport units (small, large, dynamic) equal the v units in the static viewport the options declare
+    // (browser UI that resizes the viewport, such as a mobile toolbar, is not modeled).
+    const m = /^([+-]?(?:\d+(?:\.\d+)?|\.\d+))(px|%|[sld]?(?:vw|vh|vmin|vmax)|rem|em)?/.exec(text.slice(i));
     if (!m) fail();
     i += m[0].length;
-    return unit(m[1].replace(/^\+/, '').replace(/^(-?)\./, '$10.'), m[2] ?? '');
+    return unit(m[1].replace(/^\+/, '').replace(/^(-?)\./, '$10.'), (m[2] ?? '').replace(/^[sld](?=v)/, ''));
   };
   const product = () => {
     let left = primary();
@@ -353,7 +355,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const chosen = pictureSources.find(source => !source.condition || activeContext(contexts.get(source.condition)));
       // A selected source with width or height attributes is the image's dimension source; else the img's own.
       const imageFacts = chosen ? { ...((chosen.facts.width !== undefined || chosen.facts.height !== undefined) ? { width: chosen.facts.width, height: chosen.facts.height } : { width: box.imageSize?.width, height: box.imageSize?.height }), src: chosen.src } : box.imageSize && { ...box.imageSize, src: loadedSource(box.imageSize.srcset, box.imageSize.src) };
-      if (box.tag === 'img' && imageFacts && !box.pseudo) {
+      // video: its width/height attributes are size hints and aspect-ratio auto w / h too (HTML rendering §15.4.3).
+      if (['img', 'video'].includes(box.tag) && imageFacts && !box.pseudo) {
         const { width: w, height: hgt } = imageFacts;
         if (Number.isFinite(w) && style['inline-size'] === 'auto' && !style.$sources['inline-size']) style = { ...style, 'inline-size': `${w}px` };
         if (Number.isFinite(hgt) && style['block-size'] === 'auto' && !style.$sources['block-size']) style = { ...style, 'block-size': `${hgt}px` };
@@ -428,11 +431,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // Replaced elements and text fields have intrinsic sizes the model does not compute.
     // Layout shifts from images (Layout Instability, measured): an img without a reserved height gets one when it
     // loads; one whose reserved ratio differs from the file's changes height when it loads.
-    if (box.tag === 'img' && style.$imageUnreserved && emit) issue('E_LAYOUT_IMAGE_UNRESERVED', `${box.label} has no reserved height: it shifts the layout when ${style.$imageUnreserved.src} loads; add width="${style.$imageUnreserved.width}" height="${style.$imageUnreserved.height}" (the file's size) or an aspect-ratio`, box, region);
-    if (box.tag === 'img' && style.$imageRatioMismatch && emit) issue('E_LAYOUT_IMAGE_RATIO', `${box.label} reserves the ratio ${style.$imageRatioMismatch.reserved} but ${style.$imageRatioMismatch.src} is ${style.$imageRatioMismatch.natural.width}×${style.$imageRatioMismatch.natural.height}: its height changes when it loads`, box, region);
+    if (['img', 'video'].includes(box.tag) && style.$imageUnreserved && emit) issue('E_LAYOUT_IMAGE_UNRESERVED', `${box.label} has no reserved height: it shifts the layout when ${style.$imageUnreserved.src} loads; add width="${style.$imageUnreserved.width}" height="${style.$imageUnreserved.height}" (the file's size) or an aspect-ratio`, box, region);
+    if (['img', 'video'].includes(box.tag) && style.$imageRatioMismatch && emit) issue('E_LAYOUT_IMAGE_RATIO', `${box.label} reserves the ratio ${style.$imageRatioMismatch.reserved} but ${style.$imageRatioMismatch.src} is ${style.$imageRatioMismatch.natural.width}×${style.$imageRatioMismatch.natural.height}: its height changes when it loads`, box, region);
     if (box.tag === 'img' && !box.pseudo && style['block-size'] === 'auto' && !ratioOf(style) && block) throw Object.assign(new Error(`${box.label} has no reserved height (no height, aspect-ratio or width/height attributes) and its file's size is not known; it shifts the layout when it loads`), { code: 'U_LAYOUT_IMAGE' });
     // An img may leave its block-size auto when an aspect-ratio (CSS or its width/height attributes) gives it.
-    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto' && !(box.tag === 'img' && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
+    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto' && !(['img', 'video'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
     // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
     // A closed popover that author CSS displays keeps the UA [popover] { position: fixed; inset: 0; margin: auto }:
@@ -1623,7 +1626,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             if (style['block-size'] !== 'auto') fixedBlock = /^\d+(?:\.\d+)?(?:px|%)$/.test(style['block-size']) ? length(style['block-size'], available.block, style) : scalar(zero);
             // aspect-ratio with an auto block-size (an img, or a box with no content): the block size follows the
             // inline size, on the box named by box-sizing (the content box by default).
-            else if (ratioOf(style) && (box.tag === 'img' || (!(box.children ?? []).length && !box.text && !box.inline?.length))) {
+            else if (ratioOf(style) && (['img', 'video'].includes(box.tag) || (!(box.children ?? []).length && !box.text && !box.inline?.length))) {
               const r = ratioOf(style);
               fixedBlock = style['box-sizing'] === 'border-box' ? times(inline, r) : sum(times(contentInline, r), cssBlockEdges);
             }

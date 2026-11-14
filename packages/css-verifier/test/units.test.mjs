@@ -17,6 +17,7 @@ const size = (report, w, h, axis = 'inlineSize') => {
 test('viewport units, rem, em and calc() resolve to the viewport-affine size', () => {
   const cases = [
     ['.x{inline-size:50vw}', [[320, 160], [1280, 640]]],
+    ['.x{inline-size:calc(50svw + 10dvw - 10lvw)}', [[320, 160], [1280, 640]]],
     ['.x{inline-size:calc(100% - 2rem)}', [[320, 300], [1000, 980]]],
     ['.x{inline-size:calc((100% - 2 * 16px) / 4)}', [[320, 72], [1280, 312]]],
     ['.x{inline-size:clamp(200px, 50vw, 500px)}', [[320, 200], [600, 300], [1280, 500]]],
@@ -35,7 +36,7 @@ test('viewport units, rem, em and calc() resolve to the viewport-affine size', (
     for (const [w, expected] of points) assert.equal(size(report, w, 600), expected, `${css} at ${w}`);
   }
   // Viewport-height units on the block axis (fixed height per run, so the size is a number at each width).
-  for (const [css, h, expected] of [['.x{block-size:calc(5vh + 1rem)}', 600, 40], ['.x{block-size:20vmin}', 500, 64], ['.x{block-size:clamp(10px, 4vh, 30px)}', 900, 30], ['.x{block-size:5vmax}', 500, 25]]) {
+  for (const [css, h, expected] of [['.x{block-size:calc(5vh + 1rem)}', 600, 40], ['.x{block-size:20vmin}', 500, 64], ['.x{block-size:clamp(10px, 4vh, 30px)}', 900, 30], ['.x{block-size:5vmax}', 500, 25], ['.x{block-size:10dvh}', 600, 60], ['.x{block-size:10svmin}', 500, 32]]) {
     const report = run(css, {height: {min: h, max: h}});
     assert.equal(report.status, 'verified', `${css}: ${JSON.stringify(report.diagnostics)}`);
     assert.equal(size(report, 320, h, 'blockSize'), expected, `${css} at height ${h}`);

@@ -248,3 +248,20 @@ test('lazy images in the initial viewport: the static warning region agrees with
     expect(inside, `${width}×${height}: static ${inside}, Chromium ${visible}`).toBe(visible);
   }
 });
+
+test('video: width/height attributes and aspect-ratio reserve the box like Chromium; an unreserved video shifts', async ({page}) => {
+  const css = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}video{display:block;width:100%;height:auto;background:#000}.b{height:40px;background:#444}.r{aspect-ratio:4/3}';
+  const viewport = {min: 800, max: 800, height: {min: 600, max: 2000}};
+  for (const [name, attrs] of [['attributes', 'width="1600" height="900"'], ['css ratio', 'class="r"']]) {
+    const html = `<div class="page"><video src="/none.mp4" ${attrs} muted></video><div class="b"></div></div>`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport});
+    expect(report.status === 'unknown', `${name}: ${JSON.stringify(report.diagnostics)}`).toBe(false);
+    await page.setViewportSize({width: 800, height: 600});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body style="margin:0">${html}</body></html>`);
+    const browser = await page.evaluate(() => document.querySelector('video').getBoundingClientRect().height);
+    const row = report.sizes.find(r => r.path === 'Page/0' && r.rect);
+    expect(Number(row.rect.blockSize.constant) + 800 * Number(eval(row.rect.blockSize.coefficient ?? '0')), name).toBeCloseTo(browser, 2);
+  }
+  // Without a reservation the static analysis is Unknown (the natural size arrives with the metadata).
+  expect(analyzeHTML('<div class="page"><video src="/none.mp4" muted></video><div class="b"></div></div>', {name: 'Page', css, viewport}).status).toBe('unknown');
+});

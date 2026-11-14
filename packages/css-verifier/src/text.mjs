@@ -161,8 +161,8 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     if (shaped.missing_codepoints.length) fail(`Font ${font.family} lacks ${shaped.missing_codepoints.map(c => `U+${c.toString(16).toUpperCase().padStart(4, '0')}`).join(', ')}; fallback fonts are not modeled`);
     // A line's advance is the sum of its glyph advances in either direction (bidi reordering moves glyphs, not
     // widths): Hebrew right-to-left runs measure like left-to-right ones (Chromium, measured). Arabic is shaped
-    // differently from Chromium (cursive attachment and spacing around words differ by up to 0.6px a word), so it
-    // stays outside the model.
+    // differently from Chromium: on 18 strings in Noto Sans Arabic, Chromium renders a string from 0.32em narrower
+    // to 0.38em wider than this shaping (e.g. ابحث هنا), so no allowance bounds it and it stays outside the model.
     if (/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(text)) fail('Arabic shaping is not modeled (it differs from Chromium)');
     if (shaped.runs.some(run => !['ltr', 'rtl'].includes(run.direction))) fail('Only horizontal text is modeled');
     return shaped.bounds.advance_width;

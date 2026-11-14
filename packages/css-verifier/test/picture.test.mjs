@@ -36,3 +36,15 @@ test('picture sources whose selection or file is not known stay Unknown', () => 
   // A decodable type is selected like any source.
   assert.equal(run('<source type="image/webp" srcset="/wide.png" width="1600" height="600"><img src="/narrow.png" width="800" height="800" alt="">').status, 'verified');
 });
+
+test('video: width/height attributes and aspect-ratio reserve its box like an img', () => {
+  const vcss = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}video{display:block;width:100%;height:auto}';
+  const video = (attrs, extra = {}) => analyzeHTML(`<div class="page"><video src="/clip.mp4" ${attrs}></video></div>`, {name: 'P', css: vcss, viewport: {min: 320, max: 1280, height: {min: 2000, max: 2000}}, ...extra});
+  const sized = video('width="1600" height="900"');
+  assert.equal(sized.status, 'verified', JSON.stringify(sized.diagnostics));
+  assert.equal(sized.sizes.find(r => r.path === 'P/0').blockSize.coefficient, '9/16');
+  // Its natural size, when known (from the file's metadata at build time), is checked like an image's.
+  assert.equal(video('width="1600" height="900"', {images: {'/clip.mp4': {width: 640, height: 480}}}).diagnostics[0].code, 'E_LAYOUT_IMAGE_RATIO');
+  // No reservation: the natural size arrives with the metadata, so the height is not decided.
+  assert.equal(video('').status, 'unknown');
+});

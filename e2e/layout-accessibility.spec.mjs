@@ -1280,8 +1280,8 @@ test('vw, vh, vmin, vmax, rem, em, % and calc()/min()/max()/clamp() size boxes l
   const css = `*{box-sizing:border-box;margin:0;padding:0}html{font-size:10px}html,body{margin:0;display:grid;grid-template-columns:minmax(0,1fr)}.page{display:grid;grid-template-columns:minmax(0,1fr)}.r{block-size:10px}
 .a{inline-size:50vw}.b{inline-size:calc(100% - 2rem)}.c{inline-size:clamp(200px, 50vw, 500px)}.d{inline-size:min(100%, 40rem);block-size:calc(5vh + 1rem)}
 .e{inline-size:max(20vw, 120px);block-size:20vmin}.f{inline-size:calc((100% - 2 * 16px) / 3);block-size:clamp(10px, 4vh, 30px)}.g{inline-size:calc(30vmin + 10px);block-size:5vmax}
-.h{font-size:12px;inline-size:10em;block-size:calc(2em + 4px)}.i{inline-size:25rem;max-inline-size:calc(60vw - 10px)}.j{inline-size:50%;box-sizing:content-box;padding:0 1rem}.k{inline-size:calc(50% - 400px)}`;
-  const boxes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'];
+.h{font-size:12px;inline-size:10em;block-size:calc(2em + 4px)}.i{inline-size:25rem;max-inline-size:calc(60vw - 10px)}.j{inline-size:50%;box-sizing:content-box;padding:0 1rem}.k{inline-size:calc(50% - 400px)}.l{inline-size:40dvw;block-size:10svh}`;
+  const boxes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'];
   const body = `<div class="page">${boxes.map(c => `<div class="r ${c}"></div>`).join('')}</div>`;
   // A whole document: rem resolves against the html root's font-size.
   const html = `<html lang="en"><body>${body}</body></html>`;
