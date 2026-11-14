@@ -389,7 +389,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
       if (!matches(selector, box, state)) continue;
       for (const declaration of rule.declarations) {
         const layer = rule.layer === null ? (declaration.important ? -Infinity : Infinity) : declaration.important ? -rule.layer : rule.layer;
-        const rank = [declaration.important, layer, ...selector.specificity];
+        // The style attribute (element-attached) wins over every selector and layer, below only importance (Cascade 5).
+        const rank = [declaration.important, rule.attached ? 1 : 0, layer, ...selector.specificity];
         const origin = { file: declaration.file, line: declaration.line, selector: selector.source, layer: rule.layerName, specified: declaration.specified ?? declaration.value, ...conditions(rule) };
         const wins = !priorities.has(declaration.property) || greaterRank(rank, priorities.get(declaration.property));
         // Explanation data only: the losing side of each comparison.

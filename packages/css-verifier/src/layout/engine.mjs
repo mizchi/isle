@@ -62,6 +62,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
+  // style attributes: each element's declarations as a rule that matches only it, element-attached in the cascade.
+  for (const box of boxes.filter(box => box.inlineStyle !== undefined)) {
+    if (box.inlineStyle === 'dynamic') { unknown('U_LAYOUT_CSS', `${box.label}: a dynamic style attribute decides its styles`, undefined, box); continue; }
+    const attached = parseLayoutCSS([{ css: `*{${box.inlineStyle}}`, file: `${box.label} style attribute` }], (code, message, line, file, detail) => { if (detail) diagnostics.push({ code, message, ...detail }); else unknown(code, message, line, box, file); }).rules;
+    for (const rule of attached) { rule.selectors = [{ source: `${box.label} [style]`, parts: [{ kind: 'path', value: box.path }], specificity: [0, 0, 0] }]; rule.attached = true; rules.push(rule); }
+  }
   for (const rule of rules) rule.layerName = rule.layer === null ? undefined : layers[rule.layer];
   const bounded = values => { spend(values.length); if (values.length > 512) throw new Error('Layout state limit exceeded'); return values; };
 

@@ -51,5 +51,5 @@ export function matches(selector, box, state) {
   if (selector.state && !state?.has(selector.state)) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
-    part.kind === 'root' ? box.documentRoot === true : part.choices.some(choice => matches(choice, box)));
+    part.kind === 'root' ? box.documentRoot === true : part.kind === 'path' ? box.path === part.value : part.choices.some(choice => matches(choice, box)));
 }

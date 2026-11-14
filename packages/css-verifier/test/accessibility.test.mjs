@@ -1103,3 +1103,13 @@ test('a closed popover renders nothing unless author CSS overrides it', () => {
   // Shown while closed it keeps the UA position: fixed (a centred box over the page): not modeled.
   assert.deepEqual(shown.diagnostics.map(d => d.code), ['U_LAYOUT_POPOVER']);
 });
+
+test('style attributes are element-attached declarations', () => {
+  const tree = {tag: 'main', classes: ['page'], children: [{tag: 'div', classes: ['a'], inlineStyle: 'block-size: 30px'}, {tag: 'div', classes: ['b'], inlineStyle: 'block-size: 10px !important'}]};
+  const css = '@layer base { .a { block-size: 80px !important; } }\n.page { display: grid; grid-template-columns: minmax(0, 1fr); }\n.a { block-size: 60px; }\n.b { block-size: 40px !important; }';
+  const report = analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain});
+  const size = cls => report.sizes.find(r => r.box === `.${cls}`).blockSize.constant;
+  // A layered !important beats the attribute's normal value; the attribute's !important beats an unlayered one.
+  assert.deepEqual([size('a'), size('b')], ['80', '10']);
+  assert.equal(analyzeLayout({...tree, children: [{tag: 'div', classes: ['a'], inlineStyle: 'dynamic'}]}, {name: 'Page', css: reset + css, viewport: domain}).status, 'unknown');
+});
