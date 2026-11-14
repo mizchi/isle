@@ -281,3 +281,67 @@ test('spaced line profiles (letter 0.12em, word 0.16em) match Chromium', async (
     });
   }
 });
+
+// Inline bounds: a link inside one line of measured text lies inside the outer bounds and covers the inner ones.
+test('inline element bounds contain the rendered inline box', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const roboto = {family: 'Roboto', size: 20, lineHeight: 20, weight: 400};
+  const cases = [
+    {font: jp, content: '日本語のテキスト幅を確認します', piece: 'テキスト'},
+    {font: jp, content: 'ABC 123 日本語', piece: '123'},
+    {font: {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content: 'Read the guide first.', piece: 'guide'},
+    {font: roboto, content: 'AVATAR Wave today', piece: 'Wave'},
+    {font: roboto, content: 'Tiny link at the start', piece: 'Tiny'},
+  ];
+  for (const {font, content, piece} of cases) {
+    const at = content.indexOf(piece);
+    const html = `<div class="page"><p class="p">${content.slice(0, at)}<a class="u" href="#x">${piece}</a>${content.slice(at + piece.length)}</p></div>`;
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:${font.lineHeight + 8}px;padding:4px 7px;background:#fff;color:#000}.p{font-family:"${font.family}";font-size:${font.size}px;line-height:${font.lineHeight}px;font-weight:${font.weight};white-space:nowrap}.u{color:#000}`;
+    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': piece}}}});
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 400, max: 900, height: {min: 300, max: 300}}, boxes});
+    const [bound] = report.inlineBounds ?? [];
+    expect(bound, JSON.stringify(report.diagnostics)).toBeTruthy();
+    const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+    const at400 = a => value(a.coefficient) * 400 + value(a.heightCoefficient ?? '0') * 300 + value(a.constant);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const rects = await page.evaluate(() => [...document.querySelector('.u').getClientRects()].map(r => ({x: r.x, y: r.y, w: r.width, h: r.height})));
+    expect(rects.length).toBe(1);
+    const [r] = rects, o = bound.outer, i = bound.inner;
+    const box = b => ({x: at400(b.inlineStart), y: at400(b.blockStart), w: at400(b.inlineSize), h: at400(b.blockSize)});
+    const O = box(o), I = i && box(i), tag = `${font.family} ${JSON.stringify(content)}`;
+    expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.x + r.w, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);
+    expect(r.y, `${tag} top`).toBeGreaterThanOrEqual(O.y - 1e-9); expect(r.y + r.h, `${tag} bottom`).toBeLessThanOrEqual(O.y + O.h + 1e-9);
+    expect(I, tag).toBeTruthy();
+    expect(r.x, `${tag} inner left`).toBeLessThanOrEqual(I.x + 1e-9); expect(r.x + r.w, `${tag} inner right`).toBeGreaterThanOrEqual(I.x + I.w - 1e-9);
+    expect(r.y, `${tag} inner top`).toBeLessThanOrEqual(I.y + 1e-9); expect(r.y + r.h, `${tag} inner bottom`).toBeGreaterThanOrEqual(I.y + I.h - 1e-9);
+  }
+});
+
+// Occlusion and obscured focus for an inline link, from its measured bounds, against Chromium's hit testing.
+test('inline link occlusion and obscured focus agree with Chromium', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
+  const content = 'Read the guide first.';
+  const html = '<div class="page"><p class="p">Read the <a class="u" href="#x">guide</a> first.</p><div class="cover"></div></div>';
+  const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': 'guide'}}}});
+  // Covers (left, top, width, height) relative to the page: over the whole line, over part of the link, beside it.
+  for (const [name, cover, occluded, obscured] of [['whole line', [0, 0, 300, 24], true, true], ['part of the link', [80, 0, 10, 24], true, false], ['beside the text', [200, 0, 40, 24], false, false]]) {
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;position:relative;background:#fff;color:#000}.p{font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}.u{color:#000}.cover{position:absolute;left:${cover[0]}px;top:${cover[1]}px;inline-size:${cover[2]}px;block-size:${cover[3]}px;background:#eee}`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 400, max: 900, height: {min: 300, max: 300}}, boxes, accessibility: true});
+    const codes = report.diagnostics.filter(d => d.path === 'Page/0/0').map(d => d.code);
+    expect(codes.includes('U_A11Y_OCCLUDED'), `${name}: ${JSON.stringify(codes)}`).toBe(false);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const browser = await page.evaluate(() => {
+      const link = document.querySelector('.u'), r = link.getBoundingClientRect(), c = document.querySelector('.cover').getBoundingClientRect();
+      let hit = false; for (let x = r.left + 0.5; x < r.right; x += 1) for (let y = r.top + 0.5; y < r.bottom; y += 1) if (document.elementFromPoint(x, y)?.classList.contains('cover')) hit = true;
+      return {hit, contained: c.left <= r.left && c.top <= r.top && c.right >= r.right && c.bottom >= r.bottom};
+    });
+    expect(browser, name).toEqual({hit: occluded, contained: obscured});
+    expect(codes.includes('E_A11Y_OCCLUDED'), `${name} occluded`).toBe(occluded);
+    expect(codes.includes('E_A11Y_FOCUS_OBSCURED'), `${name} obscured`).toBe(obscured);
+  }
+});

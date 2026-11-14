@@ -3,6 +3,7 @@ import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rect
 import { validateOptions } from './input.mjs';
 import { parseLayoutCSS, computeStyle, matches, px } from './css.mjs';
 import { tracks, place } from './grid.mjs';
+import { compileSelector } from './selectors.mjs';
 import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
 import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
@@ -441,7 +442,20 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // they have no horizontal padding, border or margin (and keep a font-derived contract's font).
   // Each gets its own computed style and DOM facts as a row without a rectangle.
   const fontKeys = ['font-family', 'font-size', 'font-weight', 'font-style', 'line-height', 'letter-spacing', 'word-spacing', 'text-transform'];
-  function inlineContent(leaf, leafStyle, region, parents, chain) {
+  // Measured bounds of an inline element in one line of fixed text (textMetrics.inline): an outer
+  // rectangle it stays inside and an inner one it always covers, from the leaf's content box.
+  const sixtyfourths = (value, round) => div(q(String(round(value * 64))), q(64));
+  function inlineBounds(child, leaf, leafStyle, leafRow) {
+    const metrics = leaf.contract?.textMetrics;
+    if (!leafRow?.origin || metrics?.kind !== 'content' || !metrics.inline || leaf.contract.wrap !== 'nowrap' || !['start', 'left'].includes(leafStyle['text-align']) || leafStyle.direction !== 'ltr') return null;
+    const entry = Object.entries(metrics.inline).find(([selector]) => matches(compileSelector(selector), child));
+    if (!entry) return null;
+    const b = entry[1], x = sum(leafRow.origin.inline, scalar(leafRow.content.left)), y = sum(leafRow.origin.block, scalar(leafRow.content.top));
+    const rect = (x0, x1, y0, y1) => cmp(x1, x0) > 0 && cmp(y1, y0) > 0 ? { origin: { inline: sum(x, scalar(x0)), block: sum(y, scalar(y0)) }, inline: scalar(sub(x1, x0)), block: scalar(sub(y1, y0)) } : null;
+    return { outer: rect(sixtyfourths(b.start[0], Math.floor), sixtyfourths(b.end[1], Math.ceil), sixtyfourths(b.top[0], Math.floor), sixtyfourths(b.bottom[1], Math.ceil)),
+      inner: rect(sixtyfourths(b.start[1], Math.ceil), sixtyfourths(b.end[0], Math.floor), sixtyfourths(b.top[1], Math.ceil), sixtyfourths(b.bottom[0], Math.floor)) };
+  }
+  function inlineContent(leaf, leafStyle, region, parents, chain, leafRow) {
     for (const child of leaf.inline) for (const state of styles(child, region, parents.map(p => ({ ...p, names: [] })), parents.at(-1).style, false, false)) {
       const style = state.style;
       if (style.display === 'none') continue;
@@ -451,7 +465,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (leaf.contract?.textMetrics && fontKeys.some(key => style[key] !== leafStyle[key])) throw Object.assign(new Error(`${child.label} changes the font inside text measured as one run`), { code: 'U_LAYOUT_INLINE' });
       const own = [...chain, paintFacts(style)];
       geometry.push({ box: child, path: child.path, region: state.region, origin: null, inline: null, block: null, position: 'static', inlineFlow: true,
-        borders: { left: zero, right: zero, top: zero, bottom: zero }, overflow: 'visible', overflowValue: 'visible', painted: paints(style), paint: paintFacts(style), chain: own, parentText: leaf.path });
+        borders: { left: zero, right: zero, top: zero, bottom: zero }, overflow: 'visible', overflowValue: 'visible', painted: paints(style), paint: paintFacts(style), chain: own, parentText: leaf.path,
+        ...(leafRow ? { bounds: inlineBounds(child, leaf, leafStyle, leafRow) ?? undefined } : {}) });
       if (child.children?.length) inlineContent({ ...child, inline: child.children, contract: leaf.contract }, style, state.region, [...parents, { box: child, style }], own);
     }
   }
@@ -501,7 +516,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         ...(focusableBox(box) || box.tag === 'a' ? { hoverStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, hoverState).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
         ...(style['animation-name'] !== 'none' ? { reducedMotion: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set(['prefers-reduced-motion:reduce'])).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
         ...(focusableBox(box) ? { focusStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, focusState).map(s => ({ region: s.region, paint: paintFacts(s.style), authorOutline: Boolean(s.style.$sources['outline-style']) })) } : {}) });
-      if (box.inline?.length) inlineContent(box, style, region, [...parents, { box, style }], geometry.at(-1).chain);
+      if (box.inline?.length) inlineContent(box, style, region, [...parents, { box, style }], geometry.at(-1).chain, geometry.at(-1));
       const rect=origin && blockSize ? {inlineStart:affine(origin.inline),blockStart:affine(origin.block),inlineSize:affine(inline),blockSize:affine(blockSize)} : null;
       sizes.push({ box: box.label, path: box.path, position:style.position, ...positioned,...(rect ? {rect} : {}), boxSizing: style['box-sizing'], boxSizingSource: style.$sources['box-sizing'],
         paddingInlineSize:affine(diff(inline,scalar(add(px(style['border-left']),px(style['border-right']))))),
@@ -949,6 +964,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     styleSources: styleSources.map(({ kind, file }) => ({ kind, file })), diagnostics, policies, checks, sizes, queries, subgrids,
     elements:boxes.map(({path,tag,id,classes,owner,targets,targetIdentity})=>({path,tag,...(id ? {id} : {}),classes,owner,...(targets?.length ? {targets} : {}),...(targetIdentity ? {targetIdentity} : {})})),
     ...(boxes.some(box=>box.layoutContracts?.length) ? {layoutBindings:boxes.flatMap(box=>(box.layoutContracts ?? []).map(declaration=>({path:box.path,declaration})))} : {}),
+    ...(geometry.some(row => row.bounds) ? { inlineBounds: geometry.filter(row => row.bounds).map(row => ({ box: row.box.label, path: row.path, ...ranges(row.region),
+      ...Object.fromEntries(['outer', 'inner'].map(key => [key, row.bounds[key] ? { inlineStart: affine(row.bounds[key].origin.inline), blockStart: affine(row.bounds[key].origin.block), inlineSize: affine(row.bounds[key].inline), blockSize: affine(row.bounds[key].block) } : null])) })) } : {}),
     ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}),
     ...(options.accessibility ? { accessibility: { rules: accessibilityRules, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), warnings: accessibilityWarnings, exempted: accessibilityExempted, notes: accessibilityNotes } } : {}),
     ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', warnings: integrityWarnings, exempted: integrityExempted } } : {}) };

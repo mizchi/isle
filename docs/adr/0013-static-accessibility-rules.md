@@ -177,6 +177,13 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
 - 空の inline 要素は幅がないので、フォーカスできれば focus-area の違反(Chromium と一致)。
 - リンクの UA スタイル:`a[href]` の色は UA のリンク色で、親から継承しない。以前は継承すると見なしていた(誤り)。
   作者が `color` を指定しない限りコントラストは Unknown。UA の下線(`text-decoration-line: underline`)はモデルにした。
+- **inline の矩形**:一行(nowrap)の固定文字列の text 契約で `text.inline: {'.u': 'guide'}`(内容に1度だけ現れる部分)を与えると、
+  フォント層が inline 要素の**外接**と**内接**の区間を測る:左右の端は接頭辞を単独で shaping した advance と、全体から残りを引いた advance の間
+  (境界をまたぐ kerning はこの間にある)に layout allowance を足したもの、上下は font の content area(hhea、USE_TYPO_METRICS なら OS/2 typo)
+  を行の中央に置いて ±1px(Chromium の ascent・descent の丸め)。engine は leaf の content box(text-align start、ltr)から矩形にし、
+  report の `inlineBounds` に出す。inner に重なる後の箱は確実に覆う(E_A11Y_OCCLUDED)、outer だけに触れるなら U_A11Y_OCCLUDED、
+  outer を含む箱は focus を完全に隠す(E_A11Y_FOCUS_OBSCURED)。Chromium の描画は日本語・Latin・行高が content area より小さい場合でも
+  outer の中にあり inner を覆い(`e2e/layout-text-fonts.spec.mjs`)、3つの覆い方で hit test と一致した。折り返す文字列の inline 要素は矩形なしのまま。
 
 ### form control と画像
 

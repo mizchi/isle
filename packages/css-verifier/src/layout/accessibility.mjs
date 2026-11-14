@@ -463,6 +463,29 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     if (failed) report(findings, 'E_A11Y_REFLOW', 'error', `${row.box.label} makes the page scroll horizontally at 320 CSS px`, row, failed, { rule: 'reflow' });
   }
 
+  // Inline targets (links in one line of measured text): the outer bounds hold every fragment, the
+  // inner bounds are always covered. Covering the inner box occludes; touching only the outer is Unknown.
+  for (const target of geometry.filter(row => row.inlineFlow && row.bounds?.outer && interactive(row) && visible(row) && !hiddenFrom(row.path))) {
+    const own = layer(target), inner = target.bounds.inner && { ...target, ...target.bounds.inner }, outer = { ...target, ...target.bounds.outer };
+    for (const cover of placed) {
+      if (related(cover.path, target.path) || cover.path === target.parentText || !visible(cover)) continue;
+      if (!paintsAbove(cover, layer(cover), target, own)) continue;
+      if (cover.paint.pointerEvents !== 'none') {
+        const sure = inner && overlap(inner, cover);
+        if (sure) report(findings, 'E_A11Y_OCCLUDED', 'error', `${target.box.label} (inline) is covered by ${cover.box.label}, which is painted later and receives the pointer`, target, sure, { rule: 'occluded-target', cover: cover.path });
+        let maybe = overlap(outer, cover);
+        if (maybe && sure) maybe = subtract(maybe, sure);
+        for (const region of [maybe].flat().filter(Boolean)) report(unknowns, 'U_A11Y_OCCLUDED', 'unknown', `${target.box.label} (inline) may be covered by ${cover.box.label}: its measured text bounds touch the cover`, target, region, { rule: 'occluded-target', cover: cover.path });
+      }
+      if (cover.painted && focusable(target)) {
+        let region = intersect(target.region, cover.region);
+        region = atMost(region, cover.origin.inline, outer.origin.inline); region = atMost(region, cover.origin.block, outer.origin.block);
+        region = atMost(region, right(outer), right(cover)); region = atMost(region, bottom(outer), bottom(cover));
+        if (region) report(findings, 'E_A11Y_FOCUS_OBSCURED', 'error', `${target.box.label} (inline) is entirely hidden behind ${cover.box.label} when focused`, target, region, { rule: 'focus-obscured', cover: cover.path });
+      }
+    }
+  }
+
   // focus-obscured: a later painted box contains a focusable box. focus-area: nothing to show focus on.
   for (const target of placed.filter(focusable)) {
     const own = layer(target);

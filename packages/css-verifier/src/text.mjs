@@ -334,6 +334,32 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     return {text: collapsed, width, minContent, overflowWrap, profile};
   }
 
+  /**
+   * Bounds of inline elements inside one line of fixed text (nowrap). `inline` maps a selector to
+   * its text, which occurs once in the content. Offsets come from the prefix advance shaped alone and
+   * as the whole minus the rest (kerning across the boundary lies between), widened by the layout
+   * allowance; the vertical extent is the font's content area (hhea, or OS/2 typo with USE_TYPO_METRICS)
+   * centred in the line, ±1px for Chromium's rounding of ascent and descent.
+   */
+  function inlineBounds({font, text, lang, inline}) {
+    const collapsed = collapse(text), out = {};
+    const {info} = lookup(font);
+    const typo = info.os2 && (info.os2.fsSelection & 128);
+    const ascent = typo ? info.os2.typoAscender : info.ascent, descent = Math.abs(typo ? info.os2.typoDescender : info.descent);
+    const area = (ascent + descent) / info.unitsPerEm * font.size, top = (font.lineHeight - area) / 2;
+    const width = value => value ? shapeLine(font, value, lang) : 0, slack = 2 * scriptRuns(collapsed) / UNIT;
+    for (const [selector, piece] of Object.entries(inline ?? {})) {
+      const part = collapse(piece);
+      const at = collapsed.indexOf(part);
+      if (!part || at < 0 || collapsed.indexOf(part, at + 1) >= 0) fail(`${selector}: inline text ${JSON.stringify(piece)} must occur exactly once in the content`);
+      const before = collapsed.slice(0, at), after = collapsed.slice(at + part.length), whole = width(collapsed);
+      const starts = [width(before), whole - width(part + after)], ends = [width(before + part), whole - width(after)];
+      out[selector] = {start: [Math.min(...starts) - slack, Math.max(...starts) + slack], end: [Math.min(...ends) - slack, Math.max(...ends) + slack],
+        top: [top - 1, top + 1], bottom: [top + area - 1, top + area + 1]};
+    }
+    return out;
+  }
+
   /** Replace `text` box contracts with the core's derived size contracts. */
   function resolveBoxes(boxes = {}) {
     const out = {};
@@ -357,10 +383,11 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         continue;
       }
       let metrics, width;
+      if (text.inline !== undefined && text.content === undefined) fail(`${selector}: inline bounds need fixed content`);
       if (text.content !== undefined) {
         const measured = measureText({font, text: text.content, lang: text.lang});
         width = measured.bound;
-        metrics = {kind: 'content', text: measured.text, width: measured.width};
+        metrics = {kind: 'content', text: measured.text, width: measured.width, ...(text.inline ? {inline: inlineBounds({font, text: text.content, lang: text.lang, inline: text.inline})} : {})};
       } else {
         const domain = domainBounds({font, characters: text.characters, maxLength: text.maxLength, lang: text.lang});
         width = domain.bounds.at(-1);

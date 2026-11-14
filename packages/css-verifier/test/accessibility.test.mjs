@@ -831,3 +831,18 @@ test('fixed tables with colspan and a caption', () => {
   assert.equal(rect(spanned, 'q').inlineStart.constant, '100');
   assert.equal(run(tall, css + '.s { inline-size: 100px; }', {viewport: tableView}).status, 'unknown');
 });
+
+test('inline links in one measured line: occlusion and obscured focus from their bounds', () => {
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
+  const contract = {minInlineSize: 140, intrinsicBlockSize: 24, wrap: 'nowrap', font,
+    textMetrics: {kind: 'content', text: 'Read the guide first.', width: 139, inline: {'.u': {start: [66.5, 66.6], end: [105.7, 105.8], top: [1.6, 3.7], bottom: [20.3, 22.4]}}}};
+  const tree = {tag: 'main', classes: ['page'], children: [{tag: 'p', classes: ['p'], text: true, children: [{tag: 'a', classes: ['u'], focusable: true, href: '#x', text: true}]}, {tag: 'div', classes: ['cover']}]};
+  const css = cover => `.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 24px; position: relative; background: #fff; color: #000; }\n.p { font-family: Roboto; font-size: 16px; line-height: 24px; font-weight: 400; white-space: nowrap; }\n.u { color: #000; }\n.cover { position: absolute; top: 0; ${cover} block-size: 24px; background: #eee; }`;
+  const codes = cover => run(tree, css(cover), {boxes: {'.p': contract}}).diagnostics.filter(d => d.path === 'Page/0/0').map(d => d.code).sort();
+  assert.deepEqual(codes('left: 0; inline-size: 300px;'), ['E_A11Y_FOCUS_OBSCURED', 'E_A11Y_OCCLUDED']);
+  assert.deepEqual(codes('left: 80px; inline-size: 10px;'), ['E_A11Y_OCCLUDED']);
+  assert.deepEqual(codes('left: 200px; inline-size: 40px;'), []);
+  // Touching only the measurement allowance is not decided.
+  assert.deepEqual(codes('left: 106px; inline-size: 40px;').filter(c => c.startsWith('U_')), []);
+  assert.deepEqual(codes('left: 105.75px; inline-size: 40px;'), ['U_A11Y_OCCLUDED']);
+});
