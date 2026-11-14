@@ -270,16 +270,25 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // Automatic table columns (CSS 2 / Chromium auto table layout): below the summed minima every column keeps its
     // minimum (the table overflows); between minima and maxima each grows from its minimum by its share of
     // (max − min); above the maxima the width is shared in proportion to the maxima.
+    // With px columns (measured): (1) below every minimum all stay at their minimum; (2) the px columns grow from
+    // their content minimum toward px in proportion to (px − min); (3) then the auto columns from min toward max in
+    // proportion to (max − min); (4) beyond, the auto columns share the rest in proportion to their max.
     if (definitions.some(t => t.autoTable)) {
       if (!definitions.every(t => t.autoTable)) throw new Error('Automatic table columns do not mix with other tracks');
-      const mins = definitions.map(t => t.autoTable.min), maxs = definitions.map(t => t.autoTable.max);
-      const low = mins.reduce(add, zero), high = maxs.reduce(add, zero), spread = sub(high, low), S = diff(available, scalar(gap));
-      const out = [];
-      const under = clip(region, diff(scalar(low), S), true);
-      if (under) out.push({ region: under, values: mins.map(scalar), required: scalar(add(low, gap)) });
-      if (cmp(spread, zero) > 0) { const between = region && clip(clip(region, diff(S, scalar(low))), diff(scalar(high), S), true); if (between) out.push({ region: between, values: definitions.map((t, i) => sum(scalar(mins[i]), times(diff(S, scalar(low)), div(sub(maxs[i], mins[i]), spread)))), required: scalar(gap) }); }
-      const over = clip(region, diff(S, scalar(high)));
-      if (over) out.push({ region: over, values: maxs.map(m => cmp(high, zero) > 0 ? times(S, div(m, high)) : scalar(zero)), required: scalar(gap) });
+      const mins = definitions.map(t => t.autoTable.min), tops = definitions.map(t => t.autoTable.max), fixed = definitions.map(t => Boolean(t.autoTable.fixed));
+      const S = diff(available, scalar(gap)), total = list => list.reduce(add, zero);
+      const A = total(mins), B = total(definitions.map((t, i) => fixed[i] ? tops[i] : mins[i])), C = total(tops);
+      const autoMax = total(tops.filter((_, i) => !fixed[i])), autoCount = fixed.filter(f => !f).length;
+      const out = [], within = (lo, hi) => region && clip(clip(region, diff(S, scalar(lo))), diff(scalar(hi), S), true);
+      const under = clip(region, diff(scalar(A), S), true);
+      if (under) out.push({ region: under, values: mins.map(scalar), required: scalar(add(A, gap)) });
+      const phase = (lo, hi, grows) => { const spread = sub(hi, lo); if (cmp(spread, zero) <= 0) return; const r = within(lo, hi); if (!r) return;
+        out.push({ region: r, values: definitions.map((t, i) => grows(i) ? sum(scalar(mins[i]), times(diff(S, scalar(lo)), div(sub(tops[i], mins[i]), spread))) : scalar(fixed[i] && lo === B ? tops[i] : mins[i])), required: scalar(gap) }); };
+      phase(A, B, i => fixed[i]);
+      // Phase 3: px columns at px, auto columns grow.
+      { const spread = sub(C, B), r = cmp(spread, zero) > 0 ? within(B, C) : null; if (r) out.push({ region: r, values: definitions.map((t, i) => fixed[i] ? scalar(tops[i]) : sum(scalar(mins[i]), times(diff(S, scalar(B)), div(sub(tops[i], mins[i]), spread)))), required: scalar(gap) }); }
+      const over = clip(region, diff(S, scalar(C)));
+      if (over) out.push({ region: over, values: definitions.map((t, i) => fixed[i] ? scalar(tops[i]) : sum(scalar(tops[i]), times(diff(S, scalar(C)), cmp(autoMax, zero) > 0 ? div(tops[i], autoMax) : div(one, q(autoCount))))), required: scalar(gap) });
       return out;
     }
     const overhead = sum(total(bases), scalar(gap));
@@ -1083,13 +1092,21 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const rowStyles = rows.map(row => one(styles(row, region, parents, one(styles(sections.find(sec => sec.children.includes(row)), region, parents, style, false, false)), false, false)));
       // Content-sized columns: no px widths at all, and every non-empty cell a leaf with trusted min- and max-content
       // widths (minInlineSize, maxInlineSize). Each column's range is its cells' widest (plus the cell edges).
-      const contentColumns = widths.every(w => !w) && rows.every(row => row.children.every(cell => (!cell.text && !cell.contract && !(cell.children ?? []).length) || (!(cell.children ?? []).length && cell.contract?.minInlineSize !== undefined && cell.contract?.maxInlineSize !== undefined)));
+      // Px columns may join (Chromium's auto table layout, measured): their range is [content minimum, px].
+      const leafWith = (cell, auto) => !(cell.children ?? []).length && cell.contract?.minInlineSize !== undefined && (!auto || cell.contract?.maxInlineSize !== undefined);
+      const emptyCell = cell => !cell.text && !cell.contract && !(cell.children ?? []).length;
+      const contentColumns = widths.some(w => !w) && rows.every(row => row.children.every((cell, c) => emptyCell(cell) || leafWith(cell, !widths[c]))) && (widths.every(w => !w) || rows.some(row => row.children.some((cell, c) => !widths[c] && !emptyCell(cell))));
       const ranges = contentColumns ? Array.from({ length: columns }, () => ({ min: zero, max: zero })) : null;
       rows.forEach((row, r) => row.children.forEach((cell, c) => {
         const cs = one(styles(cell, region, parents, rowStyles[r], false, false));
         if (contentColumns) {
-          if (cs['inline-size'] !== 'auto') fail('Automatic table column widths must be px or auto');
           const cellEdges = ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+          if (cs['inline-size'] !== 'auto') {
+            if (!/^\d+(?:\.\d+)?px$/.test(cs['inline-size'])) fail('Automatic table column widths must be px or auto');
+            const w = cs['box-sizing'] === 'content-box' ? add(px(cs['inline-size']), cellEdges) : px(cs['inline-size']);
+            if (!widths[c] || cmp(w, widths[c]) !== 0) fail('In automatic table layout every px width of a column must be the first row\'s');
+          }
+          if (widths[c]) ranges[c].fixed = widths[c];
           const lo = add(q(String(cell.contract?.minInlineSize ?? 0)), cellEdges), hi = add(q(String(cell.contract?.maxInlineSize ?? 0)), cellEdges);
           if (cmp(lo, ranges[c].min) > 0) ranges[c].min = lo;
           if (cmp(hi, ranges[c].max) > 0) ranges[c].max = hi;
@@ -1116,12 +1133,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const parentDisplay = parents.at(-1)?.style.display;
       if (style['inline-size'] === 'auto' && parentDisplay === 'flex') fail('An automatic table with an auto width in a flex container is sized by content');
       if (contentColumns) {
-        for (const range of ranges) if (cmp(range.max, range.min) < 0) range.max = range.min;
+        for (const range of ranges) { if (cmp(range.max, range.min) < 0) range.max = range.min; if (range.fixed && cmp(range.fixed, range.min) < 0) range.fixed = range.min; }
         if (style['inline-size'] === 'auto' && parentDisplay === 'flex') fail('An automatic table with an auto width in a flex container is sized by content');
         // An auto width outside a grid area shrinks to fit: as wide as the available width, at most its columns'
         // max-content widths plus its edges (a max-inline-size on the equivalent grid).
-        if (style['inline-size'] === 'auto' && parentDisplay !== 'grid') contentShrink = add(ranges.map(range => range.max).reduce(add, zero), edges);
-        contentTracks = ranges.map(range => `-isle-auto-table(${number(range.min)},${number(range.max)})`).join(' ');
+        if (style['inline-size'] === 'auto' && parentDisplay !== 'grid') contentShrink = add(ranges.map(range => range.fixed ?? range.max).reduce(add, zero), edges);
+        contentTracks = ranges.map(range => range.fixed ? `-isle-auto-table-fixed(${number(range.min)},${number(range.fixed)})` : `-isle-auto-table(${number(range.min)},${number(range.max)})`).join(' ');
       } else if (style['inline-size'] === 'auto' && parentDisplay === 'grid') autoMinimum = widths.filter(Boolean).reduce(add, zero);
       else if (style['inline-size'] === 'auto') {
         if (autos) fail('An automatic table with an auto column needs an explicit inline-size');
