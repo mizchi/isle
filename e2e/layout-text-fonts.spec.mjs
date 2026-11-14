@@ -516,3 +516,39 @@ test('anonymous text blocks in a table cell stack like Chromium', async ({page})
     else { expect(Math.abs(rect.y - top), `${row.box} top`).toBeLessThanOrEqual(1 / 64 + 1e-9); expect(Math.abs(rect.bottom - (top + height)), `${row.box} bottom`).toBeLessThanOrEqual(1 / 64 + 1e-9); }
   }
 });
+
+// Right-to-left text (Hebrew): widths and wrapping are the same sums of glyph advances.
+test('right-to-left Hebrew widths and line profiles match Chromium; Arabic stays outside', async ({page}) => {
+  test.setTimeout(240_000);
+  const rtlFiles = {'Noto Sans Arabic': 'arabic-variable.ttf', 'Noto Sans Hebrew': 'hebrew-variable.ttf'};
+  const rtl = await loadTextMetrics({fonts: Object.fromEntries(Object.entries(rtlFiles).map(([family, file]) => [family, {file: new URL(file, fixtures).pathname}]))});
+  const rtlFace = Object.entries(rtlFiles).map(([family, file]) => `@font-face{font-family:"${family}";src:url(data:font/ttf;base64,${readFileSync(new URL(file, fixtures)).toString('base64')})}`).join('');
+  // Arabic is shaped differently from Chromium (يلتف is 0.6px narrower): it stays outside the model.
+  expect(() => rtl.measureText({font: {family: 'Noto Sans Arabic', size: 20, lineHeight: 30, weight: 400}, text: 'مرحبا بالعالم'})).toThrow(/Arabic shaping is not modeled/);
+  const cases = [['Noto Sans Hebrew', 'he', 'שלום עולם ברוכים הבאים טקסט ארוך שנשבר על פני כמה שורות לבדיקה'], ['Noto Sans Hebrew', 'he', 'שלום עולם']];
+  await page.setContent(`<!doctype html><html dir="rtl"><style>${rtlFace}body{margin:0}</style><body></body></html>`);
+  for (const [family, lang, text] of cases) {
+    const font = {family, size: 20, lineHeight: 30, weight: 400};
+    const measured = rtl.measureText({font, text, lang});
+    const lines = rtl.breakLines({font, text, lang});
+    const widths = [...new Set(lines.profile.flatMap(entry => [-2, -1, 0, 1].map(d => entry.atLeastInlineSize + d / 64)))].filter(w => w >= lines.profile[0].atLeastInlineSize && w > 0).sort((a, b) => a - b);
+    const rendered = await page.evaluate(async ({family, text, widths}) => {
+      await document.fonts.load(`400 20px "${family}"`, text);
+      const element = document.createElement('div');
+      Object.assign(element.style, {fontFamily: `"${family}"`, fontSize: '20px', lineHeight: '30px', fontWeight: '400', width: 'max-content', whiteSpace: 'nowrap'});
+      element.textContent = text; document.body.append(element);
+      const single = element.getBoundingClientRect().width;
+      Object.assign(element.style, {whiteSpace: 'normal'});
+      const counts = widths.map(w => { element.style.width = `${w}px`; return element.getBoundingClientRect().height / 30; });
+      element.remove(); return {single, counts};
+    }, {family, text, widths});
+    expect(rendered.single, `${text} >= advance`).toBeGreaterThanOrEqual(measured.width - 1e-9);
+    expect(rendered.single, `${text} <= bound`).toBeLessThanOrEqual(measured.bound);
+    const slack = (2 * scriptRuns(text) + 1) / 64;
+    widths.forEach((w, i) => {
+      const modeled = lines.profile.filter(entry => entry.atLeastInlineSize <= w).at(-1).lines;
+      expect(rendered.counts[i], `${text} at ${w}px`).toBeLessThanOrEqual(modeled);
+      if (!lines.profile.some(entry => w < entry.atLeastInlineSize && w >= entry.atLeastInlineSize - slack)) expect(rendered.counts[i], `${text} at ${w}px`).toBe(modeled);
+    });
+  }
+});

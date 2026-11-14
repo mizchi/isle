@@ -16,5 +16,23 @@
     "sample_text": "日本語のテキスト幅検査。折り返しを確認します。英語ABC 123",
     "subset_text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~‥…、。々〈〉《》「」『』【】〔〕〜ぁあぃいぅうぇえぉおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわゐゑをんゔゕゖゝゞァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモャヤュユョヨラリルレロヮワヰヱヲンヴヵヶヷヸヹヺ・ーヽヾ予京今会住分前号名員報天幅年所折新日時書月末本東査検気番確社私秒聞英話認語読返週都間電！（），．：；？［］",
     "subset_command": "pyftsubset <source> --text-file=<text> --layout-features+=halt,chws,palt,vhal,vchw (fontTools 4.68.0); a superset of the earlier mizchi/font fixture with identical advances for its sample text"
+  },
+  {
+    "file": "hebrew-variable.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/5dac96833c85ada9384fe3e50b11df08091b9246/ofl/notosanshebrew/NotoSansHebrew%5Bwdth,wght%5D.ttf",
+    "source_sha256": "7ef36a2c3593758cdb622e1bdef4f84523e92fbc3ccc667438dd80ff54c2de88",
+    "subset_sha256": "b0b797e24a238c7655128a395c230b62925752c0c1163b1dcca0b0363035d7d2",
+    "sample_text": "שלום עולם ברוכים הבאים טקסט ארוך שנשבר על פני כמה שורות לבדיקה",
+    "subset_text": " שלום עולם ברוכים הבאים טקסט ארוך שנשבר על פני כמה שורות לבדיקה",
+    "subset_command": "pyftsubset <source> --text-file=<text> --layout-features+=mark,mkmk,ccmp (fontTools 4.55.0)"
+  },
+  {
+    "file": "arabic-variable.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/5dac96833c85ada9384fe3e50b11df08091b9246/ofl/notosansarabic/NotoSansArabic%5Bwdth,wght%5D.ttf",
+    "source_sha256": "63111b5b2e074dd48cc67692e0a2726d86ee94c1c37fe8598257b7b4e87e869e",
+    "subset_sha256": "be961b85b10893fb17d2f1c07c9a26495d891293b134966b3e2ca7516b6cba6b",
+    "sample_text": "مرحبا بالعالم",
+    "subset_text": " مرحبا بالعالم السلام عليكم ورحمة الله اللغة العربية نص طويل يلتف على عدة أسطر للتحقق",
+    "subset_command": "pyftsubset <source> --text-file=<text> --layout-features+=init,medi,fina,isol,rlig,calt,liga,mark,mkmk,ccmp (fontTools 4.55.0); kept to show that Arabic shaping stays outside the model"
   }
 ]

@@ -9,7 +9,8 @@ const fontKeys = new Set(['family', 'size', 'lineHeight', 'weight', 'style']);
 const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance', 'minContent', 'overflowWrap', 'profile', 'lang', 'spacedProfile', 'inline', 'baseline']);
 export const languageTag = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
 // Languages whose break opportunities were compared with Chromium (e2e). Chinese differs (e.g. !〜).
-export const breakingLanguages = new Set(['en', 'ja', 'ko']);
+// he: Hebrew letters break at spaces only (measured against Chromium with right-to-left text).
+export const breakingLanguages = new Set(['en', 'ja', 'ko', 'he']);
 export const breaksModeled = lang => breakingLanguages.has(lang.toLowerCase().split('-')[0]) && !/^(?:ja|ko|en)-(?:hans|hant)/i.test(lang);
 const finite = (value, min, max) => typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;
 

@@ -58,7 +58,9 @@ export function scriptSegments(text) {
   return segments;
 }
 export const scriptRuns = text => Math.max(scriptSegments(text).length, 1);
-export const textBound = (text, width) => width ? (Math.ceil(clean(width * UNIT)) + 2 * scriptRuns(text) - 1) / UNIT : 0;
+// Chromium rounds each right-to-left (Hebrew) word to the layout unit as it lays it out (measured): one more unit a word.
+const rtlWords = text => (text.match(/[\u05D0-\u05EA]+/gu) ?? []).length;
+export const textBound = (text, width) => width ? (Math.ceil(clean(width * UNIT)) + 2 * scriptRuns(text) - 1 + rtlWords(text)) / UNIT : 0;
 
 // Line-breaking classes of the modeled subset, measured in Chromium. Between
 // two ASCII characters Chromium uses its own pair table (plus the hyphen-digit
@@ -84,6 +86,8 @@ function lineClass(c) {
   if (c === ' ') return 'SP';
   if (asciiClass.has(c)) return asciiClass.get(c);
   if (latin1(c)) return 'AL';
+  // Hebrew letters (no marks or punctuation): no break inside a word, one at a space (measured).
+  if (/[\u05D0-\u05EA]/u.test(c)) return 'AR';
   if (/[\u3400-\u4DBF\u4E00-\u9FFF\u3041-\u3096\u30A1-\u30FA\u30FC]/u.test(c)) return 'ID';
   if (openings.has(c)) return 'OP';
   if (closings.has(c)) return 'CL';
@@ -95,6 +99,8 @@ const asciiPunctuation = c => ascii(c) && /[^A-Za-z0-9 ]/.test(c);
 // surrounding digits; ICU treats Latin-1 letters next to ASCII punctuation
 // differently from the ASCII table. Both are rejected.
 function unmodeledPair(x, y) {
+  const rtlLetter = c => lineClass(c) === 'AR';
+  if (rtlLetter(x) !== rtlLetter(y) && x !== ' ' && y !== ' ') return `${x}${y}: a Hebrew letter next to another class is outside the measured subset`;
   const numeric = c => '$%+\\'.includes(c);
   if ((numeric(x) && !ascii(y) && y !== ' ') || (numeric(y) && !ascii(x) && x !== ' ')) return `${x}${y}: ${numeric(x) ? x : y} next to a non-ASCII character follows ICU's numeric rule`;
   if ((latin1(x) && asciiPunctuation(y)) || (asciiPunctuation(x) && latin1(y))) return `${x}${y}: a Latin-1 letter next to ASCII punctuation follows ICU, not the ASCII table`;
@@ -107,6 +113,7 @@ function breakBefore(chars, classes, i) {
   if (a === 'SP') return true;
   // Chromium: '-' then a digit breaks only after an ASCII letter or digit (ABCD-1234, not -1).
   if (chars[i - 1] === '-' && b === 'NU') return i >= 2 && /[A-Za-z0-9]/.test(chars[i - 2]);
+  if (a === 'AR' && b === 'AR') return false;
   return breakTable[a][b];
 }
 /**
@@ -152,7 +159,12 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     const shaped = shaper.shape(handle, text, font.size, axes, language, ligatures);
     if (shaped.error) fail(`Shaping failed: ${shaped.error}`);
     if (shaped.missing_codepoints.length) fail(`Font ${font.family} lacks ${shaped.missing_codepoints.map(c => `U+${c.toString(16).toUpperCase().padStart(4, '0')}`).join(', ')}; fallback fonts are not modeled`);
-    if (shaped.runs.some(run => run.direction !== 'ltr')) fail('Only left-to-right text is modeled');
+    // A line's advance is the sum of its glyph advances in either direction (bidi reordering moves glyphs, not
+    // widths): Hebrew right-to-left runs measure like left-to-right ones (Chromium, measured). Arabic is shaped
+    // differently from Chromium (cursive attachment and spacing around words differ by up to 0.6px a word), so it
+    // stays outside the model.
+    if (/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(text)) fail('Arabic shaping is not modeled (it differs from Chromium)');
+    if (shaped.runs.some(run => !['ltr', 'rtl'].includes(run.direction))) fail('Only horizontal text is modeled');
     return shaped.bounds.advance_width;
   };
   // A line's advance: each script run shaped on its own (see scriptSegments).
@@ -250,7 +262,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         const extra = spacing ? parts.reduce((total, part) => total + [...part].length * spacing.letter + (part.match(/ /g) ?? []).length * spacing.word, 0) : 0;
         // Non-zero letter-spacing disables optional ligatures (CSS Text 3 §8.2), as Chromium does.
         const width = parts.reduce((total, part) => total + shape(font, part, language, !spacing?.letter), 0) - adjust + extra;
-        return width > 0 ? (Math.ceil(clean(width * UNIT)) + 2 * parts.length - 1) / UNIT : 0;
+        return width > 0 ? (Math.ceil(clean(width * UNIT)) + 2 * parts.length - 1 + parts.reduce((total, part) => total + rtlWords(part), 0)) / UNIT : 0;
       };
       const memo = new Map();
       const bound = (start, end) => {

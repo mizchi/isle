@@ -102,7 +102,7 @@ UAの見出し・強調のフォント(h1–h6のsizeとweight、strong/bのweig
 
 ## 範囲外(Unknownまたは入力エラー)
 
-- 未収録グリフ(フォールバックフォント)、RTL、結合文字・ZWJ・絵文字・改行を含む文字集合。
+- 未収録グリフ(フォールバックフォント)、アラビア文字(shaper と Chromium の連結・語間の幅が1語あたり最大 0.6px 違う、測定)、結合文字・ZWJ・絵文字・改行を含む文字集合。ヘブライ文字の右から左の text は扱う:幅は向きによらず advance の和で、Chromium は語ごとに layout unit へ丸めるので上限に1語あたり 1/64px を足す。ヘブライ文字は空白でだけ折り返し(lang he)、他の class との隣接は Unknown。
 - 文字集合と最大文字数の折り返し(分割位置が内容に依存する)、`white-space`がnormal・nowrap以外、`word-break`・`line-break`・`hyphens`・`text-wrap`(CSSで未対応のプロパティとして拒否)、上記以外の文字の行分割、小書き仮名・括弧の禁則、行頭・行末の約物の詰め。
 - `font`shorthand、`line-height: normal`、px以外の`font-size`、UA既定のfamily・`medium`、
   `font-weight: bolder/lighter`、`text-transform`、`letter-spacing`/`word-spacing`、
