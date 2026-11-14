@@ -97,6 +97,8 @@ const cases = [
     css: '.t{table-layout:fixed;inline-size:192px;border-spacing:3px}td{padding:4px;block-size:90px}.s,.e{vertical-align:baseline}.k{block-size:15px}'},
   {name: 'several baseline cells align their content bottoms', html: '<table class="t"><tbody><tr><td class="b1"><div class="k"></div><div class="k"></div></td><td class="b2"><div class="h"></div></td><td class="b3"><div class="k"></div></td><td class="e"></td><td class="m"><div class="k"></div><div class="h"></div><div class="h"></div></td></tr></tbody></table>',
     css: '.t{table-layout:fixed;inline-size:198px;border-spacing:3px}td{padding:4px}.b1,.b2,.b3,.e{vertical-align:baseline}.b2{padding-top:10px}.b3{padding-top:1px}.k{block-size:15px}.h{block-size:44px;inline-size:20px}'},
+  {name: 'px translate moves a box and its descendants, and contains absolute children', html: '<div class="g"><div class="w"><div class="a"></div><div class="b"></div></div><div class="t"><div class="abs"></div></div><div class="n"></div></div>',
+    css: '.g{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);row-gap:6px;position:relative;padding:5px}.w{display:grid;grid-template-columns:minmax(0,1fr);transform:translate(12px, -3px)}.a,.b{block-size:20px}.b{transform:translateY(7px)}.t{display:grid;grid-template-columns:minmax(0,1fr);block-size:40px;transform:translateX(-9px)}.abs{position:absolute;left:4px;top:6px;inline-size:30px;block-size:10px}.n{block-size:15px}', options: {integrity: true}, expected: 'violated'},
   {name: 'fixed tables with captions and border-spacing, colspan and rowspan', html: '<div class="g"><table class="t"><caption class="c">x</caption><tbody><tr><td class="a" colspan="2"></td><td class="b"></td></tr><tr><td class="a"></td><td class="a"></td><td class="a"></td></tr></tbody></table><table class="t u"><caption class="c">y</caption><tbody><tr><td class="s" rowspan="2"></td><td class="a"></td></tr><tr><td class="a"></td></tr></tbody></table></div>',
     css: '.g{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px}.t{table-layout:fixed;inline-size:196px;border-spacing:4px 6px}.u{caption-side:bottom}.c{block-size:18px;padding:0}.a,.b{block-size:20px;padding:0}.s{padding:0}',
     boxes: {'.c': {minInlineSize: 1, intrinsicBlockSize: 18}}},
@@ -121,7 +123,7 @@ const inside = (range, value) => (range.minInclusive === false ? value > range.m
 for (const sample of cases) {
   test(`${sample.name}: model rectangles match Chromium`, async ({page}) => {
     const css = reset + sample.css;
-    const report = analyzeHTML(sample.html, {name: 'Case', css, viewport: {min: 200, max: 900, height: {min: 300, max: 600}}, ...(sample.boxes ? {boxes: sample.boxes} : {})});
+    const report = analyzeHTML(sample.html, {name: 'Case', css, viewport: {min: 200, max: 900, height: {min: 300, max: 600}}, ...(sample.boxes ? {boxes: sample.boxes} : {}), ...(sample.options ?? {})});
     expect(report.status, JSON.stringify(report.diagnostics)).toBe(sample.expected ?? 'verified');
     let compared = 0;
     for (const [width, height] of [[200, 300], [321, 400], [480, 450], [777, 600], ...(sample.widths ?? []).map(width => [width, 400])]) {

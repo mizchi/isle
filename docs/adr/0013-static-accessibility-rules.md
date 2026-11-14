@@ -151,7 +151,9 @@ letter-spacing が 0 でないとき Chromium は任意の ligature を切る(CS
 1つの層として描かれる(CSS 2 付録 E):負の z、通常の流れの箱、z 0/auto の配置した層(tree 順)、正の z。覆う箱と対象が別の context なら
 (段、z、tree 順)で比べ、同じ context の中は従来の tree 順の規則。入れ子の context は、2つの箱の最も深い共通の context の中で、
 それぞれを含む直下の層どうしを比べる(低い context の中の z 99 は、高い兄弟の context の下)。`isolation: isolate` も z 0 の context を作る。
-`transform` は位置を変えるので Unknown のまま。
+`transform` は px の translate だけを扱う:レイアウトの後に箱と子孫(原点を通して)をずらし、z 0 の context を作り、
+絶対配置の子孫の containing block になる(入れ子の translate と絶対配置の子で Chromium の矩形と一致)。それ以外の transform は Unknown。
+描画と hit test の座標を動かすものなので accessibility・integrity の検査でだけ扱い、レイアウトの証明(transition・no-shift・座標の契約)では従来どおり Unknown。
 以前は z-index 自体が未対応で Unknown、opacity による context は考えていなかった。7通りの z-index/opacity と、5通りの入れ子(isolation を含む)で Chromium の hit test と一致した。
 
 ### 生成 content(`::before`・`::after`)

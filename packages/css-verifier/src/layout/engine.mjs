@@ -175,6 +175,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // A fieldset's rendered legend sits in its border: modeled only when the fieldset generates no box.
     // Replaced elements and text fields have intrinsic sizes the model does not compute.
     if(['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto'))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
+    // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
+    // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
+    if (style.transform !== 'none' && !options.accessibility && !options.integrity) throw Object.assign(new Error(`transform ${style.transform} moves the painted box; it is modeled for the accessibility and integrity checks only`), { code: 'U_LAYOUT_CSS' });
     if (['left', 'right', 'inline-start', 'inline-end'].includes(style.float)) { issue('E_LAYOUT_FLOAT', 'float is forbidden in checked layout', box, region); return false; }
     if (style.float !== 'none') throw new Error('Unsupported float value');
     if (style.display === 'contents') throw new Error('display: contents on the analyzed root or with text needs its parent box and anonymous items');
@@ -599,7 +602,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
 
   // Root-relative border coordinates. Scroll offsets/gutter placement and shared
   // subgrid line offsets are deliberately outside the first transition profile.
+  // A px translate moves the box (and, through its origin, its descendants) after layout.
+  function translated(style, origin) {
+    const m = /^translate\((-?[\d.]+)px, (-?[\d.]+)px\)$/.exec(style.transform ?? 'none');
+    return origin && m ? offset(origin, scalar(q(m[1])), scalar(q(m[2]))) : origin;
+  }
   function resolvedOrigin(style,available,inline,blockSize,parents) {
+    return translated(style, untranslatedOrigin(style,available,inline,blockSize,parents));
+  }
+  function untranslatedOrigin(style,available,inline,blockSize,parents) {
     if(!block || parents.some(p=>p.clipped || p.subgrid) || ['overflow-x','overflow-y'].some(key=>style[key]!=='visible') ||
       ['grid-template-columns','grid-template-rows'].some(key=>style[key]==='subgrid')) return null;
     if(style.position!=='absolute') {
@@ -1036,7 +1047,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           for (const bs of blockStates) {
             const origin=resolvedOrigin(style,available,inline,bs.value ? sum(bs.value,blockEdges) : null,parents);
             const contentOrigin=offset(origin,edge(['left']),edge(['top']));
-            const knownBlock = bs.value, own = { box, style, inline: contentInline, block: knownBlock, positioned:style.position!=='static',
+            // A transformed box is the containing block of its absolute descendants, like a positioned one.
+            const knownBlock = bs.value, own = { box, style, inline: contentInline, block: knownBlock, positioned:style.position!=='static' || style.transform !== 'none',
               contentOrigin,paddingOrigin:offset(origin,scalar(px(style['border-left'])),scalar(px(style['border-top']))),
               subgrid:style['grid-template-columns']==='subgrid' || style['grid-template-rows']==='subgrid',
               clipped:style['overflow-x']!=='visible' || style['overflow-y']!=='visible',

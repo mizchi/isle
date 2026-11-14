@@ -144,7 +144,7 @@ export const contrastRatio = (a, b) => { const [x, y] = [luminance(a), luminance
 export function paintFacts(style) {
   return { color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
-    isolation: style.isolation, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
+    isolation: style.isolation, transform: style.transform, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
     animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] } };
 }
 const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(String(value)); return m && (m[2] ? Number(m[1]) / 100 : Number(m[1])) >= 1; };
@@ -355,7 +355,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   // there; inside one layer the tree-order rules below apply.
   const rowAt = path => everything.find(g => g.path === path);
   const parentPath = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '';
-  const createsContext = r => (r.zIndex !== null && r.zIndex !== undefined) || !opaqueValue(r.paint.opacity) || r.paint.isolation === 'isolate';
+  const createsContext = r => (r.zIndex !== null && r.zIndex !== undefined) || !opaqueValue(r.paint.opacity) || r.paint.isolation === 'isolate' || (r.paint.transform ?? 'none') !== 'none';
   const contexts = row => { const out = []; for (let p = row.path; p; p = parentPath(p)) { const r = rowAt(p); if (r && createsContext(r)) out.unshift(r); } return out; };
   // The nearest positioned ancestor-or-self strictly inside `within` (a context path, or '' for the root).
   const layerIn = (row, within) => { for (let p = row.path; p && p !== within; p = parentPath(p)) { const r = rowAt(p); if (r && r.position !== 'static') return p; } return null; };

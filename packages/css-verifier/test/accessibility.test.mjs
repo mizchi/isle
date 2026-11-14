@@ -1045,3 +1045,13 @@ test('z-index stacking contexts decide what covers a target', () => {
   assert.equal(find(run(tree, css('.c { z-index: 1; }\n.b { position: relative; z-index: 1; }')), 'E_A11Y_OCCLUDED').length, 1);
   assert.equal(run(tree, css('.c { z-index: "x"; }')).status, 'unknown');
 });
+
+test('a px translate moves a box and its descendants; other transforms are Unknown', () => {
+  const tree = {tag: 'main', classes: ['page'], children: [{tag: 'div', classes: ['w'], children: [{tag: 'button', classes: ['b'], named: true}]}, {tag: 'div', classes: ['c']}]};
+  const css = extra => `.page { display: grid; grid-template-columns: 200px; grid-auto-rows: 40px; position: relative; background: #fff; }\n.w { display: grid; grid-template-columns: minmax(0, 1fr); }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n.c { position: absolute; left: 0; top: 0; inline-size: 100px; block-size: 40px; background: #eee; }\n${extra}`;
+  assert.equal(find(run(tree, css('')), 'E_A11Y_OCCLUDED').length, 1);
+  const moved = run(tree, css('.w { transform: translate(0, 50px); }'));
+  assert.equal(find(moved, 'E_A11Y_OCCLUDED').length, 0);
+  assert.equal(moved.sizes.find(r => r.box === '.b' && r.rect).rect.blockStart.constant, '50');
+  for (const t of ['rotate(3deg)', 'translate(10%, 0)', 'scale(2)']) assert.equal(run(tree, css(`.w { transform: ${t}; }`)).status, 'unknown', t);
+});
