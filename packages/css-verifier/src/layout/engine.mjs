@@ -997,26 +997,34 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // tableAsGrid runs more than once (a probe pass, then the layout): the profiles are recollected each time.
         cell.stackedProfiles = [];
         if (cell.text || cell.contract || !(cell.children ?? []).length) return null;
-        let total = zero;
-        for (const child of cell.children) {
-          if (child.tag === 'table' || child.tableCell) return null;
-          const cs = one(styles(child, region, [...parents, { box: cell, style }], style, false, false));
-          if (cs.display === 'none') continue;
-          // An auto-height text leaf with a constant measured height (intrinsicBlockSize as a number) counts as that.
-          const measuredLeaf = cs['block-size'] === 'auto' && child.text && !(child.children ?? []).length && child.contract?.intrinsicBlockSize !== undefined;
-          // A line-count profile depends on the cell's width: measured later, with the column widths (stackedProfiles).
-          if (measuredLeaf && typeof child.contract.intrinsicBlockSize !== 'number') {
+        // A stack: blocks of a px block-size, measured auto-height text leaves, and auto-height one-column grids
+        // (no gaps, implicit rows) that are stacks themselves. `side` is the horizontal edges from the cell inward.
+        const stack = (node, nodeStyle, ancestors, side) => {
+          let total = zero;
+          for (const child of node.children) {
+            if (child.tag === 'table' || child.tableCell) return null;
+            const cs = one(styles(child, region, ancestors, nodeStyle, false, false));
+            if (cs.display === 'none') continue;
             if (cs.position !== 'static' || ['margin-top', 'margin-bottom'].some(key => !['0', '0px'].includes(cs[key]))) return null;
-            const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-            const sideEdges = ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-            cell.stackedProfiles.push({ profile: child.contract.intrinsicBlockSize, edges, sideEdges });
-            continue;
+            const edges = ['top', 'bottom'].map(key => add(px(cs[`padding-${key}`]), px(cs[`border-${key}`]))).reduce(add, zero);
+            const sideEdges = add(side, ['left', 'right'].map(key => add(px(cs[`padding-${key}`]), px(cs[`border-${key}`]))).reduce(add, zero));
+            if (/^\d+(?:\.\d+)?px$/.test(cs['block-size'])) { total = add(total, cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size'])); continue; }
+            if (cs['block-size'] !== 'auto') return null;
+            if (child.text && !(child.children ?? []).length && child.contract?.intrinsicBlockSize !== undefined) {
+              // A line-count profile depends on the cell's width: measured later, with the column widths.
+              if (typeof child.contract.intrinsicBlockSize === 'number') total = add(total, add(q(String(child.contract.intrinsicBlockSize)), edges));
+              else cell.stackedProfiles.push({ profile: child.contract.intrinsicBlockSize, edges, sideEdges });
+              continue;
+            }
+            const oneColumn = cs.display === 'grid' && ['none', 'minmax(0,1fr)', '1fr', 'auto'].includes(String(cs['grid-template-columns']).replace(/\s+/g, '')) && cs['grid-template-rows'] === 'none' && ['0', '0px', 'normal'].includes(cs['row-gap']);
+            if (child.text || child.contract || !(child.children ?? []).length || !oneColumn) return null;
+            const inner = stack(child, cs, [...ancestors, { box: child, style: cs }], sideEdges);
+            if (inner === null) return null;
+            total = add(total, add(inner, edges));
           }
-          if ((!/^\d+(?:\.\d+)?px$/.test(cs['block-size']) && !measuredLeaf) || cs.position !== 'static' || ['margin-top', 'margin-bottom'].some(key => !['0', '0px'].includes(cs[key]))) return null;
-          const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-          total = add(total, measuredLeaf ? add(q(String(child.contract.intrinsicBlockSize)), edges) : cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']));
-        }
-        return total;
+          return total;
+        };
+        return stack(cell, style, [...parents, { box: cell, style }], zero);
       };
       const stacked = [...block][0] === 'auto' && !empty && !measured ? stackedHeight() : null;
       if (block.size !== 1 || !(([...block][0] === 'auto' && (empty || measured || stacked !== null)) || /^\d+(?:\.\d+)?px$/.test([...block][0]))) fail('A rowspan cell is modeled when it is empty, measured text or a stack of px-height blocks with block-size: auto, or has a px block-size');
