@@ -172,7 +172,8 @@ display: none の cell は列を消すので、どちらも Unknown にした(�
 block-level の子(block・grid・flex、static、float なし、margin 0)だけの cell は block flow で、それを1列の grid
 に置き、`vertical-align` の top・middle・bottom を grid の `align-content` の start・center・end にする。grid の engine に
 `align-content: center | end`(高さの決まった grid で、伸ばさない行を余白の半分か全部だけずらす。溢れるときは負にずれる)を加えた。
-baseline(行全体の揃え)は cell が行の高さを決めるとき以外 Unknown、text と子要素が混ざる cell(inline formatting)も Unknown。
+baseline は、line box のない cell が content の下端を baseline にし、行の baseline の cell どうしが行の上で下端揃えになる(測定。空の cell は加わらない)ので、
+行で唯一の中身のある baseline の cell は上端に置く。中身のある baseline の cell が複数ある行は Unknown、text と子要素が混ざる cell(inline formatting)も Unknown。
 行を決める cell、全て top の cell、高い行の middle・bottom の cell、grid の center・end(溢れる場合を含む)で Chromium と一致した。
 明示した行の track では cell は行に伸びる(Chromium の cell は行の高さになる)。
 table の cell は高さを超える内容で溢れず行が伸びるので、block 方向の内容の不足は E_LAYOUT_CONTENT ではなく U_LAYOUT_TABLE にした(以前は誤って溢れと報告していた)。

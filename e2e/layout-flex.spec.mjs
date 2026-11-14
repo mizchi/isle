@@ -93,6 +93,8 @@ const cases = [
     boxes: {'.o': {overflowBlock: 'clip'}}},
   {name: 'table cells aligned middle and bottom in taller rows', html: '<table class="t"><tbody><tr><td class="m"><div class="k"></div><div class="k"></div></td><td class="b"><div class="k"></div></td><td class="p"></td></tr></tbody></table>',
     css: '.t{table-layout:fixed;inline-size:192px;border-spacing:3px}td{padding:4px;block-size:90px}.b{vertical-align:bottom}.k{block-size:15px}'},
+  {name: 'a sole baseline cell sits at the top of its row', html: '<table class="t"><tbody><tr><td class="s"><div class="k"></div><div class="k"></div></td><td class="e"></td><td class="m"><div class="k"></div></td></tr></tbody></table>',
+    css: '.t{table-layout:fixed;inline-size:192px;border-spacing:3px}td{padding:4px;block-size:90px}.s,.e{vertical-align:baseline}.k{block-size:15px}'},
   {name: 'fixed tables with captions and border-spacing, colspan and rowspan', html: '<div class="g"><table class="t"><caption class="c">x</caption><tbody><tr><td class="a" colspan="2"></td><td class="b"></td></tr><tr><td class="a"></td><td class="a"></td><td class="a"></td></tr></tbody></table><table class="t u"><caption class="c">y</caption><tbody><tr><td class="s" rowspan="2"></td><td class="a"></td></tr><tr><td class="a"></td></tr></tbody></table></div>',
     css: '.g{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px}.t{table-layout:fixed;inline-size:196px;border-spacing:4px 6px}.u{caption-side:bottom}.c{block-size:18px;padding:0}.a,.b{block-size:20px;padding:0}.s{padding:0}',
     boxes: {'.c': {minInlineSize: 1, intrinsicBlockSize: 18}}},

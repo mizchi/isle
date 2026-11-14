@@ -666,7 +666,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const cs = one(styles(cell, region, parents, rowStyle, false, false));
       if (cell.text) fail(`${cell.label} mixes text and child elements (inline formatting is not modeled)`);
       const alone = !spanning && row.children.every(other => other === cell || (!other.text && !other.contract && !(other.children ?? []).length && one(styles(other, region, parents, rowStyle, false, false))['block-size'] === 'auto'));
-      if (!['top', 'middle', 'bottom'].includes(cs['vertical-align']) && !(alone && cs['block-size'] === 'auto')) fail(`${cell.label} has vertical-align: ${cs['vertical-align']}; baseline alignment across the row is not modeled`);
+      // baseline: a cell without line boxes takes its content bottom as baseline, and the row's baseline cells are
+      // bottom-aligned at the row's top (measured; empty cells take no part): the only non-empty one sits at the top.
+      const soleBaseline = cs['vertical-align'] === 'baseline' && !spanning && row.children.every(other => other === cell || (!other.text && !other.contract && !(other.children ?? []).length) || one(styles(other, region, parents, rowStyle, false, false))['vertical-align'] !== 'baseline');
+      if (soleBaseline) cell.tableBaselineTop = true;
+      else if (!['top', 'middle', 'bottom'].includes(cs['vertical-align']) && !(alone && cs['block-size'] === 'auto')) fail(`${cell.label} has vertical-align: ${cs['vertical-align']} with other baseline cells in its row; baseline alignment across cells is not modeled`);
       for (const child of cell.children) for (const c of styles(child, region, parents, cs, false, false)) {
         if (c.style.display === 'none') continue;
         if (!['block', 'grid', 'flex'].includes(c.style.display) || c.style.position !== 'static' || c.style.float !== 'none') fail(`${child.label} in a table cell must be a static block-level box (block flow of inline content is not modeled)`);
@@ -874,7 +878,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   // Cells fill their column (and span colspan columns); a caption is a full-width first or last row.
   function tablePlacement(box, style) {
-    if (box.tableFlow && style.display === 'table-cell') style = { ...style, display: 'grid', 'grid-template-columns': 'minmax(0, 1fr)', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'align-content': { middle: 'center', bottom: 'end' }[style['vertical-align']] ?? 'start', 'row-gap': '0', 'column-gap': '0', 'grid-auto-flow': 'row', $fromCell: true };
+    if (box.tableFlow && style.display === 'table-cell') style = { ...style, display: 'grid', 'grid-template-columns': 'minmax(0, 1fr)', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'align-content': box.tableBaselineTop ? 'start' : { middle: 'center', bottom: 'end' }[style['vertical-align']] ?? 'start', 'row-gap': '0', 'column-gap': '0', 'grid-auto-flow': 'row', $fromCell: true };
     if (box.tableCell && (style.display === 'table-cell' || style.$fromCell) && box.tableArea) return { ...style, display: style.$fromCell ? style.display : 'block', 'inline-size': 'auto', ...(box.tableStretch ? { 'block-size': 'auto' } : {}), 'grid-column': `${box.tableArea.column} / span ${box.tableArea.span}`, 'grid-row': `${box.tableArea.row} / span ${box.tableArea.down}` };
     if (box.tableCaption?.interleaved && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.interleaved.columns}`, 'grid-row': String(box.tableCaption.interleaved.row) };
     if (box.tableCell && style.$fromCell) return { ...style, 'inline-size': 'auto', ...(box.tableStretch ? { 'block-size': 'auto' } : {}), ...(box.colSpan > 1 ? { 'grid-column': `span ${box.colSpan}` } : {}), ...(box.tableRowSpan ? { 'grid-row': `span ${box.tableRowSpan}` } : {}) };
