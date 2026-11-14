@@ -108,10 +108,16 @@ const cases = [
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.k1,.k2,.k3,.s,.d{display:block}.i1,.i2,.i3{${button}inline-size:24px;block-size:24px}@media (width < 600px){.d{display:none}}`},
   {name: 'generated-names', html: '<div class="page"><button class="b1"></button><button class="b2"></button><button class="b3" aria-label="Menu"></button></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff;color:#000}.b1,.b2,.b3{${button}inline-size:30px;block-size:30px}.b1::before{content:"Save"}.b2::before,.b3::before{content:"\\e900"}`},
+  {name: 'focus-in-clip-and-hidden', html: '<div class="page"><div class="c"><div class="s"></div><button class="b1" aria-label="Clipped"></button></div><div class="h"><div class="s"></div><button class="b2" aria-label="Scrolled"></button></div><div class="c"><button class="b3" aria-label="Inside"></button></div></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:40px;row-gap:8px;background:#fff}.c,.h{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:auto}.c{overflow:clip}.h{overflow:hidden}.s{block-size:60px}.b1,.b2,.b3{${button}block-size:24px}`,
+    boxes: {'.c': {overflowBlock: 'clip'}, '.h': {overflowBlock: 'clip'}},
+    // Hit testing and raw rects see the clipped-away buttons "covered" by or overlapping the next row; the static rules make no claim on
+    // clipped content (positions under a clip are withheld from it), which is what focus-clipped covers here.
+    skip: ['occluded-target', 'target-overlap']},
   {name: 'clickable-lists-and-markup', html: '<div class="page"><div class="card"></div><button class="b" aria-label="Go"></button><ul class="l"><li class="i"></li></ul><ul class="l2" role="list"><li class="i"></li></ul><dl class="d"><dt class="dt"></dt><p class="p"></p></dl><marquee class="m"></marquee><a class="k1" href="#1" accesskey="s" aria-label="One"></a><a class="k2" href="#2" accesskey="s" aria-label="Two"></a><img class="im" src="data:," alt="Map" ismap></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.card{display:block;cursor:pointer}.b{${button}cursor:pointer;inline-size:24px;block-size:24px}.l,.l2,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;list-style:none}.i,.dt,.p{display:block}.m{display:block;inline-size:200px;block-size:24px}.k1,.k2{display:block}.im{display:block;inline-size:24px;block-size:24px}`},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped'];
 const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
 // Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -495,6 +501,24 @@ async function runtime(page, sample) {
     if (name && !name.replace(/[\uE000-\uF8FF]/g, '').trim()) found.get('icon-font-name').add(element.path);
     else if (name.trim()) found.get('generated-name').add(element.path);
   }
+  // Focus clipping: after focus (which scrolls scrollable ancestors), no part of the box is inside its clipping ancestors.
+  const clippedFocus = [];
+  for (const element of elements.filter(e => links.has(e.path) && facts[e.path].display !== 'none')) {
+    const out = await (await handle(element.path)).evaluate(node => {
+      node.focus(); let r = node.getBoundingClientRect(), box = {l: r.left, t: r.top, r: r.right, b: r.bottom};
+      for (let a = node.parentElement; a; a = a.parentElement) {
+        const s = getComputedStyle(a); if (s.overflowX === 'visible' && s.overflowY === 'visible') continue;
+        const c = a.getBoundingClientRect(), bw = parseFloat(s.borderLeftWidth), bt = parseFloat(s.borderTopWidth);
+        const clip = {l: c.left + bw, t: c.top + bt, r: c.left + bw + a.clientWidth, b: c.top + bt + a.clientHeight};
+        if (s.overflowX !== 'visible') { box.l = Math.max(box.l, clip.l); box.r = Math.min(box.r, clip.r); }
+        if (s.overflowY !== 'visible') { box.t = Math.max(box.t, clip.t); box.b = Math.min(box.b, clip.b); }
+      }
+      node.blur(); for (let a = node.parentElement; a; a = a.parentElement) { a.scrollTop = 0; a.scrollLeft = 0; }
+      return box.r <= box.l || box.b <= box.t;
+    });
+    if (out) clippedFocus.push(element.path);
+  }
+  for (const path of clippedFocus) found.get('focus-clipped').add(path);
   for (const [rule, key] of [['clickable-look', 'click'], ['list-style-semantics', 'listStyle'], ['blink', 'blink'], ['definition-list', 'dl'], ['accesskeys', 'keys'], ['server-side-image-map', 'ismap']]) for (const path of markup[key]) found.get(rule).add(path);
   // Motion: with prefers-reduced-motion: reduce, the animations still running past 5s.
   await page.emulateMedia({reducedMotion: 'reduce'});
@@ -526,7 +550,7 @@ for (const sample of cases) {
       await page.setViewportSize({width, height});
       await page.setContent(document);
       const found = await runtime(page, sample);
-      for (const rule of rules) {
+      for (const rule of rules.filter(rule => !sample.skip?.includes(rule))) {
         const expected = [...found.get(rule)].sort(), actual = [...new Set(rows.filter(r => r.rule === rule && holds(r, width)).map(r => r.path))].sort();
         (row.static[rule] ??= []).push(actual); (row.runtime[rule] ??= []).push(expected);
         expect(actual, `${rule} at ${width}`).toEqual(expected);

@@ -73,6 +73,7 @@
 //   page-main        → W_A11Y_NO_MAIN           a page where no main landmark renders
 //   icon-font-name   → E_A11Y_ICON_NAME         a control named only by generated icon-font glyphs (Private Use Area)
 //   generated-name   → W_A11Y_GENERATED_NAME    a control named only by CSS generated content
+//   focus-clipped    → E_A11Y_FOCUS_CLIPPED     a focusable box entirely outside an overflow: clip ancestor (it cannot scroll into view)
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -86,7 +87,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -524,6 +525,22 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
         region = atMost(region, right(outer), right(cover)); region = atMost(region, bottom(outer), bottom(cover));
         if (region) report(findings, 'E_A11Y_FOCUS_OBSCURED', 'error', `${target.box.label} (inline) is entirely hidden behind ${cover.box.label} when focused`, target, region, { rule: 'focus-obscured', cover: cover.path });
       }
+    }
+  }
+
+  // focus-clipped: overflow: clip does not scroll a focused descendant into view (hidden does; measured), so a
+  // focusable box entirely outside the clip edge (its padding box) on a clipped axis can never be seen focused.
+  const clipPlaced = everything.filter(row => row.clipOrigin && row.block).map(row => ({ ...row, origin: row.clipOrigin }));
+  for (const target of clipPlaced.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo)) {
+    for (const clipper of clipPlaced.filter(row => isAncestor(row.path, target.path) && (row.clipAxes?.inline || row.clipAxes?.block))) {
+      const edges = { left: sum(clipper.origin.inline, scalar(clipper.borders.left)), right: diff(right(clipper), scalar(clipper.borders.right)), top: sum(clipper.origin.block, scalar(clipper.borders.top)), bottom: diff(bottom(clipper), scalar(clipper.borders.bottom)) };
+      const base = intersect(target.region, clipper.region);
+      const outside = [
+        ...(clipper.clipAxes.inline ? [atMost(base, right(target), edges.left), atMost(base, edges.right, target.origin.inline)] : []),
+        ...(clipper.clipAxes.block ? [atMost(base, bottom(target), edges.top), atMost(base, edges.bottom, target.origin.block)] : []),
+      ].filter(Boolean);
+      for (const region of outside) report(findings, 'E_A11Y_FOCUS_CLIPPED', 'error', `${target.box.label} lies outside ${clipper.box.label}, whose overflow: clip never scrolls it into view when focused`, target, region, { rule: 'focus-clipped', clipper: clipper.path });
+      if (outside.length) break;
     }
   }
 

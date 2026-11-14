@@ -560,8 +560,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // A box's own overflow clips its content, not its border box.
       const unscaledOrigin = origin ?? resolvedOrigin({...style,'overflow-x':'visible','overflow-y':'visible'},available,inline,blockSize,parents);
       const painted = scaled(style, unscaledOrigin, inline, blockSize), ownOrigin = painted.origin;
-      geometry.push({ box, path: box.path, region, origin: ownOrigin, inline: painted.inline, block: painted.block, position: style.position,
+      // Inside an overflow: clip box positions are exact but parts may be clipped away: the other rules see no
+      // position (as before), focus-clipped reads clipOrigin.
+      const underClip = parents.some(p => p.clipScope);
+      geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, clipOrigin: ownOrigin, inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
+        // overflow: clip clips without scrolling (hidden still scrolls a focused descendant into view).
+        clipAxes: { inline: style['overflow-x'] === 'clip', block: style['overflow-y'] === 'clip' },
         overflow: ['hidden','clip'].includes(overflowValue) ? 'clip' : ['auto','scroll'].includes(overflowValue) ? 'scroll' : 'visible', overflowValue,
         // Where a single line of text starts inside the box (font-derived text extents).
         content: { left: add(px(style['border-left']), px(style['padding-left'])), top: add(px(style['border-top']), px(style['padding-top'])), inline: contentInline },
@@ -575,7 +580,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         ...(style['animation-name'] !== 'none' ? { reducedMotion: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set(['prefers-reduced-motion:reduce'])).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
         ...(focusableBox(box) ? { focusStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, focusState).map(s => ({ region: s.region, paint: paintFacts(s.style), authorOutline: Boolean(s.style.$sources['outline-style']) })) } : {}) });
       if (box.inline?.length) inlineContent(box, style, region, [...parents, { box, style }], geometry.at(-1).chain, geometry.at(-1));
-      const shown = scaled(style, origin, inline, blockSize);
+      const shown = scaled(style, parents.some(p => p.clipScope) ? null : origin, inline, blockSize);
       const rect=shown.origin && shown.block ? {inlineStart:affine(shown.origin.inline),blockStart:affine(shown.origin.block),inlineSize:affine(shown.inline),blockSize:affine(shown.block)} : null;
       const sizeRow = { box: box.label, path: box.path, position:style.position, ...positioned,...(rect ? {rect} : {}), boxSizing: style['box-sizing'], boxSizingSource: style.$sources['box-sizing'],
         paddingInlineSize:affine(diff(inline,scalar(add(px(style['border-left']),px(style['border-right']))))),
@@ -672,7 +677,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     return translated(style, untranslatedOrigin(style,available,inline,blockSize,parents), { inline, block: blockSize });
   }
   function untranslatedOrigin(style,available,inline,blockSize,parents) {
-    if(!block || parents.some(p=>p.clipped || p.subgrid) || ['overflow-x','overflow-y'].some(key=>style[key]!=='visible') ||
+    // overflow: clip never scrolls, so positions inside it stay exact; hidden/auto/scroll may be scrolled.
+    if(!block || parents.some(p=>p.clipped || p.subgrid) || ['overflow-x','overflow-y'].some(key=>!['visible','clip'].includes(style[key])) ||
       ['grid-template-columns','grid-template-rows'].some(key=>style[key]==='subgrid')) return null;
     if(style.position!=='absolute') {
       // Cross-axis alignment of a flex item that is not stretched.
@@ -1115,7 +1121,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             const knownBlock = bs.value, own = { box, style, inline: contentInline, block: knownBlock, positioned:style.position!=='static' || style.transform !== 'none',
               contentOrigin,paddingOrigin:offset(origin,scalar(px(style['border-left'])),scalar(px(style['border-top']))),
               subgrid:style['grid-template-columns']==='subgrid' || style['grid-template-rows']==='subgrid',
-              clipped:style['overflow-x']!=='visible' || style['overflow-y']!=='visible',
+              clipped:!['visible','clip'].includes(style['overflow-x']) || !['visible','clip'].includes(style['overflow-y']), clipScope: style['overflow-x'] === 'clip' || style['overflow-y'] === 'clip',
               paddingInline:diff(inline,scalar(add(px(style['border-left']),px(style['border-right'])))),
               paddingBlock:knownBlock ? diff(sum(knownBlock,blockEdges),scalar(add(px(style['border-top']),px(style['border-bottom'])))) : null,
               type: style['container-type'], names: style['container-name'] === 'none' ? [] : style['container-name'].split(/\s+/) };

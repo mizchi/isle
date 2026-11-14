@@ -83,6 +83,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | input-image-alt | 名前(aria-labelledby・aria-label・alt・value・title)のない `input type=image`。Chromium は "Submit" を補うが説明にならない | E_A11Y_INPUT_IMAGE_ALT |
 | fragment-target | `#id` のリンクの行き先がない、またはリンクが描画される場所で行き先が描画されない(display: contents は子で描画) | E_A11Y_FRAGMENT |
 | page-main | 文書(html/body)で main の landmark が描画されない区間 | W_A11Y_NO_MAIN |
+| focus-clipped | `overflow: clip` の祖先の clip の端(padding box)の外に完全にある focusable な箱。clip はスクロールしないので focus しても見えない(hidden はスクロールして見せる。Chromium で測定) | E_A11Y_FOCUS_CLIPPED |
 | aria-hidden-body | body の `aria-hidden="true"`。Chromium は body の aria-hidden を無視する(AX tree で測定)ので他の規則は中身を公開されたものとして扱い、尊重する UA では文書全体が隠れることを警告する | W_A11Y_ARIA_HIDDEN_BODY |
 | frame-title | 描画される iframe に title も名前もない(SC 4.1.2) | E_A11Y_FRAME_TITLE |
 | video-caption | 描画される video に kind=captions/subtitles の track がない(SC 1.2.2) | E_A11Y_VIDEO_CAPTION |
