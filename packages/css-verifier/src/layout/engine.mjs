@@ -651,12 +651,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const half = div(one, q(2)), centre = { inline: sum(origin.inline, times(inline, half)), block: sum(origin.block, times(blockSize, half)) };
     return mapper(matrix, centre)({ origin, inline, block: blockSize });
   }
-  function translated(style, origin) {
+  function translated(style, origin, size) {
     const m = affineOf(style);
-    return origin && m ? offset(origin, scalar(m[4]), scalar(m[5])) : origin;
+    if (!origin || !m) return origin;
+    // Percentages scale with the box's own size: t0 + W·u + H·v.
+    const needsH = cmp(m[8], zero) !== 0 || cmp(m[9], zero) !== 0;
+    if (needsH && !size?.block) return null;
+    const along = k => sum(sum(scalar(m[4 + k]), times(size.inline, m[6 + k])), needsH ? times(size.block, m[8 + k]) : scalar(zero));
+    return offset(origin, along(0), along(1));
   }
   function resolvedOrigin(style,available,inline,blockSize,parents) {
-    return translated(style, untranslatedOrigin(style,available,inline,blockSize,parents));
+    return translated(style, untranslatedOrigin(style,available,inline,blockSize,parents), { inline, block: blockSize });
   }
   function untranslatedOrigin(style,available,inline,blockSize,parents) {
     if(!block || parents.some(p=>p.clipped || p.subgrid) || ['overflow-x','overflow-y'].some(key=>style[key]!=='visible') ||

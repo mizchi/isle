@@ -1053,7 +1053,10 @@ test('px translate and scale move a box and its descendants; other transforms ar
   const moved = run(tree, css('.w { transform: translate(0, 50px); }'));
   assert.equal(find(moved, 'E_A11Y_OCCLUDED').length, 0);
   assert.equal(moved.sizes.find(r => r.box === '.b' && r.rect).rect.blockStart.constant, '50');
-  for (const t of ['rotate(3deg)', 'translate(10%, 0)', 'skewX(5deg)']) assert.equal(run(tree, css(`.w { transform: ${t}; }`)).status, 'unknown', t);
+  for (const t of ['rotate(3deg)', 'rotate(45deg)', 'skewX(5deg)', 'translate(1em, 0)']) assert.equal(run(tree, css(`.w { transform: ${t}; }`)).status, 'unknown', t);
+  // Percentages are of the box's own size: -50% of the 200 × 40 wrapper.
+  const pct = run(tree, css('.w { transform: translate(-50%, 25%); }')).sizes.find(r => r.box === '.b' && r.rect).rect;
+  assert.deepEqual([pct.inlineStart.constant, pct.blockStart.constant], ['-100', '10']);
   // A scaled box scales its descendants: the button doubles about the wrapper's centre.
   assert.equal(run(tree, css('.w { transform: scale(2); }')).sizes.find(r => r.box === '.b' && r.rect).rect.inlineSize.constant, '400');
   // A scale on a leaf shrinks its painted box about the centre: a half-size cover misses the button's ends.

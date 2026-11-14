@@ -150,17 +150,21 @@ function expand(property, value) {
     const fns = value.match(/[a-z]+\([^)]*\)/g) ?? [];
     if (!fns.length || value.replace(/[a-z]+\([^)]*\)/g, '').trim()) throw new Error(`Unsupported transform: ${value}`);
     const fail = () => { throw new Error(`Unsupported transform: ${value} (only px translate, positive scale and quarter-turn rotation are modeled)`); };
-    const len = v => { const m = /^(-?\d+(?:\.\d{1,6})?)px$|^(0)$/.exec(v.trim()); if (!m) fail(); return q(m[1] ?? '0'); };
+    // A length: px, or a percentage of the box's own width (x) or height (y): [px, fraction].
+    const len = v => { const m = /^(-?\d+(?:\.\d{1,6})?)px$|^(0)$|^(-?\d+(?:\.\d{1,4})?)%$/.exec(v.trim()); if (!m) fail(); return m[3] !== undefined ? [q(0), mul(q(m[3]), q('0.01'))] : [q(m[1] ?? '0'), q(0)]; };
     const factor = v => { const t = v.trim().replace(/^\./, '0.'); if (!/^\d+(?:\.\d{1,6})?$/.test(t) || Number(t) <= 0) fail(); return q(t); };
-    let A = [q(1), q(0), q(0), q(1)], t = [q(0), q(0)];
+    // t = t0 + W·u + H·v (W, H the box's border-box size) for percentage translations.
+    let A = [q(1), q(0), q(0), q(1)], t = [q(0), q(0)], u = [q(0), q(0)], w = [q(0), q(0)];
     const apply = ([a, b, c, d], [x, y]) => [add(mul(a, x), mul(b, y)), add(mul(c, x), mul(d, y))];
     const times = (m, n) => [add(mul(m[0], n[0]), mul(m[1], n[2])), add(mul(m[0], n[1]), mul(m[1], n[3])), add(mul(m[2], n[0]), mul(m[3], n[2])), add(mul(m[2], n[1]), mul(m[3], n[3]))];
     for (const fn of fns) {
       const [, name, args] = /^([a-z]+)\((.*)\)$/.exec(fn), parts = args.split(',');
       if (name === 'translate' || name === 'translatex' || name === 'translatey') {
         if (parts.length > (name === 'translate' ? 2 : 1)) fail();
-        const v = name === 'translatey' ? [q(0), len(parts[0])] : [len(parts[0]), name === 'translate' && parts[1] !== undefined ? len(parts[1]) : q(0)];
-        const moved = apply(A, v); t = [add(t[0], moved[0]), add(t[1], moved[1])];
+        const zeroLen = [q(0), q(0)];
+        const [x, y] = name === 'translatey' ? [zeroLen, len(parts[0])] : [len(parts[0]), name === 'translate' && parts[1] !== undefined ? len(parts[1]) : zeroLen];
+        const moved = apply(A, [x[0], y[0]]), byW = apply(A, [x[1], q(0)]), byH = apply(A, [q(0), y[1]]);
+        t = [add(t[0], moved[0]), add(t[1], moved[1])]; u = [add(u[0], byW[0]), add(u[1], byW[1])]; w = [add(w[0], byH[0]), add(w[1], byH[1])];
       } else if (['scale', 'scalex', 'scaley'].includes(name)) {
         if (parts.length > (name === 'scale' ? 2 : 1)) fail();
         const [sx, sy] = name === 'scalex' ? [factor(parts[0]), q(1)] : name === 'scaley' ? [q(1), factor(parts[0])] : [factor(parts[0]), factor(parts[1] ?? parts[0])];
@@ -172,7 +176,7 @@ function expand(property, value) {
         A = times(A, [[1, 0, 0, 1], [0, -1, 1, 0], [-1, 0, 0, -1], [0, 1, -1, 0]][((Math.round(quarters) % 4) + 4) % 4].map(n => q(n)));
       } else fail();
     }
-    return [[property, `affine(${[...A, ...t].map(exact).join(' ')})`]];
+    return [[property, `affine(${[...A, ...t, ...u, ...w].map(exact).join(' ')})`]];
   }
   if (property === 'transform-origin') { if (!wide.has(value) && !['center', '50% 50%', 'center center'].includes(value)) throw new Error(`Unsupported transform-origin: ${value}`); return []; }
   if (property === 'isolation') { if (!wide.has(value) && !['auto', 'isolate'].includes(value)) throw new Error(`Unsupported isolation: ${value}`); return [[property, value]]; }
