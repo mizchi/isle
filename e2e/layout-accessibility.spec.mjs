@@ -1120,14 +1120,14 @@ test('automatic tables share width between min- and max-content like Chromium', 
 });
 
 test('max-width in px clamps widths like Chromium', async ({page}) => {
-  const css = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:20px}.a{max-width:600px}.b{max-width:500px;padding:0 20px;box-sizing:content-box}.c{max-width:300px;min-width:400px}`;
-  const html = '<div class="page"><div class="a"></div><div class="b"></div><div class="c"></div></div>';
+  const css = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:20px}.a{max-width:600px}.b{max-width:500px;padding:0 20px;box-sizing:content-box}.c{max-width:300px;min-width:400px}.d{max-width:60%}`;
+  const html = '<div class="page"><div class="a"></div><div class="b"></div><div class="c"></div><div class="d"></div></div>';
   const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280}});
   expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
   for (const width of [1280, 700, 550, 375]) {
     await page.setViewportSize({width, height: 800});
     await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
-    for (const cls of ['a', 'b', 'c']) {
+    for (const cls of ['a', 'b', 'c', 'd']) {
       const browser = await page.evaluate(c => document.querySelector(`.${c}`).getBoundingClientRect().width, cls);
       const row = report.sizes.find(r => r.box === `.${cls}` && r.range && width >= r.range.min && width <= r.range.max);
       const statics = value(row.inlineSize.constant) + value(row.inlineSize.coefficient ?? '0') * width;

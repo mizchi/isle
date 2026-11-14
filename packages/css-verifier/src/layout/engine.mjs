@@ -247,7 +247,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
       // max-inline-size in px clamps the preferred width (CSS 2 §10.4: max(min, min(preferred, max))); flex items and
       // other max sizes are not modeled.
-      if (style[`max-${axis}-size`] !== 'none' && !(axis === 'inline' && /^\d+(?:\.\d+)?px$/.test(style['max-inline-size']) && !available.flexItem && style.display !== 'table')) throw new Error('CSS max size clamping is not modeled');
+      if (style[`max-${axis}-size`] !== 'none' && !(axis === 'inline' && (/^\d+(?:\.\d+)?px$/.test(style['max-inline-size']) || (/^\d+(?:\.\d+)?%$/.test(style['max-inline-size']) && available.inline)) && !available.flexItem && style.display !== 'table')) throw new Error('CSS max size clamping is not modeled');
       if (axis === 'inline') {
         if (style['min-inline-size'] !== 'auto') px(style['min-inline-size']);
       // A column flex item's minimum is resolved by the flex line (its track is never smaller).
@@ -1222,7 +1222,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (style['inline-size'] !== 'auto' && style['box-sizing'] === 'content-box') preferred = sum(preferred, cssInlineEdges);
         const minimum = style['min-inline-size'] === 'auto' ? zero : px(style['min-inline-size']);
         const minimumBorderBox = sum(scalar(minimum), style['box-sizing'] === 'content-box' ? cssInlineEdges : scalar(0));
-        const capped = style['max-inline-size'] !== 'none' ? minimumOf(state.region, preferred, sum(scalar(px(style['max-inline-size'])), style['box-sizing'] === 'content-box' ? cssInlineEdges : scalar(0))) : [{ region: state.region, value: preferred }];
+        const capped = style['max-inline-size'] !== 'none' ? minimumOf(state.region, preferred, sum(length(style['max-inline-size'], available.inline), style['box-sizing'] === 'content-box' ? cssInlineEdges : scalar(0))) : [{ region: state.region, value: preferred }];
         const preferredStates = capped.flatMap(c => cmp(minimum, zero) > 0 ? maximum(c.region, c.value, minimumBorderBox) : [c]);
         const edgeExplanation = axis => () => explanation(sizeChain([...parents, { box, style }], axis, { hostInset: options.hostInset }), sizeProperties(axis).filter(property => /^(?:padding|border)-/.test(property)).map(property => fact(box, style, property)));
         for (const proposal of preferredStates) if (emit) obligation(proposal.value, inlineEdges, box, proposal.region, 'E_LAYOUT_BOX_EDGES', 'inline', true, edgeExplanation('inline'));

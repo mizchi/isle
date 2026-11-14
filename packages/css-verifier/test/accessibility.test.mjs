@@ -1581,4 +1581,6 @@ test('max-inline-size in px clamps a box\'s width', () => {
   // content-box adds the padding to the cap; min-inline-size still wins over it.
   assert.equal(width('.c { box-sizing: content-box; padding: 0 10px; }', 1000), 620);
   assert.equal(width('.c { min-inline-size: 700px; }', 1000), 700);
+  // A percentage cap is of the containing block's width.
+  assert.equal(width('.c { max-inline-size: 50%; }', 1000), 500);
 });
