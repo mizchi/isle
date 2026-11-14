@@ -556,11 +556,11 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   // Its focused z-index (a :focus rule may restack it) comes along as `zIndex`.
   const focusedPieces = base => {
     const changed = (base.focusStates ?? []).filter(state => state.origin || state.originUnknown || state.zIndex !== undefined);
-    if (!changed.length) return [{ region: base.region, origin: base.origin, zIndex: base.zIndex }];
-    return [...changed.map(state => ({ region: intersect(base.region, state.region), origin: state.origin ?? base.origin, unknown: state.originUnknown, zIndex: state.zIndex !== undefined ? state.zIndex : base.zIndex })),
-      ...changed.reduce((rest, state) => rest.flatMap(r => subtract(r, state.region)), [base.region]).map(region => ({ region, origin: base.origin, zIndex: base.zIndex }))].filter(piece => piece.region);
+    if (!changed.length) return [{ region: base.region, origin: base.origin, inline: base.inline, block: base.block, zIndex: base.zIndex }];
+    return [...changed.map(state => ({ region: intersect(base.region, state.region), origin: state.origin ?? base.origin, inline: state.inline ?? base.inline, block: state.block ?? base.block, unknown: state.originUnknown, zIndex: state.zIndex !== undefined ? state.zIndex : base.zIndex })),
+      ...changed.reduce((rest, state) => rest.flatMap(r => subtract(r, state.region)), [base.region]).map(region => ({ region, origin: base.origin, inline: base.inline, block: base.block, zIndex: base.zIndex }))].filter(piece => piece.region);
   };
-  const focusedRows = rows => rows.flatMap(base => focusedPieces(base).filter(piece => !piece.unknown && piece.origin).map(piece => ({ ...base, region: piece.region, origin: piece.origin, zIndex: piece.zIndex })));
+  const focusedRows = rows => rows.flatMap(base => focusedPieces(base).filter(piece => !piece.unknown && piece.origin).map(piece => ({ ...base, region: piece.region, origin: piece.origin, inline: piece.inline, block: piece.block, zIndex: piece.zIndex })));
 
   // focus-clipped: overflow: clip does not scroll a focused descendant into view (hidden does; measured), so a
   // focusable box entirely outside the clip edge (its padding box) on a clipped axis can never be seen focused.
@@ -595,7 +595,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   for (const base of placed.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo)) {
     for (const piece of focusedPieces(base)) {
     if (piece.unknown) { report(unknowns, 'U_A11Y_FOCUS_POSITION', 'unknown', `${base.box.label}: where its :focus rule moves it is not modeled here`, base, piece.region, { rule: 'focus-offscreen' }); continue; }
-    const target = { ...base, region: piece.region, origin: piece.origin };
+    const target = { ...base, region: piece.region, origin: piece.origin, inline: piece.inline, block: piece.block };
     const before = atMost(target.region, right(target), scalar(-hostInset)), above = block ? atMost(target.region, bottom(target), scalar(-hostBlockInset)) : null;
     const outside = [...(before ? [before] : []), ...(above ? (before ? subtract(above, before) : [above]) : [])];
     for (const region of outside) report(findings, 'E_A11Y_FOCUS_OFFSCREEN', 'error', `${target.box.label} takes focus but lies entirely off screen (before the viewport's start edge), so the focused element is never visible`, target, region, { rule: 'focus-offscreen' });

@@ -1510,3 +1510,17 @@ test('flash: a saturated red flash counts even with a small luminance change', (
   assert.deepEqual(codes('0% { background-color: #c00; } 50% { background-color: #f00; } 100% { background-color: #c00; }'), ['E_A11Y_FLASH']);
   assert.deepEqual(codes('0% { background-color: #00c; } 50% { background-color: #00f; } 100% { background-color: #00c; }'), []);
 });
+
+test('a state rule may transform the box; the focus rules use the focused transform', () => {
+  const tree = page([{tag: 'button', classes: ['b'], named: true}, {tag: 'div', classes: ['cover']}]);
+  const css = extra => pageCSS(`.page { position: relative; background: #fff; color: #000; grid-auto-rows: 40px; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; inline-size: 100px; block-size: 30px; }\n.cover { position: absolute; left: 0; top: 0; inline-size: 200px; block-size: 30px; background: #333; }\n${extra}`);
+  const codes = extra => run(tree, css(extra)).diagnostics.map(d => d.code);
+  // Hover lift: admitted for the accessibility checks; layout proofs without them stay Unknown.
+  assert.notEqual(run(tree, css('.b:hover { transform: scale(1.1); }')).status, 'unknown');
+  assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css('.b:hover { transform: scale(1.1); }'), viewport: domain}).status, 'unknown');
+  // Under the cover until focus moves it down 40px, out from under it.
+  assert.ok(codes('').includes('E_A11Y_FOCUS_OBSCURED'));
+  assert.ok(!codes('.b:focus { transform: translate(0, 40px); }').includes('E_A11Y_FOCUS_OBSCURED'));
+  // A focus transform that throws it off screen.
+  assert.ok(codes('.b:focus { transform: translate(-500px, 0); }').includes('E_A11Y_FOCUS_OFFSCREEN'));
+});

@@ -322,7 +322,10 @@ export function parseLayoutCSS(sheets, diagnostic) {
       // A :focus/:focus-visible rule may also move an absolutely positioned box by its insets (the skip-link pattern);
       // the engine models that for the accessibility checks only and keeps every other proof Unknown.
       const insetMove = /^(?:left|right|top|bottom|inset(?:-inline|-block)?)$/;
-      const stateGeometry = selectors.every(selector => ['focus', 'focus-visible'].includes(selector.state)) && node.nodes.some(d => d.type === 'decl' && insetMove.test(d.prop.toLowerCase())) && node.nodes.every(d => d.type !== 'decl' || d.prop.startsWith('--') || statePaint.test(d.prop.toLowerCase()) || insetMove.test(d.prop.toLowerCase()));
+      // A state rule may also transform the box (hover lift, focus scale): transforms paint and hit-test, never lay out.
+      const focusOnly = selectors.every(selector => ['focus', 'focus-visible'].includes(selector.state));
+      const moves = d => (focusOnly && insetMove.test(d.prop.toLowerCase())) || d.prop.toLowerCase() === 'transform';
+      const stateGeometry = selectors.every(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && moves(d)) && node.nodes.every(d => d.type !== 'decl' || d.prop.startsWith('--') || statePaint.test(d.prop.toLowerCase()) || moves(d));
       // A :checked::before/::after rule builds the pseudo-element only in the checked state; the engine requires it to be
       // absolutely positioned (an overlay), so it never moves the layout.
       const checkedMark = selectors.every(selector => selector.state === 'checked' && selector.pseudoElement);

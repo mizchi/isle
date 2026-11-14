@@ -70,7 +70,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
-  if (rules.some(rule => rule.stateGeometry) && !options.accessibility && !options.integrity) unknown('U_LAYOUT_SELECTOR', 'A :focus rule moves a box by its insets; that is modeled for the accessibility and integrity checks only');
+  if (rules.some(rule => rule.stateGeometry) && !options.accessibility && !options.integrity) unknown('U_LAYOUT_SELECTOR', 'A state rule moves a box (focus insets or a transform); that is modeled for the accessibility and integrity checks only');
   // style attributes: each element's declarations as a rule that matches only it, element-attached in the cascade.
   for (const box of boxes.filter(box => box.inlineStyle !== undefined)) {
     if (box.inlineStyle === 'dynamic') { unknown('U_LAYOUT_CSS', `${box.label}: a dynamic style attribute decides its styles`, undefined, box); continue; }
@@ -559,10 +559,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // A :focus rule that moves an absolutely positioned box by its insets: where the focused box lands (stateGeometry
   // rules; accessibility checks only). Any other focused inset change is not modeled.
   function focusMove(box, style, focused, available, inline, blockSize, parents) {
-    if (['left', 'right', 'top', 'bottom'].every(key => focused[key] === style[key])) return {};
-    if (style.position !== 'absolute' || style.transform !== 'none') throw Object.assign(new Error(`${box.label}: a :focus rule changes the insets of a box that is not absolutely positioned (or is transformed)`), { code: 'U_LAYOUT_SELECTOR' });
-    const origin = untranslatedOrigin(focused, available, inline, blockSize, parents);
-    return origin ? { origin } : { originUnknown: true };
+    const moved = ['left', 'right', 'top', 'bottom'].some(key => focused[key] !== style[key]), turned = focused.transform !== style.transform;
+    if (!moved && !turned) return {};
+    if (moved && style.position !== 'absolute') throw Object.assign(new Error(`${box.label}: a :focus rule changes the insets of a box that is not absolutely positioned`), { code: 'U_LAYOUT_SELECTOR' });
+    // The focused box: placed by its focused insets, then painted through its focused transform.
+    const painted = scaled(focused, resolvedOrigin(focused, available, inline, blockSize, parents), inline, blockSize);
+    return painted.origin ? { origin: painted.origin, inline: painted.inline, block: painted.block } : { originUnknown: true };
   }
   function finish(box, style, region, inline, contentInline, blockSize, contentBlock, available, parents, emit) {
     const contract = box.contract ?? {};
