@@ -388,3 +388,24 @@ test('inline bounds in wrapping text follow the line layout', async ({page}) => 
     if (anywhere) expect(split, 'anywhere: narrow widths split the long word').toBeGreaterThan(0);
   }
 });
+
+// A rowspan cell with auto height and measured wrapping text: its line count at the column width gives its height.
+test('a measured text rowspan cell grows its rows like Chromium', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const font = {family: 'Roboto', size: 16, lineHeight: 20, weight: 400};
+  const content = 'This note spans two rows and wraps over several lines in a narrow column.';
+  const html = `<table class="t"><tbody><tr><td class="s" rowspan="2">${content}</td><td class="a"></td></tr><tr><td class="b"></td></tr></tbody></table>`;
+  const css = `*{box-sizing:border-box;margin:0;padding:0}.t{table-layout:fixed;inline-size:300px;border-spacing:3px;background:#fff;color:#000}td{padding:0}.s{inline-size:120px;font-family:"Roboto";font-size:16px;line-height:20px;font-weight:400}.a{block-size:10px}.b{block-size:30px}`;
+  const boxes = metrics.resolveBoxes({'.s': {text: {content, font}, wrap: 'normal'}});
+  const report = analyzeHTML(html, {name: 'Case', css, viewport: {min: 320, max: 900, height: {min: 400, max: 600}}, boxes});
+  expect(report.status, JSON.stringify(report.diagnostics)).toBe('verified');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  await page.setViewportSize({width: 500, height: 500});
+  await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+  await page.evaluate(() => document.fonts.ready);
+  for (const row of report.sizes.filter(row => row.rect && row.path !== 'Case')) {
+    const rect = await page.evaluate(indices => { let node = document.querySelector('body > *'); for (const i of indices) node = node.children[i]; const r = node.getBoundingClientRect(); return {y: r.top, h: r.height}; }, row.path.split('/').slice(1).map(Number));
+    expect(Math.abs(rect.y - value(row.rect.blockStart.constant)), `${row.box} top`).toBeLessThanOrEqual(1 / 64 + 1e-9);
+    expect(Math.abs(rect.h - value(row.rect.blockSize.constant)), `${row.box} height`).toBeLessThanOrEqual(1 / 64 + 1e-9);
+  }
+});

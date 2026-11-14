@@ -933,3 +933,19 @@ test('nested px rowspans grow shorter spans first; rows that start a rowspan tak
   assert.equal(rect(inside, 'm').blockSize.constant, '90');
   assert.equal(rect(inside, 'n').blockStart.constant, '100');
 });
+
+test('an auto-height text rowspan cell counts its measured height at its column width', () => {
+  const tableView = {min: 420, max: 1280, height: {min: 400, max: 900}};
+  const rect = (report, cls) => report.sizes.find(r => r.box === `.${cls}` && r.rect).rect;
+  const tree = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [
+    {tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['s'], rowSpan: 2, text: true}, {tag: 'td', classes: ['p']}]}, {tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['q']}]}]}]};
+  const css = width => `.t { table-layout: fixed; inline-size: ${width}; border-spacing: 0; background: #fff; color: #000; }\ntd { padding: 0; }\n.s { inline-size: 100px; }\n.p { block-size: 20px; }\n.q { block-size: 40px; }`;
+  // 100px column → 3 lines of 30px = 90px over 20 + 40.
+  const boxes = {'.s': {minInlineSize: 50, intrinsicBlockSize: [{atLeastInlineSize: 0, blockSize: 120}, {atLeastInlineSize: 90, blockSize: 90}, {atLeastInlineSize: 150, blockSize: 60}]}};
+  const report = run(tree, css('400px'), {viewport: tableView, boxes});
+  assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
+  assert.equal(rect(report, 'p').blockSize.constant, '30');
+  assert.equal(rect(report, 'q').blockSize.constant, '60');
+  // A table width that varies with the viewport gives no constant cell width: Unknown.
+  assert.equal(run(tree, css('100%'), {viewport: tableView, boxes}).status, 'unknown');
+});

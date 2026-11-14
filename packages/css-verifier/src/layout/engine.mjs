@@ -659,7 +659,43 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     for (const row of rows) for (const cell of row.children.filter(cell => cell.tableRowSpan)) {
       const block = new Set(styles(cell, region, parents, style, false, false).map(c => c.style['block-size']));
       const empty = !cell.text && !cell.contract && !(cell.children ?? []).length;
-      if (block.size !== 1 || !(([...block][0] === 'auto' && empty) || /^\d+(?:\.\d+)?px$/.test([...block][0]))) fail('A rowspan cell is modeled when it is empty with block-size: auto, or has a px block-size');
+      // An auto-height text cell whose height profile is known at its (constant) width counts as that height.
+      const measured = cell.text && !(cell.children ?? []).length && cell.contract?.intrinsicBlockSize !== undefined;
+      if (block.size !== 1 || !(([...block][0] === 'auto' && (empty || measured)) || /^\d+(?:\.\d+)?px$/.test([...block][0]))) fail('A rowspan cell is modeled when it is empty or measured text with block-size: auto, or has a px block-size');
+      if ([...block][0] === 'auto' && measured) cell.tableMeasuredSpan = true;
+    }
+    // The first row's cell widths decide the columns.
+    function one(list) { if (list.length !== 1) fail('Table styles that vary across viewport regions are not modeled'); return list[0].style; }
+    const sectionStyle = one(styles(sections[0], region, parents, style, false, false)), rowStyle = one(styles(rows[0], region, parents, sectionStyle, false, false));
+    // A first-row cell spanning n columns gives each (w − (n − 1)·spacing) / n (measured).
+    const widths = rows[0].children.flatMap(cell => {
+      const cs = one(styles(cell, region, parents, rowStyle, false, false)), n = spanOf(cell);
+      if (cs['inline-size'] === 'auto') return Array(n).fill(null);
+      if (!/^\d+(?:\.\d+)?px$/.test(cs['inline-size'])) fail('Fixed table column widths must be px or auto');
+      const edges = ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+      const w = cs['box-sizing'] === 'content-box' ? add(px(cs['inline-size']), edges) : px(cs['inline-size']);
+      const each = div(sub(w, mul(h, q(n - 1))), q(n));
+      if (cmp(each, zero) <= 0) fail('A spanning cell narrower than its inner spacing is not modeled');
+      return Array(n).fill(each);
+    });
+    // Column widths of a px-wide fixed table are constants (as the grid resolves them): px columns share the content
+    // width in proportion, or keep their px and auto columns split the rest equally.
+    const columnWidths = () => {
+      if (automatic || !/^\d+(?:\.\d+)?px$/.test(style['inline-size'])) fail('A measured rowspan cell needs a fixed table with a px inline-size (its width decides its height)');
+      const frame = ['left', 'right'].map(side => add(px(style[`padding-${side}`]), px(style[`border-${side}`]))).reduce(add, zero);
+      const content = sub(style['box-sizing'] === 'content-box' ? px(style['inline-size']) : sub(px(style['inline-size']), frame), mul(h, q(columns + 1)));
+      const fixed = widths.filter(Boolean).reduce(add, zero), autos = widths.filter(w => !w).length;
+      if (cmp(content, fixed) < 0) fail('A measured rowspan cell in a table narrower than its px columns is not modeled');
+      return widths.every(Boolean) ? widths.map(w => div(mul(w, content), fixed)) : widths.map(w => w ?? div(sub(content, fixed), q(autos)));
+    };
+    function measuredHeight(cell, cs, r) {
+      const at = cell.tableAt, cols = columnWidths().slice(at.column, at.column + at.span).reduce(add, zero);
+      const inner = sub(add(cols, mul(h, q(at.span - 1))), ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero));
+      const profile = cell.contract.intrinsicBlockSize;
+      if (typeof profile === 'number') return q(String(profile));
+      const entry = profile.filter(e => cmp(q(String(e.atLeastInlineSize)), inner) <= 0).at(-1);
+      if (!entry || entry.blockSize === null) fail('The measured rowspan cell has no known height at its width');
+      return q(String(entry.blockSize));
     }
     // With a rowspan the rows become explicit tracks: each row's other cells give its px height (border box).
     let rowTracks = null;
@@ -683,7 +719,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const spans = rows.flatMap((row, r) => row.children.filter(cell => cell.tableRowSpan).map(cell => {
         const cs = one(styles(cell, region, parents, one(styles(row, region, parents, style, false, false)), false, false));
         const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-        const min = cs['block-size'] === 'auto' ? zero : cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']);
+        const min = cs['block-size'] !== 'auto' ? (cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size'])) : cell.tableMeasuredSpan ? add(measuredHeight(cell, cs, r), edges) : zero;
         return { cell, row, r, n: cell.tableRowSpan, min };
       }));
       const inside = (a, b) => a.r >= b.r && a.r + a.n <= b.r + b.n;
@@ -693,9 +729,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const ordered = [...spans].sort((a, b) => before(a, b) ? -1 : before(b, a) ? 1 : 0);
       for (const { cell, row, r, n } of ordered) {
         const cs = one(styles(cell, region, parents, one(styles(row, region, parents, style, false, false)), false, false));
-        if (cs['block-size'] === 'auto') continue;
+        if (cs['block-size'] === 'auto' && !cell.tableMeasuredSpan) continue;
         const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-        const target = sub(cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']), mul(v, q(n - 1)));
+        const target = sub(spans.find(sp => sp.cell === cell).min, mul(v, q(n - 1)));
         const spanned = rowTracks.slice(r, r + n), total = spanned.reduce(add, zero);
         if (cmp(target, total) <= 0) continue;
         // Chromium's DistributeExcessBlockSizeToRows for a rowspan (rows here all have fixed heights, so none is
@@ -722,20 +758,6 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // With explicit row tracks every cell stretches to its rows (its own height is in the track).
       for (const row of rows) for (const cell of row.children) cell.tableStretch = true;
     }
-    // The first row's cell widths decide the columns.
-    function one(list) { if (list.length !== 1) fail('Table styles that vary across viewport regions are not modeled'); return list[0].style; }
-    const sectionStyle = one(styles(sections[0], region, parents, style, false, false)), rowStyle = one(styles(rows[0], region, parents, sectionStyle, false, false));
-    // A first-row cell spanning n columns gives each (w − (n − 1)·spacing) / n (measured).
-    const widths = rows[0].children.flatMap(cell => {
-      const cs = one(styles(cell, region, parents, rowStyle, false, false)), n = spanOf(cell);
-      if (cs['inline-size'] === 'auto') return Array(n).fill(null);
-      if (!/^\d+(?:\.\d+)?px$/.test(cs['inline-size'])) fail('Fixed table column widths must be px or auto');
-      const edges = ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-      const w = cs['box-sizing'] === 'content-box' ? add(px(cs['inline-size']), edges) : px(cs['inline-size']);
-      const each = div(sub(w, mul(h, q(n - 1))), q(n));
-      if (cmp(each, zero) <= 0) fail('A spanning cell narrower than its inner spacing is not modeled');
-      return Array(n).fill(each);
-    });
     // A caption sits outside the table box (above or below it, as wide as the table): an extra
     // grid row only when no border, padding or spacing separates the rows from the table edge.
     if (caption) {
