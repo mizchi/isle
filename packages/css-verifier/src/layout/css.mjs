@@ -29,10 +29,12 @@ export const textProperties = ['font-family', 'font-size', 'line-height', 'font-
 const textPropertySet = new Set(textProperties);
 /** Marker for longhands set by the `font` shorthand, which is not modeled. */
 export const fontShorthand = 'font-shorthand';
+// A CSS string literal's value (escapes: \\hex and \\char).
+const cssString = literal => literal.slice(1, -1).replace(/\\([\da-f]{1,6}) ?|\\(.)/gi, (_, hex, ch) => hex ? String.fromCodePoint(parseInt(hex, 16)) : ch);
 function expand(property, value) {
   property = aliases[property] ?? property;
   property = insets[property] ?? property;
-  if (!['container', 'container-name'].includes(property)) value = value.toLowerCase();
+  if (!['container', 'container-name', 'content'].includes(property)) value = value.toLowerCase();
   if (property === 'container-name' && value.toLowerCase() === 'none') value = 'none';
   if (value === 'revert-layer') throw new Error('revert-layer is outside this subset');
   if (geometry.has(property)) return [[property, value]];
@@ -58,7 +60,7 @@ function expand(property, value) {
   if (property === 'gap' && wide.has(value)) return [['row-gap', value], ['column-gap', value]];
   if (property === 'overflow' && wide.has(value)) return [['overflow-x', value], ['overflow-y', value]];
   // Generated content: none/normal (no box), an empty string, or text (whose box is not modeled).
-  if (property === 'content') { if (['none', 'normal'].includes(value)) return [['content', 'none']]; if (/^(?:""|'')$/.test(value)) return [['content', 'empty']]; if (/^(?:"[^"]*"|'[^']*')$/.test(value)) return [['content', 'text']]; throw new Error(`Unsupported content: ${value}`); }
+  if (property === 'content') { if (['none', 'normal'].includes(value)) return [['content', 'none']]; if (/^(?:""|'')$/.test(value)) return [['content', 'empty']]; if (/^(?:"[^"]*"|'[^']*')$/.test(value)) return [['content', `text:${cssString(value)}`]]; throw new Error(`Unsupported content: ${value}`); }
   if (property === 'gap') {
     const parts = postcss.list.space(value); if (parts.length > 2) throw new Error('Unsupported gap');
     parts.forEach(part => { if (part !== 'normal') px(part); }); return [['row-gap', parts[0]], ['column-gap', parts.at(-1)]];

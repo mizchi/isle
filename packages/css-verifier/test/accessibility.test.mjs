@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -1021,4 +1021,17 @@ test('generated boxes: an empty absolute ::after overlay covers what it paints o
   const list = {tag: 'main', classes: ['page'], children: [{tag: 'ul', classes: ['l'], children: [{tag: 'li', classes: ['i'], children: [{tag: 'span', classes: ['t']}]}]}]};
   const listCSS = css('.l { display: grid; grid-template-columns: minmax(0, 1fr); padding: 0; } .i { display: grid; grid-template-columns: minmax(0, 1fr); position: relative; } .t { display: block; block-size: 20px; } .i::before { content: ""; position: absolute; left: 0; top: 0; inline-size: 6px; block-size: 6px; background: #000; }');
   assert.equal(find(run(list, listCSS), 'E_A11Y_LIST').length, 0);
+});
+
+test('generated text names a control; icon-font glyphs do not', () => {
+  const tree = page([{tag: 'button', classes: ['b']}]);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; inline-size: 30px; block-size: 30px; }\n${extra}`);
+  const warn = (report, code) => report.accessibility.warnings.filter(d => d.code === code);
+  assert.deepEqual(find(run(tree, css('')), 'E_A11Y_NAME').map(d => d.box), ['.b']);
+  const saved = run(tree, css('.b::before { content: "Save"; }'));
+  assert.equal(saved.status, 'verified', JSON.stringify(saved.diagnostics));
+  assert.deepEqual(warn(saved, 'W_A11Y_GENERATED_NAME').map(d => d.box), ['.b']);
+  assert.deepEqual(find(run(tree, css('.b::before { content: "\\e900"; }')), 'E_A11Y_ICON_NAME').map(d => d.box), ['.b']);
+  // A leaf without px sizes: generated text may change its size.
+  assert.equal(run(tree, css('.b { inline-size: auto; }\n.b::before { content: "Save"; }')).status, 'unknown');
 });

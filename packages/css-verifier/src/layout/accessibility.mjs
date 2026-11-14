@@ -71,6 +71,8 @@
 //   input-image-alt  → E_A11Y_INPUT_IMAGE_ALT    input type=image without alt (or another name)
 //   fragment-target  → E_A11Y_FRAGMENT          an in-page link (#id) whose target is missing, or not rendered where the link is
 //   page-main        → W_A11Y_NO_MAIN           a page where no main landmark renders
+//   icon-font-name   → E_A11Y_ICON_NAME         a control named only by generated icon-font glyphs (Private Use Area)
+//   generated-name   → W_A11Y_GENERATED_NAME    a control named only by CSS generated content
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -84,7 +86,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -300,7 +302,11 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   (function walk(box) { if (box.id && !byId.has(box.id)) byId.set(box.id, box); for (const child of box.children ?? []) walk(child); })(root);
   const hasText = box => box.text || (box.named === true) || (box.tag === 'img' && box.alt && box.alt !== 'dynamic') || (box.children ?? []).some(hasText);
   // Name from content: rendered, visible text leaves and images with a non-empty alt.
-  const speaks = row => (row.box.text || (row.box.tag === 'img' && row.box.alt && row.box.alt !== 'dynamic')) && visible(row);
+  // Generated text (::before/::after) is part of the name (Chromium); icon-font glyphs (Private Use Area) say nothing.
+  const pua = /[\uE000-\uF8FF]|[\u{F0000}-\u{FFFFD}]|[\u{100000}-\u{10FFFD}]/gu;
+  const generatedText = box => [box.generated?.before, box.generated?.after].filter(Boolean).join(' ');
+  const generatedSays = box => generatedText(box).replace(pua, '').trim().length > 0;
+  const speaks = row => (row.box.text || generatedSays(row.box) || (row.box.tag === 'img' && row.box.alt && row.box.alt !== 'dynamic')) && visible(row);
   const nameOf = box => {
     if (box.named === true) return true;
     if (box.labelledBy === 'dynamic') return 'dynamic';
@@ -316,7 +322,10 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     for (const text of texts) missing = missing.flatMap(region => subtract(region, text.region));
     // A dynamic name attribute may be empty: Unknown where no text names the target.
     if (nameOf(target.box) === 'dynamic') { for (const region of missing) report(unknowns, 'U_A11Y_NAME', 'unknown', `${target.box.label} is named only by a dynamic attribute, which may be empty`, target, region, { rule: 'accessible-name' }); continue; }
-    for (const region of missing) report(findings, 'E_A11Y_NAME', 'error', `${target.box.label} has no accessible name here: no rendered text and no aria-label, aria-labelledby or title`, target, region, { rule: 'accessible-name' });
+    const icon = [target, ...texts].some(row => generatedText(row.box) && !generatedSays(row.box)) || (generatedText(target.box) && !generatedSays(target.box));
+    for (const region of missing) report(findings, icon ? 'E_A11Y_ICON_NAME' : 'E_A11Y_NAME', 'error', icon ? `${target.box.label} is named only by icon-font glyphs (generated Private Use Area characters), which say nothing` : `${target.box.label} has no accessible name here: no rendered text and no aria-label, aria-labelledby or title`, target, region, { rule: icon ? 'icon-font-name' : 'accessible-name' });
+    // The name comes only from CSS generated content: a warning (it is easy to miss in translation and review).
+    if (!missing.length && !texts.some(row => row.box.text || (row.box.tag === 'img' && row.box.alt)) && texts.length) report(warnings, 'W_A11Y_GENERATED_NAME', 'warning', `${target.box.label} is named only by CSS generated content (${JSON.stringify(texts.map(row => generatedText(row.box)).join(' '))})`, target, target.region, { rule: 'generated-name' });
   }
 
   // text-contrast over the DOM ancestors' backgrounds.

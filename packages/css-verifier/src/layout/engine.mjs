@@ -450,13 +450,27 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   const fontKeys = ['font-family', 'font-size', 'font-weight', 'font-style', 'line-height', 'letter-spacing', 'word-spacing', 'text-transform'];
   // Generated content outside a grid/flex container (a leaf, inline content, or a container whose children are
   // not collected here) has no modeled box: Unknown unless it generates nothing.
+  // Generated text is allowed where it cannot change the geometry: in a leaf with px width and height, or in a
+  // text leaf whose measured content already holds it (at its start for ::before, its end for ::after), set in the
+  // leaf's font. It is recorded as the box's generated text (accessible names include it).
   function generatedElsewhere(box, region, parents, inheritedStyle) {
-    if (box.pseudo) return;
+    if (box.pseudo) return null;
+    const generated = {};
     for (const kind of ['before', 'after']) {
       const pbox = { ...box, path: `${box.path}/${kind === 'before' ? -1 : (box.children ?? []).length}`, label: `${box.label}::${kind}`, children: [], pseudo: kind };
-      for (const c of styles(pbox, region, parents, inheritedStyle, false, false, new Set([`::${kind}`])))
-        if ((c.style.content ?? 'none') !== 'none' && c.style.display !== 'none') throw Object.assign(new Error(`${pbox.label} generates a box outside a grid or flex container (or text); generated content there is not modeled`), { code: 'U_LAYOUT_PSEUDO' });
+      for (const c of styles(pbox, region, parents, inheritedStyle, false, false, new Set([`::${kind}`]))) {
+        const content = c.style.content ?? 'none';
+        if (content === 'none' || c.style.display === 'none') continue;
+        const text = content.startsWith('text:') ? content.slice(5) : null;
+        const fixed = !(box.children ?? []).length && !box.inline?.length && ['inline-size', 'block-size'].every(key => /^\d+(?:\.\d+)?px$/.test(inheritedStyle[key])) && c.style.position === 'static';
+        const measured = box.contract?.textMetrics?.text, collapsedText = text?.replace(/\s+/g, ' ').trim();
+        const inMeasure = text !== null && typeof measured === 'string' && collapsedText && (kind === 'before' ? measured.startsWith(collapsedText) : measured.endsWith(collapsedText)) && c.style.position === 'static'
+          && ['font-family', 'font-size', 'font-weight', 'font-style', 'line-height', 'letter-spacing', 'word-spacing', 'text-transform'].every(key => c.style[key] === inheritedStyle[key]) && c.style.display === 'inline';
+        if (text === null || !(fixed || inMeasure)) throw Object.assign(new Error(`${pbox.label} generates ${text === null ? 'a box' : 'text'} that may change the layout (only text in a px-sized leaf, or included in the leaf's measured text, is modeled)`), { code: 'U_LAYOUT_PSEUDO' });
+        generated[kind] = text;
+      }
     }
+    return generated.before !== undefined || generated.after !== undefined ? generated : null;
   }
   // Measured bounds of an inline element in one line of fixed text (textMetrics.inline): an outer
   // rectangle it stays inside and an inner one it always covers, from the leaf's content box.
@@ -495,7 +509,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     for (const child of leaf.inline) for (const state of styles(child, region, parents.map(p => ({ ...p, names: [] })), parents.at(-1).style, false, false)) {
       const style = state.style;
       if (style.display === 'none') continue;
-      generatedElsewhere(child, state.region, parents, style);
+      const generatedText = generatedElsewhere(child, state.region, parents, style);
+      if (generatedText) child.generated = generatedText;
       if (style.display !== 'inline' || style.position !== 'static' || style.float !== 'none') throw Object.assign(new Error(`${child.label} inside text must stay display: inline and static to keep the text's measured size`), { code: 'U_LAYOUT_INLINE' });
       // auto margins of inline boxes compute to 0.
       for (const side of ['left', 'right']) for (const key of [`padding-${side}`, `border-${side}`, `margin-${side}`]) if (!['0', '0px', ...(key.startsWith('margin') ? ['auto'] : [])].includes(String(style[key]))) throw Object.assign(new Error(`${child.label} inside text has horizontal ${key}; inline box edges change the measured text`), { code: 'U_LAYOUT_INLINE' });
@@ -978,7 +993,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         let { style } = state;
         // A fixed table is laid out as its equivalent grid (rows and sections as contents, cells as blocks).
         if (box.tag === 'table' && style.display === 'table') style = tableAsGrid(box, style, state.region, parents, emit, available);
-        if (!['grid', 'flex'].includes(style.display) && style.display !== 'none') generatedElsewhere(box, state.region, [...parents, { box, style }], style);
+        if (!['grid', 'flex'].includes(style.display) && style.display !== 'none') { const generatedText = generatedElsewhere(box, state.region, [...parents, { box, style }], style); if (generatedText) box.generated = generatedText; }
         // A cell's width seeds its column (the cell fills the column); its height stretches to the row.
         style = tablePlacement(box, style);
         if (!validate(style, box, state.region, emit, available)) continue;
@@ -1075,7 +1090,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   states = bounded(states.flatMap(s => styles(pbox, s.region, ancestors, style, false, false, new Set([`::${kind}`])).map(c => {
                     const content = c.style.content ?? 'none';
                     if (content === 'none' || c.style.display === 'none') return { region: c.region, children: s.children };
-                    if (content === 'text') throw Object.assign(new Error(`${pbox.label} generates text; its inline box is not modeled`), { code: 'U_LAYOUT_PSEUDO' });
+                    if (content.startsWith('text:')) throw Object.assign(new Error(`${pbox.label} generates text; its inline box is not modeled`), { code: 'U_LAYOUT_PSEUDO' });
                     if (c.style.position !== 'absolute') throw Object.assign(new Error(`${pbox.label} is generated in flow; only absolutely positioned generated boxes are modeled`), { code: 'U_LAYOUT_PSEUDO' });
                     return { region: c.region, children: kind === 'before' ? [{ box: pbox, style: c.style, inherited: style }, ...s.children] : [...s.children, { box: pbox, style: c.style, inherited: style }] };
                   })));

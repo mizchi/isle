@@ -67,7 +67,9 @@
     "accesskeys",
     "server-side-image-map",
     "fragment-target",
-    "input-image-alt"
+    "input-image-alt",
+    "icon-font-name",
+    "generated-name"
   ],
   "scope": "Static accessibility rules vs the browser (AX tree names, hit testing, focus, rects, computed colors; vlmkit a11y contrast at 1280).",
   "cases": [
@@ -386,6 +388,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -698,6 +710,16 @@
           ]
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -1017,6 +1039,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1330,6 +1362,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -1640,6 +1682,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1944,6 +1996,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -2259,6 +2321,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2565,6 +2637,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -2884,6 +2966,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3197,6 +3289,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -3507,6 +3609,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3811,6 +3923,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -4130,6 +4252,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4440,6 +4572,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -4777,6 +4919,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5105,6 +5257,16 @@
           ]
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -5422,6 +5584,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5730,6 +5902,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -6051,6 +6233,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6363,6 +6555,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -6684,6 +6886,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6996,6 +7208,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -7345,6 +7567,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7685,6 +7917,16 @@
           ]
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -8002,6 +8244,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8310,6 +8562,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -8627,6 +8889,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8935,6 +9207,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -9250,6 +9532,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9556,6 +9848,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -9891,6 +10193,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -10217,6 +10529,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -10540,6 +10862,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -10854,6 +11186,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -11175,6 +11517,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -11490,6 +11842,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -11802,6 +12164,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -12108,6 +12480,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -12433,6 +12815,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -12749,6 +13141,16 @@
           ]
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -13069,6 +13471,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -13380,6 +13792,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -13699,6 +14121,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -14009,6 +14441,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -14341,6 +14783,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -14664,6 +15116,16 @@
           ]
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -15005,6 +15467,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -15337,6 +15809,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -15675,6 +16157,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -16004,6 +16496,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -16335,6 +16837,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -16657,6 +17169,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -17011,6 +17533,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -17356,6 +17888,16 @@
           ]
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -17688,6 +18230,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -18011,6 +18563,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -18346,6 +18908,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -18672,6 +19244,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -19029,6 +19611,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -19380,6 +19972,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -19705,6 +20307,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -20024,6 +20636,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -20355,6 +20977,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -20677,6 +21309,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -21011,6 +21653,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -21336,6 +21988,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -21655,6 +22317,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -21965,6 +22637,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -22281,6 +22963,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -22605,6 +23297,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -22936,6 +23638,16 @@
           [],
           []
         ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
+        ],
         "text-contrast (dark)": [
           [
             "Page/0/1",
@@ -23259,6 +23971,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -23598,6 +24320,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -23914,6 +24646,16 @@
           []
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
@@ -24240,6 +24982,16 @@
           [
             "Page/4"
           ]
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -24559,6 +25311,677 @@
           ],
           [
             "Page/4"
+          ]
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "generated-names",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
+        ],
+        "frame-title": [
+          [],
+          [],
+          []
+        ],
+        "video-caption": [
+          [],
+          [],
+          []
+        ],
+        "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
+        ],
+        "clickable-look": [
+          [],
+          [],
+          []
+        ],
+        "list-style-semantics": [
+          [],
+          [],
+          []
+        ],
+        "motion": [
+          [],
+          [],
+          []
+        ],
+        "blink": [
+          [],
+          [],
+          []
+        ],
+        "definition-list": [
+          [],
+          [],
+          []
+        ],
+        "accesskeys": [
+          [],
+          [],
+          []
+        ],
+        "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "generated-name": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
+        ],
+        "frame-title": [
+          [],
+          [],
+          []
+        ],
+        "video-caption": [
+          [],
+          [],
+          []
+        ],
+        "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
+        ],
+        "clickable-look": [
+          [],
+          [],
+          []
+        ],
+        "list-style-semantics": [
+          [],
+          [],
+          []
+        ],
+        "motion": [
+          [],
+          [],
+          []
+        ],
+        "blink": [
+          [],
+          [],
+          []
+        ],
+        "definition-list": [
+          [],
+          [],
+          []
+        ],
+        "accesskeys": [
+          [],
+          [],
+          []
+        ],
+        "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "generated-name": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
           ]
         ]
       }
@@ -24915,6 +26338,16 @@
           [],
           [],
           []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -25264,6 +26697,16 @@
           ]
         ],
         "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
           [],
           [],
           []
