@@ -210,3 +210,20 @@ test('text spacing: letter and word spacing make wrapped text take more lines', 
   const {'.a': resolved} = metrics.resolveBoxes({'.a': {wrap: 'normal', text: {font: ro, content: text}}});
   assert.deepEqual(resolved.textMetrics.spacedProfile, spaced.profile);
 });
+
+test('withGeneratedText measures ::before/::after text with the leaf content', async () => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const base = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.price{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}.price::before{content:"$ "}.price::after{content:" USD"}';
+  const html = '<div class="page"><p class="price">1,200</p></div>';
+  const run = css => metrics.withGeneratedText(options => analyzeHTML(html, options), {name: 'P', css: base + css, viewport: {min: 320, max: 800}, boxes: {'.price': {text: {font: ro, content: '1,200'}}}});
+  // Without the generated text the leaf is Unknown; with it, "$ 1,200 USD" is measured.
+  assert.equal(analyzeHTML(html, metrics.resolveOptions({name: 'P', css: base + '.price{width:120px}', viewport: {min: 320, max: 800}, boxes: {'.price': {text: {font: ro, content: '1,200'}}}})).status, 'unknown');
+  const wide = metrics.measureText({font: ro, text: '$ 1,200 USD'});
+  assert.equal(run('.price{width:120px}').status, 'verified');
+  const narrow = run('.price{width:60px}');
+  assert.equal(narrow.status, 'violated');
+  assert.equal(narrow.diagnostics[0].code, 'E_LAYOUT_CONTENT');
+  assert.ok(wide.width > 60 && wide.width < 120);
+  // Generated text that differs by condition cannot join one contract: Unknown.
+  assert.equal(run('.price{width:120px}@media (min-width:600px){.price::after{content:" US$"}}').status, 'unknown');
+});

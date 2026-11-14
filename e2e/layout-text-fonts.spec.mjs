@@ -580,3 +580,24 @@ test('right-to-left Hebrew widths and line profiles match Chromium; Arabic stays
     });
   }
 });
+
+test('::before/::after text is measured with the leaf content (withGeneratedText) and fits exactly where Chromium shows', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const ro = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
+  const base = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.price{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}.price::before{content:"$ "}.price::after{content:" USD"}';
+  const html = '<div class="page"><p class="price">1,200</p></div>';
+  for (const width of [60, 86, 87, 120]) {
+    const css = `${base}.price{width:${width}px}`;
+    const report = metrics.withGeneratedText(options => analyzeHTML(html, options), {name: 'P', css, viewport: {min: 320, max: 800}, boxes: {'.price': {text: {font: ro, content: '1,200'}}}});
+    expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    // The generated text is part of the line: Chromium's line width (a range over the whole content box).
+    const line = await page.evaluate(() => { const p = document.querySelector('.price'), r = document.createRange(); r.selectNodeContents(p); return Math.max(p.scrollWidth, r.getBoundingClientRect().width); });
+    const overflows = line > width;
+    // Static: violated means the measured bound does not fit; verified means it fits (the bound is above the advance).
+    if (report.status === 'verified') expect(overflows, `${width}px: static fits, Chromium line ${line}`).toBe(false);
+    if (report.status === 'violated') expect(width < line + 1, `${width}px: static overflow, Chromium line ${line}`).toBe(true);
+  }
+});

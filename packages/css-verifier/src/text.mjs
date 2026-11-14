@@ -472,6 +472,31 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     return out;
   }
 
-  return {measureText, domainBounds, breakLines, resolveBoxes, resolveOptions: options => ({...options, boxes: resolveBoxes(options.boxes)})};
+  const resolveOptions = options => ({...options, boxes: resolveBoxes(options.boxes)});
+  /**
+   * Analyse with ::before/::after text included in the measured content: `analyze(options)` runs the layout analysis
+   * (e.g. options => analyzeHTML(html, options)). A first pass reports the generated text of each leaf (generatedText);
+   * a text contract with fixed content whose leaves all generate the same text gets it added (before + content +
+   * after) and the page is analysed again. Generated text that differs between the boxes or conditions of a contract
+   * is left out, so those leaves stay Unknown.
+   */
+  function withGeneratedText(analyze, options) {
+    const first = analyze(resolveOptions(options));
+    const generated = first.generatedText ?? [];
+    if (!generated.length) return first;
+    const boxes = {...options.boxes};
+    let changed = false;
+    for (const selector of new Set(generated.map(g => g.selector).filter(Boolean))) {
+      const contract = boxes[selector], rows = generated.filter(g => g.selector === selector);
+      if (!contract?.text || typeof contract.text.content !== 'string') continue;
+      const one = kind => { const texts = new Set(rows.filter(g => g.kind === kind).map(g => g.text)); return texts.size > 1 ? null : [...texts][0] ?? ''; };
+      const before = one('before'), after = one('after');
+      if (before === null || after === null) continue;
+      boxes[selector] = {...contract, text: {...contract.text, content: before + contract.text.content + after}};
+      changed = true;
+    }
+    return changed ? analyze(resolveOptions({...options, boxes})) : first;
+  }
+  return {measureText, domainBounds, breakLines, resolveBoxes, resolveOptions, withGeneratedText};
 }
 

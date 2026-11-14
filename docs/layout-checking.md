@@ -357,6 +357,12 @@ E_LAYOUT_ITEM_SIZE: .cell requires 40px but receives 53/2px on inline axis at vi
 ```
 
 導出した幅は`minInlineSize`、1行の高さは`intrinsicBlockSize`、`wrap: "nowrap"`になり、既存の検査が全てのviewportで照合する。
+
+**生成テキストの計測(`withGeneratedText`)**: `::before`/`::after` の `content` の文字列は、葉の text と同じ行に並ぶ。`metrics.withGeneratedText(options => analyzeHTML(html, options), options)` を使うと、次の 2 段階で解析する。
+1. 1回目の解析で、各葉の生成テキスト(`generatedText`:path、契約の selector、before/after、文字列)を報告する。
+2. 固定の `content` を持つ text 契約で、その契約の葉がどれも同じ生成テキストを持つなら、`before + content + after` を計測して、もう一度解析する。
+
+条件(media)や箱によって生成テキストが違う契約は合成しない(unknown のまま)。`::before`/`::after` の display の既定値は、要素のタグによらず inline にした。Chromium で、`"$ " 1,200 " USD"` を 4 つの幅で表示し、静的に収まるとした幅では溢れなかった。
 ### 折り返すテキスト
 
 `wrap: "normal"`(または `"anywhere"`)と固定文字列を書くと、行分割をモデルにして行数の profile を導出する。

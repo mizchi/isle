@@ -172,7 +172,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // The untransformed re-layout (CSS transforms removed): the layout boxes, which is what a layout shift compares.
   const untransformed = preferences.includes('untransformed');
   let sawTransform = false;
-  const layoutWarnings = [];
+  const layoutWarnings = [], generatedTexts = [];
   const animated = []; // boxes with a running animation whose keyframes lay out: {box, region, name}
   const domain = validateOptions(options), block = options.block ?? Boolean(options.viewport.height);
   const component = options.name ?? 'Document';
@@ -776,6 +776,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function generatedElsewhere(box, region, parents, inheritedStyle) {
     if (box.pseudo) return null;
     const generated = {};
+    let deferred = null; // the first error, raised once both kinds are recorded
     for (const kind of ['before', 'after']) {
       const pbox = { ...box, path: `${box.path}/${kind === 'before' ? -1 : (box.children ?? []).length}`, label: `${box.label}::${kind}`, children: [], pseudo: kind };
       for (const c of styles(pbox, region, parents, inheritedStyle, false, false, new Set([`::${kind}`]))) {
@@ -789,10 +790,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // An absolutely positioned generated box of a leaf (a hit-area expansion, a check mark) is out of flow: it is laid
         // out after the leaf, against its containing block (leafPseudo).
         if (text === null && c.style.position === 'absolute' && !(box.children ?? []).length && !box.inline?.length) { box.absolutePseudo = [...new Set([...(box.absolutePseudo ?? []), kind])]; continue; }
-        if (text === null || !(fixed || inMeasure)) throw Object.assign(new Error(`${pbox.label} generates ${text === null ? 'a box' : 'text'} that may change the layout (only text in a px-sized leaf, or included in the leaf's measured text, is modeled)`), { code: 'U_LAYOUT_PSEUDO' });
+        // Generated text is recorded (path, contract selector, kind, text) so a text resolver can measure it with the
+        // leaf's content and analyse again (withGeneratedText in /text).
+        if (text !== null && !generatedTexts.some(g => g.path === box.path && g.kind === kind && g.text === text)) generatedTexts.push({ path: box.path, box: box.label, ...(box.contractSelector ? { selector: box.contractSelector } : {}), kind, text });
+        if (text === null || !(fixed || inMeasure)) { deferred ??=  Object.assign(new Error(`${pbox.label} generates ${text === null ? 'a box' : 'text'} that may change the layout (only text in a px-sized leaf, or included in the leaf's measured text, is modeled)`), { code: 'U_LAYOUT_PSEUDO' }); continue; }
         generated[kind] = text;
       }
     }
+    if (deferred) throw deferred;
     return generated.before !== undefined || generated.after !== undefined ? generated : null;
   }
   // Measured bounds of an inline element in one line of fixed text (textMetrics.inline): an outer
@@ -2071,7 +2076,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     ...(boxes.some(box=>box.layoutContracts?.length) ? {layoutBindings:boxes.flatMap(box=>(box.layoutContracts ?? []).map(declaration=>({path:box.path,declaration})))} : {}),
     ...(geometry.some(row => row.bounds) ? { inlineBounds: geometry.filter(row => row.bounds).flatMap(row => row.bounds.map(piece => ({ box: row.box.label, path: row.path, ...ranges(piece.region), ...(block ? { regionConstraints: serialize(piece.region).constraints } : {}),
       ...Object.fromEntries(['outer', 'inner'].map(key => [key, piece[key] ? { inlineStart: affine(piece[key].origin.inline), blockStart: affine(piece[key].origin.block), inlineSize: affine(piece[key].inline), blockSize: affine(piece[key].block) } : null])) }))) } : {}),
-    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}), ...(layoutWarnings.length ? { layoutWarnings } : {}),
+    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}), ...(layoutWarnings.length ? { layoutWarnings } : {}), ...(generatedTexts.length ? { generatedText: generatedTexts } : {}),
     ...(options.accessibility ? { accessibility: { rules: accessibilityRules.filter(accessibilityProfiles[options.accessibility.profile ?? 'all']), profile: options.accessibility.profile ?? 'all', contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), warnings: accessibilityWarnings, exempted: accessibilityExempted, notes: accessibilityNotes } } : {}),
     ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', warnings: integrityWarnings, exempted: integrityExempted } } : {}) };
 }
