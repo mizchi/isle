@@ -841,7 +841,8 @@ test('fixed tables with colspan and a caption', () => {
   assert.equal(spanned.status, 'verified', JSON.stringify(spanned.diagnostics));
   assert.equal(rect(spanned, 's').blockSize.constant, '60');
   assert.equal(rect(spanned, 'q').inlineStart.constant, '100');
-  assert.equal(run(tall, css + '.s { inline-size: 100px; }', {viewport: tableView}).status, 'unknown');
+  // A px rowspan cell (30px, under its two 30px rows) is modeled too.
+  assert.equal(run(tall, css + '.s { inline-size: 100px; }', {viewport: tableView}).status, 'verified');
 });
 
 test('inline links in one measured line: occlusion and obscured focus from their bounds', () => {
@@ -892,4 +893,26 @@ test('a caption does not sit on its table background', () => {
   const report = run(tree, css, {boxes: {'.cap': {minInlineSize: 1, intrinsicBlockSize: 20}, '.d': {minInlineSize: 1, intrinsicBlockSize: 20}}});
   // White caption text over the white page (the table's black is behind the cells only).
   assert.deepEqual(find(report, 'E_A11Y_CONTRAST').map(d => d.box), ['.cap']);
+});
+
+test('a taller px rowspan cell grows its rows like Chromium', () => {
+  const tableView = {min: 420, max: 1280, height: {min: 400, max: 900}};
+  const rect = (report, cls) => report.sizes.find(r => r.box === `.${cls}` && r.rect).rect;
+  const tree = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [
+    {tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['s'], rowSpan: 2}, {tag: 'td', classes: ['p']}]}, {tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['q']}]}]}]};
+  const css = spacing => `.t { table-layout: fixed; inline-size: 400px; border-spacing: ${spacing}; }\ntd { padding: 0; }\n.s { block-size: 120px; inline-size: 100px; }\n.p { block-size: 20px; }\n.q { block-size: 40px; }`;
+  const plain = run(tree, css('0'), {viewport: tableView});
+  assert.equal(plain.status, 'verified', JSON.stringify(plain.diagnostics));
+  assert.equal(rect(plain, 'p').blockSize.constant, '40');
+  assert.equal(rect(plain, 'q').blockStart.constant, '40');
+  // 116px over 20 : 40, the first share floored to 1/64px.
+  const spaced = run(tree, css('4px'), {viewport: tableView});
+  assert.equal(rect(spaced, 'p').blockSize.constant, '1237/32');
+  assert.equal(rect(spaced, 'q').blockSize.constant, '2475/32');
+});
+
+test('content taller than a table cell is Unknown, not overflow (the row grows)', () => {
+  const tree = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['d'], text: true}]}]}]};
+  const report = run(tree, '.t { table-layout: fixed; inline-size: 400px; background: #fff; color: #000; }\n.d { block-size: 20px; }', {viewport: {min: 420, max: 1280, height: {min: 400, max: 900}}, boxes: {'.d': {minInlineSize: 10, intrinsicBlockSize: 40}}});
+  assert.deepEqual(report.diagnostics.map(d => d.code), ['U_LAYOUT_TABLE']);
 });

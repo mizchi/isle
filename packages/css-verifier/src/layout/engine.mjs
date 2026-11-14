@@ -65,6 +65,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   for (const rule of rules) rule.layerName = rule.layer === null ? undefined : layers[rule.layer];
   const bounded = values => { spend(values.length); if (values.length > 512) throw new Error('Layout state limit exceeded'); return values; };
 
+  // Table cells do not overflow their height: the row grows with the content (not modeled), so it is Unknown there.
+  function cellGrows(available, required, box, region) {
+    const failed = clip(region, diff(required, available), true);
+    if (failed) diagnostics.push({ code: 'U_LAYOUT_TABLE', severity: 'unknown', message: `${box.label}: the content is taller than the cell here; a table row grows with its content`, box: box.label, path: box.path, source: box.source, axis: 'block', ...ranges(failed) });
+  }
   function obligation(available, required, box, region, code, axis, enabled = true, explain, annotate) {
     checks.push({ box: box.label, path: box.path, code, axis, ...ranges(region), available: affine(available), required: affine(required), enforced: enabled });
     if (!enabled) {
@@ -499,7 +504,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (contract.minInlineSize !== undefined) obligation(contentInline, scalar(contract.minInlineSize), box, region, 'E_LAYOUT_CONTENT', 'inline', (contract.overflow ?? 'fit') === 'fit', content('inline', 'minInlineSize'), domain);
       if (block) {
         if (available.block) obligation(available.block, blockSize, box, region, 'E_LAYOUT_ITEM_SIZE', 'block', available.fitBlock !== false, item('block'));
-        if (contract.minBlockSize !== undefined) obligation(contentBlock, scalar(contract.minBlockSize), box, region, 'E_LAYOUT_CONTENT', 'block', (contract.overflowBlock ?? 'fit') === 'fit', content('block', 'minBlockSize'));
+        if (contract.minBlockSize !== undefined) (box.tableCell && (contract.overflowBlock ?? 'fit') === 'fit' ? cellGrows : obligation)(contentBlock, scalar(contract.minBlockSize), box, region, 'E_LAYOUT_CONTENT', 'block', (contract.overflowBlock ?? 'fit') === 'fit', content('block', 'minBlockSize'));
       }
       let positioned;
       if (style.position === 'absolute') {
@@ -547,7 +552,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           // Wrapped text reports the lines it needs at this width and how many the box holds.
           const needed = contract.textMetrics?.kind === 'lines' ? Math.round(number(evaluate(required.value, { x: zero, y: zero })) / contract.font.lineHeight) : 0;
           const annotate = needed ? offered => ({ text: { lines: needed, fitsLines: fittingLines(contract.font.lineHeight, offered, needed) } }) : undefined;
-          if (emit) obligation(contentBlock, required.value, box, required.region, 'E_LAYOUT_CONTENT', 'block', true, undefined, annotate);
+          if (emit) (box.tableCell ? cellGrows : obligation)(contentBlock, required.value, box, required.region, 'E_LAYOUT_CONTENT', 'block', true, undefined, annotate);
         }
         else if (contract.minBlockSize === undefined) unknown('U_LAYOUT_INTRINSIC', 'Text needs a block-height contract or an explicit overflowBlock policy', undefined, box);
       }
@@ -648,25 +653,47 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const heights = new Set(row.children.filter(cell => !cell.tableRowSpan).map(cell => rs.flatMap(r => styles(cell, r.region, parents, r.style, false, false)).map(c => c.style['block-size']).join('|')));
       if (heights.size > 1) fail('Cells of one row with different block-size values are not modeled (table cells stretch to the row)');
     }
+    const [h, v = h] = String(style['border-spacing']).split(/\s+/).map(part => px(part));
     // A rowspan cell is stretched over its rows; it must not size them (Chromium and grid distribute differently).
     for (const row of rows) for (const cell of row.children.filter(cell => cell.tableRowSpan)) {
       const block = new Set(styles(cell, region, parents, style, false, false).map(c => c.style['block-size']));
-      if ([...block].some(b => b !== 'auto') || cell.text || cell.contract || (cell.children ?? []).length) fail('A rowspan cell is modeled only when it is empty with block-size: auto');
+      const empty = !cell.text && !cell.contract && !(cell.children ?? []).length;
+      if (block.size !== 1 || !(([...block][0] === 'auto' && empty) || /^\d+(?:\.\d+)?px$/.test([...block][0]))) fail('A rowspan cell is modeled when it is empty with block-size: auto, or has a px block-size');
     }
     // With a rowspan the rows become explicit tracks: each row's other cells give its px height (border box).
     let rowTracks = null;
     if (rows.some(row => row.children.some(cell => cell.tableRowSpan))) rowTracks = rows.map(row => {
       const own = row.children.filter(cell => !cell.tableRowSpan);
-      if (!own.length) fail('A row covered only by rowspan cells has no modeled height');
+      if (!own.length) return zero;
       const cs = one(styles(own[0], region, parents, one(styles(row, region, parents, style, false, false)), false, false));
       if (!/^\d+(?:\.\d+)?px$/.test(cs['block-size'])) fail('With rowspan, every row needs cells with a px block-size');
       const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-      return `${number(cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']))}px`;
+      return cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']);
     });
+    // A taller rowspan cell grows its rows in proportion to their heights (all to the last row when they are 0),
+    // each share floored to 1/64px and the rest to the last row (measured in Chromium). Spans may not overlap.
+    if (rowTracks) {
+      const used = new Set();
+      for (const [r, row] of rows.entries()) for (const cell of row.children.filter(cell => cell.tableRowSpan)) {
+        const n = cell.tableRowSpan, cs = one(styles(cell, region, parents, one(styles(row, region, parents, style, false, false)), false, false));
+        if (cs['block-size'] === 'auto') continue;
+        for (let k = r; k < r + n; k++) { if (used.has(k)) fail('Overlapping px rowspan cells are not modeled'); used.add(k); }
+        const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+        const target = sub(cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']), mul(v, q(n - 1)));
+        const spanned = rowTracks.slice(r, r + n), total = spanned.reduce(add, zero);
+        if (cmp(target, total) <= 0) continue;
+        const floor64 = value => div(q(String(Math.floor(number(mul(value, q(64))) + 1e-9))), q(64));
+        const grown = cmp(total, zero) === 0 ? [...spanned.slice(0, -1), target] : spanned.slice(0, -1).map(h => floor64(div(mul(h, target), total)));
+        if (cmp(total, zero) !== 0) grown.push(sub(target, grown.reduce(add, zero)));
+        rowTracks.splice(r, n, ...grown);
+      }
+      rowTracks = rowTracks.map(value => `${number(value)}px`);
+      // With explicit row tracks every cell stretches to its rows (its own height is in the track).
+      for (const row of rows) for (const cell of row.children) cell.tableStretch = true;
+    }
     // The first row's cell widths decide the columns.
     function one(list) { if (list.length !== 1) fail('Table styles that vary across viewport regions are not modeled'); return list[0].style; }
     const sectionStyle = one(styles(sections[0], region, parents, style, false, false)), rowStyle = one(styles(rows[0], region, parents, sectionStyle, false, false));
-    const [h, v = h] = String(style['border-spacing']).split(/\s+/).map(part => px(part));
     // A first-row cell spanning n columns gives each (w − (n − 1)·spacing) / n (measured).
     const widths = rows[0].children.flatMap(cell => {
       const cs = one(styles(cell, region, parents, rowStyle, false, false)), n = spanOf(cell);
@@ -758,9 +785,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   // Cells fill their column (and span colspan columns); a caption is a full-width first or last row.
   function tablePlacement(box, style) {
-    if (box.tableCell && style.display === 'table-cell' && box.tableArea) return { ...style, display: 'block', 'inline-size': 'auto', 'grid-column': `${box.tableArea.column} / span ${box.tableArea.span}`, 'grid-row': `${box.tableArea.row} / span ${box.tableArea.down}` };
+    if (box.tableCell && style.display === 'table-cell' && box.tableArea) return { ...style, display: 'block', 'inline-size': 'auto', ...(box.tableStretch ? { 'block-size': 'auto' } : {}), 'grid-column': `${box.tableArea.column} / span ${box.tableArea.span}`, 'grid-row': `${box.tableArea.row} / span ${box.tableArea.down}` };
     if (box.tableCaption?.interleaved && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.interleaved.columns}`, 'grid-row': String(box.tableCaption.interleaved.row) };
-    if (box.tableCell && style.display === 'table-cell') return { ...style, display: 'block', 'inline-size': 'auto', ...(box.colSpan > 1 ? { 'grid-column': `span ${box.colSpan}` } : {}), ...(box.tableRowSpan ? { 'grid-row': `span ${box.tableRowSpan}` } : {}) };
+    if (box.tableCell && style.display === 'table-cell') return { ...style, display: 'block', 'inline-size': 'auto', ...(box.tableStretch ? { 'block-size': 'auto' } : {}), ...(box.colSpan > 1 ? { 'grid-column': `span ${box.colSpan}` } : {}), ...(box.tableRowSpan ? { 'grid-row': `span ${box.tableRowSpan}` } : {}) };
     if (box.tableCaption && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.columns}`, 'grid-row': String(box.tableCaption.side === 'bottom' ? box.tableCaption.rows + 1 : 1) };
     return style;
   }
