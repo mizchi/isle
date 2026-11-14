@@ -634,6 +634,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           if (r + down > groupRows.length) fail('A rowspan past the end of its row group is not modeled');
           for (let k = 0; k < down; k++) for (let c = column; c < column + n; c++) taken.set(`${groupRows[r + k].path}:${c}`, true);
           if (down > 1) cell.tableRowSpan = down;
+          cell.tableAt = { column, row: rows.indexOf(row), span: n, down };
           column += n;
         }
       });
@@ -680,8 +681,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // A caption sits outside the table box (above or below it, as wide as the table): an extra
     // grid row only when no border, padding or spacing separates the rows from the table edge.
     if (caption) {
-      if (cmp(h, zero) !== 0 || cmp(v, zero) !== 0 || ['left', 'right', 'top', 'bottom'].some(side => cmp(px(style[`padding-${side}`]), zero) !== 0 || cmp(px(style[`border-${side}`]), zero) !== 0))
-        fail('A table caption is modeled only with border-spacing 0 and no table padding or border');
+      if (['left', 'right', 'top', 'bottom'].some(side => cmp(px(style[`padding-${side}`]), zero) !== 0 || cmp(px(style[`border-${side}`]), zero) !== 0))
+        fail('A table caption is modeled only without table padding or border (they surround the rows, not the caption)');
       caption.tableCaption = { columns, rows: rows.length, side: one(styles(caption, region, parents, style, false, false))['caption-side'] };
     }
     let autoWidth = null, autoMinimum = null;
@@ -725,6 +726,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (!/^\d+(?:\.\d+)?px$/.test(inlineSize)) fail('A content-box fixed table needs a px inline-size');
       inlineSize = `${number(sub(px(inlineSize), add(h, h)))}px`;
     }
+    // A caption with border-spacing: the caption spans the table's full width while the rows are inset, so the
+    // spacing becomes explicit gap tracks (h c1 h c2 h; v r1 v r2 v) and every cell an explicit grid area.
+    if (caption && (cmp(h, zero) !== 0 || cmp(v, zero) !== 0)) {
+      const top = caption.tableCaption.side !== 'bottom', gapH = `${number(h)}px`, gapV = `${number(v)}px`;
+      const rowList = rowTracks ?? rows.map(() => 'auto');
+      const rowTemplate = [gapV, ...rowList.flatMap(track => [track, gapV])];
+      caption.tableCaption = { ...caption.tableCaption, interleaved: { columns: 2 * columns + 1, row: top ? 1 : rowTemplate.length + 1 } };
+      for (const row of rows) for (const cell of row.children) cell.tableArea = { column: 2 * cell.tableAt.column + 2, span: 2 * cell.tableAt.span - 1, row: (top ? 3 : 2) + 2 * cell.tableAt.row, down: 2 * cell.tableAt.down - 1 };
+      return { ...style, display: 'grid', 'grid-template-columns': [gapH, ...tracks.flatMap(track => [track, gapH])].join(' '), 'grid-template-rows': (top ? ['auto', ...rowTemplate] : [...rowTemplate, 'auto']).join(' '),
+        'grid-auto-rows': 'auto', 'column-gap': '0px', 'row-gap': '0px', tableColumns: automatic ? null : widths.every(Boolean) ? widths.reduce(add, zero) : null, tableGaps: mul(h, q(columns + 1)) };
+    }
     const grid = { ...style, 'inline-size': inlineSize, display: 'grid', 'grid-template-columns': tracks.join(' '), 'grid-template-rows': rowTracks ? (caption ? (caption.tableCaption.side === 'bottom' ? [...rowTracks, 'auto'] : ['auto', ...rowTracks]).join(' ') : rowTracks.join(' ')) : 'none', 'grid-auto-rows': 'auto', 'column-gap': `${number(h)}px`, 'row-gap': `${number(v)}px`,
       ...Object.fromEntries(Object.entries(spacingEdges).map(([key, value]) => [key, `${number(value)}px`])), tableColumns: automatic ? null : widths.every(Boolean) ? widths.reduce(add, zero) : null, tableGaps: mul(h, q(columns - 1)),
       ...(autoWidth ? { tableShrink: autoWidth } : {}), ...(autoMinimum ? { tableAutoMinimum: autoMinimum } : {}) };
@@ -732,6 +744,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   // Cells fill their column (and span colspan columns); a caption is a full-width first or last row.
   function tablePlacement(box, style) {
+    if (box.tableCell && style.display === 'table-cell' && box.tableArea) return { ...style, display: 'block', 'inline-size': 'auto', 'grid-column': `${box.tableArea.column} / span ${box.tableArea.span}`, 'grid-row': `${box.tableArea.row} / span ${box.tableArea.down}` };
+    if (box.tableCaption?.interleaved && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.interleaved.columns}`, 'grid-row': String(box.tableCaption.interleaved.row) };
     if (box.tableCell && style.display === 'table-cell') return { ...style, display: 'block', 'inline-size': 'auto', ...(box.colSpan > 1 ? { 'grid-column': `span ${box.colSpan}` } : {}), ...(box.tableRowSpan ? { 'grid-row': `span ${box.tableRowSpan}` } : {}) };
     if (box.tableCaption && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.columns}`, 'grid-row': String(box.tableCaption.side === 'bottom' ? box.tableCaption.rows + 1 : 1) };
     return style;

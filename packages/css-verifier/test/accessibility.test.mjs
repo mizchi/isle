@@ -820,7 +820,14 @@ test('fixed tables with colspan and a caption', () => {
   assert.equal(rect(top, 'x').blockStart.constant, '50');
   const bottom = run(tree(true), css + '.t { caption-side: bottom; }', {viewport: tableView});
   assert.equal(rect(bottom, 'cap').blockStart.constant, '60');
-  assert.equal(run(tree(true), css + '.t { border-spacing: 2px; }', {viewport: tableView}).status, 'unknown');
+  // With spacing the caption still spans the full width; the rows are inset by the spacing.
+  const spaced = run(tree(true), css + '.t { border-spacing: 4px 6px; }\n.a { inline-size: 200px; }\n.b { inline-size: 100px; }', {viewport: tableView});
+  assert.equal(spaced.status, 'verified', JSON.stringify(spaced.diagnostics));
+  assert.equal(rect(spaced, 'cap').inlineSize.constant, '400');
+  assert.equal(rect(spaced, 'x').inlineStart.constant, '4');
+  assert.equal(rect(spaced, 'a').blockStart.constant, '26');
+  assert.equal(rect(spaced, 'x').blockStart.constant, '62');
+  assert.equal(run(tree(true), css + '.t { border-spacing: 2px; padding: 3px; }', {viewport: tableView}).status, 'unknown');
   // rowspan: an empty auto-height cell over two rows; a rowspan past its row group stays Unknown.
   assert.equal(run({tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r'], children: [cell('a', {rowSpan: 2})]}]}]}, css, {viewport: tableView}).status, 'unknown');
   const tall = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [

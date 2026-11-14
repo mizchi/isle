@@ -152,7 +152,8 @@ CSS 2.2 §17.5.2.1 の固定 table は次の grid と同じになることを Ch
 `E_LAYOUT_TABLE_WIDTH` で報告する。UA の cell padding(1px)と `border-spacing`(2px)をモデルにした。
 `colspan` の cell は `span n` の grid item で、1行目の幅 w の cell は各列に (w − (n−1)·spacing)/n を与える(Chromium で測定)。
 `caption` は table の枠の外(上か下、`caption-side`)で table と同じ幅になり、table 要素の矩形は caption を含む:
-`border-spacing: 0` で table の border と padding がないときだけ、全列にまたがる最初(か最後)の行として扱う。
+table の border と padding がないとき、全列にまたがる最初(か最後)の行として扱う。`border-spacing` があれば caption は全幅のまま行だけが内側に入るので、
+spacing を明示した gap track(`h c1 h c2 h`、行も同様)にし、各 cell を明示した grid area に置く(colspan・rowspan と組み合わせて Chromium と一致)。
 `rowspan` は、中身がなく高さ auto の cell が行グループの中でだけ広がるとき `grid-row: span n` として扱い、行は他の cell の px の高さを明示した track にする
 (Chromium と grid では span する cell の余りの配り方が違うので、行の高さを決める rowspan cell は Unknown)。
 **自動 table レイアウト**(`table-layout: auto`)は、内容が列を広げられないときだけ固定 table と同じになる(Chromium で測定):
@@ -160,7 +161,7 @@ CSS 2.2 §17.5.2.1 の固定 table は次の grid と同じになることを Ch
 幅を明示した table と grid の中の auto 幅の table(grid area に伸びる)は余りを px の比で分け、root の auto 幅の table は列の和に縮む。
 列の和より狭い table(内容で分け直す)と、auto 幅が container より広い区間(内容で縮む)は U_LAYOUT_TABLE。flex の中の auto 幅は Unknown。
 UA の `table { border-collapse: separate; border-spacing: 2px }` は table 自身の規則で、親からは継承しない(以前は継承していた。root 以外の table で誤り)。
-それ以外の table(内容で列幅が決まる自動レイアウト、中身のある rowspan、spacing のある caption など)は Unknown。
+それ以外の table(内容で列幅が決まる自動レイアウト、中身のある rowspan、border か padding のある table の caption など)は Unknown。
 `color-scheme` プロパティ:作者が書いた `Canvas`/`CanvasText` は要素の used color scheme で解決する(Chromium の dark は #121212/#fff)。
 UA の既定色は ADR-0007 のまま Unknown。`light dark` を宣言した CSS も dark で再判定する。Vite の `meta name=color-scheme`(light 以外)は未対応として拒否する。th は UA の bold と中央寄せを持つので、作者が指定するまで未解決にする。
 Chromium(このバージョン)は display を変えても table の role を保つことを確かめた(Safari は過去に失っていた)。
