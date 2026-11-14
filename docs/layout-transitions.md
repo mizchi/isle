@@ -261,7 +261,7 @@ host/platform条件が異なる場合はUnknownにします。片方だけの共
 証明しません。Isleの宣言用adapterは、前述の有限な全候補の比較をこのAPI上で実行します。
 
 対象のpathが不明、見えているboxの矩形が欠落、scroll/clipやsubgridの未対応座標系、
-transform等の未対応CSS、solver失敗・timeoutはUnknownです。矩形の被覆を先に検査し、
+未対応CSS、solver失敗・timeoutはUnknownです。矩形の被覆を先に検査し、
 不足を等価とみなすことを防ぎます。profile外のモデルや不正な入力、上限超過の例外も
 厳格なビルドでは失敗にします。
 
@@ -269,6 +269,23 @@ root原点・viewport・host割当・スクロール位置が前後で同じこ�
 フォントの寸法を外部から与えた場合は、引き続きtrustedな前提です。CSSのアニメーション、
 非同期処理中の中間frame、glyphやpaintの変化をこの二状態の比較で保証しません。
 ブラウザーのCLS値が0になる証明とは区別します。
+
+## transform とレイアウトの矩形
+
+`transform` は描画される箱だけを動かし、レイアウトの箱は動かしません。Chromium の Layout Instability API も
+transform による移動を layout shift に数えません(測定は [cls-evaluation.md](cls-evaluation.md))。そこで
+noshift は、transform を除いたレイアウトの矩形を比べます。
+
+- endpoint のどこかに transform があると、解析は transform を外して配置し直し、各 size 行に `layoutRect`
+  (レイアウトの矩形)を添えます。`rect` は従来どおり描画の矩形(アクセシビリティと integrity が使う)です。
+- 対応する行が配置し直しで見つからない場合は `layoutRect: null` になり、noshift はその対象を Unknown にします。
+- transform は integrity か accessibility の検査で扱える範囲に限ります(それ以外の解析では従来どおり Unknown)。
+  描画がはみ出す transform は endpoint の検査で違反になり、noshift も Unknown になります。
+- 保証するのは layout shift の意味での不動です。transform で見た目が動くこと(アニメーション、ホバーの持ち上げ)
+  は保証の外で、CLS にもなりません。
+
+Chromium で、translate・scale・その組み合わせの状態変化は CLS 0 かつ noshift verified、高さと padding の変化は
+CLS > 0 かつ noshift violated で一致しました(e2e/layout-cls-facts.spec.mjs)。
 
 ## 再現と評価
 

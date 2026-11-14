@@ -110,7 +110,10 @@ function length(value, parent, style) {
 
 // `preferences` (internal) names non-default user preferences, e.g. 'prefers-color-scheme:dark'.
 export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSheets=[], inputDiagnostics=[], preferences=[]) {
-  const pristine = options.accessibility && !preferences.length ? structuredClone(root) : null;
+  const pristine = (options.accessibility || options.integrity) && !preferences.length ? structuredClone(root) : null;
+  // The untransformed re-layout (CSS transforms removed): the layout boxes, which is what a layout shift compares.
+  const untransformed = preferences.includes('untransformed');
+  let sawTransform = false;
   const domain = validateOptions(options), block = options.block ?? Boolean(options.viewport.height);
   const component = options.name ?? 'Document';
   const h = options.viewport.height ?? { min: 0, max: 0 };
@@ -256,6 +259,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         style = { ...style, appearance: 'none', display: 'block', 'box-sizing': 'border-box', 'inline-size': '13px', 'block-size': '13px', 'min-inline-size': 'auto', 'min-block-size': 'auto', ...Object.fromEntries(['left', 'right', 'top', 'bottom'].flatMap(side => [[`padding-${side}`, '0'], [`border-${side}`, '0']])), $uaControl: true };
       if (emit) for (const entry of style.$invalid) invalidSubstitutions.push({ box: box.label, path: box.path, property: entry.property, longhands: entry.longhands, css: { file: entry.file, line: entry.line }, reason: entry.code === 'U_LAYOUT_VARIABLE_CYCLE' ? 'cycle' : 'guaranteed-invalid', message: entry.message, resolution: 'unset', ...ranges(r) });
       if (emit) for (const [condition, compiled] of contexts) if (condition.kind === 'container') queries.push({ box: box.label, path: box.path, name: condition.name, target: compiled.target, targetPath: compiled.path, matched: activeContext(compiled), ...ranges(r) });
+      if (style.transform !== 'none' && !box.pseudo) { if (untransformed) style = { ...style, transform: 'none' }; else sawTransform = true; }
       return { region: r, style };
     });
   }
@@ -1716,12 +1720,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   diagnostics.push(...merged.map(({ signature, ...finding }) => finding));
   let integrityWarnings = [], integrityExempted = [], accessibilityWarnings = [], accessibilityNotes = [], accessibilityExempted = [];
-  if (options.integrity && !diagnostics.some(d => d.severity === 'unknown')) {
+  if (options.integrity && !untransformed && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeIntegrity({ geometry, waived }, { block, targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', ranges });
     diagnostics.push(...judged.findings);
     integrityWarnings = judged.warnings; integrityExempted = judged.exempted;
   }
-  if (options.accessibility && !diagnostics.some(d => d.severity === 'unknown')) {
+  if (options.accessibility && !untransformed && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { keyframeFrames, hostInset: options.hostInset ?? 0, hostBlockInset: options.hostBlockInset ?? 0, viewportBlock: block && options.viewport.height ? height : null, scrollPaddingDeclared: rules.some(rule => rule.declarations.some(d => /^scroll-padding-(?:top|bottom)$/.test(d.property))), viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), ranges, block });
     diagnostics.push(...judged.findings, ...judged.unknowns);
     // Dark color scheme: when the CSS has prefers-color-scheme: dark rules, the contrast rules run
@@ -1759,6 +1763,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const kept = diagnostics.flatMap(d => d.rule && accessibilityRules.includes(d.rule) ? tiered([d]) : [d]);
     diagnostics.length = 0; diagnostics.push(...kept);
     accessibilityWarnings = tiered(judged.warnings); accessibilityNotes = judged.notes; accessibilityExempted = judged.exempted;
+  }
+  // Layout rectangles: a transform moves the painted box but not the layout box (a layout shift ignores it; measured
+  // in docs/cls-evaluation.md). With a transform anywhere, every row's layoutRect comes from the untransformed
+  // re-layout, matched by path and condition region; a row without a match gets layoutRect null (not decided).
+  if (pristine && sawTransform && !diagnostics.some(d => d.severity === 'unknown')) {
+    const plain = analyzeBoxTree(pristine, options, scrollbarProfile, budget, inlineSheets, [], ['untransformed']);
+    const key = row => JSON.stringify([row.path, row.range, row.heightRange, row.region]);
+    const byKey = new Map();
+    if (plain.status !== 'unknown') for (const row of plain.sizes) byKey.set(key(row), byKey.has(key(row)) ? null : row);
+    for (const row of sizes) { const match = byKey.get(key(row)); row.layoutRect = match?.rect ?? null; }
   }
   const status = diagnostics.some(d => d.severity === 'unknown') ? 'unknown' : diagnostics.length ? 'violated' : 'verified';
   return { version: 1, ok: status === 'verified', status, component,

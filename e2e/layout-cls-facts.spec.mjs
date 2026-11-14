@@ -71,3 +71,21 @@ test('static image reservation checks agree with Chromium layout shifts', async 
     expect(measured.score > 0, `${attrs || 'no attributes'}: static ${predicted}, Chromium ${measured.score}`).toBe(predicted);
   }
 });
+
+test('noshift ignores transforms like Chromium layout shifts: a transformed state verifies, a resized one does not', async ({page}) => {
+  const {createNoShiftContract} = await import('../packages/css-verifier/src/transitions.mjs');
+  const {verifyNoShift} = await import('../packages/css-verifier/src/transitions-node.mjs');
+  const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
+  const html = '<main class="page"><div class="card"><div class="inner"></div></div><div class="below"></div></main>';
+  const base = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:8px;row-gap:8px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:100px;padding:10px;background:#ddd}.inner{height:20px;background:#888}.below{height:40px;background:#444}';
+  const contract = createNoShiftContract({name: 'State', targets: [['card', 'Page/0'], ['inner', 'Page/0/0'], ['below', 'Page/1']].map(([name, path]) => ({name, before: path, after: path}))});
+  for (const [name, after] of [['translate', 'transform:translateY(-4px)'], ['scale', 'transform:scale(0.9)'], ['translate and scale', 'transform:translate(2px,-4px) scale(0.9)'], ['height', 'height:130px'], ['padding', 'padding:20px']]) {
+    const before = analyzeHTML(html, {name: 'Page', viewport, css: base, integrity: true});
+    const changed = analyzeHTML(html, {name: 'Page', viewport, css: `${base}.card{${after}}`, integrity: true});
+    const result = await verifyNoShift(before, changed, contract);
+    expect(['verified', 'violated'], `${name}: ${JSON.stringify(result.diagnostics ?? [])}`).toContain(result.status);
+    // The same change, made without input after the first frames.
+    const measured = await shifts(page, `<style>${base}.card.on{${after}}</style>${html}`, {script: "setTimeout(() => document.querySelector('.card').classList.add('on'), 300)"});
+    expect(measured.score > 0, `${name}: noshift ${result.status}, Chromium ${measured.score}`).toBe(result.status === 'violated');
+  }
+});

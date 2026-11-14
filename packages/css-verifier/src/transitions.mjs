@@ -6,6 +6,9 @@ import {sub,number,exact} from './layout/linear.mjs';
 import {obligationModel} from './layout/model.mjs';
 
 const fields=['inlineStart','blockStart','inlineSize','blockSize'];
+// The layout box: a transform moves only the painted box, and a layout shift ignores it (the Layout Instability
+// API; measured). A row whose layout box is not decided (layoutRect null) has no geometry.
+const box=row=>'layoutRect' in row ? row.layoutRect : row.rect;
 const codes={inlineStart:'E_NOSHIFT_INLINE_START',blockStart:'E_NOSHIFT_BLOCK_START',inlineSize:'E_NOSHIFT_INLINE_SIZE',blockSize:'E_NOSHIFT_BLOCK_SIZE'};
 const object=(value,keys)=>value!==null && typeof value==='object' && !Array.isArray(value) && Object.keys(value).every(key=>keys.includes(key));
 const identifier=value=>typeof value==='string' && /^[A-Za-z_][\w.-]{0,127}$/.test(value);
@@ -82,9 +85,9 @@ export function createTransitionObligation(contract,transition) {
         selected=candidates.length===1 ? candidates[0].path : `${ref.within ?? ''}/[target:${ref.id}]`;
         rows=candidates.length===1 ? state.boxes.filter(row=>row.path===selected) : [];
       }
-      const measured=rows.filter(row=>row.rect && fields.every(field=>row.rect[field]));
+      const measured=rows.filter(row=>box(row) && fields.every(field=>box(row)[field]));
       // Validate all compared affine expressions at the strict SMT boundary.
-      for(const row of measured) for(const field of fields) affine(row.rect[field]);
+      for(const row of measured) for(const field of fields) affine(box(row)[field]);
       const visible=or(rows.map(region));
       coverage.push({code:'U_NOSHIFT_GEOMETRY',box:target.name,path:selected,domain:visible,failure:`(not ${or(measured.map(region))})`});
       append({code:'E_NOSHIFT_PRESENCE',box:target.name,path:selected,domain:'true',failure:`(not ${visible})`});
@@ -93,7 +96,7 @@ export function createTransitionObligation(contract,transition) {
     for(const left of sets[0].rows) for(const right of sets[1].rows) for(const field of fields) {
       append({code:codes[field],box:target.name,path:sets[0].path,axis:field.startsWith('inline') ? 'inline' : 'block',
         target:target.name,beforePath:sets[0].path,afterPath:sets[1].path,field,
-        domain:and([region(left),region(right)]),failure:`(not (= ${affine(left.rect[field])} ${affine(right.rect[field])}))`,available:left.rect[field],required:right.rect[field]});
+        domain:and([region(left),region(right)]),failure:`(not (= ${affine(box(left)[field])} ${affine(box(right)[field])}))`,available:box(left)[field],required:box(right)[field]});
     }
   }
   const base={component:contract.name,scope,complete:transition.complete && !diagnostics.length,diagnostics,assumptions:transition.assumptions};

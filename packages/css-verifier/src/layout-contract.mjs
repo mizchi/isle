@@ -48,6 +48,7 @@ export function createLayoutIR(report) {
   // It is not an implementation case and must not become geometry evidence.
   const boxes=(cases.length ? report.sizes : []).map(row=>({...metadata(row),range:row.range,heightRange:row.heightRange,region:row.region,boxSizing:row.boxSizing,
     ...(row.rect ? {rect:row.rect} : {}),
+    ...(row.layoutRect !== undefined ? {layoutRect:row.layoutRect} : {}),
     ...(row.position ? {position:row.position} : {}),...(row.origin ? {origin:row.origin,containingBlock:row.containingBlock} : {}),
     ...(row.paddingInlineSize ? {padding:{inline:row.paddingInlineSize,...(row.paddingBlockSize ? {block:row.paddingBlockSize} : {})}} : {}),
     allocated:{inline:row.allocatedInlineSize,...(row.allocatedBlockSize ? {block:row.allocatedBlockSize} : {})},

@@ -148,3 +148,21 @@ test('contracts do not alter extracted facts, and transition IR is immutable JSO
   assert.throws(()=>createNoShiftContract({name:'Empty',targets:[]}),TypeError);
   assert.throws(()=>createNoShiftContract({name:'Extra',targets:[{name:'x',before:'Page',after:'Page'}],tolerance:1}),TypeError);
 });
+
+test('noshift compares layout boxes: a transform moves only the painted box (a layout shift ignores it)',async()=>{
+  const markup='<main class="page"><div class="card"><div class="inner"></div></div><div class="action"></div></main>';
+  const css='*{box-sizing:border-box}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:8px;row-gap:8px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:100px;padding:10px}.inner{height:20px}.action{height:32px}';
+  const state=extra=>analyzeHTML(markup,{name:'Page',viewport,css:css+extra,integrity:true});
+  const targets=createNoShiftContract({name:'Hover',targets:[['card','Page/0'],['inner','Page/0/0'],['action','Page/1']].map(([name,path])=>({name,before:path,after:path}))});
+  const lifted=state('.card{transform:translateY(-6px) scale(0.9)}');
+  // The painted rectangle moves; the layout rectangle is the untransformed one.
+  const inner=lifted.sizes.find(row=>row.path==='Page/0/0' && row.rect);
+  assert.notEqual(inner.rect.blockStart.constant,inner.layoutRect.blockStart.constant);
+  assert.equal(inner.layoutRect.blockStart.constant,'18');
+  assert.equal((await check(state(''),lifted,targets)).status,'verified');
+  // Without a transform there is no separate layout rectangle; a resize still shifts the following box.
+  assert.equal(state('').sizes.some(row=>'layoutRect' in row),false);
+  const grown=await check(state(''),state('.card{height:120px}'),targets);
+  assert.equal(grown.status,'violated');
+  assert.equal(grown.change.target,'action');assert.equal(grown.change.delta.exact,'20');
+});
