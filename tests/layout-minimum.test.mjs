@@ -67,9 +67,11 @@ test('only reachable combinations of media height and container width are accept
 });
 
 test('unsupported min/max semantics remain unknown, and min-width never proves text fit', () => {
-  for (const css of ['.cell {min-width:20%}', '.cell {max-width:40px}', '.cell {min-width:min-content}', '.cell {min-height:40px}']) {
+  // A px max-width is modeled (it caps the preferred width); a percentage one is not.
+  for (const css of ['.cell {min-width:20%}', '.cell {max-width:40%}', '.cell {min-width:min-content}', '.cell {min-height:40px}']) {
     assert.equal(run(css, {viewport:{min:160,max:300,height:{min:300,max:500}}}).status, 'unknown', css);
   }
+  assert.notEqual(run('.cell {max-width:40px}', {viewport:{min:160,max:300,height:{min:300,max:500}}}).status, 'unknown');
   const text = requireIR(compile('component Text() {<p class="cell">Unbounded content</p>}'));
   assert.equal(analyzeLayout(text, {component:'Text',css:base,viewport:{min:160,max:300}}).status, 'unknown');
 });
