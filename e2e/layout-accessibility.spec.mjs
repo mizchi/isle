@@ -506,6 +506,7 @@ async function runtime(page, sample) {
   for (const element of elements.filter(e => links.has(e.path) && facts[e.path].display !== 'none')) {
     const out = await (await handle(element.path)).evaluate(node => {
       node.focus(); let r = node.getBoundingClientRect(), box = {l: r.left, t: r.top, r: r.right, b: r.bottom};
+      if (r.width <= 0 || r.height <= 0) { node.blur(); return false; } // nothing to show: focus-area's case, not clipping
       for (let a = node.parentElement; a; a = a.parentElement) {
         const s = getComputedStyle(a); if (s.overflowX === 'visible' && s.overflowY === 'visible') continue;
         const c = a.getBoundingClientRect(), bw = parseFloat(s.borderLeftWidth), bt = parseFloat(s.borderTopWidth);
