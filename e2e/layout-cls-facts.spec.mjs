@@ -89,3 +89,17 @@ test('noshift ignores transforms like Chromium layout shifts: a transformed stat
     expect(measured.score > 0, `${name}: noshift ${result.status}, Chromium ${measured.score}`).toBe(result.status === 'violated');
   }
 });
+
+test('static :hover layout-shift findings agree with Chromium', async ({page}) => {
+  const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
+  const html = '<main class="page"><div class="card"><div class="inner"></div></div><div class="below"></div></main>';
+  const base = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:8px;row-gap:8px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:100px;padding:10px;background:#ddd}.inner{height:20px;background:#888}.below{height:40px;background:#444}';
+  // Hover point: inside .card, or inside .below (at y = 8 + 100 + 8 + 20).
+  for (const [name, rule, y] of [['taller card', '.card:hover{height:120px}', 50], ['card padding', '.card:hover{padding:14px}', 50], ['card lift', '.card:hover{transform:translateY(-4px)}', 50], ['card paint', '.card:hover{background:#eee}', 50], ['last box grows', '.below:hover{height:60px}', 136], ['last box narrows', '.below:hover{width:50%}', 136]]) {
+    const report = analyzeHTML(html, {name: 'Page', viewport, css: base + rule, integrity: true});
+    expect(report.status === 'unknown', `${name}: ${JSON.stringify(report.diagnostics)}`).toBe(false);
+    const predicted = report.diagnostics.some(d => d.code === 'E_LAYOUT_HOVER_SHIFT');
+    const measured = await shifts(page, `<style>${base + rule}</style>${html}`, {act: async p => { await p.mouse.move(700, 590); await p.waitForTimeout(300); await p.mouse.move(400, y); }});
+    expect(measured.score > 0, `${name}: static ${predicted}, Chromium ${measured.score}`).toBe(predicted);
+  }
+});

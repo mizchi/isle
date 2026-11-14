@@ -110,7 +110,9 @@ function length(value, parent, style) {
 
 // `preferences` (internal) names non-default user preferences, e.g. 'prefers-color-scheme:dark'.
 export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSheets=[], inputDiagnostics=[], preferences=[]) {
-  const pristine = (options.accessibility || options.integrity) && !preferences.length ? structuredClone(root) : null;
+  // A hovered re-layout (hover-at:<path>) still needs its own untransformed re-layout, so it keeps a pristine copy.
+  const hovered = preferences.find(p => p.startsWith('hover-at:'))?.slice(9);
+  const pristine = (options.accessibility || options.integrity || /:hover/i.test(String(options.css ?? '')) || inlineSheets.length) && preferences.every(p => p.startsWith('hover-at:')) ? structuredClone(root) : null;
   // The untransformed re-layout (CSS transforms removed): the layout boxes, which is what a layout shift compares.
   const untransformed = preferences.includes('untransformed');
   let sawTransform = false;
@@ -154,7 +156,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
-  if (rules.some(rule => rule.stateLayout) && !options.accessibility) unknown('U_LAYOUT_SELECTOR', 'A :focus rule changes the layout; the focused layout is modeled for the accessibility checks only');
+  if (rules.some(rule => rule.stateLayout && !rule.hoverLayout) && !options.accessibility) unknown('U_LAYOUT_SELECTOR', 'A :focus rule changes the layout; the focused layout is modeled for the accessibility checks only');
   if (rules.some(rule => rule.stateGeometry) && !options.accessibility && !options.integrity) unknown('U_LAYOUT_SELECTOR', 'A state rule moves a box (focus insets or a transform); that is modeled for the accessibility and integrity checks only');
   // style attributes: each element's declarations as a rule that matches only it, element-attached in the cascade.
   for (const box of boxes.filter(box => box.inlineStyle !== undefined)) {
@@ -217,6 +219,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // The focused re-layout: the one focused box (focus-at:<path>) has :focus/:focus-visible, its ancestors :focus-within.
     const focusAt = preferences.find(p => p.startsWith('focus-at:'))?.slice(9);
     if (focusAt !== undefined && !box.pseudo && (box.path === focusAt || focusAt.startsWith(box.path + '/'))) state = new Set([...(state ?? []), 'focus-within', ...(box.path === focusAt ? ['focus', 'focus-visible'] : [])]);
+    // The hovered re-layout: the hovered box and its ancestors match :hover.
+    if (hovered !== undefined && !box.pseudo && (box.path === hovered || hovered.startsWith(box.path + '/'))) state = new Set([...(state ?? []), 'hover']);
     // :checked holds for a checkbox/radio with the checked attribute unless the unchecked state is asked for.
     if (box.nativeStates?.checked && !state?.has('unchecked')) state = new Set([...(state ?? []), 'checked']);
     const relevant = rules.filter(rule => rule.selectors.some(selector => matches(selector, box, state)));
@@ -1720,12 +1724,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   diagnostics.push(...merged.map(({ signature, ...finding }) => finding));
   let integrityWarnings = [], integrityExempted = [], accessibilityWarnings = [], accessibilityNotes = [], accessibilityExempted = [];
-  if (options.integrity && !untransformed && !diagnostics.some(d => d.severity === 'unknown')) {
+  if (options.integrity && !untransformed && hovered === undefined && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeIntegrity({ geometry, waived }, { block, targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', ranges });
     diagnostics.push(...judged.findings);
     integrityWarnings = judged.warnings; integrityExempted = judged.exempted;
   }
-  if (options.accessibility && !untransformed && !diagnostics.some(d => d.severity === 'unknown')) {
+  if (options.accessibility && !untransformed && hovered === undefined && !diagnostics.some(d => d.severity === 'unknown')) {
     const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { keyframeFrames, hostInset: options.hostInset ?? 0, hostBlockInset: options.hostBlockInset ?? 0, viewportBlock: block && options.viewport.height ? height : null, scrollPaddingDeclared: rules.some(rule => rule.declarations.some(d => /^scroll-padding-(?:top|bottom)$/.test(d.property))), viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), ranges, block });
     diagnostics.push(...judged.findings, ...judged.unknowns);
     // Dark color scheme: when the CSS has prefers-color-scheme: dark rules, the contrast rules run
@@ -1768,11 +1772,42 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // in docs/cls-evaluation.md). With a transform anywhere, every row's layoutRect comes from the untransformed
   // re-layout, matched by path and condition region; a row without a match gets layoutRect null (not decided).
   if (pristine && sawTransform && !diagnostics.some(d => d.severity === 'unknown')) {
-    const plain = analyzeBoxTree(pristine, options, scrollbarProfile, budget, inlineSheets, [], ['untransformed']);
-    const key = row => JSON.stringify([row.path, row.range, row.heightRange, row.region]);
+    const plain = analyzeBoxTree(pristine, options, scrollbarProfile, budget, inlineSheets, [], [...preferences, 'untransformed']);
+    // Rows correspond by path and condition polygon (its vertices; constraints may repeat redundant bounds).
+    const key = row => JSON.stringify([row.path, row.range, row.heightRange, row.region?.vertices]);
     const byKey = new Map();
     if (plain.status !== 'unknown') for (const row of plain.sizes) byKey.set(key(row), byKey.has(key(row)) ? null : row);
     for (const row of sizes) { const match = byKey.get(key(row)); row.layoutRect = match?.rect ?? null; }
+  }
+  // Layout shifts from :hover rules that change layout: each box such a rule matches is hovered in a re-layout, and
+  // every box's layout start position (inlineStart, blockStart) is compared on the same condition region. An affine
+  // difference vanishes on a convex region exactly when it vanishes at its vertices, so the check is exact.
+  if (pristine && hovered === undefined && rules.some(rule => rule.hoverLayout) && !diagnostics.some(d => d.severity === 'unknown')) {
+    const hoverRules = rules.filter(rule => rule.hoverLayout);
+    const targets = []; (function walk(box) { if (hoverRules.some(rule => rule.selectors.some(selector => matches(selector, box, new Set(['hover']))))) targets.push(box); for (const child of box.children ?? []) walk(child); })(root);
+    // Rows correspond by path and condition polygon (its vertices; constraints may repeat redundant bounds).
+    const key = row => JSON.stringify([row.path, row.range, row.heightRange, row.region?.vertices]);
+    const rect = row => row.layoutRect !== undefined ? row.layoutRect : row.rect;
+    const r = v => { const [n, d = '1'] = String(v ?? '0').split('/'); return div(q(n), q(d)); };
+    const at = (a, w, h) => add(add(r(a.constant), mul(r(a.coefficient), w)), mul(r(a.heightCoefficient), h));
+    for (const target of targets.slice(0, 64)) {
+      const hover = analyzeBoxTree(pristine, options, scrollbarProfile, budget, inlineSheets, [], [`hover-at:${target.path}`]);
+      if (hover.status === 'unknown') { diagnostics.push({ code: 'U_LAYOUT_HOVER_SHIFT', severity: 'unknown', message: `${target.label}: its hovered layout is not decided (${hover.diagnostics.find(d => d.severity === 'unknown')?.message ?? 'unknown'})`, box: target.label, path: target.path }); continue; }
+      // Each base row against each hovered row of the same box, on the intersection of their condition regions.
+      const undecided = [...sizes, ...hover.sizes].find(row => !rect(row) || !row.$shown?.region);
+      if (undecided) { diagnostics.push({ code: 'U_LAYOUT_HOVER_SHIFT', severity: 'unknown', message: `${target.label}: the hovered layout of ${undecided.box} cannot be compared (it has no layout rectangle)`, box: target.label, path: target.path }); continue; }
+      const reported = new Set();
+      for (const row of sizes) for (const other of hover.sizes.filter(o => o.path === row.path)) {
+        const shared = intersect(row.$shown.region, other.$shown.region);
+        if (!shared || reported.has(row.path)) continue;
+        const moved = ['inlineStart', 'blockStart'].flatMap(field => shared.vertices.map(v => ({ field, v, delta: sub(at(rect(other)[field], v.x, v.y), at(rect(row)[field], v.x, v.y)) })).filter(c => cmp(c.delta, zero) !== 0).slice(0, 1));
+        if (!moved.length) continue;
+        reported.add(row.path);
+        const { field, v, delta } = moved[0];
+        diagnostics.push({ code: 'E_LAYOUT_HOVER_SHIFT', severity: 'error', box: row.box, path: row.path, hovered: target.label, hoveredPath: target.path, field, delta: exact(delta),
+          message: `Hovering ${target.label} moves ${row.box} (${field} by ${number(delta)}px at viewport ${number(v.x)}px${block ? ` × ${number(v.y)}px` : ''}): a layout shift without an excusing input. Change paint or transform on :hover, or reserve the space`, ...ranges(shared) });
+      }
+    }
   }
   const status = diagnostics.some(d => d.severity === 'unknown') ? 'unknown' : diagnostics.length ? 'violated' : 'verified';
   return { version: 1, ok: status === 'verified', status, component,

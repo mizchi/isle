@@ -350,7 +350,11 @@ export function parseLayoutCSS(sheets, diagnostic) {
       const checkedMark = selectors.every(selector => selector.state === 'checked' && selector.pseudoElement);
       // A :focus/:focus-visible/:focus-within rule that changes layout: the engine lays the page out again with that one
       // box focused (accessibility checks only); in the base layout it never applies.
-      const stateLayout = !stateGeometry && !checkedMark && selectors.every(selector => ['focus', 'focus-visible', 'focus-within'].includes(selector.state) && !selector.pseudoElement);
+      const focusLayout = selectors.every(selector => ['focus', 'focus-visible', 'focus-within'].includes(selector.state) && !selector.pseudoElement);
+      // A :hover rule that changes layout: the page is laid out again with each matching box hovered, and any box
+      // whose start position moves is a layout shift (Chromium counts it: hover is not an excusing input; measured).
+      const hoverLayout = !stateGeometry && !checkedMark && selectors.every(selector => selector.state === 'hover' && !selector.pseudoElement);
+      const stateLayout = !stateGeometry && !checkedMark && (focusLayout || hoverLayout);
       if (!stateGeometry && !checkedMark && !stateLayout && selectors.some(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `State selector rules may only change paint (color, background, outline, box-shadow, text-decoration); ${node.selector} changes layout`, node.source.start.line); continue; }
       const declarations = [];
       const authored=node.nodes.filter(declaration=>declaration.type==='decl');
@@ -376,7 +380,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
           }
         } catch (error) { problem(error.code ?? 'U_LAYOUT_CSS', error.message, declaration.source.start.line); }
       }
-      rules.push({ selectors, contexts, declarations, layer, file: filename, ...(preferences.length ? { preferences } : {}), ...(stateGeometry ? { stateGeometry: true } : {}), ...(stateLayout && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase())) ? { stateLayout: true } : {}) });
+      rules.push({ selectors, contexts, declarations, layer, file: filename, ...(preferences.length ? { preferences } : {}), ...(stateGeometry ? { stateGeometry: true } : {}), ...(stateLayout && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase())) ? { stateLayout: true, ...(hoverLayout ? { hoverLayout: true } : {}) } : {}) });
     }
   };
   for (const sheet of sheets) {

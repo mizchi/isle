@@ -666,7 +666,8 @@ test('focus-visible: removing the outline without another focus style hides focu
   assert.equal(find(fbtn('.b { outline: none; }\n.b:focus { outline: 2px solid #1a73e8; }'), 'E_A11Y_FOCUS_VISIBLE').length, 0);
   assert.equal(find(fbtn('.b { outline: none; background: #fff; }\n.b:focus { background: #ffd; }'), 'E_A11Y_FOCUS_VISIBLE').length, 0);
   // A state rule that changes layout stays Unknown: the proof covers the base state only.
-  assert.equal(fbtn('.b:hover { padding: 4px; }').status, 'unknown');
+  // A :hover layout change is laid out hovered: padding that moves nothing else is not a layout shift.
+  assert.equal(fbtn('.b:hover { padding: 4px; }').diagnostics.some(d => d.code === 'E_LAYOUT_HOVER_SHIFT'), false);
 });
 
 test('text-spacing: clipped text that no longer fits at line-height 1.5', () => {
@@ -1303,7 +1304,8 @@ test('focus-offscreen: a :focus rule that moves the skip link back by its insets
   assert.equal(find(run(tree, css('.skip:focus { left: 0; }')), 'E_A11Y_FOCUS_OFFSCREEN').length, 0);
   assert.equal(find(run(tree, css('.skip:focus { left: -5000px; }')), 'E_A11Y_FOCUS_OFFSCREEN').length, 1);
   // :hover moving it is not the focused place; a moving :focus rule keeps layout proofs Unknown.
-  assert.equal(run(tree, css('.skip:hover { left: 0; }')).status, 'unknown');
+  // Hover moving the skip link by its insets is a layout shift (laid out hovered).
+  assert.equal(run(tree, css('.skip:hover { left: 0; }')).diagnostics.some(d => d.code === 'E_LAYOUT_HOVER_SHIFT' && d.box === '.skip'), true);
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css('.skip:focus { left: 0; }'), viewport: domain}).status, 'unknown');
   // Moving a box that is not absolutely positioned is not modeled.
   assert.equal(run(page([{tag: 'button', classes: ['b'], named: true}]), pageCSS(`.page { background: #fff; grid-auto-rows: 30px; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n.b:focus { left: 10px; }`)).status, 'unknown');
