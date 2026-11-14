@@ -167,6 +167,9 @@ span の2行目以降で別の rowspan が始まる行があればそこへ等�
 高さ auto で text だけの rowspan cell は、table の幅が px の固定 table なら cell の幅が定数なので、text 契約の高さの profile をその幅で引いた高さとして扱う
 (Roboto の折り返す文で Chromium と一致)。幅が viewport で変わる table(100% か grid に伸びる auto の border-box)では cell の幅が viewport の一次式なので、
 profile の境目で region を分け、各区間で高さを決める(320〜900px で Chromium と一致)。子要素のある auto の rowspan は Unknown。
+table-cell 以外の display にした td/th は匿名の cell に包まれ span が効かず(display: grid の rowspan cell が 40px ではなく 0px になるのを測定)、
+display: none の cell は列を消すので、どちらも Unknown にした(以前は grid の item として扱っていた:誤り)。
+子要素のある cell は table-cell の中の block flow が要り、この engine は block flow を扱わないので Unknown。
 明示した行の track では cell は行に伸びる(Chromium の cell は行の高さになる)。
 table の cell は高さを超える内容で溢れず行が伸びるので、block 方向の内容の不足は E_LAYOUT_CONTENT ではなく U_LAYOUT_TABLE にした(以前は誤って溢れと報告していた)。
 **自動 table レイアウト**(`table-layout: auto`)は、内容が列を広げられないときだけ固定 table と同じになる(Chromium で測定):

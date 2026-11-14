@@ -645,6 +645,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       });
     }
     if (rows.some(row => Array.from({ length: columns + 1 }, (_, c) => taken.get(`${row.path}:${c}`)).filter(Boolean).length !== columns)) fail('Every row needs the same number of columns (cells, colspan and rowspan)');
+    // A td/th restyled away from table-cell is wrapped in an anonymous cell (its spans no longer apply), and a
+    // display: none cell removes its column: neither is the modeled grid.
+    for (const row of rows) for (const cell of row.children) for (const cs of styles(cell, region, parents, style, false, false))
+      if (cs.style.display !== 'table-cell') fail(`${cell.label} has display: ${cs.style.display}; a modeled table needs its cells as table-cell`);
     for (const box of [...sections, ...rows]) box.tablePart = true;
     for (const row of rows) for (const cell of row.children) cell.tableCell = true;
     // Cells stretch to their row: a fixed block-size must be shared by the row's cells (a grid item would not stretch).

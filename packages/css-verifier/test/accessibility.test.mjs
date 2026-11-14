@@ -953,3 +953,12 @@ test('an auto-height text rowspan cell counts its measured height at its column 
   const heights = varying.sizes.filter(r => r.box === '.q' && r.rect).map(r => [r.range.minExact, r.rect.blockSize.constant]).sort((a, b) => Number(a[0]) - Number(b[0]));
   assert.deepEqual(heights, [['150', '80'], ['190', '60'], ['250', '40']]);
 });
+
+test('a td restyled away from table-cell is not a modeled table cell', () => {
+  const tableView = {min: 420, max: 1280, height: {min: 400, max: 900}};
+  const tree = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['a']}, {tag: 'td', classes: ['b']}]}]}]};
+  const css = extra => `.t { table-layout: fixed; inline-size: 400px; }\ntd { block-size: 20px; }\n${extra}`;
+  assert.equal(run(tree, css(''), {viewport: tableView}).status, 'verified');
+  for (const extra of ['.a { display: grid; grid-template-columns: minmax(0, 1fr); }', '.b { display: none; }', '.a { display: block; }'])
+    assert.equal(run(tree, css(extra), {viewport: tableView}).status, 'unknown', extra);
+});
