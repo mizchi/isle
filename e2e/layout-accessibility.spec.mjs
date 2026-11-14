@@ -150,6 +150,8 @@ const cases = [
   {name: 'visual-presentation-aaa', html: '<div class="page"><p class="a">Tight lines wrap here</p><p class="b">Justified lines wrap here</p><p class="c">Loose lines wrap here</p><div class="j"><p class="d">Inherited justify</p></div></div>',
     css: `.page{display:grid;grid-template-columns:300px;background:#fff;color:#000;${type}}.a,.b,.c,.d{display:block;block-size:48px}.a{line-height:20px}.b,.c,.d{line-height:24px}.b,.j{text-align:justify}.j{display:grid;grid-template-columns:minmax(0,1fr)}`,
     accessibility: {contrast: 'AAA'}, boxes: {'.a': label, '.b': label, '.c': label, '.d': label}},
+  {name: 'sticky-header-focus', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><button class="b3" aria-label="C"></button><div class="tall"></div></div>',
+    css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:sticky;top:0;block-size:60px;background:#333}.gap{block-size:1000px}.tall{block-size:1500px}.b1,.b2,.b3{${button}inline-size:100px;block-size:40px}.b2{scroll-margin-top:60px}.b3{block-size:80px}`},
   {name: 'fixed-footer-hides', html: '<div class="page"><div class="gap"></div><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><div class="f"></div></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.f{position:fixed;bottom:0;left:0;inline-size:100%;block-size:60px;background:#333}.gap{block-size:1500px}.b1,.b2{${button}inline-size:100px;block-size:30px}`},
   {name: 'fixed-header-focus', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><button class="b3" aria-label="C"></button><div class="tall"></div></div>',
@@ -757,7 +759,7 @@ async function runtime(page, sample) {
   // Behind a fixed bar: some scroll offset where focus() does not scroll and the element lies inside a fixed box.
   const under = await page.evaluate(paths => {
     const at = path => { let n = document.body.firstElementChild; for (const i of path.split('/').slice(1).map(Number)) n = n.children[i]; return n; };
-    const bars = [...document.querySelectorAll('*')].filter(n => getComputedStyle(n).position === 'fixed' && getComputedStyle(n).backgroundColor !== 'rgba(0, 0, 0, 0)');
+    const bars = [...document.querySelectorAll('*')].filter(n => ['fixed', 'sticky'].includes(getComputedStyle(n).position) && getComputedStyle(n).backgroundColor !== 'rgba(0, 0, 0, 0)');
     const out = [], max = document.documentElement.scrollHeight - innerHeight;
     if (!bars.length) return out;
     for (const path of paths) {

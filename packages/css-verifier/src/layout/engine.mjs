@@ -197,6 +197,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // A closed popover that author CSS displays keeps the UA [popover] { position: fixed; inset: 0; margin: auto }:
     // it renders as a fixed, centred box over the page, which is not modeled.
     if (box.popover === true && style.display !== 'none') throw Object.assign(new Error(`${box.label} is a closed popover that renders (author display overrides [popover]:not(:popover-open) { display: none }); its UA position: fixed is not modeled`), { code: 'U_LAYOUT_POPOVER' });
+    if (style.$sticky && (!options.accessibility && !options.integrity || !['0', '0px'].includes(style.top) || ['bottom', 'left', 'right'].some(key => style[key] !== 'auto') || !block || !options.viewport.height || (options.hostBlockInset ?? 0) !== 0))
+      throw Object.assign(new Error(`${box.label} is position: sticky; only top: 0 under the page scroll (no scrolling or clipping ancestor) is modeled, for the accessibility and integrity checks`), { code: 'U_LAYOUT_CSS' });
     if (style.$fixed && !options.accessibility && !options.integrity) throw Object.assign(new Error(`${box.label} is position: fixed; it is modeled (against the viewport at scroll position 0) for the accessibility and integrity checks only`), { code: 'U_LAYOUT_CSS' });
     if (style.$fixed && (!options.viewport.height || (options.hostInset ?? 0) !== 0 || (options.hostBlockInset ?? 0) !== 0)) throw Object.assign(new Error(`${box.label} is position: fixed; the viewport needs a height range and the component must start at the viewport origin`), { code: 'U_LAYOUT_CSS' });
     if (style.transform !== 'none' && !options.accessibility && !options.integrity) throw Object.assign(new Error(`transform ${style.transform} moves the painted box; it is modeled for the accessibility and integrity checks only`), { code: 'U_LAYOUT_CSS' });
@@ -598,7 +600,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // Inside an overflow: clip box positions are exact but parts may be clipped away: the other rules see no
       // position (as before), focus-clipped reads clipOrigin.
       const underClip = parents.some(p => p.clipScope);
-      geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), inline: painted.inline, block: painted.block, position: style.position,
+      if (style.$sticky && parents.some(p => p.clipped || p.clipScope || (p.style && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible')))) throw Object.assign(new Error(`${box.label} is position: sticky inside a scrolling or clipping ancestor, which it would stick to`), { code: 'U_LAYOUT_CSS' });
+      geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
         // overflow: clip clips without scrolling (hidden still scrolls a focused descendant into view).
         clipAxes: { inline: style['overflow-x'] === 'clip', block: style['overflow-y'] === 'clip' },

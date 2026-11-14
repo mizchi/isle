@@ -1448,3 +1448,16 @@ test('target-size: a later target over part of an enlarged hit area leaves its s
   assert.deepEqual(close.diagnostics.filter(d => d.code === 'U_A11Y_TARGET_SIZE').map(d => d.box), ['.b1']);
   assert.equal(run(tree, css('8px')).status !== 'unknown', true);
 });
+
+test('focus-scrolled-under: a sticky top: 0 header covers focus while its parent is in view', () => {
+  const tree = sectioned => page([{tag: 'section', classes: ['s'], children: [{tag: 'header', classes: ['h']}, {tag: 'div', classes: ['gap']}, ...(sectioned ? [] : [{tag: 'button', classes: ['b'], named: true}])]}, ...(sectioned ? [{tag: 'button', classes: ['b'], named: true}] : []), {tag: 'div', classes: ['tall']}]);
+  const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: auto; }\n.s { display: grid; grid-template-columns: minmax(0, 1fr); }\n.h { position: sticky; top: 0; block-size: 60px; background: #333; }\n.gap { block-size: 1000px; }\n.tall { block-size: 2000px; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; block-size: 40px; }\n${extra}`);
+  const hits = (sectioned, extra = '') => find(run(tree(sectioned), css(extra)), 'E_A11Y_FOCUS_SCROLLED_UNDER').map(d => d.box);
+  assert.deepEqual(hits(false), ['.b']);
+  assert.deepEqual(hits(false, '.b { scroll-margin-top: 60px; }'), []);
+  // After its section ends the header scrolls away with it: a button below the section is never under it.
+  assert.deepEqual(hits(true), []);
+  // Other sticky offsets, and sticky without the accessibility checks, stay Unknown.
+  assert.equal(run(tree(false), css('.h { top: 10px; }')).status, 'unknown');
+  assert.equal(analyzeLayout(tree(false), {name: 'Page', css: reset + css(''), viewport: domain}).status, 'unknown');
+});

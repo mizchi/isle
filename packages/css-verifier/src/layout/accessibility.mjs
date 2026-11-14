@@ -629,7 +629,9 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   // and nothing reveals it. Positions are scroll offsets s in [0, page height - viewport height]: the element's
   // viewport top y = top - s; the bar stays at its viewport place.
   const fixedBars = placed.filter(row => row.fixed && visible(row) && row.painted);
-  if (fixedBars.length && block && viewportBlock) {
+  // A sticky (top: 0) bar is stuck at the viewport top for s in [its page top, its parent's bottom − its height].
+  const stickyBars = placed.filter(row => row.sticky && row.sticky.parent && visible(row) && row.painted);
+  if ((fixedBars.length || stickyBars.length) && block && viewportBlock) {
     const length = value => value === undefined || value === 'auto' ? 0 : Number(String(value).replace(/px$/, ''));
     const rootRow = geometry.find(row => row.path === root.path && row.origin && row.block);
     const viewportPadding = ['html'].includes(root.tag) ? rootRow?.paint.scrollPadding : scrollPaddingDeclared ? null : { top: 'auto', bottom: 'auto' };
@@ -637,19 +639,21 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     else {
       const obscured = new Set(findings.filter(d => d.code === 'E_A11Y_FOCUS_OBSCURED').map(d => d.path));
       const maxScroll = diff(bottom(rootRow), viewportBlock);
-      const insideFixed = path => fixedBars.some(bar => isAncestor(bar.path, path) || bar.path === path);
+      const insideFixed = path => [...fixedBars, ...stickyBars].some(bar => isAncestor(bar.path, path) || bar.path === path);
+      const stuck = stickyBars.flatMap(bar => placed.filter(p => p.path === bar.sticky.parent).map(parent => ({ ...bar, region: intersect(bar.region, parent.region), origin: { inline: bar.origin.inline, block: scalar(0) }, stickyFrom: bar.origin.block, stickyUntil: diff(bottom(parent), bar.block) })).filter(bar => bar.region));
       for (const target of focusedRows(placed.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo && !insideFixed(row.path) && !obscured.has(row.path)))) {
         const margin = target.paint.scrollMargin ?? {}, own = layer(target);
-        for (const bar of fixedBars) {
+        for (const bar of [...fixedBars, ...stuck]) {
           if (related(bar.path, target.path) || !paintsAbove(bar, layer(bar), target, own)) continue;
           let region = intersect(target.region, bar.region);
+          // Stuck only for s ≥ its page top and s ≤ its parent's bottom − its height (s = target top − y).
           region = atMost(region, bar.origin.inline, target.origin.inline);
           region = atMost(region, right(target), right(bar));
-          const lows = [bar.origin.block, scalar(length(viewportPadding.top) + length(margin.top)), diff(target.origin.block, maxScroll)];
-          const highs = [diff(bottom(bar), target.block), diff(sum(viewportBlock, scalar(-length(margin.bottom) - length(viewportPadding.bottom))), target.block), target.origin.block];
+          const lows = [bar.origin.block, scalar(length(viewportPadding.top) + length(margin.top)), diff(target.origin.block, maxScroll), ...(bar.stickyUntil ? [diff(target.origin.block, bar.stickyUntil)] : [])];
+          const highs = [diff(bottom(bar), target.block), diff(sum(viewportBlock, scalar(-length(margin.bottom) - length(viewportPadding.bottom))), target.block), target.origin.block, ...(bar.stickyFrom ? [diff(target.origin.block, bar.stickyFrom)] : [])];
           for (const low of lows) for (const high of highs) region = atMost(region, low, high);
           if (!region) continue;
-          report(findings, 'E_A11Y_FOCUS_SCROLLED_UNDER', 'error', `${target.box.label} can be focused while entirely behind the fixed ${bar.box.label} (the page does not scroll it out); add scroll-padding to the viewport or scroll-margin to the element`, target, region, { rule: 'focus-scrolled-under', cover: bar.path });
+          report(findings, 'E_A11Y_FOCUS_SCROLLED_UNDER', 'error', `${target.box.label} can be focused while entirely behind the ${bar.sticky ? 'sticky' : 'fixed'} ${bar.box.label} (the page does not scroll it out); add scroll-padding to the viewport or scroll-margin to the element`, target, region, { rule: 'focus-scrolled-under', cover: bar.path });
           break;
         }
       }
