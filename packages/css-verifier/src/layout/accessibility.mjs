@@ -75,6 +75,7 @@
 //   generated-name   → W_A11Y_GENERATED_NAME    a control named only by CSS generated content
 //   focus-clipped    → E_A11Y_FOCUS_CLIPPED     a focusable box entirely outside an overflow: clip ancestor (it cannot scroll into view)
 //   hidden-overridden → W_A11Y_HIDDEN_OVERRIDDEN an element with the hidden attribute that renders (author display overrides [hidden])
+//   state-mismatch   → W_A11Y_STATE_MISMATCH    aria-expanded (or a tab's aria-selected) disagrees with whether its aria-controls target renders
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -88,7 +89,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -1074,6 +1075,25 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     for (const shown of rendersAt(target)) missing = missing.flatMap(region => subtract(region, shown.region));
     for (const region of missing) report(findings, 'E_A11Y_FRAGMENT', 'error', `${row.box.label} links to #${id}, which does not render here`, row, region, { rule: 'fragment-target', reference: id });
   }
+  // state-mismatch: the announced state (aria-expanded, a tab's aria-selected) and what the CSS renders for the
+  // controlled element (aria-controls) must agree, wherever the control itself shows.
+  const renderedRows = box => geometry.filter(row => (row.path === box.path || isAncestor(box.path, row.path)) && visible(row) && !row.box.pseudo);
+  for (const row of geometry.filter(row => row.box.aria && visible(row) && !hiddenFrom(row.path))) {
+    const aria = row.box.aria, state = aria['aria-expanded'] ?? (roleOf(row.box) === 'tab' ? aria['aria-selected'] : undefined);
+    const controls = aria['aria-controls'];
+    if (!['true', 'false'].includes(state?.trim()) || !controls || controls === 'dynamic') continue;
+    const what = aria['aria-expanded'] !== undefined ? 'aria-expanded' : 'aria-selected';
+    for (const id of controls.trim().split(/\s+/)) {
+      const target = byId.get(id);
+      if (!target) continue; // aria-reference reports missing ids
+      const rendered = renderedRows(target);
+      let regions;
+      if (state.trim() === 'true') { regions = [row.region]; for (const r of rendered) regions = regions.flatMap(region => subtract(region, r.region)); }
+      else regions = rendered.map(r => intersect(row.region, r.region)).filter(Boolean);
+      for (const region of regions) report(warnings, 'W_A11Y_STATE_MISMATCH', 'warning', state.trim() === 'true' ? `${row.box.label} has ${what}="true" but #${id} does not render here` : `${row.box.label} has ${what}="false" but #${id} renders here`, row, region, { rule: 'state-mismatch', controls: id });
+    }
+  }
+
   // page-main: a page needs a main landmark wherever it renders.
   if (['html', 'body'].includes(root.tag)) {
     let none = [domain];

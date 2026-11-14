@@ -117,10 +117,13 @@ const cases = [
     skip: ['occluded-target', 'target-overlap']},
   {name: 'hidden-and-inert', html: '<div class="page"><button class="b1" hidden></button><button class="b2 shown" hidden></button><div class="w" inert><button class="b3"></button></div><button class="b4" aria-label="Go" popovertarget="m"></button><div class="m" id="m" popover><button class="b5"></button></div></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff}.b1,.b2,.b3,.b4{appearance:none;padding:0;border:0;min-width:0;min-height:0;background:transparent}.b2,.b3,.b4{display:block}.shown{display:block}.w{display:grid;grid-template-columns:minmax(0,1fr)}.b5{display:block}`},
+  {name: 'announced-state-vs-rendering', html: '<div class="page"><button class="b1" aria-expanded="false" aria-controls="m1">Menu</button><div class="m" id="m1"></div><button class="b2" aria-expanded="true" aria-controls="m2">More</button><div class="m h" id="m2"></div><div class="tabs" role="tablist"><div class="t" role="tab" tabindex="0" aria-selected="true" aria-controls="p1">One</div></div><div class="p" id="p1" role="tabpanel"></div></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff;color:#000;${type}}.b1,.b2{${button}inline-size:200px;block-size:30px}.m,.p,.t{display:block}.tabs{display:grid;grid-template-columns:minmax(0,1fr)}.h{display:none}@media (width < 600px){.p{display:none}}`,
+    boxes: {'.b1': label, '.b2': label, '.t': label}},
   {name: 'clickable-lists-and-markup', html: '<div class="page"><div class="card"></div><button class="b" aria-label="Go"></button><ul class="l"><li class="i"></li></ul><ul class="l2" role="list"><li class="i"></li></ul><dl class="d"><dt class="dt"></dt><p class="p"></p></dl><marquee class="m"></marquee><a class="k1" href="#1" accesskey="s" aria-label="One"></a><a class="k2" href="#2" accesskey="s" aria-label="Two"></a><img class="im" src="data:," alt="Map" ismap></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.card{display:block;cursor:pointer}.b{${button}cursor:pointer;inline-size:24px;block-size:24px}.l,.l2,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;list-style:none}.i,.dt,.p{display:block}.m{display:block;inline-size:200px;block-size:24px}.k1,.k2{display:block}.im{display:block;inline-size:24px;block-size:24px}`},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch'];
 const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
 // Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -424,7 +427,8 @@ async function runtime(page, sample) {
     const {node} = await client.send('DOM.describeNode', {objectId: result.objectId});
     const {nodes} = await client.send('Accessibility.getPartialAXTree', {backendNodeId: node.backendNodeId, fetchRelatives: false});
     // none/presentation on a focusable element is overridden by conflict resolution (presentation-conflict).
-    if (!['none', 'presentation'].includes(info.role) && nodes[0]?.role?.value !== info.role) found.get('role-valid').add(element.path);
+    // Only a rendered element has an AX role to compare (a display: none one is absent from the tree).
+    if (info.shown && !['none', 'presentation'].includes(info.role) && nodes[0]?.role?.value !== info.role) found.get('role-valid').add(element.path);
     if (info.shown && /^(?:button|link|checkbox|radio|switch|tab|menuitem|menuitemcheckbox|menuitemradio|option|slider|spinbutton|textbox|searchbox|combobox|treeitem|gridcell)$/.test(info.role) && info.tabIndex < 0) found.get('interactive-role-focusable').add(element.path);
   }
   for (const path of media.dangling) found.get('label-for').add(path);
@@ -523,6 +527,19 @@ async function runtime(page, sample) {
     if (out) clippedFocus.push(element.path);
   }
   for (const path of clippedFocus) found.get('focus-clipped').add(path);
+  // State vs rendering: Chromium's AX expanded/selected state against whether the controlled element has client rects.
+  for (const element of elements.filter(e => facts[e.path].display !== 'none')) {
+    const info = await (await handle(element.path)).evaluate(node => ({controls: node.getAttribute('aria-controls'), tab: node.getAttribute('role') === 'tab', shown: !node.closest('[aria-hidden="true"]') && getComputedStyle(node).visibility === 'visible'}));
+    if (!info.controls || !info.shown) continue;
+    const {result} = await client.send('Runtime.evaluate', {expression: `(() => { let n = document.body.firstElementChild; for (const i of ${JSON.stringify(element.path.split('/').slice(1).map(Number))}) n = n.children[i]; return n; })()`});
+    const {node} = await client.send('DOM.describeNode', {objectId: result.objectId});
+    const {nodes} = await client.send('Accessibility.getPartialAXTree', {backendNodeId: node.backendNodeId, fetchRelatives: false});
+    const property = name => nodes[0]?.properties?.find(p => p.name === name)?.value?.value;
+    const state = property('expanded') ?? (info.tab ? property('selected') : undefined);
+    if (state === undefined) continue;
+    const renders = await page.evaluate(ids => ids.map(id => { const t = document.getElementById(id); return t && (t.getClientRects().length > 0 || [...t.querySelectorAll('*')].some(n => n.getClientRects().length > 0)) && getComputedStyle(t).visibility === 'visible'; }), info.controls.trim().split(/\s+/));
+    if (renders.some(r => r !== null && r !== undefined && r !== state)) found.get('state-mismatch').add(element.path);
+  }
   for (const path of await page.evaluate(() => { const root = document.body.firstElementChild, pathOf = node => { const path = []; for (let n = node; n !== root; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
     return [...root.querySelectorAll('[hidden]')].filter(n => getComputedStyle(n).display !== 'none').map(pathOf); })) found.get('hidden-overridden').add(path);
   for (const [rule, key] of [['clickable-look', 'click'], ['list-style-semantics', 'listStyle'], ['blink', 'blink'], ['definition-list', 'dl'], ['accesskeys', 'keys'], ['server-side-image-map', 'ismap']]) for (const path of markup[key]) found.get(rule).add(path);
