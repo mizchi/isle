@@ -150,6 +150,8 @@ const cases = [
   {name: 'visual-presentation-aaa', html: '<div class="page"><p class="a">Tight lines wrap here</p><p class="b">Justified lines wrap here</p><p class="c">Loose lines wrap here</p><div class="j"><p class="d">Inherited justify</p></div></div>',
     css: `.page{display:grid;grid-template-columns:300px;background:#fff;color:#000;${type}}.a,.b,.c,.d{display:block;block-size:48px}.a{line-height:20px}.b,.c,.d{line-height:24px}.b,.j{text-align:justify}.j{display:grid;grid-template-columns:minmax(0,1fr)}`,
     accessibility: {contrast: 'AAA'}, boxes: {'.a': label, '.b': label, '.c': label, '.d': label}},
+  {name: 'fragment-under-header', html: '<div class="page"><div class="h"></div><a class="l1" href="#s1" aria-label="A"></a><a class="l2" href="#s2" aria-label="B"></a><div class="gap"></div><h2 class="t1" id="s1" aria-label="One"></h2><div class="gap"></div><h2 class="t2" id="s2" aria-label="Two"></h2><div class="tall"></div></div>',
+    css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:sticky;top:0;block-size:60px;background:#333}.l1,.l2{display:block;block-size:30px}.gap{block-size:1000px}.t1,.t2{display:block;block-size:40px}.t2{scroll-margin-top:70px}.tall{block-size:1500px}`, skip: ['empty-heading', 'focus-scrolled-under']},
   {name: 'fixed-bars-meet', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b" aria-label="A"></button><div class="gap"></div><div class="f"></div></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h,.f{position:fixed;left:0;inline-size:100%;block-size:400px;background:#333}.h{top:0}.f{bottom:0}.gap{block-size:600px}.b{${button}inline-size:100px;block-size:40px}`, skip: ['focus-scrolled-under']},
   {name: 'sticky-header-focus', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><button class="b3" aria-label="C"></button><div class="tall"></div></div>',
@@ -169,7 +171,7 @@ const cases = [
   {name: 'clickable-lists-and-markup', html: '<div class="page"><div class="card"></div><button class="b" aria-label="Go"></button><ul class="l"><li class="i"></li></ul><ul class="l2" role="list"><li class="i"></li></ul><dl class="d"><dt class="dt"></dt><p class="p"></p></dl><marquee class="m"></marquee><a class="k1" href="#1" accesskey="s" aria-label="One"></a><a class="k2" href="#2" accesskey="s" aria-label="Two"></a><img class="im" src="data:," alt="Map" ismap></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.card{display:block;cursor:pointer}.b{${button}cursor:pointer;inline-size:24px;block-size:24px}.l,.l2,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;list-style:none}.i,.dt,.p{display:block}.m{display:block;inline-size:200px;block-size:24px}.k1,.k2{display:block}.im{display:block;inline-size:24px;block-size:24px}`},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar'];
 const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
 // Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -777,6 +779,23 @@ async function runtime(page, sample) {
     return [...out];
   }, elements.map(e => e.path));
   for (const path of hidden) found.get('fixed-hides-content').add(path);
+  // Fragment jumps: scrollIntoView() on the #id target (fragment navigation aligns its top, with scroll-margin and
+  // scroll-padding); its top line inside a fixed or sticky painted bar.
+  const jumps = await page.evaluate(() => {
+    const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const bars = [...document.querySelectorAll('*')].filter(n => ['fixed', 'sticky'].includes(getComputedStyle(n).position) && getComputedStyle(n).backgroundColor !== 'rgba(0, 0, 0, 0)');
+    const out = [];
+    if (bars.length) for (const link of document.body.firstElementChild.querySelectorAll('a[href^="#"]')) {
+      const id = decodeURIComponent(link.getAttribute('href').slice(1)), target = id && document.getElementById(id);
+      if (!target || !target.getClientRects().length || !link.getClientRects().length) continue;
+      target.scrollIntoView();
+      const t = target.getBoundingClientRect();
+      if (bars.some(bar => { if (bar.contains(target) || bar.contains(link)) return false; const b = bar.getBoundingClientRect(); return b.top <= t.top && t.top < b.bottom && b.left < t.right && t.left < b.right; })) out.push(pathOf(link));
+      scrollTo(0, 0);
+    }
+    return out;
+  });
+  for (const path of jumps) found.get('fragment-under-bar').add(path);
   // Behind a fixed bar: some scroll offset where focus() does not scroll and the element lies inside a fixed box.
   const under = await page.evaluate(paths => {
     const at = path => { let n = document.body.firstElementChild; for (const i of path.split('/').slice(1).map(Number)) n = n.children[i]; return n; };

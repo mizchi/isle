@@ -95,13 +95,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -1350,6 +1350,47 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     for (const shown of rendersAt(target)) missing = missing.flatMap(region => subtract(region, shown.region));
     for (const region of missing) report(findings, 'E_A11Y_FRAGMENT', 'error', `${row.box.label} links to #${id}, which does not render here`, row, region, { rule: 'fragment-target', reference: id });
   }
+  // fragment-under-bar: following #id scrolls the target's top (less its scroll-margin and the viewport's scroll-padding)
+  // to the viewport top, as far as the page scrolls (s = top − padding − margin, within [0, page − viewport]). If a
+  // fixed bar, or a sticky one stuck at that s, spans that line, the target starts behind it (a heading under a header).
+  const jumpBars = placed.filter(row => (row.fixed || (row.sticky && row.sticky.parent)) && visible(row) && row.painted);
+  const pageRow = geometry.find(row => row.path === root.path && row.origin && row.block);
+  if (jumpBars.length && block && viewportBlock && pageRow) {
+    const length = value => value === undefined || value === 'auto' ? 0 : Number(String(value).replace(/px$/, ''));
+    const padding = root.tag === 'html' ? pageRow.paint.scrollPadding : scrollPaddingDeclared ? null : { top: 'auto' };
+    const maxScroll = diff(bottom(pageRow), viewportBlock);
+    for (const link of geometry.filter(row => row.box.tag === 'a' && typeof row.box.href === 'string' && /^#./.test(row.box.href) && row.box.href !== '#top' && visible(row) && !hiddenFrom(row.path))) {
+      let id; try { id = decodeURIComponent(link.box.href.slice(1)); } catch { id = link.box.href.slice(1); }
+      const box = byId.get(id);
+      if (!box) continue;
+      if (!padding) { report(unknowns, 'U_A11Y_SCROLL_PADDING', 'unknown', `${link.box.label}: the viewport's scroll-padding is set outside the analyzed root, so where #${id} lands is unknown`, link, link.region, { rule: 'fragment-under-bar' }); continue; }
+      for (const target of placed.filter(row => row.path === box.path)) {
+        const want = diff(target.origin.block, scalar(length(padding.top) + length(target.paint.scrollMargin?.top)));
+        const base = intersect(link.region, target.region);
+        // [region, s, y]: scrolled to the line; stopped at the top; stopped at the bottom.
+        const cases = [[atMost(atMost(base, scalar(0), want), want, maxScroll), want, diff(target.origin.block, want)],
+          [below(base, want, scalar(0)), scalar(0), target.origin.block],
+          [atMost(below(base, maxScroll, want), scalar(0), maxScroll), maxScroll, diff(target.origin.block, maxScroll)]];
+        let reported = false;
+        for (const bar of jumpBars) {
+          if (reported || related(bar.path, target.path) || related(bar.path, link.path)) continue;
+          const parent = bar.sticky ? placed.find(p => p.path === bar.sticky.parent) : null;
+          if (bar.sticky && !parent) continue;
+          for (const [region0, scroll, y] of cases) {
+            let region = intersect(region0, bar.region);
+            region = below(region, bar.origin.inline, right(target)); region = below(region, target.origin.inline, right(bar));
+            const top = bar.sticky ? scalar(0) : bar.origin.block, end = bar.sticky ? bar.block : bottom(bar);
+            if (bar.sticky) { region = atMost(intersect(region, parent.region), bar.origin.block, scroll); region = atMost(region, scroll, diff(bottom(parent), bar.block)); }
+            region = atMost(region, top, y); region = below(region, y, end);
+            if (!region) continue;
+            report(warnings, 'W_A11Y_FRAGMENT_UNDER_BAR', 'warning', `${link.box.label} jumps to #${id}, whose top lands behind the ${bar.sticky ? 'sticky' : 'fixed'} ${bar.box.label}; give it scroll-margin-top (or the viewport scroll-padding-top) of the bar's height`, link, region, { rule: 'fragment-under-bar', target: target.path, cover: bar.path });
+            reported = true; break;
+          }
+        }
+      }
+    }
+  }
+
   // state-mismatch: the announced state (aria-expanded, a tab's aria-selected) and what the CSS renders for the
   // controlled element (aria-controls) must agree, wherever the control itself shows.
   const treeDescendants = box => (box.children ?? []).concat(box.inline ?? []).flatMap(child => [child, ...treeDescendants(child)]);
