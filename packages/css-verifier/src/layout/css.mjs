@@ -292,7 +292,10 @@ export function parseLayoutCSS(sheets, diagnostic) {
       // the engine models that for the accessibility checks only and keeps every other proof Unknown.
       const insetMove = /^(?:left|right|top|bottom|inset(?:-inline|-block)?)$/;
       const stateGeometry = selectors.every(selector => ['focus', 'focus-visible'].includes(selector.state)) && node.nodes.some(d => d.type === 'decl' && insetMove.test(d.prop.toLowerCase())) && node.nodes.every(d => d.type !== 'decl' || d.prop.startsWith('--') || statePaint.test(d.prop.toLowerCase()) || insetMove.test(d.prop.toLowerCase()));
-      if (!stateGeometry && selectors.some(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `State selector rules may only change paint (color, background, outline, box-shadow, text-decoration); ${node.selector} changes layout`, node.source.start.line); continue; }
+      // A :checked::before/::after rule builds the pseudo-element only in the checked state; the engine requires it to be
+      // absolutely positioned (an overlay), so it never moves the layout.
+      const checkedMark = selectors.every(selector => selector.state === 'checked' && selector.pseudoElement);
+      if (!stateGeometry && !checkedMark && selectors.some(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `State selector rules may only change paint (color, background, outline, box-shadow, text-decoration); ${node.selector} changes layout`, node.source.start.line); continue; }
       const declarations = [];
       const authored=node.nodes.filter(declaration=>declaration.type==='decl');
       const conflicts=findCSSWriteConflicts(authored.map(declaration=>declaration.prop));

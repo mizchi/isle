@@ -25,6 +25,9 @@ export function compileSelector(source, depth = 0) {
     // A trailing user-action state (paint-only rules; see parseLayoutCSS).
     const action = rest.match(/^:(hover|active|focus|focus-visible|focus-within|checked)$/i);
     if (action) { state = action[1].toLowerCase(); specificity[1]++; rest = ''; continue; }
+    // :checked::before / :checked::after: the generated check mark of a custom checkbox.
+    const checkedMark = rest.match(/^:checked::?(before|after)$/i);
+    if (checkedMark) { state = 'checked'; pseudoElement = checkedMark[1].toLowerCase(); specificity[1]++; specificity[2]++; rest = ''; continue; }
     const pseudo = rest.match(/^::?(before|after)$/i) ?? rest.match(/^::(placeholder)$/i);
     if (pseudo) { pseudoElement = pseudo[1].toLowerCase(); specificity[2]++; rest = ''; continue; }
     const fn = rest.match(/^:(where|is)\(/i);

@@ -611,7 +611,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         ...(focusableBox(box) || box.tag === 'a' ? { hoverStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, hoverState).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
         ...(style['animation-name'] !== 'none' ? { reducedMotion: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set(['prefers-reduced-motion:reduce'])).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
         // Both checked states of a checkbox/radio (paint-only :checked rules), for the checked-indicator rule.
-        ...(box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType) ? { checkedStates: ['checked', 'unchecked'].map(name => styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set([name])).map(s => ({ region: s.region, paint: paintFacts(s.style) }))) } : {}),
+        // A ::before/::after generated in a state is described by its content and paint (`marks`); one that is not
+        // absolutely positioned would move the layout (`markUnknown`).
+        ...(box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType) ? { checkedStates: ['checked', 'unchecked'].map(name => styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set([name])).flatMap(s => {
+          const owner = [...parents.map(p => ({ ...p, names: p.names ?? [] })), { box, style: s.style, names: [] }];
+          let pieces = [{ region: s.region, marks: [], markUnknown: false }];
+          for (const kind of ['before', 'after']) pieces = pieces.flatMap(piece => styles({ ...box, pseudo: kind }, piece.region, owner, s.style, false, false, new Set([name])).map(m => {
+            const generated = !['none', 'normal'].includes(String(m.style.content ?? 'none')) && m.style.display !== 'none';
+            return { region: m.region, marks: generated ? [...piece.marks, JSON.stringify([kind, m.style.content, m.style['background-color'], m.style.color, m.style.visibility, m.style.opacity])] : piece.marks, markUnknown: piece.markUnknown || (generated && m.style.position !== 'absolute') };
+          }));
+          return pieces.map(piece => ({ region: piece.region, paint: paintFacts(s.style), marks: piece.marks.join('|'), markUnknown: piece.markUnknown }));
+        })) } : {}),
         // The placeholder text's paint (::placeholder rules; Chromium's UA color is rgb(117, 117, 117), measured).
         ...(box.placeholder && ['input', 'textarea'].includes(box.tag) ? { placeholderPaint: styles({ ...box, pseudo: 'placeholder' }, region, [...parents, { box, style, names: [] }], style, false, false, new Set(['::placeholder'])).map(s => ({ region: s.region, color: s.style.$sources.color ? s.style.color : '#757575', opacity: s.style.opacity })) } : {}),
         ...(focusableBox(box) ? { focusStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, focusState).map(s => ({ region: s.region, paint: paintFacts(s.style), authorOutline: Boolean(s.style.$sources['outline-style']), ...focusMove(box, style, s.style, available, inline, blockSize, parents), ...(s.style['z-index'] !== style['z-index'] ? { zIndex: s.style['z-index'] !== 'auto' && (style.position !== 'static' || ['grid', 'flex'].includes(parents.at(-1)?.style.display)) ? Number(s.style['z-index']) : null } : {}) })) } : {}) });

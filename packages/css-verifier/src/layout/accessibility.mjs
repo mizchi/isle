@@ -1012,14 +1012,16 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   }
 
   // checked-indicator (SC 1.4.11, 1.4.1): a custom checkbox/radio (appearance: none) must look different when checked.
-  // Nothing changing is an error; a change only of the fill needs 3:1 between the two fills. Indicators drawn by
-  // ::before/::after on :checked are outside the selector subset (Unknown), so every modeled indicator is a paint here.
+  // Nothing changing is an error; a change only of the fill needs 3:1 between the two fills. A ::before/::after generated
+  // only in one state (:checked::before, absolutely positioned) is an indicator too.
   for (const row of geometry.filter(row => row.checkedStates && visible(row) && !hiddenFrom(row.path) && row.chain && !row.chain.some(layer => /^(?:0|0?\.0+|0%)$/.test(String(layer.opacity).trim())))) {
     const [checked, unchecked] = row.checkedStates;
     for (const on of checked) for (const off of unchecked) {
       const region = intersect(intersect(row.region, on.region), off.region);
       if (!region) continue;
       const a = on.paint, b = off.paint;
+      if (on.markUnknown || off.markUnknown) { report(unknowns, 'U_A11Y_CHECKED_INDICATOR', 'unknown', `${row.box.label}: a :checked ::before/::after that is not absolutely positioned moves the layout`, row, region, { rule: 'checked-indicator' }); continue; }
+      if (on.marks !== off.marks) continue; // a generated check mark (or one that goes away) is the indicator
       const others = a.backgroundImage !== b.backgroundImage || a.boxShadow !== b.boxShadow || a.color !== b.color || JSON.stringify(a.borderColors) !== JSON.stringify(b.borderColors) || a.outlineStyle !== b.outlineStyle || a.outlineColor !== b.outlineColor;
       if (others) continue;
       if (a.backgroundColor === b.backgroundColor) { report(findings, 'E_A11Y_CHECKED_INDICATOR', 'error', `${row.box.label} looks the same checked and unchecked`, row, region, { rule: 'checked-indicator' }); continue; }

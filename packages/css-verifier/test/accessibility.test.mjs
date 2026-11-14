@@ -1385,3 +1385,12 @@ test('checked-indicator: a custom checkbox must look different when checked', ()
   // :checked rules only repaint; a :checked rule that moves layout stays Unknown.
   assert.equal(run(tree, css('.c:checked { padding: 2px; }')).status, 'unknown');
 });
+
+test('checked-indicator: a :checked::before check mark is an indicator', () => {
+  const tree = page([{tag: 'div', classes: ['w'], children: [{tag: 'input', classes: ['c'], inputType: 'checkbox', named: true, focusable: true}]}]);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; grid-auto-rows: 30px; }\n.w { display: grid; grid-template-columns: 24px; position: relative; }\n.c { appearance: none; display: block; padding: 0; min-width: 0; min-height: 0; inline-size: 24px; block-size: 24px; border: 2px solid #000; background: #fff; position: relative; }\n${extra}`);
+  const codes = extra => run(tree, css(extra)).diagnostics.filter(d => d.rule === 'checked-indicator').map(d => d.code);
+  assert.deepEqual(codes('.c:checked::before { content: ""; position: absolute; left: 4px; top: 4px; inline-size: 12px; block-size: 12px; background: #000; }'), []);
+  assert.deepEqual(codes('.c:checked::before { content: ""; display: block; inline-size: 12px; block-size: 12px; background: #000; }'), ['U_A11Y_CHECKED_INDICATOR']);
+  assert.deepEqual(codes(''), ['E_A11Y_CHECKED_INDICATOR']);
+});
