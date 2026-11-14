@@ -400,7 +400,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   // fieldset/legend: UA border, padding, margin and min-inline-size until reset.
   if (box.tag === 'fieldset') { for (const side of ['left', 'right', 'top', 'bottom']) { values[`padding-${side}`] = 'ua'; values[`border-${side}`] = 'ua'; } values['margin-left'] = 'ua'; values['margin-right'] = 'ua'; values['min-inline-size'] = 'ua'; }
   if (box.tag === 'legend') { values['padding-left'] = 'ua'; values['padding-right'] = 'ua'; }
-  if(['button', 'input', 'select', 'textarea'].includes(box.tag)) {
+  // The control's UA box rules are not its ::before/::after's.
+  if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag)) {
     for(const side of ['left','right','top','bottom']) {values[`padding-${side}`]='ua';values[`border-${side}`]='ua';}
     for(const key of ['display','box-sizing','min-inline-size','min-block-size']) values[key]='ua';
   }

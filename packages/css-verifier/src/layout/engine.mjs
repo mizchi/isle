@@ -188,10 +188,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(box.whitespace && !['normal','nowrap'].includes(style['white-space'])) throw new Error('Preserved whitespace needs explicit text geometry from the input adapter');
     // Derived text metrics apply only to the exact font they were measured with.
     if (box.contract?.font) { const reason = textFontMismatch(style, box.contract.font) ?? textLangMismatch(style.$lang, box.contract.textMetrics?.lang) ?? (box.contract.textMetrics?.kind === 'lines' ? textLinesMismatch(style, box.contract) : null); if (reason) throw Object.assign(new Error(reason), {code: 'U_LAYOUT_TEXT_FONT'}); }
-    if(['button', 'input', 'select', 'textarea'].includes(box.tag) && (style.appearance!=='none' || style.display!=='block')) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);
+    if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag) && (style.appearance!=='none' || style.display!=='block')) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);
     // A fieldset's rendered legend sits in its border: modeled only when the fieldset generates no box.
     // Replaced elements and text fields have intrinsic sizes the model does not compute.
-    if(['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto'))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
+    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto'))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
     // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
     // A closed popover that author CSS displays keeps the UA [popover] { position: fixed; inset: 0; margin: auto }:
@@ -493,6 +493,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const measured = box.contract?.textMetrics?.text, collapsedText = text?.replace(/\s+/g, ' ').trim();
         const inMeasure = text !== null && typeof measured === 'string' && collapsedText && (kind === 'before' ? measured.startsWith(collapsedText) : measured.endsWith(collapsedText)) && c.style.position === 'static'
           && ['font-family', 'font-size', 'font-weight', 'font-style', 'line-height', 'letter-spacing', 'word-spacing', 'text-transform'].every(key => c.style[key] === inheritedStyle[key]) && c.style.display === 'inline';
+        // An absolutely positioned generated box of a leaf (a hit-area expansion, a check mark) is out of flow: it is laid
+        // out after the leaf, against its containing block (leafPseudo).
+        if (text === null && c.style.position === 'absolute' && !(box.children ?? []).length && !box.inline?.length) { box.absolutePseudo = [...new Set([...(box.absolutePseudo ?? []), kind])]; continue; }
         if (text === null || !(fixed || inMeasure)) throw Object.assign(new Error(`${pbox.label} generates ${text === null ? 'a box' : 'text'} that may change the layout (only text in a px-sized leaf, or included in the leaf's measured text, is modeled)`), { code: 'U_LAYOUT_PSEUDO' });
         generated[kind] = text;
       }
@@ -1210,7 +1213,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               // height/overflow. Only ordinary leaves use intrinsic height.
               if (!box.children.length && style.display !== 'grid') {
                 const heights = !block ? [{ region: geometryRegion, value: null }] : knownBlock ? [{ region: geometryRegion, value: knownBlock }] : intrinsic(box, contentInline, geometryRegion);
-                for (const h of heights) results.push(finish(box, style, h.region, inline, contentInline, h.value ? sum(h.value, blockEdges) : null, h.value, available, parents, emit));
+                for (const h of heights) {
+                  results.push(finish(box, style, h.region, inline, contentInline, h.value ? sum(h.value, blockEdges) : null, h.value, available, parents, emit));
+                  // Absolute ::before/::after of the leaf, against the nearest positioned box (this leaf when it is).
+                  for (const kind of box.absolutePseudo ?? []) {
+                    const leafOwn = { ...own, paddingBlock: own.paddingBlock ?? (h.value ? diff(sum(h.value, blockEdges), scalar(add(px(style['border-top']), px(style['border-bottom'])))) : null) };
+                    const chain = [...parents, leafOwn], containing = chain.findLast(a => a.positioned);
+                    if (!block || !containing?.paddingBlock || containing.subgrid || chain.some(a => a.clipped)) throw Object.assign(new Error(`${box.label}::${kind} is absolutely positioned without an owned non-scrolling, unclipped containing block`), { code: 'U_LAYOUT_PSEUDO' });
+                    const pbox = { ...box, path: `${box.path}/${kind === 'before' ? -1 : 0}`, label: `${box.label}::${kind}`, children: [], inline: undefined, text: false, contract: undefined, pseudo: kind, absolutePseudo: undefined,
+                      named: undefined, focusable: false, tabIndex: undefined, role: undefined, href: undefined, ariaHidden: undefined, id: undefined };
+                    solve(pbox, { inline: containing.paddingInline, block: containing.paddingBlock, containingBlock: { path: containing.box.path, inline: containing.paddingInline, block: containing.paddingBlock, origin: containing.paddingOrigin } }, h.region, chain, style, emit);
+                  }
+                }
                 continue;
               }
               if (!['grid', 'flex'].includes(style.display)) { issue('E_LAYOUT_CONTAINER', 'Layout containers must use grid or the flex subset', box, bs.region); continue; }

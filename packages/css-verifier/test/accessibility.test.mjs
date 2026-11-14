@@ -1428,3 +1428,14 @@ test('target-size: a ::after that enlarges the hit area counts as the target', (
   assert.notEqual(grown.status, 'unknown');
   assert.deepEqual(find(grown, 'E_A11Y_TARGET_SIZE'), []);
 });
+
+test('an absolute ::after of a button (a block leaf) is laid out and enlarges its hit area', () => {
+  const tree = page([{tag: 'div', classes: ['row'], children: [{tag: 'button', classes: ['b1'], named: true}, {tag: 'button', classes: ['b2'], named: true}]}]);
+  const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: 40px; }\n.row { display: grid; grid-template-columns: 16px 16px; column-gap: 4px; grid-template-rows: 16px; padding: 12px; }\n.b1, .b2 { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; position: relative; }\n${extra}`);
+  assert.deepEqual(find(run(tree, css('')), 'E_A11Y_TARGET_SIZE').map(d => d.box).sort(), ['.b1', '.b2']);
+  const grown = run(tree, css('.b1::after, .b2::after { content: ""; position: absolute; left: -4px; top: -4px; inline-size: 24px; block-size: 24px; }'));
+  assert.notEqual(grown.status, 'unknown');
+  assert.deepEqual(find(grown, 'E_A11Y_TARGET_SIZE'), []);
+  // Without a positioned ancestor inside the analyzed root the containing block is not owned: Unknown.
+  assert.equal(run(tree, css('.b1, .b2 { position: static; }\n.b1::after { content: ""; position: absolute; left: 0; top: 0; inline-size: 24px; block-size: 24px; }')).status, 'unknown');
+});
