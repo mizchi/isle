@@ -19,7 +19,7 @@ const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
 const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-radius|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|transition(?:-(?:property|duration|delay|timing-function|behavior))?|animation-(?:delay|direction|fill-mode|timing-function)|list-style-(?:position|image))$/;
 // Properties a :hover/:focus rule may set: they repaint (or restack) without changing geometry.
-const statePaint = /^(?:z-index|color|background(?:-.*)?|border-(?:(?:top|right|bottom|left)-)?color|border-radius|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?|color-scheme)$/;
+const statePaint = /^(?:z-index|color|clip|clip-path|background(?:-.*)?|border-(?:(?:top|right|bottom|left)-)?color|border-radius|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?|color-scheme)$/;
 // Paint and hit-testing facts for the accessibility rules (never geometry).
 export const paintProperties = ['color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'outline-color', 'outline-offset', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'color-scheme', 'z-index', 'isolation', 'transform'];
 const inheritedPaint = ['color', 'visibility', 'pointer-events', 'cursor', 'list-style-type', 'color-scheme'];
@@ -58,6 +58,23 @@ function expand(property, value) {
     if (side === 'block' || side === 'inline') { if (parts.length > 2) throw new Error(`Unsupported ${property}: ${value}`); const [a, b] = side === 'block' ? ['top', 'bottom'] : ['left', 'right']; return [[name(a), parts[0]], [name(b), parts[1] ?? parts[0]]]; }
     if (parts.length !== 1) throw new Error(`Unsupported ${property}: ${value}`);
     return [[property, value]];
+  }
+  // clip / clip-path: only "everything clipped away" (the visually-hidden pattern) and no clipping are modeled; a partial
+  // clip changes what is visible in ways the rules do not follow.
+  if (property === 'clip') {
+    if (wide.has(value) || value === 'auto') return [[property, value]];
+    const m = /^rect\(\s*([^,\s]+)[\s,]+([^,\s]+)[\s,]+([^,\s]+)[\s,]+([^,\s)]+)\s*\)$/.exec(value);
+    const n = v => v === '0' ? 0 : /^-?\d+(?:\.\d+)?px$/.test(v) ? parseFloat(v) : NaN;
+    if (!m || m.slice(1).some(v => Number.isNaN(n(v)))) throw new Error(`Unsupported clip: ${value}`);
+    const [top, right, bottom, left] = m.slice(1).map(n);
+    if (bottom > top && right > left) throw new Error(`Unsupported clip: ${value} (only an empty rect is modeled)`);
+    return [[property, 'empty']];
+  }
+  if (property === 'clip-path') {
+    if (wide.has(value) || value === 'none') return [[property, value]];
+    const m = /^inset\(\s*(\d+(?:\.\d+)?)%\s*\)$/.exec(value);
+    if (!m || Number(m[1]) < 50) throw new Error(`Unsupported clip-path: ${value} (only inset(50%) or more is modeled)`);
+    return [[property, 'empty']];
   }
   if (property==='scrollbar-color') return [];
   if (property === 'all') {
@@ -351,7 +368,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
     'column-gap': 'normal', 'grid-column': 'auto', 'grid-row': 'auto',
     'background-color': 'transparent', 'background-image': 'none',
     'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none',
-    'z-index': 'auto', isolation: 'auto', transform: 'none', ...Object.fromEntries(['margin', 'padding'].flatMap(kind => ['top', 'right', 'bottom', 'left'].map(side => [`scroll-${kind}-${side}`, kind === 'padding' ? 'auto' : '0']))), 'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running',
+    'z-index': 'auto', isolation: 'auto', transform: 'none', clip: 'auto', 'clip-path': 'none', ...Object.fromEntries(['margin', 'padding'].flatMap(kind => ['top', 'right', 'bottom', 'left'].map(side => [`scroll-${kind}-${side}`, kind === 'padding' ? 'auto' : '0']))), 'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running',
     'table-layout': 'auto', // HTML UA: table { border-collapse: separate; border-spacing: 2px } (a UA rule on table, not inherited from above).
     'border-collapse': box.tag === 'table' ? 'separate' : inherited['border-collapse'] ?? 'separate', 'border-spacing': box.tag === 'table' ? '2px' : inherited['border-spacing'] ?? '0', 'caption-side': inherited['caption-side'] ?? 'top', 'empty-cells': 'show',
     // HTML UA: thead, tbody, tfoot, tr { vertical-align: middle } and td, th { vertical-align: inherit }.
