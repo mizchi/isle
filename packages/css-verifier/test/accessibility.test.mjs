@@ -707,7 +707,7 @@ test('hover-only: a control that hover reveals must also show on focus', () => {
 test('a rendered legend with explicit sizes is laid out in the fieldset border and names the group', () => {
   const radio = cls => ({tag: 'input', classes: [cls], inputType: 'radio', inputName: 'x', focusable: true, named: true});
   const css = '.fs { display: grid; grid-template-columns: 30px 30px; grid-template-rows: 30px; margin: 0; padding: 0; border: 2px solid #000; min-inline-size: 0; background: #fff; color: #000; }\n.lg { display: block; inline-size: 60px; block-size: 20px; padding: 0; font-size: 16px; line-height: 20px; }\n.a, .b { appearance: none; display: block; inline-size: 30px; block-size: 30px; padding: 0; border: 0; min-width: 0; min-height: 0; }\n';
-  const report = run({tag: 'fieldset', classes: ['fs'], children: [{tag: 'legend', classes: ['lg'], text: true}, radio('a'), radio('b')]}, css, {boxes: {'.lg': {minInlineSize: 1, intrinsicBlockSize: 20}}});
+  const report = run({tag: 'fieldset', classes: ['fs'], children: [{tag: 'legend', classes: ['lg'], text: true}, radio('a'), radio('b')]}, css + '\n.a, .b { background: #000; }', {boxes: {'.lg': {minInlineSize: 1, intrinsicBlockSize: 20}}});
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
   const legend = report.sizes.find(row => row.box === '.lg' && row.rect), first = report.sizes.find(row => row.box === '.a' && row.rect);
   assert.equal(legend.rect.blockStart.constant, '0');
@@ -1354,4 +1354,12 @@ test('field-boundary: a text field needs a 3:1 fill or border against its backdr
   assert.deepEqual(codes('.i { background: #333; color: #fff; }'), []);
   // Disabled fields are exempt (SC 1.4.11 inactive components).
   assert.deepEqual(codes('', {nativeStates: {disabled: true}}), []);
+});
+
+test('field-boundary: a custom checkbox (appearance: none) needs a visible box', () => {
+  const tree = page([{tag: 'input', classes: ['c'], inputType: 'checkbox', named: true, focusable: true}]);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; grid-auto-rows: 30px; }\n.c { appearance: none; display: block; padding: 0; min-width: 0; min-height: 0; inline-size: 24px; block-size: 24px; border: 0; background: transparent; }\n${extra}`);
+  const codes = extra => run(tree, css(extra)).diagnostics.filter(d => d.rule === 'field-boundary').map(d => d.code);
+  assert.deepEqual(codes(''), ['E_A11Y_FIELD_BOUNDARY']);
+  assert.deepEqual(codes('.c { border: 2px solid #000; }'), []);
 });

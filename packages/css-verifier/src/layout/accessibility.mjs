@@ -1011,10 +1011,14 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     }
   }
 
-  // field-boundary (SC 1.4.11): a text field (input, select, textarea) must be identifiable: its fill against the backdrop
+  // field-boundary (SC 1.4.11): a form field (text input, checkbox, radio, select, textarea) must be identifiable: its fill against the backdrop
   // around it, or at least one border side (1px or wider, composited over the fill), needs 3:1. Disabled fields are exempt.
-  const textInput = box => box.tag === 'select' || box.tag === 'textarea' || (box.tag === 'input' && !['hidden', 'checkbox', 'radio', 'range', 'color', 'file', 'submit', 'reset', 'button', 'image'].includes(box.inputType));
-  for (const row of geometry.filter(row => textInput(row.box) && visible(row) && !hiddenFrom(row.path) && !row.box.nativeStates?.disabled && row.chain)) {
+  // Checkboxes and radios are checked models only with appearance: none, so their box is all there is to see.
+  const textInput = box => box.tag === 'select' || box.tag === 'textarea' || (box.tag === 'input' && !['hidden', 'range', 'color', 'file', 'submit', 'reset', 'button', 'image'].includes(box.inputType));
+  // A field at opacity 0 (itself or an ancestor) is deliberately invisible: another element draws it (custom checkboxes);
+  // focus-transparent covers that pattern.
+  const invisibleField = row => row.chain.some(layer => /^(?:0|0?\.0+|0%)$/.test(String(layer.opacity).trim()));
+  for (const row of geometry.filter(row => textInput(row.box) && visible(row) && !hiddenFrom(row.path) && !row.box.nativeStates?.disabled && row.chain && !invisibleField(row))) {
     const clear = { color: '#000', backgroundColor: 'transparent', backgroundImage: 'none', opacity: '1' };
     const around = backdrop([...row.chain.slice(0, -1), clear]), fill = backdrop([...row.chain.slice(0, -1), { ...row.chain.at(-1), color: '#000' }]);
     if (around.unknown || fill.unknown) { report(unknowns, 'U_A11Y_FIELD_BOUNDARY', 'unknown', `${row.box.label}: ${(around.unknown ?? fill.unknown).replace('the text', 'the field')}`, row, row.region, { rule: 'field-boundary' }); continue; }
