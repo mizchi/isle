@@ -126,6 +126,37 @@ function layoutStartMoves(before, after, keep = () => true, within = null) {
   }
   return { moves };
 }
+// An upper bound of the Layout Instability score of one change (a frame), at viewport point p = {x: W, y: H}:
+// impact fraction (the union of every moved box's before and after layout rectangles, inside the viewport, over the
+// viewport area) × distance fraction (the largest horizontal or vertical move over max(W, H)). Every moved layout box
+// is counted, a superset of the boxes Chromium counts (those it paints), so both factors only grow: the result bounds
+// the browser's score of that frame from above (initial scroll position).
+function shiftScoreBound(before, after, keep, p) {
+  const rect = row => row.layoutRect !== undefined ? row.layoutRect : row.rect;
+  const r = v => { const [n, d = '1'] = String(v ?? '0').split('/'); return Number(n) / Number(d); };
+  const W = Number(exact(p.x).split('/').reduce((n, d) => n / d)), H = Number(exact(p.y).split('/').reduce((n, d) => n / d));
+  if (!(W > 0 && H > 0)) return null;
+  const at = a => r(a.constant) + r(a.coefficient) * W + r(a.heightCoefficient) * H;
+  const inside = row => row.$shown?.region && row.$shown.region.constraints.every(c => cmp(evaluate(c.slack, p), zero) >= 0);
+  const box = row => { const b = rect(row); return b && { x: at(b.inlineStart), y: at(b.blockStart), w: at(b.inlineSize), h: at(b.blockSize) }; };
+  const pieces = []; let distance = 0;
+  for (const row of before.filter(row => keep(row) && inside(row))) {
+    const other = after.find(o => o.path === row.path && keep(o) && inside(o));
+    if (!other) continue;
+    const a = box(row), b = box(other);
+    if (!a || !b) return null;
+    const move = Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+    if (move === 0) continue;
+    distance = Math.max(distance, move);
+    for (const c of [a, b]) { const x0 = Math.max(0, c.x), y0 = Math.max(0, c.y), x1 = Math.min(W, c.x + c.w), y1 = Math.min(H, c.y + c.h); if (x1 > x0 && y1 > y0) pieces.push([x0, y0, x1, y1]); }
+  }
+  if (!pieces.length) return 0;
+  // Union area by coordinate compression (few rectangles).
+  const xs = [...new Set(pieces.flatMap(q => [q[0], q[2]]))].sort((m, n) => m - n), ys = [...new Set(pieces.flatMap(q => [q[1], q[3]]))].sort((m, n) => m - n);
+  let area = 0;
+  for (let i = 0; i + 1 < xs.length; i++) for (let j = 0; j + 1 < ys.length; j++) if (pieces.some(q => q[0] <= xs[i] && q[2] >= xs[i + 1] && q[1] <= ys[j] && q[3] >= ys[j + 1])) area += (xs[i + 1] - xs[i]) * (ys[j + 1] - ys[j]);
+  return (area / (W * H)) * (distance / Math.max(W, H));
+}
 function length(value, parent, style) {
   if (/^\d+(?:\.\d+)?%$/.test(value) && !parent) throw new Error('Percentage block size needs a definite containing size; intrinsic percentage cycles are not modeled');
   const pieces = lengthPieces(value, parent, null, style);
@@ -1889,7 +1920,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (!moved.length) continue;
         reported.add(row.path);
         const { field, v, delta } = moved[0];
-        diagnostics.push({ code: 'E_LAYOUT_HOVER_SHIFT', severity: 'error', box: row.box, path: row.path, hovered: target.label, hoveredPath: target.path, field, delta: exact(delta),
+        const scoreBound = block ? shiftScoreBound(sizes, hover.sizes, () => true, v) : null;
+        diagnostics.push({ code: 'E_LAYOUT_HOVER_SHIFT', severity: 'error', box: row.box, path: row.path, hovered: target.label, hoveredPath: target.path, field, delta: exact(delta), ...(scoreBound !== null ? { scoreBound } : {}),
           message: `Hovering ${target.label} moves ${row.box} (${field} by ${number(delta)}px at viewport ${number(v.x)}px${block ? ` × ${number(v.y)}px` : ''}): a layout shift without an excusing input. Change paint or transform on :hover, or reserve the space`, ...ranges(shared) });
       }
     }
@@ -1986,6 +2018,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const result = layoutStartMoves(first.report.sizes, variant.report.sizes, row => !inSlide(row.path));
         if (result.undecided) { fail(`${result.undecided.box} has no layout rectangle to compare across slides`); break; }
         for (const move of result.moves) diagnostics.push({ code: 'E_LAYOUT_CAROUSEL_SHIFT', severity: 'error', box: move.row.box, path: move.row.path, carousel: carousel.label, carouselPath: carousel.path, from: first.target.label, to: variant.target.label, field: move.field, delta: exact(move.delta),
+          ...(() => { const bound = block ? shiftScoreBound(first.report.sizes, variant.report.sizes, row => !inSlide(row.path), move.v) : null; return bound !== null ? { scoreBound: bound } : {}; })(),
           message: `Switching ${carousel.label} from ${first.target.label} to ${variant.target.label} moves ${move.row.box} (${move.field} by ${number(move.delta)}px at viewport ${number(move.v.x)}px${block ? ` × ${number(move.v.y)}px` : ''}): slides of different sizes shift the page. Give the slide area a fixed height or aspect-ratio, or stack the slides in one grid cell`, ...ranges(move.shared) });
         if (result.moves.length) break;
       }

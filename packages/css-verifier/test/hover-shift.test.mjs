@@ -28,3 +28,12 @@ test('a hovered layout that only moves in part of the viewport range is found th
   assert.ok(wide.range.min >= 600, JSON.stringify(wide.range));
   assert.equal(run('@media (min-width: 2000px){.card:hover{height:110px}}').status, 'verified');
 });
+
+test('a hover shift carries an upper bound of its Layout Instability score', () => {
+  const at = {min: 800, max: 800, height: {min: 600, max: 600}};
+  const [taller] = analyzeHTML(html, {name: 'Page', viewport: at, css: base + '.card:hover{height:120px}'}).diagnostics.filter(d => d.code === 'E_LAYOUT_HOVER_SHIFT');
+  // .below (784 × 40 at y 116) moves 20px down: impact 784 × 60 / (800 × 600), distance 20 / 800 (Chromium: 0.00245).
+  assert.ok(Math.abs(taller.scoreBound - (784 * 60 / 480000) * (20 / 800)) < 1e-12, String(taller.scoreBound));
+  // Without a viewport height there is no viewport area: no bound.
+  assert.equal(shifts(analyzeHTML(html, {name: 'Page', viewport: {min: 320, max: 960}, css: base + '.card:hover{height:120px}'}))[0]?.scoreBound, undefined);
+});

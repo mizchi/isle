@@ -92,6 +92,7 @@ test('noshift ignores transforms like Chromium layout shifts: a transformed stat
 });
 
 test('static :hover layout-shift findings agree with Chromium', async ({page}) => {
+  const bounds = [];
   const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
   const html = '<main class="page"><div class="card"><div class="inner"></div></div><div class="below"></div></main>';
   const base = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:8px;row-gap:8px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:100px;padding:10px;background:#ddd}.inner{height:20px;background:#888}.below{height:40px;background:#444}';
@@ -102,7 +103,12 @@ test('static :hover layout-shift findings agree with Chromium', async ({page}) =
     const predicted = report.diagnostics.some(d => d.code === 'E_LAYOUT_HOVER_SHIFT');
     const measured = await shifts(page, `<style>${base + rule}</style>${html}`, {act: async p => { await p.mouse.move(700, 590); await p.waitForTimeout(300); await p.mouse.move(400, y); }});
     expect(measured.score > 0, `${name}: static ${predicted}, Chromium ${measured.score}`).toBe(predicted);
+    // The static score bound holds over Chromium's score of the hover frame.
+    const bound = Math.max(0, ...report.diagnostics.filter(d => d.code === 'E_LAYOUT_HOVER_SHIFT').map(d => d.scoreBound));
+    expect(measured.score, `${name}: bound ${bound}`).toBeLessThanOrEqual(bound + 1e-9);
+    if (predicted) bounds.push([name, measured.score, bound]);
   }
+  console.log('hover score vs bound', JSON.stringify(bounds));
 });
 
 test('picture: static per-media source reservations agree with Chromium layout shifts', async ({page}) => {
@@ -191,5 +197,8 @@ test('static carousel slide-switch findings agree with Chromium layout shifts', 
     const predicted = report.diagnostics.some(d => d.code === 'E_LAYOUT_CAROUSEL_SHIFT');
     const measured = await shifts(page, `<style>${base + css}</style>${html}`, {script});
     expect(measured.score > 0, `${name}: static ${predicted}, Chromium ${measured.score}`).toBe(predicted);
+    const bound = Math.max(0, ...report.diagnostics.filter(d => d.code === 'E_LAYOUT_CAROUSEL_SHIFT').map(d => d.scoreBound));
+    expect(measured.score, `${name}: bound ${bound}`).toBeLessThanOrEqual(bound + 1e-9);
+    if (predicted) console.log('carousel score vs bound', name, measured.score, bound);
   }
 });

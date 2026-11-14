@@ -34,3 +34,19 @@ test('a shown slide that cannot be identified is Unknown', () => {
   assert.equal(report.status, 'unknown');
   assert.match(report.diagnostics.find(d => d.severity === 'unknown').message, /shown slide is not identified/);
 });
+
+test('carousel initialization: the pre-script and initialized states are compared with noshift', async () => {
+  const {createNoShiftContract} = await import('../src/transitions.mjs');
+  const {verifyNoShift} = await import('../src/transitions-node.mjs');
+  // Before the script runs every slide is shown (stacked); initialization hides all but the first.
+  const before = carousel('<div class="s1" aria-roledescription="slide"></div><div class="s3" aria-roledescription="slide"></div>');
+  const after = carousel('<div class="s1" aria-roledescription="slide"></div><div class="s3" aria-roledescription="slide" hidden></div>');
+  const contract = createNoShiftContract({name: 'Init', targets: [{name: 'below', before: 'P/1', after: 'P/1'}]});
+  const pre = run(before), post = run(after);
+  assert.equal(pre.status, 'verified'); assert.equal(post.status, 'verified');
+  const result = await verifyNoShift(pre, post, contract);
+  assert.equal(result.status, 'violated');
+  assert.equal(result.change.delta.exact, '-100');
+  // Reserving the initialized height from the start (the hidden attribute in the server HTML) keeps it in place.
+  assert.equal((await verifyNoShift(run(after), post, contract)).status, 'verified');
+});
