@@ -95,13 +95,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -164,7 +164,7 @@ export const contrastRatio = (a, b) => { const [x, y] = [luminance(a), luminance
 export function paintFacts(style) {
   return { color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
-    isolation: style.isolation, transform: style.transform, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
+    isolation: style.isolation, transform: style.transform, scrollMargin: { top: style['scroll-margin-top'], bottom: style['scroll-margin-bottom'] }, scrollPadding: { top: style['scroll-padding-top'], bottom: style['scroll-padding-bottom'] }, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
     animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] } };
 }
 const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(String(value)); return m && (m[2] ? Number(m[1]) / 100 : Number(m[1])) >= 1; };
@@ -294,7 +294,7 @@ export function circleReach(region, dx, dy, r) {
   return { yes, maybe };
 }
 
-export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0 }) {
+export function judgeAccessibility({ geometry, waived = [], root, domain }, { contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0, viewportBlock = null, scrollPaddingDeclared = false }) {
   const findings = [], warnings = [], unknowns = [], notes = [], exempted = [];
   // Generated boxes (::before/::after) paint and receive the pointer (for their element), but carry no DOM semantics.
   const everything = geometry;
@@ -596,6 +596,39 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     }
   }
 
+
+  // focus-scrolled-under (SC 2.4.11): Chromium scrolls a keyboard-focused element only when it is not already inside
+  // the scrollport shrunk by the viewport's scroll-padding (its box grown by its scroll-margin; measured). So if some
+  // scroll position puts the element inside that area but entirely behind a position: fixed bar, Tab lands on it there
+  // and nothing reveals it. Positions are scroll offsets s in [0, page height - viewport height]: the element's
+  // viewport top y = top - s; the bar stays at its viewport place.
+  const fixedBars = placed.filter(row => row.fixed && visible(row) && row.painted);
+  if (fixedBars.length && block && viewportBlock) {
+    const length = value => value === undefined || value === 'auto' ? 0 : Number(String(value).replace(/px$/, ''));
+    const rootRow = geometry.find(row => row.path === root.path && row.origin && row.block);
+    const viewportPadding = ['html'].includes(root.tag) ? rootRow?.paint.scrollPadding : scrollPaddingDeclared ? null : { top: 'auto', bottom: 'auto' };
+    if (!viewportPadding || !rootRow) report(unknowns, 'U_A11Y_SCROLL_PADDING', 'unknown', 'the viewport\'s scroll-padding is set outside the analyzed root, so where a focused element scrolls behind a fixed bar is unknown', whole(root), domain, { rule: 'focus-scrolled-under' });
+    else {
+      const obscured = new Set(findings.filter(d => d.code === 'E_A11Y_FOCUS_OBSCURED').map(d => d.path));
+      const maxScroll = diff(bottom(rootRow), viewportBlock);
+      const insideFixed = path => fixedBars.some(bar => isAncestor(bar.path, path) || bar.path === path);
+      for (const target of placed.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo && !insideFixed(row.path) && !obscured.has(row.path))) {
+        const margin = target.paint.scrollMargin ?? {}, own = layer(target);
+        for (const bar of fixedBars) {
+          if (related(bar.path, target.path) || !paintsAbove(bar, layer(bar), target, own)) continue;
+          let region = intersect(target.region, bar.region);
+          region = atMost(region, bar.origin.inline, target.origin.inline);
+          region = atMost(region, right(target), right(bar));
+          const lows = [bar.origin.block, scalar(length(viewportPadding.top) + length(margin.top)), diff(target.origin.block, maxScroll)];
+          const highs = [diff(bottom(bar), target.block), diff(sum(viewportBlock, scalar(-length(margin.bottom) - length(viewportPadding.bottom))), target.block), target.origin.block];
+          for (const low of lows) for (const high of highs) region = atMost(region, low, high);
+          if (!region) continue;
+          report(findings, 'E_A11Y_FOCUS_SCROLLED_UNDER', 'error', `${target.box.label} can be focused while entirely behind the fixed ${bar.box.label} (the page does not scroll it out); add scroll-padding to the viewport or scroll-margin to the element`, target, region, { rule: 'focus-scrolled-under', cover: bar.path });
+          break;
+        }
+      }
+    }
+  }
   // pointer-disabled: keyboard can reach it, a pointer cannot.
   for (const row of geometry.filter(row => interactive(row) && visible(row) && !hiddenFrom(row.path) && row.paint.pointerEvents === 'none'))
     report(findings, 'E_A11Y_POINTER_DISABLED', 'error', `${row.box.label} cannot be clicked: pointer-events is none here`, row, row.region, { rule: 'pointer-disabled' });

@@ -45,6 +45,20 @@ function expand(property, value) {
     if (property === 'inset') return [['top',p[0]],['right',p[1] ?? p[0]],['bottom',p[2] ?? p[0]],['left',p[3] ?? p[1] ?? p[0]]];
     return property === 'inset-inline' ? [['left',p[0]],['right',p[1] ?? p[0]]] : [['top',p[0]],['bottom',p[1] ?? p[0]]];
   }
+  // scroll-margin / scroll-padding: they move where the page scrolls a focused or targeted element, never the layout.
+  // Only px lengths (and auto for scroll-padding) are modeled; the vertical sides feed the accessibility scroll rules.
+  property = property.replace(/^(scroll-(?:margin|padding))-block-(start|end)$/, (_, family, edge) => `${family}-${edge === 'start' ? 'top' : 'bottom'}`);
+  const scrollFamily = /^scroll-(margin|padding)(?:-(top|right|bottom|left|block|inline))?$/.exec(property);
+  if (scrollFamily) {
+    const [, kind, side] = scrollFamily, parts = postcss.list.space(value);
+    const length = part => wide.has(part) || /^-?(?:\d+(?:\.\d+)?|\.\d+)px$/.test(part) || part === '0' || (kind === 'padding' && part === 'auto');
+    if (!parts.length || !parts.every(length) || (wide.has(value) && parts.length !== 1)) throw new Error(`Unsupported ${property}: ${value}`);
+    const name = s => `scroll-${kind}-${s}`;
+    if (!side) { if (parts.length > 4) throw new Error(`Unsupported ${property}: ${value}`); return [[name('top'), parts[0]], [name('right'), parts[1] ?? parts[0]], [name('bottom'), parts[2] ?? parts[0]], [name('left'), parts[3] ?? parts[1] ?? parts[0]]]; }
+    if (side === 'block' || side === 'inline') { if (parts.length > 2) throw new Error(`Unsupported ${property}: ${value}`); const [a, b] = side === 'block' ? ['top', 'bottom'] : ['left', 'right']; return [[name(a), parts[0]], [name(b), parts[1] ?? parts[0]]]; }
+    if (parts.length !== 1) throw new Error(`Unsupported ${property}: ${value}`);
+    return [[property, value]];
+  }
   if (property==='scrollbar-color') return [];
   if (property === 'all') {
     if (!wide.has(value)) throw new Error('Unsupported all reset');
@@ -322,7 +336,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
     'column-gap': 'normal', 'grid-column': 'auto', 'grid-row': 'auto',
     'background-color': 'transparent', 'background-image': 'none',
     'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none',
-    'z-index': 'auto', isolation: 'auto', transform: 'none', 'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running',
+    'z-index': 'auto', isolation: 'auto', transform: 'none', ...Object.fromEntries(['margin', 'padding'].flatMap(kind => ['top', 'right', 'bottom', 'left'].map(side => [`scroll-${kind}-${side}`, kind === 'padding' ? 'auto' : '0']))), 'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running',
     'table-layout': 'auto', // HTML UA: table { border-collapse: separate; border-spacing: 2px } (a UA rule on table, not inherited from above).
     'border-collapse': box.tag === 'table' ? 'separate' : inherited['border-collapse'] ?? 'separate', 'border-spacing': box.tag === 'table' ? '2px' : inherited['border-spacing'] ?? '0', 'caption-side': inherited['caption-side'] ?? 'top', 'empty-cells': 'show',
     // HTML UA: thead, tbody, tfoot, tr { vertical-align: middle } and td, th { vertical-align: inherit }.
@@ -446,6 +460,9 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   values.$scheme = used;
   for (const property of ['color', 'background-color']) if (sources[property] && ['canvas', 'canvastext'].includes(String(values[property]).toLowerCase()))
     values[property] = { light: { canvas: '#ffffff', canvastext: '#000000' }, dark: { canvas: '#121212', canvastext: '#ffffff' } }[used][String(values[property]).toLowerCase()];
+  // position: fixed is laid out as absolute against the viewport; the engine admits it for the accessibility and
+  // integrity checks only (at scroll position 0) and keeps every other proof Unknown.
+  if (values.position === 'fixed') { values.position = 'absolute'; values.$fixed = true; }
   values.$sources = sources;
   values.$dormant = dormant;
   values.$overridden = overridden;
