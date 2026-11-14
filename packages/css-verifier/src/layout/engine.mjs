@@ -687,11 +687,24 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
       return cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']);
     }).reduce(add, zero);
+    // Text cells: the first line's baseline is floor((L − (A + D)) / 2) + A with Chromium's rounded ascent A and
+    // descent D (measured); an odd negative leading rounds ambiguously, so it is Unknown.
+    for (const row of rows) {
+      const rowStyle = one(styles(row, region, parents, one(styles(sections.find(sec => sec.children.includes(row)), region, parents, style, false, false)), false, false));
+      for (const cell of row.children.filter(cell => cell.text && !(cell.children ?? []).length && !cell.tableRowSpan)) {
+        const cs = one(styles(cell, region, parents, rowStyle, false, false));
+        if (cs['vertical-align'] !== 'baseline') continue;
+        const metrics = cell.contract?.textMetrics, L = cell.contract?.font?.lineHeight;
+        if (spanning || !metrics?.baseline || !L) fail(`${cell.label}: a baseline-aligned text cell needs font-derived text metrics (its first baseline)`);
+        const leading = L - metrics.baseline.ascent - metrics.baseline.descent;
+        if (leading < 0 && leading % 2) fail(`${cell.label}: an odd negative leading rounds the baseline ambiguously`);
+        cell.tableBaselineGroup = { row: rows.indexOf(row), style: cs, text: q(String(Math.floor(leading / 2) + metrics.baseline.ascent)) };
+      }
+    }
     for (const [r, row] of rows.entries()) {
       const group = row.children.filter(cell => cell.tableBaselineGroup);
       if (!group.length) continue;
-      if (row.children.some(cell => !cell.tableBaselineGroup && (cell.text || cell.contract) && one(styles(cell, region, parents, style, false, false))['vertical-align'] === 'baseline')) fail('Baseline cells with text (line boxes) are not modeled');
-      const baselines = group.map(cell => add(px(cell.tableBaselineGroup.style['padding-top']), contentHeight(cell)));
+      const baselines = group.map(cell => add(px(cell.tableBaselineGroup.style['padding-top']), cell.tableBaselineGroup.text ? cell.tableBaselineGroup.text : contentHeight(cell)));
       const top = baselines.reduce((a, b) => cmp(a, b) >= 0 ? a : b);
       group.forEach((cell, i) => {
         cell.tableBaselineShift = sub(top, baselines[i]);
@@ -900,6 +913,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   // Cells fill their column (and span colspan columns); a caption is a full-width first or last row.
   function tablePlacement(box, style) {
+    if (box.tableCell && !box.tableFlow && style.display === 'table-cell' && box.tableBaselineShift) style = { ...style, 'padding-top': `${number(add(px(style['padding-top']), box.tableBaselineShift))}px`, 'vertical-align': 'top' };
     if (box.tableFlow && style.display === 'table-cell') style = { ...style, display: 'grid', 'grid-template-columns': 'minmax(0, 1fr)', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', ...(box.tableBaselineShift ? { 'padding-top': `${number(add(px(style['padding-top']), box.tableBaselineShift))}px` } : {}), 'align-content': box.tableBaselineTop || box.tableBaselineShift ? 'start' : { middle: 'center', bottom: 'end' }[style['vertical-align']] ?? 'start', 'row-gap': '0', 'column-gap': '0', 'grid-auto-flow': 'row', $fromCell: true };
     if (box.tableCell && (style.display === 'table-cell' || style.$fromCell) && box.tableArea) return { ...style, display: style.$fromCell ? style.display : 'block', 'inline-size': 'auto', ...(box.tableStretch ? { 'block-size': 'auto' } : {}), 'grid-column': `${box.tableArea.column} / span ${box.tableArea.span}`, 'grid-row': `${box.tableArea.row} / span ${box.tableArea.down}` };
     if (box.tableCaption?.interleaved && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.interleaved.columns}`, 'grid-row': String(box.tableCaption.interleaved.row) };

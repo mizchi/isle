@@ -6,7 +6,7 @@ import {q, cmp} from './linear.mjs';
 import {fontShorthand} from './css.mjs';
 
 const fontKeys = new Set(['family', 'size', 'lineHeight', 'weight', 'style']);
-const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance', 'minContent', 'overflowWrap', 'profile', 'lang', 'spacedProfile', 'inline']);
+const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance', 'minContent', 'overflowWrap', 'profile', 'lang', 'spacedProfile', 'inline', 'baseline']);
 export const languageTag = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
 // Languages whose break opportunities were compared with Chromium (e2e). Chinese differs (e.g. !〜).
 export const breakingLanguages = new Set(['en', 'ja', 'ko']);
@@ -35,6 +35,7 @@ export function validateTextMetrics(metrics) {
     const known = profile.filter(entry => entry.lines !== null);
     if (profile.at(-1).lines === null || known.some((entry, i) => i && entry.lines >= known[i - 1].lines)) throw new Error('A text line profile must have decreasing line counts and end with a known count');
   }
+  if (metrics.baseline !== undefined && (!metrics.baseline || Object.keys(metrics.baseline).some(k => !['ascent', 'descent'].includes(k)) || !['ascent', 'descent'].every(k => Number.isSafeInteger(metrics.baseline[k]) && metrics.baseline[k] >= 0))) throw new Error('Invalid text baseline metrics');
   if (metrics.inline !== undefined) {
     const pair = v => Array.isArray(v) && v.length === 2 && v.every(n => finite(n, -1_000_000, 1_000_000)) && v[0] <= v[1];
     const box = b => b && Object.keys(b).every(k => ['start', 'end', 'top', 'bottom'].includes(k)) && ['start', 'end', 'top', 'bottom'].every(k => pair(b[k]));

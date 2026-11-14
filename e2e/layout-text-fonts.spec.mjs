@@ -462,3 +462,23 @@ test('inline bounds in a table cell follow vertical-align', async ({page}) => {
     expect(r.y, `${tag} inner top`).toBeLessThanOrEqual(innerTop + 1e-9); expect(r.y + r.h, `${tag} inner bottom`).toBeGreaterThanOrEqual(innerBottom - 1e-9);
   }
 });
+
+// Baseline-aligned text cells: the first line's baseline is floor((L − (A + D)) / 2) + A (rounded ascent/descent).
+test('baseline-aligned text and block cells line up like Chromium', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const roboto = {family: 'Roboto', size: 20, lineHeight: 30, weight: 400}, noto = {family: 'Noto Sans JP', size: 13, lineHeight: 17, weight: 400};
+  const html = '<table class="t"><tbody><tr><td class="r">Ax</td><td class="n">日本語</td><td class="b"><div class="k"></div></td><td class="m"><div class="h"></div></td></tr></tbody></table>';
+  const css = `*{box-sizing:border-box;margin:0;padding:0}.t{table-layout:fixed;inline-size:300px;border-spacing:2px;background:#fff;color:#000}td{padding:3px;vertical-align:baseline}.r{font-family:"Roboto";font-size:20px;line-height:30px;font-weight:400;white-space:nowrap}.n{padding-top:9px;font-family:"Noto Sans JP";font-size:13px;line-height:17px;font-weight:400;white-space:nowrap}.k{block-size:40px}.m{vertical-align:middle}.h{block-size:70px}`;
+  const boxes = metrics.resolveBoxes({'.r': {text: {content: 'Ax', font: roboto}}, '.n': {text: {content: '日本語', font: noto}}});
+  const report = analyzeHTML(html, {name: 'Case', css, viewport: {min: 320, max: 900, height: {min: 400, max: 600}}, boxes});
+  expect(report.status, JSON.stringify(report.diagnostics)).toBe('verified');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  await page.setViewportSize({width: 500, height: 500});
+  await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+  await page.evaluate(() => document.fonts.ready);
+  for (const row of report.sizes.filter(row => row.rect && row.path !== 'Case')) {
+    const rect = await page.evaluate(indices => { let node = document.querySelector('body > *'); for (const i of indices) node = node.children[i]; const r = node.getBoundingClientRect(); return {y: r.top, h: r.height}; }, row.path.split('/').slice(1).map(Number));
+    expect(Math.abs(rect.y - value(row.rect.blockStart.constant)), `${row.box} top`).toBeLessThanOrEqual(1 / 64 + 1e-9);
+    expect(Math.abs(rect.h - value(row.rect.blockSize.constant)), `${row.box} height`).toBeLessThanOrEqual(1 / 64 + 1e-9);
+  }
+});

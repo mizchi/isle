@@ -410,6 +410,14 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     return out;
   }
 
+  /** Rounded ascent and descent (px) of the font's content area, as Chromium positions a line's baseline. */
+  function baselineMetrics(font) {
+    const {info} = lookup(font);
+    const typo = info.os2 && (info.os2.fsSelection & 128);
+    const ascent = typo ? info.os2.typoAscender : info.ascent, descent = Math.abs(typo ? info.os2.typoDescender : info.descent);
+    return {ascent: Math.round(ascent / info.unitsPerEm * font.size), descent: Math.round(descent / info.unitsPerEm * font.size)};
+  }
+
   /** Replace `text` box contracts with the core's derived size contracts. */
   function resolveBoxes(boxes = {}) {
     const out = {};
@@ -427,7 +435,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         const lines = breakLines({font, text: text.content, overflowWrap, lang: text.lang});
         out[selector] = {...rest, minInlineSize: lines.minContent, intrinsicBlockSize: lines.profile.map(entry => ({atLeastInlineSize: entry.atLeastInlineSize, blockSize: entry.lines === null ? null : entry.lines * font.lineHeight})),
           font: fontContract, textMetrics: {kind: 'lines', text: lines.text, width: lines.width, minContent: lines.minContent, overflowWrap, profile: lines.profile, ...(text.lang !== undefined ? {lang: text.lang} : {}),
-            ...(text.inline ? {inline: wrappedInlineBounds({font, text: text.content, lang: text.lang, inline: text.inline, lines})} : {}),
+            ...(text.inline ? {inline: wrappedInlineBounds({font, text: text.content, lang: text.lang, inline: text.inline, lines})} : {}), baseline: baselineMetrics(font),
             // WCAG 1.4.12 text spacing: the same text with letter-spacing 0.12em and word-spacing 0.16em.
             spacedProfile: breakLines({font, text: text.content, overflowWrap, lang: text.lang, spacing: {letter: 0.12 * font.size, word: 0.16 * font.size}}).profile,
             font: provenance(font), allowance: layoutAllowance.rule}};
@@ -438,7 +446,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
       if (text.content !== undefined) {
         const measured = measureText({font, text: text.content, lang: text.lang});
         width = measured.bound;
-        metrics = {kind: 'content', text: measured.text, width: measured.width, ...(text.inline ? {inline: inlineBounds({font, text: text.content, lang: text.lang, inline: text.inline})} : {})};
+        metrics = {kind: 'content', text: measured.text, width: measured.width, baseline: baselineMetrics(font), ...(text.inline ? {inline: inlineBounds({font, text: text.content, lang: text.lang, inline: text.inline})} : {})};
       } else {
         const domain = domainBounds({font, characters: text.characters, maxLength: text.maxLength, lang: text.lang});
         width = domain.bounds.at(-1);
