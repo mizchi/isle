@@ -24,7 +24,7 @@ export function accessibilityFacts(tag, attributes) {
   const equivalent = has('data-a11y-equivalent') ? (value('data-a11y-equivalent') === undefined ? 'dynamic' : value('data-a11y-equivalent').trim() || undefined) : undefined;
   const essential = has('data-a11y-essential') ? (value('data-a11y-essential') === undefined ? 'dynamic' : value('data-a11y-essential').trim() || undefined) : undefined;
   // Images and form fields: alt (text, '' for decorative, 'dynamic'), label[for], placeholder.
-  const alt = tag === 'img' && has('alt') ? (value('alt') === undefined ? 'dynamic' : value('alt').trim()) : undefined;
+  const alt = (tag === 'img' || (tag === 'input' && value('type')?.trim().toLowerCase() === 'image')) && has('alt') ? (value('alt') === undefined ? 'dynamic' : value('alt').trim()) : undefined;
   const labelFor = tag === 'label' && has('for') ? (value('for') === undefined ? 'dynamic' : value('for').trim()) : undefined;
   const placeholder = has('placeholder') && (value('placeholder') === undefined || value('placeholder').trim()) ? true : undefined;
   const role = has('role') ? (value('role') === undefined ? 'dynamic' : value('role').trim().toLowerCase()) : undefined;

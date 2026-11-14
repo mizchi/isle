@@ -65,7 +65,9 @@
     "blink",
     "definition-list",
     "accesskeys",
-    "server-side-image-map"
+    "server-side-image-map",
+    "fragment-target",
+    "input-image-alt"
   ],
   "scope": "Static accessibility rules vs the browser (AX tree names, hit testing, focus, rects, computed colors; vlmkit a11y contrast at 1280).",
   "cases": [
@@ -368,6 +370,22 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -664,6 +682,22 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -973,6 +1007,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1276,6 +1320,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -1576,6 +1630,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1870,6 +1934,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -2175,6 +2249,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2471,6 +2555,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -2780,6 +2874,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3083,6 +3187,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -3383,6 +3497,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3677,6 +3801,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -3986,6 +4120,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4286,6 +4430,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -4607,6 +4761,22 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4919,6 +5089,22 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ]
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -5226,6 +5412,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5524,6 +5720,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -5835,6 +6041,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6137,6 +6353,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -6448,6 +6674,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6750,6 +6986,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -7083,6 +7329,22 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7407,6 +7669,22 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ],
+          [
+            "Page/0"
+          ]
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -7714,6 +7992,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8012,6 +8300,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -8319,6 +8617,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8617,6 +8925,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -8922,6 +9240,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9218,6 +9546,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -9543,6 +9881,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9859,6 +10207,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -10172,6 +10530,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -10476,6 +10844,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -10787,6 +11165,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -11092,6 +11480,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -11394,6 +11792,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -11690,6 +12098,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -11996,6 +12414,25 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [
+            "Page/0",
+            "Page/1"
+          ],
+          [
+            "Page/0",
+            "Page/1"
+          ],
+          [
+            "Page/0",
+            "Page/1"
+          ]
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -12293,6 +12730,25 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [
+            "Page/0",
+            "Page/1"
+          ],
+          [
+            "Page/0",
+            "Page/1"
+          ],
+          [
+            "Page/0",
+            "Page/1"
+          ]
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -12603,6 +13059,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -12904,6 +13370,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -13213,6 +13689,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -13513,6 +13999,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -13826,6 +14322,25 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [
+            "Page/2",
+            "Page/3"
+          ],
+          [
+            "Page/2",
+            "Page/3"
+          ],
+          [
+            "Page/2",
+            "Page/3"
+          ]
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -14130,6 +14645,25 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [
+            "Page/2",
+            "Page/3"
+          ],
+          [
+            "Page/2",
+            "Page/3"
+          ],
+          [
+            "Page/2",
+            "Page/3"
+          ]
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -14461,6 +14995,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -14783,6 +15327,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -15111,6 +15665,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -15430,6 +15994,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -15751,6 +16325,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -16063,6 +16647,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -16392,6 +16986,31 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [
+            "Page/0/0",
+            "Page/1/0",
+            "Page/1/1",
+            "Page/2/1"
+          ],
+          [
+            "Page/0/0",
+            "Page/1/0",
+            "Page/1/1",
+            "Page/2/1"
+          ],
+          [
+            "Page/0/0",
+            "Page/1/0",
+            "Page/1/1",
+            "Page/2/1"
+          ]
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -16712,6 +17331,31 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [
+            "Page/0/0",
+            "Page/1/0",
+            "Page/1/1",
+            "Page/2/1"
+          ],
+          [
+            "Page/0/0",
+            "Page/1/0",
+            "Page/1/1",
+            "Page/2/1"
+          ],
+          [
+            "Page/0/0",
+            "Page/1/0",
+            "Page/1/1",
+            "Page/2/1"
+          ]
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -17034,6 +17678,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -17347,6 +18001,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -17672,6 +18336,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -17988,6 +18662,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -18335,6 +19019,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -18676,6 +19370,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -18991,6 +19695,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -19300,6 +20014,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -19621,6 +20345,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -19933,6 +20667,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -20257,6 +21001,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -20572,6 +21326,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -20881,6 +21645,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -21181,6 +21955,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -21487,6 +22271,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -21801,6 +22595,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -22122,6 +22926,16 @@
           [],
           []
         ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
+        ],
         "text-contrast (dark)": [
           [
             "Page/0/1",
@@ -22435,6 +23249,16 @@
           []
         ],
         "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
           [],
           [],
           []
@@ -22764,6 +23588,16 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -23073,6 +23907,659 @@
           [],
           [],
           []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "fragment-links-and-image-buttons",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
+        ],
+        "frame-title": [
+          [],
+          [],
+          []
+        ],
+        "video-caption": [
+          [],
+          [],
+          []
+        ],
+        "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
+        ],
+        "clickable-look": [
+          [],
+          [],
+          []
+        ],
+        "list-style-semantics": [
+          [],
+          [],
+          []
+        ],
+        "motion": [
+          [],
+          [],
+          []
+        ],
+        "blink": [
+          [],
+          [],
+          []
+        ],
+        "definition-list": [
+          [],
+          [],
+          []
+        ],
+        "accesskeys": [
+          [],
+          [],
+          []
+        ],
+        "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1",
+            "Page/2"
+          ]
+        ],
+        "input-image-alt": [
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ]
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
+        ],
+        "frame-title": [
+          [],
+          [],
+          []
+        ],
+        "video-caption": [
+          [],
+          [],
+          []
+        ],
+        "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
+        ],
+        "clickable-look": [
+          [],
+          [],
+          []
+        ],
+        "list-style-semantics": [
+          [],
+          [],
+          []
+        ],
+        "motion": [
+          [],
+          [],
+          []
+        ],
+        "blink": [
+          [],
+          [],
+          []
+        ],
+        "definition-list": [
+          [],
+          [],
+          []
+        ],
+        "accesskeys": [
+          [],
+          [],
+          []
+        ],
+        "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1"
+          ],
+          [
+            "Page/1",
+            "Page/2"
+          ]
+        ],
+        "input-image-alt": [
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ],
+          [
+            "Page/4"
+          ]
         ]
       }
     },
@@ -23409,6 +24896,25 @@
           [
             "Page/8"
           ]
+        ],
+        "fragment-target": [
+          [
+            "Page/6",
+            "Page/7"
+          ],
+          [
+            "Page/6",
+            "Page/7"
+          ],
+          [
+            "Page/6",
+            "Page/7"
+          ]
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -23742,6 +25248,25 @@
           [
             "Page/8"
           ]
+        ],
+        "fragment-target": [
+          [
+            "Page/6",
+            "Page/7"
+          ],
+          [
+            "Page/6",
+            "Page/7"
+          ],
+          [
+            "Page/6",
+            "Page/7"
+          ]
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
         ]
       }
     }

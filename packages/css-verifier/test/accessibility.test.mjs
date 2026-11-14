@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -849,7 +849,7 @@ test('inline links in one measured line: occlusion and obscured focus from their
   const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
   const contract = {minInlineSize: 140, intrinsicBlockSize: 24, wrap: 'nowrap', font,
     textMetrics: {kind: 'content', text: 'Read the guide first.', width: 139, inline: {'.u': {start: [66.5, 66.6], end: [105.7, 105.8], top: [1.6, 3.7], bottom: [20.3, 22.4]}}}};
-  const tree = {tag: 'main', classes: ['page'], children: [{tag: 'p', classes: ['p'], text: true, children: [{tag: 'a', classes: ['u'], focusable: true, href: '#x', text: true}]}, {tag: 'div', classes: ['cover']}]};
+  const tree = {tag: 'main', classes: ['page'], children: [{tag: 'p', classes: ['p'], text: true, children: [{tag: 'a', classes: ['u'], focusable: true, href: '/x', text: true}]}, {tag: 'div', classes: ['cover']}]};
   const css = cover => `.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 24px; position: relative; background: #fff; color: #000; }\n.p { font-family: Roboto; font-size: 16px; line-height: 24px; font-weight: 400; white-space: nowrap; }\n.u { color: #000; }\n.cover { position: absolute; top: 0; ${cover} block-size: 24px; background: #eee; }`;
   const codes = cover => run(tree, css(cover), {boxes: {'.p': contract}}).diagnostics.filter(d => d.path === 'Page/0/0').map(d => d.code).sort();
   assert.deepEqual(codes('left: 0; inline-size: 300px;'), ['E_A11Y_FOCUS_OBSCURED', 'E_A11Y_OCCLUDED']);
@@ -987,4 +987,22 @@ test('table cells with block children lay them out in block flow', () => {
   assert.equal(both.sizes.filter(r => r.box === '.k1' && r.rect).map(r => r.rect.blockStart.constant).sort().join(','), '0,20');
   // With a fixed cell height the move could need a taller row: Unknown.
   assert.equal(run(tree({children: [{tag: 'div', classes: ['k1']}]}), css('td { block-size: 90px; vertical-align: baseline; }'), {viewport: tableView}).status, 'unknown');
+});
+
+test('input-image-alt, fragment-target and page-main', () => {
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; grid-auto-rows: 20px; }\n${extra}`);
+  const img = alt => page([{tag: 'input', classes: ['i'], inputType: 'image', focusable: true, ...(alt !== undefined ? {alt} : {})}]);
+  const imgCSS = css('.i { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; box-sizing: border-box; inline-size: 20px; block-size: 20px; }');
+  assert.deepEqual(find(run(img(), imgCSS), 'E_A11Y_INPUT_IMAGE_ALT').map(d => d.box), ['.i']);
+  assert.equal(find(run(img('Search'), imgCSS), 'E_A11Y_INPUT_IMAGE_ALT').length, 0);
+  const links = (id, extra) => page([{tag: 'a', classes: ['a'], focusable: true, href: '#main', named: true}, {tag: 'section', classes: ['s'], ...(id ? {id} : {}), ...extra}]);
+  const linkCSS = extra => css(`.a, .s { display: block; }\n${extra}`);
+  assert.deepEqual(find(run(links(), linkCSS('')), 'E_A11Y_FRAGMENT').map(d => d.message.includes('no element')), [true]);
+  assert.equal(find(run(links('main'), linkCSS('')), 'E_A11Y_FRAGMENT').length, 0);
+  const hidden = find(run(links('main'), linkCSS('@media (width < 600px) { .s { display: none; } }')), 'E_A11Y_FRAGMENT');
+  assert.deepEqual(hidden.map(d => d.range.maxExact), ['600']);
+  const body = main => ({tag: 'body', classes: ['page'], lang: 'en', children: [{tag: main ? 'main' : 'div', classes: ['m']}]});
+  const warn = (report, code) => report.accessibility.warnings.filter(d => d.code === code);
+  assert.equal(warn(run(body(true), '.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 20px; }'), 'W_A11Y_NO_MAIN').length, 0);
+  assert.equal(warn(run(body(false), '.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 20px; }'), 'W_A11Y_NO_MAIN').length, 1);
 });

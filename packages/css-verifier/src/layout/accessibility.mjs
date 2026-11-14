@@ -68,6 +68,9 @@
 //   accesskeys       → W_A11Y_ACCESSKEY         the same accesskey on more than one element
 //   server-side-image-map → W_A11Y_ISMAP       img ismap needs a pointer (SC 2.1.1)
 //   aria-hidden-body → W_A11Y_ARIA_HIDDEN_BODY  aria-hidden="true" on body (ignored by Chromium; hides the document elsewhere)
+//   input-image-alt  → E_A11Y_INPUT_IMAGE_ALT    input type=image without alt (or another name)
+//   fragment-target  → E_A11Y_FRAGMENT          an in-page link (#id) whose target is missing, or not rendered where the link is
+//   page-main        → W_A11Y_NO_MAIN           a page where no main landmark renders
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -80,7 +83,8 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text',
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
-  'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body'];
+  'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
+  'input-image-alt', 'fragment-target', 'page-main'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -992,6 +996,31 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   // aria-hidden-body: Chromium ignores aria-hidden on body (measured: the content stays in the AX tree), so the
   // other rules keep it exposed; user agents that honor it hide the whole document.
   for (const box of treeBoxes.values()) if (box.tag === 'body' && box.ariaHidden === true) report(warnings, 'W_A11Y_ARIA_HIDDEN_BODY', 'warning', `${box.label} has aria-hidden="true"; Chromium ignores it, but user agents that honor it hide the whole document`, whole(box), domain, { rule: 'aria-hidden-body' });
+
+  // input-image-alt: an image button is named by its alt (not a label or value).
+  for (const row of geometry.filter(row => row.box.tag === 'input' && row.box.inputType === 'image' && visible(row) && !hiddenFrom(row.path) && nameOf(row.box) !== true)) {
+    // HTML-AAM: aria-labelledby, aria-label, alt, value, title; otherwise the UA's "Submit" (not a description).
+    if (row.box.value && row.box.value !== 'dynamic' && row.box.value.trim()) continue;
+    if (row.box.alt === 'dynamic' || row.box.value === 'dynamic' || nameOf(row.box) === 'dynamic') report(unknowns, 'U_A11Y_INPUT_IMAGE_ALT', 'unknown', `${row.box.label}: a dynamic alt may be empty`, row, row.region, { rule: 'input-image-alt' });
+    else if (!row.box.alt) report(findings, 'E_A11Y_INPUT_IMAGE_ALT', 'error', `${row.box.label} is an image button without alt text`, row, row.region, { rule: 'input-image-alt' });
+  }
+  // fragment-target: #id links go to an element that exists and renders where the link does (display: contents
+  // targets render through their children). "#" and "#top" go to the top of the page.
+  const rendersAt = box => geometry.filter(row => row.path === box.path || isAncestor(box.path, row.path));
+  for (const row of geometry.filter(row => row.box.tag === 'a' && typeof row.box.href === 'string' && /^#./.test(row.box.href) && row.box.href !== '#top' && visible(row) && !hiddenFrom(row.path))) {
+    let id; try { id = decodeURIComponent(row.box.href.slice(1)); } catch { id = row.box.href.slice(1); }
+    const target = byId.get(id);
+    if (!target) { report(findings, 'E_A11Y_FRAGMENT', 'error', `${row.box.label} links to #${id}, which no element has`, row, row.region, { rule: 'fragment-target', reference: id }); continue; }
+    let missing = [row.region];
+    for (const shown of rendersAt(target)) missing = missing.flatMap(region => subtract(region, shown.region));
+    for (const region of missing) report(findings, 'E_A11Y_FRAGMENT', 'error', `${row.box.label} links to #${id}, which does not render here`, row, region, { rule: 'fragment-target', reference: id });
+  }
+  // page-main: a page needs a main landmark wherever it renders.
+  if (['html', 'body'].includes(root.tag)) {
+    let none = [domain];
+    for (const row of geometry.filter(row => (row.box.tag === 'main' || roleOf(row.box) === 'main') && !hiddenFrom(row.path))) none = none.flatMap(region => subtract(region, row.region));
+    for (const region of none) report(warnings, 'W_A11Y_NO_MAIN', 'warning', 'no main landmark renders here', whole(root), region, { rule: 'page-main' });
+  }
 
   return { findings: dedupe(findings), warnings: dedupe(warnings), unknowns: dedupe(unknowns), exempted: dedupe(exempted), notes };
 }

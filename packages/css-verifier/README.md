@@ -119,7 +119,8 @@ change layout stay Unknown), user preferences as paint-only states
 (`prefers-color-scheme: dark` contrast is checked too; long animations that
 `prefers-reduced-motion: reduce` does not stop), pointer cursors on
 non-interactive elements, lists without markers (WebKit drops their role),
-marquee, dl structure, duplicate accesskeys, `ismap`, aria-hidden body, text that clips at line-height 1.5 or with
+marquee, dl structure, duplicate accesskeys, `ismap`, aria-hidden body, image
+inputs without alt, in-page links to missing or unrendered targets, pages without main, text that clips at line-height 1.5 or with
 letter/word spacing, iframes without title, videos without captions, tables whose headers do not render
 and dangling td headers, list structure, unknown roles, widget roles that cannot
 take focus, focusable scroll regions, reflow at

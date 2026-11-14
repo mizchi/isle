@@ -104,10 +104,12 @@ const cases = [
     // vlmkit composites DOM ancestors' backgrounds, as the table's background were behind the caption;
     // the rendered pixels decide instead: white caption text over the white page leaves the caption all white.
     pixels: {selector: '.cap', uniform: [255, 255, 255]}},
+  {name: 'fragment-links-and-image-buttons', html: '<div class="page"><a class="k1" href="#main" aria-label="Skip"></a><a class="k2" href="#nowhere" aria-label="Broken"></a><a class="k3" href="#side" aria-label="Side"></a><input class="i1" type="image" src="data:," alt="Search"><input class="i2" type="image" src="data:,"><input class="i3" type="image" src="data:," value="Go"><section class="s" id="main"></section><aside class="d" id="side"></aside></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.k1,.k2,.k3,.s,.d{display:block}.i1,.i2,.i3{${button}inline-size:24px;block-size:24px}@media (width < 600px){.d{display:none}}`},
   {name: 'clickable-lists-and-markup', html: '<div class="page"><div class="card"></div><button class="b" aria-label="Go"></button><ul class="l"><li class="i"></li></ul><ul class="l2" role="list"><li class="i"></li></ul><dl class="d"><dt class="dt"></dt><p class="p"></p></dl><marquee class="m"></marquee><a class="k1" href="#1" accesskey="s" aria-label="One"></a><a class="k2" href="#2" accesskey="s" aria-label="Two"></a><img class="im" src="data:," alt="Map" ismap></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.card{display:block;cursor:pointer}.b{${button}cursor:pointer;inline-size:24px;block-size:24px}.l,.l2,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;list-style:none}.i,.dt,.p{display:block}.m{display:block;inline-size:200px;block-size:24px}.k1,.k2{display:block}.im{display:block;inline-size:24px;block-size:24px}`},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt'];
 const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
 // Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -461,6 +463,25 @@ async function runtime(page, sample) {
     for (const n of all) if (n.tagName === 'IMG' && n.isMap && shown(n)) out.ismap.push(pathOf(n));
     return out;
   });
+  // In-page links: the target exists and renders (client rects of it or a descendant); image inputs: Chromium's AX name.
+  const anchors = await page.evaluate(() => {
+    const root = document.body.firstElementChild, pathOf = node => { const path = []; for (let n = node; n !== root; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
+    const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible' && !node.closest('[aria-hidden="true"]'); };
+    const renders = node => node.getClientRects().length > 0 || [...node.querySelectorAll('*')].some(n => n.getClientRects().length > 0);
+    const out = {fragment: [], images: []};
+    for (const a of root.querySelectorAll('a[href^="#"]')) { const id = a.getAttribute('href').slice(1); if (!id || id === 'top' || !shown(a)) continue; const t = document.getElementById(decodeURIComponent(id)); if (!t || !renders(t)) out.fragment.push(pathOf(a)); }
+    for (const i of root.querySelectorAll('input[type=image]')) if (shown(i)) out.images.push(pathOf(i));
+    return out;
+  });
+  for (const path of anchors.fragment) found.get('fragment-target').add(path);
+  for (const path of anchors.images) {
+    const {result} = await client.send('Runtime.evaluate', {expression: `(() => { let n = document.body.firstElementChild; for (const i of ${JSON.stringify(path.split('/').slice(1).map(Number))}) n = n.children[i]; return n; })()`});
+    const {node} = await client.send('DOM.describeNode', {objectId: result.objectId});
+    const {nodes} = await client.send('Accessibility.getPartialAXTree', {backendNodeId: node.backendNodeId, fetchRelatives: false});
+    // Chromium falls back to "Submit" (a source on the type attribute): flag when no author source gave the name.
+    const sources = nodes[0]?.name?.sources ?? [];
+    if (!sources.some(source => (source.value?.value ?? '').trim() && !source.superseded && source.attribute !== 'type')) found.get('input-image-alt').add(path);
+  }
   for (const [rule, key] of [['clickable-look', 'click'], ['list-style-semantics', 'listStyle'], ['blink', 'blink'], ['definition-list', 'dl'], ['accesskeys', 'keys'], ['server-side-image-map', 'ismap']]) for (const path of markup[key]) found.get(rule).add(path);
   // Motion: with prefers-reduced-motion: reduce, the animations still running past 5s.
   await page.emulateMedia({reducedMotion: 'reduce'});
