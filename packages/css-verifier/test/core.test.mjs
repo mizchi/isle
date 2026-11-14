@@ -35,7 +35,7 @@ test('unsupported CSS and HTML effects remain Unknown instead of being ignored',
   assert.equal(analyzeLayout(tree(),{...options,css:css+'.cell{transform:translateX(10px)}'}).status,'unknown');
   assert.equal(analyzeLayout(tree(),{...options,css:css+'.cell{float:left}'}).status,'violated');
   // An image without explicit CSS sizes has an intrinsic size the model does not compute; width/height attributes are presentational hints.
-  for(const html of ['<main style="width:1px"></main>','<main hidden></main>','<main class="row"><img class="cell" src="x" alt=""></main>','<main class="row"><img class="cell" src="x" alt="" width="10"></main>']) {
+  for(const html of ['<main style="width:1px"></main>','<main hidden="until-found"></main>','<main class="row"><img class="cell" src="x" alt=""></main>','<main class="row"><img class="cell" src="x" alt="" width="10"></main>']) {
     assert.equal(analyzeHTML(html,options).status,'unknown',html);
   }
 });

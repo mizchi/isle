@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -1075,4 +1075,20 @@ test('focus-clipped: overflow clip hides a focusable box for good; hidden scroll
   const css = ov => pageCSS(`.page { background: #fff; grid-auto-rows: 40px; }\n.c { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 60px 20px; overflow: ${ov}; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }`);
   assert.deepEqual(find(run(tree, css('clip'), {boxes: {'.c': {overflowBlock: 'clip'}}}), 'E_A11Y_FOCUS_CLIPPED').map(d => d.box), ['.b']);
   assert.equal(find(run(tree, css('hidden'), {boxes: {'.c': {overflowBlock: 'clip'}}}), 'E_A11Y_FOCUS_CLIPPED').length, 0);
+});
+
+test('the hidden and inert attributes', () => {
+  const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: 30px; }\n.b { appearance: none; padding: 0; border: 0; min-width: 0; min-height: 0; }\n${extra}`);
+  const warn = (report, code) => report.accessibility.warnings.filter(d => d.code === code);
+  // hidden: UA display none, so an unnamed button there needs no name; an author display brings it back (and warns).
+  const hidden = run(page([{tag: 'button', classes: ['b'], hiddenAttr: true}]), css(''));
+  assert.equal(find(hidden, 'E_A11Y_NAME').length, 0);
+  assert.equal(warn(hidden, 'W_A11Y_HIDDEN_OVERRIDDEN').length, 0);
+  const shown = run(page([{tag: 'button', classes: ['b'], hiddenAttr: true}]), css('.b { display: block; }'));
+  assert.deepEqual(find(shown, 'E_A11Y_NAME').map(d => d.box), ['.b']);
+  assert.deepEqual(warn(shown, 'W_A11Y_HIDDEN_OVERRIDDEN').map(d => d.box), ['.b']);
+  assert.equal(run(page([{tag: 'button', classes: ['b'], hiddenAttr: 'until-found'}]), css('')).status, 'unknown');
+  // inert: no focus, no exposure — an unnamed button inside is not a finding.
+  const inert = page([{tag: 'div', classes: ['w'], inert: true, children: [{tag: 'button', classes: ['b']}]}]);
+  assert.equal(find(run(inert, css('.w { display: grid; grid-template-columns: minmax(0, 1fr); }')), 'E_A11Y_NAME').length, 0);
 });

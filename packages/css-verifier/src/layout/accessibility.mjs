@@ -74,6 +74,7 @@
 //   icon-font-name   → E_A11Y_ICON_NAME         a control named only by generated icon-font glyphs (Private Use Area)
 //   generated-name   → W_A11Y_GENERATED_NAME    a control named only by CSS generated content
 //   focus-clipped    → E_A11Y_FOCUS_CLIPPED     a focusable box entirely outside an overflow: clip ancestor (it cannot scroll into view)
+//   hidden-overridden → W_A11Y_HIDDEN_OVERRIDDEN an element with the hidden attribute that renders (author display overrides [hidden])
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -87,7 +88,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -527,6 +528,10 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       }
     }
   }
+
+  // hidden-overridden: [hidden] is only a UA display: none, so an author display rule shows the element again.
+  for (const row of geometry.filter(row => row.box.hiddenAttr === true))
+    report(warnings, 'W_A11Y_HIDDEN_OVERRIDDEN', 'warning', `${row.box.label} has the hidden attribute but renders: an author display rule overrides [hidden] { display: none }`, row, row.region, { rule: 'hidden-overridden' });
 
   // focus-clipped: overflow: clip does not scroll a focused descendant into view (hidden does; measured), so a
   // focusable box entirely outside the clip edge (its padding box) on a clipped axis can never be seen focused.

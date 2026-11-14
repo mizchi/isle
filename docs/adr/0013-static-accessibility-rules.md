@@ -84,6 +84,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | fragment-target | `#id` のリンクの行き先がない、またはリンクが描画される場所で行き先が描画されない(display: contents は子で描画) | E_A11Y_FRAGMENT |
 | page-main | 文書(html/body)で main の landmark が描画されない区間 | W_A11Y_NO_MAIN |
 | focus-clipped | `overflow: clip` の祖先の clip の端(padding box)の外に完全にある focusable な箱。clip はスクロールしないので focus しても見えない(hidden はスクロールして見せる。Chromium で測定) | E_A11Y_FOCUS_CLIPPED |
+| hidden-overridden | `hidden` 属性があるのに描画される要素。`[hidden]` は UA の `display: none` にすぎず、作者の display 規則が上書きする(Chromium で測定) | W_A11Y_HIDDEN_OVERRIDDEN |
 | aria-hidden-body | body の `aria-hidden="true"`。Chromium は body の aria-hidden を無視する(AX tree で測定)ので他の規則は中身を公開されたものとして扱い、尊重する UA では文書全体が隠れることを警告する | W_A11Y_ARIA_HIDDEN_BODY |
 | frame-title | 描画される iframe に title も名前もない(SC 4.1.2) | E_A11Y_FRAME_TITLE |
 | video-caption | 描画される video に kind=captions/subtitles の track がない(SC 1.2.2) | E_A11Y_VIDEO_CAPTION |
@@ -163,6 +164,12 @@ letter-spacing が 0 でないとき Chromium は任意の ligature を切る(CS
 それ以外の角度と skew は矩形が軸に沿わないので Unknown、component の root での rem と px でない font-size の em も Unknown。
 描画と hit test の座標を動かすものなので accessibility・integrity の検査でだけ扱い、レイアウトの証明(transition・no-shift・座標の契約)では従来どおり Unknown。
 以前は z-index 自体が未対応で Unknown、opacity による context は考えていなかった。7通りの z-index/opacity と、5通りの入れ子(isolation を含む)で Chromium の hit test と一致した。
+
+### `hidden` と `inert` 属性
+
+`hidden` は UA の `display: none`(作者の display が勝つ)。`hidden="until-found"` は content-visibility なので Unknown。
+`inert` の部分木は focus を受けず支援技術から隠れる(Chromium で Tab が飛ばし、AX tree で ignored)ので、focusable でなく aria-hidden と同じに扱う。
+どちらも以前は未対応の rendering 属性として拒否していた(Vite の検査も同じ)。
 
 ### 生成 content(`::before`・`::after`)
 
