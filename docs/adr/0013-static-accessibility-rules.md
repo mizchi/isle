@@ -18,7 +18,7 @@ CSS の結果(`display`・`visibility`・`pointer-events`・色・配置・重�
 既定では無効で、既存の結果は変わらない。各規則は engine が解いた geometry の行(領域・矩形・計算値の paint 事実・祖先の paint 鎖)と
 box tree の DOM 事実だけを入力にし、違反は viewport の区間(領域)として報告する。判定できない場合は Unknown にする。
 
-`position: fixed` は accessibility と integrity の検査でだけ扱い、viewport を containing block とする absolute として配置する(スクロール位置 0 の座標)。viewport の高さの区間が必要で、component は viewport の原点から始まる必要がある。transform・clip・scroll を持つ祖先の内側の fixed は Unknown。`scroll-margin` と `scroll-padding` は px の値だけを受け取り、配置には影響しない。
+`position: fixed` は accessibility と integrity の検査でだけ扱い、viewport を containing block とする absolute として配置する(スクロール位置 0 の座標)。viewport の高さの区間が必要で、component は viewport の原点から始まる必要がある。transform・clip・scroll を持つ祖先の内側の fixed は Unknown。フォーカスの規則(focus-offscreen・focus-obscured・focus-clipped・focus-scrolled-under)は、`:focus` の規則が inset で動かす absolute の箱を、フォーカスした位置で判定する。`scroll-margin` と `scroll-padding` は px の値だけを受け取り、配置には影響しない。
 
 | 規則 | 組み合わせ | 診断 |
 | --- | --- | --- |

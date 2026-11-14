@@ -551,10 +551,20 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   for (const row of geometry.filter(row => row.box.hiddenAttr === true))
     report(warnings, 'W_A11Y_HIDDEN_OVERRIDDEN', 'warning', `${row.box.label} has the hidden attribute but renders: an author display rule overrides [hidden] { display: none }`, row, row.region, { rule: 'hidden-overridden' });
 
+  // Where a focusable box is while focused: a :focus rule that moves it by its insets (stateGeometry) splits its region
+  // into the focused origin there and the base origin elsewhere; an unmodeled move is { unknown: true }.
+  const focusedPieces = base => {
+    const moved = (base.focusStates ?? []).filter(state => state.origin || state.originUnknown);
+    if (!moved.length) return [{ region: base.region, origin: base.origin }];
+    return [...moved.map(state => ({ region: intersect(base.region, state.region), origin: state.origin, unknown: state.originUnknown })),
+      ...moved.reduce((rest, state) => rest.flatMap(r => subtract(r, state.region)), [base.region]).map(region => ({ region, origin: base.origin }))].filter(piece => piece.region);
+  };
+  const focusedRows = rows => rows.flatMap(base => focusedPieces(base).filter(piece => !piece.unknown && piece.origin).map(piece => ({ ...base, region: piece.region, origin: piece.origin })));
+
   // focus-clipped: overflow: clip does not scroll a focused descendant into view (hidden does; measured), so a
   // focusable box entirely outside the clip edge (its padding box) on a clipped axis can never be seen focused.
   const clipPlaced = everything.filter(row => row.clipOrigin && row.block).map(row => ({ ...row, origin: row.clipOrigin }));
-  for (const target of clipPlaced.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo)) {
+  for (const target of focusedRows(clipPlaced.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo))) {
     for (const clipper of clipPlaced.filter(row => isAncestor(row.path, target.path) && (row.clipAxes?.inline || row.clipAxes?.block))) {
       const edges = { left: sum(clipper.origin.inline, scalar(clipper.borders.left)), right: diff(right(clipper), scalar(clipper.borders.right)), top: sum(clipper.origin.block, scalar(clipper.borders.top)), bottom: diff(bottom(clipper), scalar(clipper.borders.bottom)) };
       const base = intersect(target.region, clipper.region);
@@ -572,10 +582,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   // element is never on screen (SC 2.4.7). The root sits at the host insets.
   // A :focus rule that moves the box by its insets (stateGeometry) places it at the focused origin instead.
   for (const base of placed.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo)) {
-    const moved = (base.focusStates ?? []).filter(state => state.origin || state.originUnknown);
-    const pieces = moved.length ? [...moved.map(state => ({ region: intersect(base.region, state.region), origin: state.origin, unknown: state.originUnknown })),
-      ...moved.reduce((rest, state) => rest.flatMap(r => subtract(r, state.region)), [base.region]).map(region => ({ region, origin: base.origin }))] : [{ region: base.region, origin: base.origin }];
-    for (const piece of pieces.filter(piece => piece.region)) {
+    for (const piece of focusedPieces(base)) {
     if (piece.unknown) { report(unknowns, 'U_A11Y_FOCUS_POSITION', 'unknown', `${base.box.label}: where its :focus rule moves it is not modeled here`, base, piece.region, { rule: 'focus-offscreen' }); continue; }
     const target = { ...base, region: piece.region, origin: piece.origin };
     const before = atMost(target.region, right(target), scalar(-hostInset)), above = block ? atMost(target.region, bottom(target), scalar(-hostBlockInset)) : null;
@@ -585,7 +592,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   }
 
   // focus-obscured: a later painted box contains a focusable box. focus-area: nothing to show focus on.
-  for (const target of placed.filter(focusable)) {
+  for (const target of focusedRows(placed.filter(focusable))) {
     const own = layer(target);
     for (const cover of placed) {
       if (related(cover.path, target.path) || !visible(cover) || !cover.painted) continue;
@@ -620,7 +627,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       const obscured = new Set(findings.filter(d => d.code === 'E_A11Y_FOCUS_OBSCURED').map(d => d.path));
       const maxScroll = diff(bottom(rootRow), viewportBlock);
       const insideFixed = path => fixedBars.some(bar => isAncestor(bar.path, path) || bar.path === path);
-      for (const target of placed.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo && !insideFixed(row.path) && !obscured.has(row.path))) {
+      for (const target of focusedRows(placed.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo && !insideFixed(row.path) && !obscured.has(row.path)))) {
         const margin = target.paint.scrollMargin ?? {}, own = layer(target);
         for (const bar of fixedBars) {
           if (related(bar.path, target.path) || !paintsAbove(bar, layer(bar), target, own)) continue;

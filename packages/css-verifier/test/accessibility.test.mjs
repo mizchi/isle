@@ -1290,3 +1290,15 @@ test('focus-offscreen: a :focus rule that moves the skip link back by its insets
   // Moving a box that is not absolutely positioned is not modeled.
   assert.equal(run(page([{tag: 'button', classes: ['b'], named: true}]), pageCSS(`.page { background: #fff; grid-auto-rows: 30px; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n.b:focus { left: 10px; }`)).status, 'unknown');
 });
+
+test('the focus rules judge a skip link where its :focus rule moves it', () => {
+  const tree = page([{tag: 'a', classes: ['skip'], href: '#main', focusable: true, named: true}, {tag: 'div', classes: ['cover']}]);
+  const css = focus => pageCSS(`.page { position: relative; background: #fff; grid-auto-rows: 30px; }\n.skip { position: absolute; left: -9999px; top: 0; inline-size: 100px; block-size: 30px; display: block; }\n.cover { position: absolute; left: 0; top: 0; inline-size: 200px; block-size: 30px; background: #333; }\n${focus}`);
+  // Focused at left 0 it lands under the later painted cover: obscured there; parked off screen it is not obscured.
+  assert.deepEqual(find(run(tree, css('.skip:focus { left: 0; }')), 'E_A11Y_FOCUS_OBSCURED').map(d => d.box), ['.skip']);
+  assert.equal(find(run(tree, css('.skip:focus { left: 0; }')), 'E_A11Y_FOCUS_OFFSCREEN').length, 0);
+  assert.equal(find(run(tree, css('')), 'E_A11Y_FOCUS_OBSCURED').length, 0);
+  // A cover without paint hides nothing; z-index is not a state-paint property, so moving and restacking is Unknown.
+  assert.equal(find(run(tree, css('.skip:focus { left: 0; }\n.cover { background: transparent; }')), 'E_A11Y_FOCUS_OBSCURED').length, 0);
+  assert.equal(run(tree, css('.skip:focus { left: 0; z-index: 1; }')).status, 'unknown');
+});
