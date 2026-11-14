@@ -683,12 +683,13 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   // fixed-hides-content: a fixed bar that touches the viewport's top (bottom) edge and entirely covers content at scroll
   // position 0 (the largest scroll position) covers it at every scroll position: scrolling only moves the content
   // further behind it or out of the viewport, so it can never be read or reached (a fixed footer without page padding).
+  // A sticky bar never does: at scroll 0 it is in flow beside the content, and scrolling back always uncovers it.
   if (fixedBars.length && block && viewportBlock) {
     const rootRow = geometry.find(row => row.path === root.path && row.origin && row.block);
     const insideFixed = path => fixedBars.some(bar => isAncestor(bar.path, path) || bar.path === path);
     const content = placed.filter(row => (row.box.text || interactive(row)) && visible(row) && !row.box.pseudo && !insideFixed(row.path) && row.inline && row.block);
     for (const target of rootRow ? content : []) {
-      const own = layer(target);
+      const own = layer(target), hidden = [];
       for (const bar of fixedBars) {
         if (related(bar.path, target.path) || !paintsAbove(bar, layer(bar), target, own)) continue;
         let base = intersect(target.region, bar.region);
@@ -703,7 +704,20 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
         const regions = [top, short, tall].filter(Boolean);
         if (!regions.length) continue;
         for (const region of regions) report(findings, 'E_A11Y_FIXED_HIDES', 'error', `${target.box.label} stays entirely behind the fixed ${bar.box.label} at every scroll position; pad the page by the bar's size`, target, region, { rule: 'fixed-hides-content', cover: bar.path });
+        hidden.push(...regions);
         break;
+      }
+      // A bar on the top edge and one on the bottom edge that meet cover the whole viewport (short viewports: a phone
+      // held sideways): wherever the content scrolls, it is behind one of them.
+      for (const upper of fixedBars) for (const lower of fixedBars) {
+        if (upper === lower || [upper, lower].some(bar => related(bar.path, target.path) || !paintsAbove(bar, layer(bar), target, own))) continue;
+        let region = intersect(intersect(target.region, upper.region), lower.region);
+        for (const bar of [upper, lower]) { region = atMost(region, bar.origin.inline, target.origin.inline); region = atMost(region, right(target), right(bar)); }
+        region = atMost(region, upper.origin.block, scalar(0)); region = atMost(region, viewportBlock, bottom(lower)); region = atMost(region, lower.origin.block, bottom(upper));
+        for (const piece of region ? hidden.reduce((rest, done) => rest.flatMap(r => subtract(r, done)), [region]) : []) {
+          report(findings, 'E_A11Y_FIXED_HIDES', 'error', `${target.box.label} is behind the fixed ${upper.box.label} or ${lower.box.label} at every scroll position: together they cover the viewport`, target, piece, { rule: 'fixed-hides-content', cover: upper.path, also: lower.path });
+          hidden.push(piece);
+        }
       }
     }
   }

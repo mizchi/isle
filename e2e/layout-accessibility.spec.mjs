@@ -150,6 +150,8 @@ const cases = [
   {name: 'visual-presentation-aaa', html: '<div class="page"><p class="a">Tight lines wrap here</p><p class="b">Justified lines wrap here</p><p class="c">Loose lines wrap here</p><div class="j"><p class="d">Inherited justify</p></div></div>',
     css: `.page{display:grid;grid-template-columns:300px;background:#fff;color:#000;${type}}.a,.b,.c,.d{display:block;block-size:48px}.a{line-height:20px}.b,.c,.d{line-height:24px}.b,.j{text-align:justify}.j{display:grid;grid-template-columns:minmax(0,1fr)}`,
     accessibility: {contrast: 'AAA'}, boxes: {'.a': label, '.b': label, '.c': label, '.d': label}},
+  {name: 'fixed-bars-meet', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b" aria-label="A"></button><div class="gap"></div><div class="f"></div></div>',
+    css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h,.f{position:fixed;left:0;inline-size:100%;block-size:400px;background:#333}.h{top:0}.f{bottom:0}.gap{block-size:600px}.b{${button}inline-size:100px;block-size:40px}`, skip: ['focus-scrolled-under']},
   {name: 'sticky-header-focus', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><button class="b3" aria-label="C"></button><div class="tall"></div></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:sticky;top:0;block-size:60px;background:#333}.gap{block-size:1000px}.tall{block-size:1500px}.b1,.b2,.b3{${button}inline-size:100px;block-size:40px}.b2{scroll-margin-top:60px}.b3{block-size:80px}`},
   {name: 'fixed-footer-hides', html: '<div class="page"><div class="gap"></div><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><div class="f"></div></div>',
@@ -751,6 +753,25 @@ async function runtime(page, sample) {
         const r = node.getBoundingClientRect();
         if (bars.some(bar => { const b = bar.getBoundingClientRect(); return (edge === 'top' ? b.top <= 0 : b.bottom >= innerHeight) && inside(r, b) && bar.contains(document.elementFromPoint((r.left + r.right) / 2, (r.top + r.bottom) / 2)); })) out.add(path);
       }
+    }
+    // Every scroll offset: never on screen outside the fixed bars (several bars together, short viewports).
+    const max = document.documentElement.scrollHeight - innerHeight;
+    for (const path of paths) {
+      if (out.has(path)) continue;
+      const node = at(path);
+      const speaks = [...node.childNodes].some(c => c.nodeType === 3 && c.textContent.trim()) || node.tabIndex >= 0;
+      if (!speaks || bars.some(bar => bar.contains(node)) || !node.getClientRects().length) continue;
+      let seen = false;
+      for (let s = 0; s <= max && !seen; s++) {
+        scrollTo(0, s);
+        const r = node.getBoundingClientRect(), top = Math.max(r.top, 0), bottom = Math.min(r.bottom, innerHeight);
+        if (bottom <= top) continue; // off screen at this offset
+        // The visible slice must lie inside the union of the bars' spans that cover its width.
+        const spans = bars.map(bar => bar.getBoundingClientRect()).filter(b => b.left <= r.left && b.right >= r.right).map(b => [b.top, b.bottom]).sort((a, b) => a[0] - b[0]);
+        let reach = top; for (const [a, b] of spans) if (a <= reach) reach = Math.max(reach, b);
+        if (reach < bottom) seen = true;
+      }
+      if (!seen) out.add(path);
     }
     scrollTo(0, 0);
     return [...out];

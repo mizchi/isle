@@ -1461,3 +1461,12 @@ test('focus-scrolled-under: a sticky top: 0 header covers focus while its parent
   assert.equal(run(tree(false), css('.h { top: 10px; }')).status, 'unknown');
   assert.equal(analyzeLayout(tree(false), {name: 'Page', css: reset + css(''), viewport: domain}).status, 'unknown');
 });
+
+test('fixed-hides-content: a fixed header and footer that meet cover everything in short viewports', () => {
+  const tree = page([{tag: 'div', classes: ['h']}, {tag: 'div', classes: ['gap']}, {tag: 'button', classes: ['b'], named: true}, {tag: 'div', classes: ['gap']}, {tag: 'div', classes: ['f']}]);
+  const css = pageCSS(`.page { background: #fff; grid-auto-rows: auto; }\n.h, .f { position: fixed; left: 0; inline-size: 100%; block-size: 200px; background: #333; }\n.h { top: 0; }\n.f { bottom: 0; }\n.gap { block-size: 800px; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; block-size: 40px; }`);
+  const hits = find(run(tree, css), 'E_A11Y_FIXED_HIDES');
+  assert.deepEqual(hits.map(d => d.box), ['.b']);
+  // Only viewports up to 400px tall (200 + 200): the domain here is 400–900.
+  assert.equal(hits[0].heightRange.max, 400);
+});
