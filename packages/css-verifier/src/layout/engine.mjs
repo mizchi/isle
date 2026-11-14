@@ -583,13 +583,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (style['table-layout'] !== 'fixed') fail('Only table-layout: fixed is modeled; automatic table layout depends on cell content widths');
     if (style['border-collapse'] !== 'separate') fail('border-collapse: collapse is not modeled');
     if (style['inline-size'] === 'auto') fail('A fixed table needs an explicit inline-size');
-    const sections = table.children ?? [];
-    if (sections.some(section => !['thead', 'tbody', 'tfoot'].includes(section.tag))) fail('A modeled table holds thead, tbody and tfoot (no caption or colgroup)');
+    const caption = table.children?.[0]?.tag === 'caption' ? table.children[0] : null;
+    const sections = (table.children ?? []).slice(caption ? 1 : 0);
+    if (sections.some(section => !['thead', 'tbody', 'tfoot'].includes(section.tag))) fail('A modeled table holds an optional first caption, then thead, tbody and tfoot (no colgroup)');
     if (sections.findIndex(s => s.tag === 'tfoot') >= 0 && sections.findIndex(s => s.tag === 'tfoot') !== sections.length - 1) fail('tfoot must come last (it renders after the bodies)');
     const rows = sections.flatMap(section => section.children ?? []);
     if (!rows.length || rows.some(row => row.tag !== 'tr' || !(row.children ?? []).length || row.children.some(cell => !['td', 'th'].includes(cell.tag)))) fail('Every row is a tr of td/th cells');
-    const columns = rows[0].children.length;
-    if (rows.some(row => row.children.length !== columns)) fail('Every row needs the same number of cells (rowspan/colspan are not modeled)');
+    const spanOf = cell => { if (cell.rowSpan !== undefined && cell.rowSpan !== 1) fail('rowspan is not modeled'); if (cell.colSpan === 'dynamic') fail('A dynamic colspan decides the columns'); return cell.colSpan ?? 1; };
+    const columns = rows[0].children.map(spanOf).reduce((a, b) => a + b, 0);
+    if (rows.some(row => row.children.map(spanOf).reduce((a, b) => a + b, 0) !== columns)) fail('Every row needs the same number of columns (cells plus colspan)');
     for (const box of [...sections, ...rows]) box.tablePart = true;
     for (const row of rows) for (const cell of row.children) cell.tableCell = true;
     // Cells stretch to their row: a fixed block-size must be shared by the row's cells (a grid item would not stretch).
@@ -601,14 +603,25 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // The first row's cell widths decide the columns.
     const one = list => { if (list.length !== 1) fail('Table styles that vary across viewport regions are not modeled'); return list[0].style; };
     const sectionStyle = one(styles(sections[0], region, parents, style, false, false)), rowStyle = one(styles(rows[0], region, parents, sectionStyle, false, false));
-    const widths = rows[0].children.map(cell => {
-      const cs = one(styles(cell, region, parents, rowStyle, false, false));
-      if (cs['inline-size'] === 'auto') return null;
+    const [h, v = h] = String(style['border-spacing']).split(/\s+/).map(part => px(part));
+    // A first-row cell spanning n columns gives each (w − (n − 1)·spacing) / n (measured).
+    const widths = rows[0].children.flatMap(cell => {
+      const cs = one(styles(cell, region, parents, rowStyle, false, false)), n = spanOf(cell);
+      if (cs['inline-size'] === 'auto') return Array(n).fill(null);
       if (!/^\d+(?:\.\d+)?px$/.test(cs['inline-size'])) fail('Fixed table column widths must be px or auto');
       const edges = ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-      return cs['box-sizing'] === 'content-box' ? add(px(cs['inline-size']), edges) : px(cs['inline-size']);
+      const w = cs['box-sizing'] === 'content-box' ? add(px(cs['inline-size']), edges) : px(cs['inline-size']);
+      const each = div(sub(w, mul(h, q(n - 1))), q(n));
+      if (cmp(each, zero) <= 0) fail('A spanning cell narrower than its inner spacing is not modeled');
+      return Array(n).fill(each);
     });
-    const [h, v = h] = String(style['border-spacing']).split(/\s+/).map(part => px(part));
+    // A caption sits outside the table box (above or below it, as wide as the table): an extra
+    // grid row only when no border, padding or spacing separates the rows from the table edge.
+    if (caption) {
+      if (cmp(h, zero) !== 0 || cmp(v, zero) !== 0 || ['left', 'right', 'top', 'bottom'].some(side => cmp(px(style[`padding-${side}`]), zero) !== 0 || cmp(px(style[`border-${side}`]), zero) !== 0))
+        fail('A table caption is modeled only with border-spacing 0 and no table padding or border');
+      caption.tableCaption = { columns, rows: rows.length };
+    }
     const tracks = widths.every(Boolean) ? widths.map(w => `minmax(0, ${number(w)}fr)`) : widths.map(w => w ? `${number(w)}px` : 'minmax(0, 1fr)');
     const spacingEdges = { 'padding-left': add(px(style['padding-left']), h), 'padding-right': add(px(style['padding-right']), h), 'padding-top': add(px(style['padding-top']), v), 'padding-bottom': add(px(style['padding-bottom']), v) };
     // A content-box table's width includes the edge spacing (measured): the grid's content width is W − 2·spacing.
@@ -620,6 +633,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const grid = { ...style, 'inline-size': inlineSize, display: 'grid', 'grid-template-columns': tracks.join(' '), 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'column-gap': `${number(h)}px`, 'row-gap': `${number(v)}px`,
       ...Object.fromEntries(Object.entries(spacingEdges).map(([key, value]) => [key, `${number(value)}px`])), tableColumns: widths.every(Boolean) ? widths.reduce(add, zero) : null, tableGaps: mul(h, q(columns - 1)) };
     return grid;
+  }
+  // Cells fill their column (and span colspan columns); a caption is a full-width first or last row.
+  function tablePlacement(box, style) {
+    if (box.tableCell && style.display === 'table-cell') return { ...style, display: 'block', 'inline-size': 'auto', ...(box.colSpan > 1 ? { 'grid-column': `span ${box.colSpan}` } : {}) };
+    if (box.tableCaption && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.columns}`, 'grid-row': String(style['caption-side'] === 'bottom' ? box.tableCaption.rows + 1 : 1) };
+    return style;
   }
   // Rendered legend: display block, static, explicit px inline-size and block-size, no block margins.
   function renderedLegend(box, style, region, parents) {
@@ -656,7 +675,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // A fixed table is laid out as its equivalent grid (rows and sections as contents, cells as blocks).
         if (box.tag === 'table' && style.display === 'table') style = tableAsGrid(box, style, state.region, parents, emit);
         // A cell's width seeds its column (the cell fills the column); its height stretches to the row.
-        if (box.tableCell && style.display === 'table-cell') style = { ...style, display: 'block', 'inline-size': 'auto' };
+        style = tablePlacement(box, style);
         if (!validate(style, box, state.region, emit, available)) continue;
         // A fieldset's first legend is rendered in its block-start border (HTML §15.3.13): it is not a
         // layout child, and the fieldset's effective border-top is max(border-top, legend height).
@@ -725,6 +744,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                 let states = [{ region, children: [] }];
                 const visit = (child, inheritedStyle) => {
                   states = bounded(states.flatMap(s => styles(child, s.region, ancestors, inheritedStyle, false).flatMap(c => {
+                    if (child.tableCell || child.tableCaption) c = { ...c, style: tablePlacement(child, c.style) };
                     if (child.tablePart && ['table-row-group', 'table-header-group', 'table-footer-group', 'table-row'].includes(c.style.display)) c = { ...c, style: { ...c.style, display: 'contents' } };
                     if (c.style.display === 'none') return [{ region: c.region, children: s.children }];
                     if (c.style.display !== 'contents') return [{ region: c.region, children: [...s.children, { box: child, style: c.style, inherited: inheritedStyle }] }];
@@ -874,7 +894,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // Dark color scheme: when the CSS has prefers-color-scheme: dark rules, the contrast rules run
     // again with them (paint only, so the geometry is the same). System colors stay the light ones:
     // the color-scheme property is outside the subset.
-    if (pristine && rules.some(rule => rule.preferences?.some(p => p.feature === 'prefers-color-scheme' && p.value === 'dark'))) {
+    if (pristine && rules.some(rule => rule.preferences?.some(p => p.feature === 'prefers-color-scheme' && p.value === 'dark') || rule.declarations.some(d => d.property === 'color-scheme' && /\bdark\b/.test(d.value) && /\blight\b/.test(d.value)))) {
       const dark = analyzeBoxTree(pristine, { ...options, integrity: undefined }, scrollbarProfile, budget, inlineSheets, [], ['prefers-color-scheme:dark']);
       const contrastCodes = new Set(['E_A11Y_CONTRAST', 'U_A11Y_CONTRAST', 'E_A11Y_STATE_CONTRAST', 'E_A11Y_LINK_IN_TEXT', 'U_A11Y_LINK_IN_TEXT', 'E_A11Y_FOCUS_VISIBLE']);
       // A finding that holds in both schemes is reported once, with `alsoUnder`.

@@ -19,10 +19,10 @@ const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
 const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-(?:color|radius)|outline-(?:color|offset)|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|transition(?:-(?:property|duration|delay|timing-function|behavior))?|animation-(?:delay|direction|fill-mode|timing-function)|list-style-(?:position|image))$/;
 // Properties a :hover/:focus rule may set: they repaint without changing geometry.
-const statePaint = /^(?:color|background(?:-.*)?|border-(?:color|radius)|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?)$/;
+const statePaint = /^(?:color|background(?:-.*)?|border-(?:color|radius)|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?|color-scheme)$/;
 // Paint and hit-testing facts for the accessibility rules (never geometry).
-export const paintProperties = ['color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state'];
-const inheritedPaint = ['color', 'visibility', 'pointer-events', 'cursor', 'list-style-type'];
+export const paintProperties = ['color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'color-scheme'];
+const inheritedPaint = ['color', 'visibility', 'pointer-events', 'cursor', 'list-style-type', 'color-scheme'];
 // Inherited text properties. They are kept as specified strings and only
 // interpreted for boxes whose contract derives text metrics from a font.
 export const textProperties = ['font-family', 'font-size', 'line-height', 'font-weight', 'font-style', 'font-stretch', 'font-variant', 'text-transform', 'letter-spacing', 'word-spacing', 'text-align'];
@@ -137,6 +137,7 @@ function expand(property, value) {
     const name = parts.find(p => !times.includes(p) && p !== count && !keyword.test(p)) ?? (parts.includes('none') ? 'none' : 'none');
     return [['animation-name', name], ['animation-duration', times[0] ?? '0s'], ['animation-iteration-count', count ?? '1'], ['animation-play-state', state ?? 'running']];
   }
+  if (property === 'color-scheme' && !wide.has(value) && !/^(?:normal|(?:only\s+)?(?:light|dark)(?:\s+(?:light|dark))?(?:\s+only)?)$/.test(value)) throw new Error(`Unsupported color-scheme: ${value}`);
   if (paintProperties.includes(property)) {
     if (property === 'visibility' && !wide.has(value) && !['visible', 'hidden', 'collapse'].includes(value)) throw new Error(`Unsupported visibility: ${value}`);
     if (property === 'pointer-events' && !wide.has(value) && !['auto', 'none'].includes(value)) throw new Error(`Unsupported pointer-events: ${value}`);
@@ -275,8 +276,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
     'column-gap': 'normal', 'grid-column': 'auto', 'grid-row': 'auto',
     'background-color': 'transparent', 'background-image': 'none',
     'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none',
-    cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running',
-    'table-layout': 'auto', 'border-collapse': inherited['border-collapse'] ?? 'separate', 'border-spacing': inherited['border-spacing'] ?? (box.tag === 'table' ? '2px' : '0'), 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline',
+    'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running',
+    'table-layout': 'auto', 'border-collapse': inherited['border-collapse'] ?? 'separate', 'border-spacing': inherited['border-spacing'] ?? (box.tag === 'table' ? '2px' : '0'), 'caption-side': inherited['caption-side'] ?? 'top', 'empty-cells': 'show', 'vertical-align': 'baseline',
     color: box.tag === 'a' && box.focusable !== false ? 'ua-link' : inherited.color ?? 'canvastext', 'text-decoration-line': box.tag === 'a' && box.focusable !== false ? 'underline' : 'none', visibility: inherited.visibility ?? 'visible', 'pointer-events': inherited['pointer-events'] ?? 'auto', opacity: '1',
     'flex-direction': 'row', 'flex-wrap': 'nowrap', 'flex-grow': '0', 'flex-shrink': '1', 'flex-basis': 'auto', 'justify-content': 'normal', order: '0',
     'overflow-x': 'visible', 'overflow-y': 'visible', 'white-space': inherited['white-space'] ?? 'normal',
@@ -315,7 +316,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   if (['em', 'i'].includes(box.tag)) values['font-style'] = 'ua';
   if (box.tag === 'small') values['font-size'] = 'ua';
   const ua = { ...values };
-  const initial = { ...defaults, ...textInitial, 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
+  const initial = { ...defaults, ...textInitial, 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none', 'color-scheme': 'normal', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
   const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', 'border-collapse', 'border-spacing', 'caption-side', 'empty-cells', ...textProperties, ...inheritedPaint]);
   const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={};
   const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};
@@ -377,6 +378,14 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   }
   // Content language from the lang attribute (HTML: inherited; empty means unknown). Not settable by CSS.
   values.$lang = box.lang !== undefined ? box.lang : inherited.$lang ?? '';
+  // color-scheme: author-declared Canvas/CanvasText resolve in the element's used scheme
+  // (Chromium: light #fff/#000, dark #121212/#fff). The UA defaults stay keywords (ADR-0007).
+  const schemes = String(values['color-scheme']).split(/\s+/).filter(t => ['light', 'dark'].includes(t));
+  const wanted = [...(state ?? [])].find(s => s.startsWith('prefers-color-scheme:'))?.slice(21) ?? 'light';
+  const used = schemes.includes(wanted) ? wanted : schemes[0] ?? 'light';
+  values.$scheme = used;
+  for (const property of ['color', 'background-color']) if (sources[property] && ['canvas', 'canvastext'].includes(String(values[property]).toLowerCase()))
+    values[property] = { light: { canvas: '#ffffff', canvastext: '#000000' }, dark: { canvas: '#121212', canvastext: '#ffffff' } }[used][String(values[property]).toLowerCase()];
   values.$sources = sources;
   values.$dormant = dormant;
   values.$overridden = overridden;

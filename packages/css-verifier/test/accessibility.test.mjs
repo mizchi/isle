@@ -786,3 +786,40 @@ test('clickable-look, list-style semantics, blink, dl, accesskeys, ismap and ari
   const hiddenBody = {tag: 'body', classes: ['page'], ariaHidden: true, children: [{tag: 'div', classes: ['x']}]};
   assert.deepEqual(find(run(hiddenBody, '.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 20px; }'), 'E_A11Y_ARIA_HIDDEN_BODY').map(d => d.box), ['.page']);
 });
+
+test('color-scheme resolves author Canvas/CanvasText in the used scheme', () => {
+  const tree = page([{tag: 'p', classes: ['t'], text: true}]);
+  const css = extra => pageCSS(`.page { background: Canvas; color: CanvasText; }\n.t { font-size: 16px; }\n${extra}`);
+  const b = {'.t': text};
+  // Light: black on white. Dark (color-scheme: dark): white on #121212; a #444 text there is too dark.
+  assert.equal(find(run(tree, css(''), {boxes: b}), 'E_A11Y_CONTRAST').length, 0);
+  assert.equal(find(run(tree, css('.page { color-scheme: dark; }\n.t { color: #444; }'), {boxes: b}), 'E_A11Y_CONTRAST').length, 1);
+  assert.equal(find(run(tree, css('.t { color: #444; }'), {boxes: b}), 'E_A11Y_CONTRAST').length, 0);
+  // light dark: only the dark preference picks the dark canvas.
+  const both = find(run(tree, css('.page { color-scheme: light dark; }\n.t { color: #444; }'), {boxes: b}), 'E_A11Y_CONTRAST');
+  assert.deepEqual(both.map(d => d.preference), ['prefers-color-scheme: dark']);
+});
+
+test('fixed tables with colspan and a caption', () => {
+  const cell = (cls, extra = {}) => ({tag: 'td', classes: [cls], ...extra});
+  const tableView = {min: 420, max: 1280, height: {min: 400, max: 900}};
+  const value = text => { const [n, d = '1'] = text.split('/'); return Number(n) / Number(d); };
+  const rect = (report, cls) => report.sizes.find(r => r.box === `.${cls}` && r.rect).rect;
+  const css = '.t { table-layout: fixed; inline-size: 400px; border-spacing: 0; }\ntd { block-size: 30px; padding: 0; }\n.cap { block-size: 20px; }\n';
+  // First row: a 200px cell over two columns and a 100px one → three equal columns of 400/3.
+  const tree = (caption, side) => ({tag: 'table', classes: ['t'], children: [...(caption ? [{tag: 'caption', classes: ['cap']}] : []), {tag: 'tbody', classes: ['b'], children: [
+    {tag: 'tr', classes: ['r'], children: [cell('a', {colSpan: 2}), cell('b')]}, {tag: 'tr', classes: ['r'], children: [cell('x'), cell('y'), cell('z')]}]}]});
+  const spans = run(tree(false), css + '.a { inline-size: 200px; }\n.b { inline-size: 100px; }', {viewport: tableView});
+  assert.equal(spans.status, 'verified', JSON.stringify(spans.diagnostics));
+  assert.ok(Math.abs(value(rect(spans, 'a').inlineSize.constant) - 800 / 3) < 1e-9);
+  assert.ok(Math.abs(value(rect(spans, 'y').inlineStart.constant) - 400 / 3) < 1e-9);
+  // A caption is a full-width row above (or below) the cells.
+  const top = run(tree(true), css + '.a { inline-size: 200px; }\n.b { inline-size: 100px; }', {viewport: tableView});
+  assert.equal(top.status, 'verified', JSON.stringify(top.diagnostics));
+  assert.equal(rect(top, 'cap').inlineSize.constant, '400');
+  assert.equal(rect(top, 'x').blockStart.constant, '50');
+  const bottom = run(tree(true), css + '.t { caption-side: bottom; }', {viewport: tableView});
+  assert.equal(rect(bottom, 'cap').blockStart.constant, '60');
+  assert.equal(run(tree(true), css + '.t { border-spacing: 2px; }', {viewport: tableView}).status, 'unknown');
+  assert.equal(run({tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r'], children: [cell('a', {rowSpan: 2})]}]}]}, css, {viewport: tableView}).status, 'unknown');
+});
