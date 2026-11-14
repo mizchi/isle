@@ -846,3 +846,30 @@ test('inline links in one measured line: occlusion and obscured focus from their
   assert.deepEqual(codes('left: 106px; inline-size: 40px;').filter(c => c.startsWith('U_')), []);
   assert.deepEqual(codes('left: 105.75px; inline-size: 40px;'), ['U_A11Y_OCCLUDED']);
 });
+
+test('automatic tables whose content fits their px columns are laid out like fixed ones', () => {
+  const tableView = {min: 420, max: 1280, height: {min: 400, max: 900}};
+  const value = text => { const [n, d = '1'] = text.split('/'); return Number(n) / Number(d); };
+  const rect = (report, cls) => report.sizes.find(r => r.box === `.${cls}` && r.rect).rect;
+  const row = cells => ({tag: 'tr', classes: ['r'], children: cells.map(cls => ({tag: 'td', classes: [cls]}))});
+  const tree = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [row(['a', 'b']), row(['x', 'y'])]}]};
+  const css = extra => `td { block-size: 20px; }\n.a { inline-size: 80px; }\n.b { inline-size: 120px; }\n${extra}`;
+  // auto width: the columns plus 3 × 2px spacing.
+  const shrink = run(tree, css(''), {viewport: tableView});
+  assert.equal(shrink.status, 'verified', JSON.stringify(shrink.diagnostics));
+  assert.equal(rect(shrink, 't').inlineSize.constant, '206');
+  assert.equal(rect(shrink, 'y').inlineStart.constant, '84');
+  // An explicit width shares the extra in proportion, like a fixed table.
+  const wide = run(tree, css('.t { inline-size: 400px; }'), {viewport: tableView});
+  assert.ok(Math.abs(value(rect(wide, 'a').inlineSize.constant) - 157.6) < 1e-9);
+  // Narrower than the columns: shared by content (Unknown).
+  assert.equal(run(tree, css('.t { inline-size: 100px; }'), {viewport: tableView}).status, 'unknown');
+  // A container narrower than the auto width: the table shrinks (Unknown there only).
+  const narrow = run(tree, css('.a { inline-size: 300px; }\n.b { inline-size: 200px; }'), {viewport: tableView});
+  assert.deepEqual(narrow.diagnostics.filter(d => d.code === 'U_LAYOUT_TABLE').map(d => d.range.maxExact), ['506']);
+  // Content without a fitting min-content bound decides the column.
+  const text = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['a'], text: true}, {tag: 'td', classes: ['b']}]}]}]};
+  const colored = css('.t { background: #fff; color: #000; }');
+  assert.equal(run(text, colored, {viewport: tableView, boxes: {'.a': {minInlineSize: 60, intrinsicBlockSize: 18}}}).status, 'verified');
+  assert.equal(run(text, colored, {viewport: tableView, boxes: {'.a': {minInlineSize: 90, intrinsicBlockSize: 18}}}).status, 'unknown');
+});

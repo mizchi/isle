@@ -607,9 +607,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // border-spacing as gaps and as an inset inside the padding, rows as tall as their tallest cell.
   function tableAsGrid(table, style, region, parents, emit) {
     const fail = message => { throw Object.assign(new Error(message), { code: 'U_LAYOUT_TABLE' }); };
-    if (style['table-layout'] !== 'fixed') fail('Only table-layout: fixed is modeled; automatic table layout depends on cell content widths');
+    // Automatic layout equals the fixed one (measured) when content cannot widen a column: every cell
+    // is empty or its content's min-content bound fits its px column, no spans or caption, and
+    // at most one (empty) auto column, which needs an explicit table width; an auto width is the sum.
+    const automatic = style['table-layout'] !== 'fixed';
     if (style['border-collapse'] !== 'separate') fail('border-collapse: collapse is not modeled');
-    if (style['inline-size'] === 'auto') fail('A fixed table needs an explicit inline-size');
+    if (style['inline-size'] === 'auto' && !automatic) fail('A fixed table needs an explicit inline-size');
     const caption = table.children?.[0]?.tag === 'caption' ? table.children[0] : null;
     const sections = (table.children ?? []).slice(caption ? 1 : 0);
     if (sections.some(section => !['thead', 'tbody', 'tfoot'].includes(section.tag))) fail('A modeled table holds an optional first caption, then thead, tbody and tfoot (no colgroup)');
@@ -681,16 +684,50 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         fail('A table caption is modeled only with border-spacing 0 and no table padding or border');
       caption.tableCaption = { columns, rows: rows.length, side: one(styles(caption, region, parents, style, false, false))['caption-side'] };
     }
+    let autoWidth = null, autoMinimum = null;
+    if (automatic) {
+      if (caption || rows.some(row => row.children.some(cell => (cell.colSpan ?? 1) > 1 || cell.tableRowSpan))) fail('Automatic table layout is modeled without captions, colspan or rowspan');
+      const rowStyles = rows.map(row => one(styles(row, region, parents, one(styles(sections.find(sec => sec.children.includes(row)), region, parents, style, false, false)), false, false)));
+      rows.forEach((row, r) => row.children.forEach((cell, c) => {
+        const cs = one(styles(cell, region, parents, rowStyles[r], false, false));
+        if (cs['inline-size'] !== 'auto') {
+          if (!/^\d+(?:\.\d+)?px$/.test(cs['inline-size'])) fail('Automatic table column widths must be px or auto');
+          const edges = ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+          const w = cs['box-sizing'] === 'content-box' ? add(px(cs['inline-size']), edges) : px(cs['inline-size']);
+          if (!widths[c] || cmp(w, widths[c]) !== 0) fail('In automatic table layout every px width of a column must be the first row\'s');
+        }
+        const empty = !cell.text && !cell.contract && !(cell.children ?? []).length;
+        if (!empty) {
+          if (!widths[c]) fail('An automatic table column without a px width is sized by its content');
+          const edges = ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+          if (cell.contract?.minInlineSize === undefined || (cell.children ?? []).length || cmp(q(String(cell.contract.minInlineSize)), sub(widths[c], edges)) > 0)
+            fail('In automatic table layout a cell needs a min-content bound (minInlineSize) that fits its px column');
+        }
+      }));
+      const autos = widths.filter(w => !w).length;
+      if (autos > 1) fail('Several auto columns share the extra width by content; not modeled');
+      const edges = add(add(add(px(style['padding-left']), px(style['padding-right'])), add(px(style['border-left']), px(style['border-right']))), mul(h, q(columns + 1)));
+      // An auto width stretches in a grid area (measured) and shrinks to fit at the root (block flow).
+      const parentDisplay = parents.at(-1)?.style.display;
+      if (style['inline-size'] === 'auto' && parentDisplay === 'flex') fail('An automatic table with an auto width in a flex container is sized by content');
+      if (style['inline-size'] === 'auto' && parentDisplay === 'grid') autoMinimum = widths.filter(Boolean).reduce(add, zero);
+      else if (style['inline-size'] === 'auto') {
+        if (autos) fail('An automatic table with an auto column needs an explicit inline-size');
+        autoWidth = add(widths.reduce(add, zero), edges);
+      } else autoMinimum = widths.filter(Boolean).reduce(add, zero);
+    }
     const tracks = widths.every(Boolean) ? widths.map(w => `minmax(0, ${number(w)}fr)`) : widths.map(w => w ? `${number(w)}px` : 'minmax(0, 1fr)');
     const spacingEdges = { 'padding-left': add(px(style['padding-left']), h), 'padding-right': add(px(style['padding-right']), h), 'padding-top': add(px(style['padding-top']), v), 'padding-bottom': add(px(style['padding-bottom']), v) };
     // A content-box table's width includes the edge spacing (measured): the grid's content width is W − 2·spacing.
-    let inlineSize = style['inline-size'];
-    if (style['box-sizing'] === 'content-box') {
+    let inlineSize = autoWidth ? `${number(autoWidth)}px` : style['inline-size'];
+    if (autoWidth) style = { ...style, 'box-sizing': 'border-box' };
+    else if (style['box-sizing'] === 'content-box') {
       if (!/^\d+(?:\.\d+)?px$/.test(inlineSize)) fail('A content-box fixed table needs a px inline-size');
       inlineSize = `${number(sub(px(inlineSize), add(h, h)))}px`;
     }
     const grid = { ...style, 'inline-size': inlineSize, display: 'grid', 'grid-template-columns': tracks.join(' '), 'grid-template-rows': rowTracks ? (caption ? (caption.tableCaption.side === 'bottom' ? [...rowTracks, 'auto'] : ['auto', ...rowTracks]).join(' ') : rowTracks.join(' ')) : 'none', 'grid-auto-rows': 'auto', 'column-gap': `${number(h)}px`, 'row-gap': `${number(v)}px`,
-      ...Object.fromEntries(Object.entries(spacingEdges).map(([key, value]) => [key, `${number(value)}px`])), tableColumns: widths.every(Boolean) ? widths.reduce(add, zero) : null, tableGaps: mul(h, q(columns - 1)) };
+      ...Object.fromEntries(Object.entries(spacingEdges).map(([key, value]) => [key, `${number(value)}px`])), tableColumns: automatic ? null : widths.every(Boolean) ? widths.reduce(add, zero) : null, tableGaps: mul(h, q(columns - 1)),
+      ...(autoWidth ? { tableShrink: autoWidth } : {}), ...(autoMinimum ? { tableAutoMinimum: autoMinimum } : {}) };
     return grid;
   }
   // Cells fill their column (and span colspan columns); a caption is a full-width first or last row.
@@ -783,6 +820,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             const ancestors = [...parents, own];
             if (rendered) placeLegend(rendered, origin, bs.region, ancestors, emit);
             // A fixed table narrower than its px columns grows past its width; the grid cannot follow that.
+            // An automatic table shares a width below its px columns by content (not modeled), and one with an auto
+            // width shrinks to a narrower container: Unknown there.
+            if (emit && style.tableAutoMinimum) { const narrow = clip(bs.region, diff(sum(scalar(style.tableAutoMinimum), scalar(style.tableGaps)), contentInline), true); if (narrow) diagnostics.push({ code: 'U_LAYOUT_TABLE', severity: 'unknown', message: `${box.label} is narrower than its px columns; automatic layout then shares the width by content`, box: box.label, path: box.path, source: box.source, ...ranges(narrow) }); }
+            if (emit && style.tableShrink && available.inline) { const narrow = clip(bs.region, diff(scalar(style.tableShrink), available.inline), true); if (narrow) diagnostics.push({ code: 'U_LAYOUT_TABLE', severity: 'unknown', message: `${box.label} has an automatic width wider than its container here, where it shrinks by content`, box: box.label, path: box.path, source: box.source, ...ranges(narrow) }); }
             if (emit && style.tableColumns) obligation(diff(contentInline, scalar(style.tableGaps)), scalar(style.tableColumns), box, bs.region, 'E_LAYOUT_TABLE_WIDTH', 'inline');
             const { axes: inheritedAxes, regions: geometryRegions } = subgridGeometry(style, box, available, bs.region, emit);
             for (const geometryRegion of geometryRegions) {
