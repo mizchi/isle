@@ -1179,10 +1179,25 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       holds = atMost(holds, pad.origin.inline, row.origin.inline); holds = atMost(holds, pad.origin.block, row.origin.block);
       holds = atMost(holds, right(row), right(pad)); holds = atMost(holds, bottom(row), bottom(pad));
       if (!holds) continue;
-      for (const piece of rest.map(r => intersect(r, holds)).filter(Boolean)) out.push({ ...row, region: piece, origin: pad.origin, inline: pad.inline, block: pad.block });
+      for (const piece of rest.map(r => intersect(r, holds)).filter(Boolean)) out.push({ ...row, region: piece, origin: pad.origin, inline: pad.inline, block: pad.block, pad: pad.path });
       rest = rest.flatMap(r => subtract(r, holds));
     }
     return out.length ? [...out, ...rest.map(region => ({ ...row, region }))] : [row];
+  }).flatMap((target, _, all) => {
+    // Where a target painted later overlaps the enlarged area, hit testing gives it that part: the area left is not a
+    // box, so the size there is not decided (Unknown), and is dropped from the enlarged piece.
+    if (!target.pad) return [target];
+    let rest = [target.region];
+    for (const other of all) {
+      if (other === target || related(other.path, target.path) || !other.origin) continue;
+      let overlap = intersect(target.region, other.region);
+      overlap = below(overlap, other.origin.inline, right(target)); overlap = below(overlap, target.origin.inline, right(other));
+      overlap = below(overlap, other.origin.block, bottom(target)); overlap = below(overlap, target.origin.block, bottom(other));
+      if (!overlap || !paintsAbove(other, layer(other), target, layer(target))) continue;
+      add(undecided, target, { region: overlap, other, reason: `${other.box.label} is painted over part of its enlarged hit area` });
+      rest = rest.flatMap(r => subtract(r, overlap));
+    }
+    return rest.map(region => ({ ...target, region }));
   });
   for (const target of exposed) {
     const small = undersized(target);
@@ -1222,7 +1237,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     if (!kept.length) for (const piece of doubtful) add(undecided, target, { ...piece, reason: `its circle's distance to ${piece.other.box.label} is not decided here` });
   }
   // Exceptions: an equivalent control that renders and passes where the violation holds, or an essential presentation.
-  const rowsOf = path => exposed.filter(row => row.path === path);
+  const rowsOf = path => { const rows = exposed.filter(row => row.path === path); return rows.length ? rows : geometry.filter(row => row.path === path); };
   for (const target of new Set([...violations.keys(), ...undecided.keys()])) {
     const row = rowsOf(target)[0], box = row.box;
     let pieces = violations.get(target) ?? [], doubtfulPieces = undecided.get(target) ?? [];

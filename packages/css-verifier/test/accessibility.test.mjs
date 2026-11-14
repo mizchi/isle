@@ -1423,19 +1423,28 @@ test('target-size: a ::after that enlarges the hit area counts as the target', (
   const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: 40px; }\n.row { display: grid; grid-template-columns: 16px 16px; column-gap: 4px; grid-template-rows: 16px; padding: 12px; }\n.b1, .b2 { display: grid; position: relative; }\n${extra}`);
   const report = extra => run(tree, css(extra));
   assert.deepEqual(find(report(''), 'E_A11Y_TARGET_SIZE').map(d => d.box).sort(), ['.b1', '.b2']);
-  // Each grows to 24×24 around itself (left/top -4px): no longer undersized, so SC 2.5.8 holds.
-  const grown = report('.b1::after, .b2::after { content: ""; position: absolute; left: -4px; top: -4px; inline-size: 24px; block-size: 24px; }');
+  // .b1 grows to 24×24 around itself (left/top -4px): no longer undersized; .b2's circle still meets the grown .b1.
+  const grown = report('.b1::after { content: ""; position: absolute; left: -4px; top: -4px; inline-size: 24px; block-size: 24px; }');
   assert.notEqual(grown.status, 'unknown');
-  assert.deepEqual(find(grown, 'E_A11Y_TARGET_SIZE'), []);
+  assert.deepEqual(find(grown, 'E_A11Y_TARGET_SIZE').map(d => d.box), ['.b2']);
 });
 
 test('an absolute ::after of a button (a block leaf) is laid out and enlarges its hit area', () => {
   const tree = page([{tag: 'div', classes: ['row'], children: [{tag: 'button', classes: ['b1'], named: true}, {tag: 'button', classes: ['b2'], named: true}]}]);
   const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: 40px; }\n.row { display: grid; grid-template-columns: 16px 16px; column-gap: 4px; grid-template-rows: 16px; padding: 12px; }\n.b1, .b2 { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; position: relative; }\n${extra}`);
   assert.deepEqual(find(run(tree, css('')), 'E_A11Y_TARGET_SIZE').map(d => d.box).sort(), ['.b1', '.b2']);
-  const grown = run(tree, css('.b1::after, .b2::after { content: ""; position: absolute; left: -4px; top: -4px; inline-size: 24px; block-size: 24px; }'));
+  const grown = run(tree, css('.b1::after { content: ""; position: absolute; left: -4px; top: -4px; inline-size: 24px; block-size: 24px; }'));
   assert.notEqual(grown.status, 'unknown');
-  assert.deepEqual(find(grown, 'E_A11Y_TARGET_SIZE'), []);
+  assert.deepEqual(find(grown, 'E_A11Y_TARGET_SIZE').map(d => d.box), ['.b2']);
   // Without a positioned ancestor inside the analyzed root the containing block is not owned: Unknown.
   assert.equal(run(tree, css('.b1, .b2 { position: static; }\n.b1::after { content: ""; position: absolute; left: 0; top: 0; inline-size: 24px; block-size: 24px; }')).status, 'unknown');
+});
+
+test('target-size: a later target over part of an enlarged hit area leaves its size undecided', () => {
+  const tree = page([{tag: 'div', classes: ['row'], children: [{tag: 'button', classes: ['b1'], named: true}, {tag: 'button', classes: ['b2'], named: true}]}]);
+  const css = gap => pageCSS(`.page { background: #fff; grid-auto-rows: 40px; }\n.row { display: grid; grid-template-columns: 16px 16px; column-gap: ${gap}; grid-template-rows: 16px; padding: 12px; }\n.b1, .b2 { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; position: relative; }\n.b1::after, .b2::after { content: ""; position: absolute; left: -4px; top: -4px; inline-size: 24px; block-size: 24px; }`);
+  // 4px apart: .b2's area covers the right of .b1's (Chromium gives it to .b2).
+  const close = run(tree, css('4px'));
+  assert.deepEqual(close.diagnostics.filter(d => d.code === 'U_A11Y_TARGET_SIZE').map(d => d.box), ['.b1']);
+  assert.equal(run(tree, css('8px')).status !== 'unknown', true);
 });
