@@ -714,3 +714,31 @@ test('a rendered legend with explicit sizes is laid out in the fieldset border a
   assert.equal(first.rect.blockStart.constant, '20'); // content starts at max(border 2px, legend 20px)
   assert.equal(report.accessibility.warnings.filter(w => w.code === 'W_A11Y_FIELDSET_NAME').length, 0);
 });
+
+test('fixed tables are laid out like their equivalent grid', () => {
+  const row = n => ({tag: 'tr', classes: ['r'], children: Array.from({length: n}, (_, i) => ({tag: 'td', classes: [`c${i}`]}))});
+  const table = (rows, extra = {}) => ({tag: 'table', classes: ['t'], ...extra, children: [{tag: 'tbody', classes: ['b'], children: rows}]});
+  const css = extra => `.t { table-layout: fixed; inline-size: 400px; }\n.c0, .c1 { block-size: 20px; }\n${extra}`;
+  const tableView = {min: 420, max: 1280, height: {min: 400, max: 900}};
+  const value = text => { const [n, d = '1'] = text.split('/'); return Number(n) / Number(d); };
+  const rect = (report, cls, row = 0) => report.sizes.filter(r => r.box === `.${cls}` && r.rect)[row].rect;
+  const wide = run(table([row(2), row(2)]), css('.c0 { inline-size: 80px; }\n.c1 { inline-size: 120px; }'), {viewport: tableView});
+  assert.equal(wide.status, 'verified', JSON.stringify(wide.diagnostics));
+  // 394 shared 80 : 120 after 3 × 2px spacing.
+  assert.ok(Math.abs(value(rect(wide, 'c0').inlineSize.constant) - 157.6) < 1e-9);
+  assert.equal(rect(wide, 'c1', 1).blockStart.constant, '24');
+  assert.ok(find(run(table([row(2)]), css('.t { inline-size: 150px; }\n.c0 { inline-size: 80px; }\n.c1 { inline-size: 120px; }'), {viewport: tableView}), 'E_LAYOUT_TABLE_WIDTH').length === 1);
+  const auto = run(table([row(2)]), css('.c1 { inline-size: 100px; }'), {viewport: tableView});
+  assert.equal(rect(auto, 'c0').inlineSize.constant, '294');
+  for (const extra of ['.t { table-layout: auto; }', '.t { border-collapse: collapse; }', '.t { inline-size: auto; }'])
+    assert.equal(run(table([row(2)]), css(extra), {viewport: tableView}).status, 'unknown', extra);
+  assert.equal(run(table([row(2), row(1)]), css(''), {viewport: tableView}).status, 'unknown');
+});
+
+test('a content-box fixed table keeps its edge spacing inside its width', () => {
+  const t = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['a']}, {tag: 'td', classes: ['c']}]}]}]};
+  const report = run(t, '.t { table-layout: fixed; inline-size: 400px; box-sizing: content-box; border: 5px solid #000; }\n.a, .c { block-size: 20px; }\n.a { inline-size: 100px; }\n', {viewport: {min: 420, max: 1280, height: {min: 400, max: 900}}});
+  const sizes = Object.fromEntries(report.sizes.filter(r => r.rect).map(r => [r.box, r.rect]));
+  assert.equal(sizes['.t'].inlineSize.constant, '410'); // as measured in Chromium
+  assert.equal(sizes['.c'].inlineSize.constant, '294');
+});

@@ -571,6 +571,52 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     return { axes, regions: geometryRegions };
   }
 
+  // Fixed table layout (CSS 2.2 §17.5.2.1) as a grid, measured equal in Chromium: column widths
+  // from the first row (px widths share the width in proportion, auto columns take the rest),
+  // border-spacing as gaps and as an inset inside the padding, rows as tall as their tallest cell.
+  function tableAsGrid(table, style, region, parents, emit) {
+    const fail = message => { throw Object.assign(new Error(message), { code: 'U_LAYOUT_TABLE' }); };
+    if (style['table-layout'] !== 'fixed') fail('Only table-layout: fixed is modeled; automatic table layout depends on cell content widths');
+    if (style['border-collapse'] !== 'separate') fail('border-collapse: collapse is not modeled');
+    if (style['inline-size'] === 'auto') fail('A fixed table needs an explicit inline-size');
+    const sections = table.children ?? [];
+    if (sections.some(section => !['thead', 'tbody', 'tfoot'].includes(section.tag))) fail('A modeled table holds thead, tbody and tfoot (no caption or colgroup)');
+    if (sections.findIndex(s => s.tag === 'tfoot') >= 0 && sections.findIndex(s => s.tag === 'tfoot') !== sections.length - 1) fail('tfoot must come last (it renders after the bodies)');
+    const rows = sections.flatMap(section => section.children ?? []);
+    if (!rows.length || rows.some(row => row.tag !== 'tr' || !(row.children ?? []).length || row.children.some(cell => !['td', 'th'].includes(cell.tag)))) fail('Every row is a tr of td/th cells');
+    const columns = rows[0].children.length;
+    if (rows.some(row => row.children.length !== columns)) fail('Every row needs the same number of cells (rowspan/colspan are not modeled)');
+    for (const box of [...sections, ...rows]) box.tablePart = true;
+    for (const row of rows) for (const cell of row.children) cell.tableCell = true;
+    // Cells stretch to their row: a fixed block-size must be shared by the row's cells (a grid item would not stretch).
+    for (const row of rows) {
+      const rs = styles(row, region, parents, style, false, false);
+      const heights = new Set(row.children.map(cell => rs.flatMap(r => styles(cell, r.region, parents, r.style, false, false)).map(c => c.style['block-size']).join('|')));
+      if (heights.size > 1) fail('Cells of one row with different block-size values are not modeled (table cells stretch to the row)');
+    }
+    // The first row's cell widths decide the columns.
+    const one = list => { if (list.length !== 1) fail('Table styles that vary across viewport regions are not modeled'); return list[0].style; };
+    const sectionStyle = one(styles(sections[0], region, parents, style, false, false)), rowStyle = one(styles(rows[0], region, parents, sectionStyle, false, false));
+    const widths = rows[0].children.map(cell => {
+      const cs = one(styles(cell, region, parents, rowStyle, false, false));
+      if (cs['inline-size'] === 'auto') return null;
+      if (!/^\d+(?:\.\d+)?px$/.test(cs['inline-size'])) fail('Fixed table column widths must be px or auto');
+      const edges = ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+      return cs['box-sizing'] === 'content-box' ? add(px(cs['inline-size']), edges) : px(cs['inline-size']);
+    });
+    const [h, v = h] = String(style['border-spacing']).split(/\s+/).map(part => px(part));
+    const tracks = widths.every(Boolean) ? widths.map(w => `minmax(0, ${number(w)}fr)`) : widths.map(w => w ? `${number(w)}px` : 'minmax(0, 1fr)');
+    const spacingEdges = { 'padding-left': add(px(style['padding-left']), h), 'padding-right': add(px(style['padding-right']), h), 'padding-top': add(px(style['padding-top']), v), 'padding-bottom': add(px(style['padding-bottom']), v) };
+    // A content-box table's width includes the edge spacing (measured): the grid's content width is W − 2·spacing.
+    let inlineSize = style['inline-size'];
+    if (style['box-sizing'] === 'content-box') {
+      if (!/^\d+(?:\.\d+)?px$/.test(inlineSize)) fail('A content-box fixed table needs a px inline-size');
+      inlineSize = `${number(sub(px(inlineSize), add(h, h)))}px`;
+    }
+    const grid = { ...style, 'inline-size': inlineSize, display: 'grid', 'grid-template-columns': tracks.join(' '), 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'column-gap': `${number(h)}px`, 'row-gap': `${number(v)}px`,
+      ...Object.fromEntries(Object.entries(spacingEdges).map(([key, value]) => [key, `${number(value)}px`])), tableColumns: widths.every(Boolean) ? widths.reduce(add, zero) : null, tableGaps: mul(h, q(columns - 1)) };
+    return grid;
+  }
   // Rendered legend: display block, static, explicit px inline-size and block-size, no block margins.
   function renderedLegend(box, style, region, parents) {
     if (box.tag !== 'fieldset' || style.display === 'contents') return null;
@@ -603,6 +649,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     try {
       for (const state of styles(box, region, parents, inherited, emit, !available.root)) {
         let { style } = state;
+        // A fixed table is laid out as its equivalent grid (rows and sections as contents, cells as blocks).
+        if (box.tag === 'table' && style.display === 'table') style = tableAsGrid(box, style, state.region, parents, emit);
+        // A cell's width seeds its column (the cell fills the column); its height stretches to the row.
+        if (box.tableCell && style.display === 'table-cell') style = { ...style, display: 'block', 'inline-size': 'auto' };
         if (!validate(style, box, state.region, emit, available)) continue;
         // A fieldset's first legend is rendered in its block-start border (HTML §15.3.13): it is not a
         // layout child, and the fieldset's effective border-top is max(border-top, legend height).
@@ -650,6 +700,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               type: style['container-type'], names: style['container-name'] === 'none' ? [] : style['container-name'].split(/\s+/) };
             const ancestors = [...parents, own];
             if (rendered) placeLegend(rendered, origin, bs.region, ancestors, emit);
+            // A fixed table narrower than its px columns grows past its width; the grid cannot follow that.
+            if (emit && style.tableColumns) obligation(diff(contentInline, scalar(style.tableGaps)), scalar(style.tableColumns), box, bs.region, 'E_LAYOUT_TABLE_WIDTH', 'inline');
             const { axes: inheritedAxes, regions: geometryRegions } = subgridGeometry(style, box, available, bs.region, emit);
             for (const geometryRegion of geometryRegions) {
               // Even an empty Grid has explicit tracks and contributes their
@@ -669,6 +721,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                 let states = [{ region, children: [] }];
                 const visit = (child, inheritedStyle) => {
                   states = bounded(states.flatMap(s => styles(child, s.region, ancestors, inheritedStyle, false).flatMap(c => {
+                    if (child.tablePart && ['table-row-group', 'table-header-group', 'table-footer-group', 'table-row'].includes(c.style.display)) c = { ...c, style: { ...c.style, display: 'contents' } };
                     if (c.style.display === 'none') return [{ region: c.region, children: s.children }];
                     if (c.style.display !== 'contents') return [{ region: c.region, children: [...s.children, { box: child, style: c.style, inherited: inheritedStyle }] }];
                     if (child.text || child.contract || child.targets?.length) throw new Error('display: contents with text, contracts or noshift targets needs anonymous or absent boxes');

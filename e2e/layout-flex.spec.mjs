@@ -64,6 +64,12 @@ const cases = [
     css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.fs{display:grid;grid-template-columns:minmax(0,1fr) 40px;grid-template-rows:30px;border:2px solid red;padding:5px 7px;min-inline-size:0;margin:0}.lg{display:block;inline-size:80px;block-size:20px;padding:0}'},
   {name: 'fieldset with a legend centred in a thick border', html: '<main class="page"><fieldset class="fs"><legend class="lg"></legend><div class="a"></div></fieldset></main>',
     css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.fs{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:24px;border:30px solid red;padding:0;min-inline-size:0;margin:0}.lg{display:block;inline-size:60px;block-size:20px;padding:2px;border:1px solid red;box-sizing:content-box}'},
+  {name: 'fixed table with proportional px columns', html: '<table class="t"><tbody><tr><td class="a"></td><td class="b"></td></tr><tr><td class="a"></td><td class="b"></td></tr></tbody></table>',
+    css: '.t{table-layout:fixed;inline-size:100%}.a,.b{block-size:20px}.a{inline-size:50px}.b{inline-size:70px}'},
+  {name: 'fixed table with an auto column, spacing, border and padding', html: '<table class="t"><tbody><tr><td class="a"></td><td class="b"></td></tr><tr><td class="a"></td><td class="b"></td></tr></tbody></table>',
+    css: '.t{table-layout:fixed;inline-size:100%;border:5px solid red;padding:4px;border-spacing:6px 3px}.a,.b{block-size:20px}.b{inline-size:100px}'},
+  {name: 'fixed content-box table with thead, tbody and cell padding', html: '<table class="t"><thead><tr><th class="h"></th><th class="h"></th></tr></thead><tbody><tr><td class="a"></td><td class="b"></td></tr></tbody></table>',
+    css: '.t{table-layout:fixed;inline-size:180px;box-sizing:content-box;border:5px solid red}.h,.a,.b{block-size:24px;padding:3px}.h{font-weight:700;text-align:left}.a{inline-size:60px}'},
   {name: 'grid tracks centered by justify-content', html: '<main class="grid"><div></div><div></div></main>',
     css: '.grid{display:grid;grid-template-columns:60px 60px;column-gap:10px;grid-template-rows:20px;justify-content:center}'},
 ];

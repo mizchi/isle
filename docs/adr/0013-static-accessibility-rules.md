@@ -123,8 +123,12 @@ letter-spacing が 0 でないとき Chromium は任意の ligature を切る(CS
 
 ### table と fieldset
 
-table 系の要素(`table`・`caption`・`thead`・`tbody`・`tfoot`・`tr`・`th`・`td`)は UA の `display: table-*` のまま(未対応、Unknown)で、
-作者が grid・`contents`・block に組み替えた場合だけ検査する。th は UA の bold と中央寄せを持つので、作者が指定するまで未解決にする。
+table 系の要素は、作者が grid・`contents`・block に組み替えた場合と、次の**固定 table レイアウト**の部分集合を検査する。
+`table-layout: fixed`・`border-collapse: separate`・明示した inline-size・thead/tbody/tfoot と同じ数の cell の行(rowspan/colspan と caption なし)なら、
+CSS 2.2 §17.5.2.1 の固定 table は次の grid と同じになることを Chromium で測って確かめた:1行目の cell の幅が列を決め、px の列は幅を比例で分け
+(`minmax(0, w fr)`)、auto の列は残り(`minmax(0, 1fr)`)、`border-spacing` は gap と padding の内側の余白、行は最も高い cell の高さ、cell は列と行に広がる
+(cell の inline-size は列の幅になる)。content-box の table は端の spacing を幅の内側に持つ。px の列の和より狭い table は幅を超えて広がるので
+`E_LAYOUT_TABLE_WIDTH` で報告する。UA の cell padding(1px)と `border-spacing`(2px)をモデルにした。それ以外の table(自動レイアウトなど)は Unknown。th は UA の bold と中央寄せを持つので、作者が指定するまで未解決にする。
 Chromium(このバージョン)は display を変えても table の role を保つことを確かめた(Safari は過去に失っていた)。
 fieldset は UA の border・padding・margin・`min-inline-size` を reset する必要がある。最初の legend は border の中に描かれる
 (rendered legend)。Chromium で測った規則をモデルにした:legend は border-left + padding-left の位置、block は max(0, (border-top − L)/2)、
@@ -202,5 +206,5 @@ page の規則(html-lang など)は box tree の単体テストで検査する(e
 
 ## 次の段階
 
-2. ネイティブの table レイアウト。
+2. 自動 table レイアウト(cell の内容幅による列幅)と rowspan/colspan。
 3. inline 要素の幾何(位置と寸法。focus-obscured などの位置の規則を文中の要素に広げるため)。

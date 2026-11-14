@@ -109,6 +109,8 @@ function expand(property, value) {
   if (property === 'font') return textProperties.filter(key => key.startsWith('font-') || key === 'line-height').map(key => [key, wide.has(value) ? value : fontShorthand]);
   // Paint only: whether a box draws a background (integrity `protrusion: 'painted'`).
   if (property === 'background-color' || property === 'background-image') return [[property, value]];
+  // Table layout facts (fixed tables are modeled as an equivalent grid).
+  if (['table-layout', 'border-collapse', 'border-spacing', 'caption-side', 'empty-cells', 'vertical-align'].includes(property)) return [[property, value]];
   if (property === 'outline') {
     if (wide.has(value)) return [['outline-style', value], ['outline-width', value]];
     const parts = postcss.list.space(value), style = parts.find(p => /^(?:none|auto|solid|dotted|dashed|double|groove|ridge|inset|outset|hidden)$/.test(p)) ?? 'none';
@@ -246,6 +248,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
     'column-gap': 'normal', 'grid-column': 'auto', 'grid-row': 'auto',
     'background-color': 'transparent', 'background-image': 'none',
     'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none',
+    'table-layout': 'auto', 'border-collapse': inherited['border-collapse'] ?? 'separate', 'border-spacing': inherited['border-spacing'] ?? (box.tag === 'table' ? '2px' : '0'), 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline',
     color: box.tag === 'a' && box.focusable !== false ? 'ua-link' : inherited.color ?? 'canvastext', 'text-decoration-line': box.tag === 'a' && box.focusable !== false ? 'underline' : 'none', visibility: inherited.visibility ?? 'visible', 'pointer-events': inherited['pointer-events'] ?? 'auto', opacity: '1',
     'flex-direction': 'row', 'flex-wrap': 'nowrap', 'flex-grow': '0', 'flex-shrink': '1', 'flex-basis': 'auto', 'justify-content': 'normal', order: '0',
     'overflow-x': 'visible', 'overflow-y': 'visible', 'white-space': inherited['white-space'] ?? 'normal',
@@ -264,6 +267,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   const tableDisplay = {table: 'table', caption: 'table-caption', thead: 'table-header-group', tbody: 'table-row-group', tfoot: 'table-footer-group', tr: 'table-row', th: 'table-cell', td: 'table-cell'};
   if (tableDisplay[box.tag]) values.display = tableDisplay[box.tag];
   if (box.tag === 'th') { values['font-weight'] = 'ua'; values['text-align'] = 'ua'; }
+  // UA cell padding (HTML rendering: td, th { padding: 1px }).
+  if (['td', 'th'].includes(box.tag)) for (const side of ['left', 'right', 'top', 'bottom']) values[`padding-${side}`] = '1px';
   // fieldset/legend: UA border, padding, margin and min-inline-size until reset.
   if (box.tag === 'fieldset') { for (const side of ['left', 'right', 'top', 'bottom']) { values[`padding-${side}`] = 'ua'; values[`border-${side}`] = 'ua'; } values['margin-left'] = 'ua'; values['margin-right'] = 'ua'; values['min-inline-size'] = 'ua'; }
   if (box.tag === 'legend') { values['padding-left'] = 'ua'; values['padding-right'] = 'ua'; }
@@ -278,8 +283,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   if (['em', 'i'].includes(box.tag)) values['font-style'] = 'ua';
   if (box.tag === 'small') values['font-size'] = 'ua';
   const ua = { ...values };
-  const initial = { ...defaults, ...textInitial, 'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
-  const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', ...textProperties, ...inheritedPaint]);
+  const initial = { ...defaults, ...textInitial, 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
+  const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', 'border-collapse', 'border-spacing', 'caption-side', 'empty-cells', ...textProperties, ...inheritedPaint]);
   const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={};
   const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};
   for (const rule of rules) {
