@@ -87,6 +87,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | hidden-overridden | `hidden` 属性があるのに描画される要素。`[hidden]` は UA の `display: none` にすぎず、作者の display 規則が上書きする(Chromium で測定) | W_A11Y_HIDDEN_OVERRIDDEN |
 | state-mismatch | `aria-expanded`(と tab の `aria-selected`)が、`aria-controls` の先が描画されるかと食い違う区間(`"false"` なのに見える、`"true"` なのに見えない)。支援技術と画面が逆のことを伝える | W_A11Y_STATE_MISMATCH |
 | focus-transparent | focus しても自分か祖先が opacity 0 のままの focusable。自分の focus の表示は見えない(自作 checkbox で隣の label に focus を見せる `input:focus + label` は静的に確かめないので警告) | W_A11Y_FOCUS_TRANSPARENT |
+| error-message | `aria-invalid="true"` の field の `aria-errormessage` の先が描画されない区間(W_A11Y_ERROR_HIDDEN)、何が誤りかを示す参照(errormessage・describedby)がない(W_A11Y_INVALID_NO_MESSAGE)(SC 3.3.1) | W_A11Y_ERROR_HIDDEN / W_A11Y_INVALID_NO_MESSAGE |
 | aria-hidden-body | body の `aria-hidden="true"`。Chromium は body の aria-hidden を無視する(AX tree で測定)ので他の規則は中身を公開されたものとして扱い、尊重する UA では文書全体が隠れることを警告する | W_A11Y_ARIA_HIDDEN_BODY |
 | frame-title | 描画される iframe に title も名前もない(SC 4.1.2) | E_A11Y_FRAME_TITLE |
 | video-caption | 描画される video に kind=captions/subtitles の track がない(SC 1.2.2) | E_A11Y_VIDEO_CAPTION |

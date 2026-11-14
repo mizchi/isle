@@ -77,6 +77,7 @@
 //   hidden-overridden → W_A11Y_HIDDEN_OVERRIDDEN an element with the hidden attribute that renders (author display overrides [hidden])
 //   state-mismatch   → W_A11Y_STATE_MISMATCH    aria-expanded (or a tab's aria-selected) disagrees with whether its aria-controls target renders
 //   focus-transparent → W_A11Y_FOCUS_TRANSPARENT a focusable box that stays at opacity 0 (itself or an ancestor) when focused: its own focus indicator cannot show
+//   error-message    → W_A11Y_ERROR_HIDDEN / W_A11Y_INVALID_NO_MESSAGE  aria-invalid="true" whose aria-errormessage does not render, or with no message at all (SC 3.3.1)
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -90,7 +91,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -1097,6 +1098,20 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       if (state.trim() === 'true') { regions = [row.region]; for (const r of rendered) regions = regions.flatMap(region => subtract(region, r.region)); }
       else regions = rendered.map(r => intersect(row.region, r.region)).filter(Boolean);
       for (const region of regions) report(warnings, 'W_A11Y_STATE_MISMATCH', 'warning', state.trim() === 'true' ? `${row.box.label} has ${what}="true" but #${id} does not render here` : `${row.box.label} has ${what}="false" but #${id} renders here`, row, region, { rule: 'state-mismatch', controls: id });
+    }
+  }
+
+  // error-message (SC 3.3.1): an invalid field points at a message that renders where the field does.
+  for (const row of geometry.filter(row => row.box.aria?.['aria-invalid']?.trim() === 'true' && visible(row) && !hiddenFrom(row.path))) {
+    const aria = row.box.aria, ids = [aria['aria-errormessage'], aria['aria-describedby']].filter(v => v && v !== 'dynamic').flatMap(v => v.trim().split(/\s+/));
+    if (!ids.length) { if (aria['aria-errormessage'] !== 'dynamic' && aria['aria-describedby'] !== 'dynamic') report(warnings, 'W_A11Y_INVALID_NO_MESSAGE', 'warning', `${row.box.label} is aria-invalid="true" with no aria-errormessage or aria-describedby saying what is wrong`, row, row.region, { rule: 'error-message' }); continue; }
+    if (!aria['aria-errormessage'] || aria['aria-errormessage'] === 'dynamic') continue;
+    for (const id of aria['aria-errormessage'].trim().split(/\s+/)) {
+      const target = byId.get(id);
+      if (!target) continue;
+      let missing = [row.region];
+      for (const r of renderedRows(target)) missing = missing.flatMap(region => subtract(region, r.region));
+      for (const region of missing) report(warnings, 'W_A11Y_ERROR_HIDDEN', 'warning', `${row.box.label} is aria-invalid="true" but its error message #${id} does not render here`, row, region, { rule: 'error-message', message: id });
     }
   }
 

@@ -73,7 +73,8 @@
     "focus-clipped",
     "hidden-overridden",
     "state-mismatch",
-    "focus-transparent"
+    "focus-transparent",
+    "error-message"
   ],
   "scope": "Static accessibility rules vs the browser (AX tree names, hit testing, focus, rects, computed colors; vlmkit a11y contrast at 1280).",
   "cases": [
@@ -422,6 +423,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -764,6 +770,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -1113,6 +1124,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -1456,6 +1472,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -1796,6 +1817,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2130,6 +2156,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -2475,6 +2506,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -2811,6 +2847,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -3160,6 +3201,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -3503,6 +3549,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -3843,6 +3894,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4177,6 +4233,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -4526,6 +4587,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -4866,6 +4932,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -5233,6 +5304,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -5591,6 +5667,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -5938,6 +6019,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6276,6 +6362,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -6627,6 +6718,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -6969,6 +7065,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -7320,6 +7421,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -7662,6 +7768,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -8041,6 +8152,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -8411,6 +8527,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -8758,6 +8879,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9096,6 +9222,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -9443,6 +9574,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -9781,6 +9917,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -10126,6 +10267,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -10462,6 +10608,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -10827,6 +10978,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -11183,6 +11339,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -11536,6 +11697,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -11880,6 +12046,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -12231,6 +12402,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -12576,6 +12752,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -12918,6 +13099,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -13254,6 +13440,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -13609,6 +13800,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -13955,6 +14151,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -14305,6 +14506,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -14646,6 +14852,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -14995,6 +15206,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -15335,6 +15551,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -15697,6 +15918,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -16050,6 +16276,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -16421,6 +16652,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -16783,6 +17019,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -17151,6 +17392,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -17510,6 +17756,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -17871,6 +18122,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -18223,6 +18479,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -18607,6 +18868,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -18982,6 +19248,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -19344,6 +19615,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -19697,6 +19973,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -20062,6 +20343,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -20418,6 +20704,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -20805,6 +21096,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -21186,6 +21482,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -21541,6 +21842,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -21890,6 +22196,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -22251,6 +22562,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -22603,6 +22919,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -22967,6 +23288,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -23322,6 +23648,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -23677,6 +24008,11 @@
           [
             "Page/0"
           ]
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -24026,6 +24362,11 @@
           [
             "Page/0"
           ]
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -24369,6 +24710,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -24723,6 +25069,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -25084,6 +25435,11 @@
           [],
           []
         ],
+        "error-message": [
+          [],
+          [],
+          []
+        ],
         "text-contrast (dark)": [
           [
             "Page/0/1",
@@ -25437,6 +25793,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -25806,6 +26167,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -26152,6 +26518,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -26508,6 +26879,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -26855,6 +27231,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -27210,6 +27591,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -27559,6 +27945,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       }
     },
@@ -27895,6 +28286,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -28225,6 +28621,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -28580,6 +28981,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -28926,6 +29332,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -29279,6 +29690,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -29623,6 +30039,11 @@
           ]
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
@@ -29975,6 +30396,11 @@
             "Page/0",
             "Page/2/0"
           ]
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -30320,6 +30746,718 @@
           [
             "Page/0",
             "Page/2/0"
+          ]
+        ],
+        "error-message": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "invalid-fields-and-messages",
+      "static": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
+        ],
+        "frame-title": [
+          [],
+          [],
+          []
+        ],
+        "video-caption": [
+          [],
+          [],
+          []
+        ],
+        "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
+        ],
+        "clickable-look": [
+          [],
+          [],
+          []
+        ],
+        "list-style-semantics": [
+          [],
+          [],
+          []
+        ],
+        "motion": [
+          [],
+          [],
+          []
+        ],
+        "blink": [
+          [],
+          [],
+          []
+        ],
+        "definition-list": [
+          [],
+          [],
+          []
+        ],
+        "accesskeys": [
+          [],
+          [],
+          []
+        ],
+        "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
+        ],
+        "focus-clipped": [
+          [],
+          [],
+          []
+        ],
+        "hidden-overridden": [
+          [],
+          [],
+          []
+        ],
+        "state-mismatch": [
+          [],
+          [],
+          []
+        ],
+        "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
+          [
+            "Page/2",
+            "Page/4"
+          ],
+          [
+            "Page/2",
+            "Page/4"
+          ],
+          [
+            "Page/0",
+            "Page/2",
+            "Page/4"
+          ]
+        ]
+      },
+      "runtime": {
+        "accessible-name": [
+          [],
+          [],
+          []
+        ],
+        "text-contrast": [
+          [],
+          [],
+          []
+        ],
+        "occluded-target": [
+          [],
+          [],
+          []
+        ],
+        "target-overlap": [
+          [],
+          [],
+          []
+        ],
+        "visual-order": [
+          [],
+          [],
+          []
+        ],
+        "hidden-focusable": [
+          [],
+          [],
+          []
+        ],
+        "empty-heading": [
+          [],
+          [],
+          []
+        ],
+        "heading-order": [
+          [],
+          [],
+          []
+        ],
+        "nested-interactive": [
+          [],
+          [],
+          []
+        ],
+        "duplicate-id": [
+          [],
+          [],
+          []
+        ],
+        "aria-reference": [
+          [],
+          [],
+          []
+        ],
+        "positive-tabindex": [
+          [],
+          [],
+          []
+        ],
+        "multiple-main": [
+          [],
+          [],
+          []
+        ],
+        "scrollable-region-focusable": [
+          [],
+          [],
+          []
+        ],
+        "reflow": [
+          [],
+          [],
+          []
+        ],
+        "focus-obscured": [
+          [],
+          [],
+          []
+        ],
+        "focus-area": [
+          [],
+          [],
+          []
+        ],
+        "pointer-disabled": [
+          [],
+          [],
+          []
+        ],
+        "small-text": [
+          [],
+          [],
+          []
+        ],
+        "target-size": [
+          [],
+          [],
+          []
+        ],
+        "image-alt": [
+          [],
+          [],
+          []
+        ],
+        "form-label": [
+          [],
+          [],
+          []
+        ],
+        "label-for": [
+          [],
+          [],
+          []
+        ],
+        "list-structure": [
+          [],
+          [],
+          []
+        ],
+        "radio-group": [
+          [],
+          [],
+          []
+        ],
+        "landmark-name": [
+          [],
+          [],
+          []
+        ],
+        "role-valid": [
+          [],
+          [],
+          []
+        ],
+        "interactive-role-focusable": [
+          [],
+          [],
+          []
+        ],
+        "link-in-text-block": [
+          [],
+          [],
+          []
+        ],
+        "table-headers": [
+          [],
+          [],
+          []
+        ],
+        "td-headers": [
+          [],
+          [],
+          []
+        ],
+        "fieldset-name": [
+          [],
+          [],
+          []
+        ],
+        "label-in-name": [
+          [],
+          [],
+          []
+        ],
+        "link-purpose": [
+          [],
+          [],
+          []
+        ],
+        "link-text": [
+          [],
+          [],
+          []
+        ],
+        "role-parent": [
+          [],
+          [],
+          []
+        ],
+        "aria-attr": [
+          [],
+          [],
+          []
+        ],
+        "aria-value": [
+          [],
+          [],
+          []
+        ],
+        "presentation-conflict": [
+          [],
+          [],
+          []
+        ],
+        "empty-th": [
+          [],
+          [],
+          []
+        ],
+        "input-button-name": [
+          [],
+          [],
+          []
+        ],
+        "autocomplete": [
+          [],
+          [],
+          []
+        ],
+        "scope": [
+          [],
+          [],
+          []
+        ],
+        "p-as-heading": [
+          [],
+          [],
+          []
+        ],
+        "orientation": [
+          [],
+          [],
+          []
+        ],
+        "focus-visible": [
+          [],
+          [],
+          []
+        ],
+        "state-contrast": [
+          [],
+          [],
+          []
+        ],
+        "text-spacing": [
+          [],
+          [],
+          []
+        ],
+        "frame-title": [
+          [],
+          [],
+          []
+        ],
+        "video-caption": [
+          [],
+          [],
+          []
+        ],
+        "autoplay-audio": [
+          [],
+          [],
+          []
+        ],
+        "hover-only": [
+          [],
+          [],
+          []
+        ],
+        "clickable-look": [
+          [],
+          [],
+          []
+        ],
+        "list-style-semantics": [
+          [],
+          [],
+          []
+        ],
+        "motion": [
+          [],
+          [],
+          []
+        ],
+        "blink": [
+          [],
+          [],
+          []
+        ],
+        "definition-list": [
+          [],
+          [],
+          []
+        ],
+        "accesskeys": [
+          [],
+          [],
+          []
+        ],
+        "server-side-image-map": [
+          [],
+          [],
+          []
+        ],
+        "fragment-target": [
+          [],
+          [],
+          []
+        ],
+        "input-image-alt": [
+          [],
+          [],
+          []
+        ],
+        "icon-font-name": [
+          [],
+          [],
+          []
+        ],
+        "generated-name": [
+          [],
+          [],
+          []
+        ],
+        "focus-clipped": [
+          [],
+          [],
+          []
+        ],
+        "hidden-overridden": [
+          [],
+          [],
+          []
+        ],
+        "state-mismatch": [
+          [],
+          [],
+          []
+        ],
+        "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
+          [
+            "Page/2",
+            "Page/4"
+          ],
+          [
+            "Page/2",
+            "Page/4"
+          ],
+          [
+            "Page/0",
+            "Page/2",
+            "Page/4"
           ]
         ]
       }
@@ -30706,6 +31844,11 @@
           [],
           [],
           []
+        ],
+        "error-message": [
+          [],
+          [],
+          []
         ]
       },
       "runtime": {
@@ -31085,6 +32228,11 @@
           []
         ],
         "focus-transparent": [
+          [],
+          [],
+          []
+        ],
+        "error-message": [
           [],
           [],
           []
