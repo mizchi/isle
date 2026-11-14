@@ -98,6 +98,12 @@ const cases = [
   {name: 'color-scheme-system-colors', html: '<div class="page"><section class="s1"><p class="t1">Follows the scheme</p><p class="t2">Grey</p></section><section class="s2"><p class="t3">Always dark</p><p class="t4">Grey</p></section></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:48px;${type}}.s1,.s2{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;background:Canvas;color:CanvasText}.s1{color-scheme:light dark}.s2{color-scheme:dark}.t1,.t2,.t3,.t4{display:block}.t2,.t4{color:#555}`,
     boxes: {'.t1': label, '.t2': label, '.t3': label, '.t4': label}, schemes: ['dark']},
+  {name: 'caption-outside-table-background', html: '<div class="page"><table class="t"><caption class="cap">Prices</caption><tbody class="b"><tr class="r"><td class="d">Tea</td></tr></tbody></table></div>',
+    css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;${type}}.t{table-layout:fixed;inline-size:300px;border-spacing:0;background:#000;color:#fff}.cap,.d{block-size:20px;padding:0}`,
+    boxes: {'.cap': label, '.d': label},
+    // vlmkit composites DOM ancestors' backgrounds, as the table's background were behind the caption;
+    // the rendered pixels decide instead: white caption text over the white page leaves the caption all white.
+    pixels: {selector: '.cap', uniform: [255, 255, 255]}},
   {name: 'clickable-lists-and-markup', html: '<div class="page"><div class="card"></div><button class="b" aria-label="Go"></button><ul class="l"><li class="i"></li></ul><ul class="l2" role="list"><li class="i"></li></ul><dl class="d"><dt class="dt"></dt><p class="p"></p></dl><marquee class="m"></marquee><a class="k1" href="#1" accesskey="s" aria-label="One"></a><a class="k2" href="#2" accesskey="s" aria-label="Two"></a><img class="im" src="data:," alt="Map" ismap></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.card{display:block;cursor:pointer}.b{${button}cursor:pointer;inline-size:24px;block-size:24px}.l,.l2,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;list-style:none}.i,.dt,.p{display:block}.m{display:block;inline-size:200px;block-size:24px}.k1,.k2{display:block}.im{display:block;inline-size:24px;block-size:24px}`},
 ];
@@ -425,7 +431,8 @@ async function runtime(page, sample) {
     const walk = (node, path) => {
       const style = getComputedStyle(node);
       if (style.display !== 'none' && style.visibility === 'visible' && [...node.childNodes].some(n => n.nodeType === 3 && n.data.trim())) {
-        const layers = []; for (let n = node; n; n = n.parentElement) layers.push(parse(getComputedStyle(n).backgroundColor));
+        // A table's background paints the table box, not its caption (measured in a screenshot).
+        const layers = []; for (let n = node; n; n = n.parentElement) if (!(n.tagName === 'TABLE' && node.closest('caption')?.parentElement === n)) layers.push(parse(getComputedStyle(n).backgroundColor));
         let bg = {r: 255, g: 255, b: 255, a: 1}; for (const layer of layers.reverse()) bg = over(layer, bg);
         const fg = over(parse(style.color), bg), [x, y] = [lum(fg), lum(bg)].sort((p, q) => q - p), ratio = (x + 0.05) / (y + 0.05);
         const size = parseFloat(style.fontSize), large = size >= 24 || (size >= 56 / 3 && Number(style.fontWeight) >= 700);
@@ -506,6 +513,24 @@ for (const sample of cases) {
     writeFileSync(file, document);
     const run = spawnSync('pnpm', ['exec', 'vlmkit', 'check', 'a11y', 'contrast', file.pathname, '--json', '--output-dir', new URL('../test-results/a11y-contrast-eval/', import.meta.url).pathname], {encoding: 'utf8', env: process.env});
     const gate = JSON.parse(run.stdout);
+    if (sample.pixels) {
+      await page.setViewportSize({width: 1280, height});
+      await page.setContent(document);
+      const box = await page.locator(sample.pixels.selector).boundingBox();
+      const png = (await page.screenshot({clip: box})).toString('base64');
+      const distinct = await page.evaluate(async data => {
+        const image = new Image(); image.src = `data:image/png;base64,${data}`; await image.decode();
+        const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
+        const context = canvas.getContext('2d'); context.drawImage(image, 0, 0);
+        const pixels = context.getImageData(0, 0, image.width, image.height).data, out = new Set();
+        for (let i = 0; i < pixels.length; i += 4) out.add(`${pixels[i]},${pixels[i + 1]},${pixels[i + 2]}`);
+        return [...out];
+      }, png);
+      expect(distinct, 'rendered caption pixels').toEqual([sample.pixels.uniform.join(',')]);
+      expect(rows.some(r => r.rule === 'text-contrast' && r.path && holds({...r, heightRange: undefined}, 1280)), 'static contrast finding at 1280').toBe(true);
+      table.push(row);
+      return;
+    }
     const vlmkit = gate.findings.length > 0, staticLow = rows.some(r => r.rule === 'text-contrast' && holds({...r, heightRange: undefined}, 1280));
     expect(staticLow, `contrast at 1280: static ${staticLow} vs vlmkit ${vlmkit}`).toBe(vlmkit);
     table.push(row);

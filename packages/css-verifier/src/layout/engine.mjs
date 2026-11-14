@@ -522,7 +522,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // Where a single line of text starts inside the box (font-derived text extents).
         content: { left: add(px(style['border-left']), px(style['padding-left'])), top: add(px(style['border-top']), px(style['padding-top'])), inline: contentInline },
         textAlign: style['text-align'], painted: paints(style),
-        paint: paintFacts(style), chain: [...ancestorPaint, ...parents.map(parent => paintFacts(parent.style)), paintFacts(style)],
+        paint: paintFacts(style), chain: [...ancestorPaint, ...parents.map((parent, i) => captionBackdrop(parent, parents[i + 1]?.box ?? box, paintFacts(parent.style))), paintFacts(style)],
         contentBlockSize: contentBlock ?? null, fontSize: style['font-size'],
         // The focused paint (paint-only :focus/:focus-visible/:focus-within rules) of focusable boxes.
         ...(focusableBox(box) || box.tag === 'a' ? { hoverStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, hoverState).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
@@ -741,6 +741,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       ...Object.fromEntries(Object.entries(spacingEdges).map(([key, value]) => [key, `${number(value)}px`])), tableColumns: automatic ? null : widths.every(Boolean) ? widths.reduce(add, zero) : null, tableGaps: mul(h, q(columns - 1)),
       ...(autoWidth ? { tableShrink: autoWidth } : {}), ...(autoMinimum ? { tableAutoMinimum: autoMinimum } : {}) };
     return grid;
+  }
+  // The table's background paints the table box only, not its caption (measured): content of the
+  // caption sees through the table's background.
+  function captionBackdrop(parent, next, paint) {
+    return parent.box.tag === 'table' && next?.tableCaption ? { ...paint, backgroundColor: 'transparent', backgroundImage: 'none' } : paint;
   }
   // Cells fill their column (and span colspan columns); a caption is a full-width first or last row.
   function tablePlacement(box, style) {

@@ -880,3 +880,11 @@ test('automatic tables whose content fits their px columns are laid out like fix
   assert.equal(run(text, colored, {viewport: tableView, boxes: {'.a': {minInlineSize: 60, intrinsicBlockSize: 18}}}).status, 'verified');
   assert.equal(run(text, colored, {viewport: tableView, boxes: {'.a': {minInlineSize: 90, intrinsicBlockSize: 18}}}).status, 'unknown');
 });
+
+test('a caption does not sit on its table background', () => {
+  const tree = {tag: 'main', classes: ['page'], children: [{tag: 'table', classes: ['t'], children: [{tag: 'caption', classes: ['cap'], text: true}, {tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['d'], text: true}]}]}]}]};
+  const css = `.page { display: grid; grid-template-columns: minmax(0, 1fr); background: #fff; }\n.t { table-layout: fixed; inline-size: 300px; border-spacing: 0; background: #000; color: #fff; }\n.cap, .d { block-size: 20px; padding: 0; }`;
+  const report = run(tree, css, {boxes: {'.cap': {minInlineSize: 1, intrinsicBlockSize: 20}, '.d': {minInlineSize: 1, intrinsicBlockSize: 20}}});
+  // White caption text over the white page (the table's black is behind the cells only).
+  assert.deepEqual(find(report, 'E_A11Y_CONTRAST').map(d => d.box), ['.cap']);
+});
