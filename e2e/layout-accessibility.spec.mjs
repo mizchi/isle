@@ -130,6 +130,8 @@ const cases = [
   {name: 'new-window-links-and-forms', html: '<div class="page"><a class="l1" href="/a" target="_blank">Docs</a><a class="l2" href="/b" target="_blank">Docs (opens in a new tab)</a><form class="f1"><input class="i" type="text" aria-label="Q"></form><form class="f2"><input class="i" type="text" aria-label="Q"><button class="s">Go</button></form><form class="f3"><input class="i" type="text" aria-label="Q"><button class="s" type="button">Go</button></form></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:auto;background:#fff;color:#000;${type}}.l1,.l2{display:block;color:#000}.f1,.f2,.f3{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px}.i,.s{${button}inline-size:200px;block-size:30px}`,
     boxes: {'.l1': label, '.l2': label, '.s': label}},
+  {name: 'hit-area-expansion', html: '<div class="page"><div class="row tight"><a class="b1" href="/a" aria-label="A"></a><a class="b2" href="/b" aria-label="B"></a></div><div class="row"><a class="b3" href="/c" aria-label="C"></a><a class="b4" href="/d" aria-label="D"></a></div></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:60px;background:#fff}.row{display:grid;grid-template-columns:16px 16px;column-gap:8px;grid-template-rows:16px;padding:12px}.tight{column-gap:4px}.b1,.b2,.b3,.b4{display:grid;position:relative;background:#000}.b3::after,.b4::after{content:"";position:absolute;left:-4px;top:-4px;inline-size:24px;block-size:24px}`, skip: ['target-overlap', 'occluded-target']},
   {name: 'orientation-rotation', html: '<div class="page"><main class="m"></main></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.m{display:block;block-size:100px}@media (orientation: portrait){.m{transform:rotate(90deg)}}`},
   {name: 'visually-hidden-focus', html: '<div class="page"><a class="s1" href="/a">Skip</a><a class="s2" href="/b">Skip</a><a class="s3" href="/c">Skip</a></div>',
@@ -297,7 +299,21 @@ async function runtime(page, sample) {
     const shown = node => { for (let n = node; n; n = n.parentElement) if (getComputedStyle(n).display === 'none') return false; return getComputedStyle(node).visibility === 'visible' && !node.closest('[aria-hidden="true"]'); };
     // The inline exception: targets in a sentence (display: inline) are exempt.
     const targetsAll = [...document.body.firstElementChild.querySelectorAll('a[href], button, input:not([type=hidden]), select, textarea'), ...(document.body.firstElementChild.matches('a[href], button, input:not([type=hidden]), select, textarea') ? [document.body.firstElementChild] : [])].filter(shown).map(n => ({n, r: n.getBoundingClientRect()}));
-    const targets = targetsAll.filter(t => getComputedStyle(t.n).display !== 'inline');
+    // A small target's area is where hit testing reaches it (a ::before/::after can enlarge it): the bounding box of
+    // the points within 30px whose elementFromPoint is the target or inside it.
+    const hitBox = t => {
+      if (t.r.width >= size && t.r.height >= size) return t.r;
+      // Only a target with an absolutely positioned ::before/::after can reach past its box (edge pixels of plain
+      // controls hit-test a half pixel outside them in Chromium, so they keep their rect).
+      if (!['::before', '::after'].some(p => { const s = getComputedStyle(t.n, p); return s.content !== 'none' && s.content !== 'normal' && s.position === 'absolute'; })) return t.r;
+      let l = Infinity, tp = Infinity, rt = -Infinity, bt = -Infinity;
+      for (let y = Math.floor(t.r.top - 30); y <= t.r.bottom + 30; y++) for (let x = Math.floor(t.r.left - 30); x <= t.r.right + 30; x++) {
+        const hit = document.elementFromPoint(x + 0.5, y + 0.5);
+        if (hit && t.n.contains(hit)) { l = Math.min(l, x); tp = Math.min(tp, y); rt = Math.max(rt, x + 1); bt = Math.max(bt, y + 1); }
+      }
+      return l === Infinity || (rt - l <= t.r.width && bt - tp <= t.r.height) ? t.r : {x: l, y: tp, left: l, top: tp, right: rt, bottom: bt, width: rt - l, height: bt - tp};
+    };
+    const targets = targetsAll.filter(t => getComputedStyle(t.n).display !== 'inline').map(t => ({...t, r: hitBox(t)}));
     const small = t => t.r.width < size || t.r.height < size, centre = t => [t.r.x + t.r.width / 2, t.r.y + t.r.height / 2];
     const failing = t => {
       if (!small(t)) return false;

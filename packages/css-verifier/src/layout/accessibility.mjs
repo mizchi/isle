@@ -1167,7 +1167,23 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   const center = row => ({ inline: sum(row.origin.inline, times(row.inline, q(1 / 2))), block: sum(row.origin.block, times(row.block, q(1 / 2))) });
   const undersized = row => { const narrow = below(row.region, row.inline, scalar(S)), wide = row.region && clip(row.region, diff(row.inline, scalar(S))); return [narrow, below(wide, row.block, scalar(S))].filter(Boolean); };
   // Inline targets (in a sentence) are exempt from SC 2.5.8 and 2.5.5.
-  const exposed = geometry.filter(row => interactive(row) && visible(row) && !hiddenFrom(row.path) && !row.inlineFlow);
+  // A ::before/::after of the target that receives the pointer and contains its border box (the hit-area expansion,
+  // inset: -10px) is the target's area where it holds.
+  const parentOf = path => path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '';
+  const exposed = geometry.filter(row => interactive(row) && visible(row) && !hiddenFrom(row.path) && !row.inlineFlow).flatMap(row => {
+    if (!row.origin) return [row];
+    const pads = everything.filter(p => p.box.pseudo && parentOf(p.path) === row.path && p.origin && p.block && visible(p) && p.paint.pointerEvents !== 'none');
+    let rest = [row.region]; const out = [];
+    for (const pad of pads) {
+      let holds = intersect(row.region, pad.region);
+      holds = atMost(holds, pad.origin.inline, row.origin.inline); holds = atMost(holds, pad.origin.block, row.origin.block);
+      holds = atMost(holds, right(row), right(pad)); holds = atMost(holds, bottom(row), bottom(pad));
+      if (!holds) continue;
+      for (const piece of rest.map(r => intersect(r, holds)).filter(Boolean)) out.push({ ...row, region: piece, origin: pad.origin, inline: pad.inline, block: pad.block });
+      rest = rest.flatMap(r => subtract(r, holds));
+    }
+    return out.length ? [...out, ...rest.map(region => ({ ...row, region }))] : [row];
+  });
   for (const target of exposed) {
     const small = undersized(target);
     if (!small.length) continue;

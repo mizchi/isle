@@ -1416,3 +1416,15 @@ test('orientation: a quarter-turn rotation of the main content in one orientatio
   assert.deepEqual(rotated('.m { transform: rotate(90deg); }'), []);
   assert.deepEqual(rotated('@media (orientation: portrait) { .m { transform: rotate(180deg); } }'), []);
 });
+
+test('target-size: a ::after that enlarges the hit area counts as the target', () => {
+  const a = c => ({tag: 'a', classes: [c], href: '/x', focusable: true, named: true});
+  const tree = page([{tag: 'div', classes: ['row'], children: [a('b1'), a('b2')]}]);
+  const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: 40px; }\n.row { display: grid; grid-template-columns: 16px 16px; column-gap: 4px; grid-template-rows: 16px; padding: 12px; }\n.b1, .b2 { display: grid; position: relative; }\n${extra}`);
+  const report = extra => run(tree, css(extra));
+  assert.deepEqual(find(report(''), 'E_A11Y_TARGET_SIZE').map(d => d.box).sort(), ['.b1', '.b2']);
+  // Each grows to 24×24 around itself (left/top -4px): no longer undersized, so SC 2.5.8 holds.
+  const grown = report('.b1::after, .b2::after { content: ""; position: absolute; left: -4px; top: -4px; inline-size: 24px; block-size: 24px; }');
+  assert.notEqual(grown.status, 'unknown');
+  assert.deepEqual(find(grown, 'E_A11Y_TARGET_SIZE'), []);
+});
