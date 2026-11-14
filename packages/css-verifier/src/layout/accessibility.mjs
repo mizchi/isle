@@ -568,12 +568,20 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   }
 
   // focus-offscreen: a focusable box entirely before the viewport's start edge (left: -9999px and the like). Overflow
-  // toward negative coordinates is not scrollable, and a state rule cannot move it back (state rules only repaint, or
-  // the layout is Unknown), so the focused element is never on screen (SC 2.4.7). The root sits at the host insets.
-  for (const target of placed.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo)) {
+  // toward negative coordinates is not scrollable, so unless a :focus rule moves it back by its insets, the focused
+  // element is never on screen (SC 2.4.7). The root sits at the host insets.
+  // A :focus rule that moves the box by its insets (stateGeometry) places it at the focused origin instead.
+  for (const base of placed.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo)) {
+    const moved = (base.focusStates ?? []).filter(state => state.origin || state.originUnknown);
+    const pieces = moved.length ? [...moved.map(state => ({ region: intersect(base.region, state.region), origin: state.origin, unknown: state.originUnknown })),
+      ...moved.reduce((rest, state) => rest.flatMap(r => subtract(r, state.region)), [base.region]).map(region => ({ region, origin: base.origin }))] : [{ region: base.region, origin: base.origin }];
+    for (const piece of pieces.filter(piece => piece.region)) {
+    if (piece.unknown) { report(unknowns, 'U_A11Y_FOCUS_POSITION', 'unknown', `${base.box.label}: where its :focus rule moves it is not modeled here`, base, piece.region, { rule: 'focus-offscreen' }); continue; }
+    const target = { ...base, region: piece.region, origin: piece.origin };
     const before = atMost(target.region, right(target), scalar(-hostInset)), above = block ? atMost(target.region, bottom(target), scalar(-hostBlockInset)) : null;
     const outside = [...(before ? [before] : []), ...(above ? (before ? subtract(above, before) : [above]) : [])];
     for (const region of outside) report(findings, 'E_A11Y_FOCUS_OFFSCREEN', 'error', `${target.box.label} takes focus but lies entirely off screen (before the viewport's start edge), so the focused element is never visible`, target, region, { rule: 'focus-offscreen' });
+    }
   }
 
   // focus-obscured: a later painted box contains a focusable box. focus-area: nothing to show focus on.

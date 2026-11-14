@@ -280,7 +280,11 @@ export function parseLayoutCSS(sheets, diagnostic) {
       // A state rule (:hover, :focus, …) may only repaint: the layout is proved for the base state.
       // Preference rules (prefers-reduced-motion, prefers-color-scheme, …) likewise: layout is proved under the default preferences.
       if (preferences.length && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_QUERY', `Preference media rules may only change paint and animation; ${node.selector} changes layout`, node.source.start.line); continue; }
-      if (selectors.some(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `State selector rules may only change paint (color, background, outline, box-shadow, text-decoration); ${node.selector} changes layout`, node.source.start.line); continue; }
+      // A :focus/:focus-visible rule may also move an absolutely positioned box by its insets (the skip-link pattern);
+      // the engine models that for the accessibility checks only and keeps every other proof Unknown.
+      const insetMove = /^(?:left|right|top|bottom|inset(?:-inline|-block)?)$/;
+      const stateGeometry = selectors.every(selector => ['focus', 'focus-visible'].includes(selector.state)) && node.nodes.some(d => d.type === 'decl' && insetMove.test(d.prop.toLowerCase())) && node.nodes.every(d => d.type !== 'decl' || d.prop.startsWith('--') || statePaint.test(d.prop.toLowerCase()) || insetMove.test(d.prop.toLowerCase()));
+      if (!stateGeometry && selectors.some(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `State selector rules may only change paint (color, background, outline, box-shadow, text-decoration); ${node.selector} changes layout`, node.source.start.line); continue; }
       const declarations = [];
       const authored=node.nodes.filter(declaration=>declaration.type==='decl');
       const conflicts=findCSSWriteConflicts(authored.map(declaration=>declaration.prop));
@@ -305,7 +309,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
           }
         } catch (error) { problem(error.code ?? 'U_LAYOUT_CSS', error.message, declaration.source.start.line); }
       }
-      rules.push({ selectors, contexts, declarations, layer, file: filename, ...(preferences.length ? { preferences } : {}) });
+      rules.push({ selectors, contexts, declarations, layer, file: filename, ...(preferences.length ? { preferences } : {}), ...(stateGeometry ? { stateGeometry: true } : {}) });
     }
   };
   for (const sheet of sheets) {

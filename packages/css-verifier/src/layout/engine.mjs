@@ -70,6 +70,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
+  if (rules.some(rule => rule.stateGeometry) && !options.accessibility && !options.integrity) unknown('U_LAYOUT_SELECTOR', 'A :focus rule moves a box by its insets; that is modeled for the accessibility and integrity checks only');
   // style attributes: each element's declarations as a rule that matches only it, element-attached in the cascade.
   for (const box of boxes.filter(box => box.inlineStyle !== undefined)) {
     if (box.inlineStyle === 'dynamic') { unknown('U_LAYOUT_CSS', `${box.label}: a dynamic style attribute decides its styles`, undefined, box); continue; }
@@ -548,6 +549,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   const focusState = new Set(['focus', 'focus-visible', 'focus-within']), hoverState = new Set(['hover']);
   const focusableBox = box => box.focusable === true || box.tabIndex >= 0 || (['button', 'select', 'textarea'].includes(box.tag) && box.focusable !== false) || (box.tag === 'input' && box.focusable !== false && box.inputType !== 'hidden');
+  // A :focus rule that moves an absolutely positioned box by its insets: where the focused box lands (stateGeometry
+  // rules; accessibility checks only). Any other focused inset change is not modeled.
+  function focusMove(box, style, focused, available, inline, blockSize, parents) {
+    if (['left', 'right', 'top', 'bottom'].every(key => focused[key] === style[key])) return {};
+    if (style.position !== 'absolute' || style.transform !== 'none') throw Object.assign(new Error(`${box.label}: a :focus rule changes the insets of a box that is not absolutely positioned (or is transformed)`), { code: 'U_LAYOUT_SELECTOR' });
+    const origin = untranslatedOrigin(focused, available, inline, blockSize, parents);
+    return origin ? { origin } : { originUnknown: true };
+  }
   function finish(box, style, region, inline, contentInline, blockSize, contentBlock, available, parents, emit) {
     const contract = box.contract ?? {};
     if (emit) {
@@ -599,7 +608,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // The focused paint (paint-only :focus/:focus-visible/:focus-within rules) of focusable boxes.
         ...(focusableBox(box) || box.tag === 'a' ? { hoverStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, hoverState).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
         ...(style['animation-name'] !== 'none' ? { reducedMotion: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set(['prefers-reduced-motion:reduce'])).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
-        ...(focusableBox(box) ? { focusStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, focusState).map(s => ({ region: s.region, paint: paintFacts(s.style), authorOutline: Boolean(s.style.$sources['outline-style']) })) } : {}) });
+        ...(focusableBox(box) ? { focusStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, focusState).map(s => ({ region: s.region, paint: paintFacts(s.style), authorOutline: Boolean(s.style.$sources['outline-style']), ...focusMove(box, style, s.style, available, inline, blockSize, parents) })) } : {}) });
       if (box.inline?.length) inlineContent(box, style, region, [...parents, { box, style }], geometry.at(-1).chain, geometry.at(-1));
       const shown = scaled(style, parents.some(p => p.clipScope) ? null : origin, inline, blockSize);
       const rect=shown.origin && shown.block ? {inlineStart:affine(shown.origin.inline),blockStart:affine(shown.origin.block),inlineSize:affine(shown.inline),blockSize:affine(shown.block)} : null;

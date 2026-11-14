@@ -1278,3 +1278,15 @@ test('focus-scrolled-under: a focusable box that can sit entirely behind a fixed
   // The viewport's scroll-padding lives on html, outside this root: Unknown.
   assert.equal(run(tree, css('html { scroll-padding-top: 60px; }')).diagnostics.filter(d => d.code === 'U_A11Y_SCROLL_PADDING').length, 1);
 });
+
+test('focus-offscreen: a :focus rule that moves the skip link back by its insets', () => {
+  const tree = page([{tag: 'a', classes: ['skip'], href: '#main', focusable: true, named: true}, {tag: 'div', classes: ['d']}]);
+  const css = focus => pageCSS(`.page { position: relative; background: #fff; grid-auto-rows: 30px; }\n.skip { position: absolute; left: -9999px; top: 0; inline-size: 100px; block-size: 30px; display: block; }\n${focus}`);
+  assert.equal(find(run(tree, css('.skip:focus { left: 0; }')), 'E_A11Y_FOCUS_OFFSCREEN').length, 0);
+  assert.equal(find(run(tree, css('.skip:focus { left: -5000px; }')), 'E_A11Y_FOCUS_OFFSCREEN').length, 1);
+  // :hover moving it is not the focused place; a moving :focus rule keeps layout proofs Unknown.
+  assert.equal(run(tree, css('.skip:hover { left: 0; }')).status, 'unknown');
+  assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css('.skip:focus { left: 0; }'), viewport: domain}).status, 'unknown');
+  // Moving a box that is not absolutely positioned is not modeled.
+  assert.equal(run(page([{tag: 'button', classes: ['b'], named: true}]), pageCSS(`.page { background: #fff; grid-auto-rows: 30px; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n.b:focus { left: 10px; }`)).status, 'unknown');
+});
