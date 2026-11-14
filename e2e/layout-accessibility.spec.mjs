@@ -114,8 +114,8 @@ const cases = [
     // Hit testing and raw rects see the clipped-away buttons "covered" by or overlapping the next row; the static rules make no claim on
     // clipped content (positions under a clip are withheld from it), which is what focus-clipped covers here.
     skip: ['occluded-target', 'target-overlap']},
-  {name: 'hidden-and-inert', html: '<div class="page"><button class="b1" hidden></button><button class="b2 shown" hidden></button><div class="w" inert><button class="b3"></button></div><button class="b4" aria-label="Go"></button></div>',
-    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff}.b1,.b2,.b3,.b4{appearance:none;padding:0;border:0;min-width:0;min-height:0;background:transparent}.b2,.b3,.b4{display:block}.shown{display:block}.w{display:grid;grid-template-columns:minmax(0,1fr)}`},
+  {name: 'hidden-and-inert', html: '<div class="page"><button class="b1" hidden></button><button class="b2 shown" hidden></button><div class="w" inert><button class="b3"></button></div><button class="b4" aria-label="Go" popovertarget="m"></button><div class="m" id="m" popover><button class="b5"></button></div></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff}.b1,.b2,.b3,.b4{appearance:none;padding:0;border:0;min-width:0;min-height:0;background:transparent}.b2,.b3,.b4{display:block}.shown{display:block}.w{display:grid;grid-template-columns:minmax(0,1fr)}.b5{display:block}`},
   {name: 'clickable-lists-and-markup', html: '<div class="page"><div class="card"></div><button class="b" aria-label="Go"></button><ul class="l"><li class="i"></li></ul><ul class="l2" role="list"><li class="i"></li></ul><dl class="d"><dt class="dt"></dt><p class="p"></p></dl><marquee class="m"></marquee><a class="k1" href="#1" accesskey="s" aria-label="One"></a><a class="k2" href="#2" accesskey="s" aria-label="Two"></a><img class="im" src="data:," alt="Map" ismap></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.card{display:block;cursor:pointer}.b{${button}cursor:pointer;inline-size:24px;block-size:24px}.l,.l2,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;list-style:none}.i,.dt,.p{display:block}.m{display:block;inline-size:200px;block-size:24px}.k1,.k2{display:block}.im{display:block;inline-size:24px;block-size:24px}`},
 ];
@@ -155,7 +155,7 @@ async function runtime(page, sample) {
       const {node} = await client.send('DOM.describeNode', {objectId: result.objectId});
       const {nodes} = await client.send('Accessibility.getPartialAXTree', {backendNodeId: node.backendNodeId, fetchRelatives: false});
       const name = nodes[0]?.name?.value ?? '';
-      const ariaHidden = await page.evaluate(indices => { let n = document.body.firstElementChild; for (const i of indices) n = n.children[i]; return n.closest('[aria-hidden="true"], [inert]') !== null; }, element.path.split('/').slice(1).map(Number));
+      const ariaHidden = await page.evaluate(indices => { let n = document.body.firstElementChild; for (const i of indices) n = n.children[i]; for (let a = n; a; a = a.parentElement) if (getComputedStyle(a).display === 'none') return true; return n.closest('[aria-hidden="true"], [inert]') !== null; }, element.path.split('/').slice(1).map(Number));
       if (fact.visibility === 'visible' && !ariaHidden && !name.trim()) found.get('accessible-name').add(element.path);
     }
   }

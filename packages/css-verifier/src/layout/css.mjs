@@ -366,6 +366,10 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   if (box.tag === 'small') values['font-size'] = 'ua';
   // [hidden] { display: none } (UA): author display overrides it.
   if(box.hiddenAttr===true) values.display='none';
+  // A closed popover: [popover]:not(:popover-open) { display: none } (UA); opening it is runtime state.
+  if(box.popover===true) values.display='none';
+  if(box.popover===true && ['html','body'].includes(box.tag)) throw Object.assign(new Error(`A popover on ${box.tag} would hide the whole page`),{code:'U_LAYOUT_ELEMENT'});
+  if(box.popover==='dynamic') throw Object.assign(new Error('A dynamic popover attribute decides whether it renders'),{code:'U_LAYOUT_ELEMENT'});
   if(box.hiddenAttr==='until-found' || box.hiddenAttr==='dynamic') throw Object.assign(new Error(`hidden=${box.hiddenAttr === 'dynamic' ? '(dynamic)' : 'until-found'} is outside the modeled rendering`),{code:'U_LAYOUT_ELEMENT'});
   const ua = { ...values };
   const initial = { ...defaults, ...textInitial, 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'box-shadow': 'none', 'z-index': 'auto', isolation: 'auto', transform: 'none', 'color-scheme': 'normal', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };

@@ -165,11 +165,13 @@ letter-spacing が 0 でないとき Chromium は任意の ligature を切る(CS
 描画と hit test の座標を動かすものなので accessibility・integrity の検査でだけ扱い、レイアウトの証明(transition・no-shift・座標の契約)では従来どおり Unknown。
 以前は z-index 自体が未対応で Unknown、opacity による context は考えていなかった。7通りの z-index/opacity と、5通りの入れ子(isolation を含む)で Chromium の hit test と一致した。
 
-### `hidden` と `inert` 属性
+### `hidden`・`inert`・`popover` 属性
 
 `hidden` は UA の `display: none`(作者の display が勝つ)。`hidden="until-found"` は content-visibility なので Unknown。
 `inert` の部分木は focus を受けず支援技術から隠れる(Chromium で Tab が飛ばし、AX tree で ignored)ので、focusable でなく aria-hidden と同じに扱う。
-どちらも以前は未対応の rendering 属性として拒否していた(Vite の検査も同じ)。
+`popover` は静的な状態では閉じているので UA の `[popover]:not(:popover-open) { display: none }` で描画しない。作者の display で閉じたまま描画されると
+UA の `position: fixed; inset: 0; margin: auto` で画面の中央に固定される(Chromium で測定)ので U_LAYOUT_POPOVER(fixed は模型の外)。
+いずれも以前は未対応の rendering 属性として拒否していた(Vite の検査も同じ)。`contenteditable` は focus と編集の振る舞いが単純な事実でないので拒否のまま。
 
 ### 生成 content(`::before`・`::after`)
 

@@ -1092,3 +1092,14 @@ test('the hidden and inert attributes', () => {
   const inert = page([{tag: 'div', classes: ['w'], inert: true, children: [{tag: 'button', classes: ['b']}]}]);
   assert.equal(find(run(inert, css('.w { display: grid; grid-template-columns: minmax(0, 1fr); }')), 'E_A11Y_NAME').length, 0);
 });
+
+test('a closed popover renders nothing unless author CSS overrides it', () => {
+  const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: 30px; }\n${extra}`);
+  const warn = (report, code) => report.accessibility.warnings.filter(d => d.code === code);
+  const tree = page([{tag: 'div', classes: ['p'], popover: true, children: [{tag: 'button', classes: ['b']}]}]);
+  const closed = run(tree, css('.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }'));
+  assert.equal(closed.status, 'verified', JSON.stringify(closed.diagnostics));
+  const shown = run(tree, css('.p { display: grid; grid-template-columns: minmax(0, 1fr); }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }'));
+  // Shown while closed it keeps the UA position: fixed (a centred box over the page): not modeled.
+  assert.deepEqual(shown.diagnostics.map(d => d.code), ['U_LAYOUT_POPOVER']);
+});
