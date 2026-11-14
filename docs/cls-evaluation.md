@@ -27,6 +27,9 @@ CLS は Layout Instability API の `layout-shift` エントリーの合計で決
 | カルーセル:トラックを `transform` で送る | なし | 0 |
 | カルーセル:トラックを `margin-left` で送る | 毎回 | 2 秒で 0.19 |
 | カルーセル:高さの違うスライドを `display` で切り替える | 下の内容が動く | 2 秒で 0.015 |
+| Web フォントの読み込み(`font-display: swap`、line-height が normal の3行、行ごとに 45px → 47px) | あり | 0.00037 |
+| 同じ入れ替えで、移動が 3px 未満(1行で 2px) | なし。Chromium は 3px 未満の移動を数えない | 0 |
+| `font-display: optional`(700ms 遅れて届く) | なし。後から入れ替えない | 0 |
 
 ここから導ける判断軸は次の4つである。
 

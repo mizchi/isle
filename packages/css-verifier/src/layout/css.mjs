@@ -282,7 +282,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map();
+  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -300,6 +300,16 @@ export function parseLayoutCSS(sheets, diagnostic) {
         continue;
       }
       // @keyframes only names an animation (paint); its frames are not modeled.
+      // @font-face declares a web font (no box of its own): its family, font-display and fallback-metric overrides
+      // decide whether text can change size when the file arrives (the font-swap rule).
+      if (node.type === 'atrule' && node.name.toLowerCase() === 'font-face') {
+        const descriptor = name => (node.nodes ?? []).find(d => d.type === 'decl' && d.prop.toLowerCase() === name)?.value.trim();
+        const family = descriptor('font-family')?.replace(/^["']|["']$/g, '');
+        if (!family) { problem('U_LAYOUT_CSS', '@font-face needs a font-family', node.source.start.line); continue; }
+        fontFaces.push({ family, display: (descriptor('font-display') ?? 'auto').toLowerCase(), local: /^\s*local\(/i.test(descriptor('src') ?? ''),
+          overrides: ['size-adjust', 'ascent-override', 'descent-override', 'line-gap-override'].filter(name => descriptor(name) !== undefined), file: filename, line: node.source.start.line });
+        continue;
+      }
       if (node.type === 'atrule' && /^(?:-webkit-)?keyframes$/i.test(node.name)) {
         const name = node.params.trim().replace(/^["']|["']$/g, ''); keyframes.add(name);
         // The paint of each frame (for the flash rule): offsets with their background-color and opacity.
@@ -392,7 +402,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
   }
   // An animation-name without @keyframes runs no animation.
   for (const rule of rules) for (const declaration of rule.declarations) if (declaration.property === 'animation-name' && !wide.has(declaration.value) && declaration.value !== 'none' && !keyframes.has(declaration.value)) declaration.value = 'none';
-  return { rules, layers, keyframeFrames };
+  return { rules, layers, keyframeFrames, fontFaces };
 }
 
 // The UA default family and the user's default font size are not author

@@ -172,6 +172,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // The untransformed re-layout (CSS transforms removed): the layout boxes, which is what a layout shift compares.
   const untransformed = preferences.includes('untransformed');
   let sawTransform = false;
+  const layoutWarnings = [];
   const animated = []; // boxes with a running animation whose keyframes lay out: {box, region, name}
   const domain = validateOptions(options), block = options.block ?? Boolean(options.viewport.height);
   const component = options.name ?? 'Document';
@@ -209,7 +210,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframeFrames } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframeFrames, fontFaces } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -894,6 +895,24 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const underClip = parents.some(p => p.clipScope);
       if (style.$sticky && parents.some(p => p.clipped || p.clipScope || (p.style && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible')))) throw Object.assign(new Error(`${box.label} is position: sticky inside a scrolling or clipping ancestor, which it would stick to`), { code: 'U_LAYOUT_CSS' });
       if (style['animation-name'] !== 'none' && style['animation-play-state'] !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(style['animation-duration']) && keyframeFrames.get(style['animation-name'])?.some(frame => frame.layout)) animated.push({ box, region, name: style['animation-name'], position: style.position });
+      // Font swap: text in a web font (an @font-face family first in font-family) whose box takes its height from the
+      // text is laid out with a fallback font until the file arrives, then again with the web font; unless the font is
+      // optional (never swapped in late) the text's lines can change and move what follows (a layout shift).
+      // The text changes its box when the box takes its height from it (line-height normal follows the font's metrics;
+      // wrapping text can change its line count) or its width (a flex item without a px width).
+      const singleLine = ['nowrap', 'pre'].includes(style['white-space']) || box.contract?.wrap === 'nowrap';
+      const heightFromFont = style['block-size'] === 'auto' && (!/^\d+(?:\.\d+)?px$/.test(style['line-height']) || !singleLine);
+      const widthFromFont = parents.at(-1)?.style?.display === 'flex' && !/^\d+(?:\.\d+)?px$/.test(style['inline-size']) && !/^\d+(?:\.\d+)?px$/.test(style['flex-basis']) && style['flex-grow'] === '0';
+      if ((box.text || box.inline?.length) && (heightFromFont || widthFromFont) && !layoutWarnings.some(w => w.path === box.path)) {
+        const families = String(style['font-family'] ?? '').split(',').map(f => f.trim().replace(/^["']|["']$/g, '').toLowerCase());
+        const faces = fontFaces.filter(face => face.family.toLowerCase() === families[0]);
+        if (faces.length && faces.some(face => face.display !== 'optional')) {
+          const face = faces.find(face => face.display !== 'optional');
+          const fallback = fontFaces.find(other => families.slice(1).includes(other.family.toLowerCase()) && other.overrides.length);
+          layoutWarnings.push({ code: 'W_LAYOUT_FONT_SWAP', severity: 'warning', box: box.label, path: box.path, family: face.family, display: face.display, ...(fallback ? { fallback: fallback.family } : {}),
+            message: `${box.label} is set in the web font ${face.family} (font-display: ${face.display}) and takes its ${heightFromFont ? 'height' : 'width'} from its text: when the font file arrives the text is laid out again${fallback ? `; the fallback ${fallback.family} overrides metrics (${fallback.overrides.join(', ')}), which only reduces the change` : ''}. Use font-display: optional, preload the font, match the fallback metrics (size-adjust, ascent-override, descent-override), or reserve the box's height`, ...ranges(region) });
+        }
+      }
       geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
         // overflow: clip clips without scrolling (hidden still scrolls a focused descendant into view).
@@ -1979,6 +1998,22 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
     }
   }
+  // A lazily loaded image in the initial viewport (its layout top above the viewport height somewhere, at the
+  // initial scroll position): it starts loading only after layout, later than an eager one, which delays the largest
+  // contentful paint when it is the hero image. Reported as a warning with the region where it is visible.
+  if (block && options.viewport.height && hovered === undefined && !options.$animationFrame && !options.$slideVariant) for (const row of sizes) {
+    const box = boxes.find(b => b.path === row.path);
+    if (box?.tag !== 'img' || box.imageSize?.loading !== 'lazy' || !row.$shown?.origin || !row.$shown.block || layoutWarnings.some(w => w.code === 'W_LAYOUT_LAZY_IN_VIEWPORT' && w.path === row.path)) continue;
+    const top = row.$shown.origin.block, bottom = sum(top, row.$shown.block), left = row.$shown.origin.inline;
+    // Visible: top < H, bottom > 0 and left < W.
+    let visible = clip(row.$shown.region, diff(height, top), true);
+    visible = visible && clip(visible, bottom, true);
+    visible = visible && clip(visible, diff(width, left), true);
+    if (!visible) continue;
+    const p = sample(visible);
+    layoutWarnings.push({ code: 'W_LAYOUT_LAZY_IN_VIEWPORT', severity: 'warning', box: row.box, path: row.path,
+      message: `${row.box} has loading="lazy" but is in the initial viewport (top ${number(evaluate(top, p))}px at viewport ${number(p.x)}px × ${number(p.y)}px): it loads later than an eager image; drop loading="lazy" for images above the fold (and consider fetchpriority="high" for the largest one)`, ...ranges(visible) });
+  }
   // Carousels (the WAI-ARIA pattern: aria-roledescription="carousel" with "slide" descendants): with each slide shown
   // in turn, nothing outside the slides may move, or switching slides is a layout shift (slides of different heights
   // move the content below; measured). The shown slide is the one without the hidden attribute, or the one carrying
@@ -2036,7 +2071,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     ...(boxes.some(box=>box.layoutContracts?.length) ? {layoutBindings:boxes.flatMap(box=>(box.layoutContracts ?? []).map(declaration=>({path:box.path,declaration})))} : {}),
     ...(geometry.some(row => row.bounds) ? { inlineBounds: geometry.filter(row => row.bounds).flatMap(row => row.bounds.map(piece => ({ box: row.box.label, path: row.path, ...ranges(piece.region), ...(block ? { regionConstraints: serialize(piece.region).constraints } : {}),
       ...Object.fromEntries(['outer', 'inner'].map(key => [key, piece[key] ? { inlineStart: affine(piece[key].origin.inline), blockStart: affine(piece[key].origin.block), inlineSize: affine(piece[key].inline), blockSize: affine(piece[key].block) } : null])) }))) } : {}),
-    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}),
+    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}), ...(layoutWarnings.length ? { layoutWarnings } : {}),
     ...(options.accessibility ? { accessibility: { rules: accessibilityRules.filter(accessibilityProfiles[options.accessibility.profile ?? 'all']), profile: options.accessibility.profile ?? 'all', contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), warnings: accessibilityWarnings, exempted: accessibilityExempted, notes: accessibilityNotes } } : {}),
     ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', warnings: integrityWarnings, exempted: integrityExempted } } : {}) };
 }

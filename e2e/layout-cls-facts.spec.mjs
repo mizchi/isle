@@ -202,3 +202,49 @@ test('static carousel slide-switch findings agree with Chromium layout shifts', 
     if (predicted) console.log('carousel score vs bound', name, measured.score, bound);
   }
 });
+
+test('font swap warnings: text whose box follows the web font shifts in Chromium; warned-free cases do not', async ({page}) => {
+  const {readFileSync} = await import('node:fs');
+  const roboto = readFileSync(new URL('../packages/css-verifier/text-metrics/fixtures/roboto-variable.ttf', import.meta.url));
+  await page.route('**/roboto.ttf', async route => { await new Promise(r => setTimeout(r, 700)); await route.fulfill({body: roboto, contentType: 'font/ttf'}); });
+  const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
+  const face = display => `@font-face{font-family:Roboto;src:url(/roboto.ttf);font-display:${display}}`;
+  const base = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{font-family:Roboto,sans-serif;font-size:40px}.b{height:40px;background:#444}';
+  const results = [];
+  for (const [name, css, html] of [
+    // Three lines at line-height normal: 45px (fallback) against 47px (Roboto) a line, 6px in all (Chromium ignores
+    // moves under 3px).
+    ['swap, line-height normal', face('swap') + base + '.t{width:260px}', '<div class="page"><p class="t">Hello wide world again</p><div class="b"></div></div>'],
+    ['swap, px line-height, one line', face('swap') + base + '.t{line-height:48px;white-space:nowrap}', '<div class="page"><p class="t">Hello world</p><div class="b"></div></div>'],
+    ['optional, line-height normal', face('optional') + base, '<div class="page"><p class="t">Hello world</p><div class="b"></div></div>'],
+    ['swap, px line-height, wrapping', face('swap') + base + '.t{line-height:48px;width:260px}', '<div class="page"><p class="t">Hello wide world</p><div class="b"></div></div>'],
+  ]) {
+    const report = analyzeHTML(html, {name: 'Page', viewport, css, boxes: {'.t': {minInlineSize: 300, intrinsicBlockSize: 48}}});
+    expect(report.status === 'unknown', `${name}: ${JSON.stringify(report.diagnostics)}`).toBe(false);
+    const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_FONT_SWAP');
+    // The page must not wait for the font: route it after first paint by measuring without waiting for load.
+    const measured = await shifts(page, `<style>${css}</style>${html}`, {wait: 2000});
+    results.push([name, warned, measured.score]);
+    // Sound direction: no warning means no shift.
+    if (!warned) expect(measured.score, `${name}: no warning, Chromium ${measured.score}`).toBe(0);
+  }
+  console.log('font swap', JSON.stringify(results));
+  // line-height normal follows the font's metrics: that warned case shifts with this font pair.
+  expect(results[0][1] && results[0][2] > 0, JSON.stringify(results)).toBe(true);
+});
+
+test('lazy images in the initial viewport: the static warning region agrees with Chromium geometry', async ({page}) => {
+  const css = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.sp{height:700px}img{display:block;width:100%;height:auto}';
+  const html = '<div class="page"><div class="sp"></div><img src="/slow.png" width="400" height="200" loading="lazy" alt=""></div>';
+  const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280, height: {min: 500, max: 1000}}});
+  const warnings = (report.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_LAZY_IN_VIEWPORT');
+  expect(warnings.length).toBe(1);
+  for (const [width, height] of [[320, 600], [800, 699], [800, 701], [1280, 1000]]) {
+    await page.setViewportSize({width, height});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body style="margin:0">${html}</body></html>`);
+    const visible = await page.evaluate(() => { const r = document.querySelector('img').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; });
+    // The warning region (rational constraints over W, H) contains the point exactly when Chromium shows the image.
+    const inside = warnings.some(w => w.range.min <= width && width <= w.range.max && (w.region?.constraints ?? []).every(c => { const v = s => { const [n, d = '1'] = String(s ?? '0').split('/'); return Number(n) / Number(d); }; const value = v(c.coefficient) * width + v(c.heightCoefficient) * height + v(c.constant); return c.strict ? value > 0 : value >= 0; }) && w.heightRange.min <= height && height <= w.heightRange.max);
+    expect(inside, `${width}×${height}: static ${inside}, Chromium ${visible}`).toBe(visible);
+  }
+});
