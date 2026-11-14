@@ -129,6 +129,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     spend(rules.length + 1);
     if (preferences.length) state = new Set([...(state ?? []), ...preferences]);
     if (box.pseudo) state = new Set([...(state ?? []), `::${box.pseudo}`]);
+    // :checked holds for a checkbox/radio with the checked attribute unless the unchecked state is asked for.
+    if (box.nativeStates?.checked && !state?.has('unchecked')) state = new Set([...(state ?? []), 'checked']);
     const relevant = rules.filter(rule => rule.selectors.some(selector => matches(selector, box, state)));
     const contexts = new Map();
     for (const rule of relevant) for (const condition of rule.contexts) if (!contexts.has(condition)) contexts.set(condition, context(condition, ancestors));
@@ -608,6 +610,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // The focused paint (paint-only :focus/:focus-visible/:focus-within rules) of focusable boxes.
         ...(focusableBox(box) || box.tag === 'a' ? { hoverStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, hoverState).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
         ...(style['animation-name'] !== 'none' ? { reducedMotion: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set(['prefers-reduced-motion:reduce'])).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
+        // Both checked states of a checkbox/radio (paint-only :checked rules), for the checked-indicator rule.
+        ...(box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType) ? { checkedStates: ['checked', 'unchecked'].map(name => styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set([name])).map(s => ({ region: s.region, paint: paintFacts(s.style) }))) } : {}),
         // The placeholder text's paint (::placeholder rules; Chromium's UA color is rgb(117, 117, 117), measured).
         ...(box.placeholder && ['input', 'textarea'].includes(box.tag) ? { placeholderPaint: styles({ ...box, pseudo: 'placeholder' }, region, [...parents, { box, style, names: [] }], style, false, false, new Set(['::placeholder'])).map(s => ({ region: s.region, color: s.style.$sources.color ? s.style.color : '#757575', opacity: s.style.opacity })) } : {}),
         ...(focusableBox(box) ? { focusStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, focusState).map(s => ({ region: s.region, paint: paintFacts(s.style), authorOutline: Boolean(s.style.$sources['outline-style']), ...focusMove(box, style, s.style, available, inline, blockSize, parents), ...(s.style['z-index'] !== style['z-index'] ? { zIndex: s.style['z-index'] !== 'auto' && (style.position !== 'static' || ['grid', 'flex'].includes(parents.at(-1)?.style.display)) ? Number(s.style['z-index']) : null } : {}) })) } : {}) });

@@ -102,6 +102,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | focus-contrast | フォーカスの表示が作者の outline だけ(他に変わる塗りがない)のとき、outline の色と、その下の背景(祖先の背景。`outline-offset` が負なら自身の背景)のコントラストが 3:1 未満(SC 1.4.11)。`currentcolor` はフォーカス時の文字色。Chromium の照合はフォーカスした画面の画素で測る | E_A11Y_FOCUS_CONTRAST |
 | field-boundary | text の input・checkbox・radio(appearance: none)・select・textarea の境界が見えない(opacity 0 で別の要素が描くものは除く):塗りと周りの背景、1px 以上の border のどの辺(塗りに重ねた色)と周りの背景も 3:1 未満(SC 1.4.11)。disabled は除く。border の色は `border` の一括指定・`border-color`・`border-<side>-color` から読む。Chromium の照合は画素で測る | E_A11Y_FIELD_BOUNDARY |
 | placeholder-contrast | placeholder の文字(`::placeholder` の color と opacity、既定は Chromium の UA の rgb(117, 117, 117)、測定)と、field の塗りのコントラストが文字の基準(AA 4.5:1・大きな文字 3:1、AAA 7:1・4.5:1)未満(SC 1.4.3) | E_A11Y_PLACEHOLDER_CONTRAST |
+| checked-indicator | `appearance: none` の checkbox・radio が checked と unchecked で同じ見た目(塗り・border・box-shadow・色・outline のどれも変わらない)、または変わるのが塗りだけで、二つの塗りの差が 3:1 未満(SC 1.4.11・1.4.1)。`:checked` は塗りだけを変える状態の規則として扱い、checked 属性のある要素の基本の状態に含める。`:checked::before` などは selector の範囲外(Unknown)。Chromium の照合は checked を切り替えた画素で測る | E_A11Y_CHECKED_INDICATOR |
 | aria-hidden-body | body の `aria-hidden="true"`。Chromium は body の aria-hidden を無視する(AX tree で測定)ので他の規則は中身を公開されたものとして扱い、尊重する UA では文書全体が隠れることを警告する | W_A11Y_ARIA_HIDDEN_BODY |
 | frame-title | 描画される iframe に title も名前もない(SC 4.1.2) | E_A11Y_FRAME_TITLE |
 | video-caption | 描画される video に kind=captions/subtitles の track がない(SC 1.2.2) | E_A11Y_VIDEO_CAPTION |

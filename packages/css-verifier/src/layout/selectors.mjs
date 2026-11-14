@@ -23,7 +23,7 @@ export function compileSelector(source, depth = 0) {
     const root = rest.match(/^:root(?![\w-])/i);
     if (root) { parts.push({ kind: 'root' }); specificity[1]++; rest = rest.slice(root[0].length); continue; }
     // A trailing user-action state (paint-only rules; see parseLayoutCSS).
-    const action = rest.match(/^:(hover|active|focus|focus-visible|focus-within)$/i);
+    const action = rest.match(/^:(hover|active|focus|focus-visible|focus-within|checked)$/i);
     if (action) { state = action[1].toLowerCase(); specificity[1]++; rest = ''; continue; }
     const pseudo = rest.match(/^::?(before|after)$/i) ?? rest.match(/^::(placeholder)$/i);
     if (pseudo) { pseudoElement = pseudo[1].toLowerCase(); specificity[2]++; rest = ''; continue; }

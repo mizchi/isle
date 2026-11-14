@@ -95,13 +95,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -1008,6 +1008,27 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       const zero = value => /^(?:0|0?\.0+|0%)$/.test(String(value).trim());
       if (zero(f.opacity) || row.chain.slice(0, -1).some(layer => zero(layer.opacity)))
         report(warnings, 'W_A11Y_FOCUS_TRANSPARENT', 'warning', `${row.box.label} stays at opacity 0 when focused, so its own focus indicator is invisible; another element must show where focus is`, row, region, { rule: 'focus-transparent' });
+    }
+  }
+
+  // checked-indicator (SC 1.4.11, 1.4.1): a custom checkbox/radio (appearance: none) must look different when checked.
+  // Nothing changing is an error; a change only of the fill needs 3:1 between the two fills. Indicators drawn by
+  // ::before/::after on :checked are outside the selector subset (Unknown), so every modeled indicator is a paint here.
+  for (const row of geometry.filter(row => row.checkedStates && visible(row) && !hiddenFrom(row.path) && row.chain && !row.chain.some(layer => /^(?:0|0?\.0+|0%)$/.test(String(layer.opacity).trim())))) {
+    const [checked, unchecked] = row.checkedStates;
+    for (const on of checked) for (const off of unchecked) {
+      const region = intersect(intersect(row.region, on.region), off.region);
+      if (!region) continue;
+      const a = on.paint, b = off.paint;
+      const others = a.backgroundImage !== b.backgroundImage || a.boxShadow !== b.boxShadow || a.color !== b.color || JSON.stringify(a.borderColors) !== JSON.stringify(b.borderColors) || a.outlineStyle !== b.outlineStyle || a.outlineColor !== b.outlineColor;
+      if (others) continue;
+      if (a.backgroundColor === b.backgroundColor) { report(findings, 'E_A11Y_CHECKED_INDICATOR', 'error', `${row.box.label} looks the same checked and unchecked`, row, region, { rule: 'checked-indicator' }); continue; }
+      const fill = paint => backdrop([...row.chain.slice(0, -1), { ...row.chain.at(-1), backgroundColor: paint.backgroundColor, color: '#000' }]);
+      const [x, y] = [fill(a), fill(b)];
+      if (x.unknown || y.unknown) { report(unknowns, 'U_A11Y_CHECKED_INDICATOR', 'unknown', `${row.box.label}: ${(x.unknown ?? y.unknown).replace('the text', 'the box')}`, row, region, { rule: 'checked-indicator' }); continue; }
+      const ratio = contrastRatio(x.bg, y.bg);
+      if (Math.abs(ratio - 3) < 1e-9) report(unknowns, 'U_A11Y_CHECKED_INDICATOR', 'unknown', `${row.box.label}: checked and unchecked fills at 3:1 within numeric error`, row, region, { rule: 'checked-indicator' });
+      else if (ratio < 3) report(findings, 'E_A11Y_CHECKED_INDICATOR', 'error', `${row.box.label}'s checked fill differs from the unchecked one by only ${ratio.toFixed(2)}:1 (3:1 needed)`, row, region, { rule: 'checked-indicator', ratio });
     }
   }
 

@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -707,7 +707,7 @@ test('hover-only: a control that hover reveals must also show on focus', () => {
 test('a rendered legend with explicit sizes is laid out in the fieldset border and names the group', () => {
   const radio = cls => ({tag: 'input', classes: [cls], inputType: 'radio', inputName: 'x', focusable: true, named: true});
   const css = '.fs { display: grid; grid-template-columns: 30px 30px; grid-template-rows: 30px; margin: 0; padding: 0; border: 2px solid #000; min-inline-size: 0; background: #fff; color: #000; }\n.lg { display: block; inline-size: 60px; block-size: 20px; padding: 0; font-size: 16px; line-height: 20px; }\n.a, .b { appearance: none; display: block; inline-size: 30px; block-size: 30px; padding: 0; border: 0; min-width: 0; min-height: 0; }\n';
-  const report = run({tag: 'fieldset', classes: ['fs'], children: [{tag: 'legend', classes: ['lg'], text: true}, radio('a'), radio('b')]}, css + '\n.a, .b { background: #000; }', {boxes: {'.lg': {minInlineSize: 1, intrinsicBlockSize: 20}}});
+  const report = run({tag: 'fieldset', classes: ['fs'], children: [{tag: 'legend', classes: ['lg'], text: true}, radio('a'), radio('b')]}, css + '\n.a, .b { background: #000; }\n.a:checked, .b:checked { box-shadow: inset 0 0 0 4px #fff; }', {boxes: {'.lg': {minInlineSize: 1, intrinsicBlockSize: 20}}});
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
   const legend = report.sizes.find(row => row.box === '.lg' && row.rect), first = report.sizes.find(row => row.box === '.a' && row.rect);
   assert.equal(legend.rect.blockStart.constant, '0');
@@ -1372,4 +1372,16 @@ test('placeholder-contrast: placeholder text needs the text contrast over the fi
   assert.deepEqual(codes('.i::placeholder { color: #ccc; }'), ['E_A11Y_PLACEHOLDER_CONTRAST']);
   assert.deepEqual(codes('.i::placeholder { color: #000; opacity: 0.3; }'), ['E_A11Y_PLACEHOLDER_CONTRAST']);
   assert.deepEqual(codes('.i { background: #eee; }'), ['E_A11Y_PLACEHOLDER_CONTRAST']); // #757575 on #eee: 4.0:1
+});
+
+test('checked-indicator: a custom checkbox must look different when checked', () => {
+  const tree = page([{tag: 'input', classes: ['c'], inputType: 'checkbox', named: true, focusable: true}]);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; grid-auto-rows: 30px; }\n.c { appearance: none; display: block; padding: 0; min-width: 0; min-height: 0; inline-size: 24px; block-size: 24px; border: 2px solid #000; background: #fff; }\n${extra}`);
+  const codes = extra => run(tree, css(extra)).diagnostics.filter(d => d.rule === 'checked-indicator').map(d => d.code);
+  assert.deepEqual(codes(''), ['E_A11Y_CHECKED_INDICATOR']);
+  assert.deepEqual(codes('.c:checked { background: #000; }'), []);
+  assert.deepEqual(codes('.c:checked { background: #eee; }'), ['E_A11Y_CHECKED_INDICATOR']);
+  assert.deepEqual(codes('.c:checked { box-shadow: inset 0 0 0 4px #000; }'), []);
+  // :checked rules only repaint; a :checked rule that moves layout stays Unknown.
+  assert.equal(run(tree, css('.c:checked { padding: 2px; }')).status, 'unknown');
 });
