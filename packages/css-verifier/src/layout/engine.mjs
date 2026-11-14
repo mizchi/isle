@@ -70,6 +70,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
+  if (rules.some(rule => rule.stateLayout) && !options.accessibility) unknown('U_LAYOUT_SELECTOR', 'A :focus rule changes the layout; the focused layout is modeled for the accessibility checks only');
   if (rules.some(rule => rule.stateGeometry) && !options.accessibility && !options.integrity) unknown('U_LAYOUT_SELECTOR', 'A state rule moves a box (focus insets or a transform); that is modeled for the accessibility and integrity checks only');
   // style attributes: each element's declarations as a rule that matches only it, element-attached in the cascade.
   for (const box of boxes.filter(box => box.inlineStyle !== undefined)) {
@@ -129,6 +130,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     spend(rules.length + 1);
     if (preferences.length) state = new Set([...(state ?? []), ...preferences]);
     if (box.pseudo) state = new Set([...(state ?? []), `::${box.pseudo}`]);
+    // The focused re-layout: the one focused box (focus-at:<path>) has :focus/:focus-visible, its ancestors :focus-within.
+    const focusAt = preferences.find(p => p.startsWith('focus-at:'))?.slice(9);
+    if (focusAt !== undefined && !box.pseudo && (box.path === focusAt || focusAt.startsWith(box.path + '/'))) state = new Set([...(state ?? []), 'focus-within', ...(box.path === focusAt ? ['focus', 'focus-visible'] : [])]);
     // :checked holds for a checkbox/radio with the checked attribute unless the unchecked state is asked for.
     if (box.nativeStates?.checked && !state?.has('unchecked')) state = new Set([...(state ?? []), 'checked']);
     const relevant = rules.filter(rule => rule.selectors.some(selector => matches(selector, box, state)));
@@ -1431,6 +1435,20 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const light = diagnostics.find(l => same(l, d));
         if (light) light.alsoUnder = [...(light.alsoUnder ?? []), 'prefers-color-scheme: dark'];
         else diagnostics.push({ ...d, preference: 'prefers-color-scheme: dark', message: `${d.message} (prefers-color-scheme: dark)` });
+      }
+    }
+    // Focus rules that change layout: each focusable box they can reach is laid out again focused, and the geometric
+    // focus findings for that box come from that layout instead of the unfocused one.
+    if (pristine && rules.some(rule => rule.stateLayout)) {
+      const geometricFocus = new Set(['E_A11Y_FOCUS_OBSCURED', 'E_A11Y_FOCUS_OFFSCREEN', 'E_A11Y_FOCUS_CLIPPED', 'E_A11Y_FOCUS_SCROLLED_UNDER', 'E_A11Y_FOCUS_AREA', 'E_A11Y_FOCUS_CLIPPED_AWAY']);
+      const layoutRules = rules.filter(rule => rule.stateLayout);
+      const all = []; (function walk(box, chain) { all.push({ box, chain }); for (const child of box.children ?? []) walk(child, [...chain, box]); })(root, []);
+      const reached = ({ box, chain }) => layoutRules.some(rule => rule.selectors.some(selector => (selector.state !== 'focus-within' && matches(selector, box, new Set(['focus', 'focus-visible', 'focus-within']))) || (selector.state === 'focus-within' && [...chain, box].some(a => matches(selector, a, new Set(['focus-within']))))));
+      for (const entry of all.filter(entry => focusableBox(entry.box) && reached(entry))) {
+        const focused = analyzeBoxTree(pristine, { ...options, integrity: undefined }, scrollbarProfile, budget, inlineSheets, [], [`focus-at:${entry.box.path}`]);
+        for (let i = diagnostics.length - 1; i >= 0; i--) if (diagnostics[i].path === entry.box.path && geometricFocus.has(diagnostics[i].code)) diagnostics.splice(i, 1);
+        if (focused.status === 'unknown') { diagnostics.push({ code: 'U_A11Y_FOCUS_LAYOUT', severity: 'unknown', message: `${entry.box.label}: its focused layout is not decided (${focused.diagnostics.find(d => d.severity === 'unknown')?.message ?? 'unknown'})`, box: entry.box.label, path: entry.box.path, rule: 'focus-obscured' }); continue; }
+        for (const d of focused.diagnostics.filter(d => d.path === entry.box.path && geometricFocus.has(d.code))) diagnostics.push({ ...d, message: `${d.message} (in its focused layout)`, focusedLayout: true });
       }
     }
     // Profile: drop the rules outside it; every accessibility row carries its usefulness tier.

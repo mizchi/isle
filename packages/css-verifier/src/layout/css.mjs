@@ -329,7 +329,10 @@ export function parseLayoutCSS(sheets, diagnostic) {
       // A :checked::before/::after rule builds the pseudo-element only in the checked state; the engine requires it to be
       // absolutely positioned (an overlay), so it never moves the layout.
       const checkedMark = selectors.every(selector => selector.state === 'checked' && selector.pseudoElement);
-      if (!stateGeometry && !checkedMark && selectors.some(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `State selector rules may only change paint (color, background, outline, box-shadow, text-decoration); ${node.selector} changes layout`, node.source.start.line); continue; }
+      // A :focus/:focus-visible/:focus-within rule that changes layout: the engine lays the page out again with that one
+      // box focused (accessibility checks only); in the base layout it never applies.
+      const stateLayout = !stateGeometry && !checkedMark && selectors.every(selector => ['focus', 'focus-visible', 'focus-within'].includes(selector.state) && !selector.pseudoElement);
+      if (!stateGeometry && !checkedMark && !stateLayout && selectors.some(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `State selector rules may only change paint (color, background, outline, box-shadow, text-decoration); ${node.selector} changes layout`, node.source.start.line); continue; }
       const declarations = [];
       const authored=node.nodes.filter(declaration=>declaration.type==='decl');
       const conflicts=findCSSWriteConflicts(authored.map(declaration=>declaration.prop));
@@ -354,7 +357,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
           }
         } catch (error) { problem(error.code ?? 'U_LAYOUT_CSS', error.message, declaration.source.start.line); }
       }
-      rules.push({ selectors, contexts, declarations, layer, file: filename, ...(preferences.length ? { preferences } : {}), ...(stateGeometry ? { stateGeometry: true } : {}) });
+      rules.push({ selectors, contexts, declarations, layer, file: filename, ...(preferences.length ? { preferences } : {}), ...(stateGeometry ? { stateGeometry: true } : {}), ...(stateLayout && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase())) ? { stateLayout: true } : {}) });
     }
   };
   for (const sheet of sheets) {

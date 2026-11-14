@@ -1542,3 +1542,16 @@ test('focus-appearance (AAA): an outline indicator thinner than 2px', () => {
   assert.equal(warn('.b:focus { outline: thin solid #000; }', 'AAA'), 1);
   assert.equal(warn('.b:focus { outline: 1px solid #000; }'), 0); // AA asks nothing of it
 });
+
+test('a :focus rule that changes layout: the focused box is laid out again focused', () => {
+  const tree = page([{tag: 'button', classes: ['b'], named: true}, {tag: 'div', classes: ['cover']}]);
+  const css = extra => pageCSS(`.page { position: relative; background: #fff; color: #000; grid-auto-rows: auto; }\n.b { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; inline-size: 100px; block-size: 30px; }\n.cover { position: absolute; left: 0; top: 0; inline-size: 200px; block-size: 30px; background: #333; }\n${extra}`);
+  const codes = extra => run(tree, css(extra)).diagnostics.filter(d => d.code === 'E_A11Y_FOCUS_OBSCURED').map(d => d.box);
+  assert.deepEqual(codes(''), ['.b']);
+  // Focused it grows taller than the cover: not entirely hidden any more.
+  assert.deepEqual(codes('.b:focus { block-size: 40px; }'), []);
+  // Focused it shrinks into the cover's span: hidden only when the layout is redone.
+  assert.deepEqual(codes('.b { block-size: 40px; }\n.b:focus { block-size: 20px; }'), ['.b']);
+  // Without the accessibility checks a layout-changing :focus rule stays Unknown.
+  assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css('.b:focus { block-size: 40px; }'), viewport: domain}).status, 'unknown');
+});
