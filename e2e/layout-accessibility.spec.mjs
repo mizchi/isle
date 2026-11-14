@@ -6,7 +6,8 @@
 import {test, expect} from '@playwright/test';
 import {spawnSync} from 'node:child_process';
 import {mkdirSync, writeFileSync} from 'node:fs';
-import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
+import {analyzeHTML, htmlBoxTree} from '../packages/css-verifier/src/html.mjs';
+import {normalizeTree} from '../packages/css-verifier/src/tree.mjs';
 
 const results = new URL('../evals/results/layout-accessibility/', import.meta.url);
 const widths = [1280, 768, 375], height = 800;
@@ -663,4 +664,13 @@ test('z-index and opacity stacking decide occlusion like Chromium', async ({page
     const browser = await page.evaluate(() => { const b = document.querySelector('.b'), r = b.getBoundingClientRect(); for (let x = r.left + 0.5; x < r.right; x += 4) for (let y = r.top + 0.5; y < r.bottom; y += 4) if (document.elementFromPoint(x, y) !== b) return true; return false; });
     expect(statics, extra).toBe(browser);
   }
+});
+
+// dir=auto follows the first strong character in DOM order (text and children interleaved), as Chromium does.
+test('dir=auto resolves in DOM order like Chromium', async ({page}) => {
+  const cases = ['hello <span>שלום</span>', '<span>שלום</span> hello', '123 <span>abc</span> שלום', '<span dir="ltr">abc</span> שלום x', '<b>12</b> <i>مرحبا</i> abc', '123 !'];
+  await page.setContent(cases.map((c, i) => `<p id="c${i}" dir="auto">${c}</p>`).join(''));
+  const browser = await page.evaluate(n => Array.from({length: n}, (_, i) => getComputedStyle(document.getElementById('c' + i)).direction), cases.length);
+  const statics = cases.map(c => normalizeTree(htmlBoxTree(`<p dir="auto">${c}</p>`).tree, 'P').root.dirAttr);
+  expect(statics).toEqual(browser);
 });

@@ -4,6 +4,12 @@ import {analyzeInput} from './analyze.mjs';
 
 /** A deliberately small static-HTML adapter, with no DOM or browser dependency. */
 export function analyzeHTML(html,options) {
+  const {tree,diagnostics}=htmlBoxTree(html);
+  return analyzeInput(tree,options,diagnostics);
+}
+
+/** The box tree of a single-root HTML fragment (or a body root), and its adapter diagnostics. */
+export function htmlBoxTree(html) {
   if(typeof html!=='string' || html.length>1_000_000) throw new TypeError('Invalid HTML input');
   const diagnostics=[];
   const unknown=message=>diagnostics.push({code:'U_LAYOUT_HTML',severity:'unknown',message});
@@ -24,7 +30,9 @@ export function analyzeHTML(html,options) {
       text:node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)),
       ...(node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)) ? {textContent:node.childNodes.filter(n=>n.nodeName==='#text').map(n=>n.value).join(' ').replace(/[\t\n\r ]+/g,' ').trim()} : {}),
       ...(node.childNodes.some(n=>n.nodeName==='#text' && n.value && !/[^\t\n\r ]/.test(n.value)) ? {whitespace:true} : {}),
+      // DOM order of text and child elements: text strings and child indices.
+      runs:(()=>{ let i=0; return node.childNodes.flatMap(n=>n.tagName ? [i++] : n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value) ? [n.value.replace(/[\t\n\r ]+/g,' ').trim()] : []); })(),
       children:node.childNodes.filter(n=>n.tagName).map(child=>convert(child,depth+1))};
   }
-  return analyzeInput(convert(roots[0]),options,diagnostics);
+  return {tree:convert(roots[0]),diagnostics};
 }
