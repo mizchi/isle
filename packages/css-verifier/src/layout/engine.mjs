@@ -589,12 +589,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       Object.defineProperty(sizeRow, '$shown', { value: { region, ...shown }, writable: true, enumerable: false });
       sizes.push(sizeRow);
       // A scale maps the painted descendants too: r ↦ C + s·(r − C) about the box's centre C (affine, s constant).
-      const scale = /^scale\(([\d.]+), ([\d.]+)\)$/.exec(style.transform ?? 'none');
-      if (scale && (box.children.length || box.inline?.length) && origin && blockSize && box.$starts) {
-        const sx = q(scale[1]), sy = q(scale[2]), half = div(one, q(2));
-        const centre = { inline: sum(origin.inline, times(inline, half)), block: sum(origin.block, times(blockSize, half)) };
-        const map = rect => rect?.origin ? { origin: { inline: sum(centre.inline, times(diff(rect.origin.inline, centre.inline), sx)), block: sum(centre.block, times(diff(rect.origin.block, centre.block), sy)) },
-          inline: times(rect.inline, sx), block: rect.block ? times(rect.block, sy) : rect.block } : rect;
+      const matrix = linearOf(style);
+      if (matrix && (box.children.length || box.inline?.length) && origin && blockSize && box.$starts) {
+        const half = div(one, q(2));
+        const map = mapper(matrix, { inline: sum(origin.inline, times(inline, half)), block: sum(origin.block, times(blockSize, half)) });
         const inside = row => isDescendant(box.path, row.path) && intersectRegions(row.region, region);
         for (const row of geometry.slice(box.$starts.geometry).filter(inside)) {
           Object.assign(row, map(row));
@@ -627,16 +625,35 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // A px translate moves the box (and, through its origin, its descendants) after layout.
   const isDescendant = (a, b) => b.startsWith(a + '/');
   const intersectRegions = (a, b) => Boolean(intersect(a, b));
-  // A scale shrinks or grows the painted rectangle about its centre: (origin, size) after it.
+  // A linear transform with one nonzero entry per row (scale, quarter-turn rotation) about the box's centre keeps
+  // rectangles axis-aligned: each new axis interval is a scaled (and possibly flipped) old one, so it stays affine.
+  const rational = v => { const [n, d = '1'] = v.split('/'); return div(q(n), q(d)); };
+  const affineOf = style => { const m = /^affine\((.+)\)$/.exec(style.transform ?? 'none'); return m ? m[1].split(' ').map(rational) : null; };
+  function linearOf(style) {
+    const m = affineOf(style);
+    return m && !(cmp(m[0], one) === 0 && cmp(m[1], zero) === 0 && cmp(m[2], zero) === 0 && cmp(m[3], one) === 0) ? m.slice(0, 4) : null;
+  }
+  function mapper(matrix, centre) {
+    const [a, b, c, d] = matrix;
+    const axis = (p, r) => cmp(p, zero) !== 0 ? { coef: p, from: 'inline' } : { coef: r, from: 'block' };
+    const rows = [axis(a, b), axis(c, d)];
+    return rect => {
+      if (!rect?.origin || !rect.block) return rect;
+      const rel = { inline: [diff(rect.origin.inline, centre.inline), diff(sum(rect.origin.inline, rect.inline), centre.inline)], block: [diff(rect.origin.block, centre.block), diff(sum(rect.origin.block, rect.block), centre.block)] };
+      const size = { inline: rect.inline, block: rect.block };
+      const out = rows.map(({ coef, from }) => cmp(coef, zero) > 0 ? { lo: times(rel[from][0], coef), size: times(size[from], coef) } : { lo: times(rel[from][1], coef), size: times(size[from], mul(coef, minusOne)) });
+      return { origin: { inline: sum(centre.inline, out[0].lo), block: sum(centre.block, out[1].lo) }, inline: out[0].size, block: out[1].size };
+    };
+  }
   function scaled(style, origin, inline, blockSize) {
-    const m = /^scale\(([\d.]+), ([\d.]+)\)$/.exec(style.transform ?? 'none');
-    if (!m) return { origin, inline, block: blockSize };
-    const sx = q(m[1]), sy = q(m[2]), half = div(one, q(2));
-    return { origin: origin && blockSize ? offset(origin, times(inline, mul(sub(one, sx), half)), times(blockSize, mul(sub(one, sy), half))) : null, inline: times(inline, sx), block: blockSize ? times(blockSize, sy) : blockSize };
+    const matrix = linearOf(style);
+    if (!matrix || !origin || !blockSize) return { origin: matrix ? null : origin, inline, block: blockSize };
+    const half = div(one, q(2)), centre = { inline: sum(origin.inline, times(inline, half)), block: sum(origin.block, times(blockSize, half)) };
+    return mapper(matrix, centre)({ origin, inline, block: blockSize });
   }
   function translated(style, origin) {
-    const m = /^translate\((-?[\d.]+)px, (-?[\d.]+)px\)$/.exec(style.transform ?? 'none');
-    return origin && m ? offset(origin, scalar(q(m[1])), scalar(q(m[2]))) : origin;
+    const m = affineOf(style);
+    return origin && m ? offset(origin, scalar(m[4]), scalar(m[5])) : origin;
   }
   function resolvedOrigin(style,available,inline,blockSize,parents) {
     return translated(style, untranslatedOrigin(style,available,inline,blockSize,parents));

@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import {findCSSWriteConflicts,cssWriteConflictMessage} from '../css-writes.mjs';
-import { q, cmp } from './linear.mjs';
+import { q, cmp, add, mul, exact } from './linear.mjs';
 import { parseCondition, preferenceValues } from './conditions.mjs';
 import {customName,variableValue,variableEnvironment,substituteDeclaration} from './variables.mjs';
 
@@ -142,19 +142,37 @@ function expand(property, value) {
   }
   if (property === 'color-scheme' && !wide.has(value) && !/^(?:normal|(?:only\s+)?(?:light|dark)(?:\s+(?:light|dark))?(?:\s+only)?)$/.test(value)) throw new Error(`Unsupported color-scheme: ${value}`);
   // Stacking order (paint and hit testing only): auto or an integer.
-  // transform: only a px translation (it moves the painted box and its descendants, not the layout).
+  // transform: a list of px translations, scales and quarter-turn rotations (axis-aligned, about the centre).
+  // It composes to p ↦ C + A(p − C) + t: A has one nonzero entry per row, t is each translation mapped by the
+  // linear parts before it. Stored exactly as affine(a b c d tx ty) with rational entries.
   if (property === 'transform') {
     if (wide.has(value) || value === 'none') return [[property, value]];
-    const t = /^translate\(\s*(-?\d+(?:\.\d{1,6})?px|0)\s*(?:,\s*(-?\d+(?:\.\d{1,6})?px|0)\s*)?\)$/.exec(value) ?? /^translatex\(\s*(-?\d+(?:\.\d{1,6})?px|0)\s*\)$/.exec(value);
-    const y = /^translatey\(\s*(-?\d+(?:\.\d{1,6})?px|0)\s*\)$/.exec(value);
-    // scale(s), scale(sx, sy), scaleX(s), scaleY(s) with positive factors, about the default centre.
-    const num = '((?:\\d+(?:\\.\\d{1,6})?|\\.\\d{1,6}))';
-    const sc = new RegExp(`^scale\\(\\s*${num}\\s*(?:,\\s*${num}\\s*)?\\)$`).exec(value), sx = new RegExp(`^scalex\\(\\s*${num}\\s*\\)$`).exec(value), sy = new RegExp(`^scaley\\(\\s*${num}\\s*\\)$`).exec(value);
-    const f = v => v.startsWith('.') ? `0${v}` : v;
-    if (sc || sx || sy) return [[property, sc ? `scale(${f(sc[1])}, ${f(sc[2] ?? sc[1])})` : sx ? `scale(${f(sx[1])}, 1)` : `scale(1, ${f(sy[1])})`]];
-    if (!t && !y) throw new Error(`Unsupported transform: ${value} (only px translate and scale are modeled)`);
-    const n = v => v === undefined || v === '0' ? '0px' : v;
-    return [[property, y ? `translate(0px, ${n(y[1])})` : `translate(${n(t[1])}, ${n(t[2])})`]];
+    const fns = value.match(/[a-z]+\([^)]*\)/g) ?? [];
+    if (!fns.length || value.replace(/[a-z]+\([^)]*\)/g, '').trim()) throw new Error(`Unsupported transform: ${value}`);
+    const fail = () => { throw new Error(`Unsupported transform: ${value} (only px translate, positive scale and quarter-turn rotation are modeled)`); };
+    const len = v => { const m = /^(-?\d+(?:\.\d{1,6})?)px$|^(0)$/.exec(v.trim()); if (!m) fail(); return q(m[1] ?? '0'); };
+    const factor = v => { const t = v.trim().replace(/^\./, '0.'); if (!/^\d+(?:\.\d{1,6})?$/.test(t) || Number(t) <= 0) fail(); return q(t); };
+    let A = [q(1), q(0), q(0), q(1)], t = [q(0), q(0)];
+    const apply = ([a, b, c, d], [x, y]) => [add(mul(a, x), mul(b, y)), add(mul(c, x), mul(d, y))];
+    const times = (m, n) => [add(mul(m[0], n[0]), mul(m[1], n[2])), add(mul(m[0], n[1]), mul(m[1], n[3])), add(mul(m[2], n[0]), mul(m[3], n[2])), add(mul(m[2], n[1]), mul(m[3], n[3]))];
+    for (const fn of fns) {
+      const [, name, args] = /^([a-z]+)\((.*)\)$/.exec(fn), parts = args.split(',');
+      if (name === 'translate' || name === 'translatex' || name === 'translatey') {
+        if (parts.length > (name === 'translate' ? 2 : 1)) fail();
+        const v = name === 'translatey' ? [q(0), len(parts[0])] : [len(parts[0]), name === 'translate' && parts[1] !== undefined ? len(parts[1]) : q(0)];
+        const moved = apply(A, v); t = [add(t[0], moved[0]), add(t[1], moved[1])];
+      } else if (['scale', 'scalex', 'scaley'].includes(name)) {
+        if (parts.length > (name === 'scale' ? 2 : 1)) fail();
+        const [sx, sy] = name === 'scalex' ? [factor(parts[0]), q(1)] : name === 'scaley' ? [q(1), factor(parts[0])] : [factor(parts[0]), factor(parts[1] ?? parts[0])];
+        A = times(A, [sx, q(0), q(0), sy]);
+      } else if (name === 'rotate') {
+        const m = /^\s*(-?\d+(?:\.\d+)?)(deg|turn)\s*$/.exec(args); if (!m) fail();
+        const quarters = Number(m[1]) * (m[2] === 'turn' ? 4 : 1 / 90);
+        if (Math.abs(quarters - Math.round(quarters)) > 1e-9) fail();
+        A = times(A, [[1, 0, 0, 1], [0, -1, 1, 0], [-1, 0, 0, -1], [0, 1, -1, 0]][((Math.round(quarters) % 4) + 4) % 4].map(n => q(n)));
+      } else fail();
+    }
+    return [[property, `affine(${[...A, ...t].map(exact).join(' ')})`]];
   }
   if (property === 'transform-origin') { if (!wide.has(value) && !['center', '50% 50%', 'center center'].includes(value)) throw new Error(`Unsupported transform-origin: ${value}`); return []; }
   if (property === 'isolation') { if (!wide.has(value) && !['auto', 'isolate'].includes(value)) throw new Error(`Unsupported isolation: ${value}`); return [[property, value]]; }

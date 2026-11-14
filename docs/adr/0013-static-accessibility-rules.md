@@ -154,7 +154,9 @@ letter-spacing が 0 でないとき Chromium は任意の ligature を切る(CS
 `transform` は px の translate だけを扱う:レイアウトの後に箱と子孫(原点を通して)をずらし、z 0 の context を作り、
 絶対配置の子孫の containing block になる(入れ子の translate と絶対配置の子で Chromium の矩形と一致)。`scale`(正の倍率、中心の transform-origin)は
 扱い、描画の矩形を中心の周りで伸縮する。子孫の描画も r ↦ C + s·(r − C)(C は箱の中心で viewport の一次式、s は定数)で写すので一次式のまま
-(入れ子の scale と scale の中の translate を含め Chromium の矩形と一致)。回転などそれ以外の transform は矩形が軸に沿わなくなるので Unknown。
+(入れ子の scale と scale の中の translate を含め Chromium の矩形と一致)。90° の倍数の `rotate` も軸に沿ったままなので扱い、transform の列
+(translate・scale・90° 回転)は p ↦ C + A(p − C) + t(A は各行に非零が1つ、t は各 translate を前の線形部分で写した和)に正確に合成する
+(順序で結果が変わる列、90°・180°・−90° の回転と子を持つ回転で一致)。それ以外の角度・skew・% の translate は矩形が軸に沿わないか寸法に依るので Unknown。
 描画と hit test の座標を動かすものなので accessibility・integrity の検査でだけ扱い、レイアウトの証明(transition・no-shift・座標の契約)では従来どおり Unknown。
 以前は z-index 自体が未対応で Unknown、opacity による context は考えていなかった。7通りの z-index/opacity と、5通りの入れ子(isolation を含む)で Chromium の hit test と一致した。
 
