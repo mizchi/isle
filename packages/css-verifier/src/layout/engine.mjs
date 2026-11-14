@@ -994,6 +994,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // Children that are blocks of a px block-size stack: the cell's content height is their sum. A child's own
       // content (text or children) does not change its px height; its overflow is that child's layout to check.
       const stackedHeight = () => {
+        // tableAsGrid runs more than once (a probe pass, then the layout): the profiles are recollected each time.
+        cell.stackedProfiles = [];
         if (cell.text || cell.contract || !(cell.children ?? []).length) return null;
         let total = zero;
         for (const child of cell.children) {
@@ -1001,7 +1003,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const cs = one(styles(child, region, [...parents, { box: cell, style }], style, false, false));
           if (cs.display === 'none') continue;
           // An auto-height text leaf with a constant measured height (intrinsicBlockSize as a number) counts as that.
-          const measuredLeaf = cs['block-size'] === 'auto' && child.text && !(child.children ?? []).length && typeof child.contract?.intrinsicBlockSize === 'number';
+          const measuredLeaf = cs['block-size'] === 'auto' && child.text && !(child.children ?? []).length && child.contract?.intrinsicBlockSize !== undefined;
+          // A line-count profile depends on the cell's width: measured later, with the column widths (stackedProfiles).
+          if (measuredLeaf && typeof child.contract.intrinsicBlockSize !== 'number') {
+            if (cs.position !== 'static' || ['margin-top', 'margin-bottom'].some(key => !['0', '0px'].includes(cs[key]))) return null;
+            const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+            const sideEdges = ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+            cell.stackedProfiles.push({ profile: child.contract.intrinsicBlockSize, edges, sideEdges });
+            continue;
+          }
           if ((!/^\d+(?:\.\d+)?px$/.test(cs['block-size']) && !measuredLeaf) || cs.position !== 'static' || ['margin-top', 'margin-bottom'].some(key => !['0', '0px'].includes(cs[key]))) return null;
           const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
           total = add(total, measuredLeaf ? add(q(String(child.contract.intrinsicBlockSize)), edges) : cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size']));
@@ -1011,7 +1021,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const stacked = [...block][0] === 'auto' && !empty && !measured ? stackedHeight() : null;
       if (block.size !== 1 || !(([...block][0] === 'auto' && (empty || measured || stacked !== null)) || /^\d+(?:\.\d+)?px$/.test([...block][0]))) fail('A rowspan cell is modeled when it is empty, measured text or a stack of px-height blocks with block-size: auto, or has a px block-size');
       if ([...block][0] === 'auto' && measured) cell.tableMeasuredSpan = true;
-      if (stacked !== null) cell.tableStackedSpan = stacked;
+      if (stacked !== null) cell.tableStackedSpan = stacked; else delete cell.stackedProfiles;
     }
     // The first row's cell widths decide the columns.
     function one(list) { if (list.length !== 1) fail('Table styles that vary across viewport regions are not modeled'); return list[0].style; }
@@ -1042,6 +1052,20 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (clip(region, diff(scalar(fixed), content), true)) fail('A measured rowspan cell in a table narrower than its px columns is not modeled');
       return widths.every(Boolean) ? widths.map(w => times(content, div(w, fixed))) : widths.map(w => w ? scalar(w) : times(diff(content, scalar(fixed)), div(q(1), q(autos))));
     };
+    function cellInner(cell, cs) {
+      const at = cell.tableAt, cols = columnWidths().slice(at.column, at.column + at.span).reduce((a, b) => sum(a, b));
+      return diff(sum(cols, scalar(mul(h, q(at.span - 1)))), scalar(['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero)));
+    }
+    // The height of a line-count profile at an inner width (the caller splits the region at the profile's widths).
+    function profileHeight(profile, inner) {
+      if (typeof profile === 'number') return q(String(profile));
+      probe?.push({ inner, thresholds: profile.map(e => q(String(e.atLeastInlineSize))) });
+      const width = evaluate(inner, sample(region));
+      const entry = profile.filter(e => cmp(q(String(e.atLeastInlineSize)), width) <= 0).at(-1);
+      if (!entry || entry.blockSize === null) fail('The measured rowspan cell has no known height at its width');
+      return q(String(entry.blockSize));
+    }
+    const stackedMin = (cell, cs) => (cell.stackedProfiles ?? []).reduce((total, child) => add(total, add(profileHeight(child.profile, diff(cellInner(cell, cs), scalar(child.sideEdges))), child.edges)), cell.tableStackedSpan);
     function measuredHeight(cell, cs, r) {
       const at = cell.tableAt, cols = columnWidths().slice(at.column, at.column + at.span).reduce((a, b) => sum(a, b));
       const inner = diff(sum(cols, scalar(mul(h, q(at.span - 1)))), scalar(['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero)));
@@ -1076,7 +1100,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const spans = rows.flatMap((row, r) => row.children.filter(cell => cell.tableRowSpan).map(cell => {
         const cs = one(styles(cell, region, parents, one(styles(row, region, parents, style, false, false)), false, false));
         const edges = ['top', 'bottom'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
-        const min = cs['block-size'] !== 'auto' ? (cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size'])) : cell.tableMeasuredSpan ? add(measuredHeight(cell, cs, r), edges) : cell.tableStackedSpan !== undefined ? add(cell.tableStackedSpan, edges) : zero;
+        const min = cs['block-size'] !== 'auto' ? (cs['box-sizing'] === 'content-box' ? add(px(cs['block-size']), edges) : px(cs['block-size'])) : cell.tableMeasuredSpan ? add(measuredHeight(cell, cs, r), edges) : cell.tableStackedSpan !== undefined ? add(stackedMin(cell, cs), edges) : zero;
         return { cell, row, r, n: cell.tableRowSpan, min };
       }));
       const inside = (a, b) => a.r >= b.r && a.r + a.n <= b.r + b.n;
