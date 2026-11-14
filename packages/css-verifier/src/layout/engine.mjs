@@ -681,8 +681,6 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // A caption sits outside the table box (above or below it, as wide as the table): an extra
     // grid row only when no border, padding or spacing separates the rows from the table edge.
     if (caption) {
-      if (['left', 'right', 'top', 'bottom'].some(side => cmp(px(style[`padding-${side}`]), zero) !== 0 || cmp(px(style[`border-${side}`]), zero) !== 0))
-        fail('A table caption is modeled only without table padding or border (they surround the rows, not the caption)');
       caption.tableCaption = { columns, rows: rows.length, side: one(styles(caption, region, parents, style, false, false))['caption-side'] };
     }
     let autoWidth = null, autoMinimum = null;
@@ -728,14 +726,25 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     }
     // A caption with border-spacing: the caption spans the table's full width while the rows are inset, so the
     // spacing becomes explicit gap tracks (h c1 h c2 h; v r1 v r2 v) and every cell an explicit grid area.
-    if (caption && (cmp(h, zero) !== 0 || cmp(v, zero) !== 0)) {
-      const top = caption.tableCaption.side !== 'bottom', gapH = `${number(h)}px`, gapV = `${number(v)}px`;
+    // The table's border and padding surround the rows but not the caption (measured): they join the edge tracks.
+    const edge = side => add(px(style[`padding-${side}`]), px(style[`border-${side}`]));
+    if (caption && (cmp(h, zero) !== 0 || cmp(v, zero) !== 0 || ['left', 'right', 'top', 'bottom'].some(side => cmp(edge(side), zero) !== 0))) {
+      const top = caption.tableCaption.side !== 'bottom', gapH = `${number(h)}px`, gapV = `${number(v)}px`, track = value => `${number(value)}px`;
       const rowList = rowTracks ?? rows.map(() => 'auto');
-      const rowTemplate = [gapV, ...rowList.flatMap(track => [track, gapV])];
+      const rowTemplate = [track(add(edge('top'), v)), ...rowList.flatMap((t, i) => [t, i === rowList.length - 1 ? track(add(edge('bottom'), v)) : gapV])];
+      // The caption is as wide as the table's border box; a content-box width excludes the border and padding.
+      let width = style['inline-size'];
+      if (style['box-sizing'] === 'content-box') {
+        if (!/^\d+(?:\.\d+)?px$/.test(width)) fail('A content-box table with a caption needs a px inline-size');
+        width = `${number(add(px(width), add(edge('left'), edge('right'))))}px`;
+      }
+      const columnTemplate = [track(add(edge('left'), h)), ...tracks.flatMap((t, i) => [t, i === tracks.length - 1 ? track(add(edge('right'), h)) : gapH])];
+      const noEdges = Object.fromEntries(['left', 'right', 'top', 'bottom'].flatMap(side => [[`padding-${side}`, '0'], [`border-${side}`, '0']]));
       caption.tableCaption = { ...caption.tableCaption, interleaved: { columns: 2 * columns + 1, row: top ? 1 : rowTemplate.length + 1 } };
       for (const row of rows) for (const cell of row.children) cell.tableArea = { column: 2 * cell.tableAt.column + 2, span: 2 * cell.tableAt.span - 1, row: (top ? 3 : 2) + 2 * cell.tableAt.row, down: 2 * cell.tableAt.down - 1 };
-      return { ...style, display: 'grid', 'grid-template-columns': [gapH, ...tracks.flatMap(track => [track, gapH])].join(' '), 'grid-template-rows': (top ? ['auto', ...rowTemplate] : [...rowTemplate, 'auto']).join(' '),
-        'grid-auto-rows': 'auto', 'column-gap': '0px', 'row-gap': '0px', tableColumns: automatic ? null : widths.every(Boolean) ? widths.reduce(add, zero) : null, tableGaps: mul(h, q(columns + 1)) };
+      return { ...style, ...noEdges, 'box-sizing': 'border-box', 'inline-size': width, display: 'grid', 'grid-template-columns': columnTemplate.join(' '), 'grid-template-rows': (top ? ['auto', ...rowTemplate] : [...rowTemplate, 'auto']).join(' '),
+        'grid-auto-rows': 'auto', 'column-gap': '0px', 'row-gap': '0px', tableColumns: automatic ? null : widths.every(Boolean) ? widths.reduce(add, zero) : null,
+        tableGaps: add(mul(h, q(columns + 1)), add(edge('left'), edge('right'))) };
     }
     const grid = { ...style, 'inline-size': inlineSize, display: 'grid', 'grid-template-columns': tracks.join(' '), 'grid-template-rows': rowTracks ? (caption ? (caption.tableCaption.side === 'bottom' ? [...rowTracks, 'auto'] : ['auto', ...rowTracks]).join(' ') : rowTracks.join(' ')) : 'none', 'grid-auto-rows': 'auto', 'column-gap': `${number(h)}px`, 'row-gap': `${number(v)}px`,
       ...Object.fromEntries(Object.entries(spacingEdges).map(([key, value]) => [key, `${number(value)}px`])), tableColumns: automatic ? null : widths.every(Boolean) ? widths.reduce(add, zero) : null, tableGaps: mul(h, q(columns - 1)),
