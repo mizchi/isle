@@ -25,7 +25,7 @@ export function compileSelector(source, depth = 0) {
     // A trailing user-action state (paint-only rules; see parseLayoutCSS).
     const action = rest.match(/^:(hover|active|focus|focus-visible|focus-within)$/i);
     if (action) { state = action[1].toLowerCase(); specificity[1]++; rest = ''; continue; }
-    const pseudo = rest.match(/^::?(before|after)$/i);
+    const pseudo = rest.match(/^::?(before|after)$/i) ?? rest.match(/^::(placeholder)$/i);
     if (pseudo) { pseudoElement = pseudo[1].toLowerCase(); specificity[2]++; rest = ''; continue; }
     const fn = rest.match(/^:(where|is)\(/i);
     if (fn) {
@@ -47,7 +47,7 @@ export function matches(selector, box, state) {
   if (typeof selector === 'string') selector = compileSelector(selector);
   if (box.anonymous) return false; // anonymous boxes are not elements
   // ::before/::after rules apply only to that pseudo-element (state '::before'), and other rules not to it.
-  const pseudo = [...(state ?? [])].find(s => s === '::before' || s === '::after');
+  const pseudo = [...(state ?? [])].find(s => s === '::before' || s === '::after' || s === '::placeholder');
   if (selector.pseudoElement ? `::${selector.pseudoElement}` !== pseudo : pseudo) return false;
   if (selector.state && !state?.has(selector.state)) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :

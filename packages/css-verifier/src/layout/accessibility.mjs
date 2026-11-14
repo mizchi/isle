@@ -95,13 +95,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -1008,6 +1008,22 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       const zero = value => /^(?:0|0?\.0+|0%)$/.test(String(value).trim());
       if (zero(f.opacity) || row.chain.slice(0, -1).some(layer => zero(layer.opacity)))
         report(warnings, 'W_A11Y_FOCUS_TRANSPARENT', 'warning', `${row.box.label} stays at opacity 0 when focused, so its own focus indicator is invisible; another element must show where focus is`, row, region, { rule: 'focus-transparent' });
+    }
+  }
+
+  // placeholder-contrast (SC 1.4.3): placeholder text is text; its color (opacity applies to it alone) over the field's
+  // fill needs the text ratio. Shown only while the field is empty, but that is how it first appears.
+  for (const row of geometry.filter(row => row.placeholderPaint && visible(row) && !hiddenFrom(row.path) && row.chain)) {
+    const fill = backdrop([...row.chain.slice(0, -1), { ...row.chain.at(-1), color: '#000' }]);
+    for (const state of row.placeholderPaint) {
+      const region = intersect(row.region, state.region);
+      if (!region) continue;
+      const color = parseColor(state.color), alpha = /^(?:\d+(?:\.\d+)?|\.\d+)%?$/.test(String(state.opacity)) ? (String(state.opacity).endsWith('%') ? parseFloat(state.opacity) / 100 : Number(state.opacity)) : null;
+      if (fill.unknown || !color || alpha === null) { report(unknowns, 'U_A11Y_PLACEHOLDER_CONTRAST', 'unknown', `${row.box.label}: ${fill.unknown ?? `placeholder color ${state.color} or opacity ${state.opacity} is not modeled`}`, row, region, { rule: 'placeholder-contrast' }); continue; }
+      const ratio = contrastRatio(over({ ...color, a: color.a * alpha }, fill.bg), fill.bg);
+      const required = large(row.paint) ? (contrast === 'AAA' ? 4.5 : 3) : (contrast === 'AAA' ? 7 : 4.5);
+      if (Math.abs(ratio - required) < 1e-9) report(unknowns, 'U_A11Y_PLACEHOLDER_CONTRAST', 'unknown', `${row.box.label}: placeholder contrast at the ${required}:1 threshold within numeric error`, row, region, { rule: 'placeholder-contrast' });
+      else if (ratio < required) report(findings, 'E_A11Y_PLACEHOLDER_CONTRAST', 'error', `${row.box.label}'s placeholder has contrast ${ratio.toFixed(2)}:1, below ${required}:1`, row, region, { rule: 'placeholder-contrast', ratio, required });
     }
   }
 
