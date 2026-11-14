@@ -70,7 +70,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | page-h1 / region / bypass | root が html/body のとき:h1 が描画されない領域、landmark の外の内容、main より前の nav に skip link がない | W_A11Y_PAGE_H1 / W_A11Y_REGION / W_A11Y_BYPASS(警告) |
 | landmark-top-level / duplicate-landmark | main・complementary が他の landmark の中、同時に描画される2つの banner/contentinfo | 警告 |
 | p-as-heading | 太字(600以上)か 1.2 倍以上の文字の p が、普通の p の前にある(見出しを CSS で装う) | W_A11Y_P_AS_HEADING(警告) |
-| orientation | main が片方の向き(`(orientation: landscape/portrait)`)でだけ描画されない(SC 1.3.4) | E_A11Y_ORIENTATION |
+| orientation | main が片方の向き(`(orientation: landscape/portrait)`)でだけ描画されない、または main(か main を含む箱)が片方の向きでだけ 1/4 回転(`rotate(±90deg)`)して横倒しに表示される(SC 1.3.4) | E_A11Y_ORIENTATION |
 | focus-visible | フォーカス時に何も変わらない:作者が outline を消し、box-shadow・色・背景も変わらない(SC 2.4.7)。作者が outline-style を指定しなければ UA の focus ring があるとする | E_A11Y_FOCUS_VISIBLE |
 | state-contrast | `:hover`・`:focus` の色での文字のコントラスト | E_A11Y_STATE_CONTRAST |
 | text-spacing | フォント由来の契約を持ち clip する text が、line-height を 1.5 × font-size にすると同じ行数でも入らない(SC 1.4.12。字間・語間の拡大は行を増やすだけなので確定した違反)。1行の固定文字列は letter-spacing 0.12em × 文字数と word-spacing 0.16em × 空白数だけ幅が増え、clip する box より広くなれば違反(inline 軸) | E_A11Y_TEXT_SPACING |

@@ -1405,3 +1405,14 @@ test('focus-clipped-away: a visually hidden focusable box that :focus does not r
   // A partial clip is not modeled.
   assert.equal(run(tree, css('.s { clip: rect(0 10px 10px 0); }')).status, 'unknown');
 });
+
+test('orientation: a quarter-turn rotation of the main content in one orientation locks it', () => {
+  const tree = {tag: 'div', classes: ['page'], children: [{tag: 'main', classes: ['m']}]};
+  const css = extra => pageCSS(`.m { display: block; block-size: 100px; }\n${extra}`);
+  const rotated = extra => find(run(tree, css(extra)), 'E_A11Y_ORIENTATION').map(d => d.rotated);
+  assert.deepEqual(rotated('@media (orientation: portrait) { .m { transform: rotate(90deg); } }'), ['portrait']);
+  assert.deepEqual(rotated('@media (orientation: portrait) { .page { transform: rotate(-90deg); } }'), ['portrait']);
+  // Turned in both orientations (or a half turn) is a design, not a lock.
+  assert.deepEqual(rotated('.m { transform: rotate(90deg); }'), []);
+  assert.deepEqual(rotated('@media (orientation: portrait) { .m { transform: rotate(180deg); } }'), []);
+});

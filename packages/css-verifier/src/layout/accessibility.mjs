@@ -988,6 +988,18 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       for (const [name, part, other] of [['landscape', landscape, portrait], ['portrait', portrait, landscape]])
         if (!shows(part) && shows(other)) report(findings, 'E_A11Y_ORIENTATION', 'error', `the main content does not render in ${name} viewports`, whole(mains[0].box), part, { rule: 'orientation', missing: name });
     }
+    // The rotation hack: main (or a box holding it) turned a quarter only in one orientation shows the page sideways
+    // there, locking it to the other orientation.
+    if (portrait && landscape && mains.length) {
+      const ratio = v => { const [n, d = '1'] = v.split('/'); return Number(n) / Number(d); };
+      const quarter = row => { const m = /^affine\(([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)/.exec(String(row.paint.transform)); return Boolean(m) && ratio(m[1]) === 0 && ratio(m[4]) === 0 && Math.abs(ratio(m[2])) === 1 && Math.abs(ratio(m[3])) === 1; };
+      const holders = geometry.filter(row => mains.some(main => main.path === row.path || isAncestor(row.path, main.path)));
+      for (const [name, part, other] of [['portrait', portrait, landscape], ['landscape', landscape, portrait]]) {
+        const turned = holders.filter(row => quarter(row) && intersect(row.region, part));
+        if (!turned.length || holders.some(row => row.box === turned[0].box && quarter(row) && intersect(row.region, other))) continue;
+        for (const row of turned) report(findings, 'E_A11Y_ORIENTATION', 'error', `${row.box.label} is rotated a quarter turn only in ${name} viewports, which locks the content to the other orientation`, row, intersect(row.region, part), { rule: 'orientation', rotated: name });
+      }
+    }
   }
 
   // focus-visible: the focused state must look different. The UA :focus-visible ring applies unless an

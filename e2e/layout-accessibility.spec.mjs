@@ -130,6 +130,8 @@ const cases = [
   {name: 'new-window-links-and-forms', html: '<div class="page"><a class="l1" href="/a" target="_blank">Docs</a><a class="l2" href="/b" target="_blank">Docs (opens in a new tab)</a><form class="f1"><input class="i" type="text" aria-label="Q"></form><form class="f2"><input class="i" type="text" aria-label="Q"><button class="s">Go</button></form><form class="f3"><input class="i" type="text" aria-label="Q"><button class="s" type="button">Go</button></form></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:auto;background:#fff;color:#000;${type}}.l1,.l2{display:block;color:#000}.f1,.f2,.f3{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px}.i,.s{${button}inline-size:200px;block-size:30px}`,
     boxes: {'.l1': label, '.l2': label, '.s': label}},
+  {name: 'orientation-rotation', html: '<div class="page"><main class="m"></main></div>',
+    css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.m{display:block;block-size:100px}@media (orientation: portrait){.m{transform:rotate(90deg)}}`},
   {name: 'visually-hidden-focus', html: '<div class="page"><a class="s1" href="/a">Skip</a><a class="s2" href="/b">Skip</a><a class="s3" href="/c">Skip</a></div>',
     css: `.page{position:relative;display:grid;grid-template-columns:200px;grid-auto-rows:40px;background:#fff;color:#000;${type}}.s1,.s2,.s3{position:absolute;top:0;inline-size:1px;block-size:1px;overflow:hidden;display:block;color:#000;white-space:nowrap}.s1{left:0;clip:rect(0 0 0 0)}.s2{left:40px;clip:rect(0 0 0 0)}.s2:focus{clip:auto}.s3{left:80px;clip-path:inset(50%)}`,
     boxes: {'.s1': label, '.s2': label, '.s3': label}, skip: ['text-spacing']},
@@ -626,6 +628,25 @@ async function runtime(page, sample) {
     const absent = (await page.screenshot({clip: box})).toString('base64');
     await (await handle(element.path)).evaluate(node => { node.style.visibility = node.dataset.v; delete node.dataset.v; });
     if (focused === absent) found.get('focus-clipped-away').add(element.path);
+  }
+  // Orientation lock by rotation: main or a box holding it whose computed transform is a quarter turn, while the same
+  // box is not turned in the other orientation (measured by emulating the other aspect).
+  const quarterTurned = async () => page.evaluate(() => {
+    const main = document.querySelector('main, [role=main]'); if (!main) return [];
+    const out = []; for (let n = main; n && n !== document.body; n = n.parentElement) {
+      const t = getComputedStyle(n).transform; if (t === 'none') continue;
+      const [a, b, c, d] = t.match(/-?[\d.e-]+/g).map(Number);
+      if (Math.abs(a) < 1e-6 && Math.abs(d) < 1e-6 && Math.abs(Math.abs(b) - 1) < 1e-6 && Math.abs(Math.abs(c) - 1) < 1e-6) { let path = []; for (let m = n; m !== document.body.firstElementChild; m = m.parentElement) path.unshift([...m.parentElement.children].indexOf(m)); out.push(['Page', ...path].join('/')); }
+    }
+    return out;
+  });
+  const turnedHere = await quarterTurned();
+  if (turnedHere.length) {
+    const size = page.viewportSize();
+    await page.setViewportSize({width: size.height, height: size.width});
+    const turnedThere = new Set(await quarterTurned());
+    await page.setViewportSize(size);
+    for (const path of turnedHere) if (!turnedThere.has(path)) found.get('orientation').add(path);
   }
   // Checked indicator: screenshots of a checkbox/radio unchecked and checked; flagged when no pixel differs by 3:1.
   for (const element of elements) {
