@@ -144,7 +144,7 @@ export const contrastRatio = (a, b) => { const [x, y] = [luminance(a), luminance
 export function paintFacts(style) {
   return { color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
-    outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
+    isolation: style.isolation, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
     animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] } };
 }
 const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(String(value)); return m && (m[2] ? Number(m[1]) / 100 : Number(m[1])) >= 1; };
@@ -349,25 +349,32 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
 
   // occluded-target: a hit-testable box from a later paint layer covers a target.
   const layer = row => { for (let p = row.path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') { const r = everything.find(g => g.path === p); if (r && r.position !== 'static') return p; } return null; };
-  // Stacking contexts (CSS 2 Appendix E): a box with an integer z-index, or with opacity below 1, paints with its
-  // descendants as one layer of the root context: negative z, then in-flow boxes, then z 0/auto positioned layers
-  // (tree order), then positive z. Within one context the tree-order rules below apply. Nested contexts: Unknown.
+  // Stacking contexts (CSS 2 Appendix E): a box with an integer z-index, opacity below 1, or isolation: isolate paints
+  // with its descendants as one layer of its parent context: negative z, then in-flow boxes, then z 0/auto layers
+  // (tree order), then positive z. Two boxes compare inside their deepest common context, by the layers that hold them
+  // there; inside one layer the tree-order rules below apply.
   const rowAt = path => everything.find(g => g.path === path);
   const parentPath = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '';
-  const createsContext = r => r.zIndex !== null && r.zIndex !== undefined || !opaqueValue(r.paint.opacity);
-  const contextOf = row => { for (let p = row.path; p; p = parentPath(p)) { const r = rowAt(p); if (r && createsContext(r)) return r; } return null; };
-  const nested = new Set();
-  for (const row of everything.filter(createsContext)) { const outer = contextOf({ path: parentPath(row.path) }); if (outer) nested.add(row.path); }
-  for (const path of nested) report(unknowns, 'U_A11Y_STACKING', 'unknown', `${rowAt(path).box.label} creates a stacking context inside another; nested stacking order is not modeled`, rowAt(path), rowAt(path).region, { rule: 'occluded-target' });
-  const stackKey = row => {
-    const c = contextOf(row);
-    if (c) { const z = c.zIndex ?? 0; return { tier: z < 0 ? 1 : z > 0 ? 4 : 3, z, path: c.path, context: c.path }; }
-    const l = layer(row);
+  const createsContext = r => (r.zIndex !== null && r.zIndex !== undefined) || !opaqueValue(r.paint.opacity) || r.paint.isolation === 'isolate';
+  const contexts = row => { const out = []; for (let p = row.path; p; p = parentPath(p)) { const r = rowAt(p); if (r && createsContext(r)) out.unshift(r); } return out; };
+  // The nearest positioned ancestor-or-self strictly inside `within` (a context path, or '' for the root).
+  const layerIn = (row, within) => { for (let p = row.path; p && p !== within; p = parentPath(p)) { const r = rowAt(p); if (r && r.position !== 'static') return p; } return null; };
+  const keyIn = (row, representative, within) => {
+    if (representative) { const z = representative.zIndex ?? 0; return { tier: z < 0 ? 1 : z > 0 ? 4 : 3, z, path: representative.path, context: true }; }
+    const l = layerIn(row, within);
     return l ? { tier: 3, z: 0, path: l } : { tier: 2, z: 0, path: row.path };
   };
   const paintsAbove = (cover, above, target, own) => {
-    const a = stackKey(cover), b = stackKey(target);
-    if ((a.context || b.context) && a.context !== b.context) return a.tier !== b.tier ? a.tier > b.tier : a.z !== b.z ? a.z > b.z : treeOrder(a.path, b.path) > 0;
+    const ca = contexts(cover), cb = contexts(target);
+    let k = 0; while (k < ca.length && k < cb.length && ca[k] === cb[k]) k++;
+    const within = k ? ca[k - 1].path : '';
+    const a = keyIn(cover, ca[k], within), b = keyIn(target, cb[k], within);
+    if (a.context || b.context) return a.tier !== b.tier ? a.tier > b.tier : a.z !== b.z ? a.z > b.z : treeOrder(a.path, b.path) > 0;
+    if (k) { // both in the same context: the tree-order rules, with layers taken inside it
+      const la = layerIn(cover, within), lb = layerIn(target, within);
+      if (!la) return !lb && treeOrder(cover.path, target.path) > 0;
+      return !(lb && (isAncestor(la, lb) || la === lb || treeOrder(la, lb) < 0));
+    }
     if (!above) return !own && treeOrder(cover.path, target.path) > 0;
     return !(own && (isAncestor(above, own) || above === own || treeOrder(above, own) < 0));
   };

@@ -621,7 +621,17 @@ test('z-index and opacity stacking decide occlusion like Chromium', async ({page
     const browser = await page.evaluate(() => [...document.querySelectorAll('button')].filter(b => { const r = b.getBoundingClientRect(); for (let x = r.left + 0.5; x < r.right; x += 4) for (let y = r.top + 0.5; y < r.bottom; y += 4) if (document.elementFromPoint(x, y) !== b) return true; return false; }).map(b => `Page/${[...b.parentElement.children].indexOf(b)}`));
     expect(statics, extra || 'none').toEqual(browser.sort());
   }
-  // A stacking context inside another is not modeled.
-  const nested = analyzeHTML('<main class="page"><div class="w"><button class="b" aria-label="B"></button></div></main>', {name: 'Page', css: `${reset}.page{display:grid;grid-template-columns:200px;grid-auto-rows:40px;background:#fff}.w{display:grid;grid-template-columns:minmax(0,1fr);position:relative;z-index:1}.b{${button}position:relative;z-index:2}`, viewport: {min: 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true});
-  expect(nested.diagnostics.map(d => d.code)).toContain('U_A11Y_STACKING');
+  // Nested contexts: a high z-index inside a low context stays below a sibling context; isolation flattens; a
+  // cover inside the same context compares by tree order there.
+  const nestedHtml = '<main class="page"><div class="w"><button class="b" aria-label="B"></button></div><div class="v"></div></main>';
+  const nestedBase = `${reset}.page{display:grid;grid-template-columns:200px;grid-auto-rows:40px;position:relative;background:#fff}.w{display:grid;grid-template-columns:minmax(0,1fr);position:relative}.b{${button}}.v{position:absolute;left:0;top:0;inline-size:120px;block-size:40px;background:#eee}`;
+  for (const extra of ['.w{z-index:1}.b{position:relative;z-index:99}.v{z-index:2}', '.w{z-index:3}.b{position:relative;z-index:-5}.v{z-index:2}', '.w{isolation:isolate}.b{position:relative;z-index:5}', '.w{opacity:.9}.b{position:relative;z-index:5}.v{z-index:1}', '.w{z-index:2}.b{position:relative;z-index:1}']) {
+    const css = nestedBase + extra;
+    const report = analyzeHTML(nestedHtml, {name: 'Page', css, viewport: {min: 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true});
+    expect(report.status === 'unknown', `${extra}: ${JSON.stringify(report.diagnostics)}`).toBe(false);
+    const statics = report.diagnostics.some(d => d.code === 'E_A11Y_OCCLUDED');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${nestedHtml}</body></html>`);
+    const browser = await page.evaluate(() => { const b = document.querySelector('.b'), r = b.getBoundingClientRect(); for (let x = r.left + 0.5; x < r.right; x += 4) for (let y = r.top + 0.5; y < r.bottom; y += 4) if (document.elementFromPoint(x, y) !== b) return true; return false; });
+    expect(statics, extra).toBe(browser);
+  }
 });
