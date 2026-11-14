@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -190,7 +190,7 @@ test('duplicate-id and aria-reference: DOM facts over the whole domain', () => {
 });
 
 test('positive-tabindex and multiple-main are warnings', () => {
-  const tree = {tag: 'div', classes: ['root'], children: [{tag: 'main', classes: ['m1']}, {tag: 'main', classes: ['m2']}, {tag: 'div', classes: ['t'], tabIndex: 3}]};
+  const tree = {tag: 'div', classes: ['root'], children: [{tag: 'main', classes: ['m1']}, {tag: 'main', classes: ['m2']}, {tag: 'div', classes: ['t'], tabIndex: 3, role: 'region', named: true}]};
   const css = '.root { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 30px; }\n';
   const report = run(tree, css);
   assert.deepEqual(report.accessibility.warnings.map(w => w.code).sort(), ['W_A11Y_MULTIPLE_MAIN', 'W_A11Y_POSITIVE_TABINDEX']);
@@ -1221,4 +1221,14 @@ test('native-aria-conflict: ARIA states that contradict the native ones', () => 
   assert.equal(warn(run(input({nativeStates: {required: true}, aria: {'aria-required': 'false'}}), css), 'W_A11Y_NATIVE_ARIA_CONFLICT').length, 1);
   // aria-required="true" without the native attribute adds the state: allowed.
   assert.equal(warn(run(input({aria: {'aria-required': 'true'}}), css), 'W_A11Y_NATIVE_ARIA_CONFLICT').length, 0);
+});
+
+test('focus-semantics: a focusable element with no interactive role', () => {
+  const warn = report => report.accessibility.warnings.filter(d => d.code === 'W_A11Y_FOCUS_SEMANTICS');
+  const css = pageCSS(`.page { background: #fff; grid-auto-rows: 30px; }\n.d { inline-size: 30px; block-size: 30px; }`);
+  const div = extra => page([{tag: 'div', classes: ['d'], tabIndex: 0, focusable: true, ...extra}]);
+  assert.equal(warn(run(div({}), css)).length, 1);
+  assert.equal(warn(run(div({role: 'button', named: true}), css)).length, 0);
+  assert.equal(warn(run(div({tabIndex: -1, focusable: false}), css)).length, 0);
+  assert.equal(warn(run(div({role: 'region', named: true}), css)).length, 0);
 });

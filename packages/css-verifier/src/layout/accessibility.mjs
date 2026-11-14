@@ -95,7 +95,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics'];
 
 // --- colors (CSS Color 4 subset) ------------------------------------------
 const named = {
@@ -1144,6 +1144,16 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
     const fields = inside.filter(b => ['input', 'select', 'textarea'].includes(b.tag) && !['hidden', 'submit', 'image', 'button', 'reset'].includes(b.inputType));
     const submit = inside.some(b => (b.tag === 'button' && !['button', 'reset'].includes(b.buttonType ?? 'submit')) || (b.tag === 'input' && ['submit', 'image', 'dynamic'].includes(b.inputType)));
     if (fields.length && !submit) report(warnings, 'W_A11Y_FORM_SUBMIT', 'warning', `${row.box.label} has fields but no submit button`, row, row.region, { rule: 'form-submit' });
+  }
+
+  // focus-semantics: a non-interactive element made focusable (tabindex >= 0) without a role is announced as a
+  // generic group, so a keyboard user reaches a stop with no purpose. Scroll containers are exempt (they need focus).
+  const nativeFocus = new Set(['a', 'button', 'input', 'select', 'textarea', 'summary', 'audio', 'video', 'iframe', 'area', 'details']);
+  for (const row of geometry) {
+    const box = row.box, role = roleOf(box);
+    if (!(box.tabIndex >= 0) || box.focusable === false || nativeFocus.has(box.tag) || box.role === 'dynamic' || row.overflow === 'scroll' || !visible(row)) continue;
+    if (role && !['none', 'presentation', 'generic'].includes(role)) continue;
+    report(warnings, 'W_A11Y_FOCUS_SEMANTICS', 'warning', `${box.label} takes focus (tabindex ${box.tabIndex}) but has no interactive role; give it a role or drop the tabindex`, row, row.region, { rule: 'focus-semantics' });
   }
 
   // native-aria-conflict: ARIA in HTML forbids aria-required/aria-disabled/aria-checked that contradict the native
