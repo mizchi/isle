@@ -33,3 +33,19 @@ test('a lazy image in the initial viewport is a warning with its region', () => 
   const [deep] = lazy('<div class="sp"></div><img src="/a.png" width="400" height="200" loading="lazy" alt="">');
   assert.ok(deep.heightRange.min >= 700, JSON.stringify(deep.heightRange));
 });
+
+test('-webkit-line-clamp caps a text leaf at N lines and warns where text is cut', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const profile = [{atLeastInlineSize: 0, blockSize: 100}, {atLeastInlineSize: 300, blockSize: 60}, {atLeastInlineSize: 600, blockSize: 20}];
+  const run = css => analyzeHTML('<div class="page"><p class="t">long text</p></div>', {name: 'P', css: `*{box-sizing:border-box;margin:0}.page{${g}}.t{line-height:20px;${css}}`, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, boxes: {'.t': {minInlineSize: 10, intrinsicBlockSize: profile}}});
+  const clamped = run('display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden');
+  assert.equal(clamped.status, 'verified', JSON.stringify(clamped.diagnostics));
+  assert.deepEqual(clamped.sizes.filter(r => r.box === '.t').map(r => [r.range.min, r.blockSize.constant]).sort((a, b) => a[0] - b[0]), [[320, '40'], [600, '20']]);
+  const [cut] = clamped.layoutWarnings;
+  assert.deepEqual([cut.code, cut.lines, cut.range.min, cut.range.max], ['W_LAYOUT_LINE_CLAMPED', 2, 320, 600]);
+  // Enough lines: nothing is cut.
+  assert.equal(run('display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden').layoutWarnings, undefined);
+  // Outside the legacy clamp (no vertical orient, the unprefixed property): Unknown.
+  assert.equal(run('display:-webkit-box;-webkit-line-clamp:2').status, 'unknown');
+  assert.equal(run('line-clamp:2').status, 'unknown');
+});

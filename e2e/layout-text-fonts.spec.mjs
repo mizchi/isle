@@ -601,3 +601,24 @@ test('::before/::after text is measured with the leaf content (withGeneratedText
     if (report.status === 'violated') expect(width < line + 1, `${width}px: static overflow, Chromium line ${line}`).toBe(true);
   }
 });
+
+test('-webkit-line-clamp caps wrapped text at N lines like Chromium, and warns exactly where text is cut', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const ro = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
+  const content = 'Static layout checks prove that every card title fits its box at every viewport width';
+  const css = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{font-family:Roboto;font-size:16px;line-height:24px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.b{height:10px}';
+  const html = `<div class="page"><p class="t">${content}</p><div class="b"></div></div>`;
+  const report = analyzeHTML(html, metrics.resolveOptions({name: 'P', css, viewport: {min: 200, max: 1280, height: {min: 2000, max: 2000}}, boxes: {'.t': {text: {font: ro, content}, wrap: 'normal'}}}));
+  expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+  const warnings = (report.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_LINE_CLAMPED');
+  for (const width of [1280, 700, 500, 320, 200]) {
+    await page.setViewportSize({width, height: 800});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${css}</style></head><body style="margin:0">${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const browser = await page.evaluate(() => { const t = document.querySelector('.t'); return {height: t.getBoundingClientRect().height, cut: t.scrollHeight > t.clientHeight + 0.5}; });
+    const row = report.sizes.find(r => r.box === '.t' && width >= r.range.min && width <= r.range.max);
+    expect(Number(row.blockSize.constant), `height at ${width}`).toBe(browser.height);
+    const warned = warnings.some(w => width >= w.range.min && width <= w.range.max);
+    expect(warned, `cut at ${width}: static ${warned}, Chromium ${browser.cut}`).toBe(browser.cut);
+  }
+});

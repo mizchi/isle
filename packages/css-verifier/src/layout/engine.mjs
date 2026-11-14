@@ -350,6 +350,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       try {style=computeStyle(relevant,box,active,inherited,{spend,state});}
       catch(error) {error.box ??= box;throw error;}
       if (gridItem && inherited && style.display === 'inline') style.display = 'block';
+      // A line-clamped text leaf (-webkit-box, vertical, -webkit-line-clamp: N): a block whose height is at most N lines.
+      if (style.display === '-webkit-box' && !box.pseudo) {
+        if (style['box-orient'] !== 'vertical' || !/^\d+$/.test(style['line-clamp']) || !box.text || (box.children ?? []).length || !/^\d+(?:\.\d+)?px$/.test(style['line-height'])) throw Object.assign(new Error(`${box.label}: display: -webkit-box is modeled as a line clamp of a text leaf (-webkit-box-orient: vertical, -webkit-line-clamp: N, a px line-height)`), { code: 'U_LAYOUT_CSS' });
+        style = { ...style, display: 'block', $lineClamp: Number(style['line-clamp']) };
+      }
       // An img's width/height attributes are presentational hints (below every author rule) for its width and height,
       // and set its aspect-ratio to auto w / h (HTML rendering §15.4.3; measured).
       const chosen = pictureSources.find(source => !source.condition || activeContext(contexts.get(source.condition)));
@@ -1021,7 +1026,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     }
     if (!box.children.length) {
       if (box.text && contract.minInlineSize === undefined && (contract.overflow ?? 'fit') === 'fit') unknown('U_LAYOUT_INTRINSIC', 'Text needs a minInlineSize bound or an explicit overflow policy', undefined, box);
-      if (block && box.text && (contract.overflowBlock ?? 'fit') === 'fit') {
+      if (block && box.text && (contract.overflowBlock ?? 'fit') === 'fit' && !style.$lineClamp) {
         if (contract.intrinsicBlockSize !== undefined) for (const required of intrinsic(box, contentInline, region)) {
           // Wrapped text reports the lines it needs at this width and how many the box holds.
           const needed = contract.textMetrics?.kind === 'lines' ? Math.round(number(evaluate(required.value, { x: zero, y: zero })) / contract.font.lineHeight) : 0;
@@ -1669,6 +1674,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               // height/overflow. Only ordinary leaves use intrinsic height.
               if (!box.children.length && style.display !== 'grid') {
                 let heights = !block ? [{ region: geometryRegion, value: null }] : knownBlock ? [{ region: geometryRegion, value: knownBlock }] : intrinsic(box, contentInline, geometryRegion);
+                // A line clamp caps the text's height at N lines; where the text needs more, the rest is cut off (a warning).
+                if (style.$lineClamp && !knownBlock) heights = heights.flatMap(h => h.value ? minimumOf(h.region, h.value, scalar(mul(q(String(style.$lineClamp)), px(style['line-height'])))).map(c => {
+                  const cut = clip(c.region, diff(h.value, c.value), true);
+                  if (cut && !layoutWarnings.some(w => w.code === 'W_LAYOUT_LINE_CLAMPED' && w.path === box.path)) { const p = sample(cut); layoutWarnings.push({ code: 'W_LAYOUT_LINE_CLAMPED', severity: 'warning', box: box.label, path: box.path, lines: style.$lineClamp, message: `${box.label} is clamped to ${style.$lineClamp} lines and its text needs ${number(div(evaluate(h.value, p), px(style['line-height'])))} at viewport ${number(p.x)}px: the rest of the text is cut off (keep the full text available elsewhere, such as the page the card links to)`, ...ranges(cut) }); }
+                  return c;
+                }) : [h]);
                 // A content height above max-block-size is capped; the content then has to fit (or overflow by contract).
                 if (maxBlock && !knownBlock) heights = heights.flatMap(h => h.value ? minimumOf(h.region, h.value, diff(maxBlock, blockEdges)).map(c => {
                   if (c.value !== h.value && emit) obligation(c.value, h.value, box, c.region, 'E_LAYOUT_CONTENT', 'block', (box.contract?.overflowBlock ?? 'fit') === 'fit');

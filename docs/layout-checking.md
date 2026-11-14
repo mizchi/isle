@@ -215,6 +215,7 @@ ancestor 入力は継承用であり、host の寸法を再計算する入力で
   - 高さで決まる:line-height が px でない、または折り返しうる。
   - 幅で決まる:px の幅のない flex の item。
   フォールバックの `@font-face` が size-adjust などで metrics を合わせている場合は、その family を `fallback` として示す(変化を小さくするだけなので、警告は残す)。警告は status を変えない。実際に動くかは、2つのフォントの metrics と Chromium の 3px のしきい値で決まる。Chromium では、警告のない例(px の line-height で1行、`optional`)が CLS 0 で、警告の1例が CLS > 0 だった。
+- **行数の切り詰め(`-webkit-line-clamp`、`W_LAYOUT_LINE_CLAMPED`)**: `display: -webkit-box`・`-webkit-box-orient: vertical`・`-webkit-line-clamp: N` のテキストの葉(px の line-height)は、高さを「テキストの行数と N の小さい方 × line-height」とする。行の契約(折り返しの行数の profile)が N 行を超える条件領域では、残りの行が切られるので警告する(切り詰めは意図した overflow なので、内容の不足の違反にはしない)。Chromium で、5 つの幅の高さと切り詰めの有無が一致した。接頭辞のない `line-clamp` と、vertical でない組み合わせは unknown。
 - **画面内の遅延読み込み画像(`W_LAYOUT_LAZY_IN_VIEWPORT`、警告)**: `loading="lazy"` の `img` が、初期のスクロール位置で viewport の中にある条件領域を警告として示す(LCP の画像の読み込みが遅れる)。その領域は、Chromium で4つの大きさの viewport の表示の有無と一致した。
 - **layout shift の score の上界(`scoreBound`)**: viewport の高さがある場合、`E_LAYOUT_HOVER_SHIFT` と `E_LAYOUT_CAROUSEL_SHIFT` に、その変化(1 フレーム)の Layout Instability の score の上界を付ける。上界は、影響の割合 × 距離の割合で求める。
   - 影響の割合:動いた全てのレイアウトの箱の前後の矩形の和集合を viewport で切り取り、その面積を viewport の面積で割る。
