@@ -2017,6 +2017,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
     }
   }
+  // A sticky box that cannot stick: its containing block (the parent's content box) ends at or before its own bottom,
+  // so there is no scroll range in which it stays at top: 0 (a sticky header wrapped in a box of its own height).
+  if (block && hovered === undefined && !options.$animationFrame && !options.$slideVariant) for (const row of geometry.filter(row => row.sticky?.parent && row.origin && row.block)) {
+    const parent = geometry.find(other => other.path === row.sticky.parent && other.origin && other.contentBlockSize && intersect(other.region, row.region));
+    if (!parent || layoutWarnings.some(w => w.code === 'W_LAYOUT_STICKY_INERT' && w.path === row.path)) continue;
+    const room = diff(sum(sum(parent.origin.block, scalar(parent.content.top)), parent.contentBlockSize), sum(row.origin.block, row.block));
+    const shared = intersect(row.region, parent.region);
+    if (!shared || clip(shared, room, true)) continue;
+    layoutWarnings.push({ code: 'W_LAYOUT_STICKY_INERT', severity: 'warning', box: row.box.label, path: row.path, parent: parent.box.label,
+      message: `${row.box.label} is position: sticky, but its parent ${parent.box.label} ends at its bottom: it scrolls away like a static box. Make it a child of the scrolling content (or give the parent the height it should stick across)`, ...ranges(shared) });
+  }
   // A lazily loaded image in the initial viewport (its layout top above the viewport height somewhere, at the
   // initial scroll position): it starts loading only after layout, later than an eager one, which delays the largest
   // contentful paint when it is the hero image. Reported as a warning with the region where it is visible.

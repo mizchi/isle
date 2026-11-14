@@ -265,3 +265,21 @@ test('video: width/height attributes and aspect-ratio reserve the box like Chrom
   // Without a reservation the static analysis is Unknown (the natural size arrives with the metadata).
   expect(analyzeHTML('<div class="page"><video src="/none.mp4" muted></video><div class="b"></div></div>', {name: 'Page', css, viewport}).status).toBe('unknown');
 });
+
+test('sticky boxes without room in their parent never stick, as the static warning says', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.h{position:sticky;top:0;height:50px;background:#fff}.w{${g}}.tall{${g};height:300px}.c{height:2000px}`;
+  for (const [name, body] of [
+    ['wrapped in its own height', '<div class="page"><div class="w"><header class="h"></header></div><div class="c"></div></div>'],
+    ['a child of the scrolling content', '<div class="page"><header class="h"></header><div class="c"></div></div>'],
+    ['in a 300px section', '<div class="page"><section class="tall"><header class="h"></header></section><div class="c"></div></div>'],
+  ]) {
+    const report = analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css, viewport: {min: 800, max: 800, height: {min: 600, max: 600}}, integrity: true});
+    const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_STICKY_INERT');
+    await page.setViewportSize({width: 800, height: 600});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${body}</body></html>`);
+    // Scroll a little (the header would stick at 0 if it could) and read its top.
+    const top = await page.evaluate(async () => { scrollTo(0, 100); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); return document.querySelector('.h').getBoundingClientRect().top; });
+    expect(warned, `${name}: static ${warned}, Chromium top after scrolling 100px: ${top}`).toBe(top < 0);
+  }
+});

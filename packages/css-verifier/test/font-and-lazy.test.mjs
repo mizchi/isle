@@ -49,3 +49,14 @@ test('-webkit-line-clamp caps a text leaf at N lines and warns where text is cut
   assert.equal(run('display:-webkit-box;-webkit-line-clamp:2').status, 'unknown');
   assert.equal(run('line-clamp:2').status, 'unknown');
 });
+
+test('a sticky box whose parent ends at its bottom cannot stick (W_LAYOUT_STICKY_INERT)', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.h{position:sticky;top:0;height:50px}.w{${g}}.w2{${g};padding-bottom:20px}.c{height:2000px}`;
+  const run = body => analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, integrity: true});
+  const inert = report => (report.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_STICKY_INERT').map(w => [w.box, w.parent]);
+  assert.deepEqual(inert(run('<div class="page"><div class="w"><header class="h"></header></div><div class="c"></div></div>')), [['.h', '.w']]);
+  assert.deepEqual(inert(run('<div class="page"><header class="h"></header><div class="c"></div></div>')), []);
+  // The parent's padding is outside its content box: no room either.
+  assert.deepEqual(inert(run('<div class="page"><div class="w2"><header class="h"></header></div><div class="c"></div></div>')), [['.h', '.w2']]);
+});
