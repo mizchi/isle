@@ -215,7 +215,12 @@ function expand(property, value) {
       } else if (name === 'rotate') {
         const m = /^\s*(-?\d+(?:\.\d+)?)(deg|turn)\s*$/.exec(args); if (!m) fail();
         const quarters = Number(m[1]) * (m[2] === 'turn' ? 4 : 1 / 90);
-        if (Math.abs(quarters - Math.round(quarters)) > 1e-9) fail();
+        if (Math.abs(quarters - Math.round(quarters)) > 1e-9) {
+          // A lone rotation by any other angle: the box is painted somewhere inside its circumscribed rectangle
+          // (modeled for the accessibility checks, which treat what it may cover as undecided).
+          if (fns.length === 1) return [[property, `rotate-any(${Number(m[1]) * (m[2] === 'turn' ? 360 : 1)})`]];
+          fail();
+        }
         A = times(A, [[1, 0, 0, 1], [0, -1, 1, 0], [-1, 0, 0, -1], [0, 1, -1, 0]][((Math.round(quarters) % 4) + 4) % 4].map(n => q(n)));
       } else fail();
     }

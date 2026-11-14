@@ -214,6 +214,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       throw Object.assign(new Error(`${box.label} is position: sticky; only top: 0 under the page scroll (no scrolling or clipping ancestor) is modeled, for the accessibility and integrity checks`), { code: 'U_LAYOUT_CSS' });
     if (style.$fixed && !options.accessibility && !options.integrity) throw Object.assign(new Error(`${box.label} is position: fixed; it is modeled (against the viewport at scroll position 0) for the accessibility and integrity checks only`), { code: 'U_LAYOUT_CSS' });
     if (style.$fixed && (!options.viewport.height || (options.hostInset ?? 0) !== 0 || (options.hostBlockInset ?? 0) !== 0)) throw Object.assign(new Error(`${box.label} is position: fixed; the viewport needs a height range and the component must start at the viewport origin`), { code: 'U_LAYOUT_CSS' });
+    if (String(style.transform).startsWith('rotate-any(') && (!options.accessibility || options.integrity)) throw Object.assign(new Error(`transform ${style.transform}: an arbitrary rotation is modeled for the accessibility checks only (not integrity, whose overflow it changes)`), { code: 'U_LAYOUT_CSS' });
     if (style.transform !== 'none' && !options.accessibility && !options.integrity) throw Object.assign(new Error(`transform ${style.transform} moves the painted box; it is modeled for the accessibility and integrity checks only`), { code: 'U_LAYOUT_CSS' });
     if (['left', 'right', 'inline-start', 'inline-end'].includes(style.float)) { issue('E_LAYOUT_FLOAT', 'float is forbidden in checked layout', box, region); return false; }
     if (style.float !== 'none') throw new Error('Unsupported float value');
@@ -734,6 +735,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           }
         }
       }
+      // An arbitrary rotation: the box's circumscribed rectangle (an upper bound: |cos|·w/2 + |sin|·h/2 per half
+      // extent, rounded up) is what it may cover; its descendants have no position either.
+      const turn = /^rotate-any\((-?[\d.]+)\)$/.exec(String(style.transform));
+      if (turn && origin && blockSize) {
+        const radians = Number(turn[1]) * Math.PI / 180, up = v => q(String(Math.ceil(Math.abs(v) * 1e6 + 1) / 1e6));
+        const [c, sn] = [up(Math.cos(radians)), up(Math.sin(radians))], half = div(one, q(2));
+        const extentInline = sum(times(inline, mul(c, half)), times(blockSize, mul(sn, half))), extentBlock = sum(times(inline, mul(sn, half)), times(blockSize, mul(c, half)));
+        const centre = { inline: sum(origin.inline, times(inline, half)), block: sum(origin.block, times(blockSize, half)) };
+        const own = geometry.findLast(row => row.path === box.path && intersectRegions(row.region, region));
+        if (own) own.rotatedBounds = { origin: { inline: diff(centre.inline, extentInline), block: diff(centre.block, extentBlock) }, inline: times(extentInline, q(2)), block: times(extentBlock, q(2)) };
+        if (box.$starts) for (const row of geometry.slice(box.$starts.geometry).filter(row => isDescendant(box.path, row.path) && intersectRegions(row.region, region))) { row.origin = null; row.clipOrigin = null; row.rotatedBy = box.path; }
+      }
       // A scale maps the painted descendants too: r ↦ C + s·(r − C) about the box's centre C (affine, s constant).
       const matrix = linearOf(style);
       if (matrix && (box.children.length || box.inline?.length) && origin && blockSize && box.$starts) {
@@ -792,6 +805,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     };
   }
   function scaled(style, origin, inline, blockSize) {
+    // An arbitrary rotation leaves no axis-aligned painted box: no position (its circumscribed rectangle is recorded).
+    if (String(style.transform).startsWith('rotate-any(')) return { origin: null, inline, block: blockSize };
     const matrix = linearOf(style);
     if (!matrix || !origin || !blockSize) return { origin: matrix ? null : origin, inline, block: blockSize };
     const half = div(one, q(2)), centre = { inline: sum(origin.inline, times(inline, half)), block: sum(origin.block, times(blockSize, half)) };

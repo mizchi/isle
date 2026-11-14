@@ -623,6 +623,21 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   }
 
 
+  // rotated-cover: a box rotated by an arbitrary angle is somewhere inside its circumscribed rectangle. A target or text
+  // under that rectangle, painted below it, may be covered (Unknown), and targets inside it have no position (Unknown).
+  for (const rotated of everything.filter(row => row.rotatedBounds && visible(row))) {
+    const bounds = { ...rotated, ...rotated.rotatedBounds };
+    for (const target of placed.filter(row => (interactive(row) || row.box.text) && visible(row) && !hiddenFrom(row.path) && !related(row.path, rotated.path))) {
+      if (!paintsAbove(rotated, layer(rotated), target, layer(target))) continue;
+      let region = intersect(target.region, rotated.region);
+      region = below(region, bounds.origin.inline, right(target)); region = below(region, target.origin.inline, right(bounds));
+      region = below(region, bounds.origin.block, bottom(target)); region = below(region, target.origin.block, bottom(bounds));
+      if (region) report(unknowns, 'U_A11Y_ROTATED_COVER', 'unknown', `${target.box.label} lies under the circumscribed rectangle of the rotated ${rotated.box.label}; whether it is covered is not decided`, target, region, { rule: 'occluded-target', cover: rotated.path });
+    }
+  }
+  for (const row of geometry.filter(row => row.rotatedBy && interactive(row) && visible(row) && !hiddenFrom(row.path)))
+    report(unknowns, 'U_A11Y_ROTATED', 'unknown', `${row.box.label} is inside a box rotated by an arbitrary angle; its target geometry is not modeled`, row, row.region, { rule: 'target-size' });
+
   // text-obscured: a text box entirely under a later painted, fully opaque box (an overlay or badge laid over it) can't
   // be read. Translucent covers (alpha or opacity below 1) are left to the contrast rules.
   const opaque = row => { const c = parseColor(row.paint.backgroundColor); return c && c.a >= 1 && row.paint.backgroundImage === 'none' && opaqueValue(row.paint.opacity ?? '1') && row.chain.every(layer => opaqueValue(layer.opacity ?? '1')); };

@@ -1222,3 +1222,21 @@ test('automatic tables mixing px and content columns share width like Chromium',
   // Every phase is exercised: all but the overflowing widths were compared.
   expect(compared).toBeGreaterThanOrEqual(13);
 });
+
+test('an arbitrary rotation covers what lies inside its rendered bounding box', async ({page}) => {
+  const base = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.page{position:relative;display:grid;grid-template-columns:400px;grid-auto-rows:40px;background:#fff;color:#000}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;background:transparent;inline-size:40px;block-size:30px}.r{position:absolute;top:0;inline-size:100px;block-size:20px;background:#333}`;
+  const html = '<div class="page"><button class="b" aria-label="A"></button><div class="r"></div></div>';
+  for (const angle of [30, 63, 135]) {
+    await page.setViewportSize({width: 1280, height: 800});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${base}.r{left:200px;transform:rotate(${angle}deg)}</style></head><body>${html}</body></html>`);
+    // Chromium's bounding client rect of a rotated box is its circumscribed rectangle.
+    const left = await page.evaluate(() => document.querySelector('.r').getBoundingClientRect().left - 200);
+    for (const [gap, covered] of [[0.5, false], [-0.5, true]]) {
+      const offset = 40 + gap - left; // the rotated box's left such that its rectangle starts at button end + gap
+      const css = `${base}.r{left:${offset.toFixed(4)}px;transform:rotate(${angle}deg)}`;
+      const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 1280, max: 1280, height: {min: 800, max: 800}}, accessibility: true});
+      const hit = report.diagnostics.some(d => d.code === 'U_A11Y_ROTATED_COVER' && d.box === '.b');
+      expect(hit, `rotate(${angle}deg) with the rectangle ${gap}px from the button`).toBe(covered);
+    }
+  }
+});

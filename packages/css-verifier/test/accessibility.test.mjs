@@ -1063,7 +1063,7 @@ test('px translate and scale move a box and its descendants; other transforms ar
   const doc = {tag: 'html', classes: ['root'], lang: 'en', documentRoot: true, children: [{tag: 'body', classes: ['body'], children: [tree]}]};
   const docCSS = '.root { font-size: 8px; display: grid; grid-template-columns: minmax(0, 1fr); } .body { display: grid; grid-template-columns: minmax(0, 1fr); }\n' + css('.w { transform: translate(3rem, 0); }');
   assert.equal(run(doc, docCSS).sizes.find(r => r.box === '.b' && r.rect).rect.inlineStart.constant, '24');
-  for (const t of ['rotate(3deg)', 'rotate(45deg)', 'skewX(5deg)', 'translate(1em, 0)', 'translate(1rem, 0)']) assert.equal(run(tree, css(`.w { transform: ${t}; }`)).status, 'unknown', t);
+  for (const t of ['rotate(45deg) scale(2)', 'skewX(5deg)', 'translate(1em, 0)', 'translate(1rem, 0)']) assert.equal(run(tree, css(`.w { transform: ${t}; }`)).status, 'unknown', t);
   // Percentages are of the box's own size: -50% of the 200 × 40 wrapper.
   const pct = run(tree, css('.w { transform: translate(-50%, 25%); }')).sizes.find(r => r.box === '.b' && r.rect).rect;
   assert.deepEqual([pct.inlineStart.constant, pct.blockStart.constant], ['-100', '10']);
@@ -1613,4 +1613,18 @@ test('target-size: the user-agent control exception for an unstyled checkbox (SC
   assert.equal(find(run(tree, css('.c1, .c2 { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; box-sizing: border-box; inline-size: 13px; block-size: 13px; }')), 'E_A11Y_TARGET_SIZE').length, 2);
   // Without a margin reset (no reset sheet) the UA margin of the checkbox is not modeled.
   assert.equal(analyzeLayout(tree, {name: 'Page', css: '* { box-sizing: border-box; }\n' + pageCSS('.page { grid-auto-rows: 40px; }\n.row { display: grid; grid-template-columns: 20px 20px; }'), viewport: domain, accessibility: true}).status, 'unknown');
+});
+
+test('an arbitrary rotation: what its circumscribed rectangle may cover is undecided', () => {
+  const tree = page([{tag: 'button', classes: ['b'], named: true}, {tag: 'button', classes: ['far'], named: true}, {tag: 'div', classes: ['r']}]);
+  const css = extra => pageCSS(`.page { position: relative; background: #fff; color: #000; grid-auto-rows: 40px; }\n.b, .far { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; inline-size: 40px; block-size: 30px; }\n.r { position: absolute; left: 50px; top: 0; inline-size: 100px; block-size: 20px; background: #333; transform: rotate(30deg); }\n${extra}`);
+  const r = run(tree, css(''));
+  // At left 50 the 100×20 box turned 30° spans x 51.7–148.3 (y −23.7–43.7): clear of .b (x 0–40) and .far.
+  assert.equal(r.diagnostics.filter(d => d.code === 'U_A11Y_ROTATED_COVER').length, 0);
+  // At left 10 it spans x 11.7–108.3: over .b and, reaching y 43.7, over the top of .far (y 40–70).
+  const under = run(tree, css('.r { left: 10px; }'));
+  assert.deepEqual(under.diagnostics.filter(d => d.code === 'U_A11Y_ROTATED_COVER').map(d => d.box), ['.b', '.far']);
+  // Without the accessibility checks (or with integrity) an arbitrary rotation stays Unknown.
+  assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css(''), viewport: domain}).status, 'unknown');
+  assert.equal(run(tree, css(''), {integrity: {}}).status, 'unknown');
 });
