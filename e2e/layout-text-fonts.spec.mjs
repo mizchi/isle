@@ -345,3 +345,42 @@ test('inline link occlusion and obscured focus agree with Chromium', async ({pag
     expect(codes.includes('E_A11Y_FOCUS_OBSCURED'), `${name} obscured`).toBe(obscured);
   }
 });
+
+// Wrapping text: per width, the link's line and bounds from the line layout, or split across lines.
+test('inline bounds in wrapping text follow the line layout', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  for (const {font, content, piece} of [
+    {font: {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content: 'Read the full installation guide before you start the upgrade of the cluster.', piece: 'installation guide'},
+    {font: jp, content: '日本語のテキストを折り返して幅を確認します英ABC 123', piece: 'ABC'},
+  ]) {
+    const at = content.indexOf(piece);
+    const html = `<div class="page"><p class="p">${content.slice(0, at)}<a class="u" href="#x">${piece}</a>${content.slice(at + piece.length)}</p></div>`;
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:0 10px;background:#fff;color:#000}.p{font-family:"${font.family}";font-size:${font.size}px;line-height:${font.lineHeight}px;font-weight:${font.weight}}.u{color:#000}`;
+    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': piece}}, wrap: 'normal'}});
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 120, max: 900, height: {min: 600, max: 600}}, boxes});
+    expect(report.inlineBounds?.length, JSON.stringify(report.diagnostics)).toBeGreaterThan(0);
+    let split = 0, placed = 0;
+    for (let width = 120; width <= 900; width += 13) {
+      const at = a => value(a.coefficient) * width + value(a.heightCoefficient ?? '0') * 600 + value(a.constant);
+      const holds = row => row.regionConstraints.every(c => { const slack = value(c.coefficient) * width + value(c.heightCoefficient ?? '0') * 600 + value(c.constant); return c.strict ? slack > 1e-9 : slack >= -1e-9; });
+      const bound = report.inlineBounds.find(holds);
+      await page.setViewportSize({width, height: 600});
+      await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+      await page.evaluate(() => document.fonts.ready);
+      const rects = await page.evaluate(() => [...document.querySelector('.u').getClientRects()].map(r => ({x: r.x, y: r.y, w: r.width, h: r.height})));
+      const tag = `${font.family} at ${width}`;
+      if (!bound) { expect(rects.length, `${tag}: split`).toBeGreaterThan(1); split++; continue; }
+      expect(rects.length, tag).toBe(1); placed++;
+      const [r] = rects, box = b => ({x: at(b.inlineStart), y: at(b.blockStart), w: at(b.inlineSize), h: at(b.blockSize)}), O = box(bound.outer);
+      expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.x + r.w, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);
+      expect(r.y, `${tag} top`).toBeGreaterThanOrEqual(O.y - 1e-9); expect(r.y + r.h, `${tag} bottom`).toBeLessThanOrEqual(O.y + O.h + 1e-9);
+      if (bound.inner) {
+        const I = box(bound.inner);
+        expect(r.x, `${tag} inner left`).toBeLessThanOrEqual(I.x + 1e-9); expect(r.x + r.w, `${tag} inner right`).toBeGreaterThanOrEqual(I.x + I.w - 1e-9);
+        expect(r.y, `${tag} inner top`).toBeLessThanOrEqual(I.y + 1e-9); expect(r.y + r.h, `${tag} inner bottom`).toBeGreaterThanOrEqual(I.y + I.h - 1e-9);
+      }
+    }
+    expect(placed, `${font.family}: some widths place the link on one line`).toBeGreaterThan(0);
+  }
+});

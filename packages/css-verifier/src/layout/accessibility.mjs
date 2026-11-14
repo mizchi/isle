@@ -465,7 +465,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
 
   // Inline targets (links in one line of measured text): the outer bounds hold every fragment, the
   // inner bounds are always covered. Covering the inner box occludes; touching only the outer is Unknown.
-  for (const target of geometry.filter(row => row.inlineFlow && row.bounds?.outer && interactive(row) && visible(row) && !hiddenFrom(row.path))) {
+  for (const target of geometry.filter(row => row.inlineFlow && row.bounds && interactive(row) && visible(row) && !hiddenFrom(row.path)).flatMap(row => row.bounds.filter(piece => piece.outer).map(piece => ({ ...row, region: piece.region, bounds: piece })))) {
     const own = layer(target), inner = target.bounds.inner && { ...target, ...target.bounds.inner }, outer = { ...target, ...target.bounds.outer };
     for (const cover of placed) {
       if (related(cover.path, target.path) || cover.path === target.parentText || !visible(cover)) continue;

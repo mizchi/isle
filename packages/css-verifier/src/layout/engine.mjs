@@ -445,15 +445,27 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // Measured bounds of an inline element in one line of fixed text (textMetrics.inline): an outer
   // rectangle it stays inside and an inner one it always covers, from the leaf's content box.
   const sixtyfourths = (value, round) => div(q(String(round(value * 64))), q(64));
-  function inlineBounds(child, leaf, leafStyle, leafRow) {
+  // A list of {region, outer, inner}: one piece for one line of text, one per width interval of the
+  // line layout for wrapping text (none where the element is split across lines).
+  function inlineBounds(child, leaf, leafStyle, leafRow, region) {
     const metrics = leaf.contract?.textMetrics;
-    if (!leafRow?.origin || metrics?.kind !== 'content' || !metrics.inline || leaf.contract.wrap !== 'nowrap' || !['start', 'left'].includes(leafStyle['text-align']) || leafStyle.direction !== 'ltr') return null;
+    if (!leafRow?.origin || !metrics?.inline || !['start', 'left'].includes(leafStyle['text-align']) || leafStyle.direction !== 'ltr') return null;
+    if (!(metrics.kind === 'content' && leaf.contract.wrap === 'nowrap') && metrics.kind !== 'lines') return null;
     const entry = Object.entries(metrics.inline).find(([selector]) => matches(compileSelector(selector), child));
     if (!entry) return null;
-    const b = entry[1], x = sum(leafRow.origin.inline, scalar(leafRow.content.left)), y = sum(leafRow.origin.block, scalar(leafRow.content.top));
+    const x = sum(leafRow.origin.inline, scalar(leafRow.content.left)), y = sum(leafRow.origin.block, scalar(leafRow.content.top));
     const rect = (x0, x1, y0, y1) => cmp(x1, x0) > 0 && cmp(y1, y0) > 0 ? { origin: { inline: sum(x, scalar(x0)), block: sum(y, scalar(y0)) }, inline: scalar(sub(x1, x0)), block: scalar(sub(y1, y0)) } : null;
-    return { outer: rect(sixtyfourths(b.start[0], Math.floor), sixtyfourths(b.end[1], Math.ceil), sixtyfourths(b.top[0], Math.floor), sixtyfourths(b.bottom[1], Math.ceil)),
-      inner: rect(sixtyfourths(b.start[1], Math.ceil), sixtyfourths(b.end[0], Math.floor), sixtyfourths(b.top[1], Math.ceil), sixtyfourths(b.bottom[0], Math.floor)) };
+    const piece = (b, r) => ({ region: r, outer: rect(sixtyfourths(b.start[0], Math.floor), sixtyfourths(b.end[1], Math.ceil), sixtyfourths(b.top[0], Math.floor), sixtyfourths(b.bottom[1], Math.ceil)),
+      inner: rect(sixtyfourths(b.start[1], Math.ceil), sixtyfourths(b.end[0], Math.floor), sixtyfourths(b.top[1], Math.ceil), sixtyfourths(b.bottom[0], Math.floor)) });
+    if (metrics.kind === 'content') return [piece(entry[1], region)];
+    const content = leafRow.content.inline, out = [];
+    for (const step of entry[1]) {
+      if (step.split) continue;
+      let r = clip(region, diff(content, scalar(sixtyfourths(step.atLeastInlineSize, Math.round))));
+      if (r && step.below !== null) r = clip(r, diff(scalar(sixtyfourths(step.below, Math.round)), content), true);
+      if (r) out.push(piece(step, r));
+    }
+    return out;
   }
   function inlineContent(leaf, leafStyle, region, parents, chain, leafRow) {
     for (const child of leaf.inline) for (const state of styles(child, region, parents.map(p => ({ ...p, names: [] })), parents.at(-1).style, false, false)) {
@@ -466,7 +478,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const own = [...chain, paintFacts(style)];
       geometry.push({ box: child, path: child.path, region: state.region, origin: null, inline: null, block: null, position: 'static', inlineFlow: true,
         borders: { left: zero, right: zero, top: zero, bottom: zero }, overflow: 'visible', overflowValue: 'visible', painted: paints(style), paint: paintFacts(style), chain: own, parentText: leaf.path,
-        ...(leafRow ? { bounds: inlineBounds(child, leaf, leafStyle, leafRow) ?? undefined } : {}) });
+        ...(leafRow ? { bounds: inlineBounds(child, leaf, leafStyle, leafRow, state.region) ?? undefined } : {}) });
       if (child.children?.length) inlineContent({ ...child, inline: child.children, contract: leaf.contract }, style, state.region, [...parents, { box: child, style }], own);
     }
   }
@@ -964,8 +976,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     styleSources: styleSources.map(({ kind, file }) => ({ kind, file })), diagnostics, policies, checks, sizes, queries, subgrids,
     elements:boxes.map(({path,tag,id,classes,owner,targets,targetIdentity})=>({path,tag,...(id ? {id} : {}),classes,owner,...(targets?.length ? {targets} : {}),...(targetIdentity ? {targetIdentity} : {})})),
     ...(boxes.some(box=>box.layoutContracts?.length) ? {layoutBindings:boxes.flatMap(box=>(box.layoutContracts ?? []).map(declaration=>({path:box.path,declaration})))} : {}),
-    ...(geometry.some(row => row.bounds) ? { inlineBounds: geometry.filter(row => row.bounds).map(row => ({ box: row.box.label, path: row.path, ...ranges(row.region),
-      ...Object.fromEntries(['outer', 'inner'].map(key => [key, row.bounds[key] ? { inlineStart: affine(row.bounds[key].origin.inline), blockStart: affine(row.bounds[key].origin.block), inlineSize: affine(row.bounds[key].inline), blockSize: affine(row.bounds[key].block) } : null])) })) } : {}),
+    ...(geometry.some(row => row.bounds) ? { inlineBounds: geometry.filter(row => row.bounds).flatMap(row => row.bounds.map(piece => ({ box: row.box.label, path: row.path, ...ranges(piece.region), ...(block ? { regionConstraints: serialize(piece.region).constraints } : {}),
+      ...Object.fromEntries(['outer', 'inner'].map(key => [key, piece[key] ? { inlineStart: affine(piece[key].origin.inline), blockStart: affine(piece[key].origin.block), inlineSize: affine(piece[key].inline), blockSize: affine(piece[key].block) } : null])) }))) } : {}),
     ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}),
     ...(options.accessibility ? { accessibility: { rules: accessibilityRules, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), warnings: accessibilityWarnings, exempted: accessibilityExempted, notes: accessibilityNotes } } : {}),
     ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', warnings: integrityWarnings, exempted: integrityExempted } } : {}) };

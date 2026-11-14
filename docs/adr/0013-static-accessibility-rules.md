@@ -183,7 +183,12 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
   を行の中央に置いて ±1px(Chromium の ascent・descent の丸め)。engine は leaf の content box(text-align start、ltr)から矩形にし、
   report の `inlineBounds` に出す。inner に重なる後の箱は確実に覆う(E_A11Y_OCCLUDED)、outer だけに触れるなら U_A11Y_OCCLUDED、
   outer を含む箱は focus を完全に隠す(E_A11Y_FOCUS_OBSCURED)。Chromium の描画は日本語・Latin・行高が content area より小さい場合でも
-  outer の中にあり inner を覆い(`e2e/layout-text-fonts.spec.mjs`)、3つの覆い方で hit test と一致した。折り返す文字列の inline 要素は矩形なしのまま。
+  outer の中にあり inner を覆い(`e2e/layout-text-fonts.spec.mjs`)、3つの覆い方で hit test と一致した。
+- **折り返す文字列**(`wrap: 'normal'`):greedy な改行は sweep の各区間 [最も広い行, w] で同じなので、区間ごとの改行位置が決まる。
+  inline 要素はその区間で載る行と、行の中での位置(上と同じ測り方、上下は行番号 × line-height だけずらす)を持ち、engine は leaf の content 幅で
+  region を分ける。行をまたいで分かれる区間には矩形を置かない(その幅では検査しない)。言語や閉じ括弧の trim で改行が揺れる文字列と
+  `overflow-wrap: anywhere` は対象外。Chromium で 120〜900px を 13px 刻みで調べ、1行に載る幅では描画が outer に入り inner を覆い、
+  矩形のない幅では実際に行をまたいで分かれていた。
 
 ### form control と画像
 

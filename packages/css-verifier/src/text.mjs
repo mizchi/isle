@@ -278,7 +278,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     const bound = (start, end) => Math.max(...variants.map(size => size(start, end))); // the widest variant
     const emergency = overflowWrap !== 'normal';
     // Greedy lines at width w: the count, and the widest line that fits (0 if every line is forced).
-    const greedy = (w, size) => {
+    const greedy = (w, size, breaks) => {
       let start = 0, count = 0, widest = 0;
       while (start < n) {
         let next = ends.findIndex(e => e > start), best = -1;
@@ -293,7 +293,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
           if (size(start, end) <= w) widest = Math.max(widest, size(start, end));
           if (chars.slice(end, limit).every(c => c === ' ')) end = limit;
         } else end = ends[next];
-        start = end; count++;
+        start = end; count++; breaks?.push(end);
       }
       return {count, widest};
     };
@@ -331,7 +331,20 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     if (profile.length > 256) fail('The line profile has more than 256 steps; shorten the text');
     const pieces = ends.map((e, k) => [k ? ends[k - 1] : 0, e]);
     const minContent = overflowWrap === 'anywhere' ? widestCharacter : Math.max(0, ...pieces.map(([a, b]) => bound(a, b)));
-    return {text: collapsed, width, minContent, overflowWrap, profile};
+    // Line layouts (break positions) per width interval: greedy breaks stay the same on [widest, w].
+    // Only one variant (no language or bracket-trim ambiguity) without emergency breaks has a fixed layout.
+    let layouts = null;
+    if (variants.length === 1 && !emergency) {
+      layouts = [];
+      for (let w = Infinity; ;) {
+        const breaks = [], {widest} = greedy(w, variants[0], breaks);
+        layouts.push({atLeastInlineSize: widest, below: w, breaks});
+        if (widest === 0 || layouts.length > 256) break;
+        w = widest - 1 / UNIT;
+      }
+      layouts.reverse(); layouts[0].atLeastInlineSize = 0;
+    }
+    return {text: collapsed, width, minContent, overflowWrap, profile, layouts, chars};
   }
 
   /**
@@ -341,7 +354,31 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
    * allowance; the vertical extent is the font's content area (hhea, or OS/2 typo with USE_TYPO_METRICS)
    * centred in the line, ±1px for Chromium's rounding of ascent and descent.
    */
-  function inlineBounds({font, text, lang, inline}) {
+  /**
+   * Inline pieces in wrapping text: per width interval of a fixed line layout, the piece's line and
+   * its bounds within that line (as inlineBounds); a piece split across lines has none there.
+   */
+  function wrappedInlineBounds({font, text, lang, inline, lines}) {
+    if (!lines.layouts) fail('Inline bounds in wrapping text need one line layout (no language or bracket-trim variants, overflow-wrap: normal)');
+    const collapsed = lines.text, out = {};
+    for (const [selector, piece] of Object.entries(inline ?? {})) {
+      const part = collapse(piece), at = collapsed.indexOf(part);
+      if (!part || at < 0 || collapsed.indexOf(part, at + 1) >= 0) fail(`${selector}: inline text ${JSON.stringify(piece)} must occur exactly once in the content`);
+      // Offsets are in UTF-16 units of the collapsed text; layouts break at code point indices.
+      const cp = [...collapsed], start = [...collapsed.slice(0, at)].length, end = start + [...part].length;
+      out[selector] = lines.layouts.map(layout => {
+        const line = layout.breaks.findIndex(e => e > start), from = line ? layout.breaks[line - 1] : 0;
+        const piece = {atLeastInlineSize: layout.atLeastInlineSize, below: Number.isFinite(layout.below) ? layout.below + 1 / UNIT : null};
+        if (end > layout.breaks[line]) return {...piece, split: true};
+        let to = layout.breaks[line]; while (to > end && cp[to - 1] === ' ') to--;
+        const bounds = inlineBounds({font, text: cp.slice(from, to).join(''), lang, inline: {[selector]: part}}, start - from)[selector];
+        const shift = line * font.lineHeight;
+        return {...piece, line, ...bounds, top: bounds.top.map(v => v + shift), bottom: bounds.bottom.map(v => v + shift)};
+      });
+    }
+    return out;
+  }
+  function inlineBounds({font, text, lang, inline}, offset) {
     const collapsed = collapse(text), out = {};
     const {info} = lookup(font);
     const typo = info.os2 && (info.os2.fsSelection & 128);
@@ -350,8 +387,8 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     const width = value => value ? shapeLine(font, value, lang) : 0, slack = 2 * scriptRuns(collapsed) / UNIT;
     for (const [selector, piece] of Object.entries(inline ?? {})) {
       const part = collapse(piece);
-      const at = collapsed.indexOf(part);
-      if (!part || at < 0 || collapsed.indexOf(part, at + 1) >= 0) fail(`${selector}: inline text ${JSON.stringify(piece)} must occur exactly once in the content`);
+      const at = offset !== undefined ? [...collapsed].slice(0, offset).join('').length : collapsed.indexOf(part);
+      if (!part || at < 0 || (offset === undefined && collapsed.indexOf(part, at + 1) >= 0) || collapsed.slice(at, at + part.length) !== part) fail(`${selector}: inline text ${JSON.stringify(piece)} must occur exactly once in the content`);
       const before = collapsed.slice(0, at), after = collapsed.slice(at + part.length), whole = width(collapsed);
       const starts = [width(before), whole - width(part + after)], ends = [width(before + part), whole - width(after)];
       out[selector] = {start: [Math.min(...starts) - slack, Math.max(...starts) + slack], end: [Math.min(...ends) - slack, Math.max(...ends) + slack],
@@ -377,6 +414,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         const lines = breakLines({font, text: text.content, overflowWrap, lang: text.lang});
         out[selector] = {...rest, minInlineSize: lines.minContent, intrinsicBlockSize: lines.profile.map(entry => ({atLeastInlineSize: entry.atLeastInlineSize, blockSize: entry.lines === null ? null : entry.lines * font.lineHeight})),
           font: fontContract, textMetrics: {kind: 'lines', text: lines.text, width: lines.width, minContent: lines.minContent, overflowWrap, profile: lines.profile, ...(text.lang !== undefined ? {lang: text.lang} : {}),
+            ...(text.inline ? {inline: wrappedInlineBounds({font, text: text.content, lang: text.lang, inline: text.inline, lines})} : {}),
             // WCAG 1.4.12 text spacing: the same text with letter-spacing 0.12em and word-spacing 0.16em.
             spacedProfile: breakLines({font, text: text.content, overflowWrap, lang: text.lang, spacing: {letter: 0.12 * font.size, word: 0.16 * font.size}}).profile,
             font: provenance(font), allowance: layoutAllowance.rule}};
