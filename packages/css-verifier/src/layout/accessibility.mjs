@@ -707,6 +707,18 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
         hidden.push(...regions);
         break;
       }
+      // A bar on the left edge spanning the viewport's height covers what lies within its width at every vertical
+      // scroll, and scrolling right only moves content further left (a fixed sidebar laid over the page).
+      for (const bar of hidden.length ? [] : fixedBars) {
+        if (related(bar.path, target.path) || !paintsAbove(bar, layer(bar), target, own)) continue;
+        let region = intersect(target.region, bar.region);
+        region = atMost(region, bar.origin.inline, scalar(0)); region = atMost(region, bar.origin.block, scalar(0)); region = atMost(region, viewportBlock, bottom(bar));
+        region = atMost(region, bar.origin.inline, target.origin.inline); region = atMost(region, right(target), right(bar));
+        for (const piece of region ? hidden.reduce((rest, done) => rest.flatMap(r => subtract(r, done)), [region]) : []) {
+          report(findings, 'E_A11Y_FIXED_HIDES', 'error', `${target.box.label} stays entirely behind the fixed ${bar.box.label}, which spans the viewport's height at its left edge; offset the page by the bar's width`, target, piece, { rule: 'fixed-hides-content', cover: bar.path });
+          hidden.push(piece);
+        }
+      }
       // A bar on the top edge and one on the bottom edge that meet cover the whole viewport (short viewports: a phone
       // held sideways): wherever the content scrolls, it is behind one of them.
       for (const upper of fixedBars) for (const lower of fixedBars) {

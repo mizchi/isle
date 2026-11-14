@@ -1480,3 +1480,13 @@ test('fragment-under-bar: an #id jump that lands the target behind a fixed or st
   assert.deepEqual(hits('fixed', '.t { scroll-margin-top: 60px; }'), []);
   assert.deepEqual(hits('sticky', '.t { scroll-margin-top: 70px; }'), []);
 });
+
+test('fixed-hides-content: a full-height fixed sidebar at the left edge covers what lies under it', () => {
+  // The row sits mid-page (1000px above, 2000px below): neither the scroll-0 nor the bottom-of-page check reaches it.
+  const tree = page([{tag: 'nav', classes: ['side']}, {tag: 'div', classes: ['gap']}, {tag: 'div', classes: ['row'], children: [{tag: 'button', classes: ['b1'], named: true}, {tag: 'button', classes: ['b2'], named: true}]}, {tag: 'div', classes: ['tall']}]);
+  const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: auto; }\n.gap { block-size: 1000px; }\n.tall { block-size: 2000px; }\n.side { position: fixed; left: 0; top: 0; inline-size: 200px; block-size: 100%; background: #333; }\n.row { display: grid; grid-template-columns: 100px 100px; column-gap: 150px; grid-template-rows: 40px; }\n.b1, .b2 { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; }\n${extra}`);
+  assert.deepEqual([...new Set(find(run(tree, css('')), 'E_A11Y_FIXED_HIDES').map(d => d.box))], ['.b1']);
+  assert.deepEqual(find(run(tree, css('.row { padding-left: 200px; }')), 'E_A11Y_FIXED_HIDES'), []);
+  // A sidebar that stops short of the viewport's height (scroll can move content past its end) is not judged so.
+  assert.deepEqual(find(run(tree, css('.side { top: 100px; block-size: 200px; }')), 'E_A11Y_FIXED_HIDES'), []);
+});
