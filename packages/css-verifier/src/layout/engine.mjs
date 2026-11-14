@@ -657,6 +657,22 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // display: none cell removes its column: neither is the modeled grid.
     for (const row of rows) for (const cell of row.children) for (const cs of styles(cell, region, parents, style, false, false))
       if (cs.style.display !== 'table-cell') fail(`${cell.label} has display: ${cs.style.display}; a modeled table needs its cells as table-cell`);
+    // A cell with block-level children lays them out in block flow: with zero margins that is one start-aligned
+    // column (a 1-column grid with align-content: start). The cell's vertical-align must not move it: top, or the
+    // cell decides its row's height (the row's other cells are empty with an auto height, no rowspan in the table).
+    const spanning = rows.some(row => row.children.some(cell => (cell.rowSpan ?? 1) > 1));
+    for (const [r, row] of rows.entries()) for (const cell of row.children.filter(cell => (cell.children ?? []).length)) {
+      const rowStyle = one(styles(row, region, parents, one(styles(sections.find(sec => sec.children.includes(row)), region, parents, style, false, false)), false, false));
+      const cs = one(styles(cell, region, parents, rowStyle, false, false));
+      if (cell.text) fail(`${cell.label} mixes text and child elements (inline formatting is not modeled)`);
+      const alone = !spanning && row.children.every(other => other === cell || (!other.text && !other.contract && !(other.children ?? []).length && one(styles(other, region, parents, rowStyle, false, false))['block-size'] === 'auto'));
+      if (cs['vertical-align'] !== 'top' && !(alone && cs['block-size'] === 'auto')) fail(`${cell.label} has vertical-align: ${cs['vertical-align']} in a row it may not fill; its content would move (use vertical-align: top)`);
+      for (const child of cell.children) for (const c of styles(child, region, parents, cs, false, false)) {
+        if (c.style.display === 'none') continue;
+        if (!['block', 'grid', 'flex'].includes(c.style.display) || c.style.position !== 'static' || c.style.float !== 'none') fail(`${child.label} in a table cell must be a static block-level box (block flow of inline content is not modeled)`);
+      }
+      cell.tableFlow = true;
+    }
     for (const box of [...sections, ...rows]) box.tablePart = true;
     for (const row of rows) for (const cell of row.children) cell.tableCell = true;
     // Cells stretch to their row: a fixed block-size must be shared by the row's cells (a grid item would not stretch).
@@ -858,8 +874,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   // Cells fill their column (and span colspan columns); a caption is a full-width first or last row.
   function tablePlacement(box, style) {
-    if (box.tableCell && style.display === 'table-cell' && box.tableArea) return { ...style, display: 'block', 'inline-size': 'auto', ...(box.tableStretch ? { 'block-size': 'auto' } : {}), 'grid-column': `${box.tableArea.column} / span ${box.tableArea.span}`, 'grid-row': `${box.tableArea.row} / span ${box.tableArea.down}` };
+    if (box.tableFlow && style.display === 'table-cell') style = { ...style, display: 'grid', 'grid-template-columns': 'minmax(0, 1fr)', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'align-content': 'start', 'row-gap': '0', 'column-gap': '0', 'grid-auto-flow': 'row', $fromCell: true };
+    if (box.tableCell && (style.display === 'table-cell' || style.$fromCell) && box.tableArea) return { ...style, display: style.$fromCell ? style.display : 'block', 'inline-size': 'auto', ...(box.tableStretch ? { 'block-size': 'auto' } : {}), 'grid-column': `${box.tableArea.column} / span ${box.tableArea.span}`, 'grid-row': `${box.tableArea.row} / span ${box.tableArea.down}` };
     if (box.tableCaption?.interleaved && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.interleaved.columns}`, 'grid-row': String(box.tableCaption.interleaved.row) };
+    if (box.tableCell && style.$fromCell) return { ...style, 'inline-size': 'auto', ...(box.tableStretch ? { 'block-size': 'auto' } : {}), ...(box.colSpan > 1 ? { 'grid-column': `span ${box.colSpan}` } : {}), ...(box.tableRowSpan ? { 'grid-row': `span ${box.tableRowSpan}` } : {}) };
     if (box.tableCell && style.display === 'table-cell') return { ...style, display: 'block', 'inline-size': 'auto', ...(box.tableStretch ? { 'block-size': 'auto' } : {}), ...(box.colSpan > 1 ? { 'grid-column': `span ${box.colSpan}` } : {}), ...(box.tableRowSpan ? { 'grid-row': `span ${box.tableRowSpan}` } : {}) };
     if (box.tableCaption && style.display === 'table-caption') return { ...style, display: 'block', 'grid-column': `1 / span ${box.tableCaption.columns}`, 'grid-row': String(box.tableCaption.side === 'bottom' ? box.tableCaption.rows + 1 : 1) };
     return style;

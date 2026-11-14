@@ -962,3 +962,20 @@ test('a td restyled away from table-cell is not a modeled table cell', () => {
   for (const extra of ['.a { display: grid; grid-template-columns: minmax(0, 1fr); }', '.b { display: none; }', '.a { display: block; }'])
     assert.equal(run(tree, css(extra), {viewport: tableView}).status, 'unknown', extra);
 });
+
+test('table cells with block children lay them out in block flow', () => {
+  const tableView = {min: 420, max: 1280, height: {min: 400, max: 900}};
+  const rect = (report, cls) => report.sizes.find(r => r.box === `.${cls}` && r.rect).rect;
+  const tree = other => ({tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['c'], children: [{tag: 'div', classes: ['k1']}, {tag: 'div', classes: ['k2']}]}, {tag: 'td', classes: ['o'], ...other}]}]}]});
+  const css = extra => `.t { table-layout: fixed; inline-size: 400px; border-spacing: 0; }\ntd { padding: 0; }\n.k1 { block-size: 30px; }\n.k2 { block-size: 20px; inline-size: 50px; }\n${extra}`;
+  // The cell decides its row (the other cell is empty): the children stack at the top.
+  const alone = run(tree({}), css(''), {viewport: tableView});
+  assert.equal(alone.status, 'verified', JSON.stringify(alone.diagnostics));
+  assert.equal(rect(alone, 'k2').blockStart.constant, '30');
+  assert.equal(rect(alone, 'k2').inlineSize.constant, '50');
+  assert.equal(rect(alone, 'o').blockSize.constant, '50');
+  // A taller neighbour: middle (the default) would move the content; top is modeled.
+  assert.equal(run(tree({}), css('.o { block-size: 90px; }'), {viewport: tableView}).status, 'unknown');
+  const top = run(tree({}), css('.o { block-size: 90px; }\n.c { vertical-align: top; }'), {viewport: tableView});
+  assert.equal(top.status, 'unknown'); // rows of cells with different block-size values stay Unknown without rowspan
+});
