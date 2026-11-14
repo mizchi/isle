@@ -220,7 +220,8 @@ baseline は、line box のない cell が content の下端を baseline にし�
 が定数なので、各 cell を(最大の baseline − 自分の baseline)だけ下げる(padding-top に足す。高さを固定した cell が下がる場合は Unknown)。text の cell の baseline は 1行目の
 floor((L − (A + D)) / 2) + A(A・D は font の ascent・descent を px に丸めた値。Roboto と Noto Sans JP の5つの大きさで測定と一致)で、
 フォント層が text 契約に `baseline` として渡す。奇数で負の leading は丸めが曖昧なので Unknown。
-3つの baseline の cell(padding と高さが違う)で Chromium と一致した。text と子要素が混ざる cell(inline formatting)も Unknown。
+3つの baseline の cell(padding と高さが違う)で Chromium と一致した。block の子の間に text がある cell は、文字の断片ごとに匿名の block 箱(CSS 2 §9.2.1.1)を DOM の順(adapter の `runs`)に作って積む。selector は匿名の箱に一致せず、
+大きさは cell の契約の `textRuns`(断片ごと、font からの導出も可)。Roboto の折り返す2つの断片と block の子で Chromium と一致。inline 要素を挟む断片は inline formatting なので Unknown。
 行を決める cell、全て top の cell、高い行の middle・bottom の cell、grid の center・end(溢れる場合を含む)で Chromium と一致した。
 明示した行の track では cell は行に伸びる(Chromium の cell は行の高さになる)。
 table の cell は高さを超える内容で溢れず行が伸びるので、block 方向の内容の不足は E_LAYOUT_CONTENT ではなく U_LAYOUT_TABLE にした(以前は誤って溢れと報告していた)。

@@ -109,6 +109,13 @@ export function normalizeTree(tree,name) {
     box.children=(input.children ?? []).map((child,i)=>visit(child,path,i,depth+1));
     // Phrasing children of a text leaf are inline content of that leaf (not layout children).
     if(box.text && box.children.length && box.children.every(phrasing)) { box.inline=box.children; box.children=[]; }
+    // A table cell's text runs between block children are anonymous block boxes in DOM order (CSS 2 §9.2.1.1);
+    // selectors never match them and their sizes come from the cell contract's textRuns.
+    if(box.text && box.children.length && ['td','th'].includes(box.tag) && input.runs && !box.children.some(phrasing) && !input.runs.includes('dynamic')) {
+      let k=0;
+      box.children=input.runs.map(run=>typeof run==='number' ? box.children[run] : {tag:'#anonymous',classes:[],anonymous:true,text:true,textContent:run,children:[],path:`${path}/t${k}`,label:`${box.label}::text(${k++})`,owner:box.owner});
+      box.anonymousRuns=k; box.text=false;
+    }
     if(box.text && box.children.length) unknown('U_LAYOUT_STRUCTURE','Wrap text in an explicit leaf instead of creating anonymous grid items');
     return box;
   }

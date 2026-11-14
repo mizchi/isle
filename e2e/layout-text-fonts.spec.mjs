@@ -482,3 +482,37 @@ test('baseline-aligned text and block cells line up like Chromium', async ({page
     expect(Math.abs(rect.h - value(row.rect.blockSize.constant)), `${row.box} height`).toBeLessThanOrEqual(1 / 64 + 1e-9);
   }
 });
+
+// A table cell's text runs between block children are anonymous blocks stacked in DOM order.
+test('anonymous text blocks in a table cell stack like Chromium', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const font = {family: 'Roboto', size: 16, lineHeight: 20, weight: 400};
+  const runs = ['Total for this order', 'due before the end of the week, including shipping'];
+  const html = `<table class="t"><tbody><tr><td class="c">${runs[0]}<div class="k"></div>${runs[1]}</td><td class="d"></td></tr></tbody></table>`;
+  const css = `*{box-sizing:border-box;margin:0;padding:0}.t{table-layout:fixed;inline-size:300px;border-spacing:4px;background:#fff;color:#000}td{padding:3px;vertical-align:top}.c{inline-size:150px;font-family:"Roboto";font-size:16px;line-height:20px;font-weight:400}.k{block-size:12px}`;
+  const boxes = metrics.resolveBoxes({'.c': {textRuns: runs.map(content => ({text: {content, font}, wrap: 'normal'}))}});
+  const report = analyzeHTML(html, {name: 'Case', css, viewport: {min: 320, max: 900, height: {min: 400, max: 600}}, boxes});
+  expect(report.status, JSON.stringify(report.diagnostics)).toBe('verified');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  await page.setViewportSize({width: 500, height: 500});
+  await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+  await page.evaluate(() => document.fonts.ready);
+  for (const row of report.sizes.filter(row => row.rect && row.path !== 'Case')) {
+    const segments = row.path.split('/').slice(1);
+    const rect = await page.evaluate(segments => {
+      let node = document.querySelector('body > *');
+      for (const s of segments) {
+        if (s.startsWith('t')) { // the k-th text run of the cell: the box of its line rects
+          const texts = [...node.childNodes].filter(n => n.nodeType === 3 && n.data.trim()), range = document.createRange(); range.selectNodeContents(texts[Number(s.slice(1))]);
+          const rs = [...range.getClientRects()]; return {y: Math.min(...rs.map(r => r.top)), bottom: Math.max(...rs.map(r => r.bottom)), text: true};
+        }
+        node = node.children[Number(s)];
+      }
+      const r = node.getBoundingClientRect(); return {y: r.top, bottom: r.bottom};
+    }, segments);
+    const top = value(row.rect.blockStart.constant), height = value(row.rect.blockSize.constant);
+    // A run's line boxes start at its block's top; the glyph boxes sit inside its lines (20px each).
+    if (rect.text) { expect(rect.y, `${row.box} top`).toBeGreaterThanOrEqual(top - 1e-9); expect(rect.bottom, `${row.box} bottom`).toBeLessThanOrEqual(top + height + 1e-9); expect(rect.y - top, `${row.box} first line`).toBeLessThan(20); }
+    else { expect(Math.abs(rect.y - top), `${row.box} top`).toBeLessThanOrEqual(1 / 64 + 1e-9); expect(Math.abs(rect.bottom - (top + height)), `${row.box} bottom`).toBeLessThanOrEqual(1 / 64 + 1e-9); }
+  }
+});

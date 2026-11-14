@@ -6,7 +6,7 @@ export const boxTags = new Set('html body button div main aside section article 
 export const controlTags = new Set(['button', 'input', 'select', 'textarea']), replacedTags = new Set(['img', 'input', 'select', 'textarea']);
 const ancestorTags=new Set([...boxTags].filter(tag=>!['button', 'img', 'input', 'select', 'textarea'].includes(tag)));
 const supportedOptions = new Set(['name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility']);
-const supportedContract = new Set(['minInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock', 'font', 'textMetrics']);
+const supportedContract = new Set(['minInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock', 'font', 'textMetrics', 'textRuns']);
 function finiteSize(value, name) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1_000_000) throw new Error(`Invalid layout ${name}`);
   return q(value);
@@ -41,32 +41,38 @@ export function validateOptions(options) {
   if (options.integrity !== undefined && options.integrity !== false && options.integrity !== true && !(options.integrity && typeof options.integrity === 'object' && Object.keys(options.integrity).every(k => ['targetSize', 'protrusion'].includes(k)) && (options.integrity.targetSize === undefined || (Number.isFinite(options.integrity.targetSize) && options.integrity.targetSize >= 0 && options.integrity.targetSize <= 1000)) && [undefined, 'all', 'painted'].includes(options.integrity.protrusion))) throw new Error("Invalid integrity option: true or {targetSize, protrusion: 'all' | 'painted'}");
   if (options.accessibility !== undefined && options.accessibility !== false && options.accessibility !== true && !(options.accessibility && typeof options.accessibility === 'object' && Object.keys(options.accessibility).every(k => ['contrast', 'targetSize', 'targetLevel'].includes(k)) && [undefined, 'AA', 'AAA'].includes(options.accessibility.contrast) && [undefined, 'AA', 'AAA'].includes(options.accessibility.targetLevel) && (options.accessibility.targetSize === undefined || (Number.isFinite(options.accessibility.targetSize) && options.accessibility.targetSize > 0 && options.accessibility.targetSize <= 1000)))) throw new Error("Invalid accessibility option: true or {contrast: 'AA' | 'AAA', targetLevel: 'AA' | 'AAA', targetSize}");
   if (options.boxes === null || (options.boxes !== undefined && (typeof options.boxes !== 'object' || Array.isArray(options.boxes)))) throw new Error('Invalid box contracts');
+  // A contract; textRuns (a table cell's anonymous text blocks, in DOM order) holds one plain contract per text run.
+  const validateContract = (contract, nested) => {
+    if (!contract || typeof contract !== 'object' || Object.keys(contract).some(key => !supportedContract.has(key) || (nested && key === 'textRuns'))) throw new Error('Invalid box contract');
+    if (contract.textRuns !== undefined) { if (!Array.isArray(contract.textRuns) || !contract.textRuns.length || contract.textRuns.length > 64) throw new Error('Invalid textRuns contract'); contract.textRuns.forEach(run => validateContract(run, true)); }
+      if (contract.minInlineSize !== undefined) finiteSize(contract.minInlineSize, 'minInlineSize');
+      if (contract.minBlockSize !== undefined) finiteSize(contract.minBlockSize, 'minBlockSize');
+      if (contract.intrinsicBlockSize !== undefined) {
+        if (Array.isArray(contract.intrinsicBlockSize)) {
+          const profile = contract.intrinsicBlockSize;
+          if (!profile.length || profile.length > (contract.textMetrics?.kind === 'lines' ? 256 : 32)) throw new Error('Invalid intrinsic block profile');
+          let previous = -1;
+          for (const entry of profile) {
+            finiteSize(entry.atLeastInlineSize, 'profile width');
+            // null: a derived line profile with no determined count at these widths.
+            if (!(entry.blockSize === null && contract.textMetrics?.kind === 'lines')) finiteSize(entry.blockSize, 'profile blockSize');
+            if (entry.atLeastInlineSize <= previous || Object.keys(entry).some(k => !['atLeastInlineSize', 'blockSize'].includes(k))) throw new Error('Invalid intrinsic block profile order');
+            previous = entry.atLeastInlineSize;
+          }
+        } else finiteSize(contract.intrinsicBlockSize, 'intrinsicBlockSize');
+      }
+      if (contract.wrap !== undefined && !['normal', 'anywhere', 'nowrap'].includes(contract.wrap)) throw new Error('Invalid wrap contract');
+      if (contract.font !== undefined) validateFontContract(contract.font);
+      if (contract.textMetrics !== undefined) {
+        validateTextMetrics(contract.textMetrics);
+        if (!contract.font || contract.minInlineSize === undefined) throw new Error('Derived text metrics require the font contract and minInlineSize they were derived for');
+      }
+      if (contract.overflow !== undefined && !['fit', 'scroll', 'clip', 'visible'].includes(contract.overflow)) throw new Error('Invalid overflow contract');
+      if (contract.overflowBlock !== undefined && !['fit', 'scroll', 'clip', 'visible'].includes(contract.overflowBlock)) throw new Error('Invalid block overflow contract');
+  };
   for (const [selector, contract] of Object.entries(options.boxes ?? {})) {
-    if (!selector || !simpleSelector.test(selector) || !contract || Object.keys(contract).some(key => !supportedContract.has(key))) throw new Error('Invalid box contract');
-    if (contract.minInlineSize !== undefined) finiteSize(contract.minInlineSize, 'minInlineSize');
-    if (contract.minBlockSize !== undefined) finiteSize(contract.minBlockSize, 'minBlockSize');
-    if (contract.intrinsicBlockSize !== undefined) {
-      if (Array.isArray(contract.intrinsicBlockSize)) {
-        const profile = contract.intrinsicBlockSize;
-        if (!profile.length || profile.length > (contract.textMetrics?.kind === 'lines' ? 256 : 32)) throw new Error('Invalid intrinsic block profile');
-        let previous = -1;
-        for (const entry of profile) {
-          finiteSize(entry.atLeastInlineSize, 'profile width');
-          // null: a derived line profile with no determined count at these widths.
-          if (!(entry.blockSize === null && contract.textMetrics?.kind === 'lines')) finiteSize(entry.blockSize, 'profile blockSize');
-          if (entry.atLeastInlineSize <= previous || Object.keys(entry).some(k => !['atLeastInlineSize', 'blockSize'].includes(k))) throw new Error('Invalid intrinsic block profile order');
-          previous = entry.atLeastInlineSize;
-        }
-      } else finiteSize(contract.intrinsicBlockSize, 'intrinsicBlockSize');
-    }
-    if (contract.wrap !== undefined && !['normal', 'anywhere', 'nowrap'].includes(contract.wrap)) throw new Error('Invalid wrap contract');
-    if (contract.font !== undefined) validateFontContract(contract.font);
-    if (contract.textMetrics !== undefined) {
-      validateTextMetrics(contract.textMetrics);
-      if (!contract.font || contract.minInlineSize === undefined) throw new Error('Derived text metrics require the font contract and minInlineSize they were derived for');
-    }
-    if (contract.overflow !== undefined && !['fit', 'scroll', 'clip', 'visible'].includes(contract.overflow)) throw new Error('Invalid overflow contract');
-    if (contract.overflowBlock !== undefined && !['fit', 'scroll', 'clip', 'visible'].includes(contract.overflowBlock)) throw new Error('Invalid block overflow contract');
+    if (!selector || !simpleSelector.test(selector)) throw new Error('Invalid box contract');
+    validateContract(contract, false);
   }
   return { min, max, minInclusive: true, maxInclusive: true };
 }

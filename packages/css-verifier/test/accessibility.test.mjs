@@ -1135,3 +1135,15 @@ test('rtl mirrors placement; absolute boxes keep physical insets; dir=auto follo
   // Own strong text and strong text in children: their order is not kept, so Unknown.
   assert.equal(status({tag: 'main', classes: ['page'], dirAttr: 'auto', text: true, textContent: 'abc', children: [{tag: 'div', classes: ['a'], text: true, textContent: 'שלום'}, {tag: 'div', classes: ['b']}]}, ''), 'unknown');
 });
+
+test('a table cell with text runs between block children stacks anonymous blocks', () => {
+  const cell = {tag: 'td', classes: ['c'], text: true, runs: ['Total', 0, 'due today'], children: [{tag: 'div', classes: ['k']}]};
+  const tree = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r'], children: [cell, {tag: 'td', classes: ['d']}]}]}]};
+  const css = '.t { table-layout: fixed; inline-size: 300px; border-spacing: 0; background: #fff; color: #000; }\ntd { padding: 0; vertical-align: top; }\n.k { block-size: 30px; }';
+  const view = {min: 320, max: 1280, height: {min: 400, max: 900}};
+  const report = run(tree, css, {viewport: view, boxes: {'.c': {textRuns: [{minInlineSize: 40, intrinsicBlockSize: 20}, {minInlineSize: 70, intrinsicBlockSize: 20}]}}});
+  assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
+  assert.deepEqual(report.sizes.filter(r => r.rect && r.path.startsWith('Page/0/0/0/')).map(r => [r.box, r.rect.blockStart.constant]), [['.c::text(0)', '0'], ['.k', '20'], ['.c::text(1)', '50']]);
+  // One textRuns entry per run; selectors never match an anonymous block.
+  assert.equal(run(tree, css, {viewport: view, boxes: {'.c': {textRuns: [{minInlineSize: 40, intrinsicBlockSize: 20}]}}}).status, 'unknown');
+});

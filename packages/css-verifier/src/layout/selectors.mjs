@@ -45,6 +45,7 @@ export function compileSelector(source, depth = 0) {
 /** `state` is the set of user-action states that hold (e.g. focus): a state selector matches only then. */
 export function matches(selector, box, state) {
   if (typeof selector === 'string') selector = compileSelector(selector);
+  if (box.anonymous) return false; // anonymous boxes are not elements
   // ::before/::after rules apply only to that pseudo-element (state '::before'), and other rules not to it.
   const pseudo = [...(state ?? [])].find(s => s === '::before' || s === '::after');
   if (selector.pseudoElement ? `::${selector.pseudoElement}` !== pseudo : pseudo) return false;

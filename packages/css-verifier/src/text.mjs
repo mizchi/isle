@@ -422,6 +422,8 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
   function resolveBoxes(boxes = {}) {
     const out = {};
     for (const [selector, contract] of Object.entries(boxes)) {
+      // textRuns: one text contract per anonymous text block of a table cell.
+      if (contract?.textRuns) { out[selector] = {...contract, textRuns: contract.textRuns.map((run, k) => resolveBoxes({[`${selector} text ${k}`]: run})[`${selector} text ${k}`])}; continue; }
       if (!contract?.text) { out[selector] = contract; continue; }
       const {text, ...rest} = contract;
       if (rest.minInlineSize !== undefined || rest.intrinsicBlockSize !== undefined || rest.minBlockSize !== undefined) fail(`${selector}: a text contract derives its own sizes`);

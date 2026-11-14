@@ -57,6 +57,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (!selected.length) throw new Error(`Layout contract does not match a box: ${selector}`);
     for (const box of selected) { if (box.contract) throw new Error(`Ambiguous layout contracts for ${box.label}`); box.contract = contract; box.contractSelector = selector; }
   }
+  // A cell's textRuns contracts size its anonymous text blocks, in DOM order.
+  for (const box of boxes.filter(box => box.anonymousRuns)) {
+    const runs = box.contract?.textRuns ?? [], anonymous = box.children.filter(child => child.anonymous);
+    if (runs.length !== anonymous.length) unknown('U_LAYOUT_INTRINSIC', `${box.label} has ${anonymous.length} anonymous text block(s); give its contract one textRuns entry per text run`, undefined, box);
+    anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
+  }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
   const { rules, layers } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
