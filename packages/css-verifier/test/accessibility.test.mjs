@@ -1584,3 +1584,17 @@ test('max-inline-size in px clamps a box\'s width', () => {
   // A percentage cap is of the containing block's width.
   assert.equal(width('.c { max-inline-size: 50%; }', 1000), 500);
 });
+
+test('max-block-size in px caps an explicit height and a leaf\'s content height', () => {
+  const tree = page([{tag: 'div', classes: ['a']}, {tag: 'p', classes: ['t'], text: true}]);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; grid-auto-rows: auto; }\n.a { block-size: 200px; max-block-size: 120px; }\n.t { max-block-size: 30px; font-size: 16px; line-height: 20px; }\n${extra}`);
+  const report = (extra, overflowBlock) => run(tree, css(extra), {boxes: {'.t': {minInlineSize: 1, intrinsicBlockSize: 60, ...(overflowBlock ? {overflowBlock} : {})}}});
+  const clipped = report('.t { overflow: hidden; }', 'clip');
+  assert.notEqual(clipped.status, 'unknown', JSON.stringify(clipped.diagnostics));
+  assert.equal(clipped.sizes.find(s => s.box === '.a').blockSize.constant, '120');
+  assert.equal(clipped.sizes.find(s => s.box === '.t').blockSize.constant, '30');
+  // Content that must fit (the default) does not fit the capped height.
+  assert.ok(find(report(''), 'E_LAYOUT_CONTENT').some(d => d.box === '.t'));
+  // An auto-height container with children is not modeled.
+  assert.equal(run(page([{tag: 'div', classes: ['w'], children: [{tag: 'div', classes: ['x']}]}]), pageCSS('.page { grid-auto-rows: auto; }\n.w { display: grid; max-block-size: 50px; }\n.x { block-size: 80px; }')).status, 'unknown');
+});

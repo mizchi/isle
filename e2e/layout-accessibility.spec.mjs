@@ -1173,3 +1173,20 @@ test('flex items freeze at their px max-width like Chromium', async ({page}) => 
     }
   }
 });
+
+test('max-height in px caps heights like Chromium', async ({page}) => {
+  const css = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:100px 300px auto;row-gap:10px}.a{height:200px;max-height:120px}.b{height:50%;max-height:120px}.c{display:grid;grid-template-columns:minmax(0,1fr)}.leaf{max-height:30px;overflow:hidden;white-space:pre;font-family:sans-serif;font-size:16px;line-height:20px}`;
+  const html = '<div class="page"><div class="a"></div><div class="b"></div><div class="c"><p class="leaf">A\nB\nC</p></div></div>';
+  const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280, height: {min: 600, max: 1000}}, boxes: {'.leaf': {minInlineSize: 1, intrinsicBlockSize: 60, overflowBlock: 'clip'}}});
+  expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+  for (const width of [1280, 375]) {
+    await page.setViewportSize({width, height: 800});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    for (const cls of ['a', 'b', 'leaf']) {
+      const browser = await page.evaluate(c => document.querySelector(`.${c}`).getBoundingClientRect().height, cls);
+      const row = report.sizes.find(r => r.box === `.${cls}` && r.range && width >= r.range.min && width <= r.range.max);
+      const statics = value(row.blockSize.constant) + value(row.blockSize.coefficient ?? '0') * width;
+      expect(Math.abs(statics - browser), `.${cls} at ${width}: static ${statics} vs browser ${browser}`).toBeLessThan(0.01);
+    }
+  }
+});

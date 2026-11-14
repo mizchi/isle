@@ -247,7 +247,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
       // max-inline-size in px clamps the preferred width (CSS 2 §10.4: max(min, min(preferred, max))); flex items and
       // other max sizes are not modeled.
-      if (style[`max-${axis}-size`] !== 'none' && !(axis === 'inline' && (/^\d+(?:\.\d+)?px$/.test(style['max-inline-size']) || (/^\d+(?:\.\d+)?%$/.test(style['max-inline-size']) && available.inline && !available.flexItem)) && (!available.flexItem || available.flexItem.main === 'inline') && style.display !== 'table')) throw new Error('CSS max size clamping is not modeled');
+      // max-block-size in px: it caps an explicit or stretched height, and a leaf's content height; an auto-height
+      // container with children is not modeled.
+      if (axis === 'block' && style['max-block-size'] !== 'none' && !(/^\d+(?:\.\d+)?px$/.test(style['max-block-size']) && !available.flexItem && style.display !== 'table' && (style['block-size'] !== 'auto' || !(box.children ?? []).length || (available.block && available.alignBlock === undefined && !available.root)))) throw new Error('CSS max size clamping is not modeled');
+      if (style[`max-${axis}-size`] !== 'none' && axis === 'inline' && !( (/^\d+(?:\.\d+)?px$/.test(style['max-inline-size']) || (/^\d+(?:\.\d+)?%$/.test(style['max-inline-size']) && available.inline && !available.flexItem)) && (!available.flexItem || available.flexItem.main === 'inline') && style.display !== 'table')) throw new Error('CSS max size clamping is not modeled');
       if (axis === 'inline') {
         if (style['min-inline-size'] !== 'auto') px(style['min-inline-size']);
       // A column flex item's minimum is resolved by the flex line (its track is never smaller).
@@ -1256,8 +1259,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             else if (style['container-type'] === 'size') fixedBlock = blockEdges;
             if (style['block-size'] !== 'auto' && style['box-sizing'] === 'content-box') fixedBlock = sum(fixedBlock, cssBlockEdges);
           }
-          const blockStates = fixedBlock ? clamp(content.region, diff(fixedBlock, blockEdges)) : [{ region: content.region, value: null }];
-          if (fixedBlock && emit) obligation(fixedBlock, blockEdges, box, content.region, 'E_LAYOUT_BOX_EDGES', 'block', true, edgeExplanation('block'));
+          const maxBlock = block && style['max-block-size'] !== 'none' ? sum(scalar(px(style['max-block-size'])), style['box-sizing'] === 'content-box' ? cssBlockEdges : scalar(0)) : null;
+          const fixedPieces = fixedBlock && maxBlock ? minimumOf(content.region, fixedBlock, maxBlock) : [{ region: content.region, value: fixedBlock }];
+          const blockStates = fixedPieces.flatMap(piece => piece.value ? clamp(piece.region, diff(piece.value, blockEdges)) : [{ region: piece.region, value: null }]);
+          for (const piece of fixedPieces) if (piece.value && emit) obligation(piece.value, blockEdges, box, piece.region, 'E_LAYOUT_BOX_EDGES', 'block', true, edgeExplanation('block'));
           for (const bs of blockStates) {
             const origin=resolvedOrigin(style,available,inline,bs.value ? sum(bs.value,blockEdges) : null,parents);
             const contentOrigin=offset(origin,edge(['left']),edge(['top']));
@@ -1282,7 +1287,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               // Even an empty Grid has explicit tracks and contributes their
               // height/overflow. Only ordinary leaves use intrinsic height.
               if (!box.children.length && style.display !== 'grid') {
-                const heights = !block ? [{ region: geometryRegion, value: null }] : knownBlock ? [{ region: geometryRegion, value: knownBlock }] : intrinsic(box, contentInline, geometryRegion);
+                let heights = !block ? [{ region: geometryRegion, value: null }] : knownBlock ? [{ region: geometryRegion, value: knownBlock }] : intrinsic(box, contentInline, geometryRegion);
+                // A content height above max-block-size is capped; the content then has to fit (or overflow by contract).
+                if (maxBlock && !knownBlock) heights = heights.flatMap(h => h.value ? minimumOf(h.region, h.value, diff(maxBlock, blockEdges)).map(c => {
+                  if (c.value !== h.value && emit) obligation(c.value, h.value, box, c.region, 'E_LAYOUT_CONTENT', 'block', (box.contract?.overflowBlock ?? 'fit') === 'fit');
+                  return c;
+                }) : [h]);
                 for (const h of heights) {
                   results.push(finish(box, style, h.region, inline, contentInline, h.value ? sum(h.value, blockEdges) : null, h.value, available, parents, emit));
                   // Absolute ::before/::after of the leaf, against the nearest positioned box (this leaf when it is).
