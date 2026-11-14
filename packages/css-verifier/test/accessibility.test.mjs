@@ -946,6 +946,10 @@ test('an auto-height text rowspan cell counts its measured height at its column 
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
   assert.equal(rect(report, 'p').blockSize.constant, '30');
   assert.equal(rect(report, 'q').blockSize.constant, '60');
-  // A table width that varies with the viewport gives no constant cell width: Unknown.
-  assert.equal(run(tree, css('100%'), {viewport: tableView, boxes}).status, 'unknown');
+  // A table width that varies with the viewport: the region splits where the cell's line count changes.
+  const varying = run({tag: 'main', classes: ['page'], children: [tree]}, `.page { display: grid; grid-template-columns: minmax(0, 1fr); }\n` + css('100%').replace('.s { inline-size: 100px; }', '.p { inline-size: 100px; }'), {viewport: {min: 150, max: 1280, height: {min: 400, max: 900}}, boxes});
+  assert.equal(varying.status, 'verified', JSON.stringify(varying.diagnostics));
+  // The auto column is W − 100: below 190 → 120px (rows 40 + 80), 190..250 → 90px (30 + 60), from 250 → 60px (20 + 40).
+  const heights = varying.sizes.filter(r => r.box === '.q' && r.rect).map(r => [r.range.minExact, r.rect.blockSize.constant]).sort((a, b) => Number(a[0]) - Number(b[0]));
+  assert.deepEqual(heights, [['150', '80'], ['190', '60'], ['250', '40']]);
 });

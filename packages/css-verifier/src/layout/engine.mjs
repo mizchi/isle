@@ -610,7 +610,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // Fixed table layout (CSS 2.2 §17.5.2.1) as a grid, measured equal in Chromium: column widths
   // from the first row (px widths share the width in proportion, auto columns take the rest),
   // border-spacing as gaps and as an inset inside the padding, rows as tall as their tallest cell.
-  function tableAsGrid(table, style, region, parents, emit) {
+  function tableAsGrid(table, style, region, parents, emit, available, probe) {
     const fail = message => { throw Object.assign(new Error(message), { code: 'U_LAYOUT_TABLE' }); };
     // Automatic layout equals the fixed one (measured) when content cannot widen a column: every cell
     // is empty or its content's min-content bound fits its px column, no spans or caption, and
@@ -680,20 +680,28 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     });
     // Column widths of a px-wide fixed table are constants (as the grid resolves them): px columns share the content
     // width in proportion, or keep their px and auto columns split the rest equally.
+    // Column widths as affine functions of the viewport: constants for a px width, or from the containing width for an
+    // auto (stretched in a grid area) or 100% border-box table.
     const columnWidths = () => {
-      if (automatic || !/^\d+(?:\.\d+)?px$/.test(style['inline-size'])) fail('A measured rowspan cell needs a fixed table with a px inline-size (its width decides its height)');
       const frame = ['left', 'right'].map(side => add(px(style[`padding-${side}`]), px(style[`border-${side}`]))).reduce(add, zero);
-      const content = sub(style['box-sizing'] === 'content-box' ? px(style['inline-size']) : sub(px(style['inline-size']), frame), mul(h, q(columns + 1)));
+      let outer;
+      if (!automatic && /^\d+(?:\.\d+)?px$/.test(style['inline-size'])) outer = scalar(style['box-sizing'] === 'content-box' ? add(px(style['inline-size']), frame) : px(style['inline-size']));
+      else if (!automatic && style['box-sizing'] === 'border-box' && available?.inline && (style['inline-size'] === '100%' || (style['inline-size'] === 'auto' && parents.at(-1)?.style.display === 'grid'))) outer = available.inline;
+      else fail('A measured rowspan cell needs a fixed table with a px, 100% or grid-stretched width (its width decides its height)');
+      const content = diff(outer, scalar(add(frame, mul(h, q(columns + 1)))));
       const fixed = widths.filter(Boolean).reduce(add, zero), autos = widths.filter(w => !w).length;
-      if (cmp(content, fixed) < 0) fail('A measured rowspan cell in a table narrower than its px columns is not modeled');
-      return widths.every(Boolean) ? widths.map(w => div(mul(w, content), fixed)) : widths.map(w => w ?? div(sub(content, fixed), q(autos)));
+      if (clip(region, diff(scalar(fixed), content), true)) fail('A measured rowspan cell in a table narrower than its px columns is not modeled');
+      return widths.every(Boolean) ? widths.map(w => times(content, div(w, fixed))) : widths.map(w => w ? scalar(w) : times(diff(content, scalar(fixed)), div(q(1), q(autos))));
     };
     function measuredHeight(cell, cs, r) {
-      const at = cell.tableAt, cols = columnWidths().slice(at.column, at.column + at.span).reduce(add, zero);
-      const inner = sub(add(cols, mul(h, q(at.span - 1))), ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero));
+      const at = cell.tableAt, cols = columnWidths().slice(at.column, at.column + at.span).reduce((a, b) => sum(a, b));
+      const inner = diff(sum(cols, scalar(mul(h, q(at.span - 1)))), scalar(['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero)));
       const profile = cell.contract.intrinsicBlockSize;
       if (typeof profile === 'number') return q(String(profile));
-      const entry = profile.filter(e => cmp(q(String(e.atLeastInlineSize)), inner) <= 0).at(-1);
+      // The caller splits the region at the profile's widths, so the entry is the same everywhere in it.
+      probe?.push({ inner, thresholds: profile.map(e => q(String(e.atLeastInlineSize))) });
+      const width = evaluate(inner, sample(region));
+      const entry = profile.filter(e => cmp(q(String(e.atLeastInlineSize)), width) <= 0).at(-1);
       if (!entry || entry.blockSize === null) fail('The measured rowspan cell has no known height at its width');
       return q(String(entry.blockSize));
     }
@@ -874,10 +882,20 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function solve(box, available, region, parents = [], inherited, emit = true) {
     let results = [];
     try {
-      for (const state of styles(box, region, parents, inherited, emit, !available.root)) {
+      // A table with measured rowspan cells whose width varies: split the region where a cell's line count changes.
+      const tableStates = state => {
+        if (box.tag !== 'table' || state.style.display !== 'table') return [state];
+        const probe = [];
+        try { tableAsGrid(box, state.style, state.region, parents, false, available, probe); } catch { return [state]; }
+        let pieces = [state.region];
+        for (const { inner, thresholds } of probe) for (const t of thresholds) pieces = pieces.flatMap(r => { const p = partition(r, diff(inner, scalar(t)), '>='); return [...p.yes, ...p.no]; });
+        if (pieces.length > 256) throw new Error('Table region limit exceeded');
+        return pieces.map(r => ({ ...state, region: r }));
+      };
+      for (const state of styles(box, region, parents, inherited, emit, !available.root).flatMap(tableStates)) {
         let { style } = state;
         // A fixed table is laid out as its equivalent grid (rows and sections as contents, cells as blocks).
-        if (box.tag === 'table' && style.display === 'table') style = tableAsGrid(box, style, state.region, parents, emit);
+        if (box.tag === 'table' && style.display === 'table') style = tableAsGrid(box, style, state.region, parents, emit, available);
         // A cell's width seeds its column (the cell fills the column); its height stretches to the row.
         style = tablePlacement(box, style);
         if (!validate(style, box, state.region, emit, available)) continue;

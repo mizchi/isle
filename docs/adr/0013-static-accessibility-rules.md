@@ -165,7 +165,8 @@ px の高さの rowspan cell(中身は自由)が行の和より高いときは�
 span の2行目以降で別の rowspan が始まる行があればそこへ等分、行が全て空なら最後の行、それ以外は空でない行に高さの比で(端数は最後に受け取る行)。
 以前は余りを span の最後の行に渡していたので、最後の行が空のとき誤っていた。
 高さ auto で text だけの rowspan cell は、table の幅が px の固定 table なら cell の幅が定数なので、text 契約の高さの profile をその幅で引いた高さとして扱う
-(Roboto の折り返す文で Chromium と一致)。幅が viewport で変わる table と、子要素のある auto の rowspan は Unknown。
+(Roboto の折り返す文で Chromium と一致)。幅が viewport で変わる table(100% か grid に伸びる auto の border-box)では cell の幅が viewport の一次式なので、
+profile の境目で region を分け、各区間で高さを決める(320〜900px で Chromium と一致)。子要素のある auto の rowspan は Unknown。
 明示した行の track では cell は行に伸びる(Chromium の cell は行の高さになる)。
 table の cell は高さを超える内容で溢れず行が伸びるので、block 方向の内容の不足は E_LAYOUT_CONTENT ではなく U_LAYOUT_TABLE にした(以前は誤って溢れと報告していた)。
 **自動 table レイアウト**(`table-layout: auto`)は、内容が列を広げられないときだけ固定 table と同じになる(Chromium で測定):
@@ -266,5 +267,5 @@ page の規則(html-lang など)は box tree の単体テストで検査する(e
 
 ## 次の段階
 
-2. 内容で列幅が決まる自動 table レイアウトと、幅が viewport で変わる table の内容で高さの決まる rowspan。
+2. 内容で列幅が決まる自動 table レイアウトと、子要素のある内容で高さの決まる rowspan。
 3. inline 要素の幾何(位置と寸法。focus-obscured などの位置の規則を文中の要素に広げるため)。

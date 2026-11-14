@@ -409,3 +409,31 @@ test('a measured text rowspan cell grows its rows like Chromium', async ({page})
     expect(Math.abs(rect.h - value(row.rect.blockSize.constant)), `${row.box} height`).toBeLessThanOrEqual(1 / 64 + 1e-9);
   }
 });
+
+// The same in a table whose width follows the viewport: the region splits where the note's line count changes.
+test('a measured text rowspan cell in a viewport-wide table follows its line count', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const font = {family: 'Roboto', size: 16, lineHeight: 20, weight: 400};
+  const content = 'This note spans two rows and wraps over several lines in a column that grows with the viewport.';
+  const html = `<div class="g"><table class="t"><tbody><tr><td class="s" rowspan="2">${content}</td><td class="a"></td></tr><tr><td class="b"></td></tr></tbody></table></div>`;
+  const css = `*{box-sizing:border-box;margin:0;padding:0}.g{display:grid;grid-template-columns:minmax(0,1fr)}.t{table-layout:fixed;inline-size:100%;border-spacing:3px;background:#fff;color:#000}td{padding:0}.s{font-family:"Roboto";font-size:16px;line-height:20px;font-weight:400}.a{inline-size:120px;block-size:10px}.b{block-size:30px}`;
+  const boxes = metrics.resolveBoxes({'.s': {text: {content, font}, wrap: 'normal'}});
+  const report = analyzeHTML(html, {name: 'Case', css, viewport: {min: 320, max: 900, height: {min: 400, max: 600}}, boxes});
+  expect(report.status, JSON.stringify(report.diagnostics)).toBe('verified');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  const at = (a, w) => value(a.coefficient) * w + value(a.heightCoefficient ?? '0') * 500 + value(a.constant);
+  const holds = (row, w) => (row.range.minInclusive === false ? w > row.range.min : w >= row.range.min) && (row.range.maxInclusive === false ? w < row.range.max : w <= row.range.max);
+  const heights = new Set();
+  for (let width = 320; width <= 900; width += 29) {
+    await page.setViewportSize({width, height: 500});
+    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    for (const row of report.sizes.filter(row => row.rect && row.path !== 'Case' && holds(row, width))) {
+      const rect = await page.evaluate(indices => { let node = document.querySelector('body > *'); for (const i of indices) node = node.children[i]; const r = node.getBoundingClientRect(); return {y: r.top, h: r.height, w: r.width}; }, row.path.split('/').slice(1).map(Number));
+      if (row.box === '.b') heights.add(rect.h);
+      expect(Math.abs(rect.y - at(row.rect.blockStart, width)), `${row.box} top at ${width}`).toBeLessThanOrEqual(1 / 64 + 1e-9);
+      expect(Math.abs(rect.h - at(row.rect.blockSize, width)), `${row.box} height at ${width}`).toBeLessThanOrEqual(1 / 64 + 1e-9);
+    }
+  }
+  expect(heights.size, 'the rows grow differently across widths').toBeGreaterThan(1);
+});
