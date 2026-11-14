@@ -21,7 +21,7 @@ axe が同じ観点を持つ規則でも、axe は開いた1つの幅・1つの�
 | text-contrast / state-contrast / link-in-text-block | 頻度は1位。祖先の背景の合成、hover・focus、dark scheme を、区間全体で扱える |
 | target-size / target-overlap / occluded-target | 2.5.8 の spacing 例外を幾何で判定する。重なりと覆いは配置と stacking に依存する |
 | reflow / page-overflow-x / container-protrusion / text-collision / clipped-content | 320px での溢れ、区間内のどこかの幅だけで起きる衝突。スクリーンショットの検査では取り逃しやすい |
-| focus-contrast / visual-presentation(AAA) / fixed-hides-content / focus-scrolled-under / focus-offscreen / focus-obscured / focus-clipped / focus-transparent / focus-visible / focus-area / hidden-focusable | フォーカスが見えない・届かない誤り。sticky header に隠れる、`overflow: clip`、opacity 0、outline を消す、など。どれも CSS でしか決まらない |
+| field-boundary / focus-contrast / visual-presentation(AAA) / fixed-hides-content / focus-scrolled-under / focus-offscreen / focus-obscured / focus-clipped / focus-transparent / focus-visible / focus-area / hidden-focusable | フォーカスが見えない・届かない誤り。sticky header に隠れる、`overflow: clip`、opacity 0、outline を消す、など。どれも CSS でしか決まらない |
 | hover-only / pointer-disabled | 状態のセレクタと継承した `pointer-events` に依存する |
 | scrollable-region-focusable / text-spacing | 溢れの証明に依存する。axe は実際に溢れた1つの幅しか見ない |
 | accessible-name / form-label / label-in-name / empty-heading / empty-th / icon-font-name / generated-name | 頻度は上位。`display:none` や `visibility:hidden` の文字、生成コンテンツ、アイコンフォントで名前が消えたり偽物になったりする。lint はこれを CSS 抜きでしか見られない |

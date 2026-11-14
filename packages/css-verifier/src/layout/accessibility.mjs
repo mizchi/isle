@@ -95,13 +95,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -164,7 +164,7 @@ export const contrastRatio = (a, b) => { const [x, y] = [luminance(a), luminance
 export function paintFacts(style) {
   return { color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
-    isolation: style.isolation, transform: style.transform, scrollMargin: { top: style['scroll-margin-top'], bottom: style['scroll-margin-bottom'] }, scrollPadding: { top: style['scroll-padding-top'], bottom: style['scroll-padding-bottom'] }, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], outlineColor: style['outline-color'], outlineOffset: style['outline-offset'], boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
+    isolation: style.isolation, transform: style.transform, scrollMargin: { top: style['scroll-margin-top'], bottom: style['scroll-margin-bottom'] }, scrollPadding: { top: style['scroll-padding-top'], bottom: style['scroll-padding-bottom'] }, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], outlineColor: style['outline-color'], outlineOffset: style['outline-offset'], borderColors: { top: style['border-top-color'], right: style['border-right-color'], bottom: style['border-bottom-color'], left: style['border-left-color'] }, boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
     animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] } };
 }
 const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(String(value)); return m && (m[2] ? Number(m[1]) / 100 : Number(m[1])) >= 1; };
@@ -1009,6 +1009,26 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
       if (zero(f.opacity) || row.chain.slice(0, -1).some(layer => zero(layer.opacity)))
         report(warnings, 'W_A11Y_FOCUS_TRANSPARENT', 'warning', `${row.box.label} stays at opacity 0 when focused, so its own focus indicator is invisible; another element must show where focus is`, row, region, { rule: 'focus-transparent' });
     }
+  }
+
+  // field-boundary (SC 1.4.11): a text field (input, select, textarea) must be identifiable: its fill against the backdrop
+  // around it, or at least one border side (1px or wider, composited over the fill), needs 3:1. Disabled fields are exempt.
+  const textInput = box => box.tag === 'select' || box.tag === 'textarea' || (box.tag === 'input' && !['hidden', 'checkbox', 'radio', 'range', 'color', 'file', 'submit', 'reset', 'button', 'image'].includes(box.inputType));
+  for (const row of geometry.filter(row => textInput(row.box) && visible(row) && !hiddenFrom(row.path) && !row.box.nativeStates?.disabled && row.chain)) {
+    const clear = { color: '#000', backgroundColor: 'transparent', backgroundImage: 'none', opacity: '1' };
+    const around = backdrop([...row.chain.slice(0, -1), clear]), fill = backdrop([...row.chain.slice(0, -1), { ...row.chain.at(-1), color: '#000' }]);
+    if (around.unknown || fill.unknown) { report(unknowns, 'U_A11Y_FIELD_BOUNDARY', 'unknown', `${row.box.label}: ${(around.unknown ?? fill.unknown).replace('the text', 'the field')}`, row, row.region, { rule: 'field-boundary' }); continue; }
+    const ratios = [contrastRatio(fill.bg, around.bg)];
+    for (const side of ['top', 'right', 'bottom', 'left']) {
+      const width = row.borders?.[side]; if (!width || number(width) < 1) continue;
+      const raw = String(row.paint.borderColors?.[side] ?? 'currentcolor').toLowerCase(), color = parseColor(raw === 'currentcolor' ? row.paint.color : raw);
+      if (!color) { ratios.push(NaN); continue; }
+      ratios.push(contrastRatio(over(color, fill.bg), around.bg));
+    }
+    if (ratios.some(Number.isNaN)) { report(unknowns, 'U_A11Y_FIELD_BOUNDARY', 'unknown', `${row.box.label}: a border color is not a modeled color`, row, row.region, { rule: 'field-boundary' }); continue; }
+    const best = Math.max(...ratios);
+    if (Math.abs(best - 3) < 1e-9) report(unknowns, 'U_A11Y_FIELD_BOUNDARY', 'unknown', `${row.box.label}: its boundary contrast is at 3:1 within numeric error`, row, row.region, { rule: 'field-boundary' });
+    else if (best < 3) report(findings, 'E_A11Y_FIELD_BOUNDARY', 'error', `${row.box.label} has no visible boundary: its fill and borders reach only ${best.toFixed(2)}:1 against the background (3:1 needed)`, row, row.region, { rule: 'field-boundary', ratio: best });
   }
 
   // hover-only (SC 2.1.1, 1.4.13): content a pointer can reveal must be revealed by focus as well.

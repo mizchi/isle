@@ -100,6 +100,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | fixed-hides-content | 画面の上端(下端)に接する `position: fixed` の塗りのある箱が、スクロール位置 0(最大のスクロール位置)で text や操作対象を完全に覆う。スクロールしても裏に入るか画面の外に出るだけなので、どのスクロール位置でも読めず操作もできない(fixed のフッターに page の padding がない、など) | E_A11Y_FIXED_HIDES |
 | visual-presentation | AAA を求めたとき(`contrast` か `targetLevel` が AAA)だけ。1行より高い(折り返す)text が両端揃え(`text-align: justify`、継承を含む)、または行間が font size の 1.5 倍未満(SC 1.4.8)。`line-height: normal` は font 契約の行の高さを使い、契約がなければ note にして判定しない | W_A11Y_JUSTIFIED / W_A11Y_LINE_SPACING(警告) |
 | focus-contrast | フォーカスの表示が作者の outline だけ(他に変わる塗りがない)のとき、outline の色と、その下の背景(祖先の背景。`outline-offset` が負なら自身の背景)のコントラストが 3:1 未満(SC 1.4.11)。`currentcolor` はフォーカス時の文字色。Chromium の照合はフォーカスした画面の画素で測る | E_A11Y_FOCUS_CONTRAST |
+| field-boundary | text の input・select・textarea の境界が見えない:塗りと周りの背景、1px 以上の border のどの辺(塗りに重ねた色)と周りの背景も 3:1 未満(SC 1.4.11)。disabled は除く。border の色は `border` の一括指定・`border-color`・`border-<side>-color` から読む。Chromium の照合は画素で測る | E_A11Y_FIELD_BOUNDARY |
 | aria-hidden-body | body の `aria-hidden="true"`。Chromium は body の aria-hidden を無視する(AX tree で測定)ので他の規則は中身を公開されたものとして扱い、尊重する UA では文書全体が隠れることを警告する | W_A11Y_ARIA_HIDDEN_BODY |
 | frame-title | 描画される iframe に title も名前もない(SC 4.1.2) | E_A11Y_FRAME_TITLE |
 | video-caption | 描画される video に kind=captions/subtitles の track がない(SC 1.2.2) | E_A11Y_VIDEO_CAPTION |

@@ -17,7 +17,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -1340,4 +1340,18 @@ test('focus-contrast: an author focus outline needs 3:1 against its backdrop', (
   // A negative offset draws over the button's own background.
   assert.deepEqual(codes('.b { background: #ddd; }\n.b:focus { outline: 2px solid #ddd; outline-offset: -4px; }'), ['E_A11Y_FOCUS_CONTRAST']);
   assert.deepEqual(codes('.b { background: #333; }\n.b:focus { outline: 2px solid #ddd; outline-offset: -4px; }'), []);
+});
+
+test('field-boundary: a text field needs a 3:1 fill or border against its backdrop', () => {
+  const tree = extra => page([{tag: 'input', classes: ['i'], inputType: 'text', named: true, focusable: true, ...extra}]);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; grid-auto-rows: 30px; }\n.i { appearance: none; display: block; padding: 0; min-width: 0; min-height: 0; inline-size: 200px; block-size: 30px; border: 0; background: transparent; }\n${extra}`);
+  const codes = (extra, box = {}) => run(tree(box), css(extra)).diagnostics.filter(d => d.rule === 'field-boundary').map(d => d.code);
+  assert.deepEqual(codes(''), ['E_A11Y_FIELD_BOUNDARY']);
+  assert.deepEqual(codes('.i { border: 1px solid #ddd; }'), ['E_A11Y_FIELD_BOUNDARY']);
+  assert.deepEqual(codes('.i { border: 1px solid #767676; }'), []);
+  // One strong side is enough (an underline field); a dark fill is a boundary of its own.
+  assert.deepEqual(codes('.i { border: 1px solid #ddd; border-bottom-color: #000; }'), []);
+  assert.deepEqual(codes('.i { background: #333; color: #fff; }'), []);
+  // Disabled fields are exempt (SC 1.4.11 inactive components).
+  assert.deepEqual(codes('', {nativeStates: {disabled: true}}), []);
 });

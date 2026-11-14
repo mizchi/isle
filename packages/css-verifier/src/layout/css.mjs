@@ -17,9 +17,9 @@ const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset
 const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
-const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-(?:color|radius)|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|transition(?:-(?:property|duration|delay|timing-function|behavior))?|animation-(?:delay|direction|fill-mode|timing-function)|list-style-(?:position|image))$/;
+const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-radius|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|transition(?:-(?:property|duration|delay|timing-function|behavior))?|animation-(?:delay|direction|fill-mode|timing-function)|list-style-(?:position|image))$/;
 // Properties a :hover/:focus rule may set: they repaint (or restack) without changing geometry.
-const statePaint = /^(?:z-index|color|background(?:-.*)?|border-(?:color|radius)|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?|color-scheme)$/;
+const statePaint = /^(?:z-index|color|background(?:-.*)?|border-(?:(?:top|right|bottom|left)-)?color|border-radius|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?|color-scheme)$/;
 // Paint and hit-testing facts for the accessibility rules (never geometry).
 export const paintProperties = ['color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'outline-color', 'outline-offset', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'color-scheme', 'z-index', 'isolation', 'transform'];
 const inheritedPaint = ['color', 'visibility', 'pointer-events', 'cursor', 'list-style-type', 'color-scheme'];
@@ -107,13 +107,20 @@ function expand(property, value) {
   }
   if (property === 'border' || property === 'border-inline' || property === 'border-block') {
     const sides = property === 'border' ? ['left', 'right', 'top', 'bottom'] : property === 'border-inline' ? ['left', 'right'] : ['top', 'bottom'];
-    if (wide.has(value)) return sides.map(side => [`border-${side}`, value]);
+    // The color is kept as paint (border-<side>-color) for the non-text contrast rules.
+    if (wide.has(value)) return sides.flatMap(side => [[`border-${side}`, value], [`border-${side}-color`, value]]);
     const p = postcss.list.space(value);
-    if (p.length === 1 && ['0', 'none'].includes(value)) return sides.map(side => [`border-${side}`, '0']);
+    if (p.length === 1 && ['0', 'none'].includes(value)) return sides.flatMap(side => [[`border-${side}`, '0'], [`border-${side}-color`, 'currentcolor']]);
     if (p.length !== 3 || p[1] !== 'solid') throw new Error('Use a pixel solid border with a color');
     if (!/^(?:black|white|red|green|blue|transparent|currentcolor|#[\da-f]{3}|#[\da-f]{4}|#[\da-f]{6}|#[\da-f]{8})$/.test(p[2])) throw new Error('Use a supported literal border color');
-    px(p[0]); return sides.map(side => [`border-${side}`, p[0]]);
+    px(p[0]); return sides.flatMap(side => [[`border-${side}`, p[0]], [`border-${side}-color`, p[2]]]);
   }
+  if (property === 'border-color') {
+    const p = postcss.list.space(value);
+    if (!p.length || p.length > 4 || (wide.has(value) && p.length !== 1)) throw new Error(`Unsupported border-color: ${value}`);
+    return [['top', p[0]], ['right', p[1] ?? p[0]], ['bottom', p[2] ?? p[0]], ['left', p[3] ?? p[1] ?? p[0]]].map(([side, color]) => [`border-${side}-color`, color]);
+  }
+  if (/^border-(?:top|right|bottom|left)-color$/.test(property)) return [[property, value]];
   if (property === 'container') {
     const p = value.split('/').map(v => v.trim());
     if (p.length > 2 || !p[0]) throw new Error('Unsupported container shorthand');
@@ -332,7 +339,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
     display: ['track', 'source'].includes(box.tag) || (box.tag === 'audio' && !box.controls) ? 'none' : ['span', 'a', 'strong', 'em', 'b', 'i', 'small', 'output', 'label', 'img', 'iframe', 'video', 'audio'].includes(box.tag) ? 'inline' : 'block',
     'box-sizing': 'content-box', 'inline-size': 'auto', 'min-inline-size': 'auto', 'max-inline-size': 'none',
     'padding-left': '0', 'padding-right': '0', 'border-left': '0', 'border-right': '0',
-    'padding-top': '0', 'padding-bottom': '0', 'border-top': '0', 'border-bottom': '0',
+    'padding-top': '0', 'padding-bottom': '0', 'border-top': '0', 'border-bottom': '0', 'border-top-color': 'currentcolor', 'border-right-color': 'currentcolor', 'border-bottom-color': 'currentcolor', 'border-left-color': 'currentcolor',
     'margin-left': box.tag === 'body' ? 'ua' : '0', 'margin-right': box.tag === 'body' ? 'ua' : '0',
     'margin-top': /^(?:body|p|h[1-6])$/.test(box.tag) ? 'ua' : '0', 'margin-bottom': /^(?:body|p|h[1-6])$/.test(box.tag) ? 'ua' : '0',
     'block-size': 'auto', 'min-block-size': 'auto', 'max-block-size': 'none',
