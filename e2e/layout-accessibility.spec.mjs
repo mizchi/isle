@@ -1275,3 +1275,29 @@ test('img width/height attributes and aspect-ratio size images like Chromium', a
     }
   }
 });
+
+test('vw, vh, vmin, vmax, rem, em, % and calc()/min()/max()/clamp() size boxes like Chromium', async ({page}) => {
+  const css = `*{box-sizing:border-box;margin:0;padding:0}html{font-size:10px}html,body{margin:0;display:grid;grid-template-columns:minmax(0,1fr)}.page{display:grid;grid-template-columns:minmax(0,1fr)}.r{block-size:10px}
+.a{inline-size:50vw}.b{inline-size:calc(100% - 2rem)}.c{inline-size:clamp(200px, 50vw, 500px)}.d{inline-size:min(100%, 40rem);block-size:calc(5vh + 1rem)}
+.e{inline-size:max(20vw, 120px);block-size:20vmin}.f{inline-size:calc((100% - 2 * 16px) / 3);block-size:clamp(10px, 4vh, 30px)}.g{inline-size:calc(30vmin + 10px);block-size:5vmax}
+.h{font-size:12px;inline-size:10em;block-size:calc(2em + 4px)}.i{inline-size:25rem;max-inline-size:calc(60vw - 10px)}.j{inline-size:50%;box-sizing:content-box;padding:0 1rem}.k{inline-size:calc(50% - 400px)}`;
+  const boxes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'];
+  const body = `<div class="page">${boxes.map(c => `<div class="r ${c}"></div>`).join('')}</div>`;
+  // A whole document: rem resolves against the html root's font-size.
+  const html = `<html lang="en"><body>${body}</body></html>`;
+  for (const height of [500, 900]) {
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280, height: {min: height, max: height}}});
+    expect(report.status === 'unknown', JSON.stringify(report.diagnostics.filter(d => d.severity === 'unknown'))).toBe(false);
+    for (const width of [1280, 1000, 700, 375, 320]) {
+      await page.setViewportSize({width, height});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${body}</body></html>`);
+      for (const cls of boxes) {
+        const browser = await page.evaluate(c => { const r = document.querySelector(`.${c}`).getBoundingClientRect(); return [r.width, r.height]; }, cls);
+        const row = report.sizes.find(r => r.box === `.r.${cls}` && r.rect && r.range && width >= r.range.min && width <= r.range.max);
+        const at = a => value(a.constant) + value(a.coefficient ?? '0') * width + value(a.heightCoefficient ?? '0') * height;
+        const statics = [at(row.rect.inlineSize), at(row.rect.blockSize)];
+        expect(statics.map((v, i) => Math.abs(v - browser[i])).every(d => d < 0.02), `.${cls} at ${width}×${height}: static ${statics} vs browser ${browser}`).toBe(true);
+      }
+    }
+  }
+});

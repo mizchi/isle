@@ -63,6 +63,20 @@ test('text-contrast: inherited color against the nearest opaque background', () 
   assert.equal(find(run(card, cardCSS('.card { background: #fff; color: #767676; }'), {boxes: cardBoxes, accessibility: {contrast: 'AAA'}}), 'E_A11Y_CONTRAST').length, 1);
 });
 
+test('text-contrast: hsl() and hsla() colors give the same ratio as their rgb values', () => {
+  // hsl(0 0% 46.3%) ≈ #767676 (passes), hsl(0, 0%, 46.7%) ≈ #777 (fails); hue and saturation move the luminance.
+  assert.equal(run(card, cardCSS('.card { background: hsl(0 0% 100%); color: hsl(0 0% 46.3%); }'), {boxes: cardBoxes}).status, 'verified');
+  const [grey] = find(run(card, cardCSS('.card { background: hsl(0, 0%, 100%); color: hsl(0, 0%, 46.7%); }'), {boxes: cardBoxes}), 'E_A11Y_CONTRAST');
+  assert.ok(grey.ratio > 4.47 && grey.ratio < 4.49, String(grey.ratio));
+  // hsl(240 100% 50%) is #00f (8.59:1 on white); hsl(60 100% 50%) is #ff0 (1.07:1).
+  assert.equal(run(card, cardCSS('.card { background: #fff; color: hsl(240 100% 50%); }'), {boxes: cardBoxes}).status, 'verified');
+  const [yellow] = find(run(card, cardCSS('.card { background: #fff; color: hsl(60deg 100% 50%); }'), {boxes: cardBoxes}), 'E_A11Y_CONTRAST');
+  assert.ok(yellow && yellow.ratio < 1.08, String(yellow?.ratio));
+  // A translucent hsla() layer composites over the opaque white: 50% black is #808080 (3.95:1).
+  const [half] = find(run(card, cardCSS('.card { background: #fff; color: hsla(0, 0%, 0%, 0.5); }'), {boxes: cardBoxes}), 'E_A11Y_CONTRAST');
+  assert.ok(half && half.ratio > 3.9 && half.ratio < 4.0, String(half?.ratio));
+});
+
 test('text-contrast: translucent layers composite over an opaque ancestor, media queries split the domain', () => {
   // rgba(0, 0, 0, .5) over an opaque white ancestor is #808080; white text on it is 3.95:1.
   const panelTree = {tag: 'main', classes: ['page'], children: [{tag: 'section', classes: ['card'], children: [{tag: 'p', classes: ['t'], text: true}]}]};

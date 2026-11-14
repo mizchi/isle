@@ -7,7 +7,14 @@ import {customName,variableValue,variableEnvironment,substituteDeclaration} from
 import { compileSelector, matches, greaterRank } from './selectors.mjs';
 export { matches, simpleSelector } from './selectors.mjs';
 const pointSize = /^(?:\d+(?:\.\d{1,6})?px|0)$/;
+// rem resolves against the analysed html root's px font-size once the engine has seen it (setRootFontSize).
+let rootFontSize = null;
+export function setRootFontSize(size) { rootFontSize = size; }
+// Parse-time check of a px or rem length; rem resolves at layout time, against the html root (else Unknown).
+const pxSyntax = text => { if (!/^\d+(?:\.\d{1,6})?rem$/.test(text)) px(text); };
 export function px(text) {
+  const rem = /^(\d+(?:\.\d{1,6})?)rem$/.exec(text ?? '');
+  if (rem && rootFontSize) return mul(q(rem[1]), rootFontSize);
   if (!pointSize.test(text)) throw new Error(`Unsupported CSS pixel length: ${text}`);
   return q(text.replace(/px$/, ''));
 }
@@ -101,7 +108,7 @@ function expand(property, value) {
   if (property === 'content') { if (['none', 'normal'].includes(value)) return [['content', 'none']]; if (/^(?:""|'')$/.test(value)) return [['content', 'empty']]; if (/^(?:"[^"]*"|'[^']*')$/.test(value)) return [['content', `text:${cssString(value)}`]]; throw new Error(`Unsupported content: ${value}`); }
   if (property === 'gap') {
     const parts = postcss.list.space(value); if (parts.length > 2) throw new Error('Unsupported gap');
-    parts.forEach(part => { if (part !== 'normal') px(part); }); return [['row-gap', parts[0]], ['column-gap', parts.at(-1)]];
+    parts.forEach(part => { if (part !== 'normal') pxSyntax(part); }); return [['row-gap', parts[0]], ['column-gap', parts.at(-1)]];
   }
   if (property === 'overflow') {
     const parts = postcss.list.space(value); if (parts.length > 2) throw new Error('Unsupported overflow');
@@ -109,14 +116,14 @@ function expand(property, value) {
   }
   if (property === 'padding') {
     const p = postcss.list.space(value); if (p.length < 1 || p.length > 4) throw new Error('Unsupported padding');
-    if (!wide.has(value)) p.forEach(px); return [['padding-top', p[0]], ['padding-right', p[1] ?? p[0]], ['padding-bottom', p[2] ?? p[0]], ['padding-left', p[3] ?? p[1] ?? p[0]]];
+    if (!wide.has(value)) p.forEach(pxSyntax); return [['padding-top', p[0]], ['padding-right', p[1] ?? p[0]], ['padding-bottom', p[2] ?? p[0]], ['padding-left', p[3] ?? p[1] ?? p[0]]];
   }
   if (property === 'padding-inline' || property === 'padding-block') {
     const p = postcss.list.space(value); if (p.length > 2) throw new Error('Unsupported padding-inline');
-    if (!wide.has(value)) p.forEach(px); return property === 'padding-inline' ? [['padding-left', p[0]], ['padding-right', p[1] ?? p[0]]] : [['padding-top', p[0]], ['padding-bottom', p[1] ?? p[0]]];
+    if (!wide.has(value)) p.forEach(pxSyntax); return property === 'padding-inline' ? [['padding-left', p[0]], ['padding-right', p[1] ?? p[0]]] : [['padding-top', p[0]], ['padding-bottom', p[1] ?? p[0]]];
   }
   if (['padding-left', 'padding-right', 'padding-inline-start', 'padding-inline-end', 'padding-top', 'padding-bottom', 'padding-block-start', 'padding-block-end'].includes(property)) {
-    if (!wide.has(value)) px(value); return [[property.replace('inline-start', 'left').replace('inline-end', 'right').replace('block-start', 'top').replace('block-end', 'bottom'), value]];
+    if (!wide.has(value)) pxSyntax(value); return [[property.replace('inline-start', 'left').replace('inline-end', 'right').replace('block-start', 'top').replace('block-end', 'bottom'), value]];
   }
   if (/^margin(?:-(?:inline|block|left|right|top|bottom|inline-start|inline-end|block-start|block-end))?$/.test(property)) {
     const sides = property === 'margin' ? ['top', 'right', 'bottom', 'left'] : property === 'margin-inline' ? ['left', 'right'] : property === 'margin-block' ? ['top', 'bottom'] : [property.slice(7).replace('inline-start', 'left').replace('inline-end', 'right').replace('block-start', 'top').replace('block-end', 'bottom')];

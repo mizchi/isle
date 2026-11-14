@@ -14,8 +14,16 @@ export function htmlBoxTree(html) {
   const diagnostics=[];
   const unknown=message=>diagnostics.push({code:'U_LAYOUT_HTML',severity:'unknown',message});
   // A body element as the root: parse as a document and check from body (its attributes, such as aria-hidden, count).
-  const asBody=/^\s*<body[\s>]/i.test(html);
-  const fragment=asBody ? parse(`<!doctype html><html><head></head>${html.trim()}</html>`,{onParseError:error=>unknown(`HTML parse recovery: ${error.code}`)}).childNodes.find(n=>n.tagName==='html').childNodes.find(n=>n.tagName==='body') : parseFragment(html,{onParseError:error=>unknown(`HTML parse recovery: ${error.code}`)});
+  // An html element as the root (a whole document): its font-size is what rem resolves against. The head
+  // (with no boxes) is dropped.
+  const asHtml=/^\s*(?:<!doctype html>\s*)?<html[\s>]/i.test(html);
+  const asBody=asHtml || /^\s*<body[\s>]/i.test(html);
+  const documentNode=asBody ? parse(asHtml ? (/^\s*<!doctype/i.test(html) ? html.trim() : `<!doctype html>${html.trim()}`) : `<!doctype html><html><head></head>${html.trim()}</html>`,{onParseError:error=>unknown(`HTML parse recovery: ${error.code}`)}).childNodes.find(n=>n.tagName==='html') : null;
+  if(asHtml) {
+    if(documentNode.childNodes.some(n=>n.tagName==='head' && n.childNodes.some(c=>c.tagName && !['meta','title'].includes(c.tagName)))) unknown('A head with elements other than meta and title is not modeled (pass styles as the css option)');
+    documentNode.childNodes=documentNode.childNodes.filter(n=>n.tagName!=='head');
+  }
+  const fragment=asHtml ? documentNode : asBody ? documentNode.childNodes.find(n=>n.tagName==='body') : parseFragment(html,{onParseError:error=>unknown(`HTML parse recovery: ${error.code}`)});
   const roots=asBody ? [fragment] : fragment.childNodes.filter(node=>node.tagName);
   if(roots.length!==1 || !asBody && fragment.childNodes.some(n=>n.nodeName==='#text' && n.value.trim())) throw new TypeError('Static HTML adapter requires a single root element');
   let count=0;

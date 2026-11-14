@@ -1,7 +1,7 @@
 import { q, add, sub, mul, cmp, div, exact, number } from './linear.mjs';
 import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rectangle, clip, partition, projection, serialize } from './region.mjs';
 import { validateOptions } from './input.mjs';
-import { parseLayoutCSS, computeStyle, matches, px } from './css.mjs';
+import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize } from './css.mjs';
 import { tracks, tracks as gridTracks, place } from './grid.mjs';
 import { compileSelector } from './selectors.mjs';
 import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
@@ -19,12 +19,93 @@ const trackStart = (values,gap,index) => sum(total(values.slice(0,index)),scalar
 const offset = (origin,inline,block) => origin ? {inline:sum(origin.inline,inline),block:sum(origin.block,block)} : null;
 const inlineFeature = feature => ['width', 'inline-size'].includes(feature);
 const compare = (value, relation) => relation === '>=' ? value >= 0 : relation === '>' ? value > 0 : relation === '<=' ? value <= 0 : relation === '<' ? value < 0 : value === 0;
-function length(value, parent) {
-  if (/^\d+(?:\.\d+)?%$/.test(value)) {
-    if (!parent) throw new Error('Percentage block size needs a definite containing size; intrinsic percentage cycles are not modeled');
-    return times(parent, div(q(value.slice(0, -1)), q(100)));
-  }
-  return scalar(px(value));
+// Lengths as affine functions of the viewport (W, H): px, % of the containing size, vw, vh, vmin, vmax, rem (the
+// html root's px font-size), em (the element's px font-size), and calc() with + − × ÷ and min()/max()/clamp().
+// vmin/vmax and min()/max() split the region where their arguments cross; each piece is {region, value}.
+const unitContext = { rootFontSize: null, heightKnown: false };
+function lengthPieces(value, parent, region, style) {
+  const text = String(value).trim().toLowerCase();
+  let i = 0;
+  const fail = () => { throw new Error(`Unsupported CSS length: ${value}`); };
+  const space = () => { while (/\s/.test(text[i] ?? '')) i++; };
+  // A value is a list of pieces; `number` marks a unitless factor.
+  const constant = (v, number = false) => [{ region, value: v, number }];
+  // A piece's region is the base region or a sub-region of it; meeting the base keeps the other side as it is.
+  const meet = (a, b) => a === region ? b : b === region ? a : a === b ? a : intersect(a, b);
+  const combine = (a, b, f) => a.flatMap(x => b.flatMap(y => { const r = x.region && y.region ? meet(x.region, y.region) : x.region ?? y.region; return r || (x.region === null && y.region === null) ? [{ region: r ?? null, ...f(x, y) }] : []; }));
+  const pick = (list, larger) => list.reduce((acc, next) => combine(acc, next, (x, y) => ({ value: null, both: [x.value, y.value], number: x.number && y.number })).flatMap(entry => {
+    if (entry.both === undefined) return [entry];
+    const [a, b] = entry.both;
+    if (!entry.region) { const d = diff(a, b); if (cmp(d.x, zero) || cmp(d.y, zero)) fail(); return [{ region: null, value: (cmp(d.b, zero) >= 0) === larger ? a : b, number: entry.number }]; }
+    const p = partition(entry.region, diff(a, b), '>=');
+    return [...p.yes.map(r => ({ region: r, value: larger ? a : b, number: entry.number })), ...p.no.map(r => ({ region: r, value: larger ? b : a, number: entry.number }))];
+  }));
+  const unit = (n, u) => {
+    const k = div(q(n), q(100));
+    if (u === '') return constant(scalar(q(n)), true);
+    if (u === 'px') return constant(scalar(q(n)));
+    if (u === '%') { if (!parent) fail(); return constant(times(parent, k)); }
+    if (u === 'vw') return constant(times(width, k));
+    if (['vh', 'vmin', 'vmax'].includes(u) && !unitContext.heightKnown) throw new Error(`${value}: viewport-height units need a viewport height range`);
+    if (u === 'vh') return constant(times(height, k));
+    if (u === 'vmin' || u === 'vmax') return pick([constant(times(width, k)), constant(times(height, k))], u === 'vmax');
+    if (u === 'rem') { if (!unitContext.rootFontSize) throw new Error(`${value}: rem needs the html root with a px font-size in the analysed tree`); return constant(scalar(mul(q(n), unitContext.rootFontSize))); }
+    if (u === 'em') { if (!/^\d+(?:\.\d{1,6})?px$/.test(style?.['font-size'] ?? '')) throw new Error(`${value}: em needs a px font-size`); return constant(scalar(mul(q(n), px(style['font-size'])))); }
+    fail();
+  };
+  const primary = () => {
+    space();
+    const fn = /^(calc|min|max|clamp)\(/.exec(text.slice(i));
+    if (fn) {
+      i += fn[0].length; const args = [sumExpr()]; space();
+      while (text[i] === ',') { i++; args.push(sumExpr()); space(); }
+      if (text[i++] !== ')') fail();
+      if (fn[1] === 'calc') { if (args.length !== 1) fail(); return args[0]; }
+      if (fn[1] === 'clamp') { if (args.length !== 3) fail(); return pick([args[0], pick([args[1], args[2]], false)], true); }
+      return pick(args, fn[1] === 'max');
+    }
+    if (text[i] === '(') { i++; const v = sumExpr(); space(); if (text[i++] !== ')') fail(); return v; }
+    const m = /^([+-]?(?:\d+(?:\.\d+)?|\.\d+))(px|%|vw|vh|vmin|vmax|rem|em)?/.exec(text.slice(i));
+    if (!m) fail();
+    i += m[0].length;
+    return unit(m[1].replace(/^\+/, '').replace(/^(-?)\./, '$10.'), m[2] ?? '');
+  };
+  const product = () => {
+    let left = primary();
+    for (;;) {
+      space(); const op = text[i];
+      if (op !== '*' && op !== '/') return left;
+      i++; const right = primary();
+      left = combine(left, right, (x, y) => {
+        if (op === '/') { if (!y.number || cmp(y.value.b, zero) === 0) fail(); return { value: times(x.value, div(one, y.value.b)), number: x.number }; }
+        if (x.number) return { value: times(y.value, x.value.b), number: y.number };
+        if (y.number) return { value: times(x.value, y.value.b), number: false };
+        return fail();
+      });
+    }
+  };
+  const sumExpr = () => {
+    let left = product();
+    for (;;) {
+      space(); const op = text[i];
+      if (op !== '+' && op !== '-') return left;
+      i++; const right = product();
+      left = combine(left, right, (x, y) => { if (x.number !== y.number) fail(); return { value: op === '+' ? sum(x.value, y.value) : diff(x.value, y.value), number: x.number }; });
+    }
+  };
+  const out = sumExpr(); space();
+  if (i !== text.length || out.some(piece => piece.number && text !== '0')) fail();
+  // A size is never negative: the top-level result clamps at 0 (CSS Values 4 §10.12), splitting where it crosses 0.
+  return out.flatMap(piece => {
+    if (!piece.region) return [{ region: null, value: cmp(piece.value.b, zero) < 0 && !cmp(piece.value.x, zero) && !cmp(piece.value.y, zero) ? scalar(zero) : piece.value }];
+    const p = partition(piece.region, piece.value, '>=');
+    return [...p.yes.map(r => ({ region: r, value: piece.value })), ...p.no.map(r => ({ region: r, value: scalar(zero) }))];
+  });
+}
+function length(value, parent, style) {
+  if (/^\d+(?:\.\d+)?%$/.test(value) && !parent) throw new Error('Percentage block size needs a definite containing size; intrinsic percentage cycles are not modeled');
+  const pieces = lengthPieces(value, parent, null, style);
+  return pieces[0].value;
 }
 
 // `preferences` (internal) names non-default user preferences, e.g. 'prefers-color-scheme:dark'.
@@ -279,7 +360,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // max-block-size in px: it caps an explicit or stretched height, and a leaf's content height; an auto-height
       // container with children is not modeled.
       if (axis === 'block' && style['max-block-size'] !== 'none' && !(/^\d+(?:\.\d+)?px$/.test(style['max-block-size']) && !available.flexItem && style.display !== 'table' && (style['block-size'] !== 'auto' || !(box.children ?? []).length || (available.block && available.alignBlock === undefined && !available.root)))) throw new Error('CSS max size clamping is not modeled');
-      if (style[`max-${axis}-size`] !== 'none' && axis === 'inline' && !( (/^\d+(?:\.\d+)?px$/.test(style['max-inline-size']) || (/^\d+(?:\.\d+)?%$/.test(style['max-inline-size']) && available.inline && !available.flexItem)) && (!available.flexItem || available.flexItem.main === 'inline') && style.display !== 'table')) throw new Error('CSS max size clamping is not modeled');
+      if (style[`max-${axis}-size`] !== 'none' && axis === 'inline' && !( ((/^\d+(?:\.\d+)?px$/.test(style['max-inline-size'])) || (!/px$/.test(style['max-inline-size']) && available.inline && !available.flexItem)) && (!available.flexItem || available.flexItem.main === 'inline') && style.display !== 'table')) throw new Error('CSS max size clamping is not modeled');
       if (axis === 'inline') {
         if (style['min-inline-size'] !== 'auto') px(style['min-inline-size']);
       // A column flex item's minimum is resolved by the flex line (its track is never smaller).
@@ -1338,6 +1419,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       { inline, block, ...(legendOrigin ? { origin: legendOrigin } : {}) }, ancestors, emit);
   }
   let rootFontSize = null;
+  unitContext.rootFontSize = null; setRootFontSize(null); unitContext.heightKnown = Boolean(block && options.viewport.height);
   function solve(box, available, region, parents = [], inherited, emit = true) {
     let results = [];
     if (emit) box.$starts = { geometry: geometry.length, sizes: sizes.length };
@@ -1354,7 +1436,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       };
       for (const state of styles(box, region, parents, inherited, emit, !available.root).flatMap(tableStates)) {
         let { style } = state;
-        if (box.tag === 'html' && !parents.length && /^\d+(?:\.\d{1,6})?px$/.test(style['font-size'])) rootFontSize = px(style['font-size']);
+        if (box.tag === 'html' && !parents.length && /^\d+(?:\.\d{1,6})?px$/.test(style['font-size'])) { rootFontSize = px(style['font-size']); unitContext.rootFontSize = rootFontSize; setRootFontSize(rootFontSize); }
         // A fixed table is laid out as its equivalent grid (rows and sections as contents, cells as blocks).
         if (box.tag === 'table' && style.display === 'table') style = tableAsGrid(box, style, state.region, parents, emit, available);
         if (!['grid', 'flex'].includes(style.display) && style.display !== 'none') { const generatedText = generatedElsewhere(box, state.region, [...parents, { box, style }], style); if (generatedText) box.generated = generatedText; }
@@ -1376,11 +1458,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const edge = sides => scalar(sides.map(side => add(px(style[`padding-${side}`]), px(style[`border-${side}`]))).reduce(add, zero));
         const cssInlineEdges=edge(['left','right']),cssBlockEdges=edge(['top','bottom']);
         const inlineEdges = sum(cssInlineEdges,scalar(box.documentRoot ? 0 : frame.inlineSize)), blockEdges = sum(cssBlockEdges,scalar(box.documentRoot ? 0 : frame.blockSize));
-        let preferred = style['inline-size'] === 'auto' ? available.inline : length(style['inline-size'], available.inline);
-        if (style['inline-size'] !== 'auto' && style['box-sizing'] === 'content-box') preferred = sum(preferred, cssInlineEdges);
+        // The preferred width (a viewport unit or calc() may split the region), as a border-box size.
+        const preferredPieces = (style['inline-size'] === 'auto' ? [{ region: state.region, value: available.inline }] : lengthPieces(style['inline-size'], available.inline, state.region, style))
+          .map(piece => ({ ...piece, value: style['inline-size'] !== 'auto' && style['box-sizing'] === 'content-box' ? sum(piece.value, cssInlineEdges) : piece.value }));
         const minimum = style['min-inline-size'] === 'auto' ? zero : px(style['min-inline-size']);
         const minimumBorderBox = sum(scalar(minimum), style['box-sizing'] === 'content-box' ? cssInlineEdges : scalar(0));
-        const capped = style['max-inline-size'] !== 'none' ? minimumOf(state.region, preferred, sum(length(style['max-inline-size'], available.inline), style['box-sizing'] === 'content-box' ? cssInlineEdges : scalar(0))) : [{ region: state.region, value: preferred }];
+        const capped = style['max-inline-size'] !== 'none' ? preferredPieces.flatMap(piece => lengthPieces(style['max-inline-size'], available.inline, piece.region, style).flatMap(cap => minimumOf(cap.region, piece.value, sum(cap.value, style['box-sizing'] === 'content-box' ? cssInlineEdges : scalar(0))))) : preferredPieces;
         const preferredStates = capped.flatMap(c => cmp(minimum, zero) > 0 ? maximum(c.region, c.value, minimumBorderBox) : [c]);
         const edgeExplanation = axis => () => explanation(sizeChain([...parents, { box, style }], axis, { hostInset: options.hostInset }), sizeProperties(axis).filter(property => /^(?:padding|border)-/.test(property)).map(property => fact(box, style, property)));
         for (const proposal of preferredStates) if (emit) obligation(proposal.value, inlineEdges, box, proposal.region, 'E_LAYOUT_BOX_EDGES', 'inline', true, edgeExplanation('inline'));
@@ -1389,7 +1472,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const inline = sum(content.value, inlineEdges), contentInline = content.value;
           let fixedBlock = null;
           if (block) {
-            if (style['block-size'] !== 'auto') fixedBlock = length(style['block-size'], available.block);
+            if (style['block-size'] !== 'auto') fixedBlock = /^\d+(?:\.\d+)?(?:px|%)$/.test(style['block-size']) ? length(style['block-size'], available.block, style) : scalar(zero);
             // aspect-ratio with an auto block-size (an img, or a box with no content): the block size follows the
             // inline size, on the box named by box-sizing (the content box by default).
             else if (ratioOf(style) && (box.tag === 'img' || (!(box.children ?? []).length && !box.text && !box.inline?.length))) {
@@ -1400,8 +1483,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             else if (style['container-type'] === 'size') fixedBlock = blockEdges;
             if (style['block-size'] !== 'auto' && style['box-sizing'] === 'content-box') fixedBlock = sum(fixedBlock, cssBlockEdges);
           }
-          const maxBlock = block && style['max-block-size'] !== 'none' ? sum(scalar(px(style['max-block-size'])), style['box-sizing'] === 'content-box' ? cssBlockEdges : scalar(0)) : null;
-          const fixedPieces = fixedBlock && maxBlock ? minimumOf(content.region, fixedBlock, maxBlock) : [{ region: content.region, value: fixedBlock }];
+          const maxBlock = block && /^\d+(?:\.\d+)?px$/.test(style['max-block-size']) ? sum(scalar(px(style['max-block-size'])), style['box-sizing'] === 'content-box' ? cssBlockEdges : scalar(0)) : null;
+          // A block-size with viewport units, min()/max()/clamp() may split the region (a single piece otherwise).
+          const contentEdges = style['box-sizing'] === 'content-box' ? cssBlockEdges : scalar(0);
+          const blockPieces = block && style['block-size'] !== 'auto' && !/^\d+(?:\.\d+)?(?:px|%)$/.test(style['block-size'])
+            ? lengthPieces(style['block-size'], available.block, content.region, style).map(piece => ({ region: piece.region, value: sum(piece.value, contentEdges) }))
+            : [{ region: content.region, value: fixedBlock }];
+          const fixedPieces = blockPieces.flatMap(piece => !(block && style['max-block-size'] !== 'none' && piece.value) ? [piece]
+            : lengthPieces(style['max-block-size'], available.block, piece.region, style).flatMap(cap => minimumOf(cap.region, piece.value, sum(cap.value, contentEdges))));
           const blockStates = fixedPieces.flatMap(piece => piece.value ? clamp(piece.region, diff(piece.value, blockEdges)) : [{ region: piece.region, value: null }]);
           for (const piece of fixedPieces) if (piece.value && emit) obligation(piece.value, blockEdges, box, piece.region, 'E_LAYOUT_BOX_EDGES', 'block', true, edgeExplanation('block'));
           for (const bs of blockStates) {
