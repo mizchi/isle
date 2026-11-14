@@ -123,6 +123,9 @@ const cases = [
   {name: 'dir=auto takes the direction of the first strong character', html: '<div class="w"><div class="g" dir="auto"><p class="t">123 שלום</p><div class="b"></div></div><div class="g" dir="auto"><p class="t">42 hello</p><div class="b"></div></div></div>',
     css: '.w{display:grid;grid-template-columns:minmax(0,1fr);row-gap:4px}.g{display:grid;grid-template-columns:90px 40px;column-gap:6px}.t{font-size:16px;line-height:20px;white-space:nowrap}.b{block-size:20px}',
     boxes: {'.t': {minInlineSize: 1, intrinsicBlockSize: 20, wrap: 'nowrap', overflow: 'visible'}}},
+  {name: 'generated text items take their grid and flex cells', html: '<div class="w"><div class="g"><div class="a"></div><div class="b"></div></div><div class="f"><div class="p"></div></div></div>',
+    css: '.w{display:grid;grid-template-columns:minmax(0,1fr);row-gap:6px;font-size:16px;line-height:20px}.g{display:grid;grid-template-columns:60px minmax(0,1fr) 40px;column-gap:4px}.g::before{content:"New"}.a,.b{block-size:20px}.f{display:flex;column-gap:8px}.f::after{content:"→";flex:none;inline-size:24px}.p{flex:none;inline-size:50px;block-size:20px}',
+    boxes: {'.g::before': {minInlineSize: 40, intrinsicBlockSize: 20}, '.f::after': {minInlineSize: 20, intrinsicBlockSize: 20}}},
   {name: 'fixed tables with captions and border-spacing, colspan and rowspan', html: '<div class="g"><table class="t"><caption class="c">x</caption><tbody><tr><td class="a" colspan="2"></td><td class="b"></td></tr><tr><td class="a"></td><td class="a"></td><td class="a"></td></tr></tbody></table><table class="t u"><caption class="c">y</caption><tbody><tr><td class="s" rowspan="2"></td><td class="a"></td></tr><tr><td class="a"></td></tr></tbody></table></div>',
     css: '.g{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px}.t{table-layout:fixed;inline-size:196px;border-spacing:4px 6px}.u{caption-side:bottom}.c{block-size:18px;padding:0}.a,.b{block-size:20px;padding:0}.s{padding:0}',
     boxes: {'.c': {minInlineSize: 1, intrinsicBlockSize: 18}}},
@@ -153,7 +156,8 @@ for (const sample of cases) {
     for (const [width, height] of [[200, 300], [321, 400], [480, 450], [777, 600], ...(sample.widths ?? []).map(width => [width, 400])]) {
       await page.setViewportSize({width, height});
       await page.setContent(`<!doctype html><style>html,body{margin:0}${sample.fullHeight ? 'html,body{height:100%}' : ''}${css}</style>${sample.html}`);
-      const rows = report.sizes.filter(row => row.rect && inside(row.range, width) && (!row.heightRange || inside(row.heightRange, height)));
+      // Generated (pseudo) and anonymous boxes have no element to measure; their effect shows in the real boxes.
+      const rows = report.sizes.filter(row => row.rect && inside(row.range, width) && (!row.heightRange || inside(row.heightRange, height)) && !row.box.includes('::') && row.path.split('/').slice(1).every(seg => /^\d+$/.test(seg)));
       for (const row of rows) {
         const indices = row.path.split('/').slice(1).map(Number);
         const rect = await page.evaluate(indices => {

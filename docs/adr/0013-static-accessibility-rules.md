@@ -181,7 +181,8 @@ UA の `position: fixed; inset: 0; margin: auto` で画面の中央に固定さ�
 規則は覆う箱としてだけ使う。
 文字を生成する `content` は、幾何を変えない場合だけ扱う:幅と高さが px の leaf の中、または leaf の測った text が生成文字を含む
 (::before は先頭、::after は末尾、同じ font で inline)。Chromium はアクセシブルな名前に生成文字を含めるので名前として数え、
-名前が生成文字だけなら W_A11Y_GENERATED_NAME、icon font の私用領域(PUA)の文字だけなら E_A11Y_ICON_NAME(Chromium の名前は PUA の1文字になる)。それ以外の文字の生成と、流れの中に生成される箱は inline の箱を作るので Unknown(U_LAYOUT_PSEUDO)。leaf・文中の inline 要素・
+名前が生成文字だけなら W_A11Y_GENERATED_NAME、icon font の私用領域(PUA)の文字だけなら E_A11Y_ICON_NAME(Chromium の名前は PUA の1文字になる)。grid/flex の容器の `::before`/`::after` が文字を生成すると、その疑似要素が容器の item になる。`.x::before` の契約で大きさを与えれば普通の文字の item として置く
+(grid の最初の列と flex の最後の item で Chromium と一致)。それ以外の文字の生成と、流れの中に生成される箱は inline の箱を作るので Unknown(U_LAYOUT_PSEUDO)。leaf・文中の inline 要素・
 grid/flex でない箱の生成 content も Unknown(以前は `content` 自体が未対応で Unknown だった。leaf の生成 content を見逃さないよう全ての箱で確かめる)。
 overlay が button を覆う・覆わない・`pointer-events: none`・2つを覆う、の4通りで Chromium の hit test と一致した。
 

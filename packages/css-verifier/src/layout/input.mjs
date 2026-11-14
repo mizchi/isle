@@ -71,7 +71,8 @@ export function validateOptions(options) {
       if (contract.overflowBlock !== undefined && !['fit', 'scroll', 'clip', 'visible'].includes(contract.overflowBlock)) throw new Error('Invalid block overflow contract');
   };
   for (const [selector, contract] of Object.entries(options.boxes ?? {})) {
-    if (!selector || !simpleSelector.test(selector)) throw new Error('Invalid box contract');
+    // A contract may size a generated box: `.card::before` / `.card::after`.
+    if (!selector || !simpleSelector.test(selector.replace(/::(?:before|after)$/, ''))) throw new Error('Invalid box contract');
     validateContract(contract, false);
   }
   return { min, max, minInclusive: true, maxInclusive: true };

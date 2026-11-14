@@ -1147,3 +1147,14 @@ test('a table cell with text runs between block children stacks anonymous blocks
   // One textRuns entry per run; selectors never match an anonymous block.
   assert.equal(run(tree, css, {viewport: view, boxes: {'.c': {textRuns: [{minInlineSize: 40, intrinsicBlockSize: 20}]}}}).status, 'unknown');
 });
+
+test('generated text in a grid is an item sized by a selector::before contract', () => {
+  const tree = {tag: 'main', classes: ['g'], children: [{tag: 'div', classes: ['a']}]};
+  const css = '.g { display: grid; grid-template-columns: minmax(0, 1fr) 50px; background: #fff; color: #000; }\n.g::before { content: "New"; }\n.a { block-size: 30px; }';
+  const view = {min: 320, max: 1280, height: {min: 400, max: 900}};
+  const sized = run(tree, css, {viewport: view, boxes: {'.g::before': {minInlineSize: 30, intrinsicBlockSize: 20}}});
+  assert.equal(sized.status, 'verified', JSON.stringify(sized.diagnostics));
+  assert.deepEqual([sized.sizes.find(r => r.box === '.a').rect.inlineStart.coefficient, sized.sizes.find(r => r.box === '.a').rect.inlineStart.constant], ['1', '-50']);
+  // Without a contract the generated text has no size: Unknown.
+  assert.equal(run(tree, css, {viewport: view}).status, 'unknown');
+});

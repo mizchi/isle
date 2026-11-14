@@ -52,7 +52,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   const boxes = [];
   const collect = box => { if (box) { boxes.push(box); box.children.forEach(collect); } };
   collect(root);
-  for (const [selector, contract] of Object.entries(options.boxes ?? {})) {
+  // Contracts of generated boxes (selector::before / ::after) are applied when the pseudo-element is generated.
+  const pseudoContracts = Object.entries(options.boxes ?? {}).flatMap(([selector, contract]) => { const m = /^(.*)::(before|after)$/.exec(selector); return m ? [{ base: m[1], kind: m[2], selector, contract }] : []; });
+  for (const [selector, contract] of Object.entries(options.boxes ?? {}).filter(([selector]) => !/::(?:before|after)$/.test(selector))) {
     const selected = boxes.filter(box => matches(selector, box));
     if (!selected.length) throw new Error(`Layout contract does not match a box: ${selector}`);
     for (const box of selected) { if (box.contract) throw new Error(`Ambiguous layout contracts for ${box.label}`); box.contract = contract; box.contractSelector = selector; }
@@ -1216,7 +1218,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   states = bounded(states.flatMap(s => styles(pbox, s.region, ancestors, style, false, false, new Set([`::${kind}`])).map(c => {
                     const content = c.style.content ?? 'none';
                     if (content === 'none' || c.style.display === 'none') return { region: c.region, children: s.children };
-                    if (content.startsWith('text:')) throw Object.assign(new Error(`${pbox.label} generates text; its inline box is not modeled`), { code: 'U_LAYOUT_PSEUDO' });
+                    // Generated text in a grid/flex container is an item of its own: sized by a selector::kind contract.
+                    if (content.startsWith('text:')) {
+                      const sized = pseudoContracts.find(p => p.kind === kind && matches(p.base, box));
+                      if (!sized || c.style.position !== 'static') throw Object.assign(new Error(`${pbox.label} generates text${sized ? ' out of flow' : '; give it a contract (' + box.label + '::' + kind + ')'}`), { code: 'U_LAYOUT_PSEUDO' });
+                      const tbox = { ...pbox, text: true, textContent: content.slice(5), generated: { [kind]: content.slice(5) }, contract: sized.contract, contractSelector: sized.selector };
+                      return { region: c.region, children: kind === 'before' ? [{ box: tbox, style: c.style, inherited: style }, ...s.children] : [...s.children, { box: tbox, style: c.style, inherited: style }] };
+                    }
                     if (c.style.position !== 'absolute') throw Object.assign(new Error(`${pbox.label} is generated in flow; only absolutely positioned generated boxes are modeled`), { code: 'U_LAYOUT_PSEUDO' });
                     return { region: c.region, children: kind === 'before' ? [{ box: pbox, style: c.style, inherited: style }, ...s.children] : [...s.children, { box: pbox, style: c.style, inherited: style }] };
                   })));
