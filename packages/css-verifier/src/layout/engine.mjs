@@ -253,6 +253,21 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
 
   function flex(region, available, definitions, gap, bases, stretchAuto) {
+    // Automatic table columns (CSS 2 / Chromium auto table layout): below the summed minima every column keeps its
+    // minimum (the table overflows); between minima and maxima each grows from its minimum by its share of
+    // (max − min); above the maxima the width is shared in proportion to the maxima.
+    if (definitions.some(t => t.autoTable)) {
+      if (!definitions.every(t => t.autoTable)) throw new Error('Automatic table columns do not mix with other tracks');
+      const mins = definitions.map(t => t.autoTable.min), maxs = definitions.map(t => t.autoTable.max);
+      const low = mins.reduce(add, zero), high = maxs.reduce(add, zero), spread = sub(high, low), S = diff(available, scalar(gap));
+      const out = [];
+      const under = clip(region, diff(scalar(low), S), true);
+      if (under) out.push({ region: under, values: mins.map(scalar), required: scalar(add(low, gap)) });
+      if (cmp(spread, zero) > 0) { const between = region && clip(clip(region, diff(S, scalar(low))), diff(scalar(high), S), true); if (between) out.push({ region: between, values: definitions.map((t, i) => sum(scalar(mins[i]), times(diff(S, scalar(low)), div(sub(maxs[i], mins[i]), spread)))), required: scalar(gap) }); }
+      const over = clip(region, diff(S, scalar(high)));
+      if (over) out.push({ region: over, values: maxs.map(m => cmp(high, zero) > 0 ? times(S, div(m, high)) : scalar(zero)), required: scalar(gap) });
+      return out;
+    }
     const overhead = sum(total(bases), scalar(gap));
     return clamp(region, diff(available, overhead)).map(({ region, value: free }) => {
       const weights = definitions.filter(t => t.weight).map(t => t.weight).reduce(add, zero);
@@ -1028,12 +1043,24 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (caption) {
       caption.tableCaption = { columns, rows: rows.length, side: one(styles(caption, region, parents, style, false, false))['caption-side'] };
     }
-    let autoWidth = null, autoMinimum = null;
+    let autoWidth = null, autoMinimum = null, contentTracks = null;
     if (automatic) {
       if (caption || rows.some(row => row.children.some(cell => (cell.colSpan ?? 1) > 1 || cell.tableRowSpan))) fail('Automatic table layout is modeled without captions, colspan or rowspan');
       const rowStyles = rows.map(row => one(styles(row, region, parents, one(styles(sections.find(sec => sec.children.includes(row)), region, parents, style, false, false)), false, false)));
+      // Content-sized columns: no px widths at all, and every non-empty cell a leaf with trusted min- and max-content
+      // widths (minInlineSize, maxInlineSize). Each column's range is its cells' widest (plus the cell edges).
+      const contentColumns = widths.every(w => !w) && rows.every(row => row.children.every(cell => (!cell.text && !cell.contract && !(cell.children ?? []).length) || (!(cell.children ?? []).length && cell.contract?.minInlineSize !== undefined && cell.contract?.maxInlineSize !== undefined)));
+      const ranges = contentColumns ? Array.from({ length: columns }, () => ({ min: zero, max: zero })) : null;
       rows.forEach((row, r) => row.children.forEach((cell, c) => {
         const cs = one(styles(cell, region, parents, rowStyles[r], false, false));
+        if (contentColumns) {
+          if (cs['inline-size'] !== 'auto') fail('Automatic table column widths must be px or auto');
+          const cellEdges = ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
+          const lo = add(q(String(cell.contract?.minInlineSize ?? 0)), cellEdges), hi = add(q(String(cell.contract?.maxInlineSize ?? 0)), cellEdges);
+          if (cmp(lo, ranges[c].min) > 0) ranges[c].min = lo;
+          if (cmp(hi, ranges[c].max) > 0) ranges[c].max = hi;
+          return;
+        }
         if (cs['inline-size'] !== 'auto') {
           if (!/^\d+(?:\.\d+)?px$/.test(cs['inline-size'])) fail('Automatic table column widths must be px or auto');
           const edges = ['left', 'right'].map(side => add(px(cs[`padding-${side}`]), px(cs[`border-${side}`]))).reduce(add, zero);
@@ -1049,18 +1076,22 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         }
       }));
       const autos = widths.filter(w => !w).length;
-      if (autos > 1) fail('Several auto columns share the extra width by content; not modeled');
+      if (autos > 1 && !contentColumns) fail('Several auto columns share the extra width by content; not modeled');
       const edges = add(add(add(px(style['padding-left']), px(style['padding-right'])), add(px(style['border-left']), px(style['border-right']))), mul(h, q(columns + 1)));
       // An auto width stretches in a grid area (measured) and shrinks to fit at the root (block flow).
       const parentDisplay = parents.at(-1)?.style.display;
       if (style['inline-size'] === 'auto' && parentDisplay === 'flex') fail('An automatic table with an auto width in a flex container is sized by content');
-      if (style['inline-size'] === 'auto' && parentDisplay === 'grid') autoMinimum = widths.filter(Boolean).reduce(add, zero);
+      if (contentColumns) {
+        for (const range of ranges) if (cmp(range.max, range.min) < 0) range.max = range.min;
+        if (style['inline-size'] === 'auto' && parentDisplay !== 'grid') fail('An automatic table with content-sized columns and an auto width shrinks to its content; give it a width');
+        contentTracks = ranges.map(range => `-isle-auto-table(${number(range.min)},${number(range.max)})`).join(' ');
+      } else if (style['inline-size'] === 'auto' && parentDisplay === 'grid') autoMinimum = widths.filter(Boolean).reduce(add, zero);
       else if (style['inline-size'] === 'auto') {
         if (autos) fail('An automatic table with an auto column needs an explicit inline-size');
         autoWidth = add(widths.reduce(add, zero), edges);
       } else autoMinimum = widths.filter(Boolean).reduce(add, zero);
     }
-    const tracks = widths.every(Boolean) ? widths.map(w => `minmax(0, ${number(w)}fr)`) : widths.map(w => w ? `${number(w)}px` : 'minmax(0, 1fr)');
+    const tracks = contentTracks ? contentTracks.split(' ') : widths.every(Boolean) ? widths.map(w => `minmax(0, ${number(w)}fr)`) : widths.map(w => w ? `${number(w)}px` : 'minmax(0, 1fr)');
     const spacingEdges = { 'padding-left': add(px(style['padding-left']), h), 'padding-right': add(px(style['padding-right']), h), 'padding-top': add(px(style['padding-top']), v), 'padding-bottom': add(px(style['padding-bottom']), v) };
     // A content-box table's width includes the edge spacing (measured): the grid's content width is W − 2·spacing.
     let inlineSize = autoWidth ? `${number(autoWidth)}px` : style['inline-size'];

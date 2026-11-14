@@ -20,6 +20,9 @@ export function tracks(value, automatic = false) {
   };
   const result = expand(value).map(token => {
     if (automatic && token === 'auto') return { auto: true };
+    // An automatic table column (internal): sized between its min- and max-content widths by the table's width.
+    const column = token.match(/^-isle-auto-table\((\d+(?:\.\d+)?),(\d+(?:\.\d+)?)\)$/);
+    if (column) return { autoTable: { min: q(column[1]), max: q(column[2]) } };
     const flexible = token.match(/^minmax\(\s*0(?:px)?\s*,\s*(\d+(?:\.\d+)?)fr\s*\)$/);
     if (!flexible) return { fixed: px(token) };
     const weight = q(flexible[1]);

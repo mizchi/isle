@@ -1099,3 +1099,22 @@ test('dir=auto resolves in DOM order like Chromium', async ({page}) => {
   const statics = cases.map(c => normalizeTree(htmlBoxTree(`<p dir="auto">${c}</p>`).tree, 'P').root.dirAttr);
   expect(statics).toEqual(browser);
 });
+
+test('automatic tables share width between min- and max-content like Chromium', async ({page}) => {
+  const cells = ['Short words here', 'A much longer sentence that keeps going on and on', 'x'];
+  const css = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{inline-size:100%;border-spacing:0}td{padding:0;font-family:sans-serif;font-size:16px;line-height:20px;vertical-align:top}`;
+  const html = `<div class="page"><table class="t"><tbody><tr>${cells.map((c, i) => `<td class="c${i}">${c}</td>`).join('')}</tr></tbody></table></div>`;
+  await page.setContent(`<!doctype html><html lang="en"><head><style>${css}.probe{display:inline-block;font-family:sans-serif;font-size:16px;line-height:20px}</style></head><body>${html}${cells.map((c, i) => `<div><span class="probe" id="mn${i}" style="width:min-content">${c}</span></div><div><span class="probe" id="mx${i}" style="width:max-content">${c}</span></div>`).join('')}</body></html>`);
+  // The trusted contracts: each cell's min- and max-content width as Chromium measures it.
+  const ranges = await page.evaluate(n => Array.from({length: n}, (_, i) => [document.getElementById(`mn${i}`).getBoundingClientRect().width, document.getElementById(`mx${i}`).getBoundingClientRect().width]), cells.length);
+  const boxes = Object.fromEntries(ranges.map(([min, max], i) => [`.c${i}`, {minInlineSize: min, maxInlineSize: max, overflowBlock: 'visible'}]));
+  const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280}, boxes});
+  expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+  for (const width of [1280, 900, 600, 375]) {
+    await page.setViewportSize({width, height: 800});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const browser = await page.evaluate(n => Array.from({length: n}, (_, i) => document.querySelector(`.c${i}`).getBoundingClientRect().width), cells.length);
+    const statics = cells.map((_, i) => { const row = report.sizes.find(r => r.box === `.c${i}` && r.range && width >= r.range.min && width <= r.range.max); return value(row.inlineSize.constant) + value(row.inlineSize.coefficient ?? '0') * width; });
+    statics.forEach((v, i) => expect(Math.abs(v - browser[i]), `column ${i} at ${width}: static ${v} vs browser ${browser[i]}`).toBeLessThan(0.05));
+  }
+});

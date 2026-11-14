@@ -730,7 +730,11 @@ test('fixed tables are laid out like their equivalent grid', () => {
   assert.ok(find(run(table([row(2)]), css('.t { inline-size: 150px; }\n.c0 { inline-size: 80px; }\n.c1 { inline-size: 120px; }'), {viewport: tableView}), 'E_LAYOUT_TABLE_WIDTH').length === 1);
   const auto = run(table([row(2)]), css('.c1 { inline-size: 100px; }'), {viewport: tableView});
   assert.equal(rect(auto, 'c0').inlineSize.constant, '294');
-  for (const extra of ['.t { table-layout: auto; }', '.t { border-collapse: collapse; }', '.t { inline-size: auto; }'])
+  // An automatic table of empty cells: every column's content range is its edges alone, so they share the width equally.
+  const empty = run(table([row(2)]), css('.t { table-layout: auto; }'), {viewport: tableView});
+  assert.equal(empty.status, 'verified', JSON.stringify(empty.diagnostics));
+  assert.equal(rect(empty, 'c0').inlineSize.constant, rect(empty, 'c1').inlineSize.constant);
+  for (const extra of ['.t { border-collapse: collapse; }', '.t { inline-size: auto; }'])
     assert.equal(run(table([row(2)]), css(extra), {viewport: tableView}).status, 'unknown', extra);
   assert.equal(run(table([row(2), row(1)]), css(''), {viewport: tableView}).status, 'unknown');
 });
@@ -1554,4 +1558,16 @@ test('a :focus rule that changes layout: the focused box is laid out again focus
   assert.deepEqual(codes('.b { block-size: 40px; }\n.b:focus { block-size: 20px; }'), ['.b']);
   // Without the accessibility checks a layout-changing :focus rule stays Unknown.
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css('.b:focus { block-size: 40px; }'), viewport: domain}).status, 'unknown');
+});
+
+test('automatic tables size content columns between their min- and max-content widths', () => {
+  const cell = cls => ({tag: 'td', classes: [cls], text: true});
+  const boxes = {'.a': {minInlineSize: 40, maxInlineSize: 100, intrinsicBlockSize: 20}, '.z': {minInlineSize: 20, maxInlineSize: 300, intrinsicBlockSize: 20}};
+  const tree = {tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [{tag: 'tr', classes: ['r'], children: [cell('a'), cell('z')]}]}]};
+  const css = width => `.t { inline-size: ${width}; border-spacing: 0; background: #fff; color: #000; }\n.a, .z { padding: 0; font-size: 16px; line-height: 20px; }`;
+  const at = (width, cls) => { const r = run(tree, css(width), {boxes, viewport: {min: 320, max: 1280, height: {min: 400, max: 900}}, accessibility: undefined}); assert.notEqual(r.status, 'unknown', JSON.stringify(r.diagnostics)); return Number(r.sizes.find(row => row.box === `.${cls}` && row.rect).rect.inlineSize.constant.split('/').reduce((n, d) => n / d)); };
+  // Above the maxima (400 ≥ 100 + 300): shared 1 : 3.
+  assert.equal(at('800px', 'a'), 200);
+  // Between (60 ≤ 200 < 400): each grows from its minimum by its share of max − min (60 : 280) of the 140 left.
+  assert.ok(Math.abs(at('200px', 'a') - (40 + 140 * 60 / 340)) < 1e-9);
 });

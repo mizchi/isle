@@ -6,7 +6,7 @@ export const boxTags = new Set('html body button div main aside section article 
 export const controlTags = new Set(['button', 'input', 'select', 'textarea']), replacedTags = new Set(['img', 'input', 'select', 'textarea']);
 const ancestorTags=new Set([...boxTags].filter(tag=>!['button', 'img', 'input', 'select', 'textarea'].includes(tag)));
 const supportedOptions = new Set(['name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility']);
-const supportedContract = new Set(['minInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock', 'font', 'textMetrics', 'textRuns']);
+const supportedContract = new Set(['minInlineSize', 'maxInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock', 'font', 'textMetrics', 'textRuns']);
 function finiteSize(value, name) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1_000_000) throw new Error(`Invalid layout ${name}`);
   return q(value);
@@ -46,6 +46,8 @@ export function validateOptions(options) {
     if (!contract || typeof contract !== 'object' || Object.keys(contract).some(key => !supportedContract.has(key) || (nested && key === 'textRuns'))) throw new Error('Invalid box contract');
     if (contract.textRuns !== undefined) { if (!Array.isArray(contract.textRuns) || !contract.textRuns.length || contract.textRuns.length > 64) throw new Error('Invalid textRuns contract'); contract.textRuns.forEach(run => validateContract(run, true)); }
       if (contract.minInlineSize !== undefined) finiteSize(contract.minInlineSize, 'minInlineSize');
+      // maxInlineSize: the trusted max-content width (one unbroken line), for automatic table columns.
+      if (contract.maxInlineSize !== undefined) { finiteSize(contract.maxInlineSize, 'maxInlineSize'); if (contract.minInlineSize === undefined || contract.maxInlineSize < contract.minInlineSize) throw new Error('maxInlineSize needs a minInlineSize no larger than it'); }
       if (contract.minBlockSize !== undefined) finiteSize(contract.minBlockSize, 'minBlockSize');
       if (contract.intrinsicBlockSize !== undefined) {
         if (Array.isArray(contract.intrinsicBlockSize)) {
