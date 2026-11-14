@@ -153,6 +153,21 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       try {style=computeStyle(relevant,box,active,inherited,{spend,state});}
       catch(error) {error.box ??= box;throw error;}
       if (gridItem && inherited && style.display === 'inline') style.display = 'block';
+      // An img's width/height attributes are presentational hints (below every author rule) for its width and height,
+      // and set its aspect-ratio to auto w / h (HTML rendering §15.4.3; measured).
+      if (box.tag === 'img' && box.imageSize && !box.pseudo) {
+        const { width: w, height: hgt } = box.imageSize;
+        if (Number.isFinite(w) && style['inline-size'] === 'auto' && !style.$sources['inline-size']) style = { ...style, 'inline-size': `${w}px` };
+        if (Number.isFinite(hgt) && style['block-size'] === 'auto' && !style.$sources['block-size']) style = { ...style, 'block-size': `${hgt}px` };
+        if (Number.isFinite(w) && Number.isFinite(hgt) && w > 0 && hgt > 0 && style['aspect-ratio'] === 'auto' && !style.$sources['aspect-ratio']) style = { ...style, 'aspect-ratio': `auto ${w}/${hgt}` };
+        // The loaded image's natural size (a static file read at build time) against what was reserved before it loads.
+        const natural = typeof box.imageSize.src === 'string' ? options.images?.[box.imageSize.src] : undefined;
+        if (style['block-size'] === 'auto' && natural) {
+          const reserved = /^auto (\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/.exec(style['aspect-ratio']);
+          if (style['aspect-ratio'] === 'auto') style = { ...style, 'aspect-ratio': `auto ${natural.width}/${natural.height}`, $imageUnreserved: natural };
+          else if (reserved && Number(reserved[1]) * natural.height !== Number(reserved[2]) * natural.width) style = { ...style, $imageRatioMismatch: { natural, reserved: `${reserved[1]}/${reserved[2]}` } };
+        }
+      }
       // A user-agent checkbox or radio (appearance auto, size, padding, border and minimum untouched): Chromium draws it
       // 13×13 border-box (measured). Laid out at that size for the accessibility checks; SC 2.5.8/2.5.5 exempt it.
       if (options.accessibility && !box.pseudo && box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType) && style.appearance === 'auto' && ['ua', 'inline-block', 'block'].includes(style.display)
@@ -168,6 +183,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     return [...p.yes.map(region => ({ region, value: a })), ...p.no.map(region => ({ region, value: b }))];
   };
   const clamp = (region, value) => maximum(region, value, scalar(0));
+  // The block-per-inline factor of an aspect-ratio (h / w), or null for auto.
+  const ratioOf = style => { const m = /(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/.exec(String(style['aspect-ratio'] ?? 'auto')); return m ? div(q(m[2]), q(m[1])) : null; };
   const minimumOf = (region, a, b) => {
     const p = partition(region, diff(b, a), '>=');
     return [...p.yes.map(region => ({ region, value: a })), ...p.no.map(region => ({ region, value: b }))];
@@ -204,7 +221,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag) && (style.appearance!=='none' || style.display!=='block')) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);
     // A fieldset's rendered legend sits in its border: modeled only when the fieldset generates no box.
     // Replaced elements and text fields have intrinsic sizes the model does not compute.
-    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto'))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
+    // Layout shifts from images (Layout Instability, measured): an img without a reserved height gets one when it
+    // loads; one whose reserved ratio differs from the file's changes height when it loads.
+    if (box.tag === 'img' && style.$imageUnreserved && emit) issue('E_LAYOUT_IMAGE_UNRESERVED', `${box.label} has no reserved height: it shifts the layout when ${box.imageSize.src} loads; add width="${style.$imageUnreserved.width}" height="${style.$imageUnreserved.height}" (the file's size) or an aspect-ratio`, box, region);
+    if (box.tag === 'img' && style.$imageRatioMismatch && emit) issue('E_LAYOUT_IMAGE_RATIO', `${box.label} reserves the ratio ${style.$imageRatioMismatch.reserved} but ${box.imageSize.src} is ${style.$imageRatioMismatch.natural.width}×${style.$imageRatioMismatch.natural.height}: its height changes when it loads`, box, region);
+    if (box.tag === 'img' && !box.pseudo && style['block-size'] === 'auto' && !ratioOf(style) && block) throw Object.assign(new Error(`${box.label} has no reserved height (no height, aspect-ratio or width/height attributes) and its file's size is not known; it shifts the layout when it loads`), { code: 'U_LAYOUT_IMAGE' });
+    // An img may leave its block-size auto when an aspect-ratio (CSS or its width/height attributes) gives it.
+    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto' && !(box.tag === 'img' && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
     // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
     // A closed popover that author CSS displays keeps the UA [popover] { position: fixed; inset: 0; margin: auto }:
@@ -1367,6 +1390,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           let fixedBlock = null;
           if (block) {
             if (style['block-size'] !== 'auto') fixedBlock = length(style['block-size'], available.block);
+            // aspect-ratio with an auto block-size (an img, or a box with no content): the block size follows the
+            // inline size, on the box named by box-sizing (the content box by default).
+            else if (ratioOf(style) && (box.tag === 'img' || (!(box.children ?? []).length && !box.text && !box.inline?.length))) {
+              const r = ratioOf(style);
+              fixedBlock = style['box-sizing'] === 'border-box' ? times(inline, r) : sum(times(contentInline, r), cssBlockEdges);
+            }
             else if (!available.root && available.block && available.alignBlock === undefined) fixedBlock = available.block;
             else if (style['container-type'] === 'size') fixedBlock = blockEdges;
             if (style['block-size'] !== 'auto' && style['box-sizing'] === 'content-box') fixedBlock = sum(fixedBlock, cssBlockEdges);

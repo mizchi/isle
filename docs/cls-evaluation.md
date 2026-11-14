@@ -112,6 +112,16 @@ CLS の計算にも最適化にも寄与しない。アクセシビリティの�
 
 ### B. 画像(`img`・`picture`)
 
+> **実装済み(B1・B2):**
+>
+> - `img` の `width`/`height` 属性を、ブラウザと同じく幅と高さの既定値、および `aspect-ratio: auto w / h` として扱う。CSS の `aspect-ratio` も扱う。幅が決まれば、高さを比で計算する。6 つの書き方の大きさが、3 つの幅で Chromium と一致した。
+> - 静的な画像の大きさを、`images` option(`{src: {width, height}}`)で渡せる。ファイルの header から大きさを読む `lib/image-size.mjs`(PNG・GIF・JPEG・WebP・SVG)を追加した。
+>   - 大きさを予約していない `img` は `E_LAYOUT_IMAGE_UNRESERVED` になる。読み込み後の配置はファイルの比で計算し、加えるべき `width`/`height` を示す。
+>   - 予約した比がファイルと違う `img` は `E_LAYOUT_IMAGE_RATIO` になる。
+>   - ファイルの大きさが分からない予約なしの `img` は Unknown になる。
+>   - 3 つの変種で、静的な判定と Chromium の CLS の有無が一致した。
+> - Isle の template 言語はまだ `img` を扱えない。そのため、この検査が届くのは HTML の解析(`analyzeHTML`)だけである。build への接続は、言語が `img` に対応してから行う。
+
 **今の状態**
 
 - `img` は、CSS で幅と高さの両方を px で指定したときだけ扱える。
@@ -150,7 +160,7 @@ CLS の計算にも最適化にも寄与しない。アクセシビリティの�
 
 | 順 | 提案 | 理由 |
 | --- | --- | --- |
-| 1 | B1・B2:`width`/`height`・`aspect-ratio` と、静的な画像の比をファイルから読む | 画像は CLS の最大の原因である。比は一次式に収まる。ビルドでの自動挿入という最適化に直結する |
+| 1 | ~~B1・B2~~ 実装済み(Isle の template への接続は `img` の対応待ち) | 画像は CLS の最大の原因である。比は一次式に収まる。ビルドでの自動挿入という最適化に直結する |
 | 2 | T:`noshift` で transform を無視する | 測定で裏付けがある。transform で送るカルーセルとアニメーションをすぐ証明可能にする |
 | 3 | C2・C3:カルーセルの状態ごとの高さと、初期化前後の `noshift` | 既存の `noshift` と状態の列挙の組み合わせで済む |
 | 4 | H:配置を変える `:hover` を CLS の候補として報告する | `:focus` の配置し直しを流用できる |

@@ -23,6 +23,8 @@ export function htmlBoxTree(html) {
     if(++count>2048 || depth>64) throw new TypeError('HTML box tree limit exceeded');
     const attrs=Object.fromEntries(node.attrs.map(a=>[a.name,a.value]));
     for(const attr of node.attrs) {
+      // An img's or source's size and selection attributes are modeled (width/height hints and aspect-ratio).
+      if(!attr.namespace && ['img','source'].includes(node.tagName) && /^(?:width|height|srcset|sizes|media|loading|decoding)$/.test(attr.name)) continue;
       if(attr.namespace || !/^(?:class|id|style|dir|target|title|role|lang|tabindex|href|disabled|alt|src|type|for|name|value|placeholder|required|readonly|checked|autocomplete|headers|scope|controls|autoplay|muted|loop|playsinline|poster|kind|srclang|label|accesskey|ismap|colspan|rowspan|hidden|inert|popover|popovertarget|popovertargetaction|aria-[\w-]+|data-[\w-]+)$/.test(attr.name)) unknown(`HTML rendering attribute needs an adapter: ${attr.name}`);
     }
     if(node.namespaceURI!=='http://www.w3.org/1999/xhtml') unknown('Foreign element needs a size adapter');

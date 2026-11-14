@@ -1255,3 +1255,23 @@ test('a rowspan cell of stacked px blocks grows its rows like Chromium', async (
     expect(statics.map((v, i) => Math.abs(v - browser[i])).every(d => d < 0.02), `.${cls}: static ${statics} vs browser ${browser}`).toBe(true);
   }
 });
+
+test('img width/height attributes and aspect-ratio size images like Chromium', async ({page}) => {
+  const src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR42mNk+M9Qz0AEYBxVSAAAAP//AwAOfQkB4x7nNgAAAABJRU5ErkJggg==';
+  const css = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}img{display:block}.a{width:100%;height:auto}.b{width:300px;aspect-ratio:16/9}.d{width:200px}.e{display:block;width:50%;aspect-ratio:2/1}.f{width:240px;height:auto;padding:10px;box-sizing:content-box}`;
+  const html = `<div class="page"><img class="a" src="${src}" width="400" height="200" alt=""><img class="b" src="${src}" alt=""><img class="c" src="${src}" width="120" height="60" alt=""><img class="d" src="${src}" width="400" height="80" alt=""><div class="e"></div><img class="f" src="${src}" width="2" height="1" alt=""></div>`;
+  const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280, height: {min: 600, max: 3000}}});
+  expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+  for (const width of [1280, 700, 375]) {
+    await page.setViewportSize({width, height: 800});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => Promise.all([...document.images].map(i => i.decode().catch(() => {}))));
+    for (const cls of ['a', 'b', 'c', 'd', 'e', 'f']) {
+      const browser = await page.evaluate(c => { const r = document.querySelector(`.${c}`).getBoundingClientRect(); return [r.width, r.height]; }, cls);
+      const row = report.sizes.find(r => r.box === `.${cls}` && r.rect && r.range && width >= r.range.min && width <= r.range.max);
+      const at = a => value(a.constant) + value(a.coefficient ?? '0') * width;
+      const statics = [at(row.rect.inlineSize), at(row.rect.blockSize)];
+      expect(statics.map((v, i) => Math.abs(v - browser[i])).every(d => d < 0.02), `.${cls} at ${width}: static ${statics} vs browser ${browser}`).toBe(true);
+    }
+  }
+});

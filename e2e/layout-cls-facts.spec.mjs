@@ -2,6 +2,7 @@
 // Each case loads a page, lets it run without input, and sums the layout-shift entries. These are measurements,
 // not checks of the static analysis.
 import {test, expect} from '@playwright/test';
+import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
 
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR42mNk+M9Qz0AEYBxVSAAAAP//AwAOfQkB4x7nNgAAAABJRU5ErkJggg==', 'base64'); // 2×1
 const observe = `window.__shifts=[];new PerformanceObserver(list=>{for(const e of list.getEntries()) window.__shifts.push({value:e.value,input:e.hadRecentInput})}).observe({type:'layout-shift',buffered:true});`;
@@ -55,4 +56,18 @@ test('carousels: scrolling and transform tracks never shift; margin tracks and v
   expect((await shifts(page, `<style>${track}</style><div class=v><div class=t id=t>${slides(3, true)}</div></div><p>below</p>`, {script: advance("transform='translateX(-'+i*300+'px)'"), wait: 2000})).count).toBe(0);
   expect((await shifts(page, `<style>${track}</style><div class=v><div class=t id=t>${slides(3, true)}</div></div><p>below</p>`, {script: advance("marginLeft='-'+i*300+'px'"), wait: 2000})).score).toBeGreaterThan(0.05);
   expect((await shifts(page, `<style>.s{width:300px;background:#ddd}.s:not(.on){display:none}</style><div>${slides(3, false)}</div><p>below</p>`, {script: `let i=0;setInterval(()=>{const s=[...document.querySelectorAll('.s')];s[i].classList.remove('on');i=(i+1)%3;s[i].classList.add('on')},300)`, wait: 2000})).score).toBeGreaterThan(0);
+});
+
+// The static image checks predict these shifts: E_LAYOUT_IMAGE_* exactly where Chromium reports a layout shift.
+test('static image reservation checks agree with Chromium layout shifts', async ({page}) => {
+  const css = '*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block;width:300px;height:auto}.t{block-size:20px}';
+  const images = {'/slow.png': {width: 2, height: 1}};
+  for (const attrs of ['', 'width="2" height="1"', 'width="4" height="3"']) {
+    const html = `<div class="page"><img class="i" src="/slow.png" alt="" ${attrs}><p class="t">below</p></div>`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 800, max: 800, height: {min: 600, max: 600}}, images, boxes: {'.t': {minInlineSize: 1, intrinsicBlockSize: 20}}});
+    expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+    const predicted = report.diagnostics.some(d => /^E_LAYOUT_IMAGE_/.test(d.code));
+    const measured = await shifts(page, `<style>${css}</style>${html}`);
+    expect(measured.score > 0, `${attrs || 'no attributes'}: static ${predicted}, Chromium ${measured.score}`).toBe(predicted);
+  }
 });

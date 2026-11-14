@@ -1628,3 +1628,21 @@ test('an arbitrary rotation: what its circumscribed rectangle may cover is undec
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css(''), viewport: domain}).status, 'unknown');
   assert.equal(run(tree, css(''), {integrity: {}}).status, 'unknown');
 });
+
+test('image layout shifts: an unreserved image, and a reserved ratio that differs from the file', () => {
+  const tree = attrs => page([{tag: 'img', classes: ['i'], alt: '', imageSize: {src: '/hero.png', ...attrs}}, {tag: 'p', classes: ['t']}]);
+  // The usual responsive reset: height: auto, so the width/height attributes only give the ratio.
+  const css = pageCSS('.page { background: #fff; grid-auto-rows: auto; }\n.i { display: block; inline-size: 300px; block-size: auto; }\n.t { block-size: 20px; }');
+  const images = {'/hero.png': {width: 1200, height: 600}};
+  const codes = (attrs, opts = {images}) => run(tree(attrs), css, opts).diagnostics.map(d => d.code);
+  // No reservation: shifts when it loads; with the file's size the loaded layout is computed and the fix suggested.
+  const unreserved = run(tree({}), css, {images});
+  assert.deepEqual(unreserved.diagnostics.map(d => d.code), ['E_LAYOUT_IMAGE_UNRESERVED']);
+  assert.match(unreserved.diagnostics[0].message, /width="1200" height="600"/);
+  assert.equal(unreserved.sizes.find(s => s.box === '.i').blockSize.constant, '150');
+  // Reserved with the file's ratio: nothing. A different ratio: its height changes on load.
+  assert.deepEqual(codes({width: 1200, height: 600}).filter(c => c.startsWith('E_LAYOUT_IMAGE')), []);
+  assert.deepEqual(codes({width: 400, height: 300}).filter(c => c.startsWith('E_LAYOUT_IMAGE')), ['E_LAYOUT_IMAGE_RATIO']);
+  // Without the file's size an unreserved image is Unknown.
+  assert.equal(run(tree({}), css).status, 'unknown');
+});

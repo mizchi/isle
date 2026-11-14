@@ -14,7 +14,7 @@ export function px(text) {
 
 const aliases = { width: 'inline-size', 'min-width': 'min-inline-size', 'max-width': 'max-inline-size', height: 'block-size', 'min-height': 'min-block-size', 'max-height': 'max-block-size' };
 const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset-block-start':'top', 'inset-block-end':'bottom' };
-const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
+const geometry = new Set(['aspect-ratio', 'display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
 const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-radius|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|transition(?:-(?:property|duration|delay|timing-function|behavior))?|animation-(?:delay|fill-mode|timing-function)|list-style-(?:position|image))$/;
@@ -75,6 +75,13 @@ function expand(property, value) {
     const m = /^inset\(\s*(\d+(?:\.\d+)?)%\s*\)$/.exec(value);
     if (!m || Number(m[1]) < 50) throw new Error(`Unsupported clip-path: ${value} (only inset(50%) or more is modeled)`);
     return [[property, 'empty']];
+  }
+  // aspect-ratio: auto, a ratio (w / h, or one number), or both (auto w / h): normalized to 'auto', 'w/h' or 'auto w/h'.
+  if (property === 'aspect-ratio') {
+    if (wide.has(value) || value === 'auto') return [[property, value]];
+    const m = /^(auto\s+)?(\d+(?:\.\d+)?)\s*(?:\/\s*(\d+(?:\.\d+)?))?(\s+auto)?$/.exec(value);
+    if (!m || (m[1] && m[4]) || Number(m[2]) <= 0 || (m[3] !== undefined && Number(m[3]) <= 0)) throw new Error(`Unsupported aspect-ratio: ${value}`);
+    return [[property, `${m[1] || m[4] ? 'auto ' : ''}${m[2]}/${m[3] ?? '1'}`]];
   }
   if (property==='scrollbar-color') return [];
   if (property === 'all') {
@@ -382,7 +389,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   const values = {
     // Media: track/source never render; audio renders only with controls.
     display: ['track', 'source'].includes(box.tag) || (box.tag === 'audio' && !box.controls) ? 'none' : ['span', 'a', 'strong', 'em', 'b', 'i', 'small', 'output', 'label', 'img', 'iframe', 'video', 'audio'].includes(box.tag) ? 'inline' : 'block',
-    'box-sizing': 'content-box', 'inline-size': 'auto', 'min-inline-size': 'auto', 'max-inline-size': 'none',
+    'aspect-ratio': 'auto', 'box-sizing': 'content-box', 'inline-size': 'auto', 'min-inline-size': 'auto', 'max-inline-size': 'none',
     'padding-left': '0', 'padding-right': '0', 'border-left': '0', 'border-right': '0',
     'padding-top': '0', 'padding-bottom': '0', 'border-top': '0', 'border-bottom': '0', 'border-top-color': 'currentcolor', 'border-right-color': 'currentcolor', 'border-bottom-color': 'currentcolor', 'border-left-color': 'currentcolor',
     'margin-left': box.tag === 'body' ? 'ua' : '0', 'margin-right': box.tag === 'body' ? 'ua' : '0',

@@ -5,7 +5,7 @@ export const boxTags = new Set('html body button div main aside section article 
 // Form controls and images have UA intrinsic sizes and padding: checked only with resets and explicit sizes.
 export const controlTags = new Set(['button', 'input', 'select', 'textarea']), replacedTags = new Set(['img', 'input', 'select', 'textarea']);
 const ancestorTags=new Set([...boxTags].filter(tag=>!['button', 'img', 'input', 'select', 'textarea'].includes(tag)));
-const supportedOptions = new Set(['name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility']);
+const supportedOptions = new Set(['name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility', 'images']);
 const supportedContract = new Set(['minInlineSize', 'maxInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock', 'font', 'textMetrics', 'textRuns']);
 function finiteSize(value, name) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1_000_000) throw new Error(`Invalid layout ${name}`);
@@ -14,6 +14,9 @@ function finiteSize(value, name) {
 export function validateOptions(options) {
   if (!options || Object.keys(options).some(key => !supportedOptions.has(key))) throw new Error('Invalid layout options');
   if (typeof options.css !== 'string' || options.css.length > 1_000_000) throw new Error('Invalid layout CSS input');
+  // images: the natural size of static image files by src (read at build time), {src: {width, height}} in pixels.
+  if (options.images !== undefined && (!options.images || typeof options.images !== 'object' || Array.isArray(options.images) || Object.keys(options.images).length > 1024
+    || Object.values(options.images).some(size => !size || Object.keys(size).some(k => !['width', 'height'].includes(k)) || !Number.isSafeInteger(size.width) || !Number.isSafeInteger(size.height) || size.width <= 0 || size.height <= 0))) throw new Error('Invalid images option: {src: {width, height}} with positive integer pixels');
   if (options.name!==undefined && (typeof options.name!=='string' || !/^[A-Za-z][A-Za-z0-9_.-]{0,127}$/.test(options.name))) throw new Error('Invalid layout subject name');
   if (options.scrollbars!==undefined) {
     if (!Array.isArray(options.scrollbars) || !options.scrollbars.length || options.scrollbars.length>8 || new Set(options.scrollbars.map(p=>p?.name)).size!==options.scrollbars.length) throw new Error('Invalid scrollbar profiles');
