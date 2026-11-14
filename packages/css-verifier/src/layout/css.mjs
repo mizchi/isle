@@ -420,6 +420,9 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   // fieldset/legend: UA border, padding, margin and min-inline-size until reset.
   if (box.tag === 'fieldset') { for (const side of ['left', 'right', 'top', 'bottom']) { values[`padding-${side}`] = 'ua'; values[`border-${side}`] = 'ua'; } values['margin-left'] = 'ua'; values['margin-right'] = 'ua'; values['min-inline-size'] = 'ua'; }
   if (box.tag === 'legend') { values['padding-left'] = 'ua'; values['padding-right'] = 'ua'; }
+  // Chromium's UA margin on checkboxes and radios (3px 3px 3px 4px; radio 3px 3px 0 5px, measured) applies whatever
+  // their appearance: it stays 'ua' until the author sets the margin.
+  if (!box.pseudo && box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType)) for (const side of ['left', 'right', 'top', 'bottom']) values[`margin-${side}`] = 'ua';
   // The control's UA box rules are not its ::before/::after's.
   if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag)) {
     for(const side of ['left','right','top','bottom']) {values[`padding-${side}`]='ua';values[`border-${side}`]='ua';}

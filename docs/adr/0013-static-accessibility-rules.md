@@ -113,7 +113,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | video-caption | 描画される video に kind=captions/subtitles の track がない(SC 1.2.2) | E_A11Y_VIDEO_CAPTION |
 | autoplay-audio | muted でない autoplay の video/audio(SC 1.4.2) | W_A11Y_AUTOPLAY_AUDIO(警告) |
 | document-title / meta-viewport | 検査付き Vite build で配信する文書:空でない `<title>` がない(SC 2.4.2)、`user-scalable=no` か `maximum-scale < 2`(SC 1.4.4) | E_A11Y_DOCUMENT_TITLE / E_A11Y_META_VIEWPORT |
-| target-size | SC 2.5.8:24px 未満の操作対象で、border box の中心に置いた 24px の円が他の操作対象の box か、他の小さい対象の円と交わる(spacing 例外を満たさない)。pointer を受ける absolute の `::before`/`::after` が border box を含む区間(当たり判定を広げる `inset: -4px` など)では、その箱を対象の大きさとする(grid の要素と、button などの block の葉。葉の absolute な疑似要素は最も近い positioned の箱に対して配置する。後から描かれる別の対象がその一部に重なる区間は、残りが矩形でないので Unknown)。Chromium の照合は小さい対象の周りを elementFromPoint で走査した範囲 | E_A11Y_TARGET_SIZE
+| target-size | SC 2.5.8:24px 未満の操作対象で、border box の中心に置いた 24px の円が他の操作対象の box か、他の小さい対象の円と交わる(spacing 例外を満たさない)。pointer を受ける absolute の `::before`/`::after` が border box を含む区間(当たり判定を広げる `inset: -4px` など)では、その箱を対象の大きさとする(grid の要素と、button などの block の葉。葉の absolute な疑似要素は最も近い positioned の箱に対して配置する。後から描かれる別の対象がその一部に重なる区間は、残りが矩形でないので Unknown)。Chromium の照合は小さい対象の周りを elementFromPoint で走査した範囲。user agent control の例外(SC 2.5.8・2.5.5):appearance が auto のままで、大きさ・padding・border・min を作者が変えていない checkbox・radio は Chromium が 13×13 で描き(測定。accessibility の検査でだけその大きさで配置する)、大きさを問わない。checkbox・radio の UA の margin(3px 3px 3px 4px、radio は 3px 3px 0 5px、appearance によらない)は作者が margin を指定するまで Unknown。UA が描く control は checked-indicator と field-boundary(SC 1.4.11 の UA の例外)からも外す | E_A11Y_TARGET_SIZE
 
 ### target-size の円(非線形)の扱い
 

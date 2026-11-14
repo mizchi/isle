@@ -1085,7 +1085,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   // checked-indicator (SC 1.4.11, 1.4.1): a custom checkbox/radio (appearance: none) must look different when checked.
   // Nothing changing is an error; a change only of the fill needs 3:1 between the two fills. A ::before/::after generated
   // only in one state (:checked::before, absolutely positioned) is an indicator too.
-  for (const row of geometry.filter(row => row.checkedStates && visible(row) && !hiddenFrom(row.path) && row.chain && !row.chain.some(layer => /^(?:0|0?\.0+|0%)$/.test(String(layer.opacity).trim())))) {
+  for (const row of geometry.filter(row => row.checkedStates && !row.uaControl && visible(row) && !hiddenFrom(row.path) && row.chain && !row.chain.some(layer => /^(?:0|0?\.0+|0%)$/.test(String(layer.opacity).trim())))) {
     const [checked, unchecked] = row.checkedStates;
     for (const on of checked) for (const off of unchecked) {
       const region = intersect(intersect(row.region, on.region), off.region);
@@ -1128,7 +1128,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   // A field at opacity 0 (itself or an ancestor) is deliberately invisible: another element draws it (custom checkboxes);
   // focus-transparent covers that pattern.
   const invisibleField = row => row.chain.some(layer => /^(?:0|0?\.0+|0%)$/.test(String(layer.opacity).trim()));
-  for (const row of geometry.filter(row => textInput(row.box) && visible(row) && !hiddenFrom(row.path) && !row.box.nativeStates?.disabled && row.chain && !invisibleField(row))) {
+  for (const row of geometry.filter(row => textInput(row.box) && !row.uaControl && visible(row) && !hiddenFrom(row.path) && !row.box.nativeStates?.disabled && row.chain && !invisibleField(row))) {
     const clear = { color: '#000', backgroundColor: 'transparent', backgroundImage: 'none', opacity: '1' };
     const around = backdrop([...row.chain.slice(0, -1), clear]), fill = backdrop([...row.chain.slice(0, -1), { ...row.chain.at(-1), color: '#000' }]);
     if (around.unknown || fill.unknown) { report(unknowns, 'U_A11Y_FIELD_BOUNDARY', 'unknown', `${row.box.label}: ${(around.unknown ?? fill.unknown).replace('the text', 'the field')}`, row, row.region, { rule: 'field-boundary' }); continue; }
@@ -1289,6 +1289,8 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   const rowsOf = path => { const rows = exposed.filter(row => row.path === path); return rows.length ? rows : geometry.filter(row => row.path === path); };
   for (const target of new Set([...violations.keys(), ...undecided.keys()])) {
     const row = rowsOf(target)[0], box = row.box;
+    // The user-agent control exception (SC 2.5.8 and 2.5.5): its size is the browser's, not the author's.
+    if (row.uaControl) { for (const hit of [...(violations.get(target) ?? []), ...(undecided.get(target) ?? [])]) exempted.push({ code: 'E_A11Y_TARGET_SIZE', rule: 'target-size', box: box.label, path: target, ...ranges(hit.region), reason: 'user agent control: the browser sets its size' }); continue; }
     let pieces = violations.get(target) ?? [], doubtfulPieces = undecided.get(target) ?? [];
     const describe = hit => hit.other ? `its ${targetSize}px circle meets ${hit.other.box.label}` : targetLevel === 'AAA' ? `SC 2.5.5 allows no spacing exception` : '';
     if (box.essential === 'dynamic' || box.equivalent === 'dynamic') {

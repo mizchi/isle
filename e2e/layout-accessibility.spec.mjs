@@ -150,6 +150,8 @@ const cases = [
   {name: 'visual-presentation-aaa', html: '<div class="page"><p class="a">Tight lines wrap here</p><p class="b">Justified lines wrap here</p><p class="c">Loose lines wrap here</p><div class="j"><p class="d">Inherited justify</p></div></div>',
     css: `.page{display:grid;grid-template-columns:300px;background:#fff;color:#000;${type}}.a,.b,.c,.d{display:block;block-size:48px}.a{line-height:20px}.b,.c,.d{line-height:24px}.b,.j{text-align:justify}.j{display:grid;grid-template-columns:minmax(0,1fr)}`,
     accessibility: {contrast: 'AAA'}, boxes: {'.a': label, '.b': label, '.c': label, '.d': label}},
+  {name: 'native-checkboxes', html: '<div class="page"><div class="row"><input class="n1" type="checkbox" aria-label="A"><input class="n2" type="checkbox" aria-label="B"><input class="s1" type="checkbox" aria-label="C"><input class="s2" type="checkbox" aria-label="D"></div></div>',
+    css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:40px;background:#fff;color:#000}.row{display:grid;grid-template-columns:13px 13px 13px 13px;column-gap:2px}.s1,.s2{${button}inline-size:13px;block-size:13px;border:1px solid #000;background:#fff}.s1:checked,.s2:checked{background:#000}`},
   {name: 'focus-relayout', html: '<div class="page"><div class="c1"><button class="b1" aria-label="A"></button><div class="cover"></div></div><div class="c2"><button class="b2" aria-label="B"></button><div class="cover"></div></div></div>',
     css: `.page{display:grid;grid-template-columns:300px;grid-auto-rows:auto;row-gap:20px;background:#fff;color:#000}.c1,.c2{position:relative;display:grid;grid-template-columns:minmax(0,1fr)}.b1,.b2{${button}inline-size:100px;background:#eee}.b1{block-size:30px}.b1:focus{block-size:40px}.b2{block-size:40px}.b2:focus{block-size:20px}.cover{position:absolute;left:0;top:0;inline-size:200px;block-size:30px;background:#333}`, skip: ['occluded-target', 'target-overlap']},
   {name: 'focus-appearance-aaa', html: '<div class="page"><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button></div>',
@@ -345,6 +347,8 @@ async function runtime(page, sample) {
     };
     const out = [];
     for (const t of targets) {
+      // The user-agent control exception: a checkbox or radio the browser still draws (appearance not none).
+      if (t.n.matches('input[type=checkbox], input[type=radio]') && getComputedStyle(t.n).appearance !== 'none') continue;
       if (!failing(t) || t.n.hasAttribute('data-a11y-essential')) continue;
       const equivalent = t.n.dataset.a11yEquivalent && targets.find(o => o.n.id === t.n.dataset.a11yEquivalent);
       if (equivalent && !failing(equivalent)) continue;
@@ -688,7 +692,7 @@ async function runtime(page, sample) {
   // Checked indicator: screenshots of a checkbox/radio unchecked and checked; flagged when no pixel differs by 3:1.
   for (const element of elements) {
     const box = await (await handle(element.path)).evaluate(node => {
-      if (!node.matches('input[type=checkbox], input[type=radio]') || !node.getClientRects().length || getComputedStyle(node).visibility !== 'visible') return null;
+      if (!node.matches('input[type=checkbox], input[type=radio]') || !node.getClientRects().length || getComputedStyle(node).visibility !== 'visible' || getComputedStyle(node).appearance !== 'none') return null;
       for (let a = node; a; a = a.parentElement) if (Number(getComputedStyle(a).opacity) === 0) return null;
       const r = node.getBoundingClientRect(); return r.width >= 1 && r.height >= 1 && r.right > 0 && r.bottom > 0 ? {x: r.left, y: r.top, width: r.width, height: r.height, was: node.checked} : null;
     });
@@ -705,6 +709,8 @@ async function runtime(page, sample) {
     const geo = await (await handle(element.path)).evaluate(node => {
       const text = node.matches('select, textarea') || (node.matches('input') && !['hidden', 'range', 'color', 'file', 'submit', 'reset', 'button', 'image'].includes(node.type));
       if (!text || node.disabled || !node.getClientRects().length || getComputedStyle(node).visibility !== 'visible') return null;
+      // A control the browser still draws (appearance not none) has the UA's boundary, exempt from SC 1.4.11.
+      if (node.matches('input[type=checkbox], input[type=radio]') && getComputedStyle(node).appearance !== 'none') return null;
       for (let a = node; a; a = a.parentElement) if (Number(getComputedStyle(a).opacity) === 0) return null; // drawn by another element
       const r = node.getBoundingClientRect(), s = getComputedStyle(node), cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
       const sides = {top: [[cx, r.top + 0.5], [cx, r.top - 3]], bottom: [[cx, r.bottom - 0.5], [cx, r.bottom + 3]], left: [[r.left + 0.5, cy], [r.left - 3, cy]], right: [[r.right - 0.5, cy], [r.right + 3, cy]]};

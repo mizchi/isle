@@ -1598,3 +1598,19 @@ test('max-block-size in px caps an explicit height and a leaf\'s content height'
   // An auto-height container with children is not modeled.
   assert.equal(run(page([{tag: 'div', classes: ['w'], children: [{tag: 'div', classes: ['x']}]}]), pageCSS('.page { grid-auto-rows: auto; }\n.w { display: grid; max-block-size: 50px; }\n.x { block-size: 80px; }')).status, 'unknown');
 });
+
+test('target-size: the user-agent control exception for an unstyled checkbox (SC 2.5.8 and 2.5.5)', () => {
+  const tree = page([{tag: 'div', classes: ['row'], children: [{tag: 'input', classes: ['c1'], inputType: 'checkbox', named: true, focusable: true}, {tag: 'input', classes: ['c2'], inputType: 'checkbox', named: true, focusable: true}]}]);
+  const css = extra => pageCSS(`.page { background: #fff; grid-auto-rows: 40px; }\n.row { display: grid; grid-template-columns: 13px 13px; column-gap: 2px; }\n.c1, .c2 { margin: 0; }\n${extra}`);
+  for (const level of ['AA', 'AAA']) {
+    const r = run(tree, css(''), {accessibility: {targetLevel: level}});
+    assert.notEqual(r.status, 'unknown', JSON.stringify(r.diagnostics));
+    assert.equal(find(r, 'E_A11Y_TARGET_SIZE').length, 0, level);
+    assert.ok(r.accessibility.exempted.some(e => /user agent control/.test(e.reason)), level);
+    assert.equal(r.sizes.find(s => s.box === '.c1').inlineSize.constant, '13');
+  }
+  // Restyled (appearance: none) it is the author's target again; the UA margin stays Unknown until reset.
+  assert.equal(find(run(tree, css('.c1, .c2 { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; box-sizing: border-box; inline-size: 13px; block-size: 13px; }')), 'E_A11Y_TARGET_SIZE').length, 2);
+  // Without a margin reset (no reset sheet) the UA margin of the checkbox is not modeled.
+  assert.equal(analyzeLayout(tree, {name: 'Page', css: '* { box-sizing: border-box; }\n' + pageCSS('.page { grid-auto-rows: 40px; }\n.row { display: grid; grid-template-columns: 20px 20px; }'), viewport: domain, accessibility: true}).status, 'unknown');
+});
