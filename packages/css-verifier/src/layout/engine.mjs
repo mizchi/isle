@@ -9,7 +9,7 @@ import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
 import {textFontMismatch, textLinesMismatch, textLangMismatch, fittingLength, fittingLines} from './text-font.mjs';
 import {validateFlexContainer, flexItem, crossAlignment, distribution, flexUnknown} from './flex.mjs';
-import {judgeIntegrity} from './integrity.mjs';
+import {judgeIntegrity, intersect } from './integrity.mjs';
 import {judgeAccessibility, accessibilityRules, paintFacts} from './accessibility.mjs';
 import {fact, sizeChain, sizeProperties, trackProperties, contractFact, explanation} from './explain.mjs';
 
@@ -177,7 +177,6 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto'))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
     // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
-    if (/^scale/.test(style.transform) && ((box.children ?? []).length || box.inline?.length)) throw Object.assign(new Error('scale is modeled on leaf boxes only (it would scale every descendant)'), { code: 'U_LAYOUT_CSS' });
     if (style.transform !== 'none' && !options.accessibility && !options.integrity) throw Object.assign(new Error(`transform ${style.transform} moves the painted box; it is modeled for the accessibility and integrity checks only`), { code: 'U_LAYOUT_CSS' });
     if (['left', 'right', 'inline-start', 'inline-end'].includes(style.float)) { issue('E_LAYOUT_FLOAT', 'float is forbidden in checked layout', box, region); return false; }
     if (style.float !== 'none') throw new Error('Unsupported float value');
@@ -578,7 +577,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (box.inline?.length) inlineContent(box, style, region, [...parents, { box, style }], geometry.at(-1).chain, geometry.at(-1));
       const shown = scaled(style, origin, inline, blockSize);
       const rect=shown.origin && shown.block ? {inlineStart:affine(shown.origin.inline),blockStart:affine(shown.origin.block),inlineSize:affine(shown.inline),blockSize:affine(shown.block)} : null;
-      sizes.push({ box: box.label, path: box.path, position:style.position, ...positioned,...(rect ? {rect} : {}), boxSizing: style['box-sizing'], boxSizingSource: style.$sources['box-sizing'],
+      const sizeRow = { box: box.label, path: box.path, position:style.position, ...positioned,...(rect ? {rect} : {}), boxSizing: style['box-sizing'], boxSizingSource: style.$sources['box-sizing'],
         paddingInlineSize:affine(diff(inline,scalar(add(px(style['border-left']),px(style['border-right']))))),
         ...(blockSize ? {paddingBlockSize:affine(diff(blockSize,scalar(add(px(style['border-top']),px(style['border-bottom'])))))} : {}),
         // Explicit absolute sizing determines its public allocation independently
@@ -586,7 +585,27 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         allocatedInlineSize:affine(style.position==='absolute' ? inline : available.inline),
         ...(available.block ? {allocatedBlockSize:affine(style.position==='absolute' ? blockSize : available.block)} : {}),
         inlineSize:affine(inline),contentInlineSize:affine(contentInline),
-        ...(blockSize ? {blockSize:affine(blockSize)} : {}),...(contentBlock ? {contentBlockSize:affine(contentBlock)} : {}),...ranges(region) });
+        ...(blockSize ? {blockSize:affine(blockSize)} : {}),...(contentBlock ? {contentBlockSize:affine(contentBlock)} : {}),...ranges(region) };
+      Object.defineProperty(sizeRow, '$shown', { value: { region, ...shown }, writable: true, enumerable: false });
+      sizes.push(sizeRow);
+      // A scale maps the painted descendants too: r ↦ C + s·(r − C) about the box's centre C (affine, s constant).
+      const scale = /^scale\(([\d.]+), ([\d.]+)\)$/.exec(style.transform ?? 'none');
+      if (scale && (box.children.length || box.inline?.length) && origin && blockSize && box.$starts) {
+        const sx = q(scale[1]), sy = q(scale[2]), half = div(one, q(2));
+        const centre = { inline: sum(origin.inline, times(inline, half)), block: sum(origin.block, times(blockSize, half)) };
+        const map = rect => rect?.origin ? { origin: { inline: sum(centre.inline, times(diff(rect.origin.inline, centre.inline), sx)), block: sum(centre.block, times(diff(rect.origin.block, centre.block), sy)) },
+          inline: times(rect.inline, sx), block: rect.block ? times(rect.block, sy) : rect.block } : rect;
+        const inside = row => isDescendant(box.path, row.path) && intersectRegions(row.region, region);
+        for (const row of geometry.slice(box.$starts.geometry).filter(inside)) {
+          Object.assign(row, map(row));
+          if (row.bounds) row.bounds = row.bounds.map(piece => ({ ...piece, outer: piece.outer && map(piece.outer), inner: piece.inner && map(piece.inner) }));
+        }
+        for (const row of sizes.slice(box.$starts.sizes).filter(row => row.$shown && isDescendant(box.path, row.path) && intersectRegions(row.$shown.region, region))) {
+          const moved = map(row.$shown);
+          row.$shown = { ...row.$shown, ...moved };
+          if (row.rect && moved.origin && moved.block) row.rect = { inlineStart: affine(moved.origin.inline), blockStart: affine(moved.origin.block), inlineSize: affine(moved.inline), blockSize: affine(moved.block) };
+        }
+      }
     }
     if (!box.children.length) {
       if (box.text && contract.minInlineSize === undefined && (contract.overflow ?? 'fit') === 'fit') unknown('U_LAYOUT_INTRINSIC', 'Text needs a minInlineSize bound or an explicit overflow policy', undefined, box);
@@ -606,7 +625,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // Root-relative border coordinates. Scroll offsets/gutter placement and shared
   // subgrid line offsets are deliberately outside the first transition profile.
   // A px translate moves the box (and, through its origin, its descendants) after layout.
-  // A scale (leaves only) shrinks or grows the painted rectangle about its centre: (origin, size) after it.
+  const isDescendant = (a, b) => b.startsWith(a + '/');
+  const intersectRegions = (a, b) => Boolean(intersect(a, b));
+  // A scale shrinks or grows the painted rectangle about its centre: (origin, size) after it.
   function scaled(style, origin, inline, blockSize) {
     const m = /^scale\(([\d.]+), ([\d.]+)\)$/.exec(style.transform ?? 'none');
     if (!m) return { origin, inline, block: blockSize };
@@ -1001,6 +1022,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function solve(box, available, region, parents = [], inherited, emit = true) {
     let results = [];
+    if (emit) box.$starts = { geometry: geometry.length, sizes: sizes.length };
     try {
       // A table with measured rowspan cells whose width varies: split the region where a cell's line count changes.
       const tableStates = state => {
