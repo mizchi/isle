@@ -18,8 +18,8 @@ const geometry = new Set(['display', 'appearance', 'box-sizing', 'inline-size', 
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
 const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-(?:color|radius)|outline-(?:color|offset)|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|transition(?:-(?:property|duration|delay|timing-function|behavior))?|animation-(?:delay|direction|fill-mode|timing-function)|list-style-(?:position|image))$/;
-// Properties a :hover/:focus rule may set: they repaint without changing geometry.
-const statePaint = /^(?:color|background(?:-.*)?|border-(?:color|radius)|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?|color-scheme)$/;
+// Properties a :hover/:focus rule may set: they repaint (or restack) without changing geometry.
+const statePaint = /^(?:z-index|color|background(?:-.*)?|border-(?:color|radius)|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?|color-scheme)$/;
 // Paint and hit-testing facts for the accessibility rules (never geometry).
 export const paintProperties = ['color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'color-scheme', 'z-index', 'isolation', 'transform'];
 const inheritedPaint = ['color', 'visibility', 'pointer-events', 'cursor', 'list-style-type', 'color-scheme'];

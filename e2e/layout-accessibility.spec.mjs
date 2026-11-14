@@ -132,8 +132,8 @@ const cases = [
     boxes: {'.l1': label, '.l2': label, '.s': label}},
   {name: 'fixed-header-focus', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><button class="b3" aria-label="C"></button><div class="tall"></div></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:fixed;top:0;left:0;inline-size:100%;block-size:60px;background:#333}.gap{block-size:1000px}.tall{block-size:1500px}.b1,.b2,.b3{${button}inline-size:100px;block-size:40px}.b2{scroll-margin-top:60px}.b3{block-size:80px}`},
-  {name: 'skip-link-under-cover', html: '<div class="page"><a class="s" href="#m" aria-label="Skip"></a><div class="cover"></div><main class="m" id="m"></main></div>',
-    css: `.page{position:relative;display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff;color:#000}.s{position:absolute;left:-9999px;top:0;inline-size:100px;block-size:30px;display:block;color:#000}.s:focus{left:0}.cover{position:absolute;left:0;top:0;inline-size:200px;block-size:30px;background:#333}.m{display:block}`},
+  {name: 'skip-link-under-cover', html: '<div class="page"><a class="s" href="#m" aria-label="Skip"></a><a class="s2" href="#m" aria-label="Skip"></a><div class="cover"></div><main class="m" id="m"></main></div>',
+    css: `.page{position:relative;display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff;color:#000}.s,.s2{position:absolute;left:-9999px;top:0;inline-size:100px;block-size:30px;display:block;color:#000}.s2{top:30px}.s:focus{left:0}.s2:focus{left:0;z-index:1}.cover{position:absolute;left:0;top:0;inline-size:200px;block-size:60px;background:#333}.page{grid-auto-rows:60px}.m{display:block}`},
   {name: 'skip-link-offscreen', html: '<div class="page"><a class="s1" href="#m" aria-label="Skip"></a><a class="s2" href="#m" aria-label="Skip"></a><a class="s3" href="#m" aria-label="Skip"></a><main class="m" id="m"></main></div>',
     css: `.page{position:relative;display:grid;grid-template-columns:200px;grid-auto-rows:30px;background:#fff;color:#000}.s1,.s2,.s3{position:absolute;top:0;inline-size:100px;block-size:30px;display:block;color:#000}.s1,.s3{left:-9999px}.s2{left:-50px}.s3{top:40px}.s3:focus{left:0}.m{display:block}`},
   {name: 'focusable-without-role', html: '<div class="page"><div class="a" tabindex="0"></div><div class="b" tabindex="0" role="button" aria-label="B"></div><span class="c" tabindex="-1"></span><div class="d" tabindex="0" role="region" aria-label="D"></div></div>',
@@ -245,10 +245,13 @@ async function runtime(page, sample) {
       if (['auto', 'scroll'].includes(style.overflowX) && n.scrollWidth > n.clientWidth && !focusable(n) && ![...n.querySelectorAll('*')].some(focusable)) out.scroll.push(pathOf(n));
       if (innerWidth <= 320 && shown(n) && n.getBoundingClientRect().right > innerWidth) out.reflow.push(pathOf(n));
       if (!focusable(n)) continue;
+      // Measured while focused (a :focus rule may move or restack it), without scrolling.
+      n.focus({preventScroll: true});
       const r = n.getBoundingClientRect();
-      if (r.width === 0 || r.height === 0) { out.area.push(pathOf(n)); continue; }
+      if (r.width === 0 || r.height === 0) { n.blur(); out.area.push(pathOf(n)); continue; }
       const points = [[r.left + 0.5, r.top + 0.5], [r.right - 0.5, r.top + 0.5], [r.left + 0.5, r.bottom - 0.5], [r.right - 0.5, r.bottom - 0.5], [(r.left + r.right) / 2, (r.top + r.bottom) / 2]];
       const covers = points.map(([x, y]) => document.elementFromPoint(x, y));
+      n.blur();
       if (covers.every(c => c && !n.contains(c) && c === covers[0] && getComputedStyle(c).backgroundColor !== 'rgba(0, 0, 0, 0)')) out.obscured.push(pathOf(n));
     }
     return out;

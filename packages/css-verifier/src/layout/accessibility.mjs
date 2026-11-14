@@ -376,7 +376,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   const rowAt = path => everything.find(g => g.path === path);
   const parentPath = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '';
   const createsContext = r => (r.zIndex !== null && r.zIndex !== undefined) || !opaqueValue(r.paint.opacity) || r.paint.isolation === 'isolate' || (r.paint.transform ?? 'none') !== 'none';
-  const contexts = row => { const out = []; for (let p = row.path; p; p = parentPath(p)) { const r = rowAt(p); if (r && createsContext(r)) out.unshift(r); } return out; };
+  const contexts = row => { const out = []; for (let p = row.path; p; p = parentPath(p)) { const r = p === row.path ? row : rowAt(p); if (r && createsContext(r)) out.unshift(r); } return out; };
   // The nearest positioned ancestor-or-self strictly inside `within` (a context path, or '' for the root).
   const layerIn = (row, within) => { for (let p = row.path; p && p !== within; p = parentPath(p)) { const r = rowAt(p); if (r && r.position !== 'static') return p; } return null; };
   const keyIn = (row, representative, within) => {
@@ -553,13 +553,14 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
 
   // Where a focusable box is while focused: a :focus rule that moves it by its insets (stateGeometry) splits its region
   // into the focused origin there and the base origin elsewhere; an unmodeled move is { unknown: true }.
+  // Its focused z-index (a :focus rule may restack it) comes along as `zIndex`.
   const focusedPieces = base => {
-    const moved = (base.focusStates ?? []).filter(state => state.origin || state.originUnknown);
-    if (!moved.length) return [{ region: base.region, origin: base.origin }];
-    return [...moved.map(state => ({ region: intersect(base.region, state.region), origin: state.origin, unknown: state.originUnknown })),
-      ...moved.reduce((rest, state) => rest.flatMap(r => subtract(r, state.region)), [base.region]).map(region => ({ region, origin: base.origin }))].filter(piece => piece.region);
+    const changed = (base.focusStates ?? []).filter(state => state.origin || state.originUnknown || state.zIndex !== undefined);
+    if (!changed.length) return [{ region: base.region, origin: base.origin, zIndex: base.zIndex }];
+    return [...changed.map(state => ({ region: intersect(base.region, state.region), origin: state.origin ?? base.origin, unknown: state.originUnknown, zIndex: state.zIndex !== undefined ? state.zIndex : base.zIndex })),
+      ...changed.reduce((rest, state) => rest.flatMap(r => subtract(r, state.region)), [base.region]).map(region => ({ region, origin: base.origin, zIndex: base.zIndex }))].filter(piece => piece.region);
   };
-  const focusedRows = rows => rows.flatMap(base => focusedPieces(base).filter(piece => !piece.unknown && piece.origin).map(piece => ({ ...base, region: piece.region, origin: piece.origin })));
+  const focusedRows = rows => rows.flatMap(base => focusedPieces(base).filter(piece => !piece.unknown && piece.origin).map(piece => ({ ...base, region: piece.region, origin: piece.origin, zIndex: piece.zIndex })));
 
   // focus-clipped: overflow: clip does not scroll a focused descendant into view (hidden does; measured), so a
   // focusable box entirely outside the clip edge (its padding box) on a clipped axis can never be seen focused.

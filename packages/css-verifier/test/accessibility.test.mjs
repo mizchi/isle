@@ -1298,7 +1298,8 @@ test('the focus rules judge a skip link where its :focus rule moves it', () => {
   assert.deepEqual(find(run(tree, css('.skip:focus { left: 0; }')), 'E_A11Y_FOCUS_OBSCURED').map(d => d.box), ['.skip']);
   assert.equal(find(run(tree, css('.skip:focus { left: 0; }')), 'E_A11Y_FOCUS_OFFSCREEN').length, 0);
   assert.equal(find(run(tree, css('')), 'E_A11Y_FOCUS_OBSCURED').length, 0);
-  // A cover without paint hides nothing; z-index is not a state-paint property, so moving and restacking is Unknown.
+  // A cover without paint hides nothing; restacked above the cover once focused, it is not obscured either.
   assert.equal(find(run(tree, css('.skip:focus { left: 0; }\n.cover { background: transparent; }')), 'E_A11Y_FOCUS_OBSCURED').length, 0);
-  assert.equal(run(tree, css('.skip:focus { left: 0; z-index: 1; }')).status, 'unknown');
+  assert.equal(find(run(tree, css('.skip:focus { left: 0; z-index: 1; }')), 'E_A11Y_FOCUS_OBSCURED').length, 0);
+  assert.equal(find(run(tree, css('.skip:focus { left: 0; z-index: -1; }')), 'E_A11Y_FOCUS_OBSCURED').length, 1);
 });
