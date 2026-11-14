@@ -784,7 +784,7 @@ test('clickable-look, list-style semantics, blink, dl, accesskeys, ismap and ari
   assert.deepEqual(warn(run(keys, css('.a, .b { display: block; }')), 'W_A11Y_ACCESSKEY').map(d => d.box), ['.b']);
   assert.deepEqual(warn(run(page([{tag: 'img', classes: ['m'], alt: 'map', ismap: true}]), css('.m { display: block; inline-size: 20px; block-size: 20px; }')), 'W_A11Y_ISMAP').map(d => d.box), ['.m']);
   const hiddenBody = {tag: 'body', classes: ['page'], ariaHidden: true, children: [{tag: 'div', classes: ['x']}]};
-  assert.deepEqual(find(run(hiddenBody, '.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 20px; }'), 'E_A11Y_ARIA_HIDDEN_BODY').map(d => d.box), ['.page']);
+  assert.deepEqual(warn(run(hiddenBody, '.page { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 20px; }'), 'W_A11Y_ARIA_HIDDEN_BODY').map(d => d.box), ['.page']);
 });
 
 test('color-scheme resolves author Canvas/CanvasText in the used scheme', () => {

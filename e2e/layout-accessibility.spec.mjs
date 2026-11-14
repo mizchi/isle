@@ -511,3 +511,23 @@ for (const sample of cases) {
     table.push(row);
   });
 }
+
+// aria-hidden-body: the root is the body itself. Oracle: Chromium's full AX tree, which ignores aria-hidden on body
+// (the content stays exposed); the static rule warns because other user agents honor it.
+for (const hidden of [true, false]) {
+  test(`aria-hidden-body (${hidden ? 'hidden' : 'shown'}): static agrees with Chromium's AX tree`, async ({page}) => {
+    const body = `<body class="page"${hidden ? ' aria-hidden="true"' : ''}><main class="m"><button class="b" aria-label="Go"></button></main></body>`;
+    const css = `${reset}.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:40px;background:#fff}.m{display:grid;grid-template-columns:40px;grid-template-rows:40px}.b{${button}}`;
+    const report = analyzeHTML(body, {name: 'Page', css, viewport: {min: 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true});
+    expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+    const flagged = report.accessibility.warnings.some(d => d.code === 'W_A11Y_ARIA_HIDDEN_BODY');
+    // The other rules keep the button exposed: it is named, so no name finding either way.
+    expect(report.diagnostics.filter(d => d.code === 'E_A11Y_NAME')).toEqual([]);
+    await page.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><style>${css}</style></head>${body}</html>`);
+    const client = await page.context().newCDPSession(page);
+    const {nodes} = await client.send('Accessibility.getFullAXTree');
+    const exposed = nodes.some(n => !n.ignored && ['main', 'button'].includes(n.role?.value));
+    expect(flagged).toBe(hidden);
+    expect(exposed, 'Chromium keeps the content of an aria-hidden body exposed').toBe(true);
+  });
+}

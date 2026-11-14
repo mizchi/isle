@@ -67,7 +67,7 @@
 //   definition-list  → E_A11Y_DL                dl children other than dt/dd/div groups, or dt/dd outside dl
 //   accesskeys       → W_A11Y_ACCESSKEY         the same accesskey on more than one element
 //   server-side-image-map → W_A11Y_ISMAP       img ismap needs a pointer (SC 2.1.1)
-//   aria-hidden-body → E_A11Y_ARIA_HIDDEN_BODY  aria-hidden="true" on body hides the whole document
+//   aria-hidden-body → W_A11Y_ARIA_HIDDEN_BODY  aria-hidden="true" on body (ignored by Chromium; hides the document elsewhere)
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -285,7 +285,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   const boxes = new Map(geometry.map(row => [row.path, row.box]));
   // aria-hidden on any ancestor in the box tree (display: contents elements have no geometry row).
   const treeBoxes = new Map(); (function walk(box) { treeBoxes.set(box.path, box); for (const child of [...(box.children ?? []), ...(box.inline ?? [])]) walk(child); })(root);
-  const hiddenFrom = path => { for (let p = path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') if (treeBoxes.get(p)?.ariaHidden) return true; return false; };
+  const hiddenFrom = path => { for (let p = path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') { const b = treeBoxes.get(p); if (b?.ariaHidden && !['body', 'html'].includes(b.tag)) return true; } return false; };
 
   // accessible-name: no name attribute, and no visible text rendered inside.
   // aria-labelledby names through the text of the referenced elements, rendered or not (accname 2.B).
@@ -966,8 +966,9 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { co
   // server-side-image-map: ismap sends pointer coordinates only.
   for (const row of geometry.filter(row => row.box.tag === 'img' && row.box.ismap && visible(row) && !hiddenFrom(row.path)))
     report(warnings, 'W_A11Y_ISMAP', 'warning', `${row.box.label} is a server-side image map (ismap); its regions cannot be reached by keyboard`, row, row.region, { rule: 'server-side-image-map' });
-  // aria-hidden-body: hides the document from assistive technology.
-  for (const box of treeBoxes.values()) if (box.tag === 'body' && box.ariaHidden === true) report(findings, 'E_A11Y_ARIA_HIDDEN_BODY', 'error', `${box.label} has aria-hidden="true", which hides the whole document`, whole(box), domain, { rule: 'aria-hidden-body' });
+  // aria-hidden-body: Chromium ignores aria-hidden on body (measured: the content stays in the AX tree), so the
+  // other rules keep it exposed; user agents that honor it hide the whole document.
+  for (const box of treeBoxes.values()) if (box.tag === 'body' && box.ariaHidden === true) report(warnings, 'W_A11Y_ARIA_HIDDEN_BODY', 'warning', `${box.label} has aria-hidden="true"; Chromium ignores it, but user agents that honor it hide the whole document`, whole(box), domain, { rule: 'aria-hidden-body' });
 
   return { findings: dedupe(findings), warnings: dedupe(warnings), unknowns: dedupe(unknowns), exempted: dedupe(exempted), notes };
 }

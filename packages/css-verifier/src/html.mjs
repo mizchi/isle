@@ -1,5 +1,5 @@
 import {accessibilityFacts} from './tree.mjs';
-import {parseFragment} from 'parse5';
+import {parse,parseFragment} from 'parse5';
 import {analyzeInput} from './analyze.mjs';
 
 /** A deliberately small static-HTML adapter, with no DOM or browser dependency. */
@@ -7,9 +7,11 @@ export function analyzeHTML(html,options) {
   if(typeof html!=='string' || html.length>1_000_000) throw new TypeError('Invalid HTML input');
   const diagnostics=[];
   const unknown=message=>diagnostics.push({code:'U_LAYOUT_HTML',severity:'unknown',message});
-  const fragment=parseFragment(html,{onParseError:error=>unknown(`HTML parse recovery: ${error.code}`)});
-  const roots=fragment.childNodes.filter(node=>node.tagName);
-  if(roots.length!==1 || fragment.childNodes.some(n=>n.nodeName==='#text' && n.value.trim())) throw new TypeError('Static HTML adapter requires a single root element');
+  // A body element as the root: parse as a document and check from body (its attributes, such as aria-hidden, count).
+  const asBody=/^\s*<body[\s>]/i.test(html);
+  const fragment=asBody ? parse(`<!doctype html><html><head></head>${html.trim()}</html>`,{onParseError:error=>unknown(`HTML parse recovery: ${error.code}`)}).childNodes.find(n=>n.tagName==='html').childNodes.find(n=>n.tagName==='body') : parseFragment(html,{onParseError:error=>unknown(`HTML parse recovery: ${error.code}`)});
+  const roots=asBody ? [fragment] : fragment.childNodes.filter(node=>node.tagName);
+  if(roots.length!==1 || !asBody && fragment.childNodes.some(n=>n.nodeName==='#text' && n.value.trim())) throw new TypeError('Static HTML adapter requires a single root element');
   let count=0;
   function convert(node,depth=0) {
     if(++count>2048 || depth>64) throw new TypeError('HTML box tree limit exceeded');
