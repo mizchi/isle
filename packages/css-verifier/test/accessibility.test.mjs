@@ -974,8 +974,10 @@ test('table cells with block children lay them out in block flow', () => {
   assert.equal(rect(alone, 'k2').blockStart.constant, '30');
   assert.equal(rect(alone, 'k2').inlineSize.constant, '50');
   assert.equal(rect(alone, 'o').blockSize.constant, '50');
-  // A taller neighbour: middle (the default) would move the content; top is modeled.
-  assert.equal(run(tree({}), css('.o { block-size: 90px; }'), {viewport: tableView}).status, 'unknown');
-  const top = run(tree({}), css('.o { block-size: 90px; }\n.c { vertical-align: top; }'), {viewport: tableView});
-  assert.equal(top.status, 'unknown'); // rows of cells with different block-size values stay Unknown without rowspan
+  // A taller row (both cells 90px): middle (the default) centres the 50px content, bottom puts it at the end.
+  const middle = run(tree({}), css('td { block-size: 90px; }'), {viewport: tableView});
+  assert.equal(middle.status, 'verified', JSON.stringify(middle.diagnostics));
+  assert.equal(rect(middle, 'k1').blockStart.constant, '20');
+  assert.equal(rect(run(tree({}), css('td { block-size: 90px; }\n.c { vertical-align: bottom; }'), {viewport: tableView}), 'k1').blockStart.constant, '40');
+  assert.equal(run(tree({}), css('td { block-size: 90px; }\n.c { vertical-align: baseline; }'), {viewport: tableView}).status, 'unknown');
 });

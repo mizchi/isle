@@ -169,10 +169,11 @@ span の2行目以降で別の rowspan が始まる行があればそこへ等�
 profile の境目で region を分け、各区間で高さを決める(320〜900px で Chromium と一致)。子要素のある auto の rowspan は Unknown。
 table-cell 以外の display にした td/th は匿名の cell に包まれ span が効かず(display: grid の rowspan cell が 40px ではなく 0px になるのを測定)、
 display: none の cell は列を消すので、どちらも Unknown にした(以前は grid の item として扱っていた:誤り)。
-block-level の子(block・grid・flex、static、float なし、margin 0)だけの cell は block flow で、それは start 揃えの1列の grid
-(`align-content: start`)と同じなので、そう置く。`vertical-align` が中身を動かさないことが条件:top か、cell が行の高さを決める
-(行の他の cell が空で高さ auto、table に rowspan なし)。高い行の中の middle・bottom と、text と子要素が混ざる cell(inline formatting)は Unknown。
-2つの table(行を決める cell と、全て top の cell)で Chromium と一致した。
+block-level の子(block・grid・flex、static、float なし、margin 0)だけの cell は block flow で、それを1列の grid
+に置き、`vertical-align` の top・middle・bottom を grid の `align-content` の start・center・end にする。grid の engine に
+`align-content: center | end`(高さの決まった grid で、伸ばさない行を余白の半分か全部だけずらす。溢れるときは負にずれる)を加えた。
+baseline(行全体の揃え)は cell が行の高さを決めるとき以外 Unknown、text と子要素が混ざる cell(inline formatting)も Unknown。
+行を決める cell、全て top の cell、高い行の middle・bottom の cell、grid の center・end(溢れる場合を含む)で Chromium と一致した。
 明示した行の track では cell は行に伸びる(Chromium の cell は行の高さになる)。
 table の cell は高さを超える内容で溢れず行が伸びるので、block 方向の内容の不足は E_LAYOUT_CONTENT ではなく U_LAYOUT_TABLE にした(以前は誤って溢れと報告していた)。
 **自動 table レイアウト**(`table-layout: auto`)は、内容が列を広げられないときだけ固定 table と同じになる(Chromium で測定):
