@@ -84,11 +84,15 @@ export function flexItem(style, { empty = false, axis = 'inline' } = {}) {
   // The automatic minimum is zero for empty boxes and scroll containers
   // (overflow other than visible/clip, §4.5); otherwise it depends on content.
   const scrollContainer = !['visible', 'clip'].includes(style['overflow-x']) || !['visible', 'clip'].includes(style['overflow-y']);
-  const automatic = style[n.min] === 'auto' && !empty && !scrollContainer;
+  // Size containment on the main axis (container-type: inline-size / size on a row's inline axis): the content
+  // contributes nothing, so the content size and the automatic minimum are zero (CSS Containment §3.2).
+  const contained = axis === 'inline' ? ['inline-size', 'size'].includes(style['container-type']) : style['container-type'] === 'size';
+  const automatic = style[n.min] === 'auto' && !empty && !scrollContainer && !contained;
   let base;
   if (zeroLength(basis)) base = q(0);
   else if (/^\d+(?:\.\d+)?px$/.test(basis)) base = px(basis);
   else if (basis === 'auto' && definite(style[n.size])) base = px(style[n.size]);
+  else if ((basis === 'auto' || basis === 'content') && style[n.size] === 'auto' && contained) base = q(0);
   else if ((basis === 'auto' || basis === 'content') && axis === 'block' && style[n.size] === 'auto') base = 'content';
   else if (basis === 'auto' || basis === 'content') unknown(`flex-basis: ${basis} with an auto ${n.label} uses the content size; give a px ${n.label} or basis`);
   else unknown(`flex-basis ${basis} is outside the subset`);

@@ -1148,6 +1148,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (['flex', 'inline-flex'].includes(style.display) && set('justify-items', 'normal')) reasons.push(['justify-items', 'it is display: flex, which ignores justify-items (use justify-content)']);
         // A main size under a non-auto flex-basis (flex: 1; width: 200px): flex-basis replaces it (inertMainSize).
         if (style.$inertMain) reasons.push([style.$inertMain.property, `flex-basis: ${style['flex-basis']} sets its main size instead (use flex: 1 1 auto, or flex-basis: ${style.$inertMain.value})`]);
+        // container-type: inline-size on a flex item sized by its content (auto width and basis, not growing): the
+        // containment drops the content's size, so it collapses to its padding and border.
+        if (inFlow && ['flex', 'inline-flex'].includes(parentDisplay) && !String(parents.at(-1).style['flex-direction']).startsWith('column') && ['inline-size', 'size'].includes(style['container-type'])
+          && style['inline-size'] === 'auto' && ['auto', 'content'].includes(String(style['flex-basis'])) && String(style['flex-grow']) === '0' && !layoutWarnings.some(w => w.code === 'W_LAYOUT_CONTAINER_COLLAPSE' && w.path === box.path))
+          layoutWarnings.push({ code: 'W_LAYOUT_CONTAINER_COLLAPSE', severity: 'warning', box: box.label, path: box.path,
+            message: `${box.label} is container-type: ${style['container-type']} with no width in a flex row: size containment ignores its content, so it is only as wide as its padding and border and its content overflows. Give it a width (or flex: 1, or a flex-basis)`, ...ranges(region) });
         // align-content distributes flex lines: a single-line (nowrap) flex container has one line and nothing to distribute.
         if (['flex', 'inline-flex'].includes(style.display) && style['flex-wrap'] === 'nowrap' && set('align-content', 'normal')) reasons.push(['align-content', 'it is a single-line flex container (flex-wrap: nowrap), so there are no lines to distribute (use align-items)']);
         // object-fit sizes the content of a replaced element (img, video, canvas, …); other boxes have none.

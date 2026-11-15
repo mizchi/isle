@@ -141,6 +141,8 @@ const cases = [
     css: '.grid{display:grid;grid-template-columns:60px 60px;column-gap:10px;grid-template-rows:20px;justify-content:center}'},
   {name: 'a width under flex: 1 is ignored (flex-basis 0 replaces it)', html: '<main class="row"><div class="a"></div><div class="b"></div><div class="c"></div></main>',
     css: '.row{display:flex;column-gap:10px}.a,.b,.c{block-size:20px}.a{flex:1;inline-size:300px}.b{flex:2 1 0;inline-size:40px;min-inline-size:0}.c{flex:none;inline-size:50px}'},
+  {name: 'container-type: inline-size collapses a non-growing flex item to its padding', html: '<main class="row"><div class="c"><div class="k"></div></div><div class="g"><div class="k"></div></div><div class="o"></div></main>',
+    css: '.row{display:flex;column-gap:10px}.c,.g{display:grid;grid-template-columns:minmax(0,1fr);container-type:inline-size;padding:0 8px}.g{flex-grow:1}.k{block-size:20px}.o{inline-size:50px;block-size:10px}'},
 ];
 const evaluate = (affine, width, height) => {
   const value = text => { const [n, d = '1'] = text.split('/'); return Number(n) / Number(d); };
