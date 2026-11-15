@@ -61,3 +61,15 @@ test('a sizes width below the layout width is a W_LAYOUT_SIZES_SMALL warning in 
   // Density descriptors and sizes=auto are not sized by the attribute.
   assert.equal(analyzeHTML('<div class="page"><img src="/a.png" srcset="/b.png 2x" sizes="10vw" width="400" height="200" alt=""></div>', {name: 'P', css: scss, viewport: {min: 320, max: 1280}}).layoutWarnings, undefined);
 });
+
+test('a w-descriptor srcset without sizes (sizes defaults to 100vw) on an image at most half the viewport wide is W_LAYOUT_SIZES_MISSING', () => {
+  const css = cols => `*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:${cols}}img{display:block;width:100%;height:auto}`;
+  const regions = (cols, attrs = '') => (analyzeHTML(`<div class="page"><img src="/a.png" srcset="/a.png 400w, /b.png 800w" ${attrs} width="400" height="200" alt=""></div>`, {name: 'P', css: css(cols), viewport: {min: 320, max: 1280}}).layoutWarnings ?? [])
+    .filter(w => w.code === 'W_LAYOUT_SIZES_MISSING').map(w => [w.range.min, w.range.max]);
+  assert.deepEqual(regions('minmax(0,1fr)'), []);
+  assert.deepEqual(regions('repeat(3,minmax(0,1fr))'), [[320, 1280]]);
+  assert.deepEqual(regions('300px minmax(0,1fr)'), [[600, 1280]]); // the image is 300px: half the viewport from 600px
+  assert.deepEqual(regions('repeat(3,minmax(0,1fr))', 'sizes="33vw"'), []);
+  // Density descriptors do not use sizes.
+  assert.equal(analyzeHTML('<div class="page"><img src="/a.png" srcset="/b.png 2x" width="400" height="200" alt=""></div>', {name: 'P', css: css('repeat(3,minmax(0,1fr))'), viewport: {min: 320, max: 1280}}).layoutWarnings, undefined);
+});

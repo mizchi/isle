@@ -18,6 +18,7 @@ export const recommended = {
   W_LAYOUT_ABSOLUTE_PAGE: ['warning', 'give the box it belongs to position: relative'],
   W_LAYOUT_CONTENT_BOX_FULL: ['warning', 'use box-sizing: border-box'],
   W_LAYOUT_MEDIA_NO_MAX: ['warning', 'add max-width: 100%; height: auto'],
+  W_LAYOUT_SIZES_MISSING: ['warning', 'add a sizes attribute with the width the image takes at each breakpoint'],
   W_LAYOUT_LONG_WORD: ['warning', 'use overflow-wrap: anywhere for URLs and long words'],
   W_LAYOUT_FIXED_TRACKS: ['warning', 'use repeat(N, minmax(0, 1fr)) or fewer columns under a query'],
   W_LAYOUT_VW_SCROLLBAR: ['warning', 'use 100% instead of 100vw'],

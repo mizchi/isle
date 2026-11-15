@@ -2341,7 +2341,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const box = boxes.find(b => b.path === row.path);
     const facts = box?.tag === 'img' ? box.imageSize : null;
     if (!facts || typeof facts.srcset !== 'string' || !/\d+w\s*(?:,|$)/.test(facts.srcset) || !row.$shown?.region) continue;
-    if (facts.sizes === undefined || facts.sizes === 'dynamic' || /^\s*auto\b/i.test(facts.sizes)) continue;
+    // No sizes attribute: the browser sizes the w-descriptor candidates for 100vw. Where the image is laid out at most
+    // half the viewport wide, it downloads a file at least twice as wide as it shows (at every device pixel ratio).
+    if (facts.sizes === undefined) {
+      const wide = clip(row.$shown.region, diff(width, times(row.$shown.inline, q(2))));
+      if (wide && !layoutWarnings.some(w => w.code === 'W_LAYOUT_SIZES_MISSING' && w.path === row.path)) {
+        const p = sample(wide);
+        layoutWarnings.push({ code: 'W_LAYOUT_SIZES_MISSING', severity: 'warning', box: row.box, path: row.path, srcset: facts.srcset,
+          message: `${row.box} has a srcset with width descriptors but no sizes attribute, so the browser assumes 100vw: at viewport ${number(p.x)}px it is laid out ${number(evaluate(row.$shown.inline, p))}px wide and downloads a file for ${number(p.x)}px. Add sizes (for this layout, the width it takes at each breakpoint)`, ...ranges(wide) });
+      }
+      continue;
+    }
+    if (facts.sizes === 'dynamic' || /^\s*auto\b/i.test(facts.sizes)) continue;
     const entries = []; let depth = 0, start = 0;
     for (let i = 0; i <= facts.sizes.length; i++) { const c = facts.sizes[i]; if (c === '(') depth++; else if (c === ')') depth--; else if ((c === ',' && depth === 0) || i === facts.sizes.length) { entries.push(facts.sizes.slice(start, i).trim()); start = i + 1; } }
     let pending = [{ region: row.$shown.region }], findings = [];
