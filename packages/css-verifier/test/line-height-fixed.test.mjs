@@ -25,3 +25,11 @@ test('a px height on text that grows with the default font size (W_LAYOUT_HEIGHT
   assert.deepEqual(warned('.t{height:24px;font-size:16px}'), []);
   assert.deepEqual(warned('html{font-size:16px}.t{height:24px;font-size:1rem}'), []);
 });
+
+test('a form control keeps the UA font size, not the page font size it seems to inherit (W_LAYOUT_CONTROL_FONT)', () => {
+  const warned = css => (analyzeHTML('<html lang="en"><body><main class="page"><button class="b" aria-label="Go"></button></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body,.page{${g}}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}}).layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_CONTROL_FONT').map(w => [w.box, w.inheritedFrom]);
+  assert.deepEqual(warned('body{font-size:18px}'), [['.b', 'body@P/0']]);
+  assert.deepEqual(warned('body{font-size:18px}.b{font:inherit}'), []);
+  assert.deepEqual(warned('body{font-size:18px}.b{font-size:1em}'), []);
+  assert.deepEqual(warned(''), []); // no page font size: both are the default
+});

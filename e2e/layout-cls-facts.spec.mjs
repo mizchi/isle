@@ -537,3 +537,16 @@ test('px height on text: with a 32px default font size the text overflows its bo
     expect(overflows, `${css}: overflows at a 32px default`).toBe(warn);
   }
 });
+
+test('form controls: Chromium gives them a font size other than the page\'s exactly where the static check warns', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [css, warn] of [['body{font-size:18px}', true], ['body{font-size:18px}.b{font:inherit}', false], ['body{font-size:18px}.b{font-size:1em}', false]]) {
+    const full = `*{box-sizing:border-box;margin:0}html,body,.page{${g}}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px}${css}`;
+    const html = '<main class="page"><button class="b" aria-label="Go"></button></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: full, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_CONTROL_FONT'), css).toBe(warn);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${full}</style></head><body>${html}</body></html>`);
+    const [control, parent] = await page.evaluate(() => [getComputedStyle(document.querySelector('.b')).fontSize, getComputedStyle(document.querySelector('.page')).fontSize]);
+    expect(control !== parent, `${css}: button ${control}, page ${parent}`).toBe(warn);
+  }
+});

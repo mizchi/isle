@@ -1103,6 +1103,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           css: found.map(key => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
           message: `${box.label} is rtl, but ${found.map(key => `${key}: ${style[key]}`).join(', ')} ${found.length > 1 ? 'are' : 'is'} physical: it stays on that side instead of following the reading direction. Use ${found.includes('text-align') ? 'text-align: start/end and ' : ''}the inline-start/inline-end sides`, ...ranges(region) });
       }
+      // A form control keeps the UA control font size (the default − 2.67px), not the page font size an ancestor sets:
+      // its text is smaller than the text around it, and does not follow the page's type scale.
+      if (emit && !box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag) && style['font-size'] === 'ua' && !(box.tag === 'input' && ['checkbox', 'radio', 'range', 'color', 'hidden'].includes(box.inputType)) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_CONTROL_FONT' && w.path === box.path)) {
+        const from = [...parents].reverse().find(p => p.style?.$sources?.['font-size'] && p.box);
+        if (from) layoutWarnings.push({ code: 'W_LAYOUT_CONTROL_FONT', severity: 'warning', box: box.label, path: box.path, inheritedFrom: from.box.label,
+          message: `${box.label} is a <${box.tag}>, which does not inherit font-size: ${from.box.label} sets ${from.style['font-size']}, but the control keeps the UA size (13.33px at a 16px default). Add button, input, select, textarea { font: inherit }`, ...ranges(region) });
+      }
       // Declarations a display makes inert (the layout ignores them; the author meant something): grid placement on a
       // flex item, flex factors on a grid item, and container properties of the other layout model on the box itself.
       if (emit && !box.pseudo && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path)) {

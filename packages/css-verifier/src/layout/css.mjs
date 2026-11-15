@@ -533,6 +533,9 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag)) {
     for(const side of ['left','right','top','bottom']) {values[`padding-${side}`]='ua';values[`border-${side}`]='ua';}
     for(const key of ['display','box-sizing','min-inline-size','min-block-size']) values[key]='ua';
+    // Controls do not inherit the page's font size: the UA's control font is the default size − 2.67px (13.33px
+    // at a 16px default; measured in Chromium), until the author sets it (font: inherit, font-size).
+    values['font-size']='ua';
   }
   // UA font rules (h1–h6 size and weight, strong/b weight, em/i style, small
   // size) are not author facts: they stay 'ua' until author CSS sets them.
