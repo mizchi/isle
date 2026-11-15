@@ -439,6 +439,22 @@ test('block flow does not shrink scroll-container children: the static overflow 
   }
 });
 
+test('list markers at the viewport edge: where W_LAYOUT_MARKER_HIDDEN warns, Chromium paints none of the marker', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  await page.setViewportSize({width: 400, height: 200});
+  for (const css of ['ul{padding:0}', 'ul{padding:0 0 0 24px}', '.w{padding-left:16px}ul{padding:0}', 'ol{padding:0}']) {
+    const tag = css.startsWith('ol') ? 'ol' : 'ul';
+    const all = `*{box-sizing:border-box;margin:0}html,body{${g};background:#fff}body{margin:0}.w{${g}}li{height:20px;color:#f00;font-size:20px}${css}`;
+    const html = `<div class="w"><${tag} class="l"><li class="a"></li><li class="b"></li></${tag}></div>`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: all, viewport: {min: 320, max: 800, height: {min: 200, max: 900}}});
+    const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_MARKER_HIDDEN');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${all}</style></head><body>${html}</body></html>`);
+    const shot = (await page.screenshot()).toString('base64');
+    const red = await page.evaluate(async b64 => { const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode(); const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const x = c.getContext('2d'); x.drawImage(img, 0, 0); const d = x.getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 0; i < d.length; i += 4) if (d[i] > 200 && d[i + 1] < 80 && d[i + 2] < 80) n++; return n; }, shot);
+    expect(warned, `${css}: ${red} marker pixels in Chromium`).toBe(red === 0);
+  }
+});
+
 test('animation score bound: Chromium’s largest session window stays below the static window bound', async ({page}) => {
   const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
   const html = '<div class="page"><div class="a"></div><div class="b"></div></div>';

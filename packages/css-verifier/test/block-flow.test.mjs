@@ -60,3 +60,14 @@ test('list items lay out as blocks (an outside marker takes no part); an inside 
   assert.equal(list('ul{list-style:inside}').status, 'unknown');
   assert.equal(list('ul{list-style:none inside}').status, 'verified');
 });
+
+test('W_LAYOUT_MARKER_HIDDEN: outside markers of a list at the viewport edge are not seen', () => {
+  const list = css => (analyzeHTML('<html lang="en"><body><div class="w"><ul class="l"><li class="a"></li><li class="b"></li></ul></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.w{${g}}.a,.b{height:10px}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}}).layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_MARKER_HIDDEN').map(w => w.box);
+  assert.deepEqual(list('ul{padding:0}'), ['.a', '.b']);
+  // Under a clipping ancestor positions are not tracked: not reported.
+  assert.deepEqual(list('.w{overflow:hidden;margin-left:30px}ul{padding:0}'), []);
+  assert.deepEqual(list('.w{padding-left:16px}ul{padding:0}'), []);
+  assert.deepEqual(list('ul{padding:0 0 0 24px}'), []);
+  assert.deepEqual(list('ul{padding:0;list-style:none}'), []);
+  assert.deepEqual(list('ul{padding:0;list-style-position:inside}li{height:auto}'), []);
+});
