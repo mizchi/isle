@@ -1128,6 +1128,226 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## A heading level skipped
+
+`W_A11Y_HEADING_ORDER` — markup rule (nothing to see on screen)
+
+> .h.b (h3) follows h1 .h.a, skipping a level
+
+![heading-order](heading-order-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><h1 class="h a">Checkout</h1><h3 class="h b">Shipping</h3></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.h{display:block;font-family:Roboto;font-size:20px;line-height:28px;font-weight:400;white-space:nowrap}
+```
+
+</details>
+
+## A heading with no text
+
+`E_A11Y_EMPTY_HEADING` — markup rule (nothing to see on screen)
+
+> .e is an empty heading here
+
+![empty-heading](empty-heading-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><h2 class="e"></h2></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.e{display:block;height:28px}
+```
+
+</details>
+
+## Content outside every landmark
+
+`W_A11Y_REGION` — markup rule (nothing to see on screen)
+
+> .t is content outside any landmark
+
+![region](region-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<body><p class="t">Free shipping over 50 USD</p><main class="page"><div class="x"></div></main></body>
+```
+
+```css
+.t{display:block;font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}
+```
+
+</details>
+
+## Two main landmarks
+
+`W_A11Y_MULTIPLE_MAIN` — markup rule (nothing to see on screen)
+
+> .m2 renders as a second main landmark
+
+![multiple-main](multiple-main-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<body><main class="m1"><div class="x"></div></main><main class="m2"><div class="x"></div></main></body>
+```
+
+```css
+.m1,.m2{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}
+```
+
+</details>
+
+## A link named “Read more”
+
+`W_A11Y_LINK_TEXT` — markup rule (nothing to see on screen)
+
+> .l is named "read more", which does not say where it goes
+
+![link-text](link-text-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><a class="l" href="/posts/42" aria-label="Read more"></a></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px}.l{display:block;height:44px;background:#246}
+```
+
+</details>
+
+## A link that opens a new tab without saying so
+
+`W_A11Y_NEW_WINDOW` — markup rule (nothing to see on screen)
+
+> .l opens in a new window or tab (target="_blank") but its name does not say so
+
+![new-window](new-window-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><a class="l" href="https://example.com/terms" target="_blank" aria-label="Terms of service"></a></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px}.l{display:block;height:44px;background:#246}
+```
+
+</details>
+
+## An autocomplete value that is not an autofill token
+
+`E_A11Y_AUTOCOMPLETE` — markup rule (nothing to see on screen)
+
+> .i has autocomplete="e-mail", outside the HTML autofill tokens
+
+![autocomplete](autocomplete-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="i" type="email" aria-label="Email" autocomplete="e-mail"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}
+```
+
+</details>
+
+## An iframe without a title
+
+`E_A11Y_FRAME_TITLE` — markup rule (nothing to see on screen)
+
+> .f is a frame without a title
+
+![frame-title](frame-title-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><iframe class="f" src="/map.html"></iframe></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.f{display:block;width:300px;height:150px;border:0}
+```
+
+</details>
+
+## A video without a captions track
+
+`E_A11Y_VIDEO_CAPTION` — markup rule (nothing to see on screen)
+
+> .v has no captions track
+
+![video-caption](video-caption-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><video class="v" src="/intro.mp4" controls></video></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.v{display:block;width:320px;height:180px}
+```
+
+</details>
+
+## A skip link parked left of the viewport
+
+`E_A11Y_FOCUS_OFFSCREEN` — viewport 672 × 690px
+
+> .skip takes focus but lies entirely off screen (before the viewport's start edge), so the focused element is never visible
+
+![focus-offscreen](focus-offscreen-map.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><a class="skip" href="#main" aria-label="Skip to content"></a><div class="d"></div></main>
+```
+
+```css
+.page{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px;background:#fff}.skip{position:absolute;left:-200px;top:0;width:160px;height:30px;display:block;background:#c33}.d{background:#eee}
+```
+
+</details>
+
+## Content shown only in portrait
+
+`E_A11Y_ORIENTATION` — markup rule (nothing to see on screen)
+
+> the main content does not render in landscape viewports
+
+![orientation](orientation-portrait.png) ![orientation](orientation-landscape.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="m"><div class="x"></div></main>
+```
+
+```css
+.m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:120px;background:#9cf}@media (orientation: landscape){.m{display:none}}
+```
+
+</details>
+
 ## A badge that sticks out of its card
 
 `E_LAYOUT_PROTRUSION` — viewport 672 × 690px

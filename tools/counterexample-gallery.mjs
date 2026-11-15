@@ -156,6 +156,30 @@ const cases = [
     html: '<main class="page"><ul class="u"><li class="a"></li><div class="x"></div></ul></main>', css: '.page{display:grid;grid-template-columns:200px}.u{display:grid;grid-template-columns:minmax(0,1fr);list-style:none;padding:0}.a,.x{display:block;height:20px}'},
   {id: 'positive-tabindex', title: 'A positive tabindex', code: 'W_A11Y_POSITIVE_TABINDEX', warning: true, markup: true, mark: 'tabindex="3"', options: {accessibility: true},
     html: '<main class="page"><button class="a" aria-label="First"></button><button class="b" tabindex="3" aria-label="Jumps ahead"></button></main>', css: '.page{display:grid;grid-template-columns:120px;row-gap:4px}.a,.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}'},
+
+  {id: 'heading-order', title: 'A heading level skipped', code: 'W_A11Y_HEADING_ORDER', warning: true, markup: true, mark: '<h3 class="h b">Shipping</h3>', options: {accessibility: true}, boxes: {...text('.a', 'Checkout', {}, 20, 28), ...text('.b', 'Shipping', {}, 20, 28)},
+    html: '<main class="page"><h1 class="h a">Checkout</h1><h3 class="h b">Shipping</h3></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.h{display:block;font-family:Roboto;font-size:20px;line-height:28px;font-weight:400;white-space:nowrap}'},
+  {id: 'empty-heading', title: 'A heading with no text', code: 'E_A11Y_EMPTY_HEADING', markup: true, mark: '<h2 class="e"></h2>', options: {accessibility: true},
+    html: '<main class="page"><h2 class="e"></h2></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.e{display:block;height:28px}'},
+  {id: 'region', title: 'Content outside every landmark', code: 'W_A11Y_REGION', warning: true, markup: true, mark: '<p class="t">Free shipping over 50 USD</p>', options: {accessibility: true}, boxes: text('.t', 'Free shipping over 50 USD'),
+    doc: '<html lang="en"><body><p class="t">Free shipping over 50 USD</p><main class="page"><div class="x"></div></main></body></html>', html: '<body><p class="t">Free shipping over 50 USD</p><main class="page"><div class="x"></div></main></body>', css: '.t{display:block;font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}'},
+  {id: 'multiple-main', title: 'Two main landmarks', code: 'W_A11Y_MULTIPLE_MAIN', warning: true, markup: true, mark: '<main class="m2">', options: {accessibility: true},
+    doc: '<html lang="en"><body><main class="m1"><div class="x"></div></main><main class="m2"><div class="x"></div></main></body></html>', html: '<body><main class="m1"><div class="x"></div></main><main class="m2"><div class="x"></div></main></body>', css: '.m1,.m2{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}'},
+  {id: 'link-text', title: 'A link named “Read more”', code: 'W_A11Y_LINK_TEXT', warning: true, markup: true, mark: 'aria-label="Read more"', options: {accessibility: true},
+    html: '<main class="page"><a class="l" href="/posts/42" aria-label="Read more"></a></main>', css: '.page{display:grid;grid-template-columns:120px}.l{display:block;height:44px;background:#246}'},
+  {id: 'new-window', title: 'A link that opens a new tab without saying so', code: 'W_A11Y_NEW_WINDOW', warning: true, markup: true, mark: 'target="_blank"', options: {accessibility: true},
+    html: '<main class="page"><a class="l" href="https://example.com/terms" target="_blank" aria-label="Terms of service"></a></main>', css: '.page{display:grid;grid-template-columns:120px}.l{display:block;height:44px;background:#246}'},
+  {id: 'autocomplete', title: 'An autocomplete value that is not an autofill token', code: 'E_A11Y_AUTOCOMPLETE', markup: true, mark: 'autocomplete="e-mail"', options: {accessibility: true},
+    html: '<main class="page"><input class="i" type="email" aria-label="Email" autocomplete="e-mail"></main>', css: '.page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}'},
+  {id: 'frame-title', title: 'An iframe without a title', code: 'E_A11Y_FRAME_TITLE', markup: true, mark: '<iframe class="f" src="/map.html">', options: {accessibility: true},
+    html: '<main class="page"><iframe class="f" src="/map.html"></iframe></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.f{display:block;width:300px;height:150px;border:0}'},
+  {id: 'video-caption', title: 'A video without a captions track', code: 'E_A11Y_VIDEO_CAPTION', markup: true, mark: '<video class="v" src="/intro.mp4" controls>', options: {accessibility: true},
+    html: '<main class="page"><video class="v" src="/intro.mp4" controls></video></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.v{display:block;width:320px;height:180px}'},
+  // --- what is outside the viewport: a map, or two orientations ---
+  {id: 'focus-offscreen', title: 'A skip link parked left of the viewport', code: 'E_A11Y_FOCUS_OFFSCREEN', map: true, options: {accessibility: true},
+    html: '<main class="page"><a class="skip" href="#main" aria-label="Skip to content"></a><div class="d"></div></main>', css: '.page{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px;background:#fff}.skip{position:absolute;left:-200px;top:0;width:160px;height:30px;display:block;background:#c33}.d{background:#eee}'},
+  {id: 'orientation', title: 'Content shown only in portrait', code: 'E_A11Y_ORIENTATION', orientations: [[390, 700], [700, 390]], options: {accessibility: true},
+    html: '<main class="m"><div class="x"></div></main>', css: '.m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:120px;background:#9cf}@media (orientation: landscape){.m{display:none}}'},
   // --- integrity ---
   {id: 'protrusion', title: 'A badge that sticks out of its card', code: 'E_LAYOUT_PROTRUSION', options: {integrity: true},
     html: '<main class="page"><div class="card"><div class="badge"></div></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);padding:24px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:80px;background:#eee}.badge{height:24px;background:#c33;transform:translate(20px,-16px)}'},
@@ -202,6 +226,40 @@ for (const c of cases) {
     await page.close();
     rows.push({...c, d, width: 0, height: 0, shots: [file], count: found.length});
     console.log(`${c.id}: ${c.code} → ${file}`);
+    continue;
+  }
+  if (c.orientations || c.map) {
+    const shots = [];
+    for (const [i, [w, h]] of (c.orientations ?? [[point(d)[0], point(d)[1]]]).entries()) {
+      const page = await browser.newPage({viewport: {width: w, height: h}, deviceScaleFactor: 1});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${base}${c.css}</style></head><body>${c.html}</body></html>`);
+      const file = `${c.id}-${c.orientations ? (w < h ? 'portrait' : 'landscape') : 'map'}.png`;
+      if (c.map) {
+        // A map of the page around the viewport: the viewport frame and the reported box, drawn at half scale.
+        const r = await page.evaluate(() => { const e = document.querySelector('.skip'); const b = e.getBoundingClientRect(); return {x: b.left, y: b.top, w: b.width, h: b.height}; });
+        const shotData = (await page.screenshot()).toString('base64');
+        const left = Math.min(0, r.x) - 24, scale = 0.5, W = (w - left + 24) * scale, Hh = 140;
+        const map = `<!doctype html><html><head><style>${face}body{margin:0;background:#f5f6f8;font-family:Roboto,sans-serif}</style></head><body><div id="m" style="position:relative;width:${W}px;height:${Hh + 36}px">
+          <img src="data:image/png;base64,${shotData}" style="position:absolute;left:${(0 - left) * scale}px;top:12px;width:${w * scale}px;height:${Math.min(h, (Hh - 12) / scale) * scale}px;object-fit:cover;object-position:top;outline:2px solid #1b1f24">
+          <div style="position:absolute;left:${(0 - left) * scale}px;top:${Hh + 2}px;font:600 11px Roboto;color:#1b1f24">viewport (0 … ${w}px)</div>
+          <div style="position:absolute;left:${(r.x - left) * scale}px;top:${12 + r.y * scale}px;width:${r.w * scale}px;height:${r.h * scale}px;border:3px solid #e00;background:rgba(255,0,0,.15)"></div>
+          <div style="position:absolute;left:4px;top:${Hh + 18}px;font:600 12px Roboto;color:#fff;background:rgba(200,0,0,.92);padding:2px 6px;border-radius:3px;white-space:nowrap">${c.code} — the focusable link is at x = ${Math.round(r.x)}px, outside the viewport</div></div></body></html>`;
+        await page.setViewportSize({width: Math.max(Math.ceil(W) + 380, 720), height: Hh + 60});
+        await page.setContent(map);
+        const box = await page.evaluate(() => { const b = document.getElementById('m').getBoundingClientRect(); return {x: 0, y: 0, width: Math.ceil(Math.max(b.width, 660)), height: Math.ceil(b.height)}; });
+        await page.screenshot({path: new URL(file, out).pathname, clip: box});
+      } else {
+        const visible = await page.evaluate(() => getComputedStyle(document.querySelector('.m')).display !== 'none');
+        await page.evaluate(({label, visible}) => { const m = document.querySelector('.m'); if (visible) { const r = m.getBoundingClientRect(); const e = document.createElement('div'); Object.assign(e.style, {position: 'fixed', left: r.left - 2 + 'px', top: r.top - 2 + 'px', width: r.width + 4 + 'px', height: r.height + 4 + 'px', border: '3px solid #e00', boxSizing: 'border-box'}); document.body.append(e); }
+          const t = document.createElement('div'); t.textContent = label; Object.assign(t.style, {position: 'fixed', left: '4px', bottom: '4px', font: '600 12px Roboto, sans-serif', color: '#fff', background: 'rgba(200,0,0,.92)', padding: '4px 6px', borderRadius: '3px'}); document.body.append(t); },
+          {label: `${c.code} — ${w < h ? 'portrait: shown' : 'landscape: the content is gone'}`, visible});
+        await page.screenshot({path: new URL(file, out).pathname});
+      }
+      await page.close();
+      shots.push(file);
+    }
+    rows.push({...c, d, width: c.orientations ? 0 : point(d)[0], height: c.orientations ? 0 : point(d)[1], shots, count: found.length});
+    console.log(`${c.id}: ${c.code} → ${shots.join(', ')}`);
     continue;
   }
   const [width, height] = point(d);

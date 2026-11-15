@@ -741,6 +741,150 @@
   "css": ".page{display:grid;grid-template-columns:120px;row-gap:4px}.a,.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}"
  },
  {
+  "id": "heading-order",
+  "title": "A heading level skipped",
+  "code": "W_A11Y_HEADING_ORDER",
+  "width": 0,
+  "height": 0,
+  "message": ".h.b (h3) follows h1 .h.a, skipping a level",
+  "shots": [
+   "heading-order-markup.png"
+  ],
+  "html": "<main class=\"page\"><h1 class=\"h a\">Checkout</h1><h3 class=\"h b\">Shipping</h3></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.h{display:block;font-family:Roboto;font-size:20px;line-height:28px;font-weight:400;white-space:nowrap}"
+ },
+ {
+  "id": "empty-heading",
+  "title": "A heading with no text",
+  "code": "E_A11Y_EMPTY_HEADING",
+  "width": 0,
+  "height": 0,
+  "message": ".e is an empty heading here",
+  "shots": [
+   "empty-heading-markup.png"
+  ],
+  "html": "<main class=\"page\"><h2 class=\"e\"></h2></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.e{display:block;height:28px}"
+ },
+ {
+  "id": "region",
+  "title": "Content outside every landmark",
+  "code": "W_A11Y_REGION",
+  "width": 0,
+  "height": 0,
+  "message": ".t is content outside any landmark",
+  "shots": [
+   "region-markup.png"
+  ],
+  "html": "<body><p class=\"t\">Free shipping over 50 USD</p><main class=\"page\"><div class=\"x\"></div></main></body>",
+  "css": ".t{display:block;font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
+ },
+ {
+  "id": "multiple-main",
+  "title": "Two main landmarks",
+  "code": "W_A11Y_MULTIPLE_MAIN",
+  "width": 0,
+  "height": 0,
+  "message": ".m2 renders as a second main landmark",
+  "shots": [
+   "multiple-main-markup.png"
+  ],
+  "html": "<body><main class=\"m1\"><div class=\"x\"></div></main><main class=\"m2\"><div class=\"x\"></div></main></body>",
+  "css": ".m1,.m2{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
+ },
+ {
+  "id": "link-text",
+  "title": "A link named “Read more”",
+  "code": "W_A11Y_LINK_TEXT",
+  "width": 0,
+  "height": 0,
+  "message": ".l is named \"read more\", which does not say where it goes",
+  "shots": [
+   "link-text-markup.png"
+  ],
+  "html": "<main class=\"page\"><a class=\"l\" href=\"/posts/42\" aria-label=\"Read more\"></a></main>",
+  "css": ".page{display:grid;grid-template-columns:120px}.l{display:block;height:44px;background:#246}"
+ },
+ {
+  "id": "new-window",
+  "title": "A link that opens a new tab without saying so",
+  "code": "W_A11Y_NEW_WINDOW",
+  "width": 0,
+  "height": 0,
+  "message": ".l opens in a new window or tab (target=\"_blank\") but its name does not say so",
+  "shots": [
+   "new-window-markup.png"
+  ],
+  "html": "<main class=\"page\"><a class=\"l\" href=\"https://example.com/terms\" target=\"_blank\" aria-label=\"Terms of service\"></a></main>",
+  "css": ".page{display:grid;grid-template-columns:120px}.l{display:block;height:44px;background:#246}"
+ },
+ {
+  "id": "autocomplete",
+  "title": "An autocomplete value that is not an autofill token",
+  "code": "E_A11Y_AUTOCOMPLETE",
+  "width": 0,
+  "height": 0,
+  "message": ".i has autocomplete=\"e-mail\", outside the HTML autofill tokens",
+  "shots": [
+   "autocomplete-markup.png"
+  ],
+  "html": "<main class=\"page\"><input class=\"i\" type=\"email\" aria-label=\"Email\" autocomplete=\"e-mail\"></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}"
+ },
+ {
+  "id": "frame-title",
+  "title": "An iframe without a title",
+  "code": "E_A11Y_FRAME_TITLE",
+  "width": 0,
+  "height": 0,
+  "message": ".f is a frame without a title",
+  "shots": [
+   "frame-title-markup.png"
+  ],
+  "html": "<main class=\"page\"><iframe class=\"f\" src=\"/map.html\"></iframe></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.f{display:block;width:300px;height:150px;border:0}"
+ },
+ {
+  "id": "video-caption",
+  "title": "A video without a captions track",
+  "code": "E_A11Y_VIDEO_CAPTION",
+  "width": 0,
+  "height": 0,
+  "message": ".v has no captions track",
+  "shots": [
+   "video-caption-markup.png"
+  ],
+  "html": "<main class=\"page\"><video class=\"v\" src=\"/intro.mp4\" controls></video></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.v{display:block;width:320px;height:180px}"
+ },
+ {
+  "id": "focus-offscreen",
+  "title": "A skip link parked left of the viewport",
+  "code": "E_A11Y_FOCUS_OFFSCREEN",
+  "width": 672,
+  "height": 690,
+  "message": ".skip takes focus but lies entirely off screen (before the viewport's start edge), so the focused element is never visible",
+  "shots": [
+   "focus-offscreen-map.png"
+  ],
+  "html": "<main class=\"page\"><a class=\"skip\" href=\"#main\" aria-label=\"Skip to content\"></a><div class=\"d\"></div></main>",
+  "css": ".page{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px;background:#fff}.skip{position:absolute;left:-200px;top:0;width:160px;height:30px;display:block;background:#c33}.d{background:#eee}"
+ },
+ {
+  "id": "orientation",
+  "title": "Content shown only in portrait",
+  "code": "E_A11Y_ORIENTATION",
+  "width": 0,
+  "height": 0,
+  "message": "the main content does not render in landscape viewports",
+  "shots": [
+   "orientation-portrait.png",
+   "orientation-landscape.png"
+  ],
+  "html": "<main class=\"m\"><div class=\"x\"></div></main>",
+  "css": ".m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:120px;background:#9cf}@media (orientation: landscape){.m{display:none}}"
+ },
+ {
   "id": "protrusion",
   "title": "A badge that sticks out of its card",
   "code": "E_LAYOUT_PROTRUSION",
