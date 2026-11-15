@@ -168,7 +168,9 @@ export const contrastRatio = (a, b) => { const [x, y] = [luminance(a), luminance
 
 /** The paint facts of one computed style, kept on each geometry row. */
 export function paintFacts(style) {
-  return { ...(style.$iconPaint !== undefined ? { iconPaint: style.$iconPaint } : {}), objectFit: style['object-fit'], scrollBehavior: style['scroll-behavior'], touchAction: style['touch-action'], color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
+  // Visually hidden (sr-only): clipped to nothing, or at most 1px tall hiding its overflow. Read, not seen.
+  const hiddenVisually = style['clip-path'] === 'empty' || style.clip === 'empty' || (['hidden', 'clip'].includes(style['overflow-x']) && /^\d+(?:\.\d+)?px$/.test(String(style['block-size'])) && Number(String(style['block-size']).slice(0, -2)) <= 1);
+  return { ...(style.$iconPaint !== undefined ? { iconPaint: style.$iconPaint } : {}), ...(hiddenVisually ? { hiddenVisually: true } : {}), objectFit: style['object-fit'], scrollBehavior: style['scroll-behavior'], touchAction: style['touch-action'], color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
     isolation: style.isolation, transform: style.transform, scrollMargin: { top: style['scroll-margin-top'], bottom: style['scroll-margin-bottom'] }, scrollPadding: { top: style['scroll-padding-top'], bottom: style['scroll-padding-bottom'] }, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], outlineColor: style['outline-color'], outlineOffset: style['outline-offset'], clippedAway: style['clip-path'] === 'empty' || (style.clip === 'empty' && ['absolute', 'fixed'].includes(style.$fixed ? 'fixed' : style.position)), borderColors: { top: style['border-top-color'], right: style['border-right-color'], bottom: style['border-bottom-color'], left: style['border-left-color'] }, boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
     animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] , direction: style['animation-direction'] } };
@@ -358,7 +360,8 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   // text-contrast over the DOM ancestors' backgrounds.
   const [normal, big] = contrast === 'AAA' ? [7, 4.5] : [4.5, 3];
   const painted = placed.filter(row => row.painted && visible(row));
-  for (const text of geometry.filter(row => row.box.text && visible(row))) {
+  // Visually hidden text (sr-only) is not seen: SC 1.4.3 does not apply to it.
+  for (const text of geometry.filter(row => row.box.text && visible(row) && !row.paint?.hiddenVisually)) {
     const result = backdrop(text.chain);
     if (result.unknown) { report(unknowns, 'U_A11Y_CONTRAST', 'unknown', `${text.box.label}: ${result.unknown}`, text, text.region, { rule: 'text-contrast' }); continue; }
     // A positioned box above the opaque backdrop lets other boxes show through behind the text.

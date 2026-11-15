@@ -23,7 +23,8 @@ for (let i = 0; i < args.length; i++) {
 }
 if (!files.length) { console.error('usage: css-lint [--viewport 320-1280] [--page-css file] [--css file] [--profile recommended|all] [--format text|json] <files>'); process.exit(2); }
 const range = text => { const [min, max] = String(text).split('-').map(Number); return {min, max: max ?? min}; };
-const pageCSS = opt.pageCss ? readFileSync(opt.pageCss, 'utf8') : '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}body{margin:0}';
+// The default page around a component: block flow (html and body are display: block), border-box, no UA margins.
+const pageCSS = opt.pageCss ? readFileSync(opt.pageCss, 'utf8') : '*{box-sizing:border-box;margin:0}';
 const options = {sourceLines: true, eachCounts: (opt.eachCounts ?? '0,2').split(',').map(Number), pageCSS, viewport: {...range(opt.viewport), height: range(opt.height)}, accessibility: true, integrity: true, selectors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], ...(opt.assumeText ? {assumeText: true} : {})};
 
 const adapters = {

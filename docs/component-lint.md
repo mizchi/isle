@@ -22,7 +22,7 @@ error が 1 件でもあれば終了コードは 1 です。
 | オプション | 既定 | 意味 |
 |---|---|---|
 | `--viewport 320-1280` | `320-1280` | 検査する幅の範囲（`--height 480-900` で高さの範囲） |
-| `--page-css <file>` | box-sizing と margin のリセット、grid の body | コンポーネントを置くページの CSS |
+| `--page-css <file>` | box-sizing と margin のリセット(html と body は block flow) | コンポーネントを置くページの CSS |
 | `--css <file>` | なし | plain className の React コンポーネントに当てる stylesheet |
 | `--profile recommended\|all` | `recommended` | ルールセット |
 | `--each-counts 0,2` | `0,2` | `{#each}` / `v-for` / `.map()` の要素数 |
@@ -57,8 +57,9 @@ error が 1 件でもあれば終了コードは 1 です。
 - `<picture>` の source、`srcset`/`sizes`、`iframe`。
 - grid item と flex の行の item の px margin。幅を指定した grid item の `margin: 0 auto`。
 - block の子だけを持つ `display: block` の container(block flow)と、`max-width` + `margin: 0 auto` のラッパー。
+- sr-only(視覚的に隠したテキスト)。名前には入るが、収まるかどうか、切り取り、コントラストは判定しない。
 
-`fixtures/Catalog.svelte` は、これらを組み合わせた例である。
+`svelte-adapter/fixtures/Catalog.svelte` と `vue-adapter/fixtures/Article.vue` は、これらを組み合わせた例である。
 
 ## 保証の範囲
 

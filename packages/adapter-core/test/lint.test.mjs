@@ -74,3 +74,15 @@ test('lint: a block-flow component is checked; what it cannot model is listed as
   const refused = lint({states: [{choices: {}, report: {diagnostics: []}}], unknowns: [], coverage: {}, findings: [{code: 'E_LAYOUT_CONTAINER', severity: 'error', box: '.x', message: 'Layout containers must use grid or the flex subset', states: [{}]}]}, {file: 'X.svelte'});
   assert.ok(refused.some(m => m.code === 'E_LAYOUT_CONTAINER' && /not checked/.test(m.message)));
 });
+
+test('lint on a block-flow Vue article: centered wrapper, margins, sr-only names, width: 100% + margin', async () => {
+  const {readFileSync} = await import('node:fs');
+  const file = fileURLToPath(new URL('../../vue-adapter/fixtures/Article.vue', import.meta.url));
+  const source = readFileSync(file, 'utf8');
+  const result = analyzeVue(source, {pageCSS: '*{box-sizing:border-box;margin:0}', viewport: {min: 320, max: 1280, height: {min: 480, max: 900}}, assumeText: true, sourceLines: true, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+  const found = lint(result, {file: 'Article.vue', source}).map(m => [m.severity, m.code, m.line]);
+  for (const expected of [['error', 'E_LAYOUT_ITEM_SIZE', 7], ['warning', 'W_LAYOUT_FULL_WIDTH_MARGIN', 7], ['error', 'E_A11Y_NAME', 8]])
+    assert.ok(found.some(f => f.join() === expected.join()), `${expected}: ${JSON.stringify(found)}`);
+  // The back link is named by its sr-only text; the hidden text is not judged for fit or contrast.
+  assert.ok(!found.some(([, code, line]) => line === 4 && ['E_A11Y_NAME', 'E_LAYOUT_CONTENT', 'W_LAYOUT_CLIPPED', 'U_A11Y_CONTRAST'].includes(code)), JSON.stringify(found));
+});
