@@ -1308,11 +1308,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               total = add(total, add(add(rowList.map(t => t.fixed).reduce(add, zero), mul(gap, q(rowList.length - 1))), edges));
               continue;
             }
-            const oneColumn = cs.display === 'grid' && ['none', 'minmax(0,1fr)', '1fr', 'auto'].includes(String(cs['grid-template-columns']).replace(/\s+/g, '')) && cs['grid-template-rows'] === 'none' && ['0', '0px', 'normal'].includes(cs['row-gap']);
-            if (child.text || child.contract || !(child.children ?? []).length || !oneColumn) return null;
+            // One-column grids (implicit auto rows) and column flexes (nowrap, stretched items) of auto height stack their
+            // items too, with a px row gap between them: an auto-height column flex has no free space to grow or shrink.
+            const pxGap = ['0', '0px', 'normal'].includes(cs['row-gap']) ? zero : /^\d+(?:\.\d+)?px$/.test(cs['row-gap']) ? px(cs['row-gap']) : null;
+            const oneColumn = cs.display === 'grid' && ['none', 'minmax(0,1fr)', '1fr', 'auto'].includes(String(cs['grid-template-columns']).replace(/\s+/g, '')) && cs['grid-template-rows'] === 'none' && ['auto', undefined].includes(cs['grid-auto-rows']) && pxGap !== null;
+            const columnFlex = cs.display === 'flex' && cs['flex-direction'] === 'column' && cs['flex-wrap'] === 'nowrap' && ['normal', 'stretch'].includes(cs['align-items']) && pxGap !== null;
+            if (child.text || child.contract || !(child.children ?? []).length || !(oneColumn || columnFlex)) return null;
+            if (columnFlex && (child.children ?? []).some(item => { const st = one(styles(item, region, [...ancestors, { box: child, style: cs }], cs, false, false)); return !['auto', 'normal', 'stretch'].includes(st['align-self']) || st.order !== '0' || st['flex-basis'] !== 'auto'; })) return null;
             const inner = stack(child, cs, [...ancestors, { box: child, style: cs }], sideEdges);
             if (inner === null) return null;
-            total = add(total, add(inner, edges));
+            const shown = (child.children ?? []).filter(item => one(styles(item, region, [...ancestors, { box: child, style: cs }], cs, false, false)).display !== 'none').length;
+            total = add(total, add(add(inner, mul(pxGap, q(Math.max(0, shown - 1)))), edges));
           }
           return total;
         };

@@ -1301,3 +1301,19 @@ test('vw, vh, vmin, vmax, rem, em, % and calc()/min()/max()/clamp() size boxes l
     }
   }
 });
+
+test('a rowspan cell stacks gapped one-column grids and column flexes like Chromium', async ({page}) => {
+  const css = `*{box-sizing:border-box;margin:0;padding:0}html,body{margin:0}.t{table-layout:fixed;inline-size:300px;border-spacing:2px}td{padding:0}.a{inline-size:100px}.b{inline-size:194px}.r1,.r2{block-size:20px}
+.g{display:grid;grid-template-columns:minmax(0,1fr);row-gap:6px;padding:2px 0}.g1,.g2,.g3{block-size:10px}.f{display:flex;flex-direction:column;row-gap:4px}.f1{block-size:12px}.f2{block-size:8px}.f3{display:none}`;
+  const html = '<table class="t"><tbody><tr><td class="a" rowspan="2"><div class="g"><div class="g1"></div><div class="g2"></div><div class="g3"></div></div><div class="f"><div class="f1"></div><div class="f3"></div><div class="f2"></div></div></td><td class="b r1"></td></tr><tr><td class="r2"></td></tr></tbody></table>';
+  const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280, height: {min: 600, max: 1000}}});
+  expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+  await page.setViewportSize({width: 1280, height: 800});
+  await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+  for (const cls of ['a', 'b.r1', 'r2', 'g', 'g3', 'f', 'f2']) {
+    const browser = await page.evaluate(c => { const r = document.querySelector(`.${c}`).getBoundingClientRect(); return [r.top, r.height]; }, cls);
+    const row = report.sizes.find(r => r.box === `.${cls}` && r.rect);
+    const statics = [value(row.rect.blockStart.constant), value(row.rect.blockSize.constant)];
+    expect(statics.map((v, i) => Math.abs(v - browser[i])).every(d => d < 0.02), `.${cls}: static ${statics} vs browser ${browser}`).toBe(true);
+  }
+});

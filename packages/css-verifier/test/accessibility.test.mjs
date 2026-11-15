@@ -1679,3 +1679,20 @@ test('meta-viewport and touch-zoom: zoom disabled by the viewport meta tag or by
   // A widget's own touch-action (a slider, a canvas) is not the page's.
   assert.deepEqual(codes(page('width=device-width', '.x{touch-action:none}')), []);
 });
+
+test('a rowspan cell stacks gapped one-column grids and column flexes', () => {
+  const tableView = {min: 420, max: 1280, height: {min: 400, max: 900}};
+  const rect = (report, cls) => report.sizes.find(r => r.box === `.${cls}` && r.rect).rect;
+  const cell = children => ({tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: [
+    {tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['s'], rowSpan: 2, children}, {tag: 'td', classes: ['p']}]}, {tag: 'tr', classes: ['r'], children: [{tag: 'td', classes: ['q']}]}]}]});
+  const kids = cls => [1, 2, 3].map(i => ({tag: 'div', classes: [`${cls}${i}`]}));
+  const css = extra => `.t { table-layout: fixed; inline-size: 400px; border-spacing: 0; }\ntd { padding: 0; }\n.s { inline-size: 100px; }\n.p, .q { block-size: 20px; }\n.k1, .k2, .k3 { block-size: 10px; }\n${extra}`;
+  // 3 × 10px + 2 × 8px gaps = 46px over two 20px rows: each grows to 23px.
+  const grid = run(cell([{tag: 'div', classes: ['k'], children: kids('k')}]), css('.k { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 8px; }'), {viewport: tableView});
+  assert.equal(grid.status, 'verified', JSON.stringify(grid.diagnostics));
+  assert.equal(rect(grid, 'p').blockSize.constant, '23');
+  const flex = run(cell([{tag: 'div', classes: ['k'], children: kids('k')}]), css('.k { display: flex; flex-direction: column; row-gap: 8px; }'), {viewport: tableView});
+  assert.equal(rect(flex, 'p').blockSize.constant, '23');
+  // A px flex-basis or an item not stretched is outside the stack: Unknown.
+  assert.equal(run(cell([{tag: 'div', classes: ['k'], children: kids('k')}]), css('.k { display: flex; flex-direction: column; } .k2 { flex-basis: 30px; }'), {viewport: tableView}).status, 'unknown');
+});
