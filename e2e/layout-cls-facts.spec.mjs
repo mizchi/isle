@@ -420,6 +420,8 @@ test('inert declarations: where the static check warns, Chromium lays the page o
     ['.p{display:flex}', '.c{width:100px;height:10px}', 'justify-self:end', '.c', true],
     ['.p{display:flex}', '.c{width:100px;height:10px}', 'justify-items:center', '.p', true],
     ['.p{display:flex}', '.c{width:100px;height:10px}', 'justify-content:center', '.p', false],
+    ['.p{display:flex;height:100px}', '.c{width:100px;height:10px}', 'align-content:center', '.p', true],
+    ['.p{display:flex;height:100px}', '.c{width:100px;height:10px}', 'align-items:center', '.p', false],
   ];
   const html = '<div class="p"><div class="c"></div><div class="c"></div></div>';
   for (const [parent, child, decl, target, warn] of cases) {
@@ -658,6 +660,7 @@ test('inert text-overflow and -webkit-line-clamp: where the static check warns, 
     ['.c{width:120px;white-space:nowrap;overflow-x:clip}', 'text-overflow:ellipsis', false],
     ['.c{width:120px;overflow:hidden;line-height:20px}', '-webkit-line-clamp:2', true],
     ['.c{width:120px;overflow:hidden;line-height:20px;display:-webkit-box;-webkit-box-orient:vertical}', '-webkit-line-clamp:2', false],
+    ['.c{width:120px;height:40px;background:linear-gradient(red,blue)}', 'object-fit:cover', true],
   ];
   for (const [base, decl, warn] of cases) {
     const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g}}${base}`;

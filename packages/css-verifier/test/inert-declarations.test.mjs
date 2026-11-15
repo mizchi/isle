@@ -52,3 +52,10 @@ test('justify-self / justify-items in flex do nothing; in grid they stay Unknown
   assert.equal(run('.p{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:10px;justify-self:stretch}').status, 'verified');
   assert.equal(run('.p{display:flex}.c{width:100px;height:10px;justify-self:end}').status, 'verified');
 });
+
+test('align-content on a single-line flex container and object-fit on a non-replaced box do nothing', () => {
+  // (A max size below the min size is not inert: the max still caps a stretched size, which the min then raises.)
+  assert.deepEqual(inert(run('.p{display:flex;height:100px;align-content:center}.c{width:100px;height:10px}')), [['.p', 'align-content']]);
+  assert.deepEqual(inert(run('.p{display:flex;flex-wrap:wrap;height:100px;align-content:center}.c{width:100px;height:10px}')), []);
+  assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:10px;object-fit:cover}')), [['.c', 'object-fit']]);
+});
