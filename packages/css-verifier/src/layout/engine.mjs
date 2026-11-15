@@ -462,6 +462,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function validate(style, box, region, emit, available = {}) {
     if (style.display === 'none') return false;
     if(box.whitespace && !['normal','nowrap'].includes(style['white-space'])) throw new Error('Preserved whitespace needs explicit text geometry from the input adapter');
+    // hyphens: auto hyphenates by the content language's dictionary (not modeled); with no language (no lang on the
+    // element, an ancestor or the html element) browsers do not hyphenate, so it breaks like manual (measured).
+    if ((box.text || box.inline?.length) && !box.pseudo && style.hyphens === 'auto') {
+      if (style.$lang === '<dynamic>') throw Object.assign(new Error(`${box.label}: hyphens: auto with a dynamic lang`), { code: 'U_LAYOUT_CSS' });
+      if (style.$lang) throw Object.assign(new Error(`${box.label}: hyphens: auto with lang ${style.$lang} breaks words by that language's hyphenation dictionary, which is not modeled`), { code: 'U_LAYOUT_CSS' });
+      if (root.tag !== 'html') throw Object.assign(new Error(`${box.label}: hyphens: auto in a fragment: whether it hyphenates depends on the document's lang, which is not known here`), { code: 'U_LAYOUT_CSS' });
+      if (emit && !layoutWarnings.some(w => w.code === 'W_LAYOUT_HYPHENS_NO_LANG' && w.path === box.path)) layoutWarnings.push({ code: 'W_LAYOUT_HYPHENS_NO_LANG', severity: 'warning', box: box.label, path: box.path,
+        message: `${box.label} has hyphens: auto but no language (no lang attribute on it, an ancestor or html): browsers do not hyphenate it, and long words overflow or break as with hyphens: manual. Set lang on the html element`, ...ranges(region) });
+    }
     // Derived text metrics apply only to the exact font they were measured with.
     if (box.contract?.font) { const reason = textFontMismatch(style, box.contract.font) ?? textLangMismatch(style.$lang, box.contract.textMetrics?.lang) ?? (box.contract.textMetrics?.kind === 'lines' ? textLinesMismatch(style, box.contract) : null); if (reason) throw Object.assign(new Error(reason), {code: 'U_LAYOUT_TEXT_FONT'}); }
     if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag) && (style.appearance!=='none' || style.display!=='block')) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);

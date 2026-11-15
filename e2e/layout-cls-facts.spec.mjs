@@ -372,3 +372,19 @@ test('position: fixed under a transformed ancestor scrolls with the page; the st
     if (!contained) expect(report.status).not.toBe('unknown');
   }
 });
+
+test('hyphens: auto without lang breaks exactly like manual in Chromium, where the static check warns and lays it out as manual', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const words = 'Internationalization accessibility considerations notwithstanding representatives';
+  const report = analyzeHTML(`<html><body><main class="page"><p class="t">${words}</p></main></body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.t{line-height:20px;hyphens:auto}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, boxes: {'.t': {minInlineSize: 40, intrinsicBlockSize: 20}}});
+  expect(report.status).not.toBe('unknown');
+  expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_HYPHENS_NO_LANG')).toBe(true);
+  for (const width of [90, 120, 160, 240]) {
+    const heights = {};
+    for (const h of ['manual', 'auto']) {
+      await page.setContent(`<!doctype html><html><body style="margin:0"><p style="width:${width}px;font:16px/20px sans-serif;hyphens:${h}">${words}</p></body></html>`);
+      heights[h] = await page.evaluate(() => [...document.querySelector('p').getClientRects()].map(r => r.height).join());
+    }
+    expect(heights.auto, `${width}px`).toBe(heights.manual);
+  }
+});

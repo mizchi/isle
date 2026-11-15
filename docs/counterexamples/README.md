@@ -1708,6 +1708,26 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## hyphens: auto on a page with no lang
+
+`W_LAYOUT_HYPHENS_NO_LANG` — markup rule (nothing to see on screen)
+
+> .t has hyphens: auto but no language (no lang attribute on it, an ancestor or html): browsers do not hyphenate it, and long words overflow or break as with hyphens: manual. Set lang on the html element
+
+![hyphens-no-lang](hyphens-no-lang-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><p class="t">Internationalization</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{line-height:20px;hyphens:auto}
+```
+
+</details>
+
 ## A status message region kept display: none until it is used
 
 `W_A11Y_LIVE_HIDDEN` — markup rule (nothing to see on screen)
