@@ -36,3 +36,11 @@ test('inline content and margins collapsing through the container or an empty ch
   assert.equal(run('<div class="a"></div>', '.box{padding:0}.a{height:10px;margin-top:8px}').status, 'unknown');
   assert.equal(run('<div class="a"></div><div class="b"></div>', '.a{margin:4px 0}.b{height:10px}').status, 'unknown');
 });
+
+test('a fixed-height block container keeps its scroll-container children at their size (no grid row shrink)', () => {
+  const r = run('<div class="a"><div class="k"></div></div><div class="b"><div class="k"></div></div>', '.box{height:50px;padding:0}.a,.b{display:grid;grid-template-columns:minmax(0,1fr);overflow:hidden}.k{height:40px}');
+  assert.notEqual(r.status, 'unknown', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.deepEqual(r.sizes.filter(s => ['.a', '.b'].includes(s.box)).map(s => s.blockSize.constant), ['40', '40']);
+  // Their 80px overflow the 50px container (as in Chromium).
+  assert.ok(r.diagnostics.some(d => d.code === 'E_LAYOUT_TRACKS' && d.axis === 'block'));
+});

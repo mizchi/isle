@@ -423,6 +423,22 @@ test('width: 100% with a margin: where W_LAYOUT_FULL_WIDTH_MARGIN warns, the ite
   }
 });
 
+test('block flow does not shrink scroll-container children: the static overflow matches Chromium (a grid would shrink them)', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [height, overflow] of [['50px', true], ['100px', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g}}.box{display:block;height:${height}}.a,.b{display:grid;grid-template-columns:minmax(0,1fr);overflow:hidden}.k{height:40px}`;
+    const html = '<main class="p"><section class="box"><div class="a"><div class="k"></div></div><div class="b"><div class="k"></div></div></section></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    expect(report.status, height).not.toBe('unknown');
+    expect(report.sizes.filter(s => ['.a', '.b'].includes(s.box)).map(s => s.blockSize.constant), height).toEqual(['40', '40']);
+    expect(report.diagnostics.some(d => d.code === 'E_LAYOUT_TRACKS' && d.axis === 'block'), height).toBe(overflow);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const chrome = await page.evaluate(() => ({heights: [...document.querySelectorAll('.a,.b')].map(e => e.getBoundingClientRect().height), over: document.querySelector('.box').scrollHeight > document.querySelector('.box').clientHeight}));
+    expect(chrome.heights, height).toEqual([40, 40]);
+    expect(chrome.over, height).toBe(overflow);
+  }
+});
+
 test('animation score bound: Chromium’s largest session window stays below the static window bound', async ({page}) => {
   const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
   const html = '<div class="page"><div class="a"></div><div class="b"></div></div>';

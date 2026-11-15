@@ -2316,7 +2316,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       // height is definite and too small, Chromium shrinks that row toward the item's padding instead of
                       // its content (measured), clipping the item's content. Row sizes there are not modeled: Unknown in the
                       // region where the rows overflow.
-                      if (emit && knownBlock) {
+                      // (Block flow does not shrink them: block children keep their size and overflow — measured — which is
+                      // what the rows here are.)
+                      if (emit && knownBlock && !style.$blockFlow) {
                         const shrinking = placed.filter(item => rows[item.row]?.auto && ['overflow-x', 'overflow-y'].some(key => item.style[key] !== 'visible'));
                         const over = shrinking.length && clip(rs.region, diff(rs.required, knownBlock), true);
                         if (over) diagnostics.push({ code: 'U_LAYOUT_GRID_SHRINK', severity: 'unknown', box: box.label, path: box.path, source: box.source, items: shrinking.map(item => item.box.label),
