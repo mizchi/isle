@@ -2333,6 +2333,24 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         for (let i = diagnostics.length - 1; i >= 0; i--) if (diagnostics[i].path === entry.box.path && geometricFocus.has(diagnostics[i].code)) diagnostics.splice(i, 1);
         if (focused.status === 'unknown') { diagnostics.push({ code: 'U_A11Y_FOCUS_LAYOUT', severity: 'unknown', message: `${entry.box.label}: its focused layout is not decided (${focused.diagnostics.find(d => d.severity === 'unknown')?.message ?? 'unknown'})`, box: entry.box.label, path: entry.box.path, rule: 'focus-obscured' }); continue; }
         for (const d of focused.diagnostics.filter(d => d.path === entry.box.path && geometricFocus.has(d.code))) diagnostics.push({ ...d, message: `${d.message} (in its focused layout)`, focusedLayout: true });
+        // Boxes the focused layout moves (a :focus border or padding that changes size): Layout Instability excuses
+        // shifts right after a key press, but the content still jumps under the keyboard user. Compared like hover.
+        const rect = row => row.layoutRect !== undefined ? row.layoutRect : row.rect;
+        const r = v => { const [n, d = '1'] = String(v ?? '0').split('/'); return div(q(n), q(d)); };
+        const at = (a, w, h) => add(add(r(a.constant), mul(r(a.coefficient), w)), mul(r(a.heightCoefficient), h));
+        for (const row of sizes) {
+          if (layoutWarnings.some(w => w.code === 'W_LAYOUT_FOCUS_SHIFT' && w.path === row.path && w.focusedPath === entry.box.path) || !rect(row) || !row.$shown?.region) continue;
+          for (const other of focused.sizes.filter(o => o.path === row.path && rect(o) && o.$shown?.region)) {
+            const shared = intersect(row.$shown.region, other.$shown.region);
+            if (!shared) continue;
+            const moved = ['inlineStart', 'blockStart'].flatMap(field => shared.vertices.map(v => ({ field, v, delta: sub(at(rect(other)[field], v.x, v.y), at(rect(row)[field], v.x, v.y)) })).filter(c => cmp(c.delta, zero) !== 0).slice(0, 1));
+            if (!moved.length) continue;
+            const { field, v, delta } = moved[0];
+            layoutWarnings.push({ code: 'W_LAYOUT_FOCUS_SHIFT', severity: 'warning', box: row.box, path: row.path, focused: entry.box.label, focusedPath: entry.box.path, field, delta: exact(delta),
+              message: `Focusing ${entry.box.label} moves ${row.box} (${field} by ${number(delta)}px at viewport ${number(v.x)}px${block ? ` × ${number(v.y)}px` : ''}): the content jumps as the keyboard user tabs. Draw the focus with outline or box-shadow, or keep the size (border-color instead of border-width)` });
+            break;
+          }
+        }
       }
     }
     // Profile: drop the rules outside it; every accessibility row carries its usefulness tier.

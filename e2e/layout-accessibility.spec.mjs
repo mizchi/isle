@@ -1689,3 +1689,19 @@ test('icon-contrast: the static ratio of an icon-only button equals the one from
     if (finding) expect(Math.abs(finding.ratio - browser)).toBeLessThan(1e-6);
   }
 });
+
+test('focus shift: where W_LAYOUT_FOCUS_SHIFT warns, focusing the link moves the next box in Chromium by the reported delta', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const base = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff}.t{height:10px}.l{display:block;height:30px;background:#246;outline:2px solid #000}.next{height:20px}`;
+  const html = '<main class="p"><h1 class="t" aria-label="T"></h1><a class="l" href="/x" aria-label="X"></a><div class="next"></div></main>';
+  for (const focus of ['.l:focus{height:36px}', '.l:focus-visible{padding-top:4px;height:34px}', '.l:focus{outline:3px solid #f00}', '.l:focus{background:#000}']) {
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + focus, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+    const warning = (report.layoutWarnings ?? []).find(w => w.code === 'W_LAYOUT_FOCUS_SHIFT' && w.box === '.next');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${base}${focus}</style></head><body>${html}</body></html>`);
+    const before = await page.evaluate(() => document.querySelector('.next').getBoundingClientRect().top);
+    await page.keyboard.press('Tab');
+    const after = await page.evaluate(() => document.querySelector('.next').getBoundingClientRect().top);
+    expect(Boolean(warning), `${focus}: Chromium moves .next by ${after - before}px`).toBe(after !== before);
+    if (warning) expect(Number(warning.delta)).toBe(after - before);
+  }
+});

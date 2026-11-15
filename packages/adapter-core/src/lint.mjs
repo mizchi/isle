@@ -12,6 +12,7 @@ export const recommended = {
   E_LAYOUT_IMAGE_UNRESERVED: ['error', 'add width and height attributes (or aspect-ratio) so the image reserves its box'],
   E_LAYOUT_IMAGE_RATIO: ['error', 'make the reserved ratio match the file'],
   W_LAYOUT_DECLARATION_INERT: ['warning', 'remove it, or change the parent display it needs'],
+  W_LAYOUT_FOCUS_SHIFT: ['warning', 'draw focus with outline or box-shadow, or keep the size (change border-color, not border-width)'],
   W_LAYOUT_CONTAINER_COLLAPSE: ['warning', 'give the query container a width, flex: 1 or a flex-basis'],
   W_LAYOUT_STICKY_NO_INSET: ['warning', 'add top: 0 (or the edge it should stick to)'],
   W_LAYOUT_STICKY_SCROLLER: ['warning', 'use overflow-x: clip on the ancestor, or move the sticky box out'],
