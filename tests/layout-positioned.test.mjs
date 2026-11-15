@@ -138,13 +138,15 @@ test('missing, ambiguous, undeclared and non-absolute bindings cannot verify vac
 test('unsupported coordinate semantics and weakened profiles stay Unknown or rejected', async () => {
   for (const extra of [
     '.map{transform:translateX(1px)}', '.map{will-change:transform}', '.map{contain:layout}',
-    '.map{overflow:auto}', '.controls{margin:auto}', '.controls{left:8px}',
+    '.map{overflow:auto}', '.controls{margin:auto}',
     '.controls{grid-column:1}', '.controls{width:auto}', '.controls{height:auto}',
     '.map{left:8px}', '.controls{position:fixed}', '.controls{left:var(--unknown)}',
   ]) {
     const result = await inspect(source(css + extra));
     assert.equal(status(result), 'unknown', extra);
   }
+  // Both insets with an explicit width are over-constrained: right is ignored in ltr (CSS 2 §10.3.7), now modeled.
+  assert.notEqual(status(await inspect(source(css + '.controls{left:8px}'))), 'unknown');
   const safe = await inspect(source(css, undefined, declaration.replace('PositionedGrid', 'SafeGrid').replace(/  (?:space|overlay)[^\n]+\n/g, '')));
   assert.notEqual(status(safe), 'verified');
   const positioned = (await inspect()).ir.components[0].layout.contract;
