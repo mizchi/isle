@@ -59,7 +59,7 @@ test('height and container branches remain coupled in production checks', async 
 test('unsupported CSS is a build error, even in an unmatched rule', async t => {
   const run = await fixture(t, {css:css+responsive+'.unused{float:left}'});
   // float is parsed but an unmatched rule cannot affect geometry; unknown syntax must still fail closed.
-  const unknown = await fixture(t, {css:css+responsive+'.unused > div{display:grid}'});
+  const unknown = await fixture(t, {css:css+responsive+'.unused:nth-child(2){display:grid}'});
   await run();
   await assert.rejects(unknown, /E_ISLE_LAYOUT.*unknown/s);
 });

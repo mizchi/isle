@@ -46,10 +46,10 @@ test('media overlap at a single boundary is checked, including important and spe
     css: css.replace('600px', '608px') + `
       @media (min-width: 700px) { .body { width: 100px !important; } }
       @media (width > 700px) { .body { width: auto !important; } }
-      .board .body { color: blue; }
+      .board:nth-child(1) .body { color: blue; }
     `,
   });
-  // Unsupported combinators are never silently ignored, even for decorative rules.
+  // Unsupported selectors (here :nth-child) are never silently ignored, even for decorative rules.
   assert.equal(report.status, 'unknown');
   const supported = run({ viewport: { min: 400, max: 800 }, css: css.replace('600px', '608px') + `
     @media (width >= 700px) { .body { inline-size: 100px !important; } }
