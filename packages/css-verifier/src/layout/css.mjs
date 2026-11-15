@@ -454,7 +454,10 @@ export function parseLayoutCSS(sheets, diagnostic) {
           const pending=!custom && expression?.references.length ? {property,expression} : undefined;
           if(custom && !customName(property)) throw Object.assign(new Error('Use unescaped ASCII custom-property names'),{code:'U_LAYOUT_VARIABLE'});
           for (const [name, value] of custom ? [[property,declaration.value]] : expand(property,pending ? 'initial' : declaration.value)) {
-            declarations.push({ property:name, value, ...(custom ? {expression} : {}), ...(pending ? {pending,specified:declaration.value} : {}), important: declaration.important ? 1 : 0, line: declaration.source.start.line, file: filename });
+            // A logical inline side (padding-inline-start, margin-inline, inset-inline-end, …) is stored as its ltr
+            // physical side; `flip` is the side it means in an rtl box (computeStyle picks it once the direction is known).
+            const flip = /-inline(?:-start|-end)?$/.test(property) && /(?:^|-)(?:left|right)$/.test(name) ? name.replace(/(left|right)$/, side => side === 'left' ? 'right' : 'left') : undefined;
+            declarations.push({ property:name, value, ...(flip ? {flip} : {}), ...(custom ? {expression} : {}), ...(pending ? {pending,specified:declaration.value} : {}), important: declaration.important ? 1 : 0, line: declaration.source.start.line, file: filename });
           }
         } catch (error) { problem(error.code ?? 'U_LAYOUT_CSS', error.message, declaration.source.start.line); }
       }
@@ -474,7 +477,8 @@ export function parseLayoutCSS(sheets, diagnostic) {
 // facts: `medium` and `ua-default` stay unresolved for text metrics.
 const textInitial = { 'font-family': 'ua-default', 'font-size': 'medium', 'line-height': 'normal', 'font-weight': 'normal', 'font-style': 'normal', 'font-stretch': 'normal', 'font-variant': 'normal', 'text-transform': 'none', 'letter-spacing': 'normal', 'word-spacing': 'normal', 'text-align': 'start' };
 
-export function computeStyle(rules, box, active, inherited = {}, {spend, state}={}) {
+export function computeStyle(rules, box, active, inherited = {}, {spend, state, rtl = false}={}) {
+  let flipped = false;
   const values = {
     // Media: track/source never render; audio renders only with controls.
     // ::before/::after are inline by default (CSS Pseudo-Elements 4), whatever their element's tag.
@@ -567,15 +571,18 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
         // The style attribute (element-attached) wins over every selector and layer, below only importance (Cascade 5).
         const rank = [declaration.important, rule.attached ? 1 : 0, layer, ...selector.specificity];
         const origin = { file: declaration.file, line: declaration.line, selector: selector.source, layer: rule.layerName, specified: declaration.specified ?? declaration.value, ...conditions(rule) };
-        const wins = !priorities.has(declaration.property) || greaterRank(rank, priorities.get(declaration.property));
+        // A logical side resolves by the box's direction (an rtl pass when the first one finds rtl; CSS Logical 1).
+        if (declaration.flip) flipped = true;
+        const property = rtl && declaration.flip ? declaration.flip : declaration.property;
+        const wins = !priorities.has(property) || greaterRank(rank, priorities.get(property));
         // Explanation data only: the losing side of each comparison.
-        const loser = wins ? sources[declaration.property] : origin;
-        if (loser) (overridden[declaration.property] ??= []).push(loser);
+        const loser = wins ? sources[property] : origin;
+        if (loser) (overridden[property] ??= []).push(loser);
         if (wins) {
-          if(declaration.expression) custom.set(declaration.property,declaration);
-          else values[declaration.property] = declaration.pending ? declaration : declaration.value;
-          priorities.set(declaration.property, rank);
-          sources[declaration.property] = origin;
+          if(declaration.expression) custom.set(property,declaration);
+          else values[property] = declaration.pending ? declaration : declaration.value;
+          priorities.set(property, rank);
+          sources[property] = origin;
         }
       }
     }
@@ -593,7 +600,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
           expanded.set(declaration.pending,{map:new Map(expand(declaration.pending.property,result.invalid ? 'unset' : result.value)),invalid:result.invalid ? invalid.at(-1) : undefined});
         }
         const entry=expanded.get(declaration.pending);
-        value=entry.map.get(property);
+        // The expansion is keyed by the ltr side the declaration was stored under.
+        value=entry.map.get(declaration.property);
         entry.invalid?.longhands.push(property);
         if(value===undefined) throw new Error('CSS variable shorthand does not produce the required property');
       } catch(error) {error.css={file:declaration.file,line:declaration.line};throw error;}
@@ -641,5 +649,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   const x = values['overflow-x'], y = values['overflow-y'];
   if (!nonscroll(y)) values['overflow-x'] = x === 'visible' ? 'auto' : x === 'clip' ? 'hidden' : x;
   if (!nonscroll(x)) values['overflow-y'] = y === 'visible' ? 'auto' : y === 'clip' ? 'hidden' : y;
+  // A logical side was taken as ltr; in an rtl box cascade again with the sides flipped.
+  if (!rtl && flipped && values.direction === 'rtl') return computeStyle(rules, box, active, inherited, {spend, state, rtl: true});
   return values;
 }

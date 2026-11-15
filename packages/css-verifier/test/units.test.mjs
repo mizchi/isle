@@ -62,3 +62,15 @@ test('an html document root is analysed with its head dropped', () => {
   // A head with other elements (a style sheet) is not modeled: the css option carries the styles.
   assert.equal(run('', {html: '<html lang="en"><head><style>.x{inline-size:1px}</style></head><body><div class="page"><div class="x"></div></div></body></html>'}).status, 'unknown');
 });
+
+test('logical inline sides resolve by direction: padding-inline-start is the right side in an rtl box', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const x = (decl, dir) => { const r = analyzeHTML(`<html lang="en"><body><div class="c" dir="${dir}"><div class="x"><div class="y"></div></div></div></body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.c{display:grid;grid-template-columns:150px}.x{${g};${decl}}.y{height:20px}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}); const v = r.sizes.find(s => s.box === '.y').rect.inlineStart; return Number(v.constant) + 400 * Number(v.coefficient); };
+  // rtl: the 150px column sits at the right (250–400); start padding is on its right, so .y starts at 250.
+  assert.equal(x('padding-inline-start:30px', 'rtl'), 250);
+  assert.equal(x('padding-inline-end:30px', 'rtl'), 280);
+  assert.equal(x('padding-left:30px', 'rtl'), 280);
+  assert.equal(x('padding-inline-start:30px', 'ltr'), 30);
+  // The later of a physical and a logical side wins, by the side the logical one means here.
+  assert.equal(x('padding-left:5px;padding-inline-end:30px', 'rtl'), 280);
+});
