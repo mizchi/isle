@@ -1,7 +1,7 @@
 import { q, add, sub, mul, cmp, div, exact, number } from './linear.mjs';
 import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rectangle, clip, partition, projection, serialize } from './region.mjs';
 import { validateOptions } from './input.mjs';
-import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize } from './css.mjs';
+import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea } from './css.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place } from './grid.mjs';
 import { compileSelector } from './selectors.mjs';
@@ -924,6 +924,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
       if (style.$sticky && parents.some(p => p.clipped || p.clipScope || (p.style && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible')))) throw Object.assign(new Error(`${box.label} is position: sticky inside a scrolling or clipping ancestor, which it would stick to`), { code: 'U_LAYOUT_CSS' });
       if (style['animation-name'] !== 'none' && style['animation-play-state'] !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(style['animation-duration']) && keyframeFrames.get(style['animation-name'])?.some(frame => frame.layout)) animated.push({ box, region, name: style['animation-name'], position: style.position });
+      // A bar fixed to the bottom edge under viewport-fit=cover: its content must clear the bottom safe area (the home
+      // indicator), so its bottom padding has to be at least that inset (env(safe-area-inset-bottom)).
+      if (style.$fixed && cover && options.safeArea?.bottom > 0 && ['0', '0px'].includes(style.bottom) && (box.children ?? []).length && cmp(px(style['padding-bottom']), q(String(options.safeArea.bottom))) < 0 && !layoutWarnings.some(w => w.code === 'W_LAYOUT_SAFE_AREA' && w.path === box.path))
+        layoutWarnings.push({ code: 'W_LAYOUT_SAFE_AREA', severity: 'warning', box: box.label, path: box.path, inset: options.safeArea.bottom,
+          message: `${box.label} is fixed to the bottom edge of a viewport-fit=cover page, but its bottom padding (${style['padding-bottom']}) is less than the ${options.safeArea.bottom}px safe area: its content sits under the home indicator. Use padding-bottom: max(…, env(safe-area-inset-bottom))`, ...ranges(region) });
       // Font swap: text in a web font (an @font-face family first in font-family) whose box takes its height from the
       // text is laid out with a fallback font until the file arrives, then again with the web font; unless the font is
       // optional (never swapped in late) the text's lines can change and move what follows (a layout shift).
@@ -1597,6 +1602,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       { inline, block, ...(legendOrigin ? { origin: legendOrigin } : {}) }, ancestors, emit);
   }
   let rootFontSize = null;
+  // Safe-area insets: the declared ones under viewport-fit=cover (Unknown when not declared), else 0.
+  const cover = /viewport-fit\s*=\s*cover/i.test(String(root.metaViewport ?? ''));
+  setSafeArea(cover ? (options.safeArea ? { top: 0, right: 0, bottom: 0, left: 0, ...options.safeArea } : 'unknown') : null);
   unitContext.rootFontSize = null; setRootFontSize(null); unitContext.heightKnown = Boolean(block && options.viewport.height);
   function solve(box, available, region, parents = [], inherited, emit = true) {
     let results = [];

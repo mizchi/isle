@@ -5,7 +5,7 @@ export const boxTags = new Set('html body button div main aside section article 
 // Form controls and images have UA intrinsic sizes and padding: checked only with resets and explicit sizes.
 export const controlTags = new Set(['button', 'input', 'select', 'textarea']), replacedTags = new Set(['img', 'input', 'select', 'textarea']);
 const ancestorTags=new Set([...boxTags].filter(tag=>!['button', 'img', 'input', 'select', 'textarea'].includes(tag)));
-const supportedOptions = new Set(['name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility', 'images', 'devicePixelRatios', '$devicePixelRatio', '$animationFrame', '$slideVariant']);
+const supportedOptions = new Set(['name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility', 'images', 'devicePixelRatios', '$devicePixelRatio', '$animationFrame', '$slideVariant', 'safeArea']);
 const supportedContract = new Set(['minInlineSize', 'maxInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock', 'font', 'textMetrics', 'textRuns']);
 function finiteSize(value, name) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1_000_000) throw new Error(`Invalid layout ${name}`);
@@ -23,6 +23,9 @@ export function validateOptions(options) {
   // $animationFrame (internal): the re-layout of one box at one keyframe's layout declarations.
   if (options.$animationFrame !== undefined && (typeof options.$animationFrame?.path !== 'string' || typeof options.$animationFrame?.css !== 'string')) throw new Error('Invalid layout options');
   if (options.$slideVariant !== undefined && options.$slideVariant !== true) throw new Error('Invalid layout options');
+  // safeArea: the device's safe-area insets in px ({top, right, bottom, left}), used by env(safe-area-inset-*) when the
+  // page declares viewport-fit=cover.
+  if (options.safeArea !== undefined && (!options.safeArea || typeof options.safeArea !== 'object' || Object.keys(options.safeArea).some(k => !['top', 'right', 'bottom', 'left'].includes(k)) || Object.values(options.safeArea).some(v => !Number.isInteger(v) || v < 0 || v > 200))) throw new Error('Invalid safeArea option: {top, right, bottom, left} in whole px (0 to 200)');
   // images: the natural size of static image files by src (read at build time), {src: {width, height}} in pixels.
   if (options.images !== undefined && (!options.images || typeof options.images !== 'object' || Array.isArray(options.images) || Object.keys(options.images).length > 1024
     || Object.values(options.images).some(size => !size || Object.keys(size).some(k => !['width', 'height'].includes(k)) || !Number.isSafeInteger(size.width) || !Number.isSafeInteger(size.height) || size.width <= 0 || size.height <= 0))) throw new Error('Invalid images option: {src: {width, height}} with positive integer pixels');

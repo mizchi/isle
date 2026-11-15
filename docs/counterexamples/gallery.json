@@ -1366,6 +1366,19 @@
   "css": ".m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
  },
  {
+  "id": "safe-area",
+  "title": "A bottom bar under the home indicator (viewport-fit=cover)",
+  "code": "W_LAYOUT_SAFE_AREA",
+  "width": 390,
+  "height": 844,
+  "message": ".bar is fixed to the bottom edge of a viewport-fit=cover page, but its bottom padding (0) is less than the 34px safe area: its content sits under the home indicator. Use padding-bottom: max(…, env(safe-area-inset-bottom))",
+  "shots": [
+   "safe-area-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"c\"></div></main><nav class=\"bar\"><a class=\"l\" href=\"/\" aria-label=\"Home\"></a><a class=\"l\" href=\"/cart\" aria-label=\"Cart\"></a></nav>",
+  "css": "body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:200px;background:#eee}.bar{position:fixed;left:0;bottom:0;width:100%;height:56px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:8px;padding:4px 8px 0;background:#246}.l{display:block;height:48px;background:#9cf}"
+ },
+ {
   "id": "protrusion",
   "title": "A badge that sticks out of its card",
   "code": "E_LAYOUT_PROTRUSION",

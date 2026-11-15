@@ -259,6 +259,10 @@ const cases = [
     html: '<main class="page"><a class="l" href="/map"><img class="p" src="/wide.png" width="320" height="160" alt="Store map" ismap></a></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.l{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:block;width:100%;height:auto}'},
   {id: 'aria-hidden-body', title: 'aria-hidden on body', code: 'W_A11Y_ARIA_HIDDEN_BODY', warning: true, markup: true, mark: 'aria-hidden="true"', options: {accessibility: true},
     doc: '<html lang="en"><body aria-hidden="true"><main class="m"><div class="x"></div></main></body></html>', html: '<body aria-hidden="true"><main class="m"><div class="x"></div></main></body>', css: '.m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}'},
+  {id: 'safe-area', title: 'A bottom bar under the home indicator (viewport-fit=cover)', code: 'W_LAYOUT_SAFE_AREA', warning: true, band: 34,
+    options: {accessibility: true, scrollbars: overlay, safeArea: {top: 47, bottom: 34}, viewport: {min: 390, max: 390, height: {min: 844, max: 844}}},
+    doc: '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, viewport-fit=cover"><title>Shop</title></head><body><main class="page"><div class="c"></div></main><nav class="bar"><a class="l" href="/" aria-label="Home"></a><a class="l" href="/cart" aria-label="Cart"></a></nav></body></html>',
+    html: '<main class="page"><div class="c"></div></main><nav class="bar"><a class="l" href="/" aria-label="Home"></a><a class="l" href="/cart" aria-label="Cart"></a></nav>', css: 'body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:200px;background:#eee}.bar{position:fixed;left:0;bottom:0;width:100%;height:56px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:8px;padding:4px 8px 0;background:#246}.l{display:block;height:48px;background:#9cf}'},
   // --- integrity ---
   {id: 'protrusion', title: 'A badge that sticks out of its card', code: 'E_LAYOUT_PROTRUSION', options: {integrity: true},
     html: '<main class="page"><div class="card"><div class="badge"></div></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);padding:24px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:80px;background:#eee}.badge{height:24px;background:#c33;transform:translate(20px,-16px)}'},
@@ -364,10 +368,11 @@ for (const c of cases) {
     for (const i of path.split('/').slice(1).map(Number)) { if (i < 0) return null; n = [...n.children].filter(c => c.tagName !== 'HEAD')[i]; if (!n) return null; }
     return n;
   }), ...(extra ? [document.querySelector(extra)] : [])].map(n => { if (!n) return null; const r = n.getBoundingClientRect(); return {x: r.left, y: r.top, w: r.width, h: r.height}; }), {paths, extra: c.highlight});
-  const draw = (boxes, ghosts, label) => page.evaluate(({boxes, ghosts, label, whole}) => {
+  const draw = (boxes, ghosts, label) => page.evaluate(({boxes, ghosts, label, whole, band}) => {
     document.querySelectorAll('.__ce').forEach(e => e.remove());
     const add = (r, style) => { if (!r) return; const e = document.createElement('div'); e.className = '__ce'; Object.assign(e.style, {position: 'fixed', left: r.x - 2 + 'px', top: r.y - 2 + 'px', width: r.w + 4 + 'px', height: r.h + 4 + 'px', zIndex: 2147483647, pointerEvents: 'none', boxSizing: 'border-box', ...style}); document.body.append(e); };
     for (const r of ghosts) add(r, {border: '2px dashed #e00', background: 'rgba(255,0,0,.06)'});
+    if (band) { const e = document.createElement('div'); e.className = '__ce'; e.textContent = `safe area ${band}px (home indicator)`; Object.assign(e.style, {position: 'fixed', left: 0, right: 0, bottom: 0, height: band + 'px', zIndex: 2147483646, pointerEvents: 'none', font: '600 11px Roboto, sans-serif', color: '#fff', display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(135deg, rgba(0,0,0,.55) 0 6px, rgba(0,0,0,.35) 6px 12px)'}); document.body.append(e); }
     for (const r of boxes) add(r, {border: '3px solid #e00'});
     // The picture: the page content and every outline, padded; the label sits below it.
     const parts = [document.querySelector('main').getBoundingClientRect(), ...[...boxes, ...ghosts].filter(Boolean).map(r => ({left: r.x, top: r.y, right: r.x + r.w, bottom: r.y + r.h}))];
@@ -377,11 +382,11 @@ for (const c of cases) {
     if (whole) { x0 = 0; y0 = 0; x1 = innerWidth; y1 = full - 30; }
     x1 = Math.max(x1, Math.min(innerWidth, x0 + 280));
     const tag = document.createElement('div'); tag.className = '__ce'; tag.textContent = label;
-    Object.assign(tag.style, {position: 'fixed', left: x0 + 'px', top: y1 + 4 + 'px', maxWidth: (x1 - x0 - 8) + 'px', font: '600 12px/1.3 Roboto, sans-serif', color: '#fff', background: 'rgba(200,0,0,.92)', padding: '4px 6px', borderRadius: '3px', zIndex: 2147483647, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'});
+    Object.assign(tag.style, {position: 'fixed', left: x0 + 'px', top: (band ? 4 : y1 + 4) + 'px', maxWidth: (x1 - x0 - 8) + 'px', font: '600 12px/1.3 Roboto, sans-serif', color: '#fff', background: 'rgba(200,0,0,.92)', padding: '4px 6px', borderRadius: '3px', zIndex: 2147483647, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'});
     document.body.append(tag);
     // The DevTools clip is in document coordinates: add the scroll offset.
     return {x: x0 + scrollX, y: y0 + scrollY, width: x1 - x0, height: Math.min(full, y1 + 30) - y0};
-  }, {boxes, ghosts, label, whole: c.state === 'scroll' || Boolean(c.act && c.options?.scrollbars)});
+  }, {boxes, ghosts, label, band: c.band, whole: c.state === 'scroll' || Boolean(c.act && c.options?.scrollbars) || Boolean(c.band)});
   const shot = async (name, label, ghosts = []) => { const clip = await draw(await rects(), ghosts, label); const file = `${c.id}-${name}.png`; const {data} = await cdp.send('Page.captureScreenshot', {format: 'png', clip: {...clip, scale: 1}}); writeFileSync(new URL(file, out), Buffer.from(data, 'base64')); return file; };
   const shots = [];
   const stateful = (c.state && c.state !== 'focus') || Boolean(c.act);

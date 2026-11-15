@@ -71,3 +71,20 @@ test('a sticky box inside an overflow: hidden ancestor never sticks to the page 
   // overflow: clip is not a scroll container: the box sticks to the page through it (not modeled: Unknown).
   assert.equal(run('y').status, 'unknown');
 });
+
+test('env(safe-area-inset-*) and a bottom bar under viewport-fit=cover (W_LAYOUT_SAFE_AREA)', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const run = (meta, pad, safeArea) => analyzeHTML(`<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width${meta}"><title>T</title></head><body><main class="page"><div class="c"></div></main><nav class="bar"><a class="l" href="/" aria-label="Home"></a></nav></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.c{height:100px}.bar{position:fixed;left:0;bottom:0;width:100%;height:82px;${g};background:#fff;padding-bottom:${pad}}.l{display:block;height:48px}`,
+      viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], ...(safeArea ? {safeArea} : {})});
+  const codes = report => (report.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_SAFE_AREA').map(w => w.box);
+  assert.deepEqual(codes(run(', viewport-fit=cover', '0', {bottom: 34})), ['.bar']);
+  for (const pad of ['env(safe-area-inset-bottom)', 'max(8px, env(safe-area-inset-bottom))', 'env(safe-area-inset-bottom, 40px)']) assert.deepEqual(codes(run(', viewport-fit=cover', pad, {bottom: 34})), [], pad);
+  // The env() value: the declared inset (34px leaves 48px of content), 0 without cover.
+  const bar = report => report.sizes.find(r => r.box === '.bar').contentBlockSize.constant;
+  assert.equal(bar(run(', viewport-fit=cover', 'env(safe-area-inset-bottom)', {bottom: 34})), '48');
+  assert.equal(bar(run('', 'env(safe-area-inset-bottom)', {bottom: 34})), '82');
+  // cover without a declared safe area: the inset is not known.
+  assert.match(run(', viewport-fit=cover', 'env(safe-area-inset-bottom)').diagnostics.find(d => d.severity === 'unknown').message, /safeArea/);
+  assert.throws(() => run('', '0', {bottom: -1}), /safeArea/);
+});

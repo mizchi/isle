@@ -2088,6 +2088,26 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## A bottom bar under the home indicator (viewport-fit=cover)
+
+`W_LAYOUT_SAFE_AREA` — viewport 390 × 844px
+
+> .bar is fixed to the bottom edge of a viewport-fit=cover page, but its bottom padding (0) is less than the 34px safe area: its content sits under the home indicator. Use padding-bottom: max(…, env(safe-area-inset-bottom))
+
+![safe-area](safe-area-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="c"></div></main><nav class="bar"><a class="l" href="/" aria-label="Home"></a><a class="l" href="/cart" aria-label="Cart"></a></nav>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:200px;background:#eee}.bar{position:fixed;left:0;bottom:0;width:100%;height:56px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:8px;padding:4px 8px 0;background:#246}.l{display:block;height:48px;background:#9cf}
+```
+
+</details>
+
 ## A badge that sticks out of its card
 
 `E_LAYOUT_PROTRUSION` — viewport 672 × 690px

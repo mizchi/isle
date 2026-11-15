@@ -11,8 +11,20 @@ const pointSize = /^(?:\d+(?:\.\d{1,6})?px|0)$/;
 let rootFontSize = null;
 export function setRootFontSize(size) { rootFontSize = size; }
 // Parse-time check of a px or rem length; rem resolves at layout time, against the html root (else Unknown).
-const pxSyntax = text => { if (!/^\d+(?:\.\d{1,6})?rem$/.test(text)) px(text); };
+// env(safe-area-inset-*) (optionally with a px fallback, or as max(px, env(…))) resolves at layout time against the
+// declared safe area (setSafeArea; 0 without viewport-fit=cover, as browsers report).
+const envPattern = /^env\(\s*safe-area-inset-(top|right|bottom|left)\s*(?:,\s*(\d+(?:\.\d{1,6})?px|0)\s*)?\)$/;
+const maxEnv = /^max\(\s*(\d+(?:\.\d{1,6})?px|0)\s*,\s*(env\([^()]*\))\s*\)$/;
+let safeArea = null;
+export function setSafeArea(area) { safeArea = area; }
+const pxSyntax = text => { if (!/^\d+(?:\.\d{1,6})?rem$/.test(text) && !envPattern.test(text) && !maxEnv.test(text)) px(text); };
 export function px(text) {
+  const env = envPattern.exec(text ?? ''), envMax = maxEnv.exec(text ?? '');
+  if (envMax) { const a = px(envMax[1]), b = px(envMax[2]); return cmp(a, b) >= 0 ? a : b; }
+  if (env) {
+    if (safeArea === 'unknown') throw new Error(`${text}: viewport-fit=cover lets the page under the device's safe area; declare the safeArea option`);
+    return q(String(safeArea?.[env[1]] ?? 0));
+  }
   const rem = /^(\d+(?:\.\d{1,6})?)rem$/.exec(text ?? '');
   if (rem && rootFontSize) return mul(q(rem[1]), rootFontSize);
   if (!pointSize.test(text)) throw new Error(`Unsupported CSS pixel length: ${text}`);
