@@ -143,6 +143,8 @@ const cases = [
     css: '.row{display:flex;column-gap:10px}.a,.b,.c{block-size:20px}.a{flex:1;inline-size:300px}.b{flex:2 1 0;inline-size:40px;min-inline-size:0}.c{flex:none;inline-size:50px}'},
   {name: 'grid-template-areas place items by name, out of DOM order', html: '<main class="grid"><div class="m"></div><div class="n"></div><div class="h"></div><div class="f"></div></main>',
     css: '.grid{display:grid;grid-template-columns:120px minmax(0,1fr);grid-template-areas:"head head" "nav main" ". foot";grid-auto-rows:30px;column-gap:8px;row-gap:4px}.h{grid-area:head}.n{grid-area:nav}.m{grid-area:main}.f{grid-column:foot;grid-row:foot}'},
+  {name: 'container-type: inline-size collapses an absolute box with an auto width', html: '<main class="wrap"><div class="a"><div class="k"></div></div><div class="b"></div><div class="filler"></div></main>',
+    css: '.wrap{display:grid;grid-template-columns:minmax(0,1fr);position:relative}.filler{block-size:100px}.a,.b{position:absolute;top:10px;left:20px;block-size:30px;container-type:inline-size;display:grid;grid-template-columns:minmax(0,1fr)}.a{padding:0 6px}.b{box-sizing:content-box;padding:0 7px;top:50px}.k{block-size:10px}'},
   {name: 'container-type: inline-size collapses a non-growing flex item to its padding', html: '<main class="row"><div class="c"><div class="k"></div></div><div class="g"><div class="k"></div></div><div class="o"></div></main>',
     css: '.row{display:flex;column-gap:10px}.c,.g{display:grid;grid-template-columns:minmax(0,1fr);container-type:inline-size;padding:0 8px}.g{flex-grow:1}.k{block-size:20px}.o{inline-size:50px;block-size:10px}'},
 ];

@@ -25,3 +25,14 @@ test('a width, a growing item or no containment: no collapse', () => {
   // Without containment the width is the content's, which is outside the subset.
   assert.equal(run('').status, 'unknown');
 });
+
+test('an absolute box with container-type and an auto width collapses to its padding and border', () => {
+  const abs = css => analyzeHTML('<html lang="en"><body><div class="p"><div class="c"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g};position:relative;height:100px}.c{position:absolute;top:0;left:0;height:20px;container-type:inline-size}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  const a = abs('.c{padding:0 6px}');
+  assert.equal(a.status, 'verified', JSON.stringify(a.diagnostics));
+  assert.equal(a.sizes.find(r => r.box === '.c').inlineSize.constant, '12');
+  assert.deepEqual(collapsed(a), ['.c']);
+  assert.equal(abs('.c{box-sizing:content-box;padding:0 7px}').sizes.find(r => r.box === '.c').inlineSize.constant, '14');
+  // Both insets size it: no collapse.
+  assert.deepEqual(collapsed(abs('.c{right:0}')), []);
+});

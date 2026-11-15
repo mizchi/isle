@@ -404,6 +404,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         };
         sized(style.direction === 'rtl' ? 'right' : 'left', style.direction === 'rtl' ? 'left' : 'right', 'inline-size', ['left', 'right']);
         sized('top', 'bottom', 'block-size', ['top', 'bottom']);
+        // An auto width left after the insets shrinks to fit its content; under inline-size containment
+        // (container-type: inline-size / size) the content counts for nothing, so it is its padding and border.
+        if (style['inline-size'] === 'auto' && ['inline-size', 'size'].includes(style['container-type'])) {
+          const sides = ['left', 'right'].flatMap(side => [style[`padding-${side}`], style[`border-${side}`]]).map(v => v === 'ua' || v === undefined ? '0' : String(v));
+          if (sides.every(v => /^(?:0|\d+(?:\.\d+)?px)$/.test(v))) {
+            const edges = sides.reduce((total, v) => total + (v === '0' ? 0 : Number(v.slice(0, -2))), 0);
+            style = { ...style, 'inline-size': style['box-sizing'] === 'content-box' ? '0px' : `${edges}px`, $containerCollapse: true };
+          }
+        }
       }
       // A line-clamped text leaf (-webkit-box, vertical, -webkit-line-clamp: N): a block whose height is at most N lines.
       if (style.display === '-webkit-box' && !box.pseudo) {
@@ -1148,6 +1157,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (['flex', 'inline-flex'].includes(style.display) && set('justify-items', 'normal')) reasons.push(['justify-items', 'it is display: flex, which ignores justify-items (use justify-content)']);
         // A main size under a non-auto flex-basis (flex: 1; width: 200px): flex-basis replaces it (inertMainSize).
         if (style.$inertMain) reasons.push([style.$inertMain.property, `flex-basis: ${style['flex-basis']} sets its main size instead (use flex: 1 1 auto, or flex-basis: ${style.$inertMain.value})`]);
+        if (style.$containerCollapse && !layoutWarnings.some(w => w.code === 'W_LAYOUT_CONTAINER_COLLAPSE' && w.path === box.path))
+          layoutWarnings.push({ code: 'W_LAYOUT_CONTAINER_COLLAPSE', severity: 'warning', box: box.label, path: box.path,
+            message: `${box.label} is position: absolute and container-type: ${style['container-type']} with no width: an absolute box shrinks to fit its content, which size containment ignores, so it is only as wide as its padding and border and its content overflows. Give it a width (or both left and right)`, ...ranges(region) });
         // container-type: inline-size on a flex item sized by its content (auto width and basis, not growing): the
         // containment drops the content's size, so it collapses to its padding and border.
         if (inFlow && ['flex', 'inline-flex'].includes(parentDisplay) && !String(parents.at(-1).style['flex-direction']).startsWith('column') && ['inline-size', 'size'].includes(style['container-type'])
