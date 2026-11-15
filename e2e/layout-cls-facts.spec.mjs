@@ -645,3 +645,25 @@ test('a scroll container in an auto row of a too-short grid: Chromium shrinks th
     expect(height < 66, `${c || 'visible'}: row ${height}px`).toBe(unknown);
   }
 });
+
+test('inert text-overflow and -webkit-line-clamp: where the static check warns, Chromium paints the same without the declaration', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const text = 'Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua';
+  const cases = [
+    ['.c{width:120px;white-space:nowrap}', 'text-overflow:ellipsis', true],
+    ['.c{width:120px;white-space:nowrap;overflow:hidden}', 'text-overflow:ellipsis', false],
+    ['.c{width:120px;white-space:nowrap;overflow-x:clip}', 'text-overflow:ellipsis', false],
+    ['.c{width:120px;overflow:hidden;line-height:20px}', '-webkit-line-clamp:2', true],
+    ['.c{width:120px;overflow:hidden;line-height:20px;display:-webkit-box;-webkit-box-orient:vertical}', '-webkit-line-clamp:2', false],
+  ];
+  for (const [base, decl, warn] of cases) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g}}${base}`;
+    // The warning does not depend on the content: the static side checks the empty box (text without a size contract
+    // is Unknown), Chromium paints the text.
+    const report = analyzeHTML('<html lang="en"><body><div class="p"><div class="c"></div></div></body></html>', {name: 'P', css: `${css}.c{height:40px;${decl}}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.some(p => decl.includes(p))), `${base} ${decl}`).toBe(warn);
+    await page.setViewportSize({width: 400, height: 600});
+    const shot = async withDecl => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css}${withDecl ? `.c{${decl}}` : ''}</style></head><body><div class="p"><div class="c">${text}</div></div></body></html>`); return (await page.screenshot()).toString('base64'); };
+    expect((await shot(true)) === (await shot(false)), `${base} ${decl}: same pixels without it`).toBe(warn);
+  }
+});

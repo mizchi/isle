@@ -30,3 +30,15 @@ test('aspect-ratio with both sizes set, and vertical-align on a block-level box,
   assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:10px;vertical-align:middle}')), [['.c', 'vertical-align']]);
   assert.deepEqual(inert(run('.p{display:flex}.c{width:100px;height:10px;vertical-align:top}')), [['.c', 'vertical-align']]);
 });
+
+test('paint declarations that need another declaration: text-overflow, -webkit-line-clamp', () => {
+  const p = '.p{display:grid;grid-template-columns:minmax(0,1fr)}';
+  // text-overflow needs the inline overflow clipped.
+  assert.deepEqual(inert(run(`${p}.c{height:10px;text-overflow:ellipsis;white-space:nowrap}`)), [['.c', 'text-overflow']]);
+  assert.deepEqual(inert(run(`${p}.c{height:10px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}`)), []);
+  assert.deepEqual(inert(run(`${p}.c{height:10px;text-overflow:ellipsis;white-space:nowrap;overflow-x:clip}`)), []);
+  assert.deepEqual(inert(run(`${p}.c{height:10px;text-overflow:clip}`)), []);
+  // -webkit-line-clamp needs display: -webkit-box.
+  assert.deepEqual(inert(run(`${p}.c{height:10px;-webkit-line-clamp:2;overflow:hidden}`)), [['.c', 'line-clamp']]);
+  assert.deepEqual(inert(run(`${p}.c{height:10px;-webkit-line-clamp:none}`)), []);
+});
