@@ -33,7 +33,9 @@ test('vertical margins of adjacent siblings collapse to the larger one', () => {
 
 test('inline content and margins collapsing through the container or an empty child stay Unknown', () => {
   assert.equal(run('<span class="a"></span>', '.a{height:10px}').status, 'unknown');
-  assert.equal(run('<div class="a"></div>', '.box{padding:0}.a{height:10px;margin-top:8px}').status, 'unknown');
+  // (.box is a grid item here, a formatting context root: its child's margin stays inside — modeled. Collapsing
+  // through a plain block child is the Unknown case, tested below.)
+  assert.equal(run('<div class="a"></div>', '.box{padding:0}.a{height:10px;margin-top:8px}').status, 'verified');
   assert.equal(run('<div class="a"></div><div class="b"></div>', '.a{margin:4px 0}.b{height:10px}').status, 'unknown');
 });
 
@@ -70,4 +72,14 @@ test('W_LAYOUT_MARKER_HIDDEN: outside markers of a list at the viewport edge are
   assert.deepEqual(list('ul{padding:0 0 0 24px}'), []);
   assert.deepEqual(list('ul{padding:0;list-style:none}'), []);
   assert.deepEqual(list('ul{padding:0;list-style-position:inside}li{height:auto}'), []);
+});
+
+test('a block container that is a formatting context root keeps its children\'s margins inside', () => {
+  const box = (outer, own) => analyzeHTML('<html lang="en"><body><div class="o"><section class="s"><div class="a"></div></section><div class="n"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.o{${outer}}.s{display:block;${own}}.a{height:10px;margin-top:12px;margin-bottom:8px}.n{height:5px}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  const grid = box(g, '');
+  assert.equal(grid.status, 'verified', JSON.stringify(grid.diagnostics.map(d => d.message)));
+  assert.deepEqual(['.s', '.a', '.n'].map(b => grid.sizes.find(x => x.box === b).rect.blockStart.constant), ['0', '12', '30']);
+  assert.equal(box('display:block', 'overflow:hidden').status, 'verified');
+  // A plain block child: the margin collapses through it, which is not modeled.
+  assert.equal(box('display:block', '').status, 'unknown');
 });

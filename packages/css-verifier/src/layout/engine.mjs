@@ -2232,8 +2232,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     if (flow.some(child => cmp(add(mv(child, 'top'), mv(child, 'bottom')), zero) > 0)) {
                       const edge = side => cmp(add(px(style[`padding-${side}`] === 'ua' ? '0' : style[`padding-${side}`]), px(style[`border-${side}`] === 'ua' ? '0' : style[`border-${side}`])), zero) > 0;
                       const unknownCollapse = why => { throw Object.assign(new Error(`${box.label}: ${why}; that margin collapsing is not modeled`), { code: 'U_LAYOUT_CSS', box, region: children.region }); };
-                      if (flow.length && cmp(mv(flow[0], 'top'), zero) > 0 && !edge('top')) unknownCollapse(`the top margin of ${flow[0].box.label} collapses through its container (no padding or border on top)`);
-                      if (flow.length && cmp(mv(flow.at(-1), 'bottom'), zero) > 0 && !edge('bottom') && style['block-size'] === 'auto') unknownCollapse(`the bottom margin of ${flow.at(-1).box.label} collapses through its container (no padding or border below, auto height)`);
+                      // A container that establishes a formatting context (a grid or flex item, overflow hidden/auto/
+                      // scroll, absolute) keeps its children's margins inside it (measured): nothing collapses through.
+                      const parentStyle = parents.at(-1)?.style;
+                      const formattingRoot = (parentStyle && ['grid', 'flex', 'inline-grid', 'inline-flex'].includes(parentStyle.display) && !parentStyle.$blockFlow) || ['hidden', 'auto', 'scroll'].includes(String(style['overflow-x'])) || ['hidden', 'auto', 'scroll'].includes(String(style['overflow-y'])) || style.position === 'absolute';
+                      if (flow.length && cmp(mv(flow[0], 'top'), zero) > 0 && !edge('top') && !formattingRoot) unknownCollapse(`the top margin of ${flow[0].box.label} collapses through its container (no padding or border on top)`);
+                      if (flow.length && cmp(mv(flow.at(-1), 'bottom'), zero) > 0 && !edge('bottom') && style['block-size'] === 'auto' && !formattingRoot) unknownCollapse(`the bottom margin of ${flow.at(-1).box.label} collapses through its container (no padding or border below, auto height)`);
                       for (const child of flow) if (cmp(add(mv(child, 'top'), mv(child, 'bottom')), zero) > 0 && !(child.box.children ?? []).length && !child.box.text && child.style['block-size'] === 'auto' && !['top', 'bottom'].some(side => cmp(px(child.style[`padding-${side}`] === 'ua' ? '0' : child.style[`padding-${side}`]), zero) > 0))
                         unknownCollapse(`${child.box.label} may be empty, so its own margins would collapse together`);
                       for (let i = 1; i < flow.length; i++) {
