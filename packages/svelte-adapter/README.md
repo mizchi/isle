@@ -9,6 +9,7 @@ const report = analyzeSvelte(source, {pageCSS, viewport: {min: 320, max: 800, he
 report.status;            // verified only if every template state is verified and nothing was Unknown
 report.states;            // [{choices, html, report}] — one css-verifier report per state
 report.selectors.warnings // selectors unused in every state (agrees with Svelte's css_unused_selector)
+report.findings          // [{code, box, severity, message, states}] — every error/warning and the states it holds in
 ```
 
 ## What a state is
@@ -18,6 +19,7 @@ report.selectors.warnings // selectors unused in every state (agrees with Svelte
 | `{#if x}…{:else}…{/if}` | `x` true / false (`{:else if}` nests) |
 | `class:name={x}` | `x` true / false |
 | `class={x ? 'a' : 'b'}` | `x` true / false |
+| `attr={x ? 'a' : 'b'}` (any attribute, literal values) | `x` true / false |
 | `{#each list as item}` | item counts `eachCounts` (default 0, 1, 2), `{:else}` at 0 |
 | `{#await p}` | pending / then / catch |
 
@@ -34,6 +36,12 @@ Other dynamic attributes are rendered with a placeholder value and listed in `co
 text is placeholder text, sized by the box contracts.
 
 ## Checks
+
+- `test/new-checks.test.mjs` with `fixtures/Settings.svelte`: the newer checks (inert grid-column on a flex item, a
+  display: none checkbox behind its label, physical padding in rtl, sticky in an overflow-x wrapper, controls keeping
+  the UA font size, a see-through sticky bar, an unused selector) each fire in exactly the states the template makes
+  them true; `e2e/layout-svelte.spec.mjs` checks the same states server-rendered in Chromium (Tab order, font sizes,
+  widths, sticky position).
 
 - `test/adapter.test.mjs`: the expansion against Svelte's own SSR (`svelte/server`) for every state, unused selectors
   against the compiler's `css_unused_selector`, and the Unknown cases.

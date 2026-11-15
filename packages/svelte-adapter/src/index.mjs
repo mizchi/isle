@@ -54,7 +54,7 @@ export function expandSvelte(source, { maxStates = 64, eachCounts = [0, 1, 2] } 
 
   function attributes(node) {
     // Static attributes, class: directives (a choice each) and literal-conditional class={a ? 'x' : 'y'}.
-    const statics = [], classVariants = [[{ html: '', choices: {} }]];
+    const statics = [], classVariants = [[{ html: '', choices: {} }]], attrVariants = [];
     let classes = [];
     for (const attr of node.attributes) {
       if (attr.type === 'Attribute') {
@@ -76,6 +76,13 @@ export function expandSvelte(source, { maxStates = 64, eachCounts = [0, 1, 2] } 
           continue;
         }
         if (attr.name === 'style') { unknown('U_SVELTE_DYNAMIC_STYLE', `<${node.name}> has a dynamic style attribute`); continue; }
+        // A literal conditional (dir={rtl ? 'rtl' : 'ltr'}) is a choice between its two values.
+        const literal = parts.length === 1 && parts[0].type === 'ExpressionTag' ? parts[0].expression : null;
+        if (literal?.type === 'ConditionalExpression' && [literal.consequent, literal.alternate].every(e => e.type === 'Literal' && ['string', 'number'].includes(typeof e.value))) {
+          const { key, negate } = condition(source, literal.test);
+          attrVariants.push([true, false].map(v => ({ html: ` ${attr.name}="${escapeAttr(String(v !== negate ? literal.consequent.value : literal.alternate.value))}"`, choices: choose(key, v) })));
+          continue;
+        }
         // Another attribute with an expression: rendered with a placeholder value (recorded as an assumption).
         assumptions.add(`dynamic attribute ${attr.name} on <${node.name}> is rendered with a non-empty placeholder value`);
         statics.push(` ${attr.name}="dynamic"`);
@@ -86,7 +93,16 @@ export function expandSvelte(source, { maxStates = 64, eachCounts = [0, 1, 2] } 
       else if (attr.type === 'SpreadAttribute') unknown('U_SVELTE_SPREAD', `<${node.name}> spreads attributes; its classes and attributes are not known`);
       // on:/onclick= handlers, bind:, use:, transition: do not change the static tree.
     }
-    return product(classVariants.slice(1)).map(v => ({ choices: v.choices, classList: [...classes, ...v.html.split(/\s+/).filter(Boolean)] })).map(v => ({ ...v, statics: statics.join('') }));
+    // Class choices and attribute choices combine; an attribute variant's text joins the static attributes.
+    const tagged = [...classVariants.slice(1).map(list => list.map(v => ({ ...v, kind: 'class' }))), ...attrVariants.map(list => list.map(v => ({ ...v, kind: 'attr' })))];
+    const combos = [{ classes: [], attrs: '', choices: {} }];
+    let acc = combos;
+    for (const list of tagged) {
+      const next = [];
+      for (const left of acc) for (const right of list) { const choices = merge(left.choices, right.choices); if (choices) next.push({ classes: right.kind === 'class' ? [...left.classes, ...right.html.split(/\s+/).filter(Boolean)] : left.classes, attrs: right.kind === 'attr' ? left.attrs + right.html : left.attrs, choices }); }
+      acc = next;
+    }
+    return acc.map(v => ({ choices: v.choices, classList: [...classes, ...v.classes], statics: statics.join('') + v.attrs }));
   }
 
   function renderNodes(nodes, context) { return product((nodes ?? []).map(n => renderNode(n, context))); }
@@ -156,7 +172,15 @@ export function analyzeSvelte(source, { pageCSS = '', page = html => `<html lang
   const statuses = results.map(r => r.report.status);
   // Verified only when every state is verified and the adapter itself met nothing unknown.
   const status = statuses.includes('violated') ? 'violated' : unknowns.length || statuses.includes('unknown') ? 'unknown' : 'verified';
-  const out = { status, states: results, unknowns, coverage: { states: states.length, assumptions } };
+  // Every error and warning of every state, grouped by code and box, with the states (choices) it holds in.
+  const grouped = new Map();
+  for (const r of results) for (const d of [...r.report.diagnostics.filter(d => d.severity !== 'unknown'), ...(r.report.layoutWarnings ?? []), ...(r.report.accessibility?.warnings ?? []), ...(r.report.integrity?.warnings ?? [])]) {
+    const key = `${d.code}\u0000${d.box ?? ''}`;
+    if (!grouped.has(key)) grouped.set(key, { code: d.code, box: d.box, severity: d.severity, message: d.message, states: [] });
+    const entry = grouped.get(key);
+    if (!entry.states.includes(r.choices)) entry.states.push(r.choices);
+  }
+  const out = { status, states: results, unknowns, coverage: { states: states.length, assumptions }, findings: [...grouped.values()] };
   if (options.selectors) {
     // A selector is unused only when it is unused in every state; a row's count is its largest over the states.
     // The code may differ by state (no .item at 0 items: unmatched; with items: a broken relation); the explanation

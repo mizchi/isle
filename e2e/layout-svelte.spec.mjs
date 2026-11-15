@@ -40,3 +40,33 @@ test('Wide.svelte: the state the analysis calls violated overflows the page in C
     expect(overflows, JSON.stringify(state.choices)).toBe(state.report.status === 'violated');
   }
 });
+
+test('Settings.svelte: the newer checks\' findings per state agree with the server-rendered component in Chromium', async ({page}) => {
+  test.setTimeout(300_000);
+  const source = fixture('Settings.svelte');
+  const css18 = pageCSS + 'body{font-size:18px}';
+  const report = analyzeSvelte(source, {pageCSS: css18, viewport, accessibility: true, integrity: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], boxes: {'.title': {minInlineSize: 40, intrinsicBlockSize: 24}}, eachCounts: [0, 2]});
+  const holds = (code, box, choices) => report.findings.some(f => f.code === code && f.box === box && f.states.includes(choices));
+  const props = c => ({...c, rows: Array.from({length: c['#each rows']}, (_, i) => i)});
+  await page.setViewportSize({width: 400, height: 300});
+  let checked = 0;
+  for (const state of report.states.filter(s => s.choices['#each rows'] === 2)) {
+    const {html, css} = await renderSSR(source, props(state.choices));
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css18}${css}.tall{height:2000px}</style></head><body>${html}<div class="tall"></div></body></html>`);
+    // Hidden checkbox: Tab from the start reaches .reset after .save, never the box.
+    const order = [];
+    for (let i = 0; i < 3; i++) { await page.keyboard.press('Tab'); order.push(await page.evaluate(() => document.activeElement?.className ?? '')); }
+    const reachesBox = order.some(c => c.includes('box'));
+    expect(holds('E_A11Y_CONTROL_HIDDEN', '.box.hidden', state.choices), `${JSON.stringify(state.choices)} tab ${order}`).toBe(!reachesBox);
+    // Control font: the buttons keep the UA size against the 18px page.
+    const [button, page18] = await page.evaluate(() => [getComputedStyle(document.querySelector('.reset')).fontSize, getComputedStyle(document.querySelector('.page')).fontSize]);
+    expect(holds('W_LAYOUT_CONTROL_FONT', '.reset', state.choices)).toBe(button !== page18);
+    // grid-column on a flex item: the save button is 96px wide with or without .wide.
+    expect(await page.evaluate(() => document.querySelector('.save').getBoundingClientRect().width)).toBe(96);
+    // The sticky table head scrolls away with the page.
+    const top = await page.evaluate(async () => { scrollTo(0, 300); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); return document.querySelector('.thead').getBoundingClientRect().top; });
+    expect(holds('W_LAYOUT_STICKY_SCROLLER', '.thead', state.choices)).toBe(top < 0);
+    checked++;
+  }
+  expect(checked).toBe(16);
+});
