@@ -23,3 +23,10 @@ test('margins count toward overflow', () => {
   const r = run('.a{width:200px;margin-right:150px;flex-shrink:0}.b{width:0}');
   assert.ok(r.diagnostics.some(d => d.code === 'E_LAYOUT_TRACKS'), JSON.stringify(r.diagnostics.map(d => d.code)));
 });
+
+test('column flex items: vertical margins are part of the main size, inline margins shrink the stretched width', () => {
+  const r = analyzeHTML('<html lang="en"><body><main class="p"><div class="col"><div class="a"></div><div class="b"></div></div></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}.col{display:flex;flex-direction:column}.a{height:20px;flex:none;margin:4px 8px 6px 12px}.b{height:10px;flex:none}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.deepEqual(rect(r, '.a'), ['12', '4', '1w-20', '20']);
+  assert.deepEqual(rect(r, '.b').slice(0, 2), ['0', '30']);
+});

@@ -105,7 +105,7 @@ test(`fuzz: no invisible region — static item-fit verdicts agree with Chromium
 
 // Margins make rows taller, so more cases reach the auto-row shrink of scroll containers (U_LAYOUT_GRID_SHRINK,
 // Unknown): that variant allows a larger Unknown share.
-for (const [title, options, maxUnknown] of [['', {flex: true}, 0.2], [' (px margins on row items)', {flex: true, margins: true}, 0.6]])
+for (const [title, options, maxUnknown] of [['', {flex: true}, 0.2], [' (px margins on flex items)', {flex: true, margins: true}, 0.6]])
 test(`fuzz with flex rows and columns: a flex container overflows in Chromium exactly where the static check finds it does${title}`, async ({browser}) => {
   test.setTimeout(1_800_000);
   const tally = {cases: 0, unknown: 0, compared: 0, overflows: 0};

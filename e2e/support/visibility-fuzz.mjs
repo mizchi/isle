@@ -42,7 +42,7 @@ export function generateCase(seed, { flex = false, minmax = false, margins = fal
     // With margins, some grid items get a percentage width (it resolves against the area, not the area less margins).
     if (margins && !inFlex && r() < 0.25) width = pick(['50%', '100%', '80%']);
     const height = `${int(2, 9) * 10}px`;
-    items.push({id, width, height, inFlex, margin: margins && kind !== 'column' && r() < 0.5 ? Array.from({length: 4}, () => pick([0, 0, 4, 8, 16, 24])).map(v => `${v}px`).join(' ') : null});
+    items.push({id, width, height, inFlex, margin: margins && r() < 0.5 ? Array.from({length: 4}, () => pick([0, 0, 4, 8, 16, 24])).map(v => `${v}px`).join(' ') : null});
     return {id, children: []};
   };
   const root = container(0);
