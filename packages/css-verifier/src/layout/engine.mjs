@@ -1121,6 +1121,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (inFlow && parentDisplay === 'grid') for (const key of ['flex-grow', 'flex-shrink', 'flex-basis']) if (written(key)) reasons.push([key, `its parent ${parents.at(-1).box.label} is display: grid, not flex`]);
         if (style.display === 'flex') for (const key of ['grid-template-columns', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow']) if (written(key)) reasons.push([key, 'it is display: flex, not grid']);
         if (style.display === 'grid') for (const key of ['flex-direction', 'flex-wrap']) if (written(key)) reasons.push([key, 'it is display: grid, not flex']);
+        // aspect-ratio sizes an auto dimension; with both sizes set there is none to size.
+        if (style.$sources?.['aspect-ratio'] && style['aspect-ratio'] !== 'auto' && ['inline-size', 'block-size'].every(key => style.$sources?.[key] && style[key] !== 'auto')) reasons.push(['aspect-ratio', 'both its width and height are set']);
+        // vertical-align applies to inline boxes and table cells; a grid or flex item (blockified) ignores it.
+        if (style.$sources?.['vertical-align'] && !['baseline'].includes(String(style['vertical-align'])) && ['grid', 'flex'].includes(parentDisplay) && !box.tablePart) reasons.push(['vertical-align', `it is a ${parentDisplay} item, not inline or a table cell (use align-self)`]);
         if (reasons.length) layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: reasons.map(r => r[0]),
           css: reasons.map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
           message: `${box.label}: ${reasons.map(([key, why]) => `${key}: ${style[key]} has no effect (${why})`).join('; ')}`, ...ranges(region) });
