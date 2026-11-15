@@ -676,6 +676,11 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   const em = /^(-?\d+(?:\.\d{1,6})?)em$/.exec(String(values['letter-spacing'] ?? ''));
   if (em) values['letter-spacing'] = /^\d+(?:\.\d{1,6})?px$/.test(values['font-size']) ? `${+(Number(em[1]) * Number(values['font-size'].slice(0, -2))).toFixed(6)}px` : 'em-unresolved';
   if (values.position === 'sticky') { values.position = 'relative'; values.$sticky = true; }
+  // A list's UA padding-inline-start is 40px (Chromium's UA sheet): on the left in ltr, on the right in rtl.
+  if (['ul', 'ol'].includes(box.tag) && values['padding-left'] === 'ua') {
+    values['padding-left'] = values.direction === 'rtl' ? '0' : '40px';
+    if (values.direction === 'rtl' && !sources['padding-right']) values['padding-right'] = '40px';
+  }
   values.$sources = sources;
   values.$dormant = dormant;
   values.$overridden = overridden;

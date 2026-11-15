@@ -145,6 +145,8 @@ const cases = [
     css: '.grid{display:grid;grid-template-columns:120px minmax(0,1fr);grid-template-areas:"head head" "nav main" ". foot";grid-auto-rows:30px;column-gap:8px;row-gap:4px}.h{grid-area:head}.n{grid-area:nav}.m{grid-area:main}.f{grid-column:foot;grid-row:foot}'},
   {name: 'repeat(auto-fill, minmax(min(160px, 100%), 1fr)) cards', html: '<main class="grid"><div></div><div></div><div></div><div></div><div></div></main>',
     css: '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(160px,100%),1fr));column-gap:12px;row-gap:8px;grid-auto-rows:30px;padding:0 6px}', widths: [172, 345, 346, 520, 700, 865]},
+  {name: 'lists keep the UA padding-inline-start (40px) when the author does not reset it, in ltr and rtl', html: '<main class="col"><ul class="l"><li class="a"></li></ul><ol class="l" dir="rtl"><li class="a"></li></ol></main>',
+    css: '.col{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:12px}'},
   {name: 'block flow: list items with outside markers lay out as blocks', html: '<main class="col"><ul class="l"><li class="a"></li><li class="b"></li><li class="c"><div class="k"></div></li></ul><ol class="o"><li class="a"></li></ol></main>',
     css: '.col{display:grid;grid-template-columns:minmax(0,1fr)}.l{padding:0 0 0 24px}.o{list-style:none;padding:4px}.a{height:12px}.b{height:8px;width:90px}.c{display:grid;grid-template-columns:30px minmax(0,1fr)}.k{height:10px}'},
   {name: 'block flow: align-content centers or ends the content of a fixed-height block container', html: '<main class="col"><section class="s c"><div class="a"></div><div class="b"></div></section><section class="s e"><div class="a"></div></section><section class="s n"><div class="a"></div></section></main>',
