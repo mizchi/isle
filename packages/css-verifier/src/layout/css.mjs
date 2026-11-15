@@ -33,7 +33,7 @@ export function px(text) {
 
 const aliases = { width: 'inline-size', 'min-width': 'min-inline-size', 'max-width': 'max-inline-size', height: 'block-size', 'min-height': 'min-block-size', 'max-height': 'max-block-size' };
 const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset-block-start':'top', 'inset-block-end':'bottom' };
-const geometry = new Set(['aspect-ratio', 'display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
+const geometry = new Set(['aspect-ratio', 'display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-template-areas', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
 const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
 const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-radius|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|transition(?:-(?:property|duration|delay|timing-function|behavior))?|animation-(?:delay|fill-mode|timing-function)|list-style-(?:position|image))$/;
@@ -53,7 +53,8 @@ const cssString = literal => literal.slice(1, -1).replace(/\\([\da-f]{1,6}) ?|\\
 function expand(property, value) {
   property = aliases[property] ?? property;
   property = insets[property] ?? property;
-  if (!['container', 'container-name', 'content'].includes(property)) value = value.toLowerCase();
+  // Area names are case-sensitive identifiers.
+  if (!['container', 'container-name', 'content', 'grid-template-areas', 'grid-area'].includes(property) && !(['grid-row', 'grid-column'].includes(property) && /^-?[A-Za-z_][\w-]*$/.test(value.trim()))) value = value.toLowerCase();
   if (property === 'container-name' && value.toLowerCase() === 'none') value = 'none';
   if (value === 'revert-layer') throw new Error('revert-layer is outside this subset');
   // white-space also writes text-wrap-mode (CSS Text 4); its mark says white-space itself decides after substitution.
@@ -110,6 +111,22 @@ function expand(property, value) {
     return [...geometry, ...textProperties, ...paintProperties, 'background-color', 'background-image', ...['left', 'right', 'top', 'bottom'].flatMap(side => [side, `padding-${side}`, `margin-${side}`, `border-${side}`])].filter(key => key !== 'direction').map(key => [key, value]);
   }
   if (property === 'flex') return flexShorthand(value);
+  // grid-area: <name> places the item in the named area of its parent's grid-template-areas (grid.mjs resolves it);
+  // a name in grid-row / grid-column is the same area's lines. Line-number forms of grid-area are not modeled.
+  if (property === 'grid-area') {
+    if (wide.has(value)) return [['grid-row', value], ['grid-column', value]];
+    const v = value.trim();
+    if (v === 'auto') return [['grid-row', 'auto'], ['grid-column', 'auto']];
+    if (/^-?[A-Za-z_][\w-]*$/.test(v) && !/^span$/i.test(v)) return [['grid-row', `area:${v}`], ['grid-column', `area:${v}`]];
+    throw new Error(`Unsupported grid-area: ${value} (only a named area or auto is modeled)`);
+  }
+  if ((property === 'grid-row' || property === 'grid-column') && /^-?[A-Za-z_][\w-]*$/.test(value.trim()) && !['auto', 'span', 'inherit', 'initial', 'unset', 'revert', 'revert-layer'].includes(value.trim())) return [[property, `area:${value.trim()}`]];
+  if (property === 'grid-template-areas') {
+    if (wide.has(value) || value.trim() === 'none') return [[property, value.trim()]];
+    const rows = [...value.matchAll(/"([^"]*)"|'([^']*)'/g)].map(m => (m[1] ?? m[2]).trim());
+    if (!rows.length || value.replace(/"[^"]*"|'[^']*'/g, '').trim()) throw new Error(`Unsupported grid-template-areas: ${value}`);
+    return [[property, rows.map(r => r.split(/\s+/).join(' ')).join('|')]];
+  }
   if (property === 'flex-flow') {
     if (wide.has(value)) return [['flex-direction', value], ['flex-wrap', value]];
     const parts = postcss.list.space(value), direction = parts.filter(p => /^(?:row|row-reverse|column|column-reverse)$/.test(p)), wrap = parts.filter(p => /^(?:nowrap|wrap|wrap-reverse)$/.test(p));
@@ -503,7 +520,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     'block-size': 'auto', 'min-block-size': 'auto', 'max-block-size': 'none',
     'grid-template-columns': 'none', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'grid-auto-flow': 'row', 'row-gap': 'normal',
     'container-type': 'normal', 'container-name': 'none', 'align-items': 'normal', 'align-self': 'auto', 'align-content': 'normal',
-    'column-gap': 'normal', 'grid-column': 'auto', 'grid-row': 'auto',
+    'column-gap': 'normal', 'grid-template-areas': 'none', 'grid-column': 'auto', 'grid-row': 'auto',
     'background-color': 'transparent', 'background-image': 'none',
     'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none',
     hyphens: inherited.hyphens ?? 'manual', 'object-fit': 'fill', 'scroll-behavior': 'auto', 'text-wrap-mode': inherited['text-wrap-mode'] ?? 'white-space', 'text-wrap-style': inherited['text-wrap-style'] ?? 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'z-index': 'auto', isolation: 'auto', transform: 'none', 'justify-self': 'auto', 'justify-items': 'normal', clip: 'auto', 'clip-path': 'none', ...Object.fromEntries(['margin', 'padding'].flatMap(kind => ['top', 'right', 'bottom', 'left'].map(side => [`scroll-${kind}-${side}`, kind === 'padding' ? 'auto' : '0']))), 'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal',

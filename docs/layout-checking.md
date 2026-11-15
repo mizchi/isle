@@ -270,6 +270,20 @@ ancestor 入力は継承用であり、host の寸法を再計算する入力で
 
 CSS による通常の in-flow parent と child の関係を検査する。pure component と client island の root を追い、有限な動的 class/id・分岐・上限付き loop の集合を検査する。opaque children、inline style、reset/adapter のない native control 等は unknown。初期 SSR に存在する構造だけで将来の構造を判断しない。
 
+## 名前付きの grid 領域
+
+`grid-template-areas` と `grid-area: <名前>` を扱える。`grid-row` / `grid-column` に名前を書いた場合も、その領域の線として扱う。名前は大文字と小文字を区別する。item は DOM の順序ではなく名前で配置される。以下は Unknown にする。
+
+- 長方形でない領域や、列数の揃わない行(宣言として無効)
+- `grid-template-columns` より列の多いテンプレート(暗黙の列ができる)
+- 行番号を書く形の `grid-area`(`1 / 2 / 3 / 4`)
+- `grid-template` 略記
+
+テンプレートに無い名前を指す item(`grid-area: header` に対して領域が `head`)は `W_LAYOUT_GRID_AREA_UNKNOWN`(警告)になり、レイアウトは Unknown になる。ブラウザーはその名前の暗黙の線を明示グリッドの後ろに作り、item をそこへ置くからである。Chromium の照合では、次の 2 点を確かめる。
+
+- `e2e/layout-flex.spec.mjs`:名前で配置した item の矩形が一致する。
+- `e2e/layout-cls-facts.spec.mjs`:警告の出る場合に、item が明示グリッドの外に置かれる。
+
 ## Subgrid の共有トラック
 
 `grid-template-columns: subgrid` と `grid-template-rows: subgrid` を扱う。子の幅でもう一度 fr を配分せず、直接の親 Grid から、配置された span に対応する **解決済みトラック列**を渡す。ローカル line は1から始まり、入れ子でも共有を維持する。CSS の `inherit` による track 定義のコピーとは区別する。

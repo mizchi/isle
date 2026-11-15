@@ -3,7 +3,7 @@ import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rect
 import { validateOptions } from './input.mjs';
 import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea } from './css.mjs';
 import { parseCondition } from './conditions.mjs';
-import { tracks, tracks as gridTracks, place } from './grid.mjs';
+import { tracks, tracks as gridTracks, place, parseAreas } from './grid.mjs';
 import { compileSelector, PARENT } from './selectors.mjs';
 import { selectorUsage } from './selector-usage.mjs';
 import { viewportFont, zoomShortfall } from './zoom-font.mjs';
@@ -2032,7 +2032,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   if (!block && children.children.some(child=>child.style.position==='absolute')) throw new Error('Absolute boxes require both-axis analysis');
                   if (!columns.length && children.children.some(child=>child.style.position!=='absolute')) throw new Error('In-flow Grid children require explicit supported columns');
                   let placed;
-                  try { placed = place(children.children.filter(child=>child.style.position!=='absolute'), columns.length, { subgridColumns: Boolean(sharedColumns), rows: inheritedAxes.block?.values.length }).map(item => ({ ...item, inherited: children.children.find(child => child.box === item.box).inherited })); }
+                  // A grid-area name the parent's grid-template-areas does not define: a typo or a stale name. Chromium
+                  // puts the item on implicit lines (outside the subset); the warning names it.
+                  const areas = parseAreas(style['grid-template-areas']);
+                  for (const child of children.children) for (const key of ['grid-row', 'grid-column']) {
+                    const raw = String(child.style[key]), name = raw.startsWith('area:') ? raw.slice(5) : /^-?[A-Za-z_][\w-]*$/.test(raw) && !['auto', 'span'].includes(raw) ? raw : null;
+                    if (name && !areas.areas.has(name) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_GRID_AREA_UNKNOWN' && w.path === child.box.path))
+                      layoutWarnings.push({ code: 'W_LAYOUT_GRID_AREA_UNKNOWN', severity: 'warning', box: child.box.label, path: child.box.path, area: name, parent: box.label,
+                        message: `${child.box.label} is placed in the grid area ${name}, but ${box.label}'s grid-template-areas ${areas.areas.size ? `defines only ${[...areas.areas.keys()].join(', ')}` : 'defines none'}: the browser puts it on new implicit tracks after the explicit grid`, ...ranges(children.region) });
+                  }
+                  try { placed = place(children.children.filter(child=>child.style.position!=='absolute'), columns.length, { subgridColumns: Boolean(sharedColumns), rows: inheritedAxes.block?.values.length, areas }).map(item => ({ ...item, inherited: children.children.find(child => child.box === item.box).inherited })); }
                   catch (error) { error.region = children.region; throw error; }
                   const areaInline = item => trackArea(cs.values, columnGap, item.start, item.span);
                   const childColumns = item => trackSlice(cs.values, columnGap, box, item.start, item.span);

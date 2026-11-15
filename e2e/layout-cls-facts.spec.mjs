@@ -323,6 +323,23 @@ test('srcset without sizes: the static warning holds exactly where Chromium down
   }
 });
 
+test('grid-area with a name the template does not define: where the static check warns, Chromium puts the item outside the explicit grid', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const grid = '.p{display:grid;grid-template-columns:200px 300px;grid-template-areas:"head head" "nav main";grid-template-rows:40px 40px}';
+  for (const [css, warn] of [['.h{grid-area:header}', true], ['.h{grid-area:head}', false], ['.h{grid-column:Head;grid-row:Head}', true]]) {
+    const html = '<div class="p"><header class="h"></header><nav class="n"></nav><main class="m"></main></div>';
+    const all = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}${grid}.n{grid-area:nav}.m{grid-area:main}${css}`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: all, viewport: {min: 600, max: 800, height: {min: 600, max: 900}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_GRID_AREA_UNKNOWN' && w.box === '.h'), css).toBe(warn);
+    if (!warn) expect(report.status, css).toBe('verified');
+    await page.setViewportSize({width: 700, height: 600});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${all}</style></head><body>${html}</body></html>`);
+    const r = await page.evaluate(() => { const b = document.querySelector('.h').getBoundingClientRect(); return {x: b.x, y: b.y}; });
+    // The explicit grid is 500px × 80px: an item on implicit lines starts at or past one of its ends.
+    expect(r.x >= 500 || r.y >= 80, `${css}: .h at ${r.x},${r.y}`).toBe(warn);
+  }
+});
+
 test('animation score bound: Chromium’s largest session window stays below the static window bound', async ({page}) => {
   const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
   const html = '<div class="page"><div class="a"></div><div class="b"></div></div>';

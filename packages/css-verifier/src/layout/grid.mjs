@@ -34,8 +34,37 @@ export function tracks(value, automatic = false) {
   if (!result.length || result.length > 64) throw new Error('Use 1..64 explicit supported tracks');
   return result;
 }
-function placement(value, axis) {
+/** grid-template-areas (rows joined by |, cells by spaces) → Map name → {row, column, rows, columns}; '.' is empty. */
+export function parseAreas(value) {
+  if (!value || value === 'none') return { areas: new Map(), rows: 0, columns: 0 };
+  const strings = /["']/.test(value) ? [...value.matchAll(/"([^"]*)"|'([^']*)'/g)].map(m => (m[1] ?? m[2]).trim()) : value.split('|');
+  if (!strings.length || strings.some(row => !row) || (/["']/.test(value) && value.replace(/"[^"]*"|'[^']*'/g, '').trim())) throw Object.assign(new Error(`grid-template-areas: ${value} is not a list of strings`), { code: 'U_LAYOUT_CSS' });
+  const grid = strings.map(row => row.split(/\s+/).map(cell => /^\.+$/.test(cell) ? null : cell));
+  const columns = grid[0].length;
+  if (grid.some(row => row.length !== columns)) throw Object.assign(new Error('grid-template-areas rows have different column counts (the declaration is invalid)'), { code: 'U_LAYOUT_CSS' });
+  const areas = new Map();
+  grid.forEach((row, r) => row.forEach((name, c) => {
+    if (!name) return;
+    const a = areas.get(name);
+    if (!a) areas.set(name, { row: r, column: c, rows: 1, columns: 1, cells: 1 });
+    else { a.rows = Math.max(a.rows, r - a.row + 1); a.columns = Math.max(a.columns, c - a.column + 1); a.cells++; }
+  }));
+  for (const [name, a] of areas) {
+    const rect = a.rows * a.columns === a.cells && grid.slice(a.row, a.row + a.rows).every(row => row.slice(a.column, a.column + a.columns).every(cell => cell === name));
+    if (!rect) throw Object.assign(new Error(`grid-template-areas: the area ${name} is not a rectangle (the declaration is invalid)`), { code: 'U_LAYOUT_CSS' });
+  }
+  return { areas, rows: grid.length, columns };
+}
+
+function placement(value, axis, areas) {
   if (value === 'auto') return { span: 1 };
+  // A bare name in grid-row / grid-column is the named area's lines (name-start / name-end).
+  if (/^-?[A-Za-z_][\w-]*$/.test(String(value)) && !/^span$/i.test(value)) value = `area:${value}`;
+  if (String(value).startsWith('area:')) {
+    const a = areas?.areas.get(value.slice(5));
+    if (!a) throw Object.assign(new Error(`grid-${axis}: ${value.slice(5)} names no area of the parent's grid-template-areas (Chromium places it on implicit lines)`), { code: 'U_LAYOUT_CSS', unknownArea: value.slice(5) });
+    return axis === 'column' ? { start: a.column, span: a.columns } : { start: a.row, span: a.rows };
+  }
   const automatic = value.match(/^span\s+([1-9]\d*)$/);
   if (automatic) return { span: Number(automatic[1]) };
   const m = value.match(/^([1-9]\d*)(?:\s*\/\s*(?:span\s+([1-9]\d*)|([1-9]\d*)))?$/);
@@ -43,11 +72,13 @@ function placement(value, axis) {
   const start = Number(m[1]) - 1, span = m[2] ? Number(m[2]) : m[3] ? Number(m[3]) - start - 1 : 1;
   return { start, span };
 }
-export function place(children, columns, { rows, subgridColumns = false } = {}) {
+export function place(children, columns, { rows, subgridColumns = false, areas } = {}) {
+  // Areas wider than the explicit columns create implicit columns, which are not modeled.
+  if (areas && areas.columns > columns) throw Object.assign(new Error(`grid-template-areas has ${areas.columns} columns but grid-template-columns ${columns}: the extra columns are implicit`), { code: 'U_LAYOUT_CSS' });
   const occupied = new Set(), result = [];
   let cursor = 0;
   const violation = (code, message, box, axis) => { throw Object.assign(new Error(message), { code, box, axis }); };
-  const ordered = children.map(item => ({ ...item, column: placement(item.style['grid-column'], 'column'), line: placement(item.style['grid-row'], 'row') }))
+  const ordered = children.map(item => ({ ...item, column: placement(item.style['grid-column'], 'column', areas), line: placement(item.style['grid-row'], 'row', areas) }))
     .toSorted((a, b) => Number(a.line.start === undefined) - Number(b.line.start === undefined));
   for (const { box, style, column: columnPlacement, line } of ordered) {
     const column = columnPlacement.start, span = columnPlacement.span, rowSpan = line.span;
