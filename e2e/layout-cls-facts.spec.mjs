@@ -582,3 +582,18 @@ test('width: 100% under content-box: the box sticks out of its container in Chro
     expect(out, `${c}: sticks out ${out}`).toBe(warn);
   }
 });
+
+test('an img sized by its width attribute: wider than its container in Chromium exactly where the static check warns', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  await page.route('**/a.png', route => route.fulfill({body: png, contentType: 'image/png'}));
+  for (const [c, attrs, warn] of [['', 'width="1200" height="600"', true], ['img{max-width:100%;height:auto}', 'width="1200" height="600"', false], ['', 'width="200" height="100"', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body,.page{${g}}body{margin:0}img{display:block}${c}`, html = `<main class="page"><img src="http://cls.test/a.png" ${attrs} alt="A"></main>`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_MEDIA_NO_MAX'), `${c} ${attrs}`).toBe(warn);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.route('http://cls.test/', route => route.fulfill({contentType: 'text/html', body: `<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`}));
+    await page.goto('http://cls.test/');
+    const out = await page.evaluate(() => document.querySelector('img').getBoundingClientRect().width > document.querySelector('.page').getBoundingClientRect().width);
+    expect(out, `${c} ${attrs}`).toBe(warn);
+  }
+});
