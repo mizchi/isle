@@ -44,6 +44,18 @@ error が 1 件でもあれば終了コードは 1 です。
 - 状態はテンプレートの分岐で決まります。Svelte の `{#if}` / `class:`、Vue の `v-if` / `v-show` / `:class`、JSX の `&&` / 三項演算子 / `cx()` / `stylex.props()` が分岐になります。同じ要素が複数のクラスの組み合わせで出す検出は 1 件にまとめ、状態の表示（`[compact=false]` など）にはすべての状態に共通する条件だけを出します。
 - adapter に `sourceLines: true` を渡すと、各要素に `data-src-line` が付きます。lint は検出したボックスのパスをたどってその行を報告します。行がたどれないときは、最初のクラス名が出てくる行を代わりに使います。
 
+## 扱えるマークアップ
+
+コンポーネントでよく使う書き方を、Chromium と照合したうえで扱う。
+
+- inline の `<svg>` のアイコン。`width`/`height`/`viewBox` が寸法になり、`<title>` と `aria-label` が名前になり、`fill`/`stroke` がアイコンの色になる。React の `strokeWidth` などは属性名に変換する。
+- アイコンとラベルを子に持つ grid / flex のボタン。
+- `grid-template-areas` と `grid-area`。
+- `repeat(auto-fill | auto-fit, minmax(…, 1fr))` のカードの grid。
+- `<picture>` の source、`srcset`/`sizes`、`iframe`。
+
+`fixtures/Catalog.svelte` は、これらを組み合わせた例である。
+
 ## 保証の範囲
 
 - 検査は adapter が展開した状態だけです。状態が `maxStates` を超える場合、他のコンポーネント、動的な class や style は Unknown として info に出ます。
