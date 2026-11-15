@@ -94,3 +94,10 @@ test('assumed text follows the box tree: phrasing inside text is that text, not 
   assert.equal(result.coverage.assumptions.some(a => /1 text box/.test(a)), true, JSON.stringify(result.coverage));
   assert.ok(lint(result, {file: 'T.svelte', source}).every(m => m.code !== 'E_LAYOUT_CONTENT'));
 });
+
+test('a state whose analysis throws is Unknown, not a crash', async () => {
+  const {analyzeStates} = await import('../src/index.mjs');
+  const result = analyzeStates({states: [{html: '<div class="a"></div>', choices: {}}], css: ''}, {pageCSS, viewport, boxes: {'.missing': {minInlineSize: 0}}});
+  assert.equal(result.status, 'unknown');
+  assert.ok(lint(result, {file: 'X.svelte'}).some(m => m.code === 'U_ADAPTER_ANALYSIS' && m.severity === 'info'));
+});

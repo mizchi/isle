@@ -72,7 +72,11 @@ export function analyzeStates({ states, css, unknowns = [], assumptions = [] }, 
       const lineHeight = typeof assumeText === 'object' && assumeText.lineHeight ? assumeText.lineHeight : 24;
       boxes = { ...Object.fromEntries(Array.from({ length: marked.count }, (_, i) => [`.__text${i}`, { minInlineSize: 0, intrinsicBlockSize: lineHeight }])), ...(options.boxes ?? {}) };
     }
-    return { choices: state.choices, html: state.html, report: analyzeHTML(wrap(html), { name, ...options, ...(boxes ? { boxes } : {}), css: pageCSS + css }) };
+    // An analysis that throws (an input the core rejects outright) is that state's Unknown, never a crash of the run.
+    let report;
+    try { report = analyzeHTML(wrap(html), { name, ...options, ...(boxes ? { boxes } : {}), css: pageCSS + css }); }
+    catch (error) { report = { status: 'unknown', diagnostics: [{ code: 'U_ADAPTER_ANALYSIS', severity: 'unknown', message: `the analysis of this state failed: ${error.message}` }], sizes: [] }; }
+    return { choices: state.choices, html: state.html, report };
   });
   if (assumedTexts) assumptions = [...assumptions, `${assumedTexts} text box(es) sized by assumption (one line, no minimum width): text overflow is not checked`];
   const statuses = results.map(r => r.report.status);
