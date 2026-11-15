@@ -86,3 +86,14 @@ test('a picture source that an earlier source always shadows is W_LAYOUT_SOURCE_
   // Its media never matches in the range.
   assert.deepEqual(shadowed(src('(min-width: 2000px)', '/x.png')), [[0, '(min-width: 2000px)']]);
 });
+
+test('an image laid out wider than its widest file is W_LAYOUT_IMAGE_UPSCALED in those regions', () => {
+  const css = cap => `*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}img{display:block;width:100%;height:auto}${cap}`;
+  const regions = (attrs, cap = '', images) => (analyzeHTML(`<div class="page"><img ${attrs} width="400" height="200" alt=""></div>`, {name: 'P', css: css(cap), viewport: {min: 320, max: 1280}, ...(images ? {images} : {})}).layoutWarnings ?? [])
+    .filter(w => w.code === 'W_LAYOUT_IMAGE_UPSCALED').map(w => [w.range.min, w.range.max]);
+  assert.deepEqual(regions('src="/a.png" srcset="/a.png 400w, /b.png 800w"'), [[800, 1280]]);
+  assert.deepEqual(regions('src="/a.png" srcset="/a.png 400w, /b.png 800w"', 'img{max-width:800px}'), []);
+  assert.deepEqual(regions('src="/a.png"', '', {'/a.png': {width: 600, height: 300}}), [[600, 1280]]);
+  // Unknown file size: nothing to compare.
+  assert.deepEqual(regions('src="/a.png"'), []);
+});

@@ -386,6 +386,29 @@ test('picture sources: a source the static check reports as shadowed is never th
   }
 });
 
+test('upscaled images: where the static check warns, the file Chromium shows is narrower than the image box', async ({page}) => {
+  // Files /f<width>.svg are <width>×<width/2> pixels.
+  await page.route(/\/f\d+\.svg$/, route => { const w = Number(/f(\d+)\.svg/.exec(route.request().url())[1]); route.fulfill({contentType: 'image/svg+xml', body: `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${w / 2}"><rect width="100%" height="100%" fill="#888"/></svg>`}); });
+  const base = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}img{display:block;width:100%;height:auto}';
+  for (const [attrs, cap, images] of [
+    ['src="/f400.svg" srcset="/f400.svg 400w, /f800.svg 800w"', '', undefined],
+    ['src="/f400.svg" srcset="/f400.svg 400w, /f800.svg 800w"', 'img{max-width:800px}', undefined],
+    ['src="/f600.svg"', '', {'/f600.svg': {width: 600, height: 300}}],
+  ]) {
+    const css = base + cap, html = `<div class="page"><img ${attrs} width="400" height="200" alt=""></div>`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280}, ...(images ? {images} : {})});
+    for (const width of [400, 700, 900, 1280]) {
+      await page.setViewportSize({width, height: 600});
+      await page.route('http://upscale.test/', route => route.fulfill({contentType: 'text/html', body: `<!doctype html><html lang="en"><head><style>${css}</style></head><body style="margin:0">${html}</body></html>`}));
+      await page.goto('http://upscale.test/');
+      await page.unroute('http://upscale.test/');
+      const {file, rendered} = await page.evaluate(async () => { const i = document.querySelector('img'); await i.decode().catch(() => {}); return {file: Number(/f(\d+)\.svg/.exec(i.currentSrc)[1]), rendered: i.getBoundingClientRect().width}; });
+      const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_IMAGE_UPSCALED' && width > w.range.min && width <= w.range.max);
+      expect(warned, `${attrs} ${cap} at ${width}: ${file}px file in a ${rendered}px box`).toBe(file < rendered);
+    }
+  }
+});
+
 test('animation score bound: Chromium’s largest session window stays below the static window bound', async ({page}) => {
   const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
   const html = '<div class="page"><div class="a"></div><div class="b"></div></div>';

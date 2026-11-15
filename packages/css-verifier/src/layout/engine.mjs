@@ -2419,6 +2419,27 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     layoutWarnings.push({ code: 'W_LAYOUT_SIZES_SMALL', severity: 'warning', box: row.box, path: row.path, sizes: facts.sizes,
       message: `${row.box} is laid out ${number(evaluate(row.$shown.inline, p))}px wide at viewport ${number(p.x)}px but its sizes attribute says ${number(evaluate(L, p))}px: the browser picks a srcset file for the smaller width, so the image is upscaled (blurry). Make sizes match the layout width`, ...ranges(short) }); }
   }
+  // An image laid out wider than its widest file: the file's natural width (a single src whose size is known), or the
+  // largest w descriptor of its srcset. The browser upscales it — blurry even at a device pixel ratio of 1.
+  if (hovered === undefined && !options.$animationFrame && !options.$slideVariant) for (const row of sizes) {
+    const box = boxes.find(b => b.path === row.path), facts = box?.tag === 'img' ? box.imageSize : null;
+    if (!facts || !row.$shown?.region || box.pseudo || layoutWarnings.some(w => w.code === 'W_LAYOUT_IMAGE_UPSCALED' && w.path === row.path)) continue;
+    const parent = boxes.find(b => (b.children ?? []).includes(box));
+    if (parent?.tag === 'picture' && (parent.children ?? []).some(c => c.tag === 'source')) continue;
+    let widest, from;
+    if (typeof facts.srcset === 'string' && facts.srcset !== 'dynamic' && /\d+w\s*(?:,|$)/.test(facts.srcset)) {
+      const ws = facts.srcset.split(',').map(part => /\s(\d+)w\s*$/.exec(part.trim())?.[1]).filter(Boolean).map(Number);
+      if (ws.length) { widest = Math.max(...ws); from = `its largest srcset candidate is ${widest}w`; }
+    } else if (facts.srcset === undefined && typeof facts.src === 'string' && options.images?.[facts.src]?.width) {
+      widest = options.images[facts.src].width; from = `${facts.src} is ${widest}px wide`;
+    }
+    if (!widest) continue;
+    const over = clip(row.$shown.region, diff(row.$shown.inline, scalar(widest)), true);
+    if (!over) continue;
+    const p = sample(over);
+    layoutWarnings.push({ code: 'W_LAYOUT_IMAGE_UPSCALED', severity: 'warning', box: row.box, path: row.path, naturalWidth: widest,
+      message: `${row.box} is laid out ${number(evaluate(row.$shown.inline, p))}px wide at viewport ${number(p.x)}px, but ${from}: the browser upscales it, so it looks blurry even at 1x. Cap it (max-width: ${widest}px) or add a wider file`, ...ranges(over) });
+  }
   // object-fit: fill (the initial value) scales an img's picture to its content box on each axis: a box whose ratio
   // differs from the picture's (by more than 2%) draws it stretched. Boxes with padding or borders are not judged.
   if (hovered === undefined && !options.$animationFrame && !options.$slideVariant) for (const row of geometry.filter(row => row.imageRatio && !row.imageRatio.follows && row.paint?.objectFit === 'fill' && row.inline && row.block && !row.box.pseudo)) {
