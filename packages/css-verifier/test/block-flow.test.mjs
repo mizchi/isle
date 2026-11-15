@@ -24,7 +24,15 @@ test('auto margins with an auto width: the width fills up to max-width and the b
   assert.deepEqual(rects(run('<div class="a"></div>', '.a{height:10px;max-width:400px;margin:0 auto}'), 320)[0], ['.a', 7, 7, 306, 10]);
 });
 
-test('inline content, mixed text and vertical margins stay Unknown', () => {
+test('vertical margins of adjacent siblings collapse to the larger one', () => {
+  const r = run('<div class="a"></div><div class="b"></div>', '.a,.b{height:10px}.a{margin-bottom:20px}.b{margin-top:12px}');
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.deepEqual(rects(r, 500).map(x => x[2]), [7, 37]);
+  assert.deepEqual(rects(run('<div class="a"></div><div class="b"></div>', '.a,.b{height:10px}.a{margin-bottom:8px}.b{margin-top:30px}'), 500).map(x => x[2]), [7, 47]);
+});
+
+test('inline content and margins collapsing through the container or an empty child stay Unknown', () => {
   assert.equal(run('<span class="a"></span>', '.a{height:10px}').status, 'unknown');
-  assert.equal(run('<div class="a"></div>', '.a{height:10px;margin-top:8px}').status, 'unknown');
+  assert.equal(run('<div class="a"></div>', '.box{padding:0}.a{height:10px;margin-top:8px}').status, 'unknown');
+  assert.equal(run('<div class="a"></div><div class="b"></div>', '.a{margin:4px 0}.b{height:10px}').status, 'unknown');
 });

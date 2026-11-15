@@ -2198,9 +2198,27 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                 for (const children of childStates) {
                   if (!block && children.children.some(child=>child.style.position==='absolute')) throw new Error('Absolute boxes require both-axis analysis');
                   if (!columns.length && children.children.some(child=>child.style.position!=='absolute')) throw new Error('In-flow Grid children require explicit supported columns');
-                  if (style.$blockFlow) for (const child of children.children.filter(child => child.style.position !== 'absolute')) {
-                    if (child.style.$inlineLevel) throw Object.assign(new Error(`${child.box.label} is inline-level inside the block container ${box.label}: its line layout is not modeled (give it display: block, or make ${box.label} a grid or flex container)`), { code: 'U_LAYOUT_INLINE', box: child.box, region: children.region });
-                    if (['margin-top', 'margin-bottom'].some(key => /px$/.test(String(child.style[key])))) throw Object.assign(new Error(`${child.box.label} has a vertical margin inside the block container ${box.label}: margin collapsing is not modeled (use padding or gap in a grid)`), { code: 'U_LAYOUT_CSS', box: child.box, region: children.region });
+                  if (style.$blockFlow) {
+                    const flow = children.children.filter(child => child.style.position !== 'absolute');
+                    for (const child of flow) if (child.style.$inlineLevel) throw Object.assign(new Error(`${child.box.label} is inline-level inside the block container ${box.label}: its line layout is not modeled (give it display: block, or make ${box.label} a grid or flex container)`), { code: 'U_LAYOUT_INLINE', box: child.box, region: children.region });
+                    // Vertical margins collapse between adjacent siblings (the larger one wins; measured): the next
+                    // sibling's top margin becomes max(previous bottom, its top) − previous bottom. Collapsing through the
+                    // container (no padding or border on that side) or through an empty child is not modeled.
+                    const mv = (child, side) => /^\d+(?:\.\d+)?px$/.test(String(child.style[`margin-${side}`])) ? px(child.style[`margin-${side}`]) : zero;
+                    if (flow.some(child => cmp(add(mv(child, 'top'), mv(child, 'bottom')), zero) > 0)) {
+                      const edge = side => cmp(add(px(style[`padding-${side}`] === 'ua' ? '0' : style[`padding-${side}`]), px(style[`border-${side}`] === 'ua' ? '0' : style[`border-${side}`])), zero) > 0;
+                      const unknownCollapse = why => { throw Object.assign(new Error(`${box.label}: ${why}; that margin collapsing is not modeled`), { code: 'U_LAYOUT_CSS', box, region: children.region }); };
+                      if (flow.length && cmp(mv(flow[0], 'top'), zero) > 0 && !edge('top')) unknownCollapse(`the top margin of ${flow[0].box.label} collapses through its container (no padding or border on top)`);
+                      if (flow.length && cmp(mv(flow.at(-1), 'bottom'), zero) > 0 && !edge('bottom') && style['block-size'] === 'auto') unknownCollapse(`the bottom margin of ${flow.at(-1).box.label} collapses through its container (no padding or border below, auto height)`);
+                      for (const child of flow) if (cmp(add(mv(child, 'top'), mv(child, 'bottom')), zero) > 0 && !(child.box.children ?? []).length && !child.box.text && child.style['block-size'] === 'auto' && !['top', 'bottom'].some(side => cmp(px(child.style[`padding-${side}`] === 'ua' ? '0' : child.style[`padding-${side}`]), zero) > 0))
+                        unknownCollapse(`${child.box.label} may be empty, so its own margins would collapse together`);
+                      for (let i = 1; i < flow.length; i++) {
+                        const previous = mv(flow[i - 1], 'bottom'), top = mv(flow[i], 'top'), adjusted = cmp(top, previous) > 0 ? sub(top, previous) : zero;
+                        const index = children.children.indexOf(flow[i]);
+                        children.children[index] = { ...flow[i], style: { ...flow[i].style, 'margin-top': cmp(adjusted, zero) === 0 ? '0' : `${number(adjusted)}px` } };
+                        flow[i] = children.children[index];
+                      }
+                    }
                   }
                   if (plan.fitItems !== undefined) {
                     const flow = children.children.filter(child => child.style.position !== 'absolute');
