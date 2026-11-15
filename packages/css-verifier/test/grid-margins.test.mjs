@@ -38,3 +38,11 @@ test('inline auto margins with an explicit width center or push the item; none w
   assert.equal(start('.c{width:200px;margin:0 auto 0 20px}', 700), 20);
   assert.equal(start('.c{width:200px;box-sizing:content-box;padding:0 10px;margin:0 auto}', 700), 240);
 });
+
+test('percentages resolve against the grid area, not the area less the margins', () => {
+  const r = run('.c{width:50%;margin:0 20px}');
+  const row = r.sizes.find(s => s.box === '.c' && s.rect);
+  assert.deepEqual([row.rect.inlineStart.constant, row.rect.inlineSize.coefficient, row.rect.inlineSize.constant], ['20', '1/2', '0']);
+  // width: 100% plus a start margin pushes the item past its area (Chromium scrolls the page by the margin).
+  assert.ok(run('.c{width:100%;margin-left:20px}').diagnostics.some(d => d.code === 'E_LAYOUT_ITEM_SIZE' && d.box === '.c'));
+});

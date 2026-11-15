@@ -36,7 +36,11 @@ export function generateCase(seed, { flex = false, minmax = false, margins = fal
   };
   const item = (inFlex = false, kind = 'grid') => {
     // Flex children are narrower (30–200px) so that a flex row both fits and overflows across the domain.
-    const id = `i${n++}`, width = !inFlex && r() < 0.5 ? 'auto' : inFlex ? `${int(3, 20) * 10}px` : `${int(4, 45) * 10}px`, height = `${int(2, 9) * 10}px`;
+    const id = `i${n++}`;
+    let width = !inFlex && r() < 0.5 ? 'auto' : inFlex ? `${int(3, 20) * 10}px` : `${int(4, 45) * 10}px`;
+    // With margins, some grid items get a percentage width (it resolves against the area, not the area less margins).
+    if (margins && !inFlex && r() < 0.25) width = pick(['50%', '100%', '80%']);
+    const height = `${int(2, 9) * 10}px`;
     items.push({id, width, height, inFlex, margin: margins && kind !== 'column' && r() < 0.5 ? Array.from({length: 4}, () => pick([0, 0, 4, 8, 16, 24])).map(v => `${v}px`).join(' ') : null});
     return {id, children: []};
   };
