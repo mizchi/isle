@@ -1721,3 +1721,14 @@ test('forced-colors: a control whose only edge is its fill or shadow (W_A11Y_FOR
   assert.equal(warned(`.b{${btn};border:0;background:#246}@media (forced-colors: active){.b{outline:2px solid}}`), false);
   assert.equal(warned(`.b{${btn};border:0;background:transparent}`), false); // nothing drawn in any mode
 });
+
+test('forced-colors: a focus indicator made only of box-shadow or colour (W_A11Y_FORCED_COLORS_FOCUS)', () => {
+  const b = 'appearance:none;display:block;padding:0;border:2px solid #246;min-width:0;min-height:0;height:44px;background:#fff';
+  const warned = focus => analyzeHTML('<main class="page"><button class="b" aria-label="Save"></button></main>', {name: 'P', css: `*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:160px;background:#fff}.b{${b}}${focus}`, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true})
+    .accessibility.warnings.some(w => w.code === 'W_A11Y_FORCED_COLORS_FOCUS');
+  assert.equal(warned('.b:focus{outline:none;box-shadow:0 0 0 3px #1a73e8}'), true);
+  assert.equal(warned('.b:focus{outline:none;background:#ddf}'), true);
+  assert.equal(warned('.b:focus{outline:2px solid transparent;box-shadow:0 0 0 3px #1a73e8}'), false); // the transparent outline shows in forced colors
+  assert.equal(warned('.b:focus{outline:2px solid #1a73e8}'), false);
+  assert.equal(warned('.b:focus{outline:none;box-shadow:0 0 0 3px #1a73e8}@media (forced-colors: active){.b:focus{outline:2px solid}}'), false);
+});

@@ -982,6 +982,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{heig
 
 </details>
 
+## A focus ring made of box-shadow, in forced colors
+
+`W_A11Y_FORCED_COLORS_FOCUS` — viewport 672 × 690px
+
+> .b shows focus only by a box-shadow with the outline removed: forced colors (Windows high contrast) drop both, so the focus disappears. Keep an outline (outline: 2px solid transparent shows in forced colors) or style @media (forced-colors: active)
+
+![forced-colors-focus](forced-colors-focus-before.png) ![forced-colors-focus](forced-colors-focus-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b" aria-label="Save"></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:160px;padding:8px;background:#fff}.b{appearance:none;display:block;padding:0;border:2px solid #246;min-width:0;min-height:0;height:44px;background:#fff}.b:focus{outline:none;box-shadow:0 0 0 4px #1a73e8}
+```
+
+</details>
+
 ## A document without lang
 
 `E_A11Y_HTML_LANG` — markup rule (nothing to see on screen)

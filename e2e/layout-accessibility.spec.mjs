@@ -1379,3 +1379,22 @@ test('forced-colors: controls drawn only by fill or shadow lose their edge in Ch
     expect(warned, `${name}: static ${warned}, Chromium edge ${edge}`).toBe(!edge);
   }
 });
+
+test('forced-colors focus: an indicator made only of box-shadow or colour disappears in Chromium forced colors, as warned', async ({page}) => {
+  const b = 'appearance:none;display:block;padding:0;border:2px solid #246;min-width:0;min-height:0;height:44px;background:#fff';
+  for (const focus of ['.b:focus{outline:none;box-shadow:0 0 0 3px #1a73e8}', '.b:focus{outline:2px solid transparent;box-shadow:0 0 0 3px #1a73e8}', '.b:focus{outline:none;background:#ddf}', '.b:focus{outline:2px solid #1a73e8}']) {
+    const css = `*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:160px;background:#fff}.b{${b}}${focus}`;
+    const html = '<main class="page"><button class="b" aria-label="Save"></button></main>';
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+    const warned = report.accessibility.warnings.some(w => w.code === 'W_A11Y_FORCED_COLORS_FOCUS');
+    await page.emulateMedia({forcedColors: 'active'});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const read = () => page.evaluate(() => { const s = getComputedStyle(document.querySelector('.b')); return {outline: s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) > 0, shadow: s.boxShadow, background: s.backgroundColor}; });
+    const before = await read();
+    await page.focus('.b');
+    const after = await read();
+    await page.emulateMedia({forcedColors: 'none'});
+    const indicator = after.outline || after.shadow !== 'none' || after.background !== before.background;
+    expect(warned, `${focus}: static ${warned}, Chromium indicator ${indicator} (${JSON.stringify(after)})`).toBe(!indicator);
+  }
+});

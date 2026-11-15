@@ -141,6 +141,8 @@ const cases = [
     html: '<main class="page"><input class="i" type="search" aria-label="Search"></main>', css: '.page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0 8px;min-width:0;min-height:0;width:200px;height:36px;border:1px solid #000;background:#fff;font-size:14px}', source: '.i {\n  font-size:14px;  /* iOS Safari zooms the page in when the field takes focus */\n}'},
   {id: 'vh-toolbar', title: 'A 100vh hero under the mobile toolbar', code: 'W_LAYOUT_VH_TOOLBAR', warning: true, markup: true, mark: 'height:100vh', options: {scrollbars: overlay},
     html: '<main class="page"><section class="hero"></section></main>', css: 'body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{height:100vh;background:#246}', source: '.hero {\n  height:100vh;  /* the viewport with the toolbars hidden: use 100svh */\n}'},
+  {id: 'forced-colors-focus', title: 'A focus ring made of box-shadow, in forced colors', code: 'W_A11Y_FORCED_COLORS_FOCUS', warning: true, beforeAct: async page => { await page.focus('.b'); }, beforeLabel: 'focused, normal colours: the shadow ring shows', act: async page => { await page.emulateMedia({forcedColors: 'active'}); await page.focus('.b'); }, afterLabel: 'focused, in forced colors: no ring', options: {accessibility: true},
+    html: '<main class="page"><button class="b" aria-label="Save"></button></main>', css: '.page{display:grid;grid-template-columns:160px;padding:8px;background:#fff}.b{appearance:none;display:block;padding:0;border:2px solid #246;min-width:0;min-height:0;height:44px;background:#fff}.b:focus{outline:none;box-shadow:0 0 0 4px #1a73e8}', state: undefined},
   // --- markup (DOM rules: nothing to see on screen, so the picture is the markup with the reported part marked) ---
   {id: 'html-lang', title: 'A document without lang', code: 'E_A11Y_HTML_LANG', markup: true, mark: '<html>', options: {accessibility: true},
     doc: '<html><body><main class="page"><div class="x"></div></main></body></html>', html: '<html>\n  <body>\n    <main class="page">…</main>\n  </body>\n</html>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}'},
@@ -398,8 +400,9 @@ for (const c of cases) {
   const shot = async (name, label, ghosts = []) => { const clip = await draw(await rects(), ghosts, label); const file = `${c.id}-${name}.png`; const {data} = await cdp.send('Page.captureScreenshot', {format: 'png', clip: {...clip, scale: 1}}); writeFileSync(new URL(file, out), Buffer.from(data, 'base64')); return file; };
   const shots = [];
   const stateful = (c.state && c.state !== 'focus') || Boolean(c.act);
+  if (c.beforeAct) await c.beforeAct(page);
   const before = await rects();
-  shots.push(await shot(stateful ? 'before' : 'violation', `${c.code}${stateful ? ' — before' : ''}`));
+  shots.push(await shot(stateful ? 'before' : 'violation', `${c.code}${stateful ? ` — ${c.beforeLabel ?? 'before'}` : ''}`));
   if (c.state === 'focus') { await page.evaluate(() => document.querySelectorAll('.__ce').forEach(e => e.remove())); await page.focus(c.focus); shots.splice(0, 1, await shot('violation', `${c.code} — ${c.focusLabel ?? 'focused, nothing shows focus'}`)); }
   if (stateful) {
     await page.evaluate(() => document.querySelectorAll('.__ce').forEach(e => e.remove()));

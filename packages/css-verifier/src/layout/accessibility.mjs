@@ -49,7 +49,7 @@
 //   autocomplete     → E_A11Y_AUTOCOMPLETE      tokens outside the HTML autofill grammar (SC 1.3.5)
 //   scope            → E_A11Y_SCOPE             scope on a td, or not row/col/rowgroup/colgroup
 //   html-lang / lang-valid → E_A11Y_HTML_LANG / E_A11Y_LANG_VALID  a document without lang, or an invalid language tag (SC 3.1.1)
-//   forced-colors    → W_A11Y_FORCED_COLORS     a control whose only edge is its background or box-shadow (no border, no outline): forced colors
+//   forced-colors    → W_A11Y_FORCED_COLORS / W_A11Y_FORCED_COLORS_FOCUS  a control whose only edge (or focus indicator) is its background or box-shadow (no border, no outline): forced colors
 //                      (Windows high contrast) replace the background and drop the shadow, so the control loses its shape
 //   meta-viewport    → E_A11Y_META_VIEWPORT     the viewport meta tag disables zoom (user-scalable=no, or maximum-scale below 2) (SC 1.4.4)
 //   touch-zoom       → E_A11Y_TOUCH_ZOOM        touch-action on html or body leaves out pinch-zoom (none, or pan-* only) (SC 1.4.4)
@@ -1107,6 +1107,10 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
       const outline = !state.authorOutline || (!['none', 'hidden'].includes(f.outlineStyle) && !['0', '0px'].includes(String(f.outlineWidth)));
       const changed = (f.boxShadow !== 'none' && f.boxShadow !== b.boxShadow) || f.color !== b.color || f.backgroundColor !== b.backgroundColor || f.backgroundImage !== b.backgroundImage || f.decoration !== b.decoration;
       if (!outline && !changed) report(findings, 'E_A11Y_FOCUS_VISIBLE', 'error', `${row.box.label} shows no focus indicator: the outline is removed and nothing else changes on focus`, row, region, { rule: 'focus-visible' });
+      // In forced colors the box-shadow is not painted and colours are the system ones for both states: a focus shown
+      // only by them disappears (an underline change survives).
+      if (!outline && changed && f.decoration === b.decoration && !forcedColorsHandled && !warnings.some(w => w.code === 'W_A11Y_FORCED_COLORS_FOCUS' && w.path === row.path))
+        report(warnings, 'W_A11Y_FORCED_COLORS_FOCUS', 'warning', `${row.box.label} shows focus only by ${f.boxShadow !== 'none' && f.boxShadow !== b.boxShadow ? 'a box-shadow' : 'a colour change'} with the outline removed: forced colors (Windows high contrast) drop both, so the focus disappears. Keep an outline (outline: 2px solid transparent shows in forced colors) or style @media (forced-colors: active)`, row, region, { rule: 'forced-colors' });
       // focus-contrast (SC 1.4.11): an author outline that is the only indicator needs 3:1 against what it is drawn over
       // (the ancestors' backdrop; its own background as well when outline-offset is negative).
       if (state.authorOutline && outline && !changed && !['auto'].includes(f.outlineStyle)) {
