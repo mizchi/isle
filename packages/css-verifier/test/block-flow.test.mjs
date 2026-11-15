@@ -44,3 +44,10 @@ test('a fixed-height block container keeps its scroll-container children at thei
   // Their 80px overflow the 50px container (as in Chromium).
   assert.ok(r.diagnostics.some(d => d.code === 'E_LAYOUT_TRACKS' && d.axis === 'block'));
 });
+
+test('grid placement and align-self do nothing in block flow; justify-self (it does align there) is Unknown', () => {
+  const inert = css => (run('<div class="a"></div><div class="b"></div>', `.a,.b{height:10px}${css}`).layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_DECLARATION_INERT').map(w => w.properties.join());
+  assert.deepEqual(inert('.a{grid-column:2}'), ['grid-column']);
+  assert.deepEqual(inert('.a{align-self:end}'), ['align-self']);
+  assert.equal(run('<div class="a"></div>', '.a{height:10px;width:100px;justify-self:end}').status, 'unknown');
+});

@@ -693,7 +693,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       } else if (!['auto', '0', '0px'].includes(style['min-block-size']) && !available.flexBlockMinimum) throw new Error('CSS min-block-size clamping is not modeled');
     }
     // Flex containers and items validate their alignment in the flex model.
-    if (block && ((style.display !== 'flex' && !['normal', 'stretch'].includes(style['align-items'])) || (!available.flexItem && !['auto', 'normal', 'stretch'].includes(style['align-self'])) || (style.display !== 'flex' && !['normal', 'stretch', 'start', ...(style.display === 'grid' ? ['center', 'end'] : [])].includes(style['align-content'])))) throw new Error('Only stretch items and normal/stretch/start (grid: center/end) content alignment are supported');
+    if (block && ((style.display !== 'flex' && !['normal', 'stretch'].includes(style['align-items'])) || (!available.flexItem && !available.blockFlowChild && !['auto', 'normal', 'stretch'].includes(style['align-self'])) || (style.display !== 'flex' && !['normal', 'stretch', 'start', ...(style.display === 'grid' ? ['center', 'end'] : []), ...(style.display === 'block' && !box.text && !box.inline?.length ? ['center', 'end', 'flex-end', 'flex-start', 'space-between', 'space-around', 'space-evenly'] : [])].includes(style['align-content'])))) throw new Error('Only stretch items and normal/stretch/start (grid: center/end) content alignment are supported');
     return true;
   }
 
@@ -2100,7 +2100,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               // to collapse, lays them out as a one-column grid whose rows do not stretch (align-content: start) —
               // measured equal in Chromium for widths, %, horizontal margins, padding, borders, nested grids and images.
               // Its gaps and grid properties do not apply. Auto margins with an auto width fill, cap and center (below).
-              if (style.display === 'block' && !box.text) style = { ...style, display: 'grid', 'grid-template-columns': 'minmax(0,1fr)', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'grid-auto-flow': 'row', 'grid-template-areas': 'none', 'align-content': 'start', 'justify-content': 'normal', 'align-items': 'normal', 'justify-items': 'normal', 'row-gap': 'normal', 'column-gap': 'normal', $blockFlow: true };
+              // align-content applies to block containers (measured): center and end move the content; the rest is start.
+              if (style.display === 'block' && !box.text) style = { ...style, display: 'grid', 'grid-template-columns': 'minmax(0,1fr)', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'grid-auto-flow': 'row', 'grid-template-areas': 'none', 'align-content': ['center', 'safe center'].includes(String(style['align-content'])) ? 'center' : ['end', 'flex-end'].includes(String(style['align-content'])) ? 'end' : 'start', 'justify-content': 'normal', 'align-items': 'normal', 'justify-items': 'normal', 'row-gap': 'normal', 'column-gap': 'normal', $blockFlow: true };
               if (!['grid', 'flex'].includes(style.display)) { issue('E_LAYOUT_CONTAINER', 'Layout containers must use grid or the flex subset', box, bs.region); continue; }
               const isFlex = style.display === 'flex';
               if (!isFlex && style['grid-auto-flow'] !== 'row') throw new Error('Only sparse row auto-placement is supported');
@@ -2201,6 +2202,21 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   if (style.$blockFlow) {
                     const flow = children.children.filter(child => child.style.position !== 'absolute');
                     for (const child of flow) if (child.style.$inlineLevel) throw Object.assign(new Error(`${child.box.label} is inline-level inside the block container ${box.label}: its line layout is not modeled (give it display: block, or make ${box.label} a grid or flex container)`), { code: 'U_LAYOUT_INLINE', box: child.box, region: children.region });
+                    // Grid placement and self-alignment do nothing in block flow: laid out as auto, reported as inert.
+                    // (justify-self is not inert: Chromium aligns block-level boxes by it — measured — which is not modeled.)
+                    for (const child of flow) if (!['auto', 'normal', 'stretch', 'legacy'].includes(String(child.style['justify-self'] ?? 'auto'))) throw Object.assign(new Error(`${child.box.label}: justify-self: ${child.style['justify-self']} aligns a block-level box (CSS Box Alignment), which is not modeled`), { code: 'U_LAYOUT_CSS', box: child.box, region: children.region });
+                    const inertDefaults = { 'grid-column': 'auto', 'grid-row': 'auto', 'align-self': 'auto' };
+                    flow.forEach((child, k) => {
+                      const written = Object.keys(inertDefaults).filter(key => child.style.$sources?.[key] && !['auto', 'normal', 'stretch'].includes(String(child.style[key])));
+                      if (!written.length) return;
+                      if (emit && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === child.box.path))
+                        layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: child.box.label, path: child.box.path, properties: written,
+                          css: written.map(key => ({ property: key, file: child.style.$sources[key].file, line: child.style.$sources[key].line, selector: child.style.$sources[key].selector })),
+                          message: `${child.box.label}: ${written.map(key => `${key}: ${String(child.style[key]).replace(/^area:/, '')}`).join(', ')} ${written.length > 1 ? 'have' : 'has'} no effect (its parent ${box.label} is display: block, not grid or flex)`, ...ranges(children.region) });
+                      const index = children.children.indexOf(child);
+                      children.children[index] = { ...child, style: { ...child.style, ...Object.fromEntries(written.map(key => [key, inertDefaults[key]])) } };
+                      flow[k] = children.children[index];
+                    });
                     // Vertical margins collapse between adjacent siblings (the larger one wins; measured): the next
                     // sibling's top margin becomes max(previous bottom, its top) − previous bottom. Collapsing through the
                     // container (no padding or border on that side) or through an empty child is not modeled.
@@ -2279,7 +2295,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   const childColumns = item => trackSlice(cs.values, columnGap, box, item.start, item.span);
                   if (!block) {
                     let endings = [children.region];
-                    for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: itemInline(item), percentInline: areaInline(item), tracks: { inline: childColumns(item) }, gridItem: true, autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') }, fitInline: (box.contract?.overflow ?? 'fit') === 'fit' }, r, ancestors, item.inherited ?? style, emit).map(result => result.region)));
+                    for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: itemInline(item), percentInline: areaInline(item), tracks: { inline: childColumns(item) }, gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true } : {}), autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') }, fitInline: (box.contract?.overflow ?? 'fit') === 'fit' }, r, ancestors, item.inherited ?? style, emit).map(result => result.region)));
                     for (const r of endings) results.push(finish(box, style, r, inline, contentInline, null, null, available, parents, emit));
                     continue;
                   }
@@ -2297,7 +2313,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   }
                   let measurements = [{ region: children.region, bases: rows.map(row => row.definite ?? scalar(row.fixed ?? row.edges ?? zero)) }];
                   for (const item of placed.filter(item => rows[item.row].auto || (!knownBlock && rows[item.row].weight))) {
-                    measurements = bounded(measurements.flatMap(m => solve(item.box, { inline: itemInline(item), percentInline: areaInline(item), tracks: { inline: childColumns(item) }, gridItem: true, autoMargins: autoMargins(item) }, m.region, ancestors, item.inherited ?? style, false).flatMap(measured => maximum(measured.region, m.bases[item.row], sum(measured.block, scalar(marginBlock(item)))).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))));
+                    measurements = bounded(measurements.flatMap(m => solve(item.box, { inline: itemInline(item), percentInline: areaInline(item), tracks: { inline: childColumns(item) }, gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true } : {}), autoMargins: autoMargins(item) }, m.region, ancestors, item.inherited ?? style, false).flatMap(measured => maximum(measured.region, m.bases[item.row], sum(measured.block, scalar(marginBlock(item)))).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))));
                   }
                   for (const m of measurements) {
                     let fractions = [{ region: m.region, value: scalar(0) }];
@@ -2328,7 +2344,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       let endings = [rs.region];
                       // align-content center/end (unstretched rows in a known height): the rows move by part of the free space.
                       const blockLead = knownBlock && ['center', 'end'].includes(style['align-content']) ? times(diff(knownBlock, rs.required), style['align-content'] === 'center' ? div(one, q(2)) : one) : scalar(zero);
-                      for (const item of placed) endings = bounded(endings.flatMap(r0 => autoOffsets(item, r0)).flatMap(({ region: r, offset: autoLead }) => solve(item.box, { inline: itemInline(item), block: diff(trackArea(rs.values, rowGap, item.row, item.rowSpan), scalar(marginBlock(item))), percentInline: areaInline(item), percentBlock: trackArea(rs.values, rowGap, item.row, item.rowSpan), gridItem: true, autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') },
+                      for (const item of placed) endings = bounded(endings.flatMap(r0 => autoOffsets(item, r0)).flatMap(({ region: r, offset: autoLead }) => solve(item.box, { inline: itemInline(item), block: diff(trackArea(rs.values, rowGap, item.row, item.rowSpan), scalar(marginBlock(item))), percentInline: areaInline(item), percentBlock: trackArea(rs.values, rowGap, item.row, item.rowSpan), gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true } : {}), autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') },
                         origin:cs.shift ? offset(contentOrigin,sum(sum(sum(sum(trackStart(cs.values,columnGap,item.start),cs.shift.lead),times(cs.shift.extra,q(item.start))),scalar(marginOf(item, 'left'))),autoLead),sum(sum(trackStart(rs.values,rowGap,item.row),blockLead),scalar(marginOf(item, 'top')))) : null,
                         tracks: { inline: childColumns(item), block: trackSlice(rs.values, rowGap, box, item.row, item.rowSpan) },
                         fitInline: (box.contract?.overflow ?? 'fit') === 'fit', fitBlock: (box.contract?.overflowBlock ?? 'fit') === 'fit' }, r, finalAncestors, item.inherited ?? style, emit).map(result => result.region)));
