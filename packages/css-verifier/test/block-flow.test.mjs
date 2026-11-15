@@ -51,3 +51,12 @@ test('grid placement and align-self do nothing in block flow; justify-self (it d
   assert.deepEqual(inert('.a{align-self:end}'), ['align-self']);
   assert.equal(run('<div class="a"></div>', '.a{height:10px;width:100px;justify-self:end}').status, 'unknown');
 });
+
+test('list items lay out as blocks (an outside marker takes no part); an inside marker is Unknown', () => {
+  const list = css => analyzeHTML('<html lang="en"><body><main class="p"><ul class="l"><li class="a"></li><li class="b"></li></ul></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}ul{padding:0 0 0 20px}.a,.b{height:10px}.b{width:100px}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  const r = list('');
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.deepEqual(rects(r, 500), [['.a', 20, 0, 480, 10], ['.b', 20, 10, 100, 10]]);
+  assert.equal(list('ul{list-style:inside}').status, 'unknown');
+  assert.equal(list('ul{list-style:none inside}').status, 'verified');
+});

@@ -385,6 +385,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       try {style=computeStyle(relevant,box,active,inherited,{spend,state});}
       catch(error) {error.box ??= box;throw error;}
       if (gridItem && inherited && style.display === 'inline') style = { ...style, display: 'block', $inlineLevel: true };
+      // A list item lays out as a block: its outside marker takes no part in the layout (measured). An inside marker
+      // is an inline box in the first line, which is not modeled.
+      if (style.display === 'list-item') {
+        if (style['list-style-position'] === 'inside' && style['list-style-type'] !== 'none') throw Object.assign(new Error(`${box.label} has an inside list marker, which takes part in its first line; that is not modeled`), { code: 'U_LAYOUT_CSS', box });
+        style = { ...style, display: 'block', $listItem: true };
+      }
       // position: sticky with every inset auto never sticks (a sticky box is offset only by its inset properties):
       // it is laid out like position: relative, and the author probably forgot top: 0.
       if (style.$sticky && !box.pseudo && ['top', 'bottom', 'left', 'right'].every(side => style[side] === undefined || style[side] === 'auto')) {

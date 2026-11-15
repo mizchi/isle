@@ -438,9 +438,11 @@ test('list-structure: li outside a list, or a list child that is not li', () => 
   assert.equal(run(page([{tag: 'ul', classes: ['list'], children: [{tag: 'li', classes: ['item']}]}]), listCSS).status, 'verified');
   assert.deepEqual(find(run(page([{tag: 'div', classes: ['list'], children: [{tag: 'li', classes: ['item']}]}]), listCSS), 'E_A11Y_LIST').map(d => d.box), ['.item']);
   assert.deepEqual(find(run(page([{tag: 'ul', classes: ['list'], children: [{tag: 'div', classes: ['item']}]}]), listCSS), 'E_A11Y_LIST').map(d => d.box), ['.list']);
-  // UA list margins/padding and display: list-item stay Unknown until reset.
+  // UA list margins/padding stay Unknown until reset; display: list-item lays out as a block (an outside marker takes
+  // no part), an inside marker is Unknown.
   assert.equal(run(page([{tag: 'ul', classes: ['list'], children: [{tag: 'li', classes: ['item']}]}]), listCSS.replace('margin: 0; padding: 0; ', '')).status, 'unknown');
-  assert.equal(run(page([{tag: 'ul', classes: ['list'], children: [{tag: 'li', classes: ['x']}]}]), listCSS).status, 'unknown');
+  assert.notEqual(run(page([{tag: 'ul', classes: ['list'], children: [{tag: 'li', classes: ['x']}]}]), listCSS).status, 'unknown');
+  assert.equal(run(page([{tag: 'ul', classes: ['list'], children: [{tag: 'li', classes: ['x']}]}]), listCSS + '.list { list-style-position: inside; }').status, 'unknown');
 });
 
 test('radio-group: same-name radios need a fieldset or radiogroup', () => {

@@ -40,8 +40,8 @@ const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachmen
 // Properties a :hover/:focus rule may set: they repaint (or restack) without changing geometry.
 const statePaint = /^(?:z-index|color|clip|clip-path|background(?:-.*)?|border-(?:(?:top|right|bottom|left)-)?color|border-radius|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?|color-scheme)$/;
 // Paint and hit-testing facts for the accessibility rules (never geometry).
-export const paintProperties = ['hyphens', 'object-fit', 'scroll-behavior', 'text-wrap-mode', 'text-wrap-style', 'text-overflow', 'line-clamp', 'box-orient', 'touch-action', 'color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'outline-color', 'outline-offset', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'animation-direction', 'color-scheme', 'z-index', 'isolation', 'transform', 'justify-self', 'justify-items', 'fill', 'stroke'];
-const inheritedPaint = ['color', 'fill', 'stroke', 'visibility', 'pointer-events', 'cursor', 'list-style-type', 'color-scheme', 'text-wrap-style', 'text-wrap-mode'];
+export const paintProperties = ['hyphens', 'object-fit', 'scroll-behavior', 'text-wrap-mode', 'text-wrap-style', 'text-overflow', 'line-clamp', 'box-orient', 'touch-action', 'color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'outline-color', 'outline-offset', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'animation-direction', 'color-scheme', 'z-index', 'isolation', 'transform', 'justify-self', 'justify-items', 'fill', 'stroke', 'list-style-position'];
+const inheritedPaint = ['color', 'fill', 'stroke', 'list-style-position', 'visibility', 'pointer-events', 'cursor', 'list-style-type', 'color-scheme', 'text-wrap-style', 'text-wrap-mode'];
 // Inherited text properties. They are kept as specified strings and only
 // interpreted for boxes whose contract derives text metrics from a font.
 export const textProperties = ['font-family', 'font-size', 'line-height', 'font-weight', 'font-style', 'font-stretch', 'font-variant', 'text-transform', 'letter-spacing', 'word-spacing', 'text-align'];
@@ -222,10 +222,12 @@ function expand(property, value) {
     return [['text-decoration-line', lines.length ? lines.join(' ') : 'none']];
   }
   if (property === 'list-style') {
-    if (wide.has(value)) return [['list-style-type', value]];
-    const parts = postcss.list.space(value).filter(p => !/^(?:inside|outside|url\(.*|none)$/.test(p) || p === 'none');
-    return [['list-style-type', parts.find(p => p !== 'none') ?? (parts.includes('none') ? 'none' : 'disc')]];
+    if (wide.has(value)) return [['list-style-type', value], ['list-style-position', value]];
+    const all = postcss.list.space(value), parts = all.filter(p => !/^(?:inside|outside|url\(.*|none)$/.test(p) || p === 'none');
+    return [['list-style-type', parts.find(p => p !== 'none') ?? (parts.includes('none') ? 'none' : 'disc')], ['list-style-position', all.includes('inside') ? 'inside' : 'outside']];
   }
+  // An outside marker does not take part in the list item's layout; an inside one is an inline box in its first line.
+  if (property === 'list-style-position') { if (!wide.has(value) && !['inside', 'outside'].includes(value)) throw new Error(`Unsupported list-style-position: ${value}`); return [[property, value]]; }
   if (property === 'animation') {
     const keys = ['animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'animation-direction'];
     if (wide.has(value)) return keys.map(key => [key, value]);
@@ -529,7 +531,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     'border-collapse': box.tag === 'table' ? 'separate' : inherited['border-collapse'] ?? 'separate', 'border-spacing': box.tag === 'table' ? '2px' : inherited['border-spacing'] ?? '0', 'caption-side': inherited['caption-side'] ?? 'top', 'empty-cells': 'show',
     // HTML UA: thead, tbody, tfoot, tr { vertical-align: middle } and td, th { vertical-align: inherit }.
     'vertical-align': ['thead', 'tbody', 'tfoot', 'tr'].includes(box.tag) ? 'middle' : ['td', 'th'].includes(box.tag) ? inherited['vertical-align'] ?? 'baseline' : 'baseline',
-    fill: inherited.fill ?? 'black', stroke: inherited.stroke ?? 'none',
+    fill: inherited.fill ?? 'black', stroke: inherited.stroke ?? 'none', 'list-style-position': inherited['list-style-position'] ?? 'outside',
     color: box.tag === 'a' && box.focusable !== false ? 'ua-link' : inherited.color ?? 'canvastext', 'text-decoration-line': box.tag === 'a' && box.focusable !== false ? 'underline' : 'none', visibility: inherited.visibility ?? 'visible', 'pointer-events': inherited['pointer-events'] ?? 'auto', opacity: '1',
     'flex-direction': 'row', 'flex-wrap': 'nowrap', 'flex-grow': '0', 'flex-shrink': '1', 'flex-basis': 'auto', 'justify-content': 'normal', order: '0',
     'overflow-x': 'visible', 'overflow-y': 'visible', 'white-space': inherited['white-space'] ?? 'normal',
@@ -585,7 +587,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   if(box.popover==='dynamic') throw Object.assign(new Error('A dynamic popover attribute decides whether it renders'),{code:'U_LAYOUT_ELEMENT'});
   if(box.hiddenAttr==='until-found' || box.hiddenAttr==='dynamic') throw Object.assign(new Error(`hidden=${box.hiddenAttr === 'dynamic' ? '(dynamic)' : 'until-found'} is outside the modeled rendering`),{code:'U_LAYOUT_ELEMENT'});
   const ua = { ...values };
-  const initial = { ...defaults, ...textInitial, fill: 'black', stroke: 'none', hyphens: 'manual', 'object-fit': 'fill', 'scroll-behavior': 'auto', 'text-wrap-mode': 'white-space', 'text-wrap-style': 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none', 'z-index': 'auto', isolation: 'auto', transform: 'none', 'justify-self': 'auto', 'justify-items': 'normal', 'color-scheme': 'normal', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
+  const initial = { ...defaults, ...textInitial, fill: 'black', stroke: 'none', 'list-style-position': 'outside', hyphens: 'manual', 'object-fit': 'fill', 'scroll-behavior': 'auto', 'text-wrap-mode': 'white-space', 'text-wrap-style': 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none', 'z-index': 'auto', isolation: 'auto', transform: 'none', 'justify-self': 'auto', 'justify-items': 'normal', 'color-scheme': 'normal', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
   const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', 'border-collapse', 'border-spacing', 'caption-side', 'empty-cells', ...textProperties, ...inheritedPaint]);
   const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={};
   const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};
