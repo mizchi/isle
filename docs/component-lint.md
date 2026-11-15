@@ -53,6 +53,7 @@ error が 1 件でもあれば終了コードは 1 です。
 - `grid-template-areas` と `grid-area`。
 - `repeat(auto-fill | auto-fit, minmax(…, 1fr))` のカードの grid。
 - `<picture>` の source、`srcset`/`sizes`、`iframe`。
+- grid item と flex の行の item の px margin。幅を指定した grid item の `margin: 0 auto`。
 
 `fixtures/Catalog.svelte` は、これらを組み合わせた例である。
 
