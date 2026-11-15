@@ -2014,6 +2014,33 @@
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}.c{height:60px;background:#9cf}"
  },
  {
+  "id": "full-width-margin",
+  "title": "width: 100% plus margin-left pushes a box out of its column",
+  "code": "W_LAYOUT_FULL_WIDTH_MARGIN",
+  "width": 320,
+  "height": 480,
+  "message": ".panel is width: 100% with margin-left: 100% is its whole area, so the margin pushes it out. Drop width: 100% (a grid or flex item stretches to the area less its margins) or use calc(100% - the margins)",
+  "shots": [
+   "full-width-margin-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"panel\"></div></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr);background:#eee}.panel{width:100%;margin-left:24px;height:60px;background:#9cf}"
+ },
+ {
+  "id": "focus-shift",
+  "title": "A :focus rule that grows a link and pushes the content below",
+  "code": "W_LAYOUT_FOCUS_SHIFT",
+  "width": 600,
+  "height": 600,
+  "message": "Focusing .l moves .next (blockStart by 20px at viewport 320px × 480px): the content jumps as the keyboard user tabs. Draw the focus with outline or box-shadow, or keep the size (border-color instead of border-width)",
+  "shots": [
+   "focus-shift-before.png",
+   "focus-shift-after.png"
+  ],
+  "html": "<main class=\"page\"><h1 class=\"t\" aria-label=\"Shop\"></h1><a class=\"l\" href=\"/sale\" aria-label=\"Sale\"></a><div class=\"next\"></div></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px;background:#fff}.t{height:10px}.l{display:block;height:40px;background:#246;outline:2px solid #000}.l:focus{height:60px}.next{height:60px;background:#fc9}"
+ },
+ {
   "id": "protrusion",
   "title": "A badge that sticks out of its card",
   "code": "E_LAYOUT_PROTRUSION",

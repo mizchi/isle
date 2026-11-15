@@ -377,6 +377,11 @@ const cases = [
     html: '<main class="page"><div class="w"><div class="c"></div></div></main>', css: '.page,.w{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:40px;background:#9cf}@container card (min-width: 400px){.c{height:80px;background:#c33}}'},
   {id: 'autofill-overflow', title: 'repeat(auto-fill, minmax(360px, 1fr)) overflows a phone', code: 'E_LAYOUT_TRACKS',
     html: '<main class="page"><div class="cards"><div class="c"></div><div class="c"></div></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}.c{height:60px;background:#9cf}'},
+  {id: 'full-width-margin', title: 'width: 100% plus margin-left pushes a box out of its column', code: 'W_LAYOUT_FULL_WIDTH_MARGIN', warning: true,
+    html: '<main class="page"><div class="panel"></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);background:#eee}.panel{width:100%;margin-left:24px;height:60px;background:#9cf}'},
+  {id: 'focus-shift', title: 'A :focus rule that grows a link and pushes the content below', code: 'W_LAYOUT_FOCUS_SHIFT', warning: true, options: {accessibility: true},
+    act: async page => { await page.keyboard.press('Tab'); }, afterLabel: 'after Tab: the focused link is taller and .next moves down',
+    html: '<main class="page"><h1 class="t" aria-label="Shop"></h1><a class="l" href="/sale" aria-label="Sale"></a><div class="next"></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px;background:#fff}.t{height:10px}.l{display:block;height:40px;background:#246;outline:2px solid #000}.l:focus{height:60px}.next{height:60px;background:#fc9}'},
   // --- integrity ---
   {id: 'protrusion', title: 'A badge that sticks out of its card', code: 'E_LAYOUT_PROTRUSION', options: {integrity: true},
     html: '<main class="page"><div class="card"><div class="badge"></div></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);padding:24px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:80px;background:#eee}.badge{height:24px;background:#c33;transform:translate(20px,-16px)}'},

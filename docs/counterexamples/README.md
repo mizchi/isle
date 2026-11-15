@@ -3068,6 +3068,46 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:
 
 </details>
 
+## width: 100% plus margin-left pushes a box out of its column
+
+`W_LAYOUT_FULL_WIDTH_MARGIN` — viewport 320 × 480px
+
+> .panel is width: 100% with margin-left: 100% is its whole area, so the margin pushes it out. Drop width: 100% (a grid or flex item stretches to the area less its margins) or use calc(100% - the margins)
+
+![full-width-margin](full-width-margin-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="panel"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr);background:#eee}.panel{width:100%;margin-left:24px;height:60px;background:#9cf}
+```
+
+</details>
+
+## A :focus rule that grows a link and pushes the content below
+
+`W_LAYOUT_FOCUS_SHIFT` — viewport 600 × 600px
+
+> Focusing .l moves .next (blockStart by 20px at viewport 320px × 480px): the content jumps as the keyboard user tabs. Draw the focus with outline or box-shadow, or keep the size (border-color instead of border-width)
+
+![focus-shift](focus-shift-before.png) ![focus-shift](focus-shift-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><h1 class="t" aria-label="Shop"></h1><a class="l" href="/sale" aria-label="Sale"></a><div class="next"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px;background:#fff}.t{height:10px}.l{display:block;height:40px;background:#246;outline:2px solid #000}.l:focus{height:60px}.next{height:60px;background:#fc9}
+```
+
+</details>
+
 ## A badge that sticks out of its card
 
 `E_LAYOUT_PROTRUSION` — viewport 672 × 690px
