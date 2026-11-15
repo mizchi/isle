@@ -47,11 +47,10 @@ test('flex outside the modeled subset is Unknown', () => {
     ['.row { justify-content: safe center; }', /justify-content/],
     ['.name { min-width: auto; }', /automatic minimum/],
     ['.name { flex: 1; min-width: auto; }', /automatic minimum/],
-    ['.avatar { flex: 0 1 48px; }', /flex-basis and width/],
+    ['.name { flex: 1 1 0; width: 50px; min-width: auto; }', /flex-basis and width and an automatic minimum/],
     ['.name { align-self: baseline; }', /baseline/],
     ['.name { margin-left: 4px; }', /zero or auto margins/],
     ['.avatar { width: auto; }', /content size/],
-    ['.avatar { flex: 0 0 40px; }', /both flex-basis and width/],
     ['.avatar { order: 1; }', /order/],
     ['.name { flex: 1 1 30%; }', /flex-basis/],
   ]) {
@@ -139,12 +138,19 @@ test('column flex outside the subset is Unknown', () => {
     ['.page { justify-content: left; }', /justify-content/],
     ['.page { flex-direction: column-reverse; }', /flex-direction/],
     ['.body { min-block-size: auto; }', /automatic minimum|min-block-size|min-height/],
-    ['.head { flex: 1 1 0; block-size: 56px; min-block-size: 0; }', /height/],
   ]) {
     const report = page(ok + extra + '\n', parts, {'.copy': {minInlineSize: 100, minBlockSize: 10}});
     status(report, 'unknown');
     // Cross-axis alignment is also rejected by the general both-axis alignment check.
     assert.ok(report.diagnostics.some(d => (d.code === 'U_LAYOUT_FLEX' || /alignment/.test(d.message)) && reason.test(d.message.replace('content alignment', 'align'))), `${extra}: ${JSON.stringify(report.diagnostics)}`);
+  }
+});
+
+test('a main size under a non-auto flex-basis, with no automatic minimum, is laid out as auto and reported inert', () => {
+  for (const extra of ['.avatar { flex: 0 1 48px; }', '.avatar { flex: 0 0 40px; }']) {
+    const report = run(card(base + extra + '\n'), {viewport: {min: 188, max: 600}});
+    status(report, 'verified');
+    assert.deepEqual((report.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_DECLARATION_INERT').map(w => [w.box, w.properties.join()]), [['.avatar', 'inline-size']], extra);
   }
 });
 

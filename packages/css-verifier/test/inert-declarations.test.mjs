@@ -14,7 +14,7 @@ test('item properties the parent display ignores', () => {
   assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.c{height:10px;flex:1}')), [['.c', 'flex-grow flex-basis']]);
   // Where they apply: no warning.
   assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.c{height:10px;grid-column:span 2}')), []);
-  assert.deepEqual(inert(run('.p{display:flex}.c{width:100px;height:10px;flex:1}')), []);
+  assert.deepEqual(inert(run('.p{display:flex}.c{width:100px;height:10px;flex-grow:1}')), []);
 });
 
 test('container properties the own display ignores', () => {
@@ -58,4 +58,15 @@ test('align-content on a single-line flex container and object-fit on a non-repl
   assert.deepEqual(inert(run('.p{display:flex;height:100px;align-content:center}.c{width:100px;height:10px}')), [['.p', 'align-content']]);
   assert.deepEqual(inert(run('.p{display:flex;flex-wrap:wrap;height:100px;align-content:center}.c{width:100px;height:10px}')), []);
   assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:10px;object-fit:cover}')), [['.c', 'object-fit']]);
+});
+
+test('a main size under a non-auto flex-basis does nothing once the automatic minimum is out of the way', () => {
+  const f = '.p{display:flex}';
+  assert.deepEqual(inert(run(`${f}.c{height:10px;flex:1;width:200px}`)), [['.c', 'inline-size']]);
+  assert.deepEqual(inert(run(`${f}.c{height:10px;flex:1 1 50px;width:200px;min-width:0}`)), [['.c', 'inline-size']]);
+  assert.deepEqual(inert(run('.p{display:flex;flex-direction:column;height:300px}.c{flex:1;height:50px}')), [['.c', 'block-size']]);
+  // flex-basis auto uses the width; the width of a column item is its cross size.
+  assert.deepEqual(inert(run(`${f}.c{height:10px;flex:1 1 auto;width:200px}`)), []);
+  assert.deepEqual(inert(run(`${f}.c{height:10px;flex-grow:1;width:200px}`)), []);
+  assert.deepEqual(inert(run('.p{display:flex;flex-direction:column;height:300px}.c{flex:1;width:50px}')), []);
 });

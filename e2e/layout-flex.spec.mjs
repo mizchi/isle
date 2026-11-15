@@ -139,6 +139,8 @@ const cases = [
     css: '.t{table-layout:fixed;inline-size:180px;box-sizing:content-box;border:5px solid red}.h,.a,.b{block-size:24px;padding:3px}.h{font-weight:700;text-align:left}.a{inline-size:60px}'},
   {name: 'grid tracks centered by justify-content', html: '<main class="grid"><div></div><div></div></main>',
     css: '.grid{display:grid;grid-template-columns:60px 60px;column-gap:10px;grid-template-rows:20px;justify-content:center}'},
+  {name: 'a width under flex: 1 is ignored (flex-basis 0 replaces it)', html: '<main class="row"><div class="a"></div><div class="b"></div><div class="c"></div></main>',
+    css: '.row{display:flex;column-gap:10px}.a,.b,.c{block-size:20px}.a{flex:1;inline-size:300px}.b{flex:2 1 0;inline-size:40px;min-inline-size:0}.c{flex:none;inline-size:50px}'},
 ];
 const evaluate = (affine, width, height) => {
   const value = text => { const [n, d = '1'] = text.split('/'); return Number(n) / Number(d); };

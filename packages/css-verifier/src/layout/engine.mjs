@@ -1146,6 +1146,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (set('text-overflow', 'clip') && !['hidden', 'clip', 'auto', 'scroll'].includes(String(style['overflow-x']))) reasons.push(['text-overflow', `its overflow-x is ${style['overflow-x']}, so nothing is clipped to mark`]);
         if (inFlow && ['flex', 'inline-flex'].includes(parentDisplay) && set('justify-self', 'auto')) reasons.push(['justify-self', `its parent ${parents.at(-1).box.label} is display: flex, which ignores justify-self (use margin-inline-start: auto, or justify-content on the parent)`]);
         if (['flex', 'inline-flex'].includes(style.display) && set('justify-items', 'normal')) reasons.push(['justify-items', 'it is display: flex, which ignores justify-items (use justify-content)']);
+        // A main size under a non-auto flex-basis (flex: 1; width: 200px): flex-basis replaces it (inertMainSize).
+        if (style.$inertMain) reasons.push([style.$inertMain.property, `flex-basis: ${style['flex-basis']} sets its main size instead (use flex: 1 1 auto, or flex-basis: ${style.$inertMain.value})`]);
         // align-content distributes flex lines: a single-line (nowrap) flex container has one line and nothing to distribute.
         if (['flex', 'inline-flex'].includes(style.display) && style['flex-wrap'] === 'nowrap' && set('align-content', 'normal')) reasons.push(['align-content', 'it is a single-line flex container (flex-wrap: nowrap), so there are no lines to distribute (use align-items)']);
         // object-fit sizes the content of a replaced element (img, video, canvas, …); other boxes have none.
@@ -1153,7 +1155,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (set('line-clamp', 'none') && style.$lineClamp === undefined && !['-webkit-box', '-webkit-inline-box'].includes(style.display)) reasons.push(['line-clamp', `it is display: ${style.display}, not -webkit-box`]);
         if (reasons.length) layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: reasons.map(r => r[0]),
           css: reasons.map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
-          message: `${box.label}: ${reasons.map(([key, why]) => `${key}: ${style[key]} has no effect (${why})`).join('; ')}`, ...ranges(region) });
+          message: `${box.label}: ${reasons.map(([key, why]) => `${key}: ${style.$inertMain?.property === key ? style.$inertMain.value : style[key]} has no effect (${why})`).join('; ')}`, ...ranges(region) });
       }
       geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, ...(style.display === 'grid' && /^(?:\s*(?:repeat\(\s*\d+\s*,\s*\d+(?:\.\d+)?px\s*\)|\d+(?:\.\d+)?px))+\s*$/.test(String(style['grid-template-columns'])) ? { fixedTracks: style['grid-template-columns'] } : {}), ...((box.text || box.inline?.length) && !box.pseudo && ['normal', 'pre-wrap', 'pre-line'].includes(style['white-space']) && style['overflow-wrap'] === 'normal' ? { wrapsByWords: true } : {}), ...(style.$widthFromAttribute ? { widthFromAttribute: style.$widthFromAttribute } : {}), ...(/\dvw\b|\bvw\)/.test(String(style.$sources?.['inline-size']?.specified ?? '')) ? { vwInline: style.$sources['inline-size'].specified } : {}), ...(style['box-sizing'] === 'content-box' && /^100%$/.test(String(style.$sources?.['inline-size']?.specified ?? '').trim()) && ['left', 'right'].some(side => cmp(px(style[`padding-${side}`] === 'ua' ? '0' : style[`padding-${side}`]), zero) > 0 || cmp(px(style[`border-${side}`] === 'ua' ? '0' : style[`border-${side}`]), zero) > 0) ? { contentBoxFull: ['left', 'right'].flatMap(side => [`padding-${side}`, `border-${side}`]).filter(key => style[key] && !['0', '0px', 'ua'].includes(String(style[key]))) } : {}), ...(style.$imageRatio ? { imageRatio: style.$imageRatio } : {}), clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
@@ -1814,6 +1816,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   const cover = /viewport-fit\s*=\s*cover/i.test(String(root.metaViewport ?? ''));
   setSafeArea(cover ? (options.safeArea ? { top: 0, right: 0, bottom: 0, left: 0, ...options.safeArea } : 'unknown') : null);
   unitContext.rootFontSize = null; setRootFontSize(null); unitContext.heightKnown = Boolean(block && options.viewport.height);
+  // A flex item's main size that a non-auto flex-basis replaces, when no automatic minimum reads it (flex.mjs keeps
+  // that case Unknown): the property, or null. The layout treats it as auto; finish() reports it as inert.
+  function inertMainSize(style, box, main) {
+    const size = main === 'block' ? 'block-size' : 'inline-size';
+    if (!style.$sources?.[size] || style[size] === 'auto' || ['auto', 'content'].includes(String(style['flex-basis']))) return null;
+    const scroller = !['visible', 'clip'].includes(String(style['overflow-x'])) || !['visible', 'clip'].includes(String(style['overflow-y']));
+    const empty = !(box.children ?? []).length && !box.text && !box.inline?.length;
+    return style[`min-${size}`] !== 'auto' || scroller || empty ? size : null;
+  }
   function solve(box, available, region, parents = [], inherited, emit = true) {
     let results = [];
     if (emit) box.$starts = { geometry: geometry.length, sizes: sizes.length };
@@ -1830,6 +1841,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       };
       for (const state of styles(box, region, parents, inherited, emit, !available.root).flatMap(tableStates)) {
         let { style } = state;
+        const inertMain = available.flexItem && style.position !== 'absolute' ? inertMainSize(style, box, available.flexItem.main) : null;
+        if (inertMain) style = { ...style, [inertMain]: 'auto', $inertMain: { property: inertMain, value: style[inertMain] } };
         if (box.tag === 'html' && !parents.length && /^\d+(?:\.\d{1,6})?px$/.test(style['font-size'])) { rootFontSize = px(style['font-size']); unitContext.rootFontSize = rootFontSize; setRootFontSize(rootFontSize); }
         // A fixed table is laid out as its equivalent grid (rows and sections as contents, cells as blocks).
         if (box.tag === 'table' && style.display === 'table') style = tableAsGrid(box, style, state.region, parents, emit, available);

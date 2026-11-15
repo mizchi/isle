@@ -421,6 +421,10 @@ test('inert declarations: where the static check warns, Chromium lays the page o
     ['.p{display:flex}', '.c{width:100px;height:10px}', 'justify-items:center', '.p', true],
     ['.p{display:flex}', '.c{width:100px;height:10px}', 'justify-content:center', '.p', false],
     ['.p{display:flex;height:100px}', '.c{width:100px;height:10px}', 'align-content:center', '.p', true],
+    ['.p{display:flex}', '.c{height:10px;flex:1}', 'width:200px', '.c', true],
+    ['.p{display:flex}', '.c{height:10px;flex:1 1 50px;min-width:0}', 'width:300px', '.c', true],
+    ['.p{display:flex;flex-direction:column;height:300px}', '.c{flex:1}', 'height:50px', '.c', true],
+    ['.p{display:flex}', '.c{height:10px;flex:0 0 auto}', 'width:100px', '.c', false],
     ['.p{display:flex;height:100px}', '.c{width:100px;height:10px}', 'align-items:center', '.p', false],
   ];
   const html = '<div class="p"><div class="c"></div><div class="c"></div></div>';

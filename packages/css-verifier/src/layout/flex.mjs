@@ -92,7 +92,9 @@ export function flexItem(style, { empty = false, axis = 'inline' } = {}) {
   else if ((basis === 'auto' || basis === 'content') && axis === 'block' && style[n.size] === 'auto') base = 'content';
   else if (basis === 'auto' || basis === 'content') unknown(`flex-basis: ${basis} with an auto ${n.label} uses the content size; give a px ${n.label} or basis`);
   else unknown(`flex-basis ${basis} is outside the subset`);
-  if (basis !== 'auto' && style[n.size] !== 'auto') unknown(`An item with both flex-basis and ${n.label} is outside the subset; flex-basis wins over ${n.label}`);
+  // A non-auto flex-basis replaces the main size; the size still feeds the automatic minimum (the specified size
+  // suggestion, §4.5), which is outside the subset. Without it the size does nothing (W_LAYOUT_DECLARATION_INERT).
+  if (basis !== 'auto' && style[n.size] !== 'auto' && automatic) unknown(`An item with both flex-basis and ${n.label} and an automatic minimum is outside the subset (the ${n.label} caps the content-based minimum); set ${n.minLabel}`);
   const item = { grow, shrink, edges: own, autoStart, autoEnd, automaticBelowBase: false };
   if (base === 'content') {
     // The block content size is both the flex base size and the automatic minimum.
