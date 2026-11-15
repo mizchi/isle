@@ -1649,3 +1649,17 @@ test('grid areas out of DOM order: where W_A11Y_ORDER warns, Chromium tabs to a 
     expect(warned, `${areas}: focus visits tops ${tops}`).toBe(tops[1] < tops[0]);
   }
 });
+
+test('icon buttons (grid containers): the button has a name in Chromium exactly where E_A11Y_NAME is not reported', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff}.t{height:10px}.b{appearance:none;padding:0 8px;border:0;min-width:0;min-height:0;background:#246;color:#fff;display:grid;grid-template-columns:24px;height:40px}svg{display:block}`;
+  for (const svg of ['<svg width="24" height="24" aria-hidden="true"></svg>', '<svg width="24" height="24" aria-label="Close" role="img"></svg>', '<svg width="24" height="24"><title>Close</title></svg>']) {
+    const html = `<main class="p"><h1 class="t" aria-label="T"></h1><button class="b" type="button">${svg}</button></main>`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+    expect(report.status, `${svg} ${report.diagnostics.map(d => d.message).join(' | ')}`).not.toBe('unknown');
+    const unnamed = report.diagnostics.some(d => d.code === 'E_A11Y_NAME' && d.box === '.b');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const name = /button "([^"]*)"/.exec(await page.locator('main').ariaSnapshot())?.[1] ?? '';
+    expect(unnamed, `${svg}: Chromium names the button "${name}"`).toBe(name === '');
+  }
+});
