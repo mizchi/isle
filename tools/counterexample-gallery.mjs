@@ -232,6 +232,14 @@ const cases = [
     html: '<main class="page"><label class="l" for="mail" aria-label="Email"></label><input class="i" type="email" id="email" aria-label="Email"></main>', css: '.page{display:grid;grid-template-columns:200px}.l{display:block;height:20px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}'},
   {id: 'absolute-page', title: 'A card badge with no positioned ancestor', code: 'W_LAYOUT_ABSOLUTE_PAGE', warning: true, options: {},
     html: '<main class="page"><div class="gap"></div><div class="card"><span class="badge"></span></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:12px}.gap{height:120px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:120px;background:#eef;outline:1px dashed #999}.badge{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:12px;background:#c33}'},
+  {id: 'content-box-full', title: 'width: 100% with padding under content-box', code: 'W_LAYOUT_CONTENT_BOX_FULL', warning: true, options: {},
+    html: '<main class="page"><div class="field"></div></main>', css: '*{box-sizing:content-box}.page{display:grid;grid-template-columns:minmax(0,1fr);outline:1px dashed #999}.field{width:100%;height:40px;padding:0 24px;background:#c33}'},
+  {id: 'media-no-max', title: 'An image as wide as its width attribute', code: 'W_LAYOUT_MEDIA_NO_MAX', warning: true, state: 'load', options: {images: {'/wide.png': {width: 32, height: 16}}},
+    html: '<main class="page"><img class="hero" src="/wide.png" width="560" height="280" alt="A photo"></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);outline:1px dashed #999}.hero{display:block}'},
+  {id: 'long-word', title: 'A URL wider than its card', code: 'W_LAYOUT_LONG_WORD', warning: true, options: {boxes: text('.t', 'https://example.com/articles/2026/a-very-long-path', {wrap: 'normal'})},
+    html: '<main class="page"><p class="t">https://example.com/articles/2026/a-very-long-path</p></main>', css: '.page{display:grid;grid-template-columns:200px;outline:1px dashed #999}.t{display:block;font-family:Roboto;font-size:16px;line-height:24px;background:#eef}'},
+  {id: 'sticky-no-inset', title: 'position: sticky with no top', code: 'W_LAYOUT_STICKY_NO_INSET', warning: true, act: async page => { await page.evaluate(async () => { scrollTo(0, 200); await new Promise(r => requestAnimationFrame(r)); }); }, afterLabel: 'scrolled 200px: the header scrolled away', options: {scrollbars: overlay},
+    html: '<main class="page"><header class="h"></header><div class="body"></div></main>', css: 'body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.h{position:sticky;height:56px;background:#246}.body{height:2000px;background:repeating-linear-gradient(#fff 0 40px,#f3f3f3 40px 80px)}'},
   {id: 'declaration-inert', title: 'grid-column on an item of a flex container', code: 'W_LAYOUT_DECLARATION_INERT', warning: true, options: {},
     html: '<main class="page"><div class="row"><div class="c wide"></div><div class="c"></div><div class="c"></div></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.row{display:flex;column-gap:8px}.c{width:80px;height:60px;background:#246}.wide{grid-column:span 2;background:#c33}'},
   {id: 'vw-scrollbar', title: 'width: 100vw on a page with a classic scrollbar', code: 'W_LAYOUT_VW_SCROLLBAR', warning: true, markup: true, mark: 'width: 100vw', noScrollbars: true, options: {scrollbars: [{name: 'classic', inlineSize: 15, blockSize: 15}]},
@@ -243,6 +251,24 @@ const cases = [
   {id: 'line-height-fixed', title: 'A px line-height under the default font size', code: 'W_LAYOUT_LINE_HEIGHT_FIXED', warning: true, markup: true, mark: 'line-height: 20px', doc: '<html lang="en"><body><main class="page"><p class="t">Text</p></main></body></html>', options: {boxes: {'.t': {minInlineSize: 40, intrinsicBlockSize: 20}}},
     source: '<style>\n  p { font-size: 1rem; line-height: 20px; }  /* a 32px default: 32px glyphs on 20px lines */\n</style>',
     html: '<main class="page"><p class="t">Text</p></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{display:block;font-size:1rem;line-height:20px}'},
+  {id: 'control-font', title: 'Buttons that keep the UA font size', code: 'W_LAYOUT_CONTROL_FONT', warning: true, markup: true, mark: 'font-size: 18px', doc: '<html lang="en"><body><main class="page"><button class="b" aria-label="Save"></button></main></body></html>',
+    source: '<style>\n  body { font-size: 18px; }\n  /* button { font: inherit } is missing: the button text stays 13.33px */\n</style>\n<button>Save</button>',
+    html: '<main class="page"><button class="b" aria-label="Save"></button></main>', css: 'body{font-size:18px}.page{display:grid;grid-template-columns:minmax(0,1fr)}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px}'},
+  {id: 'height-fixed-text', title: 'A px height on text that follows the default font size', code: 'W_LAYOUT_HEIGHT_FIXED_TEXT', warning: true, markup: true, mark: 'height: 24px', doc: '<html lang="en"><body><main class="page"><p class="t">Text</p></main></body></html>', options: {boxes: {'.t': {minInlineSize: 40, intrinsicBlockSize: 20}}},
+    source: '<style>\n  .tag { height: 24px; font-size: 1rem; }  /* a 32px default font: 40px of text in 24px */\n</style>',
+    html: '<main class="page"><p class="t">Text</p></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{display:block;height:24px;font-size:1rem;line-height:1.25}'},
+  {id: 'autofocus-scrolls', title: 'An autofocus field below the fold', code: 'W_A11Y_AUTOFOCUS_SCROLLS', warning: true, markup: true, mark: 'autofocus', options: {accessibility: true},
+    source: '<section class="hero" style="height: 600px">…</section>\n<input type="email" aria-label="Email" autofocus>\n<!-- the page opens scrolled down to the field, past the hero -->',
+    html: '<main class="page"><div class="hero"></div><input class="f" type="email" aria-label="Email" autofocus><div class="tall"></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{height:600px}.tall{height:2000px}.f{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff}'},
+  {id: 'autofocus-multiple', title: 'Two autofocus fields', code: 'W_A11Y_AUTOFOCUS_MULTIPLE', warning: true, markup: true, mark: 'autofocus', options: {accessibility: true},
+    source: '<input type="search" aria-label="Search" autofocus>\n<input type="email" aria-label="Email" autofocus>  <!-- ignored: the first one takes focus -->',
+    html: '<main class="page"><input class="f a" type="search" aria-label="Search" autofocus><input class="f b" type="email" aria-label="Email" autofocus></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px}.f{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff}'},
+  {id: 'selector-unmatched', title: 'A selector with a typo in a class name', code: 'W_CSS_SELECTOR_UNMATCHED', warning: true, markup: true, mark: '.crad', options: {selectors: true},
+    source: '<style>\n  .crad { padding: 16px; }  /* no element has class crad: did you mean .card? */\n</style>\n<div class="card">…</div>',
+    html: '<main class="page"><div class="card"></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.card{height:40px}.crad{color:red}'},
+  {id: 'selector-relation', title: 'A child selector the template does not match', code: 'W_CSS_SELECTOR_RELATION', warning: true, markup: true, mark: '.list > .item', options: {selectors: true},
+    source: '<style>\n  .list > .item { padding: 8px; }\n</style>\n<ul class="list">\n  <li class="row"><a class="item">…</a></li>   <!-- .item is a grandchild of .list -->\n</ul>',
+    html: '<main class="page"><div class="list"><div class="row"><div class="item"></div></div></div></main>', css: '.page,.list,.row{display:grid;grid-template-columns:minmax(0,1fr)}.item{height:20px}.list > .item{color:red}'},
   {id: 'font-zoom', title: 'A heading sized only in vw', code: 'W_LAYOUT_FONT_ZOOM', warning: true, markup: true, mark: 'font-size: 5vw', doc: '<html lang="en"><body><main class="page"><h1 class="t"></h1></main></body></html>',
     source: '<style>\n  h1 { font-size: 5vw; }  /* 200% zoom halves the viewport: the heading stays the same size */\n</style>',
     html: '<main class="page"><h1 class="t"></h1></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{height:40px;font-size:5vw}'},
@@ -344,7 +370,7 @@ for (const c of cases) {
   const options = {name: 'P', css: base + c.css, viewport: {min: 320, max: 1024, height: {min: 480, max: 900}}, ...(c.options ?? {}), ...(c.boxes ? {boxes: {...(c.options?.boxes ?? {}), ...c.boxes}} : {})};
   if (!options.scrollbars && !c.noScrollbars) options.scrollbars = overlay;
   const report = analyzeHTML(doc, metrics.resolveOptions(options));
-  const all = [...report.diagnostics, ...(report.layoutWarnings ?? []), ...(report.integrity?.warnings ?? []), ...(report.accessibility?.warnings ?? [])];
+  const all = [...report.diagnostics, ...(report.layoutWarnings ?? []), ...(report.integrity?.warnings ?? []), ...(report.accessibility?.warnings ?? []), ...(report.selectors?.warnings ?? [])];
   const found = all.filter(d => d.code === c.code);
   if (!found.length) { console.error(`${c.id}: expected ${c.code}, got ${report.status}: ${all.map(d => d.code + ' ' + d.message).join(' | ').slice(0, 400)}`); process.exitCode = 1; continue; }
   const d = found[0];

@@ -1206,6 +1206,60 @@
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:12px}.gap{height:120px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:120px;background:#eef;outline:1px dashed #999}.badge{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:12px;background:#c33}"
  },
  {
+  "id": "content-box-full",
+  "title": "width: 100% with padding under content-box",
+  "code": "W_LAYOUT_CONTENT_BOX_FULL",
+  "width": 320,
+  "height": 480,
+  "message": ".field is width: 100% with box-sizing: content-box, so its padding-left, padding-right come on top of the container's width and it overflows. Use box-sizing: border-box (or width: auto in a grid or flex parent)",
+  "shots": [
+   "content-box-full-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"field\"></div></main>",
+  "css": "*{box-sizing:content-box}.page{display:grid;grid-template-columns:minmax(0,1fr);outline:1px dashed #999}.field{width:100%;height:40px;padding:0 24px;background:#c33}"
+ },
+ {
+  "id": "media-no-max",
+  "title": "An image as wide as its width attribute",
+  "code": "W_LAYOUT_MEDIA_NO_MAX",
+  "width": 320,
+  "height": 480,
+  "message": ".hero takes its width from its width=\"560\" attribute and no CSS width or max-width limits it, so it is wider than its container. Add max-width: 100% (with height: auto to keep its ratio)",
+  "shots": [
+   "media-no-max-before.png",
+   "media-no-max-after.png"
+  ],
+  "html": "<main class=\"page\"><img class=\"hero\" src=\"/wide.png\" width=\"560\" height=\"280\" alt=\"A photo\"></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr);outline:1px dashed #999}.hero{display:block}"
+ },
+ {
+  "id": "long-word",
+  "title": "A URL wider than its card",
+  "code": "W_LAYOUT_LONG_WORD",
+  "width": 320,
+  "height": 480,
+  "message": ".t wraps only between words (overflow-wrap: normal), and its longest word is wider than the box: it sticks out. Use overflow-wrap: anywhere (or break-word) for URLs and long words",
+  "shots": [
+   "long-word-violation.png"
+  ],
+  "html": "<main class=\"page\"><p class=\"t\">https://example.com/articles/2026/a-very-long-path</p></main>",
+  "css": ".page{display:grid;grid-template-columns:200px;outline:1px dashed #999}.t{display:block;font-family:Roboto;font-size:16px;line-height:24px;background:#eef}"
+ },
+ {
+  "id": "sticky-no-inset",
+  "title": "position: sticky with no top",
+  "code": "W_LAYOUT_STICKY_NO_INSET",
+  "width": 320,
+  "height": 480,
+  "message": ".h is position: sticky with no top, bottom, left or right: a sticky box sticks only by its insets, so it scrolls away like position: relative. Add top: 0 (or the edge it should stick to)",
+  "shots": [
+   "sticky-no-inset-before.png",
+   "sticky-no-inset-after.png"
+  ],
+  "html": "<main class=\"page\"><header class=\"h\"></header><div class=\"body\"></div></main>",
+  "css": "body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.h{position:sticky;height:56px;background:#246}.body{height:2000px;background:repeating-linear-gradient(#fff 0 40px,#f3f3f3 40px 80px)}"
+ },
+ {
   "id": "declaration-inert",
   "title": "grid-column on an item of a flex container",
   "code": "W_LAYOUT_DECLARATION_INERT",
@@ -1256,6 +1310,84 @@
   ],
   "html": "<main class=\"page\"><p class=\"t\">Text</p></main>",
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.t{display:block;font-size:1rem;line-height:20px}"
+ },
+ {
+  "id": "control-font",
+  "title": "Buttons that keep the UA font size",
+  "code": "W_LAYOUT_CONTROL_FONT",
+  "width": 0,
+  "height": 0,
+  "message": ".b is a <button>, which does not inherit font-size: body@P/0 sets 18px, but the control keeps the UA size (13.33px at a 16px default). Add button, input, select, textarea { font: inherit }",
+  "shots": [
+   "control-font-markup.png"
+  ],
+  "html": "<main class=\"page\"><button class=\"b\" aria-label=\"Save\"></button></main>",
+  "css": "body{font-size:18px}.page{display:grid;grid-template-columns:minmax(0,1fr)}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px}"
+ },
+ {
+  "id": "height-fixed-text",
+  "title": "A px height on text that follows the default font size",
+  "code": "W_LAYOUT_HEIGHT_FIXED_TEXT",
+  "width": 0,
+  "height": 0,
+  "message": ".t has height: 24px but its text follows the user's default font size (font-size: 1rem): with a larger default the text outgrows the box and overflows it. Use min-height (or padding) instead",
+  "shots": [
+   "height-fixed-text-markup.png"
+  ],
+  "html": "<main class=\"page\"><p class=\"t\">Text</p></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.t{display:block;height:24px;font-size:1rem;line-height:1.25}"
+ },
+ {
+  "id": "autofocus-scrolls",
+  "title": "An autofocus field below the fold",
+  "code": "W_A11Y_AUTOFOCUS_SCROLLS",
+  "width": 0,
+  "height": 0,
+  "message": ".f has autofocus and ends below the viewport here: the page opens scrolled down to it, past what is above",
+  "shots": [
+   "autofocus-scrolls-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"hero\"></div><input class=\"f\" type=\"email\" aria-label=\"Email\" autofocus><div class=\"tall\"></div></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{height:600px}.tall{height:2000px}.f{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff}"
+ },
+ {
+  "id": "autofocus-multiple",
+  "title": "Two autofocus fields",
+  "code": "W_A11Y_AUTOFOCUS_MULTIPLE",
+  "width": 0,
+  "height": 0,
+  "message": ".f.b has autofocus, but an earlier autofocus element (.f.a) takes focus here: only one autofocus applies",
+  "shots": [
+   "autofocus-multiple-markup.png"
+  ],
+  "html": "<main class=\"page\"><input class=\"f a\" type=\"search\" aria-label=\"Search\" autofocus><input class=\"f b\" type=\"email\" aria-label=\"Email\" autofocus></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px}.f{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff}"
+ },
+ {
+  "id": "selector-unmatched",
+  "title": "A selector with a typo in a class name",
+  "code": "W_CSS_SELECTOR_UNMATCHED",
+  "width": 0,
+  "height": 0,
+  "message": ".crad matches no element of the template (no element has class .crad); did you mean .card?",
+  "shots": [
+   "selector-unmatched-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"card\"></div></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.card{height:40px}.crad{color:red}"
+ },
+ {
+  "id": "selector-relation",
+  "title": "A child selector the template does not match",
+  "code": "W_CSS_SELECTOR_RELATION",
+  "width": 0,
+  "height": 0,
+  "message": ".list > .item: 1 element(s) match .item, but none has a parent matching .list; their parents are .row. The selector and the template's structure disagree",
+  "shots": [
+   "selector-relation-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"list\"><div class=\"row\"><div class=\"item\"></div></div></div></main>",
+  "css": ".page,.list,.row{display:grid;grid-template-columns:minmax(0,1fr)}.item{height:20px}.list > .item{color:red}"
  },
  {
   "id": "font-zoom",

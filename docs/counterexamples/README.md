@@ -1828,6 +1828,86 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## width: 100% with padding under content-box
+
+`W_LAYOUT_CONTENT_BOX_FULL` — viewport 320 × 480px
+
+> .field is width: 100% with box-sizing: content-box, so its padding-left, padding-right come on top of the container's width and it overflows. Use box-sizing: border-box (or width: auto in a grid or flex parent)
+
+![content-box-full](content-box-full-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="field"></div></main>
+```
+
+```css
+*{box-sizing:content-box}.page{display:grid;grid-template-columns:minmax(0,1fr);outline:1px dashed #999}.field{width:100%;height:40px;padding:0 24px;background:#c33}
+```
+
+</details>
+
+## An image as wide as its width attribute
+
+`W_LAYOUT_MEDIA_NO_MAX` — viewport 320 × 480px
+
+> .hero takes its width from its width="560" attribute and no CSS width or max-width limits it, so it is wider than its container. Add max-width: 100% (with height: auto to keep its ratio)
+
+![media-no-max](media-no-max-before.png) ![media-no-max](media-no-max-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><img class="hero" src="/wide.png" width="560" height="280" alt="A photo"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr);outline:1px dashed #999}.hero{display:block}
+```
+
+</details>
+
+## A URL wider than its card
+
+`W_LAYOUT_LONG_WORD` — viewport 320 × 480px
+
+> .t wraps only between words (overflow-wrap: normal), and its longest word is wider than the box: it sticks out. Use overflow-wrap: anywhere (or break-word) for URLs and long words
+
+![long-word](long-word-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><p class="t">https://example.com/articles/2026/a-very-long-path</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px;outline:1px dashed #999}.t{display:block;font-family:Roboto;font-size:16px;line-height:24px;background:#eef}
+```
+
+</details>
+
+## position: sticky with no top
+
+`W_LAYOUT_STICKY_NO_INSET` — viewport 320 × 480px
+
+> .h is position: sticky with no top, bottom, left or right: a sticky box sticks only by its insets, so it scrolls away like position: relative. Add top: 0 (or the edge it should stick to)
+
+![sticky-no-inset](sticky-no-inset-before.png) ![sticky-no-inset](sticky-no-inset-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><header class="h"></header><div class="body"></div></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.h{position:sticky;height:56px;background:#246}.body{height:2000px;background:repeating-linear-gradient(#fff 0 40px,#f3f3f3 40px 80px)}
+```
+
+</details>
+
 ## grid-column on an item of a flex container
 
 `W_LAYOUT_DECLARATION_INERT` — viewport 320 × 480px
@@ -1904,6 +1984,126 @@ html{overflow-y:auto}.hero{height:100px;width:100vw}.tall{height:3000px}
 
 ```css
 .page{display:grid;grid-template-columns:minmax(0,1fr)}.t{display:block;font-size:1rem;line-height:20px}
+```
+
+</details>
+
+## Buttons that keep the UA font size
+
+`W_LAYOUT_CONTROL_FONT` — markup rule (nothing to see on screen)
+
+> .b is a <button>, which does not inherit font-size: body@P/0 sets 18px, but the control keeps the UA size (13.33px at a 16px default). Add button, input, select, textarea { font: inherit }
+
+![control-font](control-font-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b" aria-label="Save"></button></main>
+```
+
+```css
+body{font-size:18px}.page{display:grid;grid-template-columns:minmax(0,1fr)}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px}
+```
+
+</details>
+
+## A px height on text that follows the default font size
+
+`W_LAYOUT_HEIGHT_FIXED_TEXT` — markup rule (nothing to see on screen)
+
+> .t has height: 24px but its text follows the user's default font size (font-size: 1rem): with a larger default the text outgrows the box and overflows it. Use min-height (or padding) instead
+
+![height-fixed-text](height-fixed-text-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><p class="t">Text</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{display:block;height:24px;font-size:1rem;line-height:1.25}
+```
+
+</details>
+
+## An autofocus field below the fold
+
+`W_A11Y_AUTOFOCUS_SCROLLS` — markup rule (nothing to see on screen)
+
+> .f has autofocus and ends below the viewport here: the page opens scrolled down to it, past what is above
+
+![autofocus-scrolls](autofocus-scrolls-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="hero"></div><input class="f" type="email" aria-label="Email" autofocus><div class="tall"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{height:600px}.tall{height:2000px}.f{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff}
+```
+
+</details>
+
+## Two autofocus fields
+
+`W_A11Y_AUTOFOCUS_MULTIPLE` — markup rule (nothing to see on screen)
+
+> .f.b has autofocus, but an earlier autofocus element (.f.a) takes focus here: only one autofocus applies
+
+![autofocus-multiple](autofocus-multiple-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="f a" type="search" aria-label="Search" autofocus><input class="f b" type="email" aria-label="Email" autofocus></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px}.f{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff}
+```
+
+</details>
+
+## A selector with a typo in a class name
+
+`W_CSS_SELECTOR_UNMATCHED` — markup rule (nothing to see on screen)
+
+> .crad matches no element of the template (no element has class .crad); did you mean .card?
+
+![selector-unmatched](selector-unmatched-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="card"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.card{height:40px}.crad{color:red}
+```
+
+</details>
+
+## A child selector the template does not match
+
+`W_CSS_SELECTOR_RELATION` — markup rule (nothing to see on screen)
+
+> .list > .item: 1 element(s) match .item, but none has a parent matching .list; their parents are .row. The selector and the template's structure disagree
+
+![selector-relation](selector-relation-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="list"><div class="row"><div class="item"></div></div></div></main>
+```
+
+```css
+.page,.list,.row{display:grid;grid-template-columns:minmax(0,1fr)}.item{height:20px}.list > .item{color:red}
 ```
 
 </details>
