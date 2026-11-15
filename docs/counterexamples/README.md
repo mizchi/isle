@@ -1708,6 +1708,26 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## A status message region kept display: none until it is used
+
+`W_A11Y_LIVE_HIDDEN` — markup rule (nothing to see on screen)
+
+> .toast is a live region (status) but is not rendered (display: none or visibility: hidden) here: what is written into it is not announced. Keep the region rendered and empty, and hide it visually if needed
+
+![live-hidden](live-hidden-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="toast" role="status"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.toast{display:none}
+```
+
+</details>
+
 ## A field named only by its title
 
 `W_A11Y_TITLE_ONLY` — markup rule (nothing to see on screen)

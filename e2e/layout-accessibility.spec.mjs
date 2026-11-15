@@ -1466,3 +1466,20 @@ test('select-indicator: where the static rule warns, Chromium draws nothing at t
     expect(dark > 0, `${extra || 'bare'}: ${dark} dark pixels at the select end`).toBe(!warn);
   }
 });
+
+test('live-hidden: the static warning holds exactly where Chromium leaves the live region out of the accessibility tree', async ({page}) => {
+  const base = '*{box-sizing:border-box;margin:0}body{margin:0}.page{display:grid;grid-template-columns:200px;padding:8px;background:#fff;color:#000}.w{display:grid;grid-template-columns:minmax(0,1fr)}.m{display:block;height:20px}';
+  const cdp = await page.context().newCDPSession(page);
+  for (const [extra, wrapperHidden, warn] of [['', false, false], ['.m{display:none}', false, true], ['.m{visibility:hidden}', false, true], ['', true, true], ['.m{opacity:0}', false, false]]) {
+    const css = base + extra, html = `<main class="page"><div class="w"${wrapperHidden ? ' aria-hidden="true"' : ''}><div class="m" role="status" aria-label="Saved"></div></div></main>`;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, boxes: {'.m': {minInlineSize: 1, intrinsicBlockSize: 20}}});
+    expect(report.status, report.diagnostics.map(d => d.message).join(' | ')).not.toBe('unknown');
+    const warned = report.accessibility.warnings.some(w => w.code === 'W_A11Y_LIVE_HIDDEN');
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const {nodes} = await cdp.send('Accessibility.getFullAXTree');
+    const inTree = nodes.some(n => n.role?.value === 'status' && !n.ignored);
+    expect(warned, `${extra || (wrapperHidden ? 'aria-hidden wrapper' : 'shown')}: static ${warned}, in the tree ${inTree}`).toBe(!inTree);
+    expect(warned).toBe(warn);
+  }
+});
