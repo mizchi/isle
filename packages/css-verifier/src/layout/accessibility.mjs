@@ -99,13 +99,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['hidden-control', 'focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -831,6 +831,23 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
       if (dynamic) report(unknowns, 'U_A11Y_LABEL', 'unknown', `${box.label}: a dynamic name, type or label[for] decides whether it is labelled`, row, region, { rule: 'form-label' });
       else if (box.placeholder) report(warnings, 'W_A11Y_PLACEHOLDER_LABEL', 'warning', `${box.label} is named only by its placeholder here, which disappears on input`, row, region, { rule: 'form-label' });
       else report(findings, 'E_A11Y_LABEL', 'error', `${box.label} has no label here: add a visible <label>, aria-label, aria-labelledby or title`, row, region, { rule: 'form-label' });
+    }
+  }
+  // hidden-control (SC 2.1.1, 4.1.2): the custom checkbox pattern gone wrong — the field itself is display: none or
+  // visibility: hidden (out of the tab order and the accessibility tree) while its label is shown. A pointer can toggle
+  // it through the label; the keyboard and assistive technology cannot reach it. The visually hidden pattern (opacity
+  // 0, clip) keeps the field focusable and is not a finding.
+  for (const box of [...boxOf.values()].filter(box => field(box) && !box.pseudo && !hiddenFrom(box.path))) {
+    const wrapped = ancestorsOf(box.path).find(a => a.tag === 'label');
+    const pointed = box.id ? labels.filter(l => l.labelFor === box.id) : [];
+    if (!wrapped && !pointed.length) continue;
+    const operable = geometry.filter(row => row.path === box.path && visible(row)).map(row => row.region);
+    for (const label of [wrapped, ...pointed].filter(Boolean)) {
+      let shown = geometry.filter(t => visible(t) && !t.box.pseudo && (t.path === label.path || isAncestor(label.path, t.path)) && !isAncestor(box.path, t.path) && t.path !== box.path).map(t => t.region);
+      for (const region of operable) shown = shown.flatMap(r => subtract(r, region));
+      const at = shown.find(Boolean);
+      if (at && !findings.some(f => f.code === 'E_A11Y_CONTROL_HIDDEN' && f.path === box.path))
+        report(findings, 'E_A11Y_CONTROL_HIDDEN', 'error', `${box.label} is ${geometry.some(row => row.path === box.path) ? 'visibility: hidden' : 'display: none'} but its label ${label.label} is shown: a pointer toggles it through the label, the keyboard and screen readers cannot reach it. Hide it visually instead (opacity: 0 or a clip, keeping it focusable) and draw the focus on the label`, { box, path: box.path }, at, { rule: 'hidden-control', label: label.path });
     }
   }
   // label-for: the id must name a labelable element (button, input other than hidden, select, textarea, output).

@@ -95,6 +95,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | page-main | 文書(html/body)で main の landmark が描画されない区間 | W_A11Y_NO_MAIN |
 | focus-clipped | `overflow: clip` の祖先の clip の端(padding box)の外に完全にある focusable な箱。clip はスクロールしないので focus しても見えない(hidden はスクロールして見せる。Chromium で測定) | E_A11Y_FOCUS_CLIPPED |
 | focus-ring-clipped | `overflow: clip` の祖先の padding 端にぴったり接する focusable な箱。フォーカスリング(outline の幅 + outline-offset、UA のリングは 1px 以上)が箱の外に描かれ、clip で切れる(warning、SC 2.4.7)。`overflow: hidden` のスクロールコンテナは子の位置が置かれないので判定しない。Chromium では箱のすぐ外の画素がリング色か(切れていればページ色)で照合 | W_A11Y_FOCUS_RING_CLIPPED |
+| hidden-control | `display: none` か `visibility: hidden` の form field(checkbox、radio、file など)で、それを指す label(`for` か包む label)は表示されている。ポインターは label で切り替えられるが、tab 順と accessibility tree にないのでキーボードとスクリーンリーダーは届かない(SC 2.1.1、4.1.2)。視覚的に隠す型(`opacity: 0`、clip)は focus できるので対象外。Chromium で、Tab で届かないことと label のクリックで切り替わることを照合 | E_A11Y_CONTROL_HIDDEN |
 | hidden-overridden | `hidden` 属性があるのに描画される要素。`[hidden]` は UA の `display: none` にすぎず、作者の display 規則が上書きする(Chromium で測定) | W_A11Y_HIDDEN_OVERRIDDEN |
 | state-mismatch | `aria-expanded`(と tab の `aria-selected`)が、`aria-controls` の先が描画されるかと食い違う区間(`"false"` なのに見える、`"true"` なのに見えない)。支援技術と画面が逆のことを伝える | W_A11Y_STATE_MISMATCH |
 | focus-transparent | focus しても自分か祖先が opacity 0 のままの focusable。自分の focus の表示は見えない(自作 checkbox で隣の label に focus を見せる `input:focus + label` は静的に確かめないので警告) | W_A11Y_FOCUS_TRANSPARENT |

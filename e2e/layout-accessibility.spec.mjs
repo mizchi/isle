@@ -1427,3 +1427,24 @@ test('focus ring clipped by overflow: clip: the pixels just outside the button a
     expect(red, `${name}: ring pixel outside the button is ${red ? 'red' : 'not red'} (static warning ${warn})`).toBe(!warn);
   }
 });
+
+test('hidden-control: where the static rule fires, the label toggles the field but Tab never reaches it', async ({page}) => {
+  const base = '*{box-sizing:border-box;margin:0}body{margin:0}.page{display:grid;grid-template-columns:200px;row-gap:8px;padding:8px;background:#fff;color:#000}.l{display:block;height:24px}.f{appearance:none;display:block;width:24px;height:24px;margin:0;padding:0;min-width:0;min-height:0;border:1px solid #000}';
+  for (const [hide, expected] of [['.f{display:none}', true], ['.f{visibility:hidden}', true], ['.f{opacity:0}', false], ['', false]]) {
+    const css = base + hide;
+    const html = '<main class="page"><input class="f" type="checkbox" id="opt"><label class="l" for="opt" aria-label="Remember me"></label></main>';
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, boxes: {'.l': {minInlineSize: 1, intrinsicBlockSize: 24}}});
+    expect(report.status, `${hide}: ${report.diagnostics.map(d => d.message).join(' | ')}`).not.toBe('unknown');
+    const fired = report.diagnostics.some(d => d.code === 'E_A11Y_CONTROL_HIDDEN');
+    await page.setViewportSize({width: 400, height: 600});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    // Tab from a fresh document first (a click moves the sequential focus starting point), then the pointer.
+    await page.keyboard.press('Tab');
+    const reached = await page.evaluate(() => document.activeElement?.id === 'opt');
+    await page.click('.l');
+    const toggled = await page.evaluate(() => document.querySelector('#opt').checked);
+    expect(toggled, `${hide || 'shown'}: the label toggles it`).toBe(true);
+    expect(fired, `${hide || 'shown'}: static ${fired}, Tab reaches it: ${reached}`).toBe(!reached);
+    expect(fired).toBe(expected);
+  }
+});

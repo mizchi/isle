@@ -386,6 +386,20 @@
   "css": ".page{display:grid;grid-template-columns:200px;padding:16px;background:#fff}.c{display:grid;grid-template-columns:minmax(0,1fr);overflow:clip;padding:8px 8px 8px 0;background:#eef}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.b:focus{outline:4px solid #e8710a}"
  },
  {
+  "id": "hidden-control",
+  "title": "A custom checkbox whose real input is display: none",
+  "code": "E_A11Y_CONTROL_HIDDEN",
+  "width": 672,
+  "height": 690,
+  "message": "#opt is display: none but its label .l is shown: a pointer toggles it through the label, the keyboard and screen readers cannot reach it. Hide it visually instead (opacity: 0 or a clip, keeping it focusable) and draw the focus on the label",
+  "shots": [
+   "hidden-control-before.png",
+   "hidden-control-after.png"
+  ],
+  "html": "<main class=\"page\"><input class=\"f\" type=\"checkbox\" id=\"opt\"><label class=\"l\" for=\"opt\"><span class=\"box\"></span><span class=\"t\">Remember me</span></label><button class=\"b\" aria-label=\"Sign in\"></button></main>",
+  "css": ".page{display:grid;grid-template-columns:220px;row-gap:12px;background:#fff;color:#111}.f{display:none}.l{display:grid;grid-template-columns:24px minmax(0,1fr);column-gap:8px}.box{display:block;height:24px;border:2px solid #246;border-radius:4px}.t{display:block;font-family:Roboto;font-size:16px;line-height:24px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#246}.b:focus{outline:3px solid #e8710a;outline-offset:2px}"
+ },
+ {
   "id": "focus-clipped-away",
   "title": "A visually hidden skip link that :focus does not reveal",
   "code": "E_A11Y_FOCUS_CLIPPED_AWAY",
