@@ -275,7 +275,7 @@ test('sticky boxes without room in their parent never stick, as the static warni
     ['in a 300px section', '<div class="page"><section class="tall"><header class="h"></header></section><div class="c"></div></div>'],
     ['inside an overflow: hidden page', '<div class="page" style=""><div class="hid"><header class="h"></header><div class="c"></div></div></div>'],
   ]) {
-    const report = analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css, viewport: {min: 800, max: 800, height: {min: 600, max: 600}}, integrity: true, ...(body.includes('hid') ? {boxes: {'.hid': {overflow: 'clip', overflowBlock: 'clip'}}} : {})});
+    const report = analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css, viewport: {min: 800, max: 800, height: {min: 600, max: 600}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], integrity: true, ...(body.includes('hid') ? {boxes: {'.hid': {overflow: 'clip', overflowBlock: 'clip'}}} : {})});
     const warned = (report.layoutWarnings ?? []).some(w => ['W_LAYOUT_STICKY_INERT', 'W_LAYOUT_STICKY_SCROLLER'].includes(w.code));
     await page.setViewportSize({width: 800, height: 600});
     await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${body}</body></html>`);

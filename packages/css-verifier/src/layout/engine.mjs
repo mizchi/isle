@@ -884,7 +884,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const domain = contract.textMetrics?.kind === 'domain' ? offeredInline => ({ text: { maxLength: contract.textMetrics.maxLength, fitsUpTo: fittingLength(contract.textMetrics, offeredInline), widest: contract.textMetrics.widest } }) : undefined;
       if (contract.minInlineSize !== undefined) obligation(contentInline, scalar(contract.minInlineSize), box, region, 'E_LAYOUT_CONTENT', 'inline', (contract.overflow ?? 'fit') === 'fit', content('inline', 'minInlineSize'), domain);
       if (block) {
-        if (available.block) obligation(available.block, blockSize, box, region, 'E_LAYOUT_ITEM_SIZE', 'block', available.fitBlock !== false, item('block'));
+        // The document root may be taller than the viewport when the viewport scrolls (html overflow-y not hidden/clip):
+        // that is an ordinary long page. With overflow-y visible and a classic scrollbar profile the scrollbar would
+        // appear and narrow the page, which is not laid out, so the root is still required to fit there. A hidden or
+        // clipped root cannot scroll: content below the viewport is unreachable (the obligation stays).
+        const viewportScrolls = box.documentRoot && available.root && !['hidden', 'clip'].includes(style['overflow-y']) && (['auto', 'scroll'].includes(style['overflow-y']) || (scrollbarProfile !== undefined && !(scrollbarProfile.inlineSize > 0)));
+        // Without a scrollbar profile, a root taller than the viewport scrolls with a platform scrollbar of unknown width.
+        if (box.documentRoot && available.root && available.block && !['hidden', 'clip', 'auto', 'scroll'].includes(style['overflow-y']) && scrollbarProfile === undefined && clip(region, diff(blockSize, available.block), true))
+          throw Object.assign(new Error(`${box.label} is taller than the viewport, so the viewport scrolls: declare scrollbar profiles (the scrollbars option) for the platforms the page is checked on`), { code: 'U_LAYOUT_SCROLLBAR' });
+        if (available.block) obligation(available.block, blockSize, box, region, 'E_LAYOUT_ITEM_SIZE', 'block', available.fitBlock !== false && !viewportScrolls, item('block'));
         if (contract.minBlockSize !== undefined) (box.tableCell && (contract.overflowBlock ?? 'fit') === 'fit' ? cellGrows : obligation)(contentBlock, scalar(contract.minBlockSize), box, region, 'E_LAYOUT_CONTENT', 'block', (contract.overflowBlock ?? 'fit') === 'fit', content('block', 'minBlockSize'));
       }
       let positioned;

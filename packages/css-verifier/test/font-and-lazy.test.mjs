@@ -53,7 +53,7 @@ test('-webkit-line-clamp caps a text leaf at N lines and warns where text is cut
 test('a sticky box whose parent ends at its bottom cannot stick (W_LAYOUT_STICKY_INERT)', () => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.h{position:sticky;top:0;height:50px}.w{${g}}.w2{${g};padding-bottom:20px}.c{height:2000px}`;
-  const run = body => analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, integrity: true});
+  const run = body => analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], integrity: true});
   const inert = report => (report.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_STICKY_INERT').map(w => [w.box, w.parent]);
   assert.deepEqual(inert(run('<div class="page"><div class="w"><header class="h"></header></div><div class="c"></div></div>')), [['.h', '.w']]);
   assert.deepEqual(inert(run('<div class="page"><header class="h"></header><div class="c"></div></div>')), []);
@@ -64,7 +64,7 @@ test('a sticky box whose parent ends at its bottom cannot stick (W_LAYOUT_STICKY
 test('a sticky box inside an overflow: hidden ancestor never sticks to the page (W_LAYOUT_STICKY_SCROLLER)', () => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.h{position:sticky;top:0;height:50px}.c{height:2000px}.x{overflow:hidden}.y{overflow:clip}`;
-  const run = cls => analyzeHTML(`<html lang="en"><body><div class="page ${cls}"><header class="h"></header><div class="c"></div></div></body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, integrity: true, boxes: {[`.${cls}`]: {overflow: 'clip', overflowBlock: 'clip'}}});
+  const run = cls => analyzeHTML(`<html lang="en"><body><div class="page ${cls}"><header class="h"></header><div class="c"></div></div></body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], integrity: true, boxes: {[`.${cls}`]: {overflow: 'clip', overflowBlock: 'clip'}}});
   const hidden = run('x');
   assert.notEqual(hidden.status, 'unknown');
   assert.deepEqual(hidden.layoutWarnings.map(w => [w.code, w.box, w.scroller]), [['W_LAYOUT_STICKY_SCROLLER', '.h', '.page.x']]);

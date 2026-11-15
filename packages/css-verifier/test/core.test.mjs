@@ -77,3 +77,18 @@ test('scrollbar profiles are checked as independent cases through the generic AP
   assert.equal(report.status,'verified');
   assert.deepEqual(new Set(report.sizes.map(row=>row.scrollbarProfile)),new Set(['overlay','classic']));
 });
+
+test('a document taller than the viewport scrolls it: decided with a scrollbar profile, unreachable when the root clips', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const page = (css, scrollbars) => analyzeHTML('<html lang="en"><body><div class="page"><div class="c"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html{${g}}body{${g}}.page{${g}}.c{height:2000px}${css}`, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, ...(scrollbars ? {scrollbars} : {})});
+  const overlay = [{name: 'overlay', inlineSize: 0, blockSize: 0}], classic = [{name: 'classic', inlineSize: 15, blockSize: 15}];
+  assert.equal(page('', overlay).status, 'verified');
+  // Without a profile the scrollbar's width is not known: Unknown.
+  assert.match(page('').diagnostics[0].message, /declare scrollbar profiles/);
+  // overflow-y: visible with a classic scrollbar is not laid out narrowed: still required to fit.
+  assert.equal(page('', classic).status, 'violated');
+  // A hidden root cannot scroll: content past the viewport is unreachable.
+  assert.equal(page('html{overflow:hidden}', overlay).diagnostics[0].code, 'E_LAYOUT_ITEM_SIZE');
+  // A page that fits needs no profile.
+  assert.equal(page('.c{height:100px}').status, 'verified');
+});
