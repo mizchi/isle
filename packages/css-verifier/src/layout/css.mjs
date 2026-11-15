@@ -40,8 +40,8 @@ const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachmen
 // Properties a :hover/:focus rule may set: they repaint (or restack) without changing geometry.
 const statePaint = /^(?:z-index|color|clip|clip-path|background(?:-.*)?|border-(?:(?:top|right|bottom|left)-)?color|border-radius|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?|color-scheme)$/;
 // Paint and hit-testing facts for the accessibility rules (never geometry).
-export const paintProperties = ['text-overflow', 'line-clamp', 'box-orient', 'touch-action', 'color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'outline-color', 'outline-offset', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'animation-direction', 'color-scheme', 'z-index', 'isolation', 'transform'];
-const inheritedPaint = ['color', 'visibility', 'pointer-events', 'cursor', 'list-style-type', 'color-scheme'];
+export const paintProperties = ['text-wrap-style', 'text-overflow', 'line-clamp', 'box-orient', 'touch-action', 'color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'outline-color', 'outline-offset', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'animation-direction', 'color-scheme', 'z-index', 'isolation', 'transform'];
+const inheritedPaint = ['color', 'visibility', 'pointer-events', 'cursor', 'list-style-type', 'color-scheme', 'text-wrap-style'];
 // Inherited text properties. They are kept as specified strings and only
 // interpreted for boxes whose contract derives text metrics from a font.
 export const textProperties = ['font-family', 'font-size', 'line-height', 'font-weight', 'font-style', 'font-stretch', 'font-variant', 'text-transform', 'letter-spacing', 'word-spacing', 'text-align'];
@@ -170,7 +170,9 @@ function expand(property, value) {
     return [['container-name', p[0].toLowerCase() === 'none' ? 'none' : p[0]], ['container-type', (p[1] ?? 'normal').toLowerCase()]];
   }
   if (textPropertySet.has(property)) {
-    if (['letter-spacing', 'word-spacing'].includes(property) && !wide.has(value) && !['normal', '0', '0px'].includes(value)) throw new Error(`Unsupported ${property}: ${value}`);
+    // letter-spacing: normal, px or em (made px at the declaring element, its computed value); word-spacing: normal.
+    if (property === 'letter-spacing' && !wide.has(value) && !['normal', '0', '0px'].includes(value) && !/^-?\d+(?:\.\d{1,6})?(?:px|em)$/.test(value)) throw new Error(`Unsupported ${property}: ${value}`);
+    if (property === 'word-spacing' && !wide.has(value) && !['normal', '0', '0px'].includes(value)) throw new Error(`Unsupported ${property}: ${value}`);
     return [[property, value]];
   }
   if (property === 'font') return textProperties.filter(key => key.startsWith('font-') || key === 'line-height').map(key => [key, wide.has(value) ? value : fontShorthand]);
@@ -262,12 +264,24 @@ function expand(property, value) {
   // Accepted only at values that leave line breaking, shaping, containing blocks and painting as modeled; any other
   // value changes what is checked, so it stays Unknown.
   const neutral = {
-    'word-break': ['normal'], hyphens: ['manual', 'none'], 'text-wrap': ['wrap'], 'text-wrap-mode': ['wrap'], 'text-wrap-style': ['auto'],
+    'word-break': ['normal'], hyphens: ['manual', 'none'], 'text-wrap-mode': ['wrap'],
     'font-variant-numeric': ['normal'], 'font-variant-ligatures': ['normal'], 'font-feature-settings': ['normal'], 'font-variation-settings': ['normal'], 'text-rendering': ['auto'],
     'text-indent': ['0', '0px'], 'tab-size': ['8'], 'box-decoration-break': ['slice'], '-webkit-box-decoration-break': ['slice'], 'field-sizing': ['fixed'],
     resize: ['none'], 'text-size-adjust': ['none', '100%'], '-webkit-text-size-adjust': ['none', '100%'],
     filter: ['none'], 'backdrop-filter': ['none'], '-webkit-backdrop-filter': ['none'], 'mix-blend-mode': ['normal'], contain: ['none', 'style'], 'content-visibility': ['visible'], 'will-change': ['auto', 'scroll-position', 'contents'], perspective: ['none'],
   };
+  // text-wrap-style: balance and pretty change where wrapping text breaks (the engine keeps wrapping leaves under them
+  // Unknown; one-line text is unaffected). The text-wrap shorthand also sets text-wrap-mode, which white-space writes
+  // too (the later one wins: text-wrap: balance after white-space: nowrap wraps again, measured); that ordering is not
+  // modeled, so the shorthand stays Unknown.
+  if (property === 'text-wrap') throw new Error('text-wrap also resets text-wrap-mode (white-space wrapping); use text-wrap-style');
+  if (property === 'text-wrap-style') {
+    if (wide.has(value)) return [['text-wrap-style', value]];
+    const v = value.trim().toLowerCase();
+    if (['auto', 'stable'].includes(v)) return [['text-wrap-style', 'auto']];
+    if (['balance', 'pretty'].includes(v)) return [['text-wrap-style', v]];
+    throw new Error(`Unsupported ${property}: ${value}`);
+  }
   if (Object.hasOwn(neutral, property)) {
     if (wide.has(value) || neutral[property].includes(value.trim().toLowerCase())) return [];
     throw new Error(`Unsupported ${property}: ${value} (it changes line breaking, shaping, containing blocks or paint, which are not modeled)`);
@@ -461,7 +475,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
     'column-gap': 'normal', 'grid-column': 'auto', 'grid-row': 'auto',
     'background-color': 'transparent', 'background-image': 'none',
     'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none',
-    'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'z-index': 'auto', isolation: 'auto', transform: 'none', clip: 'auto', 'clip-path': 'none', ...Object.fromEntries(['margin', 'padding'].flatMap(kind => ['top', 'right', 'bottom', 'left'].map(side => [`scroll-${kind}-${side}`, kind === 'padding' ? 'auto' : '0']))), 'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal',
+    'text-wrap-style': inherited['text-wrap-style'] ?? 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'z-index': 'auto', isolation: 'auto', transform: 'none', clip: 'auto', 'clip-path': 'none', ...Object.fromEntries(['margin', 'padding'].flatMap(kind => ['top', 'right', 'bottom', 'left'].map(side => [`scroll-${kind}-${side}`, kind === 'padding' ? 'auto' : '0']))), 'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal',
     'table-layout': 'auto', // HTML UA: table { border-collapse: separate; border-spacing: 2px } (a UA rule on table, not inherited from above).
     'border-collapse': box.tag === 'table' ? 'separate' : inherited['border-collapse'] ?? 'separate', 'border-spacing': box.tag === 'table' ? '2px' : inherited['border-spacing'] ?? '0', 'caption-side': inherited['caption-side'] ?? 'top', 'empty-cells': 'show',
     // HTML UA: thead, tbody, tfoot, tr { vertical-align: middle } and td, th { vertical-align: inherit }.
@@ -518,7 +532,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   if(box.popover==='dynamic') throw Object.assign(new Error('A dynamic popover attribute decides whether it renders'),{code:'U_LAYOUT_ELEMENT'});
   if(box.hiddenAttr==='until-found' || box.hiddenAttr==='dynamic') throw Object.assign(new Error(`hidden=${box.hiddenAttr === 'dynamic' ? '(dynamic)' : 'until-found'} is outside the modeled rendering`),{code:'U_LAYOUT_ELEMENT'});
   const ua = { ...values };
-  const initial = { ...defaults, ...textInitial, 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none', 'z-index': 'auto', isolation: 'auto', transform: 'none', 'color-scheme': 'normal', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
+  const initial = { ...defaults, ...textInitial, 'text-wrap-style': 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none', 'z-index': 'auto', isolation: 'auto', transform: 'none', 'color-scheme': 'normal', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
   const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', 'border-collapse', 'border-spacing', 'caption-side', 'empty-cells', ...textProperties, ...inheritedPaint]);
   const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={};
   const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};
@@ -594,6 +608,9 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   if (values.position === 'fixed') { values.position = 'absolute'; values.$fixed = true; }
   // position: sticky with top: 0 is laid out in flow (as relative, unshifted at scroll 0); the accessibility scroll rules
   // treat it as a bar stuck to the viewport top while its parent is in view.
+  // letter-spacing in em computes to px against the element's own font-size (then inherits as px).
+  const em = /^(-?\d+(?:\.\d{1,6})?)em$/.exec(String(values['letter-spacing'] ?? ''));
+  if (em) values['letter-spacing'] = /^\d+(?:\.\d{1,6})?px$/.test(values['font-size']) ? `${+(Number(em[1]) * Number(values['font-size'].slice(0, -2))).toFixed(6)}px` : 'em-unresolved';
   if (values.position === 'sticky') { values.position = 'relative'; values.$sticky = true; }
   values.$sources = sources;
   values.$dormant = dormant;

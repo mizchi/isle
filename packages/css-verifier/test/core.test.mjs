@@ -97,6 +97,16 @@ test('geometry-neutral properties are accepted; values that change breaking, sha
   const run = decl => analyzeHTML('<div class="page"><div class="x"></div></div>', {name: 'P', css: `*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{min-height:0;${decl}}`, viewport: {min: 320, max: 800}}).status;
   for (const decl of ['object-fit:cover', 'scroll-behavior:smooth', 'user-select:none', 'accent-color:#246', 'scroll-snap-type:x mandatory', '-webkit-font-smoothing:antialiased', 'overscroll-behavior-y:contain', 'word-break:normal', 'filter:none', 'contain:style', 'will-change:scroll-position', 'text-size-adjust:100%'])
     assert.equal(run(decl), 'verified', decl);
-  for (const decl of ['word-break:break-all', 'hyphens:auto', 'text-wrap:balance', 'font-variant-numeric:tabular-nums', 'filter:blur(2px)', 'contain:paint', 'will-change:transform', 'content-visibility:auto', 'resize:both', 'mix-blend-mode:multiply'])
+  for (const decl of ['word-break:break-all', 'hyphens:auto', 'font-variant-numeric:tabular-nums', 'filter:blur(2px)', 'contain:paint', 'will-change:transform', 'content-visibility:auto', 'resize:both', 'mix-blend-mode:multiply'])
     assert.equal(run(decl), 'unknown', decl);
+});
+
+test('text-wrap-style: balance and pretty are Unknown only on wrapping text; the text-wrap shorthand stays Unknown', () => {
+  const run = css => analyzeHTML('<div class="page"><p class="t">x</p></div>', {name: 'P', css: '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{line-height:20px}' + css, viewport: {min: 320, max: 800}, boxes: {'.t': {minInlineSize: 10, intrinsicBlockSize: 20}}}).status;
+  assert.equal(run('.page{text-wrap-style:balance}.t{white-space:nowrap}'), 'verified'); // inherited, but the text is one line
+  assert.equal(run('.page{text-wrap-style:balance}'), 'unknown');
+  assert.equal(run('.t{text-wrap-style:pretty}'), 'unknown');
+  assert.equal(run('.t{text-wrap-style:stable}'), 'verified');
+  // The shorthand also resets the wrap mode that white-space sets (the later one wins, not modeled).
+  assert.equal(run('.t{white-space:nowrap;text-wrap:balance}'), 'unknown');
 });

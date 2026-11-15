@@ -456,6 +456,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (style.float !== 'none') throw new Error('Unsupported float value');
     if (style.display === 'contents') throw new Error('display: contents on the analyzed root or with text needs its parent box and anonymous items');
     if (!['block', 'grid', 'flex'].includes(style.display)) throw new Error(`Unsupported display: ${style.display}`);
+    // text-wrap: balance / pretty re-break wrapping text; the measured line profile assumes greedy breaking.
+    if (['balance', 'pretty'].includes(style['text-wrap-style']) && (box.text || box.inline?.length) && !['nowrap', 'pre'].includes(style['white-space'])) throw Object.assign(new Error(`${box.label} has text-wrap: ${style['text-wrap-style']}, which changes where its text wraps (the line profile assumes greedy breaking); keep it on one line or drop it`), { code: 'U_LAYOUT_CSS' });
     if (['grid', 'flex'].includes(style.display) && box.text) throw new Error('Wrap text in an explicit leaf; anonymous grid/flex text items need a layout adapter');
     // Main-axis auto margins of flex items absorb free space (resolved by the flex line).
     const marginOk = (key, axis) => style[key] === '0' || (style[key] === 'auto' && available.flexItem?.main === axis);

@@ -168,7 +168,9 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     return shaped.bounds.advance_width;
   };
   // A line's advance: each script run shaped on its own (see scriptSegments).
-  const shapeLine = (font, text, language) => scriptSegments(text).reduce((total, segment) => total + shape(font, segment, language), 0);
+  // letter-spacing (font.letterSpacing, px) adds its value after every character and turns optional ligatures off
+  // (CSS Text 3 §8.2; Chromium).
+  const shapeLine = (font, text, language) => { const ls = font.letterSpacing ?? 0; return scriptSegments(text).reduce((total, segment) => total + shape(font, segment, language, !ls), 0) + ls * [...text].length; };
   // The content language selects locl glyphs (Noto Sans JP's apostrophe and
   // quotes differ under ja). The document language is not modeled, so every
   // listed language is measured: bounds take the widest, line profiles keep
@@ -234,6 +236,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
    */
   /** spacing: extra px per character (letter-spacing) and per space (word-spacing), e.g. WCAG 1.4.12. */
   function breakLines({font, text, overflowWrap = 'normal', lang, spacing}) {
+    spacing ??= font.letterSpacing ? {letter: font.letterSpacing, word: 0} : undefined;
     checkLang(lang);
     if (lang !== undefined && !breaksModeled(lang)) fail(`lang ${lang}: line breaking is verified for ${[...breakingLanguages].join(', ')}`);
     if (typeof text !== 'string') fail('Text content must be a string');
@@ -441,7 +444,9 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
       if (rest.minInlineSize !== undefined || rest.intrinsicBlockSize !== undefined || rest.minBlockSize !== undefined) fail(`${selector}: a text contract derives its own sizes`);
       if (rest.wrap !== undefined && !['nowrap', 'normal', 'anywhere'].includes(rest.wrap)) fail(`${selector}: wrap must be nowrap, normal or anywhere`);
       const {font} = text;
-      const fontContract = {family: font.family, size: font.size, lineHeight: font.lineHeight, ...(font.weight !== undefined ? {weight: font.weight} : {})};
+      if (font.letterSpacing !== undefined && (typeof font.letterSpacing !== 'number' || !Number.isFinite(font.letterSpacing) || Math.abs(font.letterSpacing) > 100)) fail(`${selector}: letterSpacing must be a px number`);
+      if (font.letterSpacing && text.content === undefined) fail(`${selector}: letter-spacing is measured for fixed content; a character domain is not`);
+      const fontContract = {family: font.family, size: font.size, lineHeight: font.lineHeight, ...(font.weight !== undefined ? {weight: font.weight} : {}), ...(font.letterSpacing ? {letterSpacing: font.letterSpacing} : {})};
       if (rest.wrap === 'normal' || rest.wrap === 'anywhere') {
         if (text.content === undefined) fail(`${selector}: wrapping is measured for fixed content; a character domain has no fixed line breaks`);
         const overflowWrap = rest.wrap === 'anywhere' ? 'anywhere' : (text.overflowWrap ?? 'normal');

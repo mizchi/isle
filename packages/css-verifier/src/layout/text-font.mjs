@@ -5,7 +5,7 @@
 import {q, cmp} from './linear.mjs';
 import {fontShorthand} from './css.mjs';
 
-const fontKeys = new Set(['family', 'size', 'lineHeight', 'weight', 'style']);
+const fontKeys = new Set(['family', 'size', 'lineHeight', 'weight', 'style', 'letterSpacing']);
 const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance', 'minContent', 'overflowWrap', 'profile', 'lang', 'spacedProfile', 'inline', 'baseline']);
 export const languageTag = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
 // Languages whose break opportunities were compared with Chromium (e2e). Chinese differs (e.g. !〜).
@@ -19,6 +19,7 @@ export function validateFontContract(font) {
   if (typeof font.family !== 'string' || !font.family.trim() || font.family.length > 256) throw new Error('Invalid font family');
   if (!finite(font.size, 1, 4096) || !finite(font.lineHeight, 0, 1_000_000) || (font.weight !== undefined && !finite(font.weight, 1, 1000))) throw new Error('Invalid font metrics contract');
   if (font.style !== undefined && font.style !== 'normal') throw new Error('Only normal font-style is modeled');
+  if (font.letterSpacing !== undefined && !(typeof font.letterSpacing === 'number' && Number.isFinite(font.letterSpacing) && Math.abs(font.letterSpacing) <= 100)) throw new Error('Invalid font letterSpacing');
 }
 
 export function validateTextMetrics(metrics) {
@@ -79,7 +80,11 @@ export function textFontMismatch(style, font) {
   if (style['font-style'] !== (font.style ?? 'normal')) return `font-style ${style['font-style']} differs from the measured ${font.style ?? 'normal'}`;
   if (style['font-stretch'] !== 'normal' || style['font-variant'] !== 'normal') return 'font-stretch and font-variant must be normal';
   if (style['text-transform'] !== 'none') return `text-transform ${style['text-transform']} changes the measured characters`;
-  for (const key of ['letter-spacing', 'word-spacing']) if (!['normal', '0', '0px'].includes(style[key])) return `${key} must be normal`;
+  if (!['normal', '0', '0px'].includes(style['word-spacing'])) return 'word-spacing must be normal';
+  // letter-spacing: the measured spacing (font.letterSpacing, px) must be the computed one.
+  const spacing = ['normal', '0', '0px'].includes(style['letter-spacing']) ? 0 : /^-?\d+(?:\.\d{1,6})?px$/.test(style['letter-spacing']) ? Number(style['letter-spacing'].slice(0, -2)) : null;
+  if (spacing === null) return `letter-spacing ${style['letter-spacing']} must resolve to px (an em value needs a px font-size)`;
+  if (Math.abs(spacing - (font.letterSpacing ?? 0)) > 1e-6) return `letter-spacing ${style['letter-spacing']} differs from the measured ${font.letterSpacing ?? 0}px`;
   return null;
 }
 

@@ -1328,3 +1328,12 @@ test('properties accepted as geometry-neutral leave every box where Chromium put
     expect(await rects(`.page,.page *{${neutral}}`), `at ${width}`).toEqual(await rects(''));
   }
 });
+
+test('text-wrap-style: balance leaves one-line text where it was; the text-wrap shorthand re-enables wrapping', async ({page}) => {
+  const html = '<div class="page"><h2 class="t">A heading that is long enough to wrap in a narrow box</h2><p class="u">Short</p></div>';
+  const rects = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>*{margin:0}.page{display:grid;grid-template-columns:220px;font:16px/24px sans-serif}${css}</style></head><body>${html}</body></html>`); return page.evaluate(() => [...document.querySelectorAll('.t, .u')].map(e => { const r = e.getBoundingClientRect(); return [r.width, r.height, e.scrollWidth]; })); };
+  const nowrap = await rects('.t,.u{white-space:nowrap;overflow:hidden}');
+  expect(await rects('.t,.u{white-space:nowrap;text-wrap-style:balance;overflow:hidden}')).toEqual(nowrap);
+  // The shorthand after white-space: nowrap sets text-wrap-mode back to wrap (why the analysis keeps it Unknown).
+  expect(await rects('.t,.u{white-space:nowrap;text-wrap:balance;overflow:hidden}')).not.toEqual(nowrap);
+});

@@ -643,3 +643,24 @@ test('text-overflow: ellipsis warns exactly where Chromium truncates the line', 
     if (cut) expect(warned, `${width}: Chromium cuts, static warned ${warned}`).toBe(true);
   }
 });
+
+test('letter-spacing (px, or em made px at its element) is measured like Chromium lays it out', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const texts = ['Checkout', 'Wireless headphones', 'office ffi fl'];
+  for (const [spacing, css] of [[0.32, 'letter-spacing:0.02em'], [1, 'letter-spacing:1px'], [-0.5, 'letter-spacing:-0.5px'], [2.4, 'letter-spacing:0.15em']]) {
+    const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400, letterSpacing: spacing};
+    for (const text of texts) {
+      const measured = metrics.measureText({font, text});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${face}span{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap;${css}}</style></head><body><span>${text}</span></body></html>`);
+      await page.evaluate(() => document.fonts.ready);
+      const width = await page.evaluate(() => document.querySelector('span').getBoundingClientRect().width);
+      expect(width, `${text} ${css}: Chromium ${width}, shaped ${measured.width}`).toBeGreaterThanOrEqual(measured.width - 1 / 64);
+      expect(width, `${text} ${css}: Chromium ${width}, bound ${measured.bound}`).toBeLessThanOrEqual(measured.bound);
+    }
+  }
+  // The analysis accepts the em value once its px matches the measured spacing, and an inherited em is the parent's px.
+  const html = '<div class="page"><p class="t">Checkout</p></div>';
+  const run = css => analyzeHTML(html, metrics.resolveOptions({name: 'P', css: '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr);font-size:20px;letter-spacing:0.05em}.t{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}' + css, viewport: {min: 320, max: 800}, boxes: {'.t': {text: {font: {family: 'Roboto', size: 16, lineHeight: 24, weight: 400, letterSpacing: 1}, content: 'Checkout'}}}}));
+  expect(run('').status).toBe('verified'); // 0.05em × 20px (the page) = 1px, inherited
+  expect(run('.t{letter-spacing:0.05em}').status).toBe('unknown'); // 0.8px at 16px: not the measured 1px
+});
