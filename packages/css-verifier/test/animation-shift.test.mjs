@@ -32,3 +32,19 @@ test('animations that do not move a layout start are not shifts', () => {
   // A keyframe whose layout is outside the subset is Unknown, not verified.
   assert.equal(run('@keyframes m{to{margin-bottom:20px}}.a{animation:m 1s}').status, 'unknown');
 });
+
+test('an animation shift carries a session-window score bound under the monotone-motion premise', () => {
+  const at = {min: 800, max: 800, height: {min: 600, max: 600}};
+  const page = css => analyzeHTML(html, {name: 'P', css: base + '.a{background:#ccc}.b{background:#444}' + css, viewport: at}).diagnostics.find(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT')?.scoreBound;
+  // .b moves 40px each way: the hull of its two places (800 × 80) over 800 × 600, times 40 / 800, per iteration.
+  const per = (800 * 80 / 480000) * (40 / 800);
+  const infinite = page('@keyframes grow{from{height:40px}to{height:80px}}.a{animation:grow .5s infinite}');
+  assert.ok(Math.abs(infinite.perIteration - per) < 1e-12);
+  assert.equal(infinite.iterations, 10); // a 5 s window holds 10 iterations of 0.5 s
+  assert.ok(Math.abs(infinite.window - (10 * per + 9 * per)) < 1e-12); // plus 9 jumps back from 100% to 0%
+  assert.equal(infinite.assumes, 'boxes move monotonically between keyframes');
+  const alternate = page('@keyframes grow{from{height:40px}to{height:80px}}.a{animation:grow .5s infinite alternate}');
+  assert.ok(Math.abs(alternate.window - 10 * per) < 1e-12); // no jumps
+  // A margin keyframe is reported without a layout of its own: no bound.
+  assert.equal(page('@keyframes nudge{to{margin-top:12px}}.a{animation:nudge 1s}'), undefined);
+});

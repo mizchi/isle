@@ -168,4 +168,4 @@ CLS の計算にも最適化にも寄与しない。アクセシビリティの�
 | 3 | ~~C2~~ 実装済み:カルーセルの状態ごとの高さ(`E_LAYOUT_CAROUSEL_SHIFT`。Chromium の CLS と 4 例で一致)。C3 の初期化前後の比較は、初期化前と初期化後の HTML を noshift API に渡して行う(テストで確認) |
 | 4 | ~~H~~ 実装済み:配置を変える `:hover` を CLS の候補として報告する(`E_LAYOUT_HOVER_SHIFT`。Chromium の CLS と 6 例で一致) | `:focus` の配置し直しを流用できる |
 | 5 | ~~B3~~ 実装済み:`picture` の media ごとの比(B4 の inline の代替表示は、検査器が `img` に `display: block` を要求するので対象外) | media の区間分けと、要素の種類の規則で済む |
-| 6 | A:配置のアニメーション。~~A1・A2・A4~~ 実装済み(キーフレームごとに配置し直して `E_LAYOUT_ANIMATION_SHIFT` を報告し、transform への書き換えを示す。Chromium の CLS と 7 例で一致)。A3 は、hover とカルーセルの1回の変化の score の上界(`scoreBound`)を実装し、Chromium の実測と 4 例で一致した。アニメーションの連続した動きと、時間の窓での集計(ADR-0001 M3)は未実装 | score は非線形なので、上界の設計が要る。最も大きい |
+| 6 | A:配置のアニメーション。~~A1・A2・A4~~ 実装済み(キーフレームごとに配置し直して `E_LAYOUT_ANIMATION_SHIFT` を報告し、transform への書き換えを示す。Chromium の CLS と 7 例で一致)。A3 は、hover とカルーセルの1回の変化の score の上界(`scoreBound`)を実装し、Chromium の実測と 4 例で一致した。アニメーションは、キーフレームの間で箱が単調に動くという前提を明示した、5 秒の窓の上界(`scoreBound.window`、`assumes` に前提)を出す。4 例で Chromium の最大の窓が上界以下だった | score は非線形なので、上界の設計が要る。最も大きい |

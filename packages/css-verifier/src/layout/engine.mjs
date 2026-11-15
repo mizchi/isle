@@ -159,6 +159,35 @@ function shiftScoreBound(before, after, keep, p) {
   for (let i = 0; i + 1 < xs.length; i++) for (let j = 0; j + 1 < ys.length; j++) if (pieces.some(q => q[0] <= xs[i] && q[2] >= xs[i + 1] && q[1] <= ys[j] && q[3] >= ys[j + 1])) area += (xs[i + 1] - xs[i]) * (ys[j + 1] - ys[j]);
   return (area / (W * H)) * (distance / Math.max(W, H));
 }
+// A bound of the Layout Instability score summed over the frames of one continuous change from layout `before` to
+// layout `after`, assuming every box moves monotonically between them (premise recorded with the result): each frame's
+// unstable area lies in the hull of a moved box's two rectangles, and the frames' largest moves add up to at most the
+// sum of every moved box's whole move. Returns {impact, distance} fractions, or null without layout rectangles.
+function sweptBound(before, after, p) {
+  const rect = row => row.layoutRect !== undefined ? row.layoutRect : row.rect;
+  const r = v => { const [n, d = '1'] = String(v ?? '0').split('/'); return Number(n) / Number(d); };
+  const W = Number(exact(p.x).split('/').reduce((n, d) => n / d)), H = Number(exact(p.y).split('/').reduce((n, d) => n / d));
+  if (!(W > 0 && H > 0)) return null;
+  const at = a => r(a.constant) + r(a.coefficient) * W + r(a.heightCoefficient) * H;
+  const inside = row => row.$shown?.region && row.$shown.region.constraints.every(c => cmp(evaluate(c.slack, p), zero) >= 0);
+  const box = row => { const b = rect(row); return b && { x: at(b.inlineStart), y: at(b.blockStart), w: at(b.inlineSize), h: at(b.blockSize) }; };
+  const pieces = []; let moves = 0;
+  for (const row of before.filter(inside)) {
+    const other = after.find(o => o.path === row.path && inside(o));
+    if (!other) continue;
+    const a = box(row), b = box(other);
+    if (!a || !b) return null;
+    const move = Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+    if (move === 0) continue;
+    moves += move;
+    const x0 = Math.max(0, Math.min(a.x, b.x)), y0 = Math.max(0, Math.min(a.y, b.y)), x1 = Math.min(W, Math.max(a.x + a.w, b.x + b.w)), y1 = Math.min(H, Math.max(a.y + a.h, b.y + b.h));
+    if (x1 > x0 && y1 > y0) pieces.push([x0, y0, x1, y1]);
+  }
+  const xs = [...new Set(pieces.flatMap(q => [q[0], q[2]]))].sort((m, n) => m - n), ys = [...new Set(pieces.flatMap(q => [q[1], q[3]]))].sort((m, n) => m - n);
+  let area = 0;
+  for (let i = 0; i + 1 < xs.length; i++) for (let j = 0; j + 1 < ys.length; j++) if (pieces.some(q => q[0] <= xs[i] && q[2] >= xs[i + 1] && q[1] <= ys[j] && q[3] >= ys[j + 1])) area += (xs[i + 1] - xs[i]) * (ys[j + 1] - ys[j]);
+  return { impact: area / (W * H), distance: moves / Math.max(W, H) };
+}
 function length(value, parent, style) {
   if (/^\d+(?:\.\d+)?%$/.test(value) && !parent) throw new Error('Percentage block size needs a definite containing size; intrinsic percentage cycles are not modeled');
   const pieces = lengthPieces(value, parent, null, style);
@@ -933,7 +962,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         style = { ...style, $sticky: false };
       }
       if (style.$sticky && parents.some(p => p.clipped || p.clipScope || (p.style && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible')))) throw Object.assign(new Error(`${box.label} is position: sticky inside a scrolling or clipping ancestor, which it would stick to`), { code: 'U_LAYOUT_CSS' });
-      if (style['animation-name'] !== 'none' && style['animation-play-state'] !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(style['animation-duration']) && keyframeFrames.get(style['animation-name'])?.some(frame => frame.layout)) animated.push({ box, region, name: style['animation-name'], position: style.position });
+      if (style['animation-name'] !== 'none' && style['animation-play-state'] !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(style['animation-duration']) && keyframeFrames.get(style['animation-name'])?.some(frame => frame.layout)) animated.push({ box, region, name: style['animation-name'], position: style.position, duration: style['animation-duration'], count: style['animation-iteration-count'], direction: style['animation-direction'] });
       // A bar fixed to the bottom edge under viewport-fit=cover: its content must clear the bottom safe area (the home
       // indicator), so its bottom padding has to be at least that inset (env(safe-area-inset-bottom)).
       if (style.$fixed && cover && options.safeArea?.bottom > 0 && ['0', '0px'].includes(style.bottom) && (box.children ?? []).length && cmp(px(style['padding-bottom']), q(String(options.safeArea.bottom))) < 0 && !layoutWarnings.some(w => w.code === 'W_LAYOUT_SAFE_AREA' && w.path === box.path))
@@ -2019,6 +2048,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       seen.add(id);
       const where = animated.filter(other => `${other.box.path}|${other.name}` === id).map(other => other.region);
       const reported = new Set();
+      const states = []; let complete = true; // keyframe layouts for the score bound
       for (const frame of keyframeFrames.get(entry.name).filter(frame => frame.layout)) {
         const label = `${entry.name} at ${number(q(String(Math.round(frame.offset * 1e4) / 100)))}%`;
         // A nonzero px margin-top/left (the checked layout has zero margins) moves an in-flow box's own start: a shift
@@ -2035,10 +2065,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           reported.add(entry.box.path);
           diagnostics.push({ code: 'E_LAYOUT_ANIMATION_SHIFT', severity: 'error', box: entry.box.label, path: entry.box.path, animated: entry.box.label, animatedPath: entry.box.path, animation: entry.name, offset: frame.offset, field: shifted[0], delta: exact(q(shifted[1].replace(/px$/, ''))),
             message: `Animation ${label} on ${entry.box.label} sets a ${shifted[1]} start margin, which moves it (${shifted[0]}): a layout shift while it runs. Animate transform (translate) instead of margin`, ...ranges(entry.region) });
+          complete = false;
           continue;
         }
         const moved = analyzeBoxTree(pristine, { ...options, $animationFrame: { path: entry.box.path, css: frame.layout } }, scrollbarProfile, budget, inlineSheets, [], preferences);
         if (moved.status === 'unknown') { diagnostics.push({ code: 'U_LAYOUT_ANIMATION_SHIFT', severity: 'unknown', message: `${entry.box.label}: the layout at keyframe ${label} is not decided (${moved.diagnostics.find(d => d.severity === 'unknown')?.message ?? 'unknown'})`, box: entry.box.label, path: entry.box.path }); continue; }
+        if (moved.status !== 'unknown') states.push({ offset: frame.offset, sizes: moved.sizes }); else complete = false;
         const undecided = [...sizes, ...moved.sizes].find(row => !rect(row) || !row.$shown?.region);
         if (undecided) { diagnostics.push({ code: 'U_LAYOUT_ANIMATION_SHIFT', severity: 'unknown', message: `${entry.box.label}: the layout of ${undecided.box} at keyframe ${label} cannot be compared (it has no layout rectangle)`, box: entry.box.label, path: entry.box.path }); continue; }
         for (const row of sizes) for (const other of moved.sizes.filter(o => o.path === row.path)) {
@@ -2053,6 +2085,32 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               message: `Animation ${label} on ${entry.box.label} moves ${row.box} (${change.field} by ${number(change.delta)}px at viewport ${number(change.v.x)}px${block ? ` × ${number(change.v.y)}px` : ''}): a layout shift while it runs (every frame it moves). Animate transform (translate/scale) instead of layout properties`, ...ranges(shared) });
             break;
           }
+        }
+      }
+      // The score bound of one 5 s session window (Chromium's CLS window), under the premise that boxes move
+      // monotonically between keyframes. Missing 0% / 100% keyframes are the box's own (base) layout.
+      const found = diagnostics.filter(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT' && d.animatedPath === entry.box.path && d.animation === entry.name);
+      if (complete && found.length && block && options.viewport.height) {
+        const frames = [...states].sort((a, b) => a.offset - b.offset);
+        if (!frames.length || frames[0].offset > 0) frames.unshift({ offset: 0, sizes });
+        if (frames.at(-1).offset < 1) frames.push({ offset: 1, sizes });
+        const shared = found[0];
+        const regionOf = d => d.regionConstraints ?? d.region?.constraints;
+        const p = sample(entry.region);
+        let perIteration = 0, ok = true;
+        for (let i = 0; i + 1 < frames.length; i++) { const b = sweptBound(frames[i].sizes, frames[i + 1].sizes, p); if (!b) { ok = false; break; } perIteration += b.impact * b.distance; }
+        // A normal-direction repeat jumps from the last keyframe back to the first in one frame; the start jumps from
+        // the base layout to the first keyframe.
+        const jump = (a, b) => shiftScoreBound(a, b, () => true, p);
+        const seconds = (/^(\d+(?:\.\d+)?|\.\d+)(m?s)$/.exec(String(entry.duration)) ?? []);
+        const duration = seconds[2] === 'ms' ? Number(seconds[1]) / 1000 : Number(seconds[1]);
+        const count = entry.count === 'infinite' ? Infinity : Number(entry.count);
+        if (ok && duration > 0 && count > 0) {
+          const iterations = Math.min(count, Math.ceil(5 / duration));
+          const wraps = ['normal', 'reverse'].includes(entry.direction) ? Math.max(0, iterations - 1) : 0;
+          const startJump = jump(sizes, frames[0].sizes) ?? 0, wrapJump = wraps ? (jump(frames.at(-1).sizes, frames[0].sizes) ?? 0) : 0;
+          const windowBound = perIteration * iterations + wraps * wrapJump + startJump;
+          for (const d of found) d.scoreBound = { window: windowBound, perIteration, iterations, viewport: { width: number(p.x), height: number(p.y) }, assumes: 'boxes move monotonically between keyframes' };
         }
       }
     }

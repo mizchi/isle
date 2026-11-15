@@ -303,3 +303,25 @@ test('sizes narrower than the layout width: the static warning agrees with the f
     }
   }
 });
+
+test('animation score bound: Chromium’s largest session window stays below the static window bound', async ({page}) => {
+  const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
+  const html = '<div class="page"><div class="a"></div><div class="b"></div></div>';
+  const base = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:40px;background:#ccc}.b{height:40px;background:#444}';
+  const results = [];
+  for (const rule of ['@keyframes m{from{height:40px}to{height:80px}}.a{animation:m .5s infinite}', '@keyframes m{from{height:40px}to{height:80px}}.a{animation:m .5s infinite alternate}', '@keyframes m{to{height:140px}}.a{animation:m 2s 1}', '@keyframes m{0%{height:40px}50%{height:120px}100%{height:40px}}.a{animation:m 1s infinite}']) {
+    const report = analyzeHTML(html, {name: 'Page', viewport, css: base + rule});
+    const bound = report.diagnostics.find(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT')?.scoreBound;
+    expect(bound, rule).toBeTruthy();
+    await page.setViewportSize({width: 800, height: 600});
+    await page.route('http://cls.test/', route => route.fulfill({contentType: 'text/html', body: `<!doctype html><html lang="en"><head><script>window.__s=[];new PerformanceObserver(l=>{for(const e of l.getEntries()) if(!e.hadRecentInput) window.__s.push([e.startTime,e.value])}).observe({type:'layout-shift',buffered:true});</script><style>${base + rule}</style></head><body style="margin:0">${html}</body></html>`}));
+    await page.goto('http://cls.test/');
+    await page.waitForTimeout(6000);
+    // Chromium's CLS: the largest session window (gaps under 1 s, at most 5 s long).
+    const largest = await page.evaluate(() => { let best = 0, sum = 0, first = -Infinity, last = -Infinity; for (const [t, v] of window.__s) { if (t - last >= 1000 || t - first >= 5000) { sum = 0; first = t; } sum += v; last = t; best = Math.max(best, sum); } return best; });
+    await page.unroute('http://cls.test/');
+    results.push([rule.slice(-30), largest, bound.window]);
+    expect(largest, `${rule}: Chromium ${largest}, bound ${bound.window}`).toBeLessThanOrEqual(bound.window + 1e-9);
+  }
+  console.log('animation window vs bound', JSON.stringify(results));
+});
