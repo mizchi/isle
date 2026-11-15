@@ -211,7 +211,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   const component = options.name ?? 'Document';
   const h = options.viewport.height ?? { min: 0, max: 0 };
   const initial = rectangle(domain, { min: q(h.min), max: q(h.max) });
-  const diagnostics = [...inputDiagnostics], findings = [], checks = [], policies = [], sizes = [], queries = [], subgrids = [], scrollbars = [], invalidSubstitutions = [];
+  const diagnostics = [...inputDiagnostics], findings = [], checks = [], policies = [], sizes = [], queries = [], queryFacts = [], subgrids = [], scrollbars = [], invalidSubstitutions = [];
   // Live geometry and waived obligations for the opt-in integrity rules.
   const geometry = [], waived = [];
   // Paint facts of the options.ancestors chain (html, body, …) for the accessibility rules.
@@ -454,7 +454,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         && ['inline-size', 'block-size'].every(key => style[key] === 'auto') && ['left', 'right', 'top', 'bottom'].every(side => ['ua', '0', '0px'].includes(style[`padding-${side}`]) && ['ua', '0', '0px'].includes(style[`border-${side}`])) && ['min-inline-size', 'min-block-size'].every(key => ['ua', 'auto'].includes(style[key])))
         style = { ...style, appearance: 'none', display: 'block', 'box-sizing': 'border-box', 'inline-size': '13px', 'block-size': '13px', 'min-inline-size': 'auto', 'min-block-size': 'auto', ...Object.fromEntries(['left', 'right', 'top', 'bottom'].flatMap(side => [[`padding-${side}`, '0'], [`border-${side}`, '0']])), $uaControl: true };
       if (emit) for (const entry of style.$invalid) invalidSubstitutions.push({ box: box.label, path: box.path, property: entry.property, longhands: entry.longhands, css: { file: entry.file, line: entry.line }, reason: entry.code === 'U_LAYOUT_VARIABLE_CYCLE' ? 'cycle' : 'guaranteed-invalid', message: entry.message, resolution: 'unset', ...ranges(r) });
-      if (emit) for (const [condition, compiled] of contexts) if (condition.kind === 'container') queries.push({ box: box.label, path: box.path, name: condition.name, target: compiled.target, targetPath: compiled.path, matched: activeContext(compiled), ...ranges(r) });
+      if (emit) for (const [condition, compiled] of contexts) if (condition.kind === 'container') {
+        queries.push({ box: box.label, path: box.path, name: condition.name, target: compiled.target, targetPath: compiled.path, matched: activeContext(compiled), ...ranges(r) });
+        queryFacts.push({ condition, target: compiled.target, box: box.label, matched: activeContext(compiled), region: r });
+      }
       if (style.transform !== 'none' && !box.pseudo) { if (untransformed) style = { ...style, transform: 'none' }; else sawTransform = true; }
       return { region: r, style };
     });
@@ -2525,6 +2528,24 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           message: `Switching ${carousel.label} from ${first.target.label} to ${variant.target.label} moves ${move.row.box} (${move.field} by ${number(move.delta)}px at viewport ${number(move.v.x)}px${block ? ` × ${number(move.v.y)}px` : ''}): slides of different sizes shift the page. Give the slide area a fixed height or aspect-ratio, or stack the slides in one grid cell`, ...ranges(move.shared) });
         if (result.moves.length) break;
       }
+    }
+  }
+  // A container query that matches no element anywhere in the checked range: no ancestor is a query container (of
+  // that name), or the containers it finds are never that size. Its rules never apply.
+  {
+    const byRule = new Map();
+    for (const f of queryFacts) {
+      const key = `${f.condition.css?.file}:${f.condition.css?.line}:${f.condition.params}`;
+      if (!byRule.has(key)) byRule.set(key, []);
+      byRule.get(key).push(f);
+    }
+    for (const facts of byRule.values()) {
+      if (facts.some(f => f.matched) || diagnostics.some(d => d.severity === 'unknown')) continue;
+      const { condition } = facts[0], targets = [...new Set(facts.map(f => f.target).filter(Boolean))], boxes = [...new Set(facts.map(f => f.box))];
+      const why = !targets.length ? (condition.name ? `no ancestor of ${boxes.join(', ')} has container-name: ${condition.name}` : `no ancestor of ${boxes.join(', ')} has a container-type`) : `its container ${targets.join(', ')} is never that size in the checked viewport range`;
+      layoutWarnings.push({ code: 'W_CSS_CONTAINER_QUERY_NEVER', severity: 'warning', box: boxes[0], boxes, query: condition.params, ...(condition.name ? { name: condition.name } : {}), reason: targets.length ? 'size' : 'no-container',
+        ...(condition.css ? { css: condition.css } : {}),
+        message: `@container ${condition.params} never matches: ${why}, so its rules never apply${targets.length ? '' : ` (give an ancestor container-type: inline-size${condition.name ? ` and container-name: ${condition.name}` : ''})`}` });
     }
   }
   const status = diagnostics.some(d => d.severity === 'unknown') ? 'unknown' : diagnostics.length ? 'violated' : 'verified';

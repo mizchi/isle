@@ -340,6 +340,30 @@ test('grid-area with a name the template does not define: where the static check
   }
 });
 
+test('container queries that never match: where the static check warns, the rule applies at no width in Chromium', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const html = '<div class="p"><div class="w"><div class="c"></div></div></div>';
+  for (const [css, warn] of [
+    ['@container (min-width: 400px){.c{height:30px}}', true],
+    ['.w{container-type:inline-size;container-name:side}@container card (min-width: 400px){.c{height:30px}}', true],
+    ['.p{grid-template-columns:300px}.w{container-type:inline-size}@container (min-width: 400px){.c{height:30px}}', true],
+    ['.w{container-type:inline-size}@container (min-width: 400px){.c{height:30px}}', false],
+    ['.w{container-type:inline-size;container-name:card}@container card (max-width: 500px){.c{height:30px}}', false],
+  ]) {
+    const all = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g}}.w{${g}}.c{height:10px}${css}`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: all, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    expect(report.status, css).toBe('verified');
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_CSS_CONTAINER_QUERY_NEVER'), css).toBe(warn);
+    let applied = false;
+    for (const width of [320, 450, 640, 800]) {
+      await page.setViewportSize({width, height: 700});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${all}</style></head><body>${html}</body></html>`);
+      if (await page.evaluate(() => document.querySelector('.c').getBoundingClientRect().height) === 30) applied = true;
+    }
+    expect(applied, `${css}: the rule applies at some width`).toBe(!warn);
+  }
+});
+
 test('animation score bound: Chromium’s largest session window stays below the static window bound', async ({page}) => {
   const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
   const html = '<div class="page"><div class="a"></div><div class="b"></div></div>';

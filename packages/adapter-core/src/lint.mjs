@@ -31,6 +31,7 @@ export const recommended = {
   W_LAYOUT_LINE_HEIGHT_FIXED: ['warning', 'use a unitless line-height'],
   W_LAYOUT_HEIGHT_FIXED_TEXT: ['warning', 'use min-height (or padding)'],
   W_LAYOUT_PHYSICAL_IN_RTL: ['warning', 'use the inline-start/end sides'],
+  W_CSS_CONTAINER_QUERY_NEVER: ['warning', 'give an ancestor container-type (and the container-name), or fix the size'],
   W_CSS_SELECTOR_UNMATCHED: ['warning', 'remove the selector or fix its class name'],
   W_CSS_SELECTOR_RELATION: ['warning', 'make the selector match the template structure'],
   // Accessibility.
