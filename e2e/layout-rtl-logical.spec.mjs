@@ -44,3 +44,26 @@ test('physical sides in rtl: Chromium does not mirror the ltr layout exactly whe
     expect(warned, decl).toBe(warn);
   }
 });
+
+test('absolute boxes with both insets of an axis agree with Chromium (random insets, sizes, box-sizing, direction)', async ({page}) => {
+  test.setTimeout(300_000);
+  await page.setViewportSize({width: 400, height: 600});
+  const n = t => { const [a, b = '1'] = String(t ?? '0').split('/'); return Number(a) / Number(b); };
+  const len = r => [`${Math.floor(r() * 4) * 10}px`, `${Math.floor(r() * 3) * 5}%`, '0'][Math.floor(r() * 3)];
+  for (let seed = 1; seed <= 40; seed++) {
+    const r = random(seed), pick = list => list[Math.floor(r() * list.length)];
+    const inline = pick([`left:${len(r)};right:${len(r)}`, `left:${len(r)}`, `right:${len(r)}`]);
+    const blockAxis = pick([`top:${len(r)};bottom:${len(r)}`, `top:${len(r)}`]);
+    const both = inline.includes(';'), bothBlock = blockAxis.includes(';');
+    const width = both && r() < 0.5 ? '' : 'width:120px;', height = bothBlock && r() < 0.5 ? '' : 'height:40px;';
+    const sizing = pick(['border-box', 'content-box']), pad = pick(['', 'padding:4px 8px;']), dir = pick(['ltr', 'rtl']);
+    const css = `*{margin:0}html,body,.page,.card{${g}}body{margin:0}.card{position:relative;height:200px}.o{position:absolute;box-sizing:${sizing};${pad}${width}${height}${inline};${blockAxis}}`;
+    const html = `<main class="page"><div class="card" dir="${dir}"><div class="o"></div></div></main>`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 600, max: 600}}});
+    expect(report.status, `${seed}: ${css} ${report.diagnostics.map(d => d.message).join(' | ')}`).toBe('verified');
+    const rect = report.sizes.find(s => s.box === '.o').rect, v = x => n(x.constant) + 400 * n(x.coefficient) + 600 * n(x.heightCoefficient);
+    await page.setContent(`<!doctype html><style>${css}</style>${html}`);
+    const box = await page.evaluate(() => { const b = document.querySelector('.o').getBoundingClientRect(); return [b.x, b.y, b.width, b.height]; });
+    expect([v(rect.inlineStart), v(rect.blockStart), v(rect.inlineSize), v(rect.blockSize)], `seed ${seed} dir=${dir}: ${css}`).toEqual(box);
+  }
+});

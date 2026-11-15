@@ -381,6 +381,22 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       try {style=computeStyle(relevant,box,active,inherited,{spend,state});}
       catch(error) {error.box ??= box;throw error;}
       if (gridItem && inherited && style.display === 'inline') style.display = 'block';
+      // An absolute box with both insets of an axis (inset: 0 overlays): an auto size fills the containing block
+      // between them, width = 100% − start − end − its own padding and border under content-box (CSS 2 §10.3.7); with
+      // an explicit size it is over-constrained and the end inset is ignored (right in ltr, left in rtl; bottom).
+      if (style.position === 'absolute' && !box.pseudo) {
+        const sized = (start, end, size, edges) => {
+          const set = side => style[side] !== undefined && style[side] !== 'auto';
+          if (!set(start) || !set(end)) return;
+          if (style[size] === 'auto') {
+            const own = style['box-sizing'] === 'content-box' ? edges.flatMap(edge => [style[`padding-${edge}`], style[`border-${edge}`]]).filter(v => v && !['0', '0px', 'ua'].includes(v)) : [];
+            const minus = [style[start], style[end], ...own].filter(v => !['0', '0px'].includes(v));
+            style = { ...style, [size]: minus.length ? `calc(100% - ${minus.join(' - ')})` : '100%', [end]: 'auto' };
+          } else style = { ...style, [end]: 'auto' };
+        };
+        sized(style.direction === 'rtl' ? 'right' : 'left', style.direction === 'rtl' ? 'left' : 'right', 'inline-size', ['left', 'right']);
+        sized('top', 'bottom', 'block-size', ['top', 'bottom']);
+      }
       // A line-clamped text leaf (-webkit-box, vertical, -webkit-line-clamp: N): a block whose height is at most N lines.
       if (style.display === '-webkit-box' && !box.pseudo) {
         if (style['box-orient'] !== 'vertical' || !/^\d+$/.test(style['line-clamp']) || !box.text || (box.children ?? []).length || !/^\d+(?:\.\d+)?px$/.test(style['line-height'])) throw Object.assign(new Error(`${box.label}: display: -webkit-box is modeled as a line clamp of a text leaf (-webkit-box-orient: vertical, -webkit-line-clamp: N, a px line-height)`), { code: 'U_LAYOUT_CSS' });
