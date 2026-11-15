@@ -1663,3 +1663,29 @@ test('icon buttons (grid containers): the button has a name in Chromium exactly 
     expect(unnamed, `${svg}: Chromium names the button "${name}"`).toBe(name === '');
   }
 });
+
+test('icon-contrast: the static ratio of an icon-only button equals the one from Chromium’s computed fill/stroke and background', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const base = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff}.t{height:10px}.b{appearance:none;padding:0 8px;border:0;min-width:0;min-height:0;background:#246;color:#fff;display:grid;grid-template-columns:24px;height:40px}svg{display:block}`;
+  const lum = rgb => { const [r, g2, b] = rgb.map(v => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g2 + 0.0722 * b; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  for (const [svg, css] of [
+    ['<svg width="24" height="24" fill="currentColor" aria-label="Close" role="img"><path d="M0 0h24v24H0z"/></svg>', ''],
+    ['<svg width="24" height="24" fill="currentColor" aria-label="Close" role="img"><path d="M0 0h24v24H0z"/></svg>', '.b{color:#456}'],
+    ['<svg width="24" height="24" fill="none" stroke="#357" aria-label="Close" role="img"><path d="M0 0h24v24H0z"/></svg>', ''],
+    ['<svg width="24" height="24" aria-label="Close" role="img"><path fill="#fff" d="M0 0h24v24H0z"/></svg>', ''],
+    ['<svg width="24" height="24" aria-label="Close" role="img"><path d="M0 0h24v24H0z"/></svg>', ''],
+    ['<svg class="i" width="24" height="24" fill="#000" aria-label="Close" role="img"><path d="M0 0h24v24H0z"/></svg>', '.i{fill:#fff}'],
+    ['<svg width="24" height="24" aria-label="Close" role="img"><g fill="#89a"><path d="M0 0h24v24H0z"/></g></svg>', ''],
+  ]) {
+    const html = `<main class="p"><h1 class="t" aria-label="T"></h1><button class="b" type="button">${svg}</button></main>`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+    expect(report.status, svg).not.toBe('unknown');
+    const finding = report.diagnostics.find(d => d.code === 'E_A11Y_ICON_CONTRAST');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${base}${css}</style></head><body>${html}</body></html>`);
+    const {paint, bg} = await page.evaluate(() => { const s = getComputedStyle(document.querySelector('path')); const nums = v => v.match(/\d+(\.\d+)?/g)?.slice(0, 3).map(Number); return {paint: nums(s.fill === 'none' ? s.stroke : s.fill), bg: nums(getComputedStyle(document.querySelector('.b')).backgroundColor)}; });
+    const browser = ratio(paint, bg);
+    expect(Boolean(finding), `${svg} ${css}: Chromium ${browser.toFixed(2)}:1, static ${finding?.ratio}`).toBe(browser < 3);
+    if (finding) expect(Math.abs(finding.ratio - browser)).toBeLessThan(1e-6);
+  }
+});

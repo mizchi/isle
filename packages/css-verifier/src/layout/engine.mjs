@@ -447,6 +447,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const facts = box.svgSize ?? {}, vb = facts.viewBox;
         if ([facts.width, facts.height].includes('dynamic') || vb === 'dynamic') throw Object.assign(new Error(`${box.label}: an svg with a dynamic width, height or viewBox is not modeled`), { code: 'U_LAYOUT_ELEMENT', box });
         if (style.display === 'inline') style = { ...style, display: 'block' };
+        // The color its shapes are drawn in: a shape's own fill/stroke attribute, else author CSS on the svg, else the
+        // svg's attribute, else the inherited value (initial fill black, stroke none). Fill wins if both paint.
+        {
+          const paint = facts.paint ?? {}, value = key => {
+            const shape = paint[key === 'fill' ? 'shapeFill' : 'shapeStroke'];
+            if (shape === 'mixed' || shape === 'dynamic') return 'dynamic';
+            const v = shape ?? (style.$sources[key] ? style[key] : paint[key] ?? style[key]);
+            return String(v).toLowerCase() === 'currentcolor' ? style.color : v;
+          };
+          const fill = value('fill'), stroke = value('stroke');
+          style = { ...style, $iconPaint: [fill, stroke].includes('dynamic') ? 'dynamic' : fill !== 'none' && stroke !== 'none' && String(fill) !== String(stroke) ? 'dynamic' : fill !== 'none' ? fill : stroke };
+        }
         const authored = key => style.$sources[key] && style[key] !== 'auto';
         if (!authored('inline-size') && facts.width) style = { ...style, 'inline-size': facts.width };
         if (!authored('block-size') && facts.height) style = { ...style, 'block-size': facts.height };

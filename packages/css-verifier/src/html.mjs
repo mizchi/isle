@@ -45,7 +45,22 @@ export function htmlBoxTree(html) {
     if(node.namespaceURI!=='http://www.w3.org/1999/xhtml' && !inlineSvg) unknown('Foreign element needs a size adapter');
     // Its <title> child names it (SVG accessibility API mappings), like an aria-label.
     const svgTitle=inlineSvg ? node.childNodes.find(n=>n.tagName==='title')?.childNodes.filter(n=>n.nodeName==='#text').map(n=>n.value).join('').trim() : undefined;
-    if(inlineSvg) return {tag:'svg',...(attrs.id!==undefined ? {id:attrs.id} : {}),...accessibilityFacts('svg',attrs),...(svgTitle ? {named:true} : {}),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),text:false,runs:[],children:[]};
+    // The colors it draws with: its fill/stroke attributes and those of its shapes (one value each across the shapes,
+    // 'mixed' otherwise; a style attribute on a shape is not read, so it is 'dynamic').
+    const svgPaint=(()=>{
+      if(!inlineSvg) return undefined;
+      // Leaf shapes with their ancestor chain inside the svg (a g's attributes inherit to its shapes).
+      const shapes=[], leaves=[]; (function walk(n,chain){ for(const c of n.childNodes ?? []) if(c.tagName && c.tagName!=='title' && c.tagName!=='desc'){ shapes.push(c); const next=[...chain,c]; if(c.childNodes?.some(k=>k.tagName)) walk(c,next); else leaves.push(next); } })(node,[]);
+      const own=Object.fromEntries(['fill','stroke'].filter(k=>attrs[k]!==undefined).map(k=>[k,attrs[k].trim().toLowerCase()]));
+      const of=key=>{
+        if(shapes.some(c=>c.attrs.some(a=>a.name==='style'))) return 'dynamic';
+        const values=leaves.map(chain=>[...chain].reverse().map(c=>c.attrs.find(a=>a.name===key)?.value.trim().toLowerCase()).find(v=>v!==undefined));
+        if(values.every(v=>v===undefined)) return undefined;
+        return new Set(values).size===1 ? values[0] : 'mixed';
+      };
+      return {...own,...(of('fill')!==undefined ? {shapeFill:of('fill')} : {}),...(of('stroke')!==undefined ? {shapeStroke:of('stroke')} : {}),shapes:shapes.length};
+    })();
+    if(inlineSvg) { const facts=accessibilityFacts('svg',attrs); facts.svgSize={...(facts.svgSize ?? {}),paint:svgPaint}; return {tag:'svg',...(attrs.id!==undefined ? {id:attrs.id} : {}),...facts,...(svgTitle ? {named:true} : {}),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),text:false,runs:[],children:[]}; }
     return {tag:node.tagName,...(attrs.id!==undefined ? {id:attrs.id} : {}),...(attrs.lang!==undefined ? {lang:attrs.lang.trim()} : {}),...accessibilityFacts(node.tagName,attrs),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),
       text:node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)),
       ...(node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)) ? {textContent:node.childNodes.filter(n=>n.nodeName==='#text').map(n=>n.value).join(' ').replace(/[\t\n\r ]+/g,' ').trim()} : {}),
