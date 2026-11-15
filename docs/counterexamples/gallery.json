@@ -598,6 +598,149 @@
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.outer{display:grid;grid-template-columns:600px;overflow:auto;height:140px;background:#eee;padding:8px}.inner{display:grid;grid-template-columns:900px;overflow:auto;background:#cde}.content{min-width:0;height:100px;background:repeating-linear-gradient(90deg,#9cf 0 40px,#cde 40px 80px)}"
  },
  {
+  "id": "html-lang",
+  "title": "A document without lang",
+  "code": "E_A11Y_HTML_LANG",
+  "width": 0,
+  "height": 0,
+  "message": "html@P has no lang attribute",
+  "shots": [
+   "html-lang-markup.png"
+  ],
+  "html": "<html>\n  <body>\n    <main class=\"page\">…</main>\n  </body>\n</html>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
+ },
+ {
+  "id": "meta-viewport",
+  "title": "A viewport meta tag that disables zoom",
+  "code": "E_A11Y_META_VIEWPORT",
+  "width": 0,
+  "height": 0,
+  "message": "The viewport meta tag disables zooming (user-scalable=no, maximum-scale=1): text cannot be enlarged to 200% on touch devices",
+  "shots": [
+   "meta-viewport-markup.png"
+  ],
+  "html": "<head>\n  <meta name=\"viewport\" content=\"width=device-width, maximum-scale=1, user-scalable=no\">\n</head>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
+ },
+ {
+  "id": "touch-zoom",
+  "title": "touch-action on body that blocks pinch-zoom",
+  "code": "E_A11Y_TOUCH_ZOOM",
+  "width": 0,
+  "height": 0,
+  "message": "body@P/0 has touch-action: pan-x pan-y, which disables pinch-zoom for the whole page",
+  "shots": [
+   "touch-zoom-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"x\"></div></main>",
+  "css": "body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
+ },
+ {
+  "id": "duplicate-id",
+  "title": "Two elements with the same id",
+  "code": "E_A11Y_DUPLICATE_ID",
+  "width": 0,
+  "height": 0,
+  "message": "id \"email\" is used by 2 elements",
+  "shots": [
+   "duplicate-id-markup.png"
+  ],
+  "html": "<main class=\"page\"><label class=\"l\" for=\"email\" id=\"email\">Email</label><input class=\"i\" type=\"email\" id=\"email\"></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.l{display:block;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}"
+ },
+ {
+  "id": "aria-reference",
+  "title": "aria-labelledby that points at nothing",
+  "code": "E_A11Y_REFERENCE",
+  "width": 0,
+  "height": 0,
+  "message": ".d references the missing id \"dialog-title\"",
+  "shots": [
+   "aria-reference-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"d\" role=\"dialog\" aria-labelledby=\"dialog-title\"><button class=\"b\" aria-label=\"Close\"></button></div></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.d{display:grid;grid-template-columns:44px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}"
+ },
+ {
+  "id": "nested-interactive",
+  "title": "A button inside a link",
+  "code": "E_A11Y_NESTED_INTERACTIVE",
+  "width": 0,
+  "height": 0,
+  "message": ".b is interactive inside .card",
+  "shots": [
+   "nested-interactive-markup.png"
+  ],
+  "html": "<main class=\"page\"><a class=\"card\" href=\"/item\"><button class=\"b\" aria-label=\"Add to cart\"></button></a></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.card{display:grid;grid-template-columns:44px;padding:8px;background:#eee}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}"
+ },
+ {
+  "id": "image-alt",
+  "title": "An image without alt",
+  "code": "E_A11Y_IMAGE_ALT",
+  "width": 0,
+  "height": 0,
+  "message": ".p has no alt; use alt=\"\" if it is decorative",
+  "shots": [
+   "image-alt-markup.png"
+  ],
+  "html": "<main class=\"page\"><img class=\"p\" src=\"/wide.png\" width=\"320\" height=\"160\"></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:block;width:100%;height:auto}"
+ },
+ {
+  "id": "form-label",
+  "title": "A text field with no label",
+  "code": "E_A11Y_LABEL",
+  "width": 0,
+  "height": 0,
+  "message": ".i has no label here: add a visible <label>, aria-label, aria-labelledby or title",
+  "shots": [
+   "form-label-markup.png"
+  ],
+  "html": "<main class=\"page\"><input class=\"i\" type=\"text\"></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}"
+ },
+ {
+  "id": "role-valid",
+  "title": "A misspelled role",
+  "code": "E_A11Y_ROLE",
+  "width": 0,
+  "height": 0,
+  "message": ".b has role \"buton\", which is not a WAI-ARIA role",
+  "shots": [
+   "role-valid-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"b\" role=\"buton\" tabindex=\"0\" aria-label=\"Save\"></div></main>",
+  "css": ".page{display:grid;grid-template-columns:120px}.b{height:44px;background:#246}"
+ },
+ {
+  "id": "list-structure",
+  "title": "A list with a non-item child",
+  "code": "E_A11Y_LIST",
+  "width": 0,
+  "height": 0,
+  "message": ".u has a child that is not li",
+  "shots": [
+   "list-structure-markup.png"
+  ],
+  "html": "<main class=\"page\"><ul class=\"u\"><li class=\"a\"></li><div class=\"x\"></div></ul></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.u{display:grid;grid-template-columns:minmax(0,1fr);list-style:none;padding:0}.a,.x{display:block;height:20px}"
+ },
+ {
+  "id": "positive-tabindex",
+  "title": "A positive tabindex",
+  "code": "W_A11Y_POSITIVE_TABINDEX",
+  "width": 0,
+  "height": 0,
+  "message": ".b has tabindex 3, which moves it ahead of the DOM focus order",
+  "shots": [
+   "positive-tabindex-markup.png"
+  ],
+  "html": "<main class=\"page\"><button class=\"a\" aria-label=\"First\"></button><button class=\"b\" tabindex=\"3\" aria-label=\"Jumps ahead\"></button></main>",
+  "css": ".page{display:grid;grid-template-columns:120px;row-gap:4px}.a,.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}"
+ },
+ {
   "id": "protrusion",
   "title": "A badge that sticks out of its card",
   "code": "E_LAYOUT_PROTRUSION",

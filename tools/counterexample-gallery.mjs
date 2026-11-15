@@ -132,6 +132,30 @@ const cases = [
     html: '<main class="page"><div class="row"><p class="t a">A long product name that overflows</p><p class="t b">19.99 USD</p></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.t{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}.b{background:rgba(255,200,120,.5)}'},
   {id: 'nested-scroll', title: 'A scroll area inside a scroll area', code: 'W_LAYOUT_NESTED_SCROLL', warning: true, options: {integrity: true, boxes: {'.outer': {overflow: 'scroll'}, '.inner': {overflow: 'scroll'}}},
     html: '<main class="page"><div class="outer"><div class="inner"><div class="content"></div></div></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.outer{display:grid;grid-template-columns:600px;overflow:auto;height:140px;background:#eee;padding:8px}.inner{display:grid;grid-template-columns:900px;overflow:auto;background:#cde}.content{min-width:0;height:100px;background:repeating-linear-gradient(90deg,#9cf 0 40px,#cde 40px 80px)}'},
+
+  // --- markup (DOM rules: nothing to see on screen, so the picture is the markup with the reported part marked) ---
+  {id: 'html-lang', title: 'A document without lang', code: 'E_A11Y_HTML_LANG', markup: true, mark: '<html>', options: {accessibility: true},
+    doc: '<html><body><main class="page"><div class="x"></div></main></body></html>', html: '<html>\n  <body>\n    <main class="page">…</main>\n  </body>\n</html>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}'},
+  {id: 'meta-viewport', title: 'A viewport meta tag that disables zoom', code: 'E_A11Y_META_VIEWPORT', markup: true, mark: 'maximum-scale=1, user-scalable=no', options: {accessibility: true},
+    doc: '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, maximum-scale=1, user-scalable=no"><title>Shop</title></head><body><main class="page"><div class="x"></div></main></body></html>', html: '<head>\n  <meta name="viewport" content="width=device-width, maximum-scale=1, user-scalable=no">\n</head>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}'},
+  {id: 'touch-zoom', title: 'touch-action on body that blocks pinch-zoom', code: 'E_A11Y_TOUCH_ZOOM', markup: true, mark: 'touch-action: pan-x pan-y', options: {accessibility: true},
+    html: '<main class="page"><div class="x"></div></main>', css: 'body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}', source: 'body {\n  touch-action: pan-x pan-y;  /* no pinch-zoom */\n}'},
+  {id: 'duplicate-id', title: 'Two elements with the same id', code: 'E_A11Y_DUPLICATE_ID', markup: true, mark: 'id="email"', options: {accessibility: true},
+    html: '<main class="page"><label class="l" for="email" id="email">Email</label><input class="i" type="email" id="email"></main>', css: '.page{display:grid;grid-template-columns:200px}.l{display:block;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}', boxes: text('.l', 'Email')},
+  {id: 'aria-reference', title: 'aria-labelledby that points at nothing', code: 'E_A11Y_REFERENCE', markup: true, mark: 'aria-labelledby="dialog-title"', options: {accessibility: true},
+    html: '<main class="page"><div class="d" role="dialog" aria-labelledby="dialog-title"><button class="b" aria-label="Close"></button></div></main>', css: '.page{display:grid;grid-template-columns:200px}.d{display:grid;grid-template-columns:44px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}'},
+  {id: 'nested-interactive', title: 'A button inside a link', code: 'E_A11Y_NESTED_INTERACTIVE', markup: true, mark: '<button class="b" aria-label="Add to cart"></button>', options: {accessibility: true},
+    html: '<main class="page"><a class="card" href="/item"><button class="b" aria-label="Add to cart"></button></a></main>', css: '.page{display:grid;grid-template-columns:200px}.card{display:grid;grid-template-columns:44px;padding:8px;background:#eee}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}'},
+  {id: 'image-alt', title: 'An image without alt', code: 'E_A11Y_IMAGE_ALT', markup: true, mark: '<img class="p" src="/wide.png" width="320" height="160">', options: {accessibility: true},
+    html: '<main class="page"><img class="p" src="/wide.png" width="320" height="160"></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:block;width:100%;height:auto}'},
+  {id: 'form-label', title: 'A text field with no label', code: 'E_A11Y_LABEL', markup: true, mark: '<input class="i" type="text">', options: {accessibility: true},
+    html: '<main class="page"><input class="i" type="text"></main>', css: '.page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}'},
+  {id: 'role-valid', title: 'A misspelled role', code: 'E_A11Y_ROLE', markup: true, mark: 'role="buton"', options: {accessibility: true},
+    html: '<main class="page"><div class="b" role="buton" tabindex="0" aria-label="Save"></div></main>', css: '.page{display:grid;grid-template-columns:120px}.b{height:44px;background:#246}'},
+  {id: 'list-structure', title: 'A list with a non-item child', code: 'E_A11Y_LIST', markup: true, mark: '<div class="x"></div>', options: {accessibility: true},
+    html: '<main class="page"><ul class="u"><li class="a"></li><div class="x"></div></ul></main>', css: '.page{display:grid;grid-template-columns:200px}.u{display:grid;grid-template-columns:minmax(0,1fr);list-style:none;padding:0}.a,.x{display:block;height:20px}'},
+  {id: 'positive-tabindex', title: 'A positive tabindex', code: 'W_A11Y_POSITIVE_TABINDEX', warning: true, markup: true, mark: 'tabindex="3"', options: {accessibility: true},
+    html: '<main class="page"><button class="a" aria-label="First"></button><button class="b" tabindex="3" aria-label="Jumps ahead"></button></main>', css: '.page{display:grid;grid-template-columns:120px;row-gap:4px}.a,.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}'},
   // --- integrity ---
   {id: 'protrusion', title: 'A badge that sticks out of its card', code: 'E_LAYOUT_PROTRUSION', options: {integrity: true},
     html: '<main class="page"><div class="card"><div class="badge"></div></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);padding:24px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:80px;background:#eee}.badge{height:24px;background:#c33;transform:translate(20px,-16px)}'},
@@ -146,14 +170,40 @@ const point = d => {
 const browser = await chromium.launch();
 const rows = [];
 for (const c of cases) {
-  const doc = `<html lang="en"><body>${c.html}</body></html>`;
-  const options = {name: 'P', css: base + c.css, viewport: {min: 320, max: 1024, height: {min: 480, max: 900}}, ...(c.options ?? {})};
+  const doc = c.doc ?? `<html lang="en"><body>${c.html}</body></html>`;
+  const options = {name: 'P', css: base + c.css, viewport: {min: 320, max: 1024, height: {min: 480, max: 900}}, ...(c.options ?? {}), ...(c.boxes ? {boxes: {...(c.options?.boxes ?? {}), ...c.boxes}} : {})};
   if (!options.scrollbars && !c.noScrollbars) options.scrollbars = overlay;
   const report = analyzeHTML(doc, metrics.resolveOptions(options));
   const all = [...report.diagnostics, ...(report.layoutWarnings ?? []), ...(report.integrity?.warnings ?? []), ...(report.accessibility?.warnings ?? [])];
   const found = all.filter(d => d.code === c.code);
   if (!found.length) { console.error(`${c.id}: expected ${c.code}, got ${report.status}: ${all.map(d => d.code + ' ' + d.message).join(' | ').slice(0, 400)}`); process.exitCode = 1; continue; }
   const d = found[0];
+  if (c.markup) {
+    // The markup with the reported part marked, and the report under it.
+    const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // Mark first (sentinels), then break and indent the tags one per line.
+    const broken = text => c.source ? text : text.replace(/></g, '>\n<');
+    const raw = broken(c.source ?? c.html).split(broken(c.mark)).join(`\u0001${broken(c.mark)}\u0002`);
+    let depth = 0;
+    const source = c.source ? raw : raw.split('\n').map(line => {
+      const plain = line.replace(/[\u0001\u0002]/g, '');
+      if (/^<\//.test(plain)) depth = Math.max(0, depth - 1);
+      const out = '  '.repeat(depth) + line;
+      if (/^<[a-z][^>]*>$/i.test(plain) && !/^<(?:img|input|meta|br|hr|source)\b/i.test(plain) && !/<\/[a-z]+>$/i.test(plain)) depth++;
+      return out;
+    }).join('\n');
+    const marked = esc(source).replace(/\u0001/g, '<mark>').replace(/\u0002/g, '</mark>');
+    const card = `<!doctype html><html><head><style>${face}body{margin:0;background:#fff;font-family:Roboto,sans-serif}.card{display:inline-grid;gap:10px;padding:16px;min-width:440px;max-width:620px}pre{margin:0;padding:12px 14px;background:#f5f6f8;border:1px solid #dde1e6;border-radius:4px;font:13px/1.6 ui-monospace,Menlo,monospace;white-space:pre-wrap;color:#1b1f24}mark{background:none;color:#c00;outline:2px solid #e00;outline-offset:1px;border-radius:2px}.r{font:600 12px/1.4 Roboto,sans-serif;color:#fff;background:rgba(200,0,0,.92);padding:4px 6px;border-radius:3px;justify-self:start}.m{font:12px/1.5 ui-monospace,Menlo,monospace;color:#5b6470;max-width:600px}</style></head><body><div class="card"><pre>${marked}</pre><div class="r">${c.code}</div><div class="m">${esc(d.message)}</div></div></body></html>`;
+    const page = await browser.newPage({viewport: {width: 680, height: 600}, deviceScaleFactor: 1});
+    await page.setContent(card);
+    const box = await page.evaluate(() => { const r = document.querySelector('.card').getBoundingClientRect(); return {x: r.left, y: r.top, width: Math.ceil(r.width), height: Math.ceil(r.height)}; });
+    const file = `${c.id}-markup.png`;
+    await page.screenshot({path: new URL(file, out).pathname, clip: box});
+    await page.close();
+    rows.push({...c, d, width: 0, height: 0, shots: [file], count: found.length});
+    console.log(`${c.id}: ${c.code} → ${file}`);
+    continue;
+  }
   const [width, height] = point(d);
   const page = await browser.newPage({viewport: {width, height}, deviceScaleFactor: 1});
   // The web font is held back until the before picture is taken (Playwright's screenshot waits for fonts, so pictures
@@ -223,7 +273,7 @@ await browser.close();
 
 const md = ['# 反例ギャラリー', '',
   '各パターンで、わざと違反する小さなページを静的に検査し、報告された反例の viewport で Chromium に描画した画像。赤い実線の枠が報告された箱、点線の枠が状態が変わる前の位置(動いた分が layout shift)。`node tools/counterexample-gallery.mjs` で再生成する。', '',
-  ...rows.flatMap(r => [`## ${r.title}`, '', `\`${r.code}\` — viewport ${r.width} × ${r.height}px`, '', `> ${r.d.message}`, '', r.shots.map(s => `![${r.id}](${s})`).join(' '), '',
+  ...rows.flatMap(r => [`## ${r.title}`, '', r.width ? `\`${r.code}\` — viewport ${r.width} × ${r.height}px` : `\`${r.code}\` — markup rule (nothing to see on screen)`, '', `> ${r.d.message}`, '', r.shots.map(s => `![${r.id}](${s})`).join(' '), '',
     '<details><summary>HTML / CSS</summary>', '', '```html', r.html, '```', '', '```css', r.css, '```', '', '</details>', ''])];
 writeFileSync(new URL('README.md', out), md.join('\n'));
 writeFileSync(new URL('gallery.json', out), JSON.stringify(rows.map(r => ({id: r.id, title: r.title, code: r.code, width: r.width, height: r.height, message: r.d.message, shots: r.shots, html: r.html, css: r.css})), null, 1));

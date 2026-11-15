@@ -902,6 +902,232 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background
 
 </details>
 
+## A document without lang
+
+`E_A11Y_HTML_LANG` — markup rule (nothing to see on screen)
+
+> html@P has no lang attribute
+
+![html-lang](html-lang-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<html>
+  <body>
+    <main class="page">…</main>
+  </body>
+</html>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}
+```
+
+</details>
+
+## A viewport meta tag that disables zoom
+
+`E_A11Y_META_VIEWPORT` — markup rule (nothing to see on screen)
+
+> The viewport meta tag disables zooming (user-scalable=no, maximum-scale=1): text cannot be enlarged to 200% on touch devices
+
+![meta-viewport](meta-viewport-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<head>
+  <meta name="viewport" content="width=device-width, maximum-scale=1, user-scalable=no">
+</head>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}
+```
+
+</details>
+
+## touch-action on body that blocks pinch-zoom
+
+`E_A11Y_TOUCH_ZOOM` — markup rule (nothing to see on screen)
+
+> body@P/0 has touch-action: pan-x pan-y, which disables pinch-zoom for the whole page
+
+![touch-zoom](touch-zoom-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="x"></div></main>
+```
+
+```css
+body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}
+```
+
+</details>
+
+## Two elements with the same id
+
+`E_A11Y_DUPLICATE_ID` — markup rule (nothing to see on screen)
+
+> id "email" is used by 2 elements
+
+![duplicate-id](duplicate-id-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><label class="l" for="email" id="email">Email</label><input class="i" type="email" id="email"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.l{display:block;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}
+```
+
+</details>
+
+## aria-labelledby that points at nothing
+
+`E_A11Y_REFERENCE` — markup rule (nothing to see on screen)
+
+> .d references the missing id "dialog-title"
+
+![aria-reference](aria-reference-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="d" role="dialog" aria-labelledby="dialog-title"><button class="b" aria-label="Close"></button></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.d{display:grid;grid-template-columns:44px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}
+```
+
+</details>
+
+## A button inside a link
+
+`E_A11Y_NESTED_INTERACTIVE` — markup rule (nothing to see on screen)
+
+> .b is interactive inside .card
+
+![nested-interactive](nested-interactive-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><a class="card" href="/item"><button class="b" aria-label="Add to cart"></button></a></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.card{display:grid;grid-template-columns:44px;padding:8px;background:#eee}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}
+```
+
+</details>
+
+## An image without alt
+
+`E_A11Y_IMAGE_ALT` — markup rule (nothing to see on screen)
+
+> .p has no alt; use alt="" if it is decorative
+
+![image-alt](image-alt-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><img class="p" src="/wide.png" width="320" height="160"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:block;width:100%;height:auto}
+```
+
+</details>
+
+## A text field with no label
+
+`E_A11Y_LABEL` — markup rule (nothing to see on screen)
+
+> .i has no label here: add a visible <label>, aria-label, aria-labelledby or title
+
+![form-label](form-label-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="i" type="text"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}
+```
+
+</details>
+
+## A misspelled role
+
+`E_A11Y_ROLE` — markup rule (nothing to see on screen)
+
+> .b has role "buton", which is not a WAI-ARIA role
+
+![role-valid](role-valid-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="b" role="buton" tabindex="0" aria-label="Save"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px}.b{height:44px;background:#246}
+```
+
+</details>
+
+## A list with a non-item child
+
+`E_A11Y_LIST` — markup rule (nothing to see on screen)
+
+> .u has a child that is not li
+
+![list-structure](list-structure-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><ul class="u"><li class="a"></li><div class="x"></div></ul></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.u{display:grid;grid-template-columns:minmax(0,1fr);list-style:none;padding:0}.a,.x{display:block;height:20px}
+```
+
+</details>
+
+## A positive tabindex
+
+`W_A11Y_POSITIVE_TABINDEX` — markup rule (nothing to see on screen)
+
+> .b has tabindex 3, which moves it ahead of the DOM focus order
+
+![positive-tabindex](positive-tabindex-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="a" aria-label="First"></button><button class="b" tabindex="3" aria-label="Jumps ahead"></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px;row-gap:4px}.a,.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}
+```
+
+</details>
+
 ## A badge that sticks out of its card
 
 `E_LAYOUT_PROTRUSION` — viewport 672 × 690px
