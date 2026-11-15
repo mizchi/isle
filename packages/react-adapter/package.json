@@ -1,0 +1,11 @@
+{
+  "name": "@mizchi/css-verifier-react",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "React (JSX) adapter for @mizchi/css-verifier with StyleX and Linaria style resolution: JSX branches as states.",
+  "exports": {".": {"import": "./src/index.mjs"}},
+  "dependencies": {"@mizchi/css-verifier-adapter-core": "workspace:*", "@babel/parser": "7.29.12", "postcss": "8.5.32"},
+  "devDependencies": {"react": "19.1.10", "react-dom": "19.1.10", "@stylexjs/stylex": "0.19.1", "@stylexjs/babel-plugin": "0.19.1", "esbuild": "0.28.2"},
+  "scripts": {"test": "node --test test/*.test.mjs"}
+}

@@ -6,7 +6,7 @@ default:
 # The Svelte component adapter (generality check of the core outside Isle): unit tests against Svelte's own
 # compiler and SSR. The Chromium comparison is e2e/layout-svelte.spec.mjs.
 svelte-adapter-check:
-    node --test packages/adapter-core/test/*.test.mjs packages/svelte-adapter/test/*.test.mjs packages/vue-adapter/test/*.test.mjs
+    node --test packages/adapter-core/test/*.test.mjs packages/svelte-adapter/test/*.test.mjs packages/vue-adapter/test/*.test.mjs packages/react-adapter/test/*.test.mjs
 
 # Independent static CSS core, isolated package consumer and Isle adapter parity.
 css-verifier-check: check-types
