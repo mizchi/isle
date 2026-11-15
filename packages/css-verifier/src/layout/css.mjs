@@ -256,6 +256,22 @@ function expand(property, value) {
   }
   // The legacy line clamp (display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: N) is what Chromium
   // implements; the unprefixed line-clamp is not modeled.
+  // Properties that never change the checked geometry or paint (scrolling behaviour, selection, caret and accent
+  // colours, font smoothing, snapping, view transitions, image sampling, …) are accepted and ignored.
+  if (/^(?:object-fit|object-position|scroll-behavior|user-select|-webkit-user-select|accent-color|caret-color|-webkit-font-smoothing|-moz-osx-font-smoothing|-webkit-tap-highlight-color|print-color-adjust|-webkit-print-color-adjust|color-adjust|overflow-anchor|image-rendering|text-decoration-skip-ink|overscroll-behavior(?:-[xy]|-inline|-block)?|scroll-snap-(?:type|align|stop)|view-transition-name|view-transition-class|interpolate-size|anchor-name|anchor-scope|quotes|counter-(?:reset|increment|set)|-webkit-touch-callout|backface-visibility|-webkit-backface-visibility|text-underline-position|font-optical-sizing|font-kerning)$/.test(property)) return [];
+  // Accepted only at values that leave line breaking, shaping, containing blocks and painting as modeled; any other
+  // value changes what is checked, so it stays Unknown.
+  const neutral = {
+    'word-break': ['normal'], hyphens: ['manual', 'none'], 'text-wrap': ['wrap'], 'text-wrap-mode': ['wrap'], 'text-wrap-style': ['auto'],
+    'font-variant-numeric': ['normal'], 'font-variant-ligatures': ['normal'], 'font-feature-settings': ['normal'], 'font-variation-settings': ['normal'], 'text-rendering': ['auto'],
+    'text-indent': ['0', '0px'], 'tab-size': ['8'], 'box-decoration-break': ['slice'], '-webkit-box-decoration-break': ['slice'], 'field-sizing': ['fixed'],
+    resize: ['none'], 'text-size-adjust': ['none', '100%'], '-webkit-text-size-adjust': ['none', '100%'],
+    filter: ['none'], 'backdrop-filter': ['none'], '-webkit-backdrop-filter': ['none'], 'mix-blend-mode': ['normal'], contain: ['none', 'style'], 'content-visibility': ['visible'], 'will-change': ['auto', 'scroll-position', 'contents'], perspective: ['none'],
+  };
+  if (Object.hasOwn(neutral, property)) {
+    if (wide.has(value) || neutral[property].includes(value.trim().toLowerCase())) return [];
+    throw new Error(`Unsupported ${property}: ${value} (it changes line breaking, shaping, containing blocks or paint, which are not modeled)`);
+  }
   if (property === 'line-clamp' || property === 'box-orient') throw new Error(`Unsupported layout property: ${property} (only the -webkit- line clamp is modeled)`);
   if (property === 'text-overflow' && !wide.has(value) && !['clip', 'ellipsis'].includes(value)) throw new Error(`Unsupported text-overflow: ${value}`);
   if (property === '-webkit-line-clamp') { if (!wide.has(value) && !/^(?:none|[1-9]\d{0,2})$/.test(value)) throw new Error(`Unsupported -webkit-line-clamp: ${value}`); return [['line-clamp', value]]; }

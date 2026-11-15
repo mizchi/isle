@@ -1317,3 +1317,14 @@ test('a rowspan cell stacks gapped one-column grids and column flexes like Chrom
     expect(statics.map((v, i) => Math.abs(v - browser[i])).every(d => d < 0.02), `.${cls}: static ${statics} vs browser ${browser}`).toBe(true);
   }
 });
+
+test('properties accepted as geometry-neutral leave every box where Chromium puts it without them', async ({page}) => {
+  const neutral = 'object-fit:cover;object-position:right;scroll-behavior:smooth;user-select:none;accent-color:#c33;caret-color:#c33;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;print-color-adjust:exact;overflow-anchor:none;image-rendering:pixelated;text-decoration-skip-ink:none;overscroll-behavior:contain;scroll-snap-type:y mandatory;scroll-snap-align:start;view-transition-name:none;quotes:none;counter-reset:item;word-break:normal;hyphens:manual;text-size-adjust:100%;filter:none;mix-blend-mode:normal;contain:style;content-visibility:visible;will-change:scroll-position;resize:none;tab-size:8;text-indent:0;font-variant-numeric:normal;font-feature-settings:normal;text-rendering:auto';
+  const css = extra => `*{box-sizing:border-box;margin:0}body{margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:8px;padding:8px;font:16px/24px sans-serif}.a{height:40px;background:#9cf}.b{padding:4px;border:2px solid #333}.c{grid-column:1 / 3;height:60px;overflow:auto}.c div{height:200px}.t{white-space:nowrap}${extra}`;
+  const html = '<div class="page"><div class="a"></div><div class="b"><p class="t">Neutral 0123456789</p></div><div class="c"><div></div></div></div>';
+  const rects = async extra => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css(extra)}</style></head><body>${html}</body></html>`); return page.evaluate(() => [...document.querySelectorAll('.page, .page *')].map(e => { const r = e.getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map(v => Math.round(v * 64) / 64); })); };
+  for (const width of [360, 800]) {
+    await page.setViewportSize({width, height: 600});
+    expect(await rects(`.page,.page *{${neutral}}`), `at ${width}`).toEqual(await rects(''));
+  }
+});
