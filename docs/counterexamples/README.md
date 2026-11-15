@@ -1,0 +1,443 @@
+# 反例ギャラリー
+
+各パターンで、わざと違反する小さなページを静的に検査し、報告された反例の viewport で Chromium に描画した画像。赤い実線の枠が報告された箱、点線の枠が状態が変わる前の位置(動いた分が layout shift)。`node tools/counterexample-gallery.mjs` で再生成する。
+
+## A fixed-width box wider than its column
+
+`E_LAYOUT_ITEM_SIZE` — viewport 416 × 690px
+
+> .card requires 480px but receives 384px on inline axis at viewport 416px × 690px
+
+![item-size](item-size-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="card"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.card{width:480px;height:80px;background:#9cf}
+```
+
+</details>
+
+## A label that does not fit its button
+
+`E_LAYOUT_CONTENT` — viewport 672 × 690px
+
+> .label requires 12569/64px but receives 144px on inline axis at viewport 672px × 690px
+
+![content](content-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="bar"><span class="label">Download the annual report</span></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:160px}.bar{display:grid;grid-template-columns:minmax(0,1fr);background:#246;color:#fff;padding:8px}.label{font-size:16px;line-height:24px;white-space:nowrap}
+```
+
+</details>
+
+## A grid row too short for its item
+
+`E_LAYOUT_ITEM_SIZE` — viewport 672 × 690px
+
+> .a requires 70px but receives 40px on block axis at viewport 672px × 690px
+
+![rows](rows-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="a"></div><div class="b"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:40px 40px;background:#eee}.a{height:70px;background:#fc9}.b{height:30px;background:#9cf}
+```
+
+</details>
+
+## A box that makes the page scroll sideways (100vw with a scrollbar)
+
+`E_LAYOUT_ITEM_SIZE` — viewport 672 × 690px
+
+> .hero requires 672px but receives 657px on inline axis at viewport 672px × 690px
+
+![page-overflow](page-overflow-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="hero"></div></main>
+```
+
+```css
+html{overflow-y:scroll}body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{width:100vw;height:120px;background:#c9f}
+```
+
+</details>
+
+## An image whose reserved ratio differs from its file
+
+`E_LAYOUT_IMAGE_RATIO` — viewport 320 × 480px
+
+> .hero reserves the ratio 400/400 but /wide.png is 32×16: its height changes when it loads
+
+![image-ratio](image-ratio-before.png) ![image-ratio](image-ratio-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><img class="hero" src="/wide.png" width="400" height="400" alt=""><p class="after">The text below the image</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{display:block;width:100%;height:auto;background:#ddd}.after{height:40px;background:#eee}
+```
+
+</details>
+
+## A :hover rule that grows a card and pushes the content below
+
+`E_LAYOUT_HOVER_SHIFT` — viewport 320 × 480px
+
+> Hovering .card moves .below (blockStart by 50px at viewport 320px × 480px): a layout shift without an excusing input. Change paint or transform on :hover, or reserve the space
+
+![hover-shift](hover-shift-before.png) ![hover-shift](hover-shift-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="card"></div><div class="below"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px}.card{height:100px;background:#9cf}.card:hover{height:150px}.below{height:60px;background:#fc9}
+```
+
+</details>
+
+## A margin animation that moves the page every frame
+
+`E_LAYOUT_ANIMATION_SHIFT` — viewport 320 × 480px
+
+> Animation drop at 100% on .banner sets a 60px start margin, which moves it (blockStart): a layout shift while it runs. Animate transform (translate) instead of margin
+
+![animation-shift](animation-shift-before.png) ![animation-shift](animation-shift-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="banner"></div><div class="below"></div></main>
+```
+
+```css
+@keyframes drop{from{margin-top:0}to{margin-top:60px}}.page{display:grid;grid-template-columns:minmax(0,1fr)}.banner{height:60px;background:#f99;animation:drop 1s infinite}.below{height:60px;background:#9cf}
+```
+
+</details>
+
+## Carousel slides of different heights
+
+`E_LAYOUT_CAROUSEL_SHIFT` — viewport 320 × 480px
+
+> Switching .c from .s1 to .s2 moves .below (blockStart by 80px at viewport 320px × 480px): slides of different sizes shift the page. Give the slide area a fixed height or aspect-ratio, or stack the slides in one grid cell
+
+![carousel-shift](carousel-shift-before.png) ![carousel-shift](carousel-shift-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><section class="c" aria-roledescription="carousel" aria-label="News"><div class="s1" aria-roledescription="slide"></div><div class="s2" aria-roledescription="slide" hidden></div></section><div class="below"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.c{display:grid;grid-template-columns:minmax(0,1fr)}.s1{height:100px;background:#9cf}.s2{height:180px;background:#69c}.below{height:60px;background:#fc9}
+```
+
+</details>
+
+## Web-font text whose height follows the font
+
+`W_LAYOUT_FONT_SWAP` — viewport 332 × 480px
+
+> .t is set in the web font Roboto (font-display: swap) and takes its height from its text: when the font file arrives the text is laid out again. Use font-display: optional, preload the font, match the fallback metrics (size-adjust, ascent-override, descent-override), or reserve the box's height
+
+![font-swap](font-swap-before.png) ![font-swap](font-swap-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><h1 class="t">A heading set in a web font that wraps onto three lines</h1><div class="below"></div></main>
+```
+
+```css
+@font-face{font-family:Roboto;src:url(/roboto.ttf);font-display:swap}.page{display:grid;grid-template-columns:300px}.t{font-family:Roboto,serif;font-size:32px;line-height:40px;font-weight:400}.below{height:40px;background:#fc9}
+```
+
+</details>
+
+## loading="lazy" on an image above the fold
+
+`W_LAYOUT_LAZY_IN_VIEWPORT` — viewport 320 × 480px
+
+> .hero has loading="lazy" but is in the initial viewport (top 16px at viewport 672px × 690px): it loads later than an eager image; drop loading="lazy" for images above the fold (and consider fetchpriority="high" for the largest one)
+
+![lazy-in-viewport](lazy-in-viewport-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><img class="hero" src="/wide.png" width="800" height="400" loading="lazy" alt=""></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{display:block;width:100%;height:auto}
+```
+
+</details>
+
+## A sizes attribute smaller than the rendered width
+
+`W_LAYOUT_SIZES_SMALL` — viewport 320 × 480px
+
+> .hero is laid out 640px wide at viewport 672px but its sizes attribute says 168px: the browser picks a srcset file for the smaller width, so the image is upscaled (blurry). Make sizes match the layout width
+
+![sizes-small](sizes-small-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><img class="hero" src="/w400.png" srcset="/w40.png 40w, /w80.png 80w, /w120.png 120w, /w160.png 160w, /w200.png 200w, /w240.png 240w, /w280.png 280w, /w320.png 320w, /w360.png 360w, /w400.png 400w, /w440.png 440w, /w480.png 480w, /w520.png 520w, /w560.png 560w, /w600.png 600w, /w640.png 640w, /w680.png 680w, /w720.png 720w, /w760.png 760w, /w800.png 800w, /w840.png 840w, /w880.png 880w, /w920.png 920w, /w960.png 960w, /w1000.png 1000w, /w1040.png 1040w, /w1080.png 1080w, /w1120.png 1120w, /w1160.png 1160w, /w1200.png 1200w" sizes="25vw" width="800" height="400" alt=""></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{display:block;width:100%;height:auto}
+```
+
+</details>
+
+## A two-line clamp that cuts the title
+
+`W_LAYOUT_LINE_CLAMPED` — viewport 320 × 480px
+
+> .t is clamped to 2 lines and its text needs 3 at viewport 672px: the rest of the text is cut off (keep the full text available elsewhere, such as the page the card links to)
+
+![line-clamp](line-clamp-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><p class="t">A card title that is much longer than the two lines the design allows</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:220px}.t{font-size:16px;line-height:24px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;background:#eef}
+```
+
+</details>
+
+## A sticky header wrapped in a box of its own height
+
+`W_LAYOUT_STICKY_INERT` — viewport 320 × 480px
+
+> .h is position: sticky, but its parent .wrap ends at its bottom: it scrolls away like a static box. Make it a child of the scrolling content (or give the parent the height it should stick across)
+
+![sticky-inert](sticky-inert-before.png) ![sticky-inert](sticky-inert-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="wrap"><header class="h"></header></div><div class="content"></div></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.wrap{display:grid;grid-template-columns:minmax(0,1fr)}.h{position:sticky;top:0;height:56px;background:#246}.content{height:1600px;background:repeating-linear-gradient(#fff 0 40px,#eee 40px 80px)}
+```
+
+</details>
+
+## A sticky header inside overflow: hidden
+
+`W_LAYOUT_STICKY_SCROLLER` — viewport 320 × 480px
+
+> .h is position: sticky inside .page, which has overflow: hidden: it sticks to that box, which does not scroll, so it never sticks to the page. Use overflow: clip on the ancestor, or move the sticky box out of it
+
+![sticky-scroller](sticky-scroller-before.png) ![sticky-scroller](sticky-scroller-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><header class="h"></header><div class="content"></div></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);overflow:hidden}.h{position:sticky;top:0;height:56px;background:#246}.content{height:1600px;background:repeating-linear-gradient(#fff 0 40px,#eee 40px 80px)}
+```
+
+</details>
+
+## Grey text below 4.5:1
+
+`E_A11Y_CONTRAST` — viewport 672 × 690px
+
+> .t has contrast 2.85:1, below 4.5:1
+
+![contrast](contrast-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><p class="t">Low contrast text</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{color:#999;font-size:16px;line-height:24px;white-space:nowrap}
+```
+
+</details>
+
+## A 16 × 16 icon button
+
+`E_A11Y_TARGET_SIZE` — viewport 672 × 690px
+
+> .x is under 24px and its 24px circle meets .y
+
+![target-size](target-size-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="bar"><button class="x" aria-label="Close"></button><button class="y" aria-label="Menu"></button></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.bar{display:grid;grid-template-columns:16px 16px;column-gap:2px}.x,.y{appearance:none;display:block;width:16px;height:16px;padding:0;border:0;min-width:0;min-height:0;background:#c33}
+```
+
+</details>
+
+## A button covered by a later box
+
+`E_A11Y_OCCLUDED` — viewport 672 × 690px
+
+> .a is covered by .b, which is painted later and receives the pointer
+
+![occluded](occluded-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="a" aria-label="Buy"></button><div class="b"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px;grid-template-rows:30px 30px}.a{appearance:none;display:block;height:60px;padding:0;border:0;min-width:0;min-height:0;background:#c33}.b{background:rgba(40,80,160,.9)}
+```
+
+</details>
+
+## outline: none without another focus style
+
+`E_A11Y_FOCUS_VISIBLE` — viewport 672 × 690px
+
+> .b shows no focus indicator: the outline is removed and nothing else changes on focus
+
+![focus-visible](focus-visible-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b" aria-label="Save"></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px}.b{appearance:none;display:block;height:44px;padding:0;border:0;min-width:0;min-height:0;background:#246}.b:focus{outline:none}
+```
+
+</details>
+
+## Grid placement that reverses the reading order
+
+`W_A11Y_ORDER` — viewport 672 × 690px
+
+> .b comes after .a in the DOM but is placed before it
+
+![visual-order](visual-order-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="row"><a class="a" href="/1" aria-label="First"></a><a class="b" href="/2" aria-label="Second"></a></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.row{display:grid;grid-template-columns:100px 100px;column-gap:8px}.a{grid-column:2;grid-row:1;display:block;height:44px;background:#9cf}.b{grid-column:1;grid-row:1;display:block;height:44px;background:#fc9}
+```
+
+</details>
+
+## An icon link with no accessible name
+
+`E_A11Y_NAME` — viewport 672 × 690px
+
+> .icon has no accessible name here: no rendered text and no aria-label, aria-labelledby or title
+
+![accessible-name](accessible-name-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><a class="icon" href="/cart"></a></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:44px}.icon{display:block;height:44px;background:#246}
+```
+
+</details>
+
+## Content that needs horizontal scrolling at 320px
+
+`E_A11Y_REFLOW` — viewport 320 × 690px
+
+> .table makes the page scroll horizontally at 320 CSS px
+
+![reflow](reflow-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="table"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.table{width:600px;height:80px;background:#c9f}
+```
+
+</details>
+
+## A badge that sticks out of its card
+
+`E_LAYOUT_PROTRUSION` — viewport 672 × 690px
+
+> .badge sticks out of its parent .card on the inline axis
+
+![protrusion](protrusion-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="card"><div class="badge"></div></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr);padding:24px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:80px;background:#eee}.badge{height:24px;background:#c33;transform:translate(20px,-16px)}
+```
+
+</details>
