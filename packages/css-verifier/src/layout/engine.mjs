@@ -2042,6 +2042,44 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     layoutWarnings.push({ code: 'W_LAYOUT_STICKY_INERT', severity: 'warning', box: row.box.label, path: row.path, parent: parent.box.label,
       message: `${row.box.label} is position: sticky, but its parent ${parent.box.label} ends at its bottom: it scrolls away like a static box. Make it a child of the scrolling content (or give the parent the height it should stick across)`, ...ranges(shared) });
   }
+  // An img whose srcset has width descriptors picks its file by the sizes attribute's width (× the pixel ratio): a
+  // sizes width below the width the image is laid out at selects a file too small for its box (a blurry image).
+  // sizes is evaluated like the layout: its media conditions split the region, its lengths are viewport-affine.
+  if (hovered === undefined && !options.$animationFrame && !options.$slideVariant) for (const row of sizes) {
+    const box = boxes.find(b => b.path === row.path);
+    const facts = box?.tag === 'img' ? box.imageSize : null;
+    if (!facts || typeof facts.srcset !== 'string' || !/\d+w\s*(?:,|$)/.test(facts.srcset) || !row.$shown?.region) continue;
+    if (facts.sizes === undefined || facts.sizes === 'dynamic' || /^\s*auto\b/i.test(facts.sizes)) continue;
+    const entries = []; let depth = 0, start = 0;
+    for (let i = 0; i <= facts.sizes.length; i++) { const c = facts.sizes[i]; if (c === '(') depth++; else if (c === ')') depth--; else if ((c === ',' && depth === 0) || i === facts.sizes.length) { entries.push(facts.sizes.slice(start, i).trim()); start = i + 1; } }
+    let pending = [{ region: row.$shown.region }], findings = [];
+    try {
+      for (const entry of entries.filter(Boolean)) {
+        const m = /^(\(.*\))\s+(\S.*)$/.exec(entry);
+        const [media, len] = m ? [m[1], m[2]] : [null, entry];
+        const next = [];
+        for (const piece of pending) {
+          let yes = [piece.region], no = [];
+          if (media) {
+            // Split by every atom, then classify each piece at a sample point (as the cascade does).
+            const compiled = context(parseCondition(media, 'media'), []);
+            let parts = [piece.region];
+            for (const atom of compiled.groups.flat()) parts = parts.flatMap(r => { const p = partition(r, atom.slack, atom.relation); return [...p.yes, ...p.no]; });
+            const holds = r => { const p = sample(r); return compiled.groups.some(group => group.every(atom => compare(cmp(evaluate(atom.slack, p), zero), atom.relation))); };
+            yes = parts.filter(holds); no = parts.filter(r => !holds(r));
+          }
+          for (const r of yes) for (const L of lengthPieces(len, null, r, {})) { const short = clip(L.region, diff(row.$shown.inline, L.value), true); if (short) findings.push({ region: short, L: L.value }); }
+          next.push(...no.map(region => ({ region })));
+        }
+        pending = next;
+        if (!pending.length) break;
+      }
+    } catch { continue; }
+    for (const { region: short, L } of findings.slice(0, 8)) { const p = sample(short);
+    if (layoutWarnings.filter(w => w.code === 'W_LAYOUT_SIZES_SMALL' && w.path === row.path).length >= 8) break;
+    layoutWarnings.push({ code: 'W_LAYOUT_SIZES_SMALL', severity: 'warning', box: row.box, path: row.path, sizes: facts.sizes,
+      message: `${row.box} is laid out ${number(evaluate(row.$shown.inline, p))}px wide at viewport ${number(p.x)}px but its sizes attribute says ${number(evaluate(L, p))}px: the browser picks a srcset file for the smaller width, so the image is upscaled (blurry). Make sizes match the layout width`, ...ranges(short) }); }
+  }
   // A lazily loaded image in the initial viewport (its layout top above the viewport height somewhere, at the
   // initial scroll position): it starts loading only after layout, later than an eager one, which delays the largest
   // contentful paint when it is the hero image. Reported as a warning with the region where it is visible.

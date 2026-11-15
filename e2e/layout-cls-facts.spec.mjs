@@ -284,3 +284,22 @@ test('sticky boxes without room in their parent never stick, as the static warni
     expect(warned, `${name}: static ${warned}, Chromium top after scrolling 100px: ${top}`).toBe(top < 0);
   }
 });
+
+test('sizes narrower than the layout width: the static warning agrees with the file Chromium picks', async ({page}) => {
+  await page.route(/\/w\d+\.png$/, route => route.fulfill({body: png, contentType: 'image/png'}));
+  const srcset = Array.from({length: 200}, (_, i) => `/w${(i + 1) * 10}.png ${(i + 1) * 10}w`).join(', ');
+  const css = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}img{display:block;width:100%;height:auto}@media (min-width:900px){.page{grid-template-columns:600px}}';
+  for (const sizes of ['50vw', '100vw', '(min-width: 900px) 500px, 100vw', '(min-width: 900px) 600px, 100vw', 'calc(100vw - 40px)']) {
+    const html = `<div class="page"><img src="/w400.png" srcset="${srcset}" sizes="${sizes}" width="400" height="200" alt=""></div>`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280}});
+    for (const width of [400, 800, 1000, 1280]) {
+      await page.setViewportSize({width, height: 600});
+      await page.route('http://sizes.test/', route => route.fulfill({contentType: 'text/html', body: `<!doctype html><html lang="en"><head><style>${css}</style></head><body style="margin:0">${html}</body></html>`}));
+      await page.goto('http://sizes.test/');
+      await page.unroute('http://sizes.test/');
+      const {picked, rendered} = await page.evaluate(async () => { const i = document.querySelector('img'); await i.decode().catch(() => {}); return {picked: Number(/w(\d+)\.png/.exec(i.currentSrc)[1]), rendered: i.getBoundingClientRect().width}; });
+      const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_SIZES_SMALL' && width >= w.range.min && width <= w.range.max && !(width === w.range.max && !w.range.maxInclusive) && !(width === w.range.min && !w.range.minInclusive));
+      expect(warned, `${sizes} at ${width}: static ${warned}, Chromium picked ${picked}w for ${rendered}px`).toBe(picked < rendered);
+    }
+  }
+});

@@ -48,3 +48,16 @@ test('video: width/height attributes and aspect-ratio reserve its box like an im
   // No reservation: the natural size arrives with the metadata, so the height is not decided.
   assert.equal(video('').status, 'unknown');
 });
+
+test('a sizes width below the layout width is a W_LAYOUT_SIZES_SMALL warning in those regions', () => {
+  const scss = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}img{display:block;width:100%;height:auto}@media (min-width:900px){.page{grid-template-columns:600px}}';
+  const regions = sizes => (analyzeHTML(`<div class="page"><img src="/a.png" srcset="/a.png 400w, /b.png 800w" sizes="${sizes}" width="400" height="200" alt=""></div>`, {name: 'P', css: scss, viewport: {min: 320, max: 1280}}).layoutWarnings ?? [])
+    .filter(w => w.code === 'W_LAYOUT_SIZES_SMALL').map(w => [w.range.min, w.range.max]).sort((a, b) => a[0] - b[0]);
+  assert.deepEqual(regions('100vw'), []);
+  assert.deepEqual(regions('(min-width: 900px) 600px, 100vw'), []);
+  assert.deepEqual(regions('50vw'), [[320, 900], [900, 1200]]); // 50vw < W below 900px, < 600px up to 1200px
+  assert.deepEqual(regions('(min-width: 900px) 500px, 100vw'), [[900, 1280]]);
+  assert.deepEqual(regions('calc(100vw - 20px)'), [[320, 900]]);
+  // Density descriptors and sizes=auto are not sized by the attribute.
+  assert.equal(analyzeHTML('<div class="page"><img src="/a.png" srcset="/b.png 2x" sizes="10vw" width="400" height="200" alt=""></div>', {name: 'P', css: scss, viewport: {min: 320, max: 1280}}).layoutWarnings, undefined);
+});
