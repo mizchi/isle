@@ -41,10 +41,10 @@ test('-webkit-line-clamp caps a text leaf at N lines and warns where text is cut
   const clamped = run('display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden');
   assert.equal(clamped.status, 'verified', JSON.stringify(clamped.diagnostics));
   assert.deepEqual(clamped.sizes.filter(r => r.box === '.t').map(r => [r.range.min, r.blockSize.constant]).sort((a, b) => a[0] - b[0]), [[320, '40'], [600, '20']]);
-  const [cut] = clamped.layoutWarnings;
+  const [cut] = clamped.layoutWarnings.filter(w => w.code !== 'W_LAYOUT_LINE_HEIGHT_FIXED');
   assert.deepEqual([cut.code, cut.lines, cut.range.min, cut.range.max], ['W_LAYOUT_LINE_CLAMPED', 2, 320, 600]);
   // Enough lines: nothing is cut.
-  assert.equal(run('display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden').layoutWarnings, undefined);
+  assert.equal(run('display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden').layoutWarnings?.filter(w => w.code !== 'W_LAYOUT_LINE_HEIGHT_FIXED').length ?? 0, 0);
   // Outside the legacy clamp (no vertical orient, the unprefixed property): Unknown.
   assert.equal(run('display:-webkit-box;-webkit-line-clamp:2').status, 'unknown');
   assert.equal(run('line-clamp:2').status, 'unknown');
@@ -93,7 +93,7 @@ test('text-overflow: ellipsis is intended one-line truncation (W_LAYOUT_TRUNCATE
   const run = css => analyzeHTML('<div class="page"><p class="t">long</p></div>', {name: 'P', css: '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{white-space:nowrap;overflow:hidden;line-height:20px}' + css, viewport: {min: 320, max: 800}, boxes: {'.t': {minInlineSize: 500, intrinsicBlockSize: 20}}});
   const ellipsis = run('.t{text-overflow:ellipsis}');
   assert.equal(ellipsis.status, 'verified', JSON.stringify(ellipsis.diagnostics));
-  assert.deepEqual(ellipsis.layoutWarnings.map(w => [w.code, w.range.min, w.range.max]), [['W_LAYOUT_TRUNCATED', 320, 500]]);
+  assert.deepEqual(ellipsis.layoutWarnings.filter(w => w.code !== 'W_LAYOUT_LINE_HEIGHT_FIXED').map(w => [w.code, w.range.min, w.range.max]), [['W_LAYOUT_TRUNCATED', 320, 500]]);
   assert.equal(run('').diagnostics[0].code, 'E_LAYOUT_CONTENT');
   // Wrapping text is not truncated by text-overflow.
   assert.equal(run('.t{text-overflow:ellipsis;white-space:normal}').diagnostics[0]?.code, 'E_LAYOUT_CONTENT');

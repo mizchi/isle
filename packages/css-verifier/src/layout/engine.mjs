@@ -481,6 +481,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function validate(style, box, region, emit, available = {}) {
     if (style.display === 'none') return false;
     if(box.whitespace && !['normal','nowrap'].includes(style['white-space'])) throw new Error('Preserved whitespace needs explicit text geometry from the input adapter');
+    // A px line-height on text whose font-size follows the user's default font size (no px root size and a
+    // relative size, or a keyword such as medium): a larger default grows the glyphs, not the line, so wrapped lines
+    // overlap. Unitless or em line-heights grow with the text.
+    if ((box.text || box.inline?.length) && !box.pseudo && emit && /^\d+(?:\.\d+)?px$/.test(String(style['line-height'])) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_LINE_HEIGHT_FIXED' && w.path === box.path)) {
+      const size = String(style['font-size']);
+      const keyword = /^(?:medium|small|large|x-small|x-large|xx-small|xx-large|xxx-large|smaller|larger|ua)$/.test(size);
+      const scales = !/^\d+(?:\.\d+)?px$/.test(size) && (keyword || !unitContext.rootFontSize);
+      if (scales) layoutWarnings.push({ code: 'W_LAYOUT_LINE_HEIGHT_FIXED', severity: 'warning', box: box.label, path: box.path, lineHeight: style['line-height'], fontSize: size,
+        message: `${box.label} has line-height: ${style['line-height']} but font-size: ${size === 'ua' ? 'the UA default' : size}, which follows the user's default font size: with a larger default the text grows and the lines do not, so wrapped lines overlap. Use a unitless line-height (e.g. 1.5)`, ...ranges(region) });
+    }
     // A font-size in viewport units alone (or mostly): page zoom shrinks the viewport in CSS px, so the text does not
     // grow with zoom; where 200% zoom shows it below twice its size it fails SC 1.4.4 unless it is resized otherwise.
     // Judged on the declaring element (descendants inherit the computed px). Evaluated at every whole px of width.

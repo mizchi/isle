@@ -1245,6 +1245,19 @@
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.t{line-height:20px;hyphens:auto}"
  },
  {
+  "id": "line-height-fixed",
+  "title": "A px line-height under the default font size",
+  "code": "W_LAYOUT_LINE_HEIGHT_FIXED",
+  "width": 0,
+  "height": 0,
+  "message": ".t has line-height: 20px but font-size: 1rem, which follows the user's default font size: with a larger default the text grows and the lines do not, so wrapped lines overlap. Use a unitless line-height (e.g. 1.5)",
+  "shots": [
+   "line-height-fixed-markup.png"
+  ],
+  "html": "<main class=\"page\"><p class=\"t\">Text</p></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.t{display:block;font-size:1rem;line-height:20px}"
+ },
+ {
   "id": "font-zoom",
   "title": "A heading sized only in vw",
   "code": "W_LAYOUT_FONT_ZOOM",

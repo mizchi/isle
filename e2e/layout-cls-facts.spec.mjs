@@ -506,3 +506,19 @@ test('font-size under 200% zoom (half the CSS width at twice the pixel ratio): s
     }
   }
 });
+
+test('px line-height: with a 32px default font size the glyphs outgrow the line in Chromium exactly where the static check warns', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Page.enable');
+  await cdp.send('Page.setFontSizes', {fontSizes: {standard: 32}});
+  for (const [css, warn] of [['.t{font-size:1rem;line-height:20px}', true], ['.t{line-height:20px}', true], ['.t{font-size:1rem;line-height:1.25}', false], ['.t{font-size:16px;line-height:20px}', false], ['html{font-size:16px}.t{font-size:1rem;line-height:20px}', false]]) {
+    const full = `*{box-sizing:border-box;margin:0}html,body,.page{${g}}.t{display:block}${css}`;
+    const report = analyzeHTML('<html lang="en"><body><main class="page"><p class="t">Text</p></main></body></html>', {name: 'P', css: full, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, boxes: {'.t': {minInlineSize: 40, intrinsicBlockSize: 20}}});
+    const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_LINE_HEIGHT_FIXED');
+    expect(warned, css).toBe(warn);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${full}</style></head><body><main class="page"><p class="t">Text</p></main></body></html>`);
+    const [fontSize, lineHeight] = await page.evaluate(() => { const s = getComputedStyle(document.querySelector('.t')); return [parseFloat(s.fontSize), parseFloat(s.lineHeight)]; });
+    expect(fontSize > lineHeight, `${css}: font ${fontSize}px, line ${lineHeight}px at a 32px default`).toBe(warn);
+  }
+});

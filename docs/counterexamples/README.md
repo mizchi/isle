@@ -1888,6 +1888,26 @@ html{overflow-y:auto}.hero{height:100px;width:100vw}.tall{height:3000px}
 
 </details>
 
+## A px line-height under the default font size
+
+`W_LAYOUT_LINE_HEIGHT_FIXED` — markup rule (nothing to see on screen)
+
+> .t has line-height: 20px but font-size: 1rem, which follows the user's default font size: with a larger default the text grows and the lines do not, so wrapped lines overlap. Use a unitless line-height (e.g. 1.5)
+
+![line-height-fixed](line-height-fixed-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><p class="t">Text</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{display:block;font-size:1rem;line-height:20px}
+```
+
+</details>
+
 ## A heading sized only in vw
 
 `W_LAYOUT_FONT_ZOOM` — markup rule (nothing to see on screen)
