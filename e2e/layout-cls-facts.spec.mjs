@@ -597,3 +597,20 @@ test('an img sized by its width attribute: wider than its container in Chromium 
     expect(out, `${c} ${attrs}`).toBe(warn);
   }
 });
+
+test('a long word: the text overflows its 200px box in Chromium exactly where the static check warns, and overflow-wrap: anywhere fixes it', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const word = 'https://example.com/a/very/long/path/to/a/resource';
+  await page.setContent(`<span style="font:16px/20px sans-serif;white-space:nowrap">${word}</span>`);
+  const width = Math.ceil(await page.evaluate(() => document.querySelector('span').getBoundingClientRect().width));
+  for (const [wrap, warn] of [['normal', true], ['anywhere', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.page{display:grid;grid-template-columns:200px}.t{display:block;font:16px/20px sans-serif;overflow-wrap:${wrap}}`;
+    const html = `<main class="page"><p class="t">${word}</p></main>`;
+    // The measured longest unbreakable piece is the contract's minimum width (anywhere: any character may break).
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, boxes: {'.t': {minInlineSize: wrap === 'normal' ? width : 12, intrinsicBlockSize: 20}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_LONG_WORD'), wrap).toBe(warn);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const overflows = await page.evaluate(() => { const t = document.querySelector('.t'); return t.scrollWidth > t.clientWidth; });
+    expect(overflows, `overflow-wrap: ${wrap} (word ${width}px)`).toBe(warn);
+  }
+});

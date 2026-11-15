@@ -25,3 +25,12 @@ test('an img sized by its width attribute with no max-width overflows (W_LAYOUT_
   assert.deepEqual(codes(img('img{width:100%;height:auto}')), []);
   assert.deepEqual(codes(img('', 'width="200" height="100"')), []); // fits: no overflow to explain
 });
+
+test('a wrapping text whose longest word does not fit (W_LAYOUT_LONG_WORD)', () => {
+  const text = (css, contract = {minInlineSize: 300, intrinsicBlockSize: 20}) => analyzeHTML('<html lang="en"><body><main class="page"><p class="t">https://example.com/a/very/long/path</p></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.page{display:grid;grid-template-columns:200px}.t{display:block}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, boxes: {'.t': contract}});
+  const warned = r => (r.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_LONG_WORD').map(w => w.box);
+  assert.deepEqual(warned(text('')), ['.t']);
+  // nowrap text does not wrap at all: another cause, not reported here.
+  assert.deepEqual(warned(text('.t{white-space:nowrap}')), []);
+  assert.deepEqual(warned(text('', {minInlineSize: 150, intrinsicBlockSize: 20})), []);
+});
