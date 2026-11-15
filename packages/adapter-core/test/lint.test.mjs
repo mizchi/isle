@@ -86,3 +86,11 @@ test('lint on a block-flow Vue article: centered wrapper, margins, sr-only names
   // The back link is named by its sr-only text; the hidden text is not judged for fit or contrast.
   assert.ok(!found.some(([, code, line]) => line === 4 && ['E_A11Y_NAME', 'E_LAYOUT_CONTENT', 'W_LAYOUT_CLIPPED', 'U_A11Y_CONTRAST'].includes(code)), JSON.stringify(found));
 });
+
+test('assumed text follows the box tree: phrasing inside text is that text, not a box of its own (no crash)', async () => {
+  const {analyzeSvelte} = await import('../../svelte-adapter/src/index.mjs');
+  const source = '<article class="t"><p class="meta">Posted <strong>today</strong> by <a href="/me">me</a></p></article>\n<style>.t{display:block;padding:8px;background:#fff;color:#222}a{color:#246}</style>';
+  const result = analyzeSvelte(source, {pageCSS: '*{box-sizing:border-box;margin:0}', viewport, assumeText: true, accessibility: true, sourceLines: true});
+  assert.equal(result.coverage.assumptions.some(a => /1 text box/.test(a)), true, JSON.stringify(result.coverage));
+  assert.ok(lint(result, {file: 'T.svelte', source}).every(m => m.code !== 'E_LAYOUT_CONTENT'));
+});

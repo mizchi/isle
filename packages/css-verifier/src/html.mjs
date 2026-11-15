@@ -1,4 +1,6 @@
 import {accessibilityFacts} from './tree.mjs';
+// The tags whose elements inside a text-bearing element are its inline content (no boxes of their own).
+export {phrasingTags} from './tree.mjs';
 import {parse,parseFragment} from 'parse5';
 import {analyzeInput} from './analyze.mjs';
 

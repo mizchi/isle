@@ -1,7 +1,7 @@
 // The shared part of the component adapters (Svelte, Vue, React with StyleX or Linaria). An adapter turns one
 // component into its template states — { html, choices } with the conditions each takes — plus its CSS; this module
 // analyses every state with the generic core and reports what holds per state. The core knows nothing of components.
-import { analyzeHTML } from '@mizchi/css-verifier/html';
+import { analyzeHTML, phrasingTags } from '@mizchi/css-verifier/html';
 import { parseFragment, serialize } from 'parse5';
 
 /** Choices of two variants merge unless they take one condition both ways (that combination cannot happen). */
@@ -39,11 +39,16 @@ const page = html => `<html lang="en"><body>${html}</body></html>`;
 function markText(html, start = 0) {
   const fragment = parseFragment(html);
   let n = start;
+  // Phrasing elements (a, span, strong, …) inside an element with text of its own are its inline content (the box tree
+  // folds them into it): only that element is a text box.
+  const phrasing = node => phrasingTags.has(node.tagName) && (node.childNodes ?? []).filter(c => c.tagName).every(phrasing);
   const walk = node => {
     // An inline svg is one replaced box: its <title>/<text> are not CSS text boxes.
     if (node.tagName === 'svg') return;
-    for (const child of node.childNodes ?? []) walk(child);
-    if (node.tagName && (node.childNodes ?? []).some(c => c.nodeName === '#text' && c.value.trim())) {
+    const ownText = (node.childNodes ?? []).some(c => c.nodeName === '#text' && c.value.trim());
+    const folds = node.tagName && ownText && (node.childNodes ?? []).filter(c => c.tagName).every(phrasing);
+    if (!folds) for (const child of node.childNodes ?? []) walk(child);
+    if (node.tagName && ownText) {
       const id = `__text${n++}`, cls = node.attrs.find(a => a.name === 'class');
       if (cls) cls.value = `${cls.value} ${id}`.trim(); else node.attrs.push({ name: 'class', value: id });
     }
