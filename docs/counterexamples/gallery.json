@@ -148,6 +148,19 @@
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{display:block;width:100%;height:auto}"
  },
  {
+  "id": "truncated",
+  "title": "A product name cut with an ellipsis",
+  "code": "W_LAYOUT_TRUNCATED",
+  "width": 320,
+  "height": 480,
+  "message": ".t is cut with an ellipsis: its text needs 375.46875px but the box offers 240px at viewport 672px (keep the full text available, e.g. in its accessible name or the page it links to)",
+  "shots": [
+   "truncated-violation.png"
+  ],
+  "html": "<main class=\"page\"><p class=\"t\">Wireless noise-cancelling headphones, midnight blue</p></main>",
+  "css": ".page{display:grid;grid-template-columns:240px}.t{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#eef}"
+ },
+ {
   "id": "line-clamp",
   "title": "A two-line clamp that cuts the title",
   "code": "W_LAYOUT_LINE_CLAMPED",

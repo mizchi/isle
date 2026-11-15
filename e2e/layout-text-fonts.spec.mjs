@@ -622,3 +622,24 @@ test('-webkit-line-clamp caps wrapped text at N lines like Chromium, and warns e
     expect(warned, `cut at ${width}: static ${warned}, Chromium ${browser.cut}`).toBe(browser.cut);
   }
 });
+
+test('text-overflow: ellipsis warns exactly where Chromium truncates the line', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const ro = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
+  const content = 'Wireless noise-cancelling headphones, midnight blue';
+  const css = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:0 16px}.t{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
+  const html = `<div class="page"><p class="t">${content}</p></div>`;
+  const report = analyzeHTML(html, metrics.resolveOptions({name: 'P', css, viewport: {min: 200, max: 1280}, boxes: {'.t': {text: {font: ro, content}}}}));
+  expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+  const [warning] = (report.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_TRUNCATED');
+  for (const width of [200, 380, 400, 420, 1280]) {
+    await page.setViewportSize({width, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${css}</style></head><body style="margin:0">${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const cut = await page.evaluate(() => { const t = document.querySelector('.t'); return t.scrollWidth > t.clientWidth; });
+    const warned = Boolean(warning) && width >= warning.range.min && (width < warning.range.max || (width === warning.range.max && warning.range.maxInclusive));
+    // The static bound is a sufficient width: no warning means Chromium does not cut.
+    if (!warned) expect(cut, `${width}: no warning, Chromium cut ${cut}`).toBe(false);
+    if (cut) expect(warned, `${width}: Chromium cuts, static warned ${warned}`).toBe(true);
+  }
+});

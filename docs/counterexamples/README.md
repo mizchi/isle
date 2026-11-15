@@ -222,6 +222,26 @@ html{overflow-y:scroll}body{padding:0}.page{display:grid;grid-template-columns:m
 
 </details>
 
+## A product name cut with an ellipsis
+
+`W_LAYOUT_TRUNCATED` — viewport 320 × 480px
+
+> .t is cut with an ellipsis: its text needs 375.46875px but the box offers 240px at viewport 672px (keep the full text available, e.g. in its accessible name or the page it links to)
+
+![truncated](truncated-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><p class="t">Wireless noise-cancelling headphones, midnight blue</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:240px}.t{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#eef}
+```
+
+</details>
+
 ## A two-line clamp that cuts the title
 
 `W_LAYOUT_LINE_CLAMPED` — viewport 320 × 480px

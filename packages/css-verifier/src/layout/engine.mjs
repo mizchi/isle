@@ -882,7 +882,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       obligation(available.inline, inline, box, region, 'E_LAYOUT_ITEM_SIZE', 'inline', available.fitInline !== false, item('inline'));
       // A text domain reports how many characters still fit at the witness.
       const domain = contract.textMetrics?.kind === 'domain' ? offeredInline => ({ text: { maxLength: contract.textMetrics.maxLength, fitsUpTo: fittingLength(contract.textMetrics, offeredInline), widest: contract.textMetrics.widest } }) : undefined;
-      if (contract.minInlineSize !== undefined) obligation(contentInline, scalar(contract.minInlineSize), box, region, 'E_LAYOUT_CONTENT', 'inline', (contract.overflow ?? 'fit') === 'fit', content('inline', 'minInlineSize'), domain);
+      // A one-line text cut with an ellipsis (text-overflow: ellipsis, overflow hidden or clip, nowrap) is intended
+      // truncation: where the text needs more than the box, it is a warning, not a content violation.
+      const ellipsis = style['text-overflow'] === 'ellipsis' && ['hidden', 'clip'].includes(style['overflow-x']) && ['nowrap', 'pre'].includes(style['white-space']) && box.text;
+      if (ellipsis && contract.minInlineSize !== undefined && emit) {
+        const cut = clip(region, diff(scalar(contract.minInlineSize), contentInline), true);
+        if (cut && !layoutWarnings.some(w => w.code === 'W_LAYOUT_TRUNCATED' && w.path === box.path)) { const p = sample(cut); layoutWarnings.push({ code: 'W_LAYOUT_TRUNCATED', severity: 'warning', box: box.label, path: box.path,
+          message: `${box.label} is cut with an ellipsis: its text needs ${number(q(String(contract.minInlineSize)))}px but the box offers ${number(evaluate(contentInline, p))}px at viewport ${number(p.x)}px (keep the full text available, e.g. in its accessible name or the page it links to)`, ...ranges(cut) }); }
+      }
+      if (contract.minInlineSize !== undefined) obligation(contentInline, scalar(contract.minInlineSize), box, region, 'E_LAYOUT_CONTENT', 'inline', (contract.overflow ?? 'fit') === 'fit' && !ellipsis, content('inline', 'minInlineSize'), domain);
       if (block) {
         // The document root may be taller than the viewport when the viewport scrolls (html overflow-y not hidden/clip):
         // that is an ordinary long page. With overflow-y visible and a classic scrollbar profile the scrollbar would

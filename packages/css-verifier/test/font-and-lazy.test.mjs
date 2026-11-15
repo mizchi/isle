@@ -88,3 +88,14 @@ test('env(safe-area-inset-*) and a bottom bar under viewport-fit=cover (W_LAYOUT
   assert.match(run(', viewport-fit=cover', 'env(safe-area-inset-bottom)').diagnostics.find(d => d.severity === 'unknown').message, /safeArea/);
   assert.throws(() => run('', '0', {bottom: -1}), /safeArea/);
 });
+
+test('text-overflow: ellipsis is intended one-line truncation (W_LAYOUT_TRUNCATED), clip without it stays a violation', () => {
+  const run = css => analyzeHTML('<div class="page"><p class="t">long</p></div>', {name: 'P', css: '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{white-space:nowrap;overflow:hidden;line-height:20px}' + css, viewport: {min: 320, max: 800}, boxes: {'.t': {minInlineSize: 500, intrinsicBlockSize: 20}}});
+  const ellipsis = run('.t{text-overflow:ellipsis}');
+  assert.equal(ellipsis.status, 'verified', JSON.stringify(ellipsis.diagnostics));
+  assert.deepEqual(ellipsis.layoutWarnings.map(w => [w.code, w.range.min, w.range.max]), [['W_LAYOUT_TRUNCATED', 320, 500]]);
+  assert.equal(run('').diagnostics[0].code, 'E_LAYOUT_CONTENT');
+  // Wrapping text is not truncated by text-overflow.
+  assert.equal(run('.t{text-overflow:ellipsis;white-space:normal}').diagnostics[0]?.code, 'E_LAYOUT_CONTENT');
+  assert.equal(run('.t{text-overflow:fade}').status, 'unknown');
+});
