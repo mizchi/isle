@@ -31,13 +31,13 @@ export function generateCase(seed, { flex = false, minmax = false, margins = fal
     const margin = () => margins && r() < 0.5 ? Array.from({length: 4}, () => pick([0, 0, 4, 8, 16, 24])).map(v => `${v}px`).join(' ') : null;
     containers.push({id, ...rule, margin: inFlex ? null : margin()});
     const count = int(1, 4);
-    const children = Array.from({length: count}, () => depth < 3 && r() < 0.35 && kind === 'grid' ? container(depth + 1) : item(kind !== 'grid'));
+    const children = Array.from({length: count}, () => depth < 3 && r() < 0.35 && kind === 'grid' ? container(depth + 1) : item(kind !== 'grid', kind));
     return {id, children};
   };
-  const item = (inFlex = false) => {
+  const item = (inFlex = false, kind = 'grid') => {
     // Flex children are narrower (30–200px) so that a flex row both fits and overflows across the domain.
     const id = `i${n++}`, width = !inFlex && r() < 0.5 ? 'auto' : inFlex ? `${int(3, 20) * 10}px` : `${int(4, 45) * 10}px`, height = `${int(2, 9) * 10}px`;
-    items.push({id, width, height, inFlex, margin: !inFlex && margins && r() < 0.5 ? Array.from({length: 4}, () => pick([0, 0, 4, 8, 16, 24])).map(v => `${v}px`).join(' ') : null});
+    items.push({id, width, height, inFlex, margin: margins && kind !== 'column' && r() < 0.5 ? Array.from({length: 4}, () => pick([0, 0, 4, 8, 16, 24])).map(v => `${v}px`).join(' ') : null});
     return {id, children: []};
   };
   const root = container(0);

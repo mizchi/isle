@@ -97,12 +97,13 @@ test(`fuzz: no invisible region — static item-fit verdicts agree with Chromium
 });
 
 
-test('fuzz with flex rows and columns: a flex container overflows in Chromium exactly where the static check finds it does', async ({browser}) => {
+for (const [title, options] of [['', {flex: true}], [' (px margins on row items)', {flex: true, margins: true}]])
+test(`fuzz with flex rows and columns: a flex container overflows in Chromium exactly where the static check finds it does${title}`, async ({browser}) => {
   test.setTimeout(1_800_000);
   const tally = {cases: 0, unknown: 0, compared: 0, overflows: 0};
   const page = await (await browser.newContext()).newPage();
   for (let seed = first; seed < first + seeds; seed++) {
-    const c = generateCase(seed, {flex: true});
+    const c = generateCase(seed, options);
     if (!c.flexContainers.length) continue;
     tally.cases++;
     const report = analyzeHTML(c.html, {name: 'P', css: c.css, viewport: {min: 320, max: 1024, height: {min: 480, max: 900}}, devicePixelRatios: [1], scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});

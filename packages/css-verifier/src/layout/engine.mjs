@@ -633,8 +633,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // Main-axis auto margins of flex items absorb free space (resolved by the flex line).
     // A grid item may also have px margins: its grid area less the margins is what it is laid out in (margins of grid
     // and flex items never collapse).
-    const marginOk = (key, axis) => style[key] === '0' || (style[key] === 'auto' && available.flexItem?.main === axis) || (available.gridItem && /^\d+(?:\.\d+)?px$/.test(String(style[key]))) || (available.gridItem && axis === 'inline' && style[key] === 'auto' && available.autoMargins);
-    if (available.flexItem && ['margin-left', 'margin-right', 'margin-top', 'margin-bottom'].some(key => /px$/.test(String(style[key])))) throw Object.assign(new Error('px margins on flex items are outside the subset (only zero or auto margins are modeled there)'), { code: 'U_LAYOUT_FLEX' });
+    const marginOk = (key, axis) => style[key] === '0' || (style[key] === 'auto' && available.flexItem?.main === axis) || ((available.gridItem || available.flexItem?.main === 'inline') && /^\d+(?:\.\d+)?px$/.test(String(style[key]))) || (available.gridItem && axis === 'inline' && style[key] === 'auto' && available.autoMargins);
+    // px margins on items of a row flex container are modeled (layoutFlex adds them to the outer sizes); a column's not.
+    if (available.flexItem && available.flexItem.main !== 'inline' && ['margin-left', 'margin-right', 'margin-top', 'margin-bottom'].some(key => /px$/.test(String(style[key])))) throw Object.assign(new Error('px margins on items of a column flex container are outside the subset (only zero or auto margins are modeled there)'), { code: 'U_LAYOUT_FLEX' });
     if (['margin-left', 'margin-right'].some(key => !marginOk(key, 'inline'))) throw new Error(available.flexItem && ['margin-left', 'margin-right'].some(key => style[key] === 'auto') ? 'Cross-axis auto margins of a flex item are outside the subset' : 'Only known zero inline margins are supported');
     if (block && ['margin-top', 'margin-bottom'].some(key => !marginOk(key, 'block'))) throw new Error(available.flexItem && ['margin-top', 'margin-bottom'].some(key => style[key] === 'auto') ? 'Cross-axis auto margins of a flex item are outside the subset' : 'Reset native block margins explicitly before block checking');
     if (!['static', 'relative', 'absolute'].includes(style.position) || style['writing-mode'] !== 'horizontal-tb' || !['ltr', 'rtl'].includes(style.direction)) throw new Error('Only static/relative/local-absolute horizontal-tb boxes are supported');
@@ -828,7 +829,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     return results;
   }
   // ---- flex layout (ADR-0011) ----------------------------------------------
-  const constantItem = item => ({ ...item, base: scalar(item.base), minimum: scalar(item.minimum), maximum: item.maximum !== undefined ? scalar(item.maximum) : null, innerBase: sub(item.base, item.edges) });
+  const constantItem = item => ({ ...item, base: scalar(item.base), minimum: scalar(item.minimum), maximum: item.maximum !== undefined ? scalar(item.maximum) : null, innerBase: sub(sub(item.base, item.edges), item.marginMain ?? zero) });
   // Greedy line breaking by outer hypothetical sizes (constants), split by width thresholds.
   function breakLines(region, available, hypothetical, gap) {
     const n = hypothetical.length, done = [];
@@ -887,11 +888,25 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const align = crossAlignment(style['align-items'], child.style['align-self']);
           // A column item that is not stretched is as wide as its own px width.
           if (main === 'block' && align !== 'stretch' && !/^\d+(?:\.\d+)?px$/.test(child.style['inline-size'])) throw flexUnknown('A column item that is not stretched (align) shrink-wraps its content; give it a px width');
-          return { child, item: flexItem(child.style, { empty: !child.box.text && !child.box.children.length, axis: main }), align };
+          // px margins of a row item: its outer main size (base, minimum, maximum) includes them; layoutFlex lays the
+          // item out inside them on both axes.
+          const m = side => /^\d+(?:\.\d+)?px$/.test(String(child.style[`margin-${side}`])) ? px(child.style[`margin-${side}`]) : zero;
+          const margins = { left: m('left'), right: m('right'), top: m('top'), bottom: m('bottom') };
+          let item = flexItem(child.style, { empty: !child.box.text && !child.box.children.length, axis: main });
+          const marginMain = add(margins.left, margins.right);
+          if (main === 'inline' && cmp(add(marginMain, add(margins.top, margins.bottom)), zero) !== 0) {
+            if ((item.autoStart || item.autoEnd) && cmp(marginMain, zero) !== 0) throw flexUnknown('A row item with both auto and px inline margins is outside the subset');
+            if (style.direction === 'rtl' && cmp(margins.left, margins.right) !== 0) throw flexUnknown('Unequal inline margins of a flex item in rtl are outside the subset');
+            item = { ...item, base: add(item.base, marginMain), minimum: add(item.minimum, marginMain), ...(item.maximum !== undefined ? { maximum: add(item.maximum, marginMain) } : {}), marginMain };
+          }
+          return { child, item, align, margins };
         } catch (error) { error.box ??= child.box; throw error; }
       });
       const inheritedOf = entry => entry.child.inherited ?? style;
-      const itemAvailable = (entry, extra) => ({ ...extra, flexItem: { main }, ...(main === 'block' ? { flexBlockMinimum: true } : {}),
+      const itemAvailable = (entry, extra) => ({ ...extra,
+        ...(main === 'inline' && entry.margins ? { ...(extra.inline ? { inline: diff(extra.inline, scalar(add(entry.margins.left, entry.margins.right))) } : {}), ...(extra.block ? { block: diff(extra.block, scalar(add(entry.margins.top, entry.margins.bottom))) } : {}),
+          ...(extra.origin ? { origin: { inline: sum(extra.origin.inline, scalar(entry.margins.left)), block: sum(extra.origin.block, scalar(entry.margins.top)) } } : {}), marginEnd: { inline: entry.margins.right, block: entry.margins.bottom } } : {}),
+        flexItem: { main }, ...(main === 'block' ? { flexBlockMinimum: true } : {}),
         ...(entry.align !== 'stretch' ? (main === 'inline' ? { alignBlock: entry.align } : { alignInline: entry.align }) : {}) });
       if (main === 'inline') {
         const items = model.map(entry => constantItem(entry.item));
@@ -903,7 +918,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             .flatMap(r => mainStarts(r.region, r.values, r.free, indices.map(i => items[i]), mainGap, main, style['justify-content'])
               .map(m => ({ region: m.region, lines: [...c.lines, { indices, values: r.values, starts: m.starts }] })))));
           for (const combo of combos) {
-            for (const line of combo.lines) if (emit) obligation(contentInline, sum(total(line.values), scalar(gaps(mainGap, line.indices.length))), box, combo.region, 'E_LAYOUT_TRACKS', 'inline', fitInline, explainTracks('inline'));
+            // The last item's end margin may stick out (it hides nothing; measured for grid and flex items).
+            for (const line of combo.lines) if (emit) obligation(contentInline, diff(sum(total(line.values), scalar(gaps(mainGap, line.indices.length))), scalar(line.indices.length ? model[line.indices.at(-1)].margins.right : zero)), box, combo.region, 'E_LAYOUT_TRACKS', 'inline', fitInline, explainTracks('inline'));
             if (!block) {
               let endings = [combo.region];
               for (const line of combo.lines) line.indices.forEach((i, k) => { endings = bounded(endings.flatMap(r => solve(model[i].child.box, itemAvailable(model[i], { inline: line.values[k], fitInline }), r, ancestors, inheritedOf(model[i]), emit).map(result => result.region))); });
@@ -914,7 +930,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             let measured = [{ region: combo.region, sizes: combo.lines.map(() => scalar(0)) }];
             if (wrap || !knownBlock) combo.lines.forEach((line, l) => line.indices.forEach((i, k) => {
               measured = bounded(measured.flatMap(m => solve(model[i].child.box, itemAvailable(model[i], { inline: line.values[k] }), m.region, ancestors, inheritedOf(model[i]), false)
-                .flatMap(result => maximum(result.region, m.sizes[l], result.block).map(mx => ({ region: mx.region, sizes: m.sizes.map((v, j) => j === l ? mx.value : v) })))));
+                .flatMap(result => maximum(result.region, m.sizes[l], sum(result.block, scalar(add(model[i].margins.top, model[i].margins.bottom)))).map(mx => ({ region: mx.region, sizes: m.sizes.map((v, j) => j === l ? mx.value : v) })))));
             }));
             else measured = [{ region: combo.region, sizes: [knownBlock] }];
             for (const m of measured) {
