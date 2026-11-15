@@ -85,8 +85,11 @@ test('a document taller than the viewport scrolls it: decided with a scrollbar p
   assert.equal(page('', overlay).status, 'verified');
   // Without a profile the scrollbar's width is not known: Unknown.
   assert.match(page('').diagnostics[0].message, /declare scrollbar profiles/);
-  // overflow-y: visible with a classic scrollbar is not laid out narrowed: still required to fit.
-  assert.equal(page('', classic).status, 'violated');
+  // overflow-y: visible with a classic scrollbar: the page scrolls and the scrollbar narrows it, which is laid out
+  // for an explicit html overflow-y: auto (the same in a browser): Unknown here, verified there.
+  assert.equal(page('', classic).status, 'unknown');
+  assert.match(page('', classic).diagnostics[0].message, /overflow-y: auto or scroll/);
+  assert.equal(page('html{overflow-y:auto}', classic).status, 'verified');
   // A hidden root cannot scroll: content past the viewport is unreachable.
   assert.equal(page('html{overflow:hidden}', overlay).diagnostics[0].code, 'E_LAYOUT_ITEM_SIZE');
   // A page that fits needs no profile.

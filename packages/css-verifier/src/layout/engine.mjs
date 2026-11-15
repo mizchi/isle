@@ -952,6 +952,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // Without a scrollbar profile, a root taller than the viewport scrolls with a platform scrollbar of unknown width.
         if (box.documentRoot && available.root && available.block && !['hidden', 'clip', 'auto', 'scroll'].includes(style['overflow-y']) && scrollbarProfile === undefined && clip(region, diff(blockSize, available.block), true))
           throw Object.assign(new Error(`${box.label} is taller than the viewport, so the viewport scrolls: declare scrollbar profiles (the scrollbars option) for the platforms the page is checked on`), { code: 'U_LAYOUT_SCROLLBAR' });
+        // With a classic scrollbar and overflow-y visible, a long page scrolls too (the root's visible is the viewport's
+        // auto), and the scrollbar narrows it; that narrowing is laid out only for an explicit auto or scroll, so a
+        // root taller than the viewport here is Unknown, not a violation (the page does scroll in a browser).
+        if (box.documentRoot && available.root && available.block && !['hidden', 'clip', 'auto', 'scroll'].includes(style['overflow-y']) && scrollbarProfile?.inlineSize > 0 && clip(region, diff(blockSize, available.block), true))
+          throw Object.assign(new Error(`${box.label} is taller than the viewport, so the viewport scrolls and its ${scrollbarProfile.name ?? 'classic'} scrollbar (${scrollbarProfile.inlineSize}px) narrows the page; that is laid out when html sets overflow-y: auto or scroll (the same in a browser)`), { code: 'U_LAYOUT_SCROLLBAR' });
         if (available.block) obligation(available.block, blockSize, box, region, 'E_LAYOUT_ITEM_SIZE', 'block', available.fitBlock !== false && !viewportScrolls, item('block'));
         if (contract.minBlockSize !== undefined) (box.tableCell && (contract.overflowBlock ?? 'fit') === 'fit' ? cellGrows : obligation)(contentBlock, scalar(contract.minBlockSize), box, region, 'E_LAYOUT_CONTENT', 'block', (contract.overflowBlock ?? 'fit') === 'fit', content('block', 'minBlockSize'));
       }
@@ -1033,7 +1038,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           css: reasons.map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
           message: `${box.label}: ${reasons.map(([key, why]) => `${key}: ${style[key]} has no effect (${why})`).join('; ')}`, ...ranges(region) });
       }
-      geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, ...(style.$imageRatio ? { imageRatio: style.$imageRatio } : {}), clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
+      geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, ...(/\dvw\b|\bvw\)/.test(String(style.$sources?.['inline-size']?.specified ?? '')) ? { vwInline: style.$sources['inline-size'].specified } : {}), ...(style.$imageRatio ? { imageRatio: style.$imageRatio } : {}), clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
         // overflow: clip clips without scrolling (hidden still scrolls a focused descendant into view).
         clipAxes: { inline: style['overflow-x'] === 'clip', block: style['overflow-y'] === 'clip' },
@@ -2231,6 +2236,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       layoutWarnings.push({ code: 'W_LAYOUT_IMAGE_DISTORTED', severity: 'warning', box: row.box.label, path: row.path, natural: `${w}/${h}`, basis: row.imageRatio.basis, stretched: way,
         message: `${row.box.label} is drawn ${iw}×${ih}px at viewport ${number(p.x)}px, but its picture is ${w}×${h} (${row.imageRatio.basis === 'file' ? 'the file' : 'its width/height attributes'}): object-fit: fill stretches it ${way}. Use object-fit: cover (or contain), or let one size be auto`, ...ranges(found) });
     }
+  }
+  // A vw width is a share of the whole viewport, the classic scrollbar included: on a scrolling page it is wider
+  // than the space beside the scrollbar (100vw → a horizontal scrollbar). Explains the inline E_LAYOUT_ITEM_SIZE.
+  if (hovered === undefined && !options.$animationFrame && !options.$slideVariant && scrollbarProfile?.inlineSize > 0) for (const row of geometry.filter(row => row.vwInline)) {
+    const failed = diagnostics.find(d => d.code === 'E_LAYOUT_ITEM_SIZE' && d.path === row.path && d.axis === 'inline');
+    if (!failed || layoutWarnings.some(w => w.code === 'W_LAYOUT_VW_SCROLLBAR' && w.path === row.path)) continue;
+    layoutWarnings.push({ code: 'W_LAYOUT_VW_SCROLLBAR', severity: 'warning', box: row.box.label, path: row.path, width: row.vwInline, scrollbar: scrollbarProfile.inlineSize,
+      message: `${row.box.label} is width: ${row.vwInline}, and vw includes the ${scrollbarProfile.inlineSize}px classic scrollbar of the scrolling page: it is wider than the page beside the scrollbar, which scrolls sideways. Use 100% (or width: auto in a grid or flex parent)`, range: failed.range, ...(failed.heightRange ? { heightRange: failed.heightRange } : {}) });
   }
   // A lazily loaded image in the initial viewport (its layout top above the viewport height somewhere, at the
   // initial scroll position): it starts loading only after layout, later than an eager one, which delays the largest

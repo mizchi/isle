@@ -1151,6 +1151,19 @@
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.row{display:flex;column-gap:8px}.c{width:80px;height:60px;background:#246}.wide{grid-column:span 2;background:#c33}"
  },
  {
+  "id": "vw-scrollbar",
+  "title": "width: 100vw on a page with a classic scrollbar",
+  "code": "W_LAYOUT_VW_SCROLLBAR",
+  "width": 0,
+  "height": 0,
+  "message": ".hero is width: 100vw, and vw includes the 15px classic scrollbar of the scrolling page: it is wider than the page beside the scrollbar, which scrolls sideways. Use 100% (or width: auto in a grid or flex parent)",
+  "shots": [
+   "vw-scrollbar-markup.png"
+  ],
+  "html": "<div class=\"hero\"></div><div class=\"tall\"></div>",
+  "css": "html{overflow-y:auto}.hero{height:100px;width:100vw}.tall{height:3000px}"
+ },
+ {
   "id": "hyphens-no-lang",
   "title": "hyphens: auto on a page with no lang",
   "code": "W_LAYOUT_HYPHENS_NO_LANG",

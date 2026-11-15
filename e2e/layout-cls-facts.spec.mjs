@@ -424,3 +424,26 @@ test('inert declarations: where the static check warns, Chromium lays the page o
     expect((await rects(true)) === (await rects(false)), `${target}{${decl}} in ${parent}: same layout without it`).toBe(warn);
   }
 });
+
+test('100vw with a classic scrollbar: the page scrolls sideways in Chromium exactly where the static check warns', async ({playwright}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  // Headless Chromium hides scrollbars by default; without --hide-scrollbars it draws classic 15px ones.
+  const browser = await playwright.chromium.launch({ignoreDefaultArgs: ['--hide-scrollbars']});
+  const page = await browser.newPage();
+  await page.setViewportSize({width: 480, height: 700});
+  await page.setContent('<!doctype html><html><body style="margin:0"><div style="height:3000px"></div></body></html>');
+  const scrollbar = await page.evaluate(() => innerWidth - document.documentElement.clientWidth);
+  expect(scrollbar).toBeGreaterThan(0);
+  const profile = [{name: 'classic', inlineSize: scrollbar, blockSize: scrollbar}];
+  for (const [hero, warn] of [['width:100vw', true], ['width:100%', false], ['width:calc(100vw - 40px)', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html{overflow-y:auto}html,body{${g}}body{margin:0}.hero{height:100px;${hero}}.tall{height:3000px}`;
+    const html = '<div class="hero"></div><div class="tall"></div>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, scrollbars: profile});
+    const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_VW_SCROLLBAR');
+    expect(warned, hero).toBe(warn);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const sideways = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+    expect(sideways, `${hero}: scrolls sideways ${sideways}, static warning ${warned} (scrollbar ${scrollbar}px)`).toBe(warn);
+  }
+  await browser.close();
+});

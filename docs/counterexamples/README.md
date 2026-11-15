@@ -1748,6 +1748,26 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## width: 100vw on a page with a classic scrollbar
+
+`W_LAYOUT_VW_SCROLLBAR` — markup rule (nothing to see on screen)
+
+> .hero is width: 100vw, and vw includes the 15px classic scrollbar of the scrolling page: it is wider than the page beside the scrollbar, which scrolls sideways. Use 100% (or width: auto in a grid or flex parent)
+
+![vw-scrollbar](vw-scrollbar-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<div class="hero"></div><div class="tall"></div>
+```
+
+```css
+html{overflow-y:auto}.hero{height:100px;width:100vw}.tall{height:3000px}
+```
+
+</details>
+
 ## hyphens: auto on a page with no lang
 
 `W_LAYOUT_HYPHENS_NO_LANG` — markup rule (nothing to see on screen)
