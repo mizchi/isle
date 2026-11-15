@@ -278,6 +278,10 @@ ancestor 入力は継承用であり、host の寸法を再計算する入力で
 
 CSS による通常の in-flow parent と child の関係を検査する。pure component と client island の root を追い、有限な動的 class/id・分岐・上限付き loop の集合を検査する。opaque children、inline style、reset/adapter のない native control 等は unknown。初期 SSR に存在する構造だけで将来の構造を判断しない。
 
+## block flow
+
+`display: block` の container で、子がすべて block レベルで、子に縦の margin がない場合は、行が伸びない(`align-content: start`)1 列の grid として配置する。子は上から積まれ、幅いっぱいに広がる。container に高さがあっても子は伸びない。% は container の幅に対して解決し、左右の margin はそのまま効く。grid の性質と gap は block には効かないので使わない。幅が auto で左右が `auto` margin の子は、幅いっぱいを `max-width` で抑えたうえで中央に置く(`max-width: 1200px; margin: 0 auto` のラッパー)。幅、%、左右の margin、padding、border、入れ子の grid、画像、auto margin について、Chromium での配置が同じであることを測った。inline レベルの子(行の配置)、子要素と混ざった直接のテキスト、縦の px margin(margin の相殺)は Unknown にする。Chromium の照合は 2 つある。`e2e/layout-flex.spec.mjs` は矩形の一致を確かめる。`e2e/layout-fuzz-visibility.spec.mjs` の block 版は、40 seed・4,348 件の判定の一致を確かめる。
+
 ## grid item の margin
 
 grid item には、負でない px の margin を書ける(grid と flex の margin は相殺しない)。item は、grid の領域から margin を引いた幅と高さの中に配置され、左上の margin の分だけずれる。auto の行は、item の margin を含めた大きさで決まる。収まるかどうかは、始端の margin と border box を合わせて領域と比べる。終端の margin がはみ出しても、何も隠れず、スクロールも起きない(Chromium で測った)。幅を指定した item(px か %、ltr)の inline の `auto` margin は、領域の空きを取って item を中央(両側 auto)か端へ寄せる。空きが負なら取らずに始端に置く(Chromium で測った)。幅が auto で `auto` margin の item は内容に合わせて縮むので、Unknown にする。flex の行(row)の item の px margin は、主軸の外側の大きさ(基準・最小・最大)に含め、item はその内側に配置する。交差軸では、伸びる大きさから margin を引き、行の高さは margin を含めて決める。行がはみ出したかどうかの判定では、最後の item の終端の margin を除く。負の margin、column の flex item の px margin、subgrid の margin、rtl で左右の値が異なる margin は Unknown にする。Chromium の照合は 2 つある。`e2e/layout-flex.spec.mjs` は、入れ子と auto の行を含めて矩形が一致することを確かめる。`e2e/layout-fuzz-visibility.spec.mjs` の margin 版は、40 seed・5,944 件で、item が収まるかどうかの判定が一致することを確かめる。flex の margin 版は、40 seed で、flex の行がはみ出すかどうかの判定が一致することを確かめる。

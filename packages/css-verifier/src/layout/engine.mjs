@@ -384,7 +384,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       let style;
       try {style=computeStyle(relevant,box,active,inherited,{spend,state});}
       catch(error) {error.box ??= box;throw error;}
-      if (gridItem && inherited && style.display === 'inline') style.display = 'block';
+      if (gridItem && inherited && style.display === 'inline') style = { ...style, display: 'block', $inlineLevel: true };
       // position: sticky with every inset auto never sticks (a sticky box is offset only by its inset properties):
       // it is laid out like position: relative, and the author probably forgot top: 0.
       if (style.$sticky && !box.pseudo && ['top', 'bottom', 'left', 'right'].every(side => style[side] === undefined || style[side] === 'auto')) {
@@ -2096,6 +2096,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                 }
                 continue;
               }
+              // Block flow: a display: block container whose children are all block-level, with no vertical margins
+              // to collapse, lays them out as a one-column grid whose rows do not stretch (align-content: start) —
+              // measured equal in Chromium for widths, %, horizontal margins, padding, borders, nested grids and images.
+              // Its gaps and grid properties do not apply. Auto margins with an auto width fill, cap and center (below).
+              if (style.display === 'block' && !box.text) style = { ...style, display: 'grid', 'grid-template-columns': 'minmax(0,1fr)', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'grid-auto-flow': 'row', 'grid-template-areas': 'none', 'align-content': 'start', 'justify-content': 'normal', 'align-items': 'normal', 'justify-items': 'normal', 'row-gap': 'normal', 'column-gap': 'normal', $blockFlow: true };
               if (!['grid', 'flex'].includes(style.display)) { issue('E_LAYOUT_CONTAINER', 'Layout containers must use grid or the flex subset', box, bs.region); continue; }
               const isFlex = style.display === 'flex';
               if (!isFlex && style['grid-auto-flow'] !== 'row') throw new Error('Only sparse row auto-placement is supported');
@@ -2193,6 +2198,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                 for (const children of childStates) {
                   if (!block && children.children.some(child=>child.style.position==='absolute')) throw new Error('Absolute boxes require both-axis analysis');
                   if (!columns.length && children.children.some(child=>child.style.position!=='absolute')) throw new Error('In-flow Grid children require explicit supported columns');
+                  if (style.$blockFlow) for (const child of children.children.filter(child => child.style.position !== 'absolute')) {
+                    if (child.style.$inlineLevel) throw Object.assign(new Error(`${child.box.label} is inline-level inside the block container ${box.label}: its line layout is not modeled (give it display: block, or make ${box.label} a grid or flex container)`), { code: 'U_LAYOUT_INLINE', box: child.box, region: children.region });
+                    if (['margin-top', 'margin-bottom'].some(key => /px$/.test(String(child.style[key])))) throw Object.assign(new Error(`${child.box.label} has a vertical margin inside the block container ${box.label}: margin collapsing is not modeled (use padding or gap in a grid)`), { code: 'U_LAYOUT_CSS', box: child.box, region: children.region });
+                  }
                   if (plan.fitItems !== undefined) {
                     const flow = children.children.filter(child => child.style.position !== 'absolute');
                     if (flow.length !== plan.fitItems || flow.some(child => child.style['grid-column'] !== 'auto' || child.style['grid-row'] !== 'auto'))
@@ -2225,13 +2234,22 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   // each), and none of it when it is negative (start-aligned; measured). With an auto width the item
                   // would shrink to fit its content: Unknown.
                   const autoMargins = item => ['margin-left', 'margin-right'].some(key => item.style[key] === 'auto');
-                  for (const item of placed) if (autoMargins(item)) {
+                  // In block flow an auto width fills the area, max-inline-size caps it, and the auto margins center it.
+                  const blockFill = item => style.$blockFlow && String(item.style['inline-size']) === 'auto' && /^(?:none|\d+(?:\.\d+)?px)$/.test(String(item.style['max-inline-size']));
+                  for (const item of placed) if (autoMargins(item) && !blockFill(item)) {
                     const w = String(item.style['inline-size']);
                     if (!/^\d+(?:\.\d+)?(?:px|%)$/.test(w) || (item.style['box-sizing'] === 'content-box' && ['left', 'right'].some(side => !/^(?:0|\d+(?:\.\d+)?px)$/.test(String(item.style[`padding-${side}`])) || !/^(?:0|ua|\d+(?:\.\d+)?px)$/.test(String(item.style[`border-${side}`])))) || style.direction === 'rtl')
                       throw Object.assign(new Error(`${item.box.label}: auto margins on a grid item are modeled only with a px or % width (ltr); with an auto width it shrinks to fit its content`), { code: 'U_LAYOUT_CSS', box: item.box });
                   }
                   const autoOffsets = (item, region) => {
                     if (!autoMargins(item)) return [{ region, offset: scalar(0) }];
+                    if (blockFill(item)) {
+                      const max = String(item.style['max-inline-size']);
+                      if (max === 'none') return [{ region, offset: scalar(0) }];
+                      const free = diff(itemInline(item), scalar(px(max))), share = item.style['margin-left'] === 'auto' ? (item.style['margin-right'] === 'auto' ? div(one, q(2)) : one) : zero;
+                      const split = partition(region, free, '>=');
+                      return [...split.yes.map(r => ({ region: r, offset: times(free, share) })), ...split.no.map(r => ({ region: r, offset: scalar(0) }))];
+                    }
                     const w = String(item.style['inline-size']), area = itemInline(item);
                     const outer = w.endsWith('%') ? times(areaInline(item), div(q(w.slice(0, -1)), q(100))) : scalar(px(w));
                     const extra = item.style['box-sizing'] === 'content-box' ? ['left', 'right'].flatMap(side => [item.style[`padding-${side}`], item.style[`border-${side}`]]).filter(v => v && !['0', 'ua'].includes(String(v))).reduce((acc, v) => add(acc, px(v)), zero) : zero;

@@ -56,6 +56,7 @@ error が 1 件でもあれば終了コードは 1 です。
 - `repeat(auto-fill | auto-fit, minmax(…, 1fr))` のカードの grid。
 - `<picture>` の source、`srcset`/`sizes`、`iframe`。
 - grid item と flex の行の item の px margin。幅を指定した grid item の `margin: 0 auto`。
+- block の子だけを持つ `display: block` の container(block flow)と、`max-width` + `margin: 0 auto` のラッパー。
 
 `fixtures/Catalog.svelte` は、これらを組み合わせた例である。
 

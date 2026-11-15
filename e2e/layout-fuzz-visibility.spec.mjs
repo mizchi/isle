@@ -41,6 +41,12 @@ const measure = () => {
       for (const k of parent.children) out[k.className] = {fits: true, shown: getComputedStyle(k).display !== 'none', inFlex: true};
       continue;
     }
+    if (s.display === 'block') {
+      // Block flow: a child fits when it stays inside the container's content box horizontally (rows grow to fit).
+      const l = box.left + px(s.borderLeftWidth) + px(s.paddingLeft), r = box.right - px(s.borderRightWidth) - px(s.paddingRight), e = 0.02;
+      for (const k of parent.children) { const shown = getComputedStyle(k).display !== 'none', b = k.getBoundingClientRect(); out[k.className] = {fits: !shown || (b.left >= l - e && b.right <= r + e), shown}; }
+      continue;
+    }
     const cols = s.gridTemplateColumns.split(' ').map(px), rows = s.gridTemplateRows.split(' ').map(px);
     const gx = px(s.columnGap), gy = px(s.rowGap), left = box.left + px(s.borderLeftWidth) + px(s.paddingLeft), top = box.top + px(s.borderTopWidth) + px(s.paddingTop);
     const kids = [...parent.children].filter(k => getComputedStyle(k).display !== 'none');
@@ -60,7 +66,7 @@ const measure = () => {
 
 // The minmax variant makes more rows (auto-fill packs fewer columns), so more cases hit the auto-row shrink of scroll
 // containers, which stays Unknown (U_LAYOUT_GRID_SHRINK): its Unknown share is allowed to be higher.
-for (const [title, options, maxUnknown] of [['', {}, 0.2], [' (minmax(px, fr) and auto-fill tracks)', {minmax: true}, 0.4], [' (px margins on grid items)', {margins: true}, 0.2]])
+for (const [title, options, maxUnknown] of [['', {}, 0.2], [' (minmax(px, fr) and auto-fill tracks)', {minmax: true}, 0.4], [' (px margins on grid items)', {margins: true}, 0.2], [' (block containers)', {block: true}, 0.2]])
 test(`fuzz: no invisible region — static item-fit verdicts agree with Chromium across media, resolution and nesting${title}`, async ({browser}) => {
   test.setTimeout(1_800_000);
   const tally = {cases: 0, unknown: 0, compared: 0, misfits: 0};

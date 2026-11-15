@@ -8,7 +8,7 @@
 
 export function random(seed) { let s = (seed * 2654435761) >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 2 ** 32; }; }
 
-export function generateCase(seed, { flex = false, minmax = false, margins = false } = {}) {
+export function generateCase(seed, { flex = false, minmax = false, margins = false, block = false } = {}) {
   const r = random(seed), pick = list => list[Math.floor(r() * list.length)], int = (lo, hi) => lo + Math.floor(r() * (hi - lo + 1));
   let n = 0;
   const containers = [], items = [];
@@ -25,13 +25,14 @@ export function generateCase(seed, { flex = false, minmax = false, margins = fal
   // flex: some containers are flex rows or columns; their children never shrink (flex-shrink: 0) and have px widths
   // (the subset needs a definite basis), so an overflow is a real overflow, not a shrink.
   const container = (depth, inFlex = false) => {
-    const id = `c${n++}`, kind = flex && depth > 0 && r() < 0.45 ? pick(['row', 'column']) : 'grid';
+    // With block: true, some containers are display: block (block flow of block-level children).
+    const id = `c${n++}`, kind = flex && depth > 0 && r() < 0.45 ? pick(['row', 'column']) : block && r() < 0.4 ? 'block' : 'grid';
     const rule = {kind, columns: tracks(), gap: pick([0, 8, 16]), rowGap: pick([0, 8]), padding: pick([0, 8, 12]), autoRows: pick(['auto', 'auto', `${int(3, 8) * 10}px`]), clip: r() < 0.6, width: inFlex ? `${int(10, 40) * 10}px` : null};
     // With margins: true, grid items (containers and items) get px margins on some sides.
     const margin = () => margins && r() < 0.5 ? Array.from({length: 4}, () => pick([0, 0, 4, 8, 16, 24])).map(v => `${v}px`).join(' ') : null;
     containers.push({id, ...rule, margin: inFlex ? null : margin()});
     const count = int(1, 4);
-    const children = Array.from({length: count}, () => depth < 3 && r() < 0.35 && kind === 'grid' ? container(depth + 1) : item(kind !== 'grid', kind));
+    const children = Array.from({length: count}, () => depth < 3 && r() < 0.35 && ['grid', 'block'].includes(kind) ? container(depth + 1) : item(!['grid', 'block'].includes(kind), kind));
     return {id, children};
   };
   const item = (inFlex = false, kind = 'grid') => {
@@ -46,7 +47,7 @@ export function generateCase(seed, { flex = false, minmax = false, margins = fal
   };
   const root = container(0);
   const html = node => node.children.length || node.id.startsWith('c') ? `<div class="${node.id}">${node.children.map(html).join('')}</div>` : `<div class="${node.id}"></div>`;
-  const decl = c => (c.kind === 'grid' ? `display:grid;grid-template-columns:${c.columns};column-gap:${c.gap}px;row-gap:${c.rowGap}px;grid-auto-rows:${c.autoRows};` : `display:flex;flex-direction:${c.kind};column-gap:${c.gap}px;row-gap:${c.rowGap}px;`)
+  const decl = c => (c.kind === 'block' ? 'display:block;' : c.kind === 'grid' ? `display:grid;grid-template-columns:${c.columns};column-gap:${c.gap}px;row-gap:${c.rowGap}px;grid-auto-rows:${c.autoRows};` : `display:flex;flex-direction:${c.kind};column-gap:${c.gap}px;row-gap:${c.rowGap}px;`)
     + `padding:${c.padding}px;${c.clip ? 'overflow:hidden;' : ''}${c.width ? `width:${c.width};flex-shrink:0;` : ''}${c.margin ? `margin:${c.margin};` : ''}`;
   let css = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr);overflow-x:clip}body{margin:0}';
   css += containers.map(c => `.${c.id}{${decl(c)}background:#eef}`).join('');

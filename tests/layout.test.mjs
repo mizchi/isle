@@ -105,11 +105,12 @@ test('wrapping must agree with CSS and is not itself a font-metric guarantee', (
   assert.equal(run({ css: css.replace('anywhere', 'break-word') }).diagnostics.some(d => d.code === 'E_LAYOUT_WRAP'), true);
 });
 
-test('float, block containers, flex outside the subset and overlapping/outside placement are rejected', () => {
+test('float, flex outside the subset and overlapping/outside placement are rejected; a block container of block children is laid out', () => {
   assert.ok(run({ css: css + '.side { float: left; }' }).diagnostics.some(d => d.code === 'E_LAYOUT_FLOAT'));
   // flex items with content-sized defaults are outside the flex subset.
   assert.ok(run({ css: css.replace('display: grid', 'display: flex') }).diagnostics.some(d => d.code === 'U_LAYOUT_FLEX'));
-  assert.ok(run({ css: css + '.board { display: block; }' }).diagnostics.some(d => d.code === 'E_LAYOUT_CONTAINER'));
+  // Block flow (block children, no vertical margins) is a one-column grid: not a container error any more.
+  assert.ok(!run({ css: css + '.board { display: block; }' }).diagnostics.some(d => d.code === 'E_LAYOUT_CONTAINER'));
   assert.ok(run({ css: css + '.body { grid-column: 3; }' }).diagnostics.some(d => d.code === 'E_LAYOUT_PLACEMENT'));
   assert.ok(run({ css: css + '.side, .body { grid-column: 1; grid-row: 1; }' }).diagnostics.some(d => d.code === 'E_LAYOUT_OVERLAP'));
 });
@@ -127,7 +128,7 @@ test('unsupported CSS, external dependencies, dynamic structure and replaced ele
   assert.equal(run({ css: css + '.body { display: grid; }' }, source.replace('Content', '<input type="text" aria-label="Content" />')).status, 'unknown');
   const dynamic=run({}, source.replace('Board()', 'Board(show: boolean)').replace('Content', '<Show when={show}> <span>Content</span> </Show>'));
   assert.equal(dynamic.structure.complete,true);
-  assert.equal(dynamic.status,'violated'); // The added child requires a Grid container.
+  assert.equal(dynamic.status,'unknown'); // The added span is inline-level in a block container: its line layout is not modeled.
 });
 
 test('unreachable media branches and display:none subtrees do not create spurious requirements', () => {
