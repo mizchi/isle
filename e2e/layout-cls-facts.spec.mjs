@@ -388,3 +388,17 @@ test('hyphens: auto without lang breaks exactly like manual in Chromium, where t
     expect(heights.auto, `${width}px`).toBe(heights.manual);
   }
 });
+
+test('root font size: where the static check warns, text ignores the browser default font size setting', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Page.enable');
+  for (const [css, warn] of [['html{font-size:16px}', true], ['body{font-size:12pt}', true], ['html{font-size:100%}', false], ['html{font-size:62.5%}body{font-size:1.6rem}', false], ['', false]]) {
+    const doc = '<html lang="en"><body><main class="page"><div class="b"></div></main></body></html>';
+    const report = analyzeHTML(doc, {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.b{height:20px}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_ROOT_FONT_FIXED'), css || 'none').toBe(warn);
+    const size = async standard => { await cdp.send('Page.setFontSizes', {fontSizes: {standard}}); await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body><p>Text</p></body></html>`); return page.evaluate(() => getComputedStyle(document.querySelector('p')).fontSize); };
+    const [a, b] = [await size(16), await size(24)];
+    expect(a === b, `${css || 'none'}: ${a} at default 16, ${b} at default 24`).toBe(warn);
+  }
+});

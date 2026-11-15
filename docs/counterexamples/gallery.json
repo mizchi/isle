@@ -1137,6 +1137,19 @@
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.t{line-height:20px;hyphens:auto}"
  },
  {
+  "id": "root-font-fixed",
+  "title": "A px font-size on html",
+  "code": "W_LAYOUT_ROOT_FONT_FIXED",
+  "width": 0,
+  "height": 0,
+  "message": "html@P sets font-size: 16px, an absolute length: it replaces the user's default font size, so text no longer grows with the browser's font size setting. Use a percentage or rem (for example 100%)",
+  "shots": [
+   "root-font-fixed-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"b\"></div></main>",
+  "css": "html{font-size:16px}.page{display:grid;grid-template-columns:minmax(0,1fr)}.b{height:20px}"
+ },
+ {
   "id": "live-hidden",
   "title": "A status message region kept display: none until it is used",
   "code": "W_A11Y_LIVE_HIDDEN",

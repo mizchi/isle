@@ -462,6 +462,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function validate(style, box, region, emit, available = {}) {
     if (style.display === 'none') return false;
     if(box.whitespace && !['normal','nowrap'].includes(style['white-space'])) throw new Error('Preserved whitespace needs explicit text geometry from the input adapter');
+    // An absolute font-size on html or body replaces the user's default font size (the browser's font size setting):
+    // the page's text no longer follows it (relative sizes, %, em, rem and the medium keyword do).
+    if (['html', 'body'].includes(box.tag) && !box.pseudo && style.$sources?.['font-size'] && /^\d+(?:\.\d+)?(?:px|pt|pc|cm|mm|in|q)$/i.test(String(style['font-size']))
+      && emit && !layoutWarnings.some(w => w.code === 'W_LAYOUT_ROOT_FONT_FIXED' && w.path === box.path))
+      layoutWarnings.push({ code: 'W_LAYOUT_ROOT_FONT_FIXED', severity: 'warning', box: box.label, path: box.path, fontSize: style['font-size'],
+        message: `${box.label} sets font-size: ${style['font-size']}, an absolute length: it replaces the user's default font size, so text no longer grows with the browser's font size setting. Use a percentage or rem (for example 100%)`, ...ranges(region) });
     // hyphens: auto hyphenates by the content language's dictionary (not modeled); with no language (no lang on the
     // element, an ancestor or the html element) browsers do not hyphenate, so it breaks like manual (measured).
     if ((box.text || box.inline?.length) && !box.pseudo && style.hyphens === 'auto') {

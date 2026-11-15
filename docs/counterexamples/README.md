@@ -1728,6 +1728,26 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## A px font-size on html
+
+`W_LAYOUT_ROOT_FONT_FIXED` — markup rule (nothing to see on screen)
+
+> html@P sets font-size: 16px, an absolute length: it replaces the user's default font size, so text no longer grows with the browser's font size setting. Use a percentage or rem (for example 100%)
+
+![root-font-fixed](root-font-fixed-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="b"></div></main>
+```
+
+```css
+html{font-size:16px}.page{display:grid;grid-template-columns:minmax(0,1fr)}.b{height:20px}
+```
+
+</details>
+
 ## A status message region kept display: none until it is used
 
 `W_A11Y_LIVE_HIDDEN` — markup rule (nothing to see on screen)
