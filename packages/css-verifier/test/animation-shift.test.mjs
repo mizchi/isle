@@ -30,7 +30,9 @@ test('animations that do not move a layout start are not shifts', () => {
     '@keyframes grow{to{height:80px}}.a{animation:grow 0s}', // no duration
   ]) assert.equal(run(css).status, 'verified', css);
   // A keyframe whose layout is outside the subset is Unknown, not verified.
-  assert.equal(run('@keyframes m{to{margin-bottom:20px}}.a{animation:m 1s}').status, 'unknown');
+  assert.equal(run('@keyframes m{to{margin-bottom:-20px}}.a{animation:m 1s}').status, 'unknown');
+  // A px margin of a grid item is modeled: animating it moves what follows.
+  assert.ok(run('@keyframes m{to{margin-bottom:20px}}.a{animation:m 1s}').diagnostics.some(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT'));
 });
 
 test('an animation shift carries a session-window score bound under the monotone-motion premise', () => {

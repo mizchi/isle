@@ -60,7 +60,7 @@ const measure = () => {
 
 // The minmax variant makes more rows (auto-fill packs fewer columns), so more cases hit the auto-row shrink of scroll
 // containers, which stays Unknown (U_LAYOUT_GRID_SHRINK): its Unknown share is allowed to be higher.
-for (const [title, options, maxUnknown] of [['', {}, 0.2], [' (minmax(px, fr) and auto-fill tracks)', {minmax: true}, 0.4]])
+for (const [title, options, maxUnknown] of [['', {}, 0.2], [' (minmax(px, fr) and auto-fill tracks)', {minmax: true}, 0.4], [' (px margins on grid items)', {margins: true}, 0.2]])
 test(`fuzz: no invisible region — static item-fit verdicts agree with Chromium across media, resolution and nesting${title}`, async ({browser}) => {
   test.setTimeout(1_800_000);
   const tally = {cases: 0, unknown: 0, compared: 0, misfits: 0};

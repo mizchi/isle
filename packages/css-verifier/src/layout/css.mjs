@@ -163,7 +163,8 @@ function expand(property, value) {
     const maximum = property === 'margin' ? 4 : ['margin-inline', 'margin-block'].includes(property) ? 2 : 1;
     if (!parts.length || parts.length > maximum) throw new Error(`${property} requires 1..${maximum} values`);
     // Zero, or auto (only flex items may use it on their main axis; checked by the engine).
-    const margin = v => v === 'auto' ? 'auto' : cmp(px(v), q(0)) === 0 ? '0' : (() => { throw new Error('Only zero or auto margins are supported'); })();
+    // Zero, auto, or a non-negative px length (grid items take px margins; checked by the engine).
+    const margin = v => { if (v === 'auto') return 'auto'; const n = px(v); if (cmp(n, q(0)) === 0) return '0'; if (cmp(n, q(0)) < 0) throw new Error('Negative margins are not modeled'); if (!/^\d+(?:\.\d+)?px$/.test(v)) throw new Error('Only px, zero or auto margins are supported'); return v; };
     const values = property === 'margin' ? [parts[0], parts[1] ?? parts[0], parts[2] ?? parts[0], parts[3] ?? parts[1] ?? parts[0]] : sides.length === 2 ? [parts[0], parts[1] ?? parts[0]] : [parts[0]];
     return sides.map((side, i) => [`margin-${side}`, margin(values[i])]);
   }

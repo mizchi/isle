@@ -277,6 +277,10 @@ ancestor 入力は継承用であり、host の寸法を再計算する入力で
 
 CSS による通常の in-flow parent と child の関係を検査する。pure component と client island の root を追い、有限な動的 class/id・分岐・上限付き loop の集合を検査する。opaque children、inline style、reset/adapter のない native control 等は unknown。初期 SSR に存在する構造だけで将来の構造を判断しない。
 
+## grid item の margin
+
+grid item には、負でない px の margin を書ける(grid と flex の margin は相殺しない)。item は、grid の領域から margin を引いた幅と高さの中に配置され、左上の margin の分だけずれる。auto の行は、item の margin を含めた大きさで決まる。収まるかどうかは、始端の margin と border box を合わせて領域と比べる。終端の margin がはみ出しても、何も隠れず、スクロールも起きない(Chromium で測った)。`auto` の margin、負の margin、flex item の px margin、subgrid の margin、rtl で左右の値が異なる margin は Unknown にする。Chromium の照合は 2 つある。`e2e/layout-flex.spec.mjs` は、入れ子と auto の行を含めて矩形が一致することを確かめる。`e2e/layout-fuzz-visibility.spec.mjs` の margin 版は、40 seed・5,944 件で、item が収まるかどうかの判定が一致することを確かめる。
+
 ## 最小幅のある fr トラックと auto-fill
 
 `minmax(Lpx, Nfr)` は、空き幅の取り分が L 未満のトラックを L で固定し、残りを分け直す(css-grid-1 §12.7.1 の fr の大きさの求め方)。各回は「取り分 ≥ L」による領域の分割になる。全てのトラックが L に固定され、さらに幅が足りない領域は `E_LAYOUT_TRACKS` になる。`minmax(min(Lpx, 100%), Nfr)` では、container の幅が L 未満の所で最小幅が container の幅になり、はみ出さない。
