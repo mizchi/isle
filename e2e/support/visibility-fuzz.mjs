@@ -1,0 +1,67 @@
+// Seeded generator of nested grid pages with media branches (width, height, orientation, resolution), for the
+// visibility harness: every grid item must fit the grid area it is placed in, or the part that does not is cut off
+// (the containers clip) or covered by its neighbour — an invisible region.
+//
+// The generated CSS stays inside the verifier's subset on purpose (grid tracks of px and minmax(0, fr), px gaps
+// and padding, px or stretched item sizes, display: none under a media branch) and never mixes vw with vh in one
+// length, so every region the static check reports is a rectangle in (width, height).
+
+export function random(seed) { let s = (seed * 2654435761) >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 2 ** 32; }; }
+
+export function generateCase(seed) {
+  const r = random(seed), pick = list => list[Math.floor(r() * list.length)], int = (lo, hi) => lo + Math.floor(r() * (hi - lo + 1));
+  let n = 0;
+  const containers = [], items = [];
+  const tracks = () => pick([
+    'minmax(0,1fr)', `repeat(${int(2, 4)},minmax(0,1fr))`, `${int(8, 30) * 10}px minmax(0,1fr)`, `minmax(0,1fr) ${int(6, 20) * 10}px`,
+    `repeat(${int(2, 3)},${int(8, 20) * 10}px)`, `minmax(0,2fr) minmax(0,1fr)`,
+  ]);
+  const container = (depth) => {
+    const id = `c${n++}`, columns = tracks(), rule = {columns, gap: pick([0, 8, 16]), rowGap: pick([0, 8]), padding: pick([0, 8, 12]), autoRows: pick(['auto', 'auto', `${int(3, 8) * 10}px`]), clip: r() < 0.6};
+    containers.push({id, ...rule});
+    const count = int(1, 4);
+    const children = Array.from({length: count}, () => depth < 3 && r() < 0.35 ? container(depth + 1) : item());
+    return {id, children};
+  };
+  const item = () => {
+    const id = `i${n++}`, width = r() < 0.5 ? 'auto' : `${int(4, 45) * 10}px`, height = `${int(2, 9) * 10}px`;
+    items.push({id, width, height});
+    return {id, children: []};
+  };
+  const root = container(0);
+  const html = node => node.children.length || node.id.startsWith('c') ? `<div class="${node.id}">${node.children.map(html).join('')}</div>` : `<div class="${node.id}"></div>`;
+  const decl = c => `display:grid;grid-template-columns:${c.columns};column-gap:${c.gap}px;row-gap:${c.rowGap}px;padding:${c.padding}px;grid-auto-rows:${c.autoRows};${c.clip ? 'overflow:hidden;' : ''}`;
+  let css = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr);overflow-x:clip}body{margin:0}';
+  css += containers.map(c => `.${c.id}{${decl(c)}background:#eef}`).join('');
+  css += items.map(i => `.${i.id}{${i.width === 'auto' ? '' : `width:${i.width};`}height:${i.height};background:#246}`).join('');
+  // Media branches: each changes a container's tracks, an item's size, or hides an item.
+  const conditions = [() => `(min-width: ${int(36, 90) * 10}px)`, () => `(max-width: ${int(36, 90) * 10}px)`, () => `(min-height: ${int(55, 85) * 10}px)`,
+    () => '(orientation: portrait)', () => '(min-resolution: 2dppx)', () => `(min-width: ${int(40, 70) * 10}px) and (max-height: ${int(55, 80) * 10}px)`];
+  const branches = Array.from({length: int(1, 4)}, () => {
+    const condition = pick(conditions)();
+    const body = Array.from({length: int(1, 3)}, () => {
+      const kind = r();
+      if (kind < 0.35) { const c = pick(containers); return `.${c.id}{grid-template-columns:${tracks()}}`; }
+      if (kind < 0.75) { const i = pick(items); return `.${i.id}{width:${r() < 0.3 ? 'auto' : `${int(4, 60) * 10}px`}}`; }
+      const i = pick(items); return `.${i.id}{display:none}`;
+    }).join('');
+    return `@media ${condition}{${body}}`;
+  });
+  css += branches.join('');
+  return {seed, html: `<html lang="en"><body>${html(root)}</body></html>`, body: html(root), css, items: items.map(i => i.id), containers: containers.map(c => c.id)};
+}
+
+// Viewports to sample: random points plus both sides of every px breakpoint in the CSS.
+export function viewports(c, seed, {min = 320, max = 1024, hmin = 480, hmax = 900} = {}) {
+  const r = random(seed + 7919), points = new Set();
+  for (let i = 0; i < 4; i++) points.add(`${min + Math.floor(r() * (max - min))}x${hmin + Math.floor(r() * (hmax - hmin))}`);
+  for (const m of c.css.matchAll(/(min|max)-(width|height): (\d+)px/g)) {
+    const v = Number(m[3]);
+    for (const d of [-1, 0, 1]) {
+      const at = v + d;
+      if (m[2] === 'width' && at >= min && at <= max) points.add(`${at}x${hmin + Math.floor(r() * (hmax - hmin))}`);
+      if (m[2] === 'height' && at >= hmin && at <= hmax) points.add(`${min + Math.floor(r() * (max - min))}x${at}`);
+    }
+  }
+  return [...points].map(p => p.split('x').map(Number));
+}
