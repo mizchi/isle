@@ -306,7 +306,7 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.wrap{disp
 
 `W_LAYOUT_STICKY_SCROLLER` — viewport 320 × 480px
 
-> .h is position: sticky inside .page, which has overflow: hidden: it sticks to that box, which does not scroll, so it never sticks to the page. Use overflow: clip on the ancestor, or move the sticky box out of it
+> .h is position: sticky inside .page, which has overflow: hidden: it sticks to that box, which does not scroll vertically, so it never sticks to the page. Use overflow-x: clip on the ancestor (not a scroll container), or move the sticky box out of it
 
 ![sticky-scroller](sticky-scroller-before.png) ![sticky-scroller](sticky-scroller-after.png)
 
@@ -718,6 +718,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background
 
 ```css
 body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:12px;background:#fff}.h{position:sticky;top:0;height:56px;background:#246}.card{position:relative;height:90px;background:#f2c94c}.tall{height:2000px}
+```
+
+</details>
+
+## A sticky table header inside an overflow-x: auto wrapper
+
+`W_LAYOUT_STICKY_SCROLLER` — viewport 320 × 480px
+
+> .h is position: sticky inside .wrap, which has overflow-x: auto (so its overflow-y is auto) and no height of its own: it sticks to that box, which does not scroll vertically, so it never sticks to the page. Use overflow-x: clip on the ancestor (not a scroll container), or move the sticky box out of it
+
+![sticky-table-wrapper](sticky-table-wrapper-before.png) ![sticky-table-wrapper](sticky-table-wrapper-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="wrap"><div class="h"></div><div class="rows"></div></div><div class="tall"></div></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.wrap{display:grid;grid-template-columns:minmax(0,1fr);overflow-x:auto}.h{position:sticky;top:0;height:44px;background:#246}.rows{height:1200px;background:repeating-linear-gradient(#fff 0 40px,#eef 40px 80px)}.tall{height:1500px}
 ```
 
 </details>

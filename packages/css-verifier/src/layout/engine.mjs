@@ -981,13 +981,25 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const underClip = parents.some(p => p.clipScope);
       // Sticky inside an overflow: hidden box (a scroll container nobody scrolls): it sticks to that box, not to the page,
       // so it never sticks; at the initial scroll position it is where the flow puts it (a warning, laid out as relative).
-      const scroller = [...parents].reverse().find(p => p.style && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible'));
-      if (style.$sticky && scroller && ['overflow-x', 'overflow-y'].every(key => scroller.style[key] === 'hidden') && !parents.some(p => p !== scroller && p.style && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible'))) {
+      // overflow-x: clip with overflow-y visible is not a scroll container (CSS Overflow 3): a sticky box inside still
+      // sticks to the page, and a horizontal clip does not cut its vertical sticking.
+      const xClipOnly = p => p.style && p.style['overflow-x'] === 'clip' && p.style['overflow-y'] === 'visible';
+      const scrolling = p => p.style && !xClipOnly(p) && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible');
+      const scroller = [...parents].reverse().find(scrolling);
+      // A scroll container nobody scrolls vertically: overflow hidden, or overflow-x auto/scroll (so y computes to auto)
+      // with a content-sized block size. A top/bottom sticky box sticks to it, which does not move, so it never sticks
+      // to the page; at the initial scroll position it is where the flow puts it (a warning, laid out as relative).
+      // A sticky left/right box (a sticky first column) does stick inside a horizontal scroller: not judged here.
+      const stillY = p => ['overflow-x', 'overflow-y'].every(key => p.style[key] === 'hidden')
+        || (['auto', 'scroll'].includes(p.style['overflow-x']) && ['visible', 'auto', 'hidden'].includes(p.style['overflow-y']) && p.style['block-size'] === 'auto' && ['none', undefined].includes(p.style['max-block-size']) && p.style['overflow-y'] !== 'scroll');
+      const horizontalStick = ['left', 'right'].some(side => style[side] !== undefined && style[side] !== 'auto');
+      if (style.$sticky && scroller && !horizontalStick && stillY(scroller) && !parents.some(p => p !== scroller && scrolling(p))) {
+        const how = ['overflow-x', 'overflow-y'].every(key => scroller.style[key] === 'hidden') ? 'overflow: hidden' : `overflow-x: ${scroller.style['overflow-x']} (so its overflow-y is auto) and no height of its own`;
         if (!layoutWarnings.some(w => w.code === 'W_LAYOUT_STICKY_SCROLLER' && w.path === box.path)) layoutWarnings.push({ code: 'W_LAYOUT_STICKY_SCROLLER', severity: 'warning', box: box.label, path: box.path, scroller: scroller.box.label,
-          message: `${box.label} is position: sticky inside ${scroller.box.label}, which has overflow: hidden: it sticks to that box, which does not scroll, so it never sticks to the page. Use overflow: clip on the ancestor, or move the sticky box out of it`, ...ranges(region) });
+          message: `${box.label} is position: sticky inside ${scroller.box.label}, which has ${how}: it sticks to that box, which does not scroll vertically, so it never sticks to the page. Use overflow-x: clip on the ancestor (not a scroll container), or move the sticky box out of it`, ...ranges(region) });
         style = { ...style, $sticky: false };
       }
-      if (style.$sticky && parents.some(p => p.clipped || p.clipScope || (p.style && ['overflow-x', 'overflow-y'].some(key => p.style[key] !== 'visible')))) throw Object.assign(new Error(`${box.label} is position: sticky inside a scrolling or clipping ancestor, which it would stick to`), { code: 'U_LAYOUT_CSS' });
+      if (style.$sticky && parents.some(p => (p.clipped || p.clipScope || scrolling(p)) && !xClipOnly(p))) throw Object.assign(new Error(`${box.label} is position: sticky inside a scrolling or clipping ancestor, which it would stick to`), { code: 'U_LAYOUT_CSS' });
       if (style['animation-name'] !== 'none' && style['animation-play-state'] !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(style['animation-duration']) && keyframeFrames.get(style['animation-name'])?.some(frame => frame.layout)) animated.push({ box, region, name: style['animation-name'], position: style.position, duration: style['animation-duration'], count: style['animation-iteration-count'], direction: style['animation-direction'] });
       // A bar fixed to the bottom edge under viewport-fit=cover: its content must clear the bottom safe area (the home
       // indicator), so its bottom padding has to be at least that inset (env(safe-area-inset-bottom)).

@@ -112,3 +112,18 @@ test('mobile: fields under 16px (iOS focus zoom) and vh heights under the toolba
   assert.deepEqual(codes('.h{height:calc(100vh - 60px)}'), ['W_LAYOUT_VH_TOOLBAR']);
   for (const css of ['.h{height:100svh}', '.h{height:calc(100dvh - 60px)}', '.h{height:50vw}']) assert.deepEqual(codes(css), [], css);
 });
+
+test('a sticky header in an overflow-x wrapper: auto never sticks (content height), clip still sticks to the page', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const run = wrap => analyzeHTML('<html lang="en"><body><div class="page"><div class="wrap"><div class="h"></div><div class="c"></div></div><div class="tall"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body,.page,.wrap{${g}}.wrap{${wrap}}.h{position:sticky;top:0;height:40px}.c{height:600px}.tall{height:2000px}`, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], integrity: true});
+  const codes = report => (report.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_STICKY_SCROLLER').map(w => w.scroller);
+  const auto = run('overflow-x:auto');
+  assert.notEqual(auto.status, 'unknown', JSON.stringify(auto.diagnostics.map(d => d.message)));
+  assert.deepEqual(codes(auto), ['.wrap']);
+  assert.match(auto.layoutWarnings.find(w => w.code === 'W_LAYOUT_STICKY_SCROLLER').message, /overflow-x: clip/);
+  const clip = run('overflow-x:clip');
+  assert.notEqual(clip.status, 'unknown', JSON.stringify(clip.diagnostics.map(d => d.message)));
+  assert.deepEqual(codes(clip), []);
+  // A wrapper with its own height does scroll vertically: the header sticks inside it (not modeled: Unknown).
+  assert.equal(run('overflow-x:auto;height:300px').status, 'unknown');
+});

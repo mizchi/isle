@@ -447,3 +447,19 @@ test('100vw with a classic scrollbar: the page scrolls sideways in Chromium exac
   }
   await browser.close();
 });
+
+test('sticky in an overflow-x wrapper: the header sticks in Chromium exactly when the static check does not warn', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [wrap, warn] of [['overflow-x:auto', true], ['overflow-x:scroll', true], ['overflow:hidden', true], ['overflow-x:clip', false], ['', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body,.page,.wrap{${g}}body{margin:0}.wrap{${wrap}}.h{position:sticky;top:0;height:40px;background:#246}.c{height:1200px}.tall{height:2000px}`;
+    const html = '<div class="page"><div class="wrap"><div class="h"></div><div class="c"></div></div><div class="tall"></div></div>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], integrity: true});
+    expect(report.status, `${wrap}: ${report.diagnostics.map(d => d.message).join(' | ')}`).not.toBe('unknown');
+    const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_STICKY_SCROLLER');
+    expect(warned, wrap || 'no wrapper overflow').toBe(warn);
+    await page.setViewportSize({width: 400, height: 600});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const top = await page.evaluate(async () => { scrollTo(0, 500); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); return document.querySelector('.h').getBoundingClientRect().top; });
+    expect(top === 0, `${wrap || 'no wrapper overflow'}: header top ${top} after scrolling 500px`).toBe(!warn);
+  }
+});
