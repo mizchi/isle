@@ -1635,3 +1635,17 @@ test('inline svg names: a link named only by its svg has a name in Chromium exac
     expect(unnamed, `${svg}: Chromium names the link "${name}" (${snapshot.replace(/\n/g, ' ')})`).toBe(name === '');
   }
 });
+
+test('grid areas out of DOM order: where W_A11Y_ORDER warns, Chromium tabs to a link that sits below the next one', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const areas of ['"a" "b"', '"b" "a"']) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff}.t{height:10px}.g{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:${areas};grid-auto-rows:30px}.x{grid-area:a;display:block}.y{grid-area:b;display:block}`;
+    const html = '<main class="p"><h1 class="t" aria-label="T"></h1><div class="g"><a class="x" href="/1" aria-label="One"></a><a class="y" href="/2" aria-label="Two"></a></div></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+    const warned = report.accessibility.warnings.some(w => w.code === 'W_A11Y_ORDER');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const tops = [];
+    for (let i = 0; i < 2; i++) { await page.keyboard.press('Tab'); tops.push(await page.evaluate(() => document.activeElement.getBoundingClientRect().top)); }
+    expect(warned, `${areas}: focus visits tops ${tops}`).toBe(tops[1] < tops[0]);
+  }
+});

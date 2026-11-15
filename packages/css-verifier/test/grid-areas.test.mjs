@@ -27,3 +27,9 @@ test('an undefined area name is a warning and Unknown; invalid templates are Unk
   assert.equal(run('.p{grid-template-areas:"a b" "b b"}.h{grid-area:a}').status, 'unknown');
   assert.equal(run('.p{grid-template-areas:"a b c"}.h{grid-area:a}').status, 'unknown');
 });
+
+test('areas that put the DOM order upside down are a visual-order warning', () => {
+  const run2 = areas => analyzeHTML('<html lang="en"><body><main class="p"><h1 class="t" aria-label="T"></h1><div class="g"><a class="x" href="/1" aria-label="One"></a><a class="y" href="/2" aria-label="Two"></a></div></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g};background:#fff}.t{height:10px}.g{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:${areas};grid-auto-rows:30px}.x{grid-area:a;display:block}.y{grid-area:b;display:block}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+  assert.deepEqual(run2('"a" "b"').accessibility.warnings.filter(w => w.code === 'W_A11Y_ORDER'), []);
+  assert.equal(run2('"b" "a"').accessibility.warnings.filter(w => w.code === 'W_A11Y_ORDER').length, 1);
+});
