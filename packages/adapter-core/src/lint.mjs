@@ -41,6 +41,7 @@ export const recommended = {
   W_A11Y_BAR_COVERED: ['warning', 'give the bar a z-index'],
   W_A11Y_BAR_TRANSPARENT: ['warning', 'give the bar an opaque background'],
   W_A11Y_TABINDEX_REMOVED: ['warning', 'drop the negative tabindex'],
+  E_A11Y_CONTENTS_FOCUS: ['error', 'give the link or button a box (display: grid/flex/block) instead of display: contents'],
   W_A11Y_LIVE_HIDDEN: ['warning', 'keep the live region rendered'],
   W_A11Y_AUTOFOCUS_HIDDEN: ['warning', 'autofocus an element that is shown at this size'],
   W_A11Y_SELECT_INDICATOR: ['warning', 'draw an arrow for the select'],

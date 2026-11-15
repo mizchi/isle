@@ -87,6 +87,7 @@
 //   form-submit      → W_A11Y_FORM_SUBMIT       a form with fields but no submit button (SC 3.2.2)
 //   native-aria-conflict → W_A11Y_NATIVE_ARIA_CONFLICT an ARIA state that contradicts the native one (required/disabled/checked), which Chromium announces instead
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
+//   contents-focus   → E_A11Y_CONTENTS_FOCUS    a link, button or tabindex element with display: contents (drawn by its children; Tab skips it)
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
 import { languageTag } from './text-font.mjs';
@@ -99,7 +100,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'bar-covered', 'bar-transparent', 'autofocus'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'bar-covered', 'bar-transparent', 'autofocus'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
@@ -901,6 +902,17 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     if (row.box.tag === 'a' && row.box.href !== 'dynamic' && geometry.some(other => other.box.tag === 'a' && other.box.href === row.box.href && other.path !== row.path && !(other.box.tabIndex < 0) && visible(other))) continue;
     if (!warnings.some(w => w.code === 'W_A11Y_TABINDEX_REMOVED' && w.path === row.path))
       report(warnings, 'W_A11Y_TABINDEX_REMOVED', 'warning', `${row.box.label} is a visible ${row.box.tag === 'a' ? 'link' : 'control'} with tabindex ${row.box.tabIndex}: a pointer can use it, but Tab skips it. Drop the tabindex (or make it part of a composite widget with arrow-key navigation)`, row, row.region, { rule: 'tabindex-removed' });
+  }
+  // contents-focus (SC 2.1.1): a focusable element with display: contents has no box, so Chromium leaves it out of the
+  // tab order (measured: a link, a button, tabindex=0), while its children draw it and a link or button stays in the
+  // accessibility tree. Found as a focusable element with no geometry row whose descendants render there.
+  const keyboardFocusable = box => box.focusable !== false && (box.tabIndex >= 0 || (nativeControl(box) && !(box.tabIndex < 0)));
+  for (const box of [...boxOf.values()].filter(box => keyboardFocusable(box) && !box.pseudo && !hiddenFrom(box.path))) {
+    let shown = geometry.filter(row => isAncestor(box.path, row.path) && visible(row)).map(row => row.region);
+    for (const own of geometry.filter(row => row.path === box.path)) shown = shown.flatMap(r => subtract(r, own.region));
+    const at = shown.find(Boolean);
+    if (at && !findings.some(f => f.code === 'E_A11Y_CONTENTS_FOCUS' && f.path === box.path))
+      report(findings, 'E_A11Y_CONTENTS_FOCUS', 'error', `${box.label} is a ${box.tag === 'a' ? 'link' : box.tag === 'button' ? 'button' : 'focusable element'} with display: contents: its children draw it, but it has no box, so Tab skips it and the keyboard cannot use it. Give it a box (display: block, or grid/flex) and move the layout to it`, { box, path: box.path }, at, { rule: 'contents-focus' });
   }
   // hidden-control (SC 2.1.1, 4.1.2): the custom checkbox pattern gone wrong — the field itself is display: none or
   // visibility: hidden (out of the tab order and the accessibility tree) while its label is shown. A pointer can toggle

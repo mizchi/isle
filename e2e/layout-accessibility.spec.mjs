@@ -1597,3 +1597,26 @@ test('stretched link: Chromium hits the link\'s ::after at the button exactly wh
     expect(hit === 'l', `${fix || 'bare'}: the button centre hits .${hit}`).toBe(covered);
   }
 });
+
+test('contents-focus: where the static rule reports, Tab never lands on the element in Chromium', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const base = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.page{${g};background:#fff}.card{display:block;height:40px;background:#eee}`;
+  const cases = [
+    ['<a class="l" href="/x" aria-label="Card"><span class="card"></span></a>', '.l{display:contents}', true],
+    ['<button class="l" type="button" aria-label="Go"><span class="card"></span></button>', '.l{display:contents}', true],
+    ['<div class="l" tabindex="0" role="button" aria-label="Go"><span class="card"></span></div>', '.l{display:contents}', true],
+    ['<a class="l" href="/x" aria-label="Card"><span class="card"></span></a>', `.l{${g}}`, false],
+    ['<button class="l card" type="button" aria-label="Go"></button>', '.l{appearance:none;display:block;box-sizing:border-box;min-width:0;min-height:0;padding:0;border:0;background:#eee}', false],
+  ];
+  for (const [inner, extra, warn] of cases) {
+    const html = `<main class="page"><a class="first card" href="/a" aria-label="First"></a>${inner}</main>`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + extra, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+    expect(report.status, report.diagnostics.map(d => d.message).join(' | ')).not.toBe('unknown');
+    expect(report.diagnostics.some(d => d.code === 'E_A11Y_CONTENTS_FOCUS'), `${inner} ${extra}`).toBe(warn);
+    await page.setViewportSize({width: 400, height: 600});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${base}${extra}</style></head><body>${html}</body></html>`);
+    let reached = false;
+    for (let i = 0; i < 4; i++) { await page.keyboard.press('Tab'); if (await page.evaluate(() => document.activeElement?.classList.contains('l'))) reached = true; }
+    expect(reached, `${inner} ${extra}: Tab reaches it`).toBe(!warn);
+  }
+});
