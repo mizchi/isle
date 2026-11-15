@@ -73,3 +73,16 @@ test('a w-descriptor srcset without sizes (sizes defaults to 100vw) on an image 
   // Density descriptors do not use sizes.
   assert.equal(analyzeHTML('<div class="page"><img src="/a.png" srcset="/b.png 2x" width="400" height="200" alt=""></div>', {name: 'P', css: css('repeat(3,minmax(0,1fr))'), viewport: {min: 320, max: 1280}}).layoutWarnings, undefined);
 });
+
+test('a picture source that an earlier source always shadows is W_LAYOUT_SOURCE_SHADOWED', () => {
+  const css = '*{box-sizing:border-box;margin:0}.page,picture{display:grid;grid-template-columns:minmax(0,1fr)}img{display:block;width:100%;height:auto}';
+  const shadowed = sources => (analyzeHTML(`<div class="page"><picture>${sources}<img src="/s.png" width="400" height="200" alt=""></picture></div>`, {name: 'P', css, viewport: {min: 320, max: 1280}}).layoutWarnings ?? [])
+    .filter(w => w.code === 'W_LAYOUT_SOURCE_SHADOWED').map(w => [w.source, w.media]);
+  const src = (media, file) => `<source media="${media}" srcset="${file}" width="400" height="200">`;
+  assert.deepEqual(shadowed(src('(min-width: 600px)', '/m.png') + src('(min-width: 900px)', '/l.png')), [[1, '(min-width: 900px)']]);
+  assert.deepEqual(shadowed(src('(min-width: 900px)', '/l.png') + src('(min-width: 600px)', '/m.png')), []);
+  // A source without media matches everywhere: later sources are dead.
+  assert.deepEqual(shadowed('<source srcset="/a.png" width="400" height="200">' + src('(min-width: 600px)', '/m.png')), [[1, '(min-width: 600px)']]);
+  // Its media never matches in the range.
+  assert.deepEqual(shadowed(src('(min-width: 2000px)', '/x.png')), [[0, '(min-width: 2000px)']]);
+});

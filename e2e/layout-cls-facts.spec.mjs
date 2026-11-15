@@ -364,6 +364,28 @@ test('container queries that never match: where the static check warns, the rule
   }
 });
 
+test('picture sources: a source the static check reports as shadowed is never the one Chromium loads', async ({page}) => {
+  await page.route(/\/[a-z]\.png$/, route => route.fulfill({body: png, contentType: 'image/png'}));
+  const css = '*{box-sizing:border-box;margin:0}.page,picture{display:grid;grid-template-columns:minmax(0,1fr)}img{display:block;width:100%;height:auto}';
+  const src = (media, file) => `<source ${media ? `media="${media}" ` : ''}srcset="/${file}.png" width="400" height="200">`;
+  for (const sources of [src('(min-width: 600px)', 'm') + src('(min-width: 900px)', 'l'), src('(min-width: 900px)', 'l') + src('(min-width: 600px)', 'm'), src('', 'a') + src('(min-width: 600px)', 'm'), src('(min-width: 2000px)', 'x') + src('(max-width: 700px)', 'n')]) {
+    const html = `<div class="page"><picture>${sources}<img src="/s.png" width="400" height="200" alt=""></picture></div>`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280}});
+    expect(report.status, sources).toBe('verified');
+    const dead = new Set((report.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_SOURCE_SHADOWED').map(w => /\/([a-z])\.png/.exec(w.srcset)[1]));
+    const loaded = new Set();
+    for (const width of [320, 500, 650, 800, 1000, 1280]) {
+      await page.setViewportSize({width, height: 600});
+      await page.route('http://picture.test/', route => route.fulfill({contentType: 'text/html', body: `<!doctype html><html lang="en"><head><style>${css}</style></head><body style="margin:0">${html}</body></html>`}));
+      await page.goto('http://picture.test/');
+      await page.unroute('http://picture.test/');
+      loaded.add(await page.evaluate(async () => { const i = document.querySelector('img'); await i.decode().catch(() => {}); return /\/([a-z])\.png/.exec(i.currentSrc)[1]; }));
+    }
+    const all = [...sources.matchAll(/\/([a-z])\.png/g)].map(m => m[1]);
+    for (const file of all) expect(loaded.has(file), `${sources}: ${file} reported dead ${dead.has(file)}, loaded ${[...loaded]}`).toBe(!dead.has(file));
+  }
+});
+
 test('animation score bound: Chromium’s largest session window stays below the static window bound', async ({page}) => {
   const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
   const html = '<div class="page"><div class="a"></div><div class="b"></div></div>';

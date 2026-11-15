@@ -211,7 +211,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   const component = options.name ?? 'Document';
   const h = options.viewport.height ?? { min: 0, max: 0 };
   const initial = rectangle(domain, { min: q(h.min), max: q(h.max) });
-  const diagnostics = [...inputDiagnostics], findings = [], checks = [], policies = [], sizes = [], queries = [], queryFacts = [], subgrids = [], scrollbars = [], invalidSubstitutions = [];
+  const diagnostics = [...inputDiagnostics], findings = [], checks = [], policies = [], sizes = [], queries = [], queryFacts = [], sourceUse = new Map(), subgrids = [], scrollbars = [], invalidSubstitutions = [];
   // Live geometry and waived obligations for the opt-in integrity rules.
   const geometry = [], waived = [];
   // Paint facts of the options.ancestors chain (html, body, …) for the accessibility rules.
@@ -422,6 +422,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // An img's width/height attributes are presentational hints (below every author rule) for its width and height,
       // and set its aspect-ratio to auto w / h (HTML rendering §15.4.3; measured).
       const chosen = pictureSources.find(source => !source.condition || activeContext(contexts.get(source.condition)));
+      if (emit && pictureSources.length) {
+        const use = sourceUse.get(box.path) ?? { box, sources: pictureSources, chosen: new Set(), active: new Set() };
+        sourceUse.set(box.path, use);
+        if (chosen) use.chosen.add(pictureSources.indexOf(chosen));
+        pictureSources.forEach((source, i) => { if (!source.condition || activeContext(contexts.get(source.condition))) use.active.add(i); });
+      }
       // A selected source with width or height attributes is the image's dimension source; else the img's own.
       const imageFacts = chosen ? { ...((chosen.facts.width !== undefined || chosen.facts.height !== undefined) ? { width: chosen.facts.width, height: chosen.facts.height } : { width: box.imageSize?.width, height: box.imageSize?.height }), src: chosen.src } : box.imageSize && { ...box.imageSize, src: loadedSource(box.imageSize.srcset, box.imageSize.src) };
       // video: its width/height attributes are size hints and aspect-ratio auto w / h too (HTML rendering §15.4.3).
@@ -2530,6 +2536,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
     }
   }
+  // A picture source that is never the selected one in the checked range: an earlier source's media covers every
+  // width where its own matches (the first matching source wins), or its media never matches. Its files are dead.
+  if (!diagnostics.some(d => d.severity === 'unknown')) for (const use of sourceUse.values()) use.sources.forEach((source, i) => {
+    if (use.chosen.has(i)) return;
+    const media = source.facts.media ?? 'all', earlier = use.sources.slice(0, i).map(s => s.facts.media ?? 'all');
+    layoutWarnings.push({ code: 'W_LAYOUT_SOURCE_SHADOWED', severity: 'warning', box: use.box.label, path: use.box.path, source: i, media, srcset: source.facts.srcset,
+      message: use.active.has(i)
+        ? `<source media="${media}"> (source ${i + 1}) of ${use.box.label}'s picture is never used: wherever it matches, an earlier source (${earlier.join(', ')}) matches too, and the first match wins. Order the sources from the most specific media to the least`
+        : `<source media="${media}"> (source ${i + 1}) of ${use.box.label}'s picture never matches in the checked viewport range, so it is never used` });
+  });
   // A container query that matches no element anywhere in the checked range: no ancestor is a query container (of
   // that name), or the containers it finds are never that size. Its rules never apply.
   {

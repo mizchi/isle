@@ -19,6 +19,7 @@ export const recommended = {
   W_LAYOUT_ABSOLUTE_PAGE: ['warning', 'give the box it belongs to position: relative'],
   W_LAYOUT_CONTENT_BOX_FULL: ['warning', 'use box-sizing: border-box'],
   W_LAYOUT_MEDIA_NO_MAX: ['warning', 'add max-width: 100%; height: auto'],
+  W_LAYOUT_SOURCE_SHADOWED: ['warning', 'order the picture sources from the most specific media to the least'],
   W_LAYOUT_SIZES_MISSING: ['warning', 'add a sizes attribute with the width the image takes at each breakpoint'],
   W_LAYOUT_LONG_WORD: ['warning', 'use overflow-wrap: anywhere for URLs and long words'],
   W_LAYOUT_GRID_AREA_UNKNOWN: ['warning', 'use a name from the parent\'s grid-template-areas'],
