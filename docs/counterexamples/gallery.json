@@ -1232,6 +1232,19 @@
   "css": "html{font-size:16px}.page{display:grid;grid-template-columns:minmax(0,1fr)}.b{height:20px}"
  },
  {
+  "id": "autofocus-hidden",
+  "title": "An autofocus search field hidden on mobile",
+  "code": "W_A11Y_AUTOFOCUS_HIDDEN",
+  "width": 0,
+  "height": 0,
+  "message": ".search has autofocus but it is not rendered and visible here, so nothing takes focus on load",
+  "shots": [
+   "autofocus-hidden-markup.png"
+  ],
+  "html": "<main class=\"page\"><input class=\"search\" type=\"search\" aria-label=\"Search\" autofocus></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.search{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff}@media (max-width: 500px){.search{display:none}}"
+ },
+ {
   "id": "live-hidden",
   "title": "A status message region kept display: none until it is used",
   "code": "W_A11Y_LIVE_HIDDEN",

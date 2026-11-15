@@ -99,7 +99,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'bar-covered', 'bar-transparent'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'bar-covered', 'bar-transparent', 'autofocus'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
@@ -694,6 +694,24 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   const fixedBars = placed.filter(row => row.fixed && visible(row) && row.painted);
   // A sticky (top: 0) bar is stuck at the viewport top for s in [its page top, its parent's bottom − its height].
   const stickyBars = placed.filter(row => row.sticky && row.sticky.parent && visible(row) && row.painted);
+  // autofocus: on load the browser focuses the first autofocus candidate that can take focus — one not rendered or
+  // not visible there (display: none, visibility: hidden, aria-hidden is not a reason) is skipped for the next
+  // (measured in Chromium). Where no candidate can, nothing takes focus (W_A11Y_AUTOFOCUS_HIDDEN); a later candidate
+  // is ignored where an earlier one takes focus (W_A11Y_AUTOFOCUS_MULTIPLE).
+  const autofocused = all.filter(box => box.autofocus === true && !box.pseudo);
+  const shownAt = box => geometry.filter(row => row.path === box.path && visible(row)).map(row => row.region);
+  let earlier = [];
+  for (const [i, box] of autofocused.entries()) {
+    const ignored = earlier.find(Boolean);
+    if (i > 0 && ignored) report(warnings, 'W_A11Y_AUTOFOCUS_MULTIPLE', 'warning', `${box.label} has autofocus, but an earlier autofocus element (${autofocused[0].label}) takes focus here: only one autofocus applies`, whole(box), ignored, { rule: 'autofocus' });
+    earlier = [...earlier, ...shownAt(box)];
+  }
+  if (autofocused.length) {
+    let none = [domain];
+    for (const region of earlier) none = none.flatMap(r => subtract(r, region));
+    const at = none.find(Boolean);
+    if (at) report(warnings, 'W_A11Y_AUTOFOCUS_HIDDEN', 'warning', `${autofocused.map(b => b.label).join(', ')} ${autofocused.length > 1 ? 'have' : 'has'} autofocus but ${autofocused.length > 1 ? 'none is' : 'it is not'} rendered and visible here, so nothing takes focus on load`, whole(autofocused[0]), at, { rule: 'autofocus' });
+  }
   // bar-transparent: a sticky or fixed bar with text but no opaque background (transparent or translucent, no
   // background image): content scrolling under it shows through and runs into the bar's text.
   for (const bar of placed.filter(row => (row.fixed || row.sticky?.parent) && visible(row) && !row.box.pseudo)) {

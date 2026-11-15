@@ -1537,3 +1537,31 @@ test('bar-transparent: where the static rule warns, the scrolled card shows thro
     expect(showsThrough, `${extra || 'no background'}: header pixel rgb(${r}, ${g}, ${b})`).toBe(warn);
   }
 });
+
+test('autofocus: the static warnings say which candidate Chromium focuses at each width', async ({page}) => {
+  const base = '*{box-sizing:border-box;margin:0}body{margin:0}html,body,.page{display:grid;grid-template-columns:minmax(0,1fr)}.f{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff}';
+  const cases = [
+    ['<input class="f a" type="search" aria-label="Search" autofocus>', '@media (max-width: 500px){.a{display:none}}'],
+    ['<input class="f a" type="search" aria-label="Search" autofocus><input class="f b" type="text" aria-label="Name" autofocus>', '@media (max-width: 500px){.a{display:none}}'],
+    ['<input class="f a" type="search" aria-label="Search" autofocus><input class="f b" type="text" aria-label="Name" autofocus>', ''],
+    ['<input class="f a" type="search" aria-label="Search" autofocus>', '.a{visibility:hidden}'],
+  ];
+  const inRange = (w, width) => (w.range.minInclusive ? width >= w.range.min : width > w.range.min) && (w.range.maxInclusive ? width <= w.range.max : width < w.range.max);
+  for (const [inner, extra] of cases) {
+    const css = base + extra, html = `<main class="page">${inner}</main>`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+    const ws = report.accessibility.warnings.filter(w => w.rule === 'autofocus');
+    for (const width of [360, 700]) {
+      await page.setViewportSize({width, height: 600});
+      await page.route('http://af.test/', r => r.fulfill({contentType: 'text/html', body: `<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`}));
+      await page.goto('http://af.test/');
+      await page.waitForFunction(() => document.readyState === 'complete');
+      await page.waitForTimeout(100);
+      const focused = await page.evaluate(() => [...(document.activeElement?.classList ?? [])].find(c => c === 'a' || c === 'b') ?? 'none');
+      const label = `${inner.length} ${extra} at ${width}`;
+      expect(ws.some(w => w.code === 'W_A11Y_AUTOFOCUS_HIDDEN' && inRange(w, width)), label).toBe(focused === 'none');
+      // .b is reported ignored exactly where .a takes focus while .b has autofocus too.
+      if (inner.includes('class="f b"')) expect(ws.some(w => w.code === 'W_A11Y_AUTOFOCUS_MULTIPLE' && inRange(w, width)), label).toBe(focused === 'a');
+    }
+  }
+});

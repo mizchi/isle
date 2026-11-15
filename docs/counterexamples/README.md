@@ -1868,6 +1868,26 @@ html{font-size:16px}.page{display:grid;grid-template-columns:minmax(0,1fr)}.b{he
 
 </details>
 
+## An autofocus search field hidden on mobile
+
+`W_A11Y_AUTOFOCUS_HIDDEN` — markup rule (nothing to see on screen)
+
+> .search has autofocus but it is not rendered and visible here, so nothing takes focus on load
+
+![autofocus-hidden](autofocus-hidden-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="search" type="search" aria-label="Search" autofocus></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.search{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff}@media (max-width: 500px){.search{display:none}}
+```
+
+</details>
+
 ## A status message region kept display: none until it is used
 
 `W_A11Y_LIVE_HIDDEN` — markup rule (nothing to see on screen)
