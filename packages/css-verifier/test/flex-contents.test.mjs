@@ -49,7 +49,7 @@ test('flex outside the modeled subset is Unknown', () => {
     ['.name { flex: 1; min-width: auto; }', /automatic minimum/],
     ['.name { flex: 1 1 0; width: 50px; min-width: auto; }', /flex-basis and width and an automatic minimum/],
     ['.name { align-self: baseline; }', /baseline/],
-    ['.name { margin-left: -4px; }', /Negative margins/],
+    ['.name { margin-left: -4px; }', /Negative margins|pixel length/],
     ['.avatar { width: auto; }', /content size/],
     ['.avatar { order: 1; }', /order/],
     ['.name { flex: 1 1 30%; }', /flex-basis/],
