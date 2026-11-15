@@ -1407,3 +1407,23 @@ test('Chromium keeps scroll-behavior: smooth under prefers-reduced-motion: reduc
   }
   await page.emulateMedia({reducedMotion: 'no-preference'});
 });
+
+test('focus ring clipped by overflow: clip: the pixels just outside the button are the ring only where the static rule says it survives', async ({page}) => {
+  const b = 'appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246';
+  for (const [name, c, warn] of [['flush with the clip edge', '.c{overflow:clip}', true], ['padded', '.c{overflow:clip;padding:4px}', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}body{margin:0}.page{display:grid;grid-template-columns:200px;padding:16px;background:#fff}.c{display:grid;grid-template-columns:minmax(0,1fr)}.b{${b}}${c}.b:focus{outline:3px solid #ff0000}`;
+    const html = '<main class="page"><div class="c"><button class="b" aria-label="Save"></button></div></main>';
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, boxes: {'.c': {overflow: 'clip', overflowBlock: 'clip'}}});
+    expect(report.accessibility.warnings.some(w => w.code === 'W_A11Y_FOCUS_RING_CLIPPED'), name).toBe(warn);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    await page.focus('.b');
+    const r = await page.evaluate(() => { const x = document.querySelector('.b').getBoundingClientRect(); return {x: Math.round(x.left - 2), y: Math.round(x.top + x.height / 2)}; });
+    const shot = await page.screenshot({clip: {x: r.x, y: r.y, width: 1, height: 1}});
+    // The PNG's single pixel: red ring, or the white page where the ring is cut.
+    const {inflateSync} = await import('node:zlib');
+    let i = 8, idat = []; while (i < shot.length) { const len = shot.readUInt32BE(i), type = shot.toString('ascii', i + 4, i + 8); if (type === 'IDAT') idat.push(shot.subarray(i + 8, i + 8 + len)); i += 12 + len; }
+    const px = inflateSync(Buffer.concat(idat)); const red = px[1] > 200 && px[2] < 80 && px[3] < 80;
+    expect(red, `${name}: ring pixel outside the button is ${red ? 'red' : 'not red'} (static warning ${warn})`).toBe(!warn);
+  }
+});

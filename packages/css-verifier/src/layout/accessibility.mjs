@@ -99,13 +99,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -580,6 +580,34 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
       for (const region of outside) report(findings, 'E_A11Y_FOCUS_CLIPPED', 'error', `${target.box.label} lies outside ${clipper.box.label}, whose overflow: clip never scrolls it into view when focused`, target, region, { rule: 'focus-clipped', clipper: clipper.path });
       if (outside.length) break;
     }
+  }
+
+  // focus-ring-clipped: the focus outline is drawn outside the box (by its width plus outline-offset; the UA ring at
+  // least 1px), and an ancestor with overflow: clip cuts what passes its padding edge: a control flush with
+  // that edge shows a cut-off ring. (A hidden scroller gives its children no placed positions here, so it is not judged.)
+  for (const target of clipPlaced.filter(row => focusable(row) && !hiddenFrom(row.path) && !row.box.pseudo && row.focusStates?.length)) {
+    if (findings.some(f => f.code === 'E_A11Y_FOCUS_CLIPPED' && f.path === target.path)) continue;
+    const paint = target.focusStates[0].paint, author = target.focusStates[0].authorOutline;
+    if (author && ['none', 'hidden'].includes(paint.outlineStyle)) continue;
+    const px = v => /^-?\d+(?:\.\d+)?px$/.test(String(v)) ? Number.parseFloat(v) : /^0$/.test(String(v)) ? 0 : null;
+    const width = author ? ({ thin: 1, medium: 3, thick: 5 })[String(paint.outlineWidth)] ?? px(paint.outlineWidth) : 1;
+    const offset = author ? px(paint.outlineOffset ?? '0') ?? 0 : 0;
+    if (width === null || width + offset <= 0) continue;
+    const reach = q(String(width + offset));
+    const clipper = [...clipPlaced].reverse().find(row => isAncestor(row.path, target.path) && row.overflow === 'clip');
+    if (!clipper) continue;
+    const edges = { left: sum(clipper.origin.inline, scalar(clipper.borders.left)), right: diff(right(clipper), scalar(clipper.borders.right)), top: sum(clipper.origin.block, scalar(clipper.borders.top)), bottom: diff(bottom(clipper), scalar(clipper.borders.bottom)) };
+    const base = intersect(target.region, clipper.region);
+    if (!base) continue;
+    // A side is cut where the ring passes the edge: target − reach < left edge, target + reach > right edge, ….
+    const cut = [
+      clip(base, diff(edges.left, diff(target.origin.inline, scalar(reach))), true),
+      clip(base, diff(sum(right(target), scalar(reach)), edges.right), true),
+      clip(base, diff(edges.top, diff(target.origin.block, scalar(reach))), true),
+      clip(base, diff(sum(bottom(target), scalar(reach)), edges.bottom), true),
+    ].find(Boolean);
+    if (cut && !warnings.some(w => w.code === 'W_A11Y_FOCUS_RING_CLIPPED' && w.path === target.path))
+      report(warnings, 'W_A11Y_FOCUS_RING_CLIPPED', 'warning', `${target.box.label}'s focus ring (${width + offset}px outside it) is cut off by ${clipper.box.label}'s overflow at its edge. Give the container padding, or draw the ring inside (a negative outline-offset)`, target, cut, { rule: 'focus-ring-clipped', clipper: clipper.path });
   }
 
   // focus-clipped-away (SC 2.4.7): the visually-hidden pattern (clip: rect(0 0 0 0) on an absolute box, clip-path:

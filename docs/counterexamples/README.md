@@ -542,6 +542,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);overflow:h
 
 </details>
 
+## A focus ring cut off by a flush overflow: clip container
+
+`W_A11Y_FOCUS_RING_CLIPPED` — viewport 672 × 690px
+
+> .b's focus ring (4px outside it) is cut off by .c's overflow at its edge. Give the container padding, or draw the ring inside (a negative outline-offset)
+
+![focus-ring-clipped](focus-ring-clipped-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="c"><button class="b" aria-label="Save"></button></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px;padding:16px;background:#fff}.c{display:grid;grid-template-columns:minmax(0,1fr);overflow:clip;padding:8px 8px 8px 0;background:#eef}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.b:focus{outline:4px solid #e8710a}
+```
+
+</details>
+
 ## A visually hidden skip link that :focus does not reveal
 
 `E_A11Y_FOCUS_CLIPPED_AWAY` — viewport 672 × 690px
