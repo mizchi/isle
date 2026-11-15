@@ -156,6 +156,7 @@ ancestor 入力は継承用であり、host の寸法を再計算する入力で
 
 - universal・型・class・id・:root と、その複合 selector。:where の specificity は0、:is は一致しない枝も含めた最大 specificity を保持する。combinator、属性 selector 等は未対応。
 - 結合子: 子(`>`)、子孫(空白)、隣接兄弟(`+`)、後続兄弟(`~`)。祖先と前の兄弟要素へ照合し、specificity は各複合 selector の和。状態(`:hover` など)や疑似要素は最後の複合 selector にだけ置ける(途中にあれば Unknown)。`:is()`/`:where()` の中の結合子も Unknown。Chromium の照合(`e2e/layout-combinators.spec.mjs`)は、乱数の木と結合子の規則で、すべての葉の高さが Chromium と一致することを確かめる。
+- **selector とテンプレートの対応(`options.selectors`、opt-in)**: stylesheet の各 selector を解析した木の要素へ照合し、`report.selectors.rows`(selector、file、line、一致した要素の数)に記録する。状態(`:hover` など)と疑似要素は、それが付く要素で判定する。どの要素にも一致しない selector は `W_CSS_SELECTOR_UNMATCHED`(近い class 名があれば示す。転置も 1 文字の違いとして数える)。各複合 selector はどこかの要素に一致するのに結合子の関係が成り立たない selector は `W_CSS_SELECTOR_RELATION` で、壊れた結合子と、実際の親・祖先・兄弟を示す(「`.page > .item`: `.item` は 2 つあるが、親は `.list` と `.card`」)。1 つの木はテンプレートの 1 つの状態なので、分岐のある adapter は状態ごとの警告の共通部分をとる。Chromium の照合は、乱数の木と selector で一致数が `querySelectorAll` と同じことを確かめる。
 - before / after の単一・二重コロン。reset の宣言は読めるが、その selector を実 element へ適用しない。content が生成する追加 box は未対応で unknown。content:none / normal だけを許可する。
 - 平坦な名前付き layer、順序宣言、再開、匿名 layer block。通常宣言は後の layer、重要宣言は先の layer を優先する。layer 外の宣言も標準の優先順位に従う。nested layer と条件付き layer 宣言は未対応。layer 内の media / container 条件は扱える。
 - 検査対象 property の inherit / initial / unset / revert と、padding / margin / border 等の対応 shorthand、all reset。revert-layer は未対応。UA 由来の未知の margin 等を0だと推測しない。

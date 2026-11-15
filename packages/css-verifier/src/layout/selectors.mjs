@@ -89,17 +89,18 @@ const elementSiblings = box => (box[PARENT]?.children ?? []).filter(child => !ch
 function related(chain, i, box) {
   if (i >= chain.length) return true;
   const { compound, combinator } = chain[i];
-  let candidates = [];
-  if (combinator === '>') candidates = box[PARENT] ? [box[PARENT]] : [];
-  else if (combinator === ' ') for (let p = box[PARENT]; p; p = p[PARENT]) candidates.push(p);
-  else {
-    const siblings = elementSiblings(box), at = siblings.findIndex(s => s === box || s.path === box.path);
-    const before = at > 0 ? siblings.slice(0, at) : [];
-    candidates = combinator === '+' ? before.slice(-1) : before.reverse();
-  }
-  return candidates.some(c => compoundMatches(compound, c) && related(chain, i + 1, c));
+  return neighbors(box, combinator).some(c => compoundMatches(compound, c) && related(chain, i + 1, c));
 }
-function compoundMatches(selector, box) {
+/** The elements a combinator reaches from a box: its parent (>), ancestors (descendant), previous sibling (+) or earlier siblings (~). */
+export function neighbors(box, combinator) {
+  if (combinator === '>') return box[PARENT] ? [box[PARENT]] : [];
+  if (combinator === ' ') { const out = []; for (let p = box[PARENT]; p; p = p[PARENT]) out.push(p); return out; }
+  const siblings = elementSiblings(box), at = siblings.findIndex(s => s === box || s.path === box.path);
+  const before = at > 0 ? siblings.slice(0, at) : [];
+  return combinator === '+' ? before.slice(-1) : before.reverse();
+}
+/** The compound (tag, classes, id, :root, :is/:where) alone, ignoring states, pseudo-elements and combinators. */
+export function compoundMatches(selector, box) {
   if (box.anonymous) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :

@@ -29,3 +29,29 @@ test('complex selectors match the same boxes as Chromium (random trees and rules
   }
   expect(checked).toBeGreaterThan(120);
 });
+
+test('selector usage counts agree with querySelectorAll in Chromium (random trees and selectors)', async ({page}) => {
+  test.setTimeout(600_000);
+  const classes = ['a', 'b', 'c', 'd'], combinators = ['>', ' ', '+', '~'];
+  let compared = 0;
+  for (let seed = 101; seed <= 120; seed++) {
+    const r = random(seed), pick = list => list[Math.floor(r() * list.length)];
+    const node = depth => ({cls: pick(classes), kids: depth < 3 ? Array.from({length: Math.floor(r() * 3)}, () => node(depth + 1)) : []});
+    const root = {cls: 'root', kids: [node(1), node(1), node(1)]};
+    const html = t => `<div class="${t.cls}">${t.kids.map(html).join('')}</div>`;
+    const selectors = Array.from({length: 10}, () => { let s = `.${pick(classes)}`; const n = Math.floor(r() * 3); for (let i = 0; i < n; i++) s += ` ${pick(combinators)} .${pick(classes)}`; return s.replace(/ {2,}/g, ' '); });
+    const css = `*{box-sizing:border-box;margin:0}html,body,div{${g}}` + selectors.map(s => `${s}{color:red}`).join('');
+    const doc = `<html lang="en"><body>${html(root)}</body></html>`;
+    const report = analyzeHTML(doc, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, selectors: true});
+    await page.setContent(`<!doctype html>${doc}`);
+    for (const s of new Set(selectors)) {
+      const row = report.selectors.rows.find(x => x.selector === s);
+      const count = await page.evaluate(sel => document.querySelectorAll(sel).length, s);
+      expect(row.matched, `seed ${seed}: ${s}`).toBe(count);
+      // A warning exactly when nothing matches.
+      expect(report.selectors.warnings.some(w => w.selector === s), `seed ${seed}: ${s}`).toBe(count === 0);
+      compared++;
+    }
+  }
+  expect(compared).toBeGreaterThan(150);
+});
