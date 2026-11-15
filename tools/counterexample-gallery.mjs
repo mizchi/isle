@@ -78,6 +78,37 @@ const cases = [
     html: '<main class="page"><a class="icon" href="/cart"></a></main>', css: '.page{display:grid;grid-template-columns:44px}.icon{display:block;height:44px;background:#246}'},
   {id: 'reflow', title: 'Content that needs horizontal scrolling at 320px', code: 'E_A11Y_REFLOW', options: {accessibility: true},
     html: '<main class="page"><div class="table"></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.table{width:600px;height:80px;background:#c9f}'},
+
+  // --- accessibility (more) ---
+  {id: 'target-overlap', title: 'Two targets that overlap', code: 'E_A11Y_TARGET_OVERLAP', options: {accessibility: true},
+    html: '<main class="page"><button class="go" aria-label="Go"></button><a class="more" href="/more" aria-label="More"></a></main>', css: '.page{display:grid;grid-template-columns:200px;grid-template-rows:44px;position:relative}.go{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.more{position:absolute;left:150px;top:10px;width:80px;height:44px;display:block;background:rgba(220,120,40,.85)}'},
+  {id: 'focus-obscured', title: 'A focused button entirely under another box', code: 'E_A11Y_FOCUS_OBSCURED', state: 'focus', focus: '.go', options: {accessibility: true},
+    html: '<main class="page"><button class="go" aria-label="Pay"></button><div class="cover"></div></main>', css: '.page{display:grid;grid-template-columns:200px;grid-template-rows:44px;position:relative;background:#fff}.go{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.go:focus{outline:3px solid #1a73e8}.cover{position:absolute;left:0;top:0;width:200px;height:44px;background:#f4f4f4}'},
+  {id: 'state-contrast', title: 'A hover color with too little contrast', code: 'E_A11Y_STATE_CONTRAST', state: 'hover', hover: '.b', options: {accessibility: true, boxes: text('.b', 'Subscribe')},
+    html: '<main class="page"><button class="b">Subscribe</button></main>', css: '.page{display:grid;grid-template-columns:160px;background:#fff;color:#000}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;font-family:Roboto;font-size:16px;line-height:24px;background:#fff;color:#000;white-space:nowrap}.b:hover{color:#bbb}'},
+  {id: 'focus-contrast', title: 'A pale focus outline', code: 'E_A11Y_FOCUS_CONTRAST', state: 'focus', focus: '.b', options: {accessibility: true},
+    html: '<main class="page"><button class="b" aria-label="Save"></button></main>', css: '.page{display:grid;grid-template-columns:120px;padding:8px;background:#fff}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.b:focus{outline:3px solid #ddd;outline-offset:2px}'},
+  {id: 'focus-clipped', title: 'A button inside overflow: clip, below the clip edge', code: 'E_A11Y_FOCUS_CLIPPED', options: {accessibility: true, boxes: {'.c': {overflowBlock: 'clip'}}},
+    html: '<main class="page"><div class="c"><div class="s"></div><button class="b" aria-label="Next"></button></div></main>', css: '.page{display:grid;grid-template-columns:200px;background:#fff}.c{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:60px 30px;height:60px;overflow:clip;outline:1px dashed #999}.s{background:#eee}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;background:#c33}'},
+  {id: 'focus-clipped-away', title: 'A visually hidden skip link that :focus does not reveal', code: 'E_A11Y_FOCUS_CLIPPED_AWAY', state: 'focus', focus: '.s', options: {accessibility: true},
+    html: '<main class="page"><a class="s" href="#main" aria-label="Skip to content"></a><div class="d"></div></main>', css: '.page{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px;background:#fff;color:#000}.s{position:absolute;left:0;top:0;width:1px;height:1px;overflow:hidden;display:block;clip:rect(0 0 0 0)}.d{background:#eee}'},
+  {id: 'focus-scrolled-under', title: 'A button that can sit entirely behind a fixed header', code: 'E_A11Y_FOCUS_SCROLLED_UNDER', act: async page => { await page.evaluate(async () => { scrollTo(0, 1000); document.querySelector('.b').focus({preventScroll: true}); await new Promise(r => requestAnimationFrame(r)); }); }, afterLabel: 'focused at scroll 1000px', options: {accessibility: true, scrollbars: overlay},
+    html: '<main class="page"><div class="h"></div><div class="gap"></div><button class="b" aria-label="Buy"></button><div class="tall"></div></main>', css: 'body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:fixed;top:0;left:0;width:100%;height:60px;background:rgba(36,68,102,.97)}.gap{height:1010px}.tall{height:2000px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#c33}.b:focus{outline:3px solid #1a73e8}'},
+  {id: 'fixed-hides', title: 'A fixed footer that covers the end of the page', code: 'E_A11Y_FIXED_HIDES', act: async page => { await page.evaluate(async () => { scrollTo(0, document.documentElement.scrollHeight); await new Promise(r => requestAnimationFrame(r)); }); }, afterLabel: 'scrolled to the end', options: {accessibility: true, scrollbars: overlay},
+    html: '<main class="page"><div class="gap"></div><button class="b" aria-label="Accept"></button><footer class="f"></footer></main>', css: 'body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.f{position:fixed;bottom:0;left:0;width:100%;height:60px;background:rgba(36,68,102,.97)}.gap{height:2000px;background:repeating-linear-gradient(#fff 0 40px,#f3f3f3 40px 80px)}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#c33}'},
+  {id: 'fragment-under-bar', title: 'An #id jump that lands under a fixed header', code: 'W_A11Y_FRAGMENT_UNDER_BAR', act: async page => { await page.click('.l'); await page.waitForTimeout(100); }, afterLabel: 'after following the link: the heading is under the header', highlight: '#s', options: {accessibility: true, scrollbars: overlay, boxes: text('.t', 'Pricing', {}, 20, 30)},
+    html: '<main class="page"><div class="h"></div><div class="top"></div><a class="l" href="#s" aria-label="Jump to pricing"></a><div class="gap"></div><h2 class="t" id="s">Pricing</h2><div class="tall"></div></main>', css: 'body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.h{position:fixed;top:0;left:0;width:100%;height:60px;background:#333}.top{height:60px}.l{display:block;height:30px;background:#06c}.gap{height:1000px}.t{display:block;font-family:Roboto;font-size:20px;line-height:30px;font-weight:400;white-space:nowrap}.tall{height:2000px}', expectWarning: true},
+  {id: 'field-boundary', title: 'A text field whose border is too faint', code: 'E_A11Y_FIELD_BOUNDARY', options: {accessibility: true},
+    html: '<main class="page"><input class="i" type="text" aria-label="Email"></main>', css: '.page{display:grid;grid-template-columns:240px;background:#fff;color:#000}.i{appearance:none;display:block;padding:0 8px;min-width:0;min-height:0;width:240px;height:36px;border:1px solid #ddd;background:transparent;font:16px Roboto}'},
+  {id: 'placeholder-contrast', title: 'Placeholder text with too little contrast', code: 'E_A11Y_PLACEHOLDER_CONTRAST', options: {accessibility: true},
+    html: '<main class="page"><input class="i" type="text" aria-label="Search" placeholder="Search products"></main>', css: '.page{display:grid;grid-template-columns:240px;background:#fff;color:#000}.i{appearance:none;display:block;padding:0 8px;min-width:0;min-height:0;width:240px;height:36px;border:1px solid #000;background:#fff;font-size:16px}.i::placeholder{color:#ccc}'},
+  {id: 'checked-indicator', title: 'A custom checkbox that looks the same when checked', code: 'E_A11Y_CHECKED_INDICATOR', act: async page => { await page.click('.c'); }, afterLabel: 'checked', options: {accessibility: true},
+    html: '<main class="page"><input class="c" type="checkbox" aria-label="Agree"></main>', css: '.page{display:grid;grid-template-columns:24px;background:#fff;color:#000}.c{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:24px;height:24px;border:2px solid #000;background:#fff;margin:0}'},
+  {id: 'text-obscured', title: 'Text entirely under a later opaque box', code: 'E_A11Y_TEXT_OBSCURED', options: {accessibility: true, boxes: text('.t', 'Price: 1,200 USD', {}, 16, 20)},
+    html: '<main class="page"><p class="t">Price: 1,200 USD</p><div class="over"></div></main>', css: '.page{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:20px;background:#fff;color:#000}.t{display:block;font-family:Roboto;font-size:16px;line-height:20px;white-space:nowrap}.over{position:absolute;left:0;top:0;width:100%;height:20px;background:#333}'},
+  // --- integrity (more) ---
+  {id: 'clipped', title: 'Content cut off by overflow: hidden', code: 'W_LAYOUT_CLIPPED', warning: true, options: {integrity: true, boxes: {'.box': {overflowBlock: 'clip'}}},
+    html: '<main class="page"><div class="box"><div class="item a"></div><div class="item b"></div><div class="item c"></div></div></main>', css: '.page{display:grid;grid-template-columns:240px}.box{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px;height:90px;overflow:hidden;background:#eee;padding:8px}.item{height:40px;background:#69c}.b{background:#9c6}.c{background:#c96}'},
   // --- integrity ---
   {id: 'protrusion', title: 'A badge that sticks out of its card', code: 'E_LAYOUT_PROTRUSION', options: {integrity: true},
     html: '<main class="page"><div class="card"><div class="badge"></div></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);padding:24px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:80px;background:#eee}.badge{height:24px;background:#c33;transform:translate(20px,-16px)}'},
@@ -117,11 +148,12 @@ for (const c of cases) {
   if (c.state === 'load' || c.state === 'font') await page.waitForSelector('main');
   else await page.evaluate(() => document.fonts.ready);
   const paths = [...new Set(found.map(f => f.path).filter(Boolean))].slice(0, 4);
-  const rects = () => page.evaluate(paths => paths.map(path => {
+  // The reported boxes (by path), plus any element the case names to outline as well (such as a jump target).
+  const rects = () => page.evaluate(({paths, extra}) => [...paths.map(path => {
     let n = document.documentElement;
     for (const i of path.split('/').slice(1).map(Number)) { if (i < 0) return null; n = [...n.children].filter(c => c.tagName !== 'HEAD')[i]; if (!n) return null; }
-    const r = n.getBoundingClientRect(); return {x: r.left, y: r.top, w: r.width, h: r.height};
-  }), paths);
+    return n;
+  }), ...(extra ? [document.querySelector(extra)] : [])].map(n => { if (!n) return null; const r = n.getBoundingClientRect(); return {x: r.left, y: r.top, w: r.width, h: r.height}; }), {paths, extra: c.highlight});
   const draw = (boxes, ghosts, label) => page.evaluate(({boxes, ghosts, label, whole}) => {
     document.querySelectorAll('.__ce').forEach(e => e.remove());
     const add = (r, style) => { if (!r) return; const e = document.createElement('div'); e.className = '__ce'; Object.assign(e.style, {position: 'fixed', left: r.x - 2 + 'px', top: r.y - 2 + 'px', width: r.w + 4 + 'px', height: r.h + 4 + 'px', zIndex: 2147483647, pointerEvents: 'none', boxSizing: 'border-box', ...style}); document.body.append(e); };
@@ -137,16 +169,18 @@ for (const c of cases) {
     const tag = document.createElement('div'); tag.className = '__ce'; tag.textContent = label;
     Object.assign(tag.style, {position: 'fixed', left: x0 + 'px', top: y1 + 4 + 'px', maxWidth: (x1 - x0 - 8) + 'px', font: '600 12px/1.3 Roboto, sans-serif', color: '#fff', background: 'rgba(200,0,0,.92)', padding: '4px 6px', borderRadius: '3px', zIndex: 2147483647, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'});
     document.body.append(tag);
-    return {x: x0, y: y0, width: x1 - x0, height: Math.min(full, y1 + 30) - y0};
-  }, {boxes, ghosts, label, whole: c.state === 'scroll'});
+    // The DevTools clip is in document coordinates: add the scroll offset.
+    return {x: x0 + scrollX, y: y0 + scrollY, width: x1 - x0, height: Math.min(full, y1 + 30) - y0};
+  }, {boxes, ghosts, label, whole: c.state === 'scroll' || Boolean(c.act && c.options?.scrollbars)});
   const shot = async (name, label, ghosts = []) => { const clip = await draw(await rects(), ghosts, label); const file = `${c.id}-${name}.png`; const {data} = await cdp.send('Page.captureScreenshot', {format: 'png', clip: {...clip, scale: 1}}); writeFileSync(new URL(file, out), Buffer.from(data, 'base64')); return file; };
   const shots = [];
-  const stateful = c.state && c.state !== 'focus';
+  const stateful = (c.state && c.state !== 'focus') || Boolean(c.act);
   const before = await rects();
   shots.push(await shot(stateful ? 'before' : 'violation', `${c.code}${stateful ? ' — before' : ''}`));
   if (c.state === 'focus') { await page.evaluate(() => document.querySelectorAll('.__ce').forEach(e => e.remove())); await page.focus(c.focus); shots.splice(0, 1, await shot('violation', `${c.code} — focused, nothing shows focus`)); }
   if (stateful) {
     await page.evaluate(() => document.querySelectorAll('.__ce').forEach(e => e.remove()));
+    if (c.act) await c.act(page);
     if (c.state === 'hover') await page.hover(c.hover);
     if (c.state === 'slide') await page.evaluate(() => { const [a, b] = document.querySelectorAll('[aria-roledescription=slide]'); a.hidden = true; b.hidden = false; });
     if (c.state === 'animation') await page.evaluate(sel => { const a = document.querySelector(sel).getAnimations()[0]; a.currentTime = 999; }, c.animated);
@@ -155,7 +189,7 @@ for (const c of cases) {
     if (c.state === 'font') await page.evaluate(async () => { await document.fonts.load('32px WebFace'); await document.fonts.ready; });
     if (c.state === 'scroll') await page.evaluate(async () => { scrollTo(0, 120); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); });
     await page.waitForTimeout(50);
-    shots.push(await shot('after', `${c.code} — after (${({hover: 'hovered', slide: 'next slide', animation: 'keyframe 100%', load: 'image loaded', font: 'web font loaded', scroll: 'scrolled 120px'})[c.state]})`, before));
+    shots.push(await shot('after', `${c.code} — after (${c.afterLabel ?? ({hover: 'hovered', slide: 'next slide', animation: 'keyframe 100%', load: 'image loaded', font: 'web font loaded', scroll: 'scrolled 120px'})[c.state]})`, before));
   }
   releaseFont();
   await page.close();

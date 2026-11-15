@@ -422,6 +422,286 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);overflow:h
 
 </details>
 
+## Two targets that overlap
+
+`E_A11Y_TARGET_OVERLAP` — viewport 672 × 690px
+
+> .go and .more overlap
+
+![target-overlap](target-overlap-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="go" aria-label="Go"></button><a class="more" href="/more" aria-label="More"></a></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px;grid-template-rows:44px;position:relative}.go{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.more{position:absolute;left:150px;top:10px;width:80px;height:44px;display:block;background:rgba(220,120,40,.85)}
+```
+
+</details>
+
+## A focused button entirely under another box
+
+`E_A11Y_FOCUS_OBSCURED` — viewport 672 × 690px
+
+> .go is entirely hidden behind .cover when focused
+
+![focus-obscured](focus-obscured-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="go" aria-label="Pay"></button><div class="cover"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px;grid-template-rows:44px;position:relative;background:#fff}.go{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.go:focus{outline:3px solid #1a73e8}.cover{position:absolute;left:0;top:0;width:200px;height:44px;background:#f4f4f4}
+```
+
+</details>
+
+## A hover color with too little contrast
+
+`E_A11Y_STATE_CONTRAST` — viewport 672 × 690px
+
+> .b has contrast 1.92:1 when hovered, below 4.5:1
+
+![state-contrast](state-contrast-before.png) ![state-contrast](state-contrast-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b">Subscribe</button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:160px;background:#fff;color:#000}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;font-family:Roboto;font-size:16px;line-height:24px;background:#fff;color:#000;white-space:nowrap}.b:hover{color:#bbb}
+```
+
+</details>
+
+## A pale focus outline
+
+`E_A11Y_FOCUS_CONTRAST` — viewport 672 × 690px
+
+> .b's focus outline has contrast 1.36:1 against its backdrop, below 3:1
+
+![focus-contrast](focus-contrast-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b" aria-label="Save"></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px;padding:8px;background:#fff}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.b:focus{outline:3px solid #ddd;outline-offset:2px}
+```
+
+</details>
+
+## A button inside overflow: clip, below the clip edge
+
+`E_A11Y_FOCUS_CLIPPED` — viewport 672 × 690px
+
+> .b lies outside .c, whose overflow: clip never scrolls it into view when focused
+
+![focus-clipped](focus-clipped-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="c"><div class="s"></div><button class="b" aria-label="Next"></button></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px;background:#fff}.c{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:60px 30px;height:60px;overflow:clip;outline:1px dashed #999}.s{background:#eee}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;background:#c33}
+```
+
+</details>
+
+## A visually hidden skip link that :focus does not reveal
+
+`E_A11Y_FOCUS_CLIPPED_AWAY` — viewport 672 × 690px
+
+> .s takes focus but is clipped away (visually hidden) even when focused; reveal it on :focus
+
+![focus-clipped-away](focus-clipped-away-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><a class="s" href="#main" aria-label="Skip to content"></a><div class="d"></div></main>
+```
+
+```css
+.page{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px;background:#fff;color:#000}.s{position:absolute;left:0;top:0;width:1px;height:1px;overflow:hidden;display:block;clip:rect(0 0 0 0)}.d{background:#eee}
+```
+
+</details>
+
+## A button that can sit entirely behind a fixed header
+
+`E_A11Y_FOCUS_SCROLLED_UNDER` — viewport 672 × 690px
+
+> .b can be focused while entirely behind the fixed .h (the page does not scroll it out); add scroll-padding to the viewport or scroll-margin to the element
+
+![focus-scrolled-under](focus-scrolled-under-before.png) ![focus-scrolled-under](focus-scrolled-under-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="h"></div><div class="gap"></div><button class="b" aria-label="Buy"></button><div class="tall"></div></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:fixed;top:0;left:0;width:100%;height:60px;background:rgba(36,68,102,.97)}.gap{height:1010px}.tall{height:2000px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#c33}.b:focus{outline:3px solid #1a73e8}
+```
+
+</details>
+
+## A fixed footer that covers the end of the page
+
+`E_A11Y_FIXED_HIDES` — viewport 672 × 690px
+
+> .b stays entirely behind the fixed .f at every scroll position; pad the page by the bar's size
+
+![fixed-hides](fixed-hides-before.png) ![fixed-hides](fixed-hides-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="gap"></div><button class="b" aria-label="Accept"></button><footer class="f"></footer></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.f{position:fixed;bottom:0;left:0;width:100%;height:60px;background:rgba(36,68,102,.97)}.gap{height:2000px;background:repeating-linear-gradient(#fff 0 40px,#f3f3f3 40px 80px)}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#c33}
+```
+
+</details>
+
+## An #id jump that lands under a fixed header
+
+`W_A11Y_FRAGMENT_UNDER_BAR` — viewport 672 × 690px
+
+> .l jumps to #s, whose top lands behind the fixed .h; give it scroll-margin-top (or the viewport scroll-padding-top) of the bar's height
+
+![fragment-under-bar](fragment-under-bar-before.png) ![fragment-under-bar](fragment-under-bar-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="h"></div><div class="top"></div><a class="l" href="#s" aria-label="Jump to pricing"></a><div class="gap"></div><h2 class="t" id="s">Pricing</h2><div class="tall"></div></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.h{position:fixed;top:0;left:0;width:100%;height:60px;background:#333}.top{height:60px}.l{display:block;height:30px;background:#06c}.gap{height:1000px}.t{display:block;font-family:Roboto;font-size:20px;line-height:30px;font-weight:400;white-space:nowrap}.tall{height:2000px}
+```
+
+</details>
+
+## A text field whose border is too faint
+
+`E_A11Y_FIELD_BOUNDARY` — viewport 672 × 690px
+
+> .i has no visible boundary: its fill and borders reach only 1.36:1 against the background (3:1 needed)
+
+![field-boundary](field-boundary-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="i" type="text" aria-label="Email"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:240px;background:#fff;color:#000}.i{appearance:none;display:block;padding:0 8px;min-width:0;min-height:0;width:240px;height:36px;border:1px solid #ddd;background:transparent;font:16px Roboto}
+```
+
+</details>
+
+## Placeholder text with too little contrast
+
+`E_A11Y_PLACEHOLDER_CONTRAST` — viewport 672 × 690px
+
+> .i's placeholder has contrast 1.61:1, below 4.5:1
+
+![placeholder-contrast](placeholder-contrast-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="i" type="text" aria-label="Search" placeholder="Search products"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:240px;background:#fff;color:#000}.i{appearance:none;display:block;padding:0 8px;min-width:0;min-height:0;width:240px;height:36px;border:1px solid #000;background:#fff;font-size:16px}.i::placeholder{color:#ccc}
+```
+
+</details>
+
+## A custom checkbox that looks the same when checked
+
+`E_A11Y_CHECKED_INDICATOR` — viewport 672 × 690px
+
+> .c looks the same checked and unchecked
+
+![checked-indicator](checked-indicator-before.png) ![checked-indicator](checked-indicator-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="c" type="checkbox" aria-label="Agree"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:24px;background:#fff;color:#000}.c{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:24px;height:24px;border:2px solid #000;background:#fff;margin:0}
+```
+
+</details>
+
+## Text entirely under a later opaque box
+
+`E_A11Y_TEXT_OBSCURED` — viewport 672 × 690px
+
+> .t's text is entirely hidden behind .over
+
+![text-obscured](text-obscured-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><p class="t">Price: 1,200 USD</p><div class="over"></div></main>
+```
+
+```css
+.page{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:20px;background:#fff;color:#000}.t{display:block;font-family:Roboto;font-size:16px;line-height:20px;white-space:nowrap}.over{position:absolute;left:0;top:0;width:100%;height:20px;background:#333}
+```
+
+</details>
+
+## Content cut off by overflow: hidden
+
+`W_LAYOUT_CLIPPED` — viewport 672 × 690px
+
+> .box is cut off by .box (overflow hidden)
+
+![clipped](clipped-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="box"><div class="item a"></div><div class="item b"></div><div class="item c"></div></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:240px}.box{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px;height:90px;overflow:hidden;background:#eee;padding:8px}.item{height:40px;background:#69c}.b{background:#9c6}.c{background:#c96}
+```
+
+</details>
+
 ## A badge that sticks out of its card
 
 `E_LAYOUT_PROTRUSION` — viewport 672 × 690px
