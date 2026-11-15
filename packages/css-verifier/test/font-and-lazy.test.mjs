@@ -127,3 +127,12 @@ test('a sticky header in an overflow-x wrapper: auto never sticks (content heigh
   // A wrapper with its own height does scroll vertically: the header sticks inside it (not modeled: Unknown).
   assert.equal(run('overflow-x:auto;height:300px').status, 'unknown');
 });
+
+test('position: sticky with no inset never sticks (W_LAYOUT_STICKY_NO_INSET), laid out as relative', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const run = h => analyzeHTML('<html lang="en"><body><div class="page"><div class="h"></div><div class="c"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body,.page{${g}}.h{height:40px;${h}}.c{height:2000px}`, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+  const bare = run('position:sticky');
+  assert.notEqual(bare.status, 'unknown', JSON.stringify(bare.diagnostics.map(d => d.message)));
+  assert.deepEqual(bare.layoutWarnings.filter(w => w.code === 'W_LAYOUT_STICKY_NO_INSET').map(w => w.box), ['.h']);
+  assert.deepEqual((run('position:sticky;top:0').layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_STICKY_NO_INSET'), []);
+});

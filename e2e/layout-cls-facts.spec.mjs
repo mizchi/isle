@@ -554,3 +554,18 @@ test('form controls: Chromium gives them a font size other than the page\'s exac
     expect(control !== parent, `${css}: button ${control}, page ${parent}`).toBe(warn);
   }
 });
+
+test('position: sticky with no inset scrolls away in Chromium exactly where the static check warns', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [h, warn] of [['position:sticky', true], ['position:sticky;top:0', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body,.page{${g}}body{margin:0}.h{height:40px;background:#246;${h}}.c{height:2000px}`;
+    const html = '<div class="page"><div class="h"></div><div class="c"></div></div>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], integrity: true});
+    expect(report.status).not.toBe('unknown');
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_STICKY_NO_INSET'), h).toBe(warn);
+    await page.setViewportSize({width: 400, height: 600});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const top = await page.evaluate(async () => { scrollTo(0, 300); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); return document.querySelector('.h').getBoundingClientRect().top; });
+    expect(top < 0, `${h}: top ${top}`).toBe(warn);
+  }
+});

@@ -382,6 +382,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       try {style=computeStyle(relevant,box,active,inherited,{spend,state});}
       catch(error) {error.box ??= box;throw error;}
       if (gridItem && inherited && style.display === 'inline') style.display = 'block';
+      // position: sticky with every inset auto never sticks (a sticky box is offset only by its inset properties):
+      // it is laid out like position: relative, and the author probably forgot top: 0.
+      if (style.$sticky && !box.pseudo && ['top', 'bottom', 'left', 'right'].every(side => style[side] === undefined || style[side] === 'auto')) {
+        style = { ...style, $sticky: false };
+        if (emit && !layoutWarnings.some(w => w.code === 'W_LAYOUT_STICKY_NO_INSET' && w.path === box.path)) layoutWarnings.push({ code: 'W_LAYOUT_STICKY_NO_INSET', severity: 'warning', box: box.label, path: box.path,
+          message: `${box.label} is position: sticky with no top, bottom, left or right: a sticky box sticks only by its insets, so it scrolls away like position: relative. Add top: 0 (or the edge it should stick to)`, ...ranges(r) });
+      }
       // An absolute box with both insets of an axis (inset: 0 overlays): an auto size fills the containing block
       // between them, width = 100% − start − end − its own padding and border under content-box (CSS 2 §10.3.7); with
       // an explicit size it is over-constrained and the end inset is ignored (right in ltr, left in rtl; bottom).
