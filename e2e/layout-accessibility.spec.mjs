@@ -1734,3 +1734,21 @@ test('caret-hidden: the static warning agrees with Chromium’s computed caret c
     expect(warned, `${css || 'auto'}: Chromium caret ${caret} on ${bg}`).toBe(hidden);
   }
 });
+
+test('label-pointer: where W_A11Y_LABEL_POINTER warns, clicking the label in Chromium does not toggle its checkbox', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const base = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff}.t{height:10px}.c{appearance:none;display:block;width:24px;height:24px;padding:0;border:2px solid #000;min-width:0;min-height:0;background:#fff}.c:checked{background:#000}.lab{display:block;height:30px;background:#eef;color:#000}`;
+  for (const [html, css] of [
+    ['<input class="c" type="checkbox" id="x"><label class="lab" for="x" aria-label="Agree"></label>', '.lab{pointer-events:none}'],
+    ['<input class="c" type="checkbox" id="x"><label class="lab" for="x" aria-label="Agree"></label>', ''],
+  ]) {
+    const doc = `<main class="p"><h1 class="t" aria-label="T"></h1>${html}</main>`;
+    const report = analyzeHTML(`<html lang="en"><body>${doc}</body></html>`, {name: 'P', css: base + css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+    const warned = report.accessibility.warnings.some(w => w.code === 'W_A11Y_LABEL_POINTER');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${base}${css}</style></head><body>${doc}</body></html>`);
+    const box = await page.locator('.lab').boundingBox();
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    const toggled = await page.evaluate(() => document.querySelector('.c').checked);
+    expect(warned, `${css || 'no pointer-events'}: toggled ${toggled}`).toBe(!toggled);
+  }
+});

@@ -88,6 +88,7 @@
 //   native-aria-conflict → W_A11Y_NATIVE_ARIA_CONFLICT an ARIA state that contradicts the native one (required/disabled/checked), which Chromium announces instead
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 //   icon-contrast    → E_A11Y_ICON_CONTRAST     the svg icon of a control without text under 3:1 against its background (SC 1.4.11)
+//   label-pointer    → W_A11Y_LABEL_POINTER     a field's label with pointer-events: none (clicks pass through it)
 //   caret-hidden     → W_A11Y_CARET_HIDDEN      a text field whose caret is transparent or its background color
 //   contents-focus   → E_A11Y_CONTENTS_FOCUS    a link, button or tabindex element with display: contents (drawn by its children; Tab skips it)
 import { exact, number } from './linear.mjs';
@@ -102,7 +103,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'bar-covered', 'bar-transparent', 'autofocus'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'label-pointer', 'bar-covered', 'bar-transparent', 'autofocus'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
@@ -392,6 +393,18 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     if (Math.abs(ratio - 3) < 1e-9) { report(unknowns, 'U_A11Y_CONTRAST', 'unknown', `${icon.box.label} has contrast ${ratio}:1, at the 3:1 threshold within numeric error`, icon, icon.region, { rule: 'icon-contrast' }); continue; }
     if (ratio < 3 && !findings.some(f => f.code === 'E_A11Y_ICON_CONTRAST' && f.path === icon.path))
       report(findings, 'E_A11Y_ICON_CONTRAST', 'error', `${icon.box.label} is the only content of ${owner.box.label} and is drawn in ${paint} at contrast ${ratio.toFixed(2)}:1 against its background, below the 3:1 for graphics (SC 1.4.11)`, icon, icon.region, { rule: 'icon-contrast', ratio, required: 3, foreground: result.fg, background: result.bg, control: owner.box.label });
+  }
+
+  // label-pointer: a label of a field with pointer-events: none: clicks on it pass through, so it no longer focuses or
+  // toggles its field (a custom checkbox whose real input is hidden can then not be used with a pointer at all).
+  {
+    const labelBoxes = []; (function walk(box) { if (box.tag === 'label') labelBoxes.push(box); for (const child of box.children ?? []) walk(child); })(root);
+    const ids = new Set(); (function walk(box) { if (box.id) ids.add(box.id); for (const child of box.children ?? []) walk(child); })(root);
+    const wrapsField = label => { let found = false; (function walk(box) { if (box !== label && ['input', 'select', 'textarea'].includes(box.tag)) found = true; for (const child of box.children ?? []) walk(child); })(label); return found; };
+    for (const label of labelBoxes.filter(l => (l.labelFor && l.labelFor !== 'dynamic' && ids.has(l.labelFor)) || wrapsField(l)))
+      for (const row of geometry.filter(row => row.path === label.path && visible(row) && row.paint.pointerEvents === 'none'))
+        if (!warnings.some(w => w.code === 'W_A11Y_LABEL_POINTER' && w.path === row.path))
+          report(warnings, 'W_A11Y_LABEL_POINTER', 'warning', `${row.box.label} labels a field but has pointer-events: none: clicking it does not reach the field (a hidden custom checkbox cannot then be toggled with a pointer)`, row, row.region, { rule: 'label-pointer' });
   }
 
   // caret-hidden: a text field whose caret is transparent, or painted in the field's own background color, does not
