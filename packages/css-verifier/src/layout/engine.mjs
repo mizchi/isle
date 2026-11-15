@@ -1984,6 +1984,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                           return solve(item.box,{inline:viewport.inline,block:viewport.block,containingBlock:{path:'viewport',...viewport}},r,finalAncestors,item.inherited ?? style,emit).map(result=>result.region);
                         }
                         const containing = finalAncestors.findLast(ancestor=>ancestor.positioned);
+                        // No positioned (or transformed) ancestor: the initial containing block — the viewport's size at the
+                        // top of the page — places it (CSS 2 §10.1), and it scrolls with the page. Usually a missing
+                        // position: relative on the box it was meant to sit in (a badge that jumps to the page corner).
+                        // A clipping or scrolling ancestor in between (does it clip the box?) stays Unknown.
+                        if (!containing && height && !finalAncestors.some(ancestor=>ancestor.clipped || ancestor.subgrid || (ancestor.style && ['overflow-x','overflow-y'].some(key=>ancestor.style[key] !== 'visible')))) {
+                          const parent = finalAncestors.at(-1)?.box;
+                          if (emit && !layoutWarnings.some(w => w.code === 'W_LAYOUT_ABSOLUTE_PAGE' && w.path === item.box.path)) layoutWarnings.push({ code: 'W_LAYOUT_ABSOLUTE_PAGE', severity: 'warning', box: item.box.label, path: item.box.path, ...(parent ? { parent: parent.label } : {}),
+                            message: `${item.box.label} is position: absolute with no positioned ancestor, so it is placed against the page (the initial containing block), not ${parent ? parent.label : 'its parent'}. Give the box it belongs to position: relative`, ...ranges(r) });
+                          const initial = { inline: width, block: height, origin: { inline: scalar(0), block: scalar(0) } };
+                          return solve(item.box,{inline:initial.inline,block:initial.block,containingBlock:{path:'initial',...initial}},r,finalAncestors,item.inherited ?? style,emit).map(result=>result.region);
+                        }
                         if (!containing?.paddingBlock || containing.subgrid || finalAncestors.some(ancestor=>ancestor.clipped)) throw new Error('Absolute boxes require an owned non-scrolling, unclipped containing block without subgrid placement');
                         return solve(item.box,{inline:containing.paddingInline,block:containing.paddingBlock,
                           containingBlock:{path:containing.box.path,inline:containing.paddingInline,block:containing.paddingBlock,origin:containing.paddingOrigin}},r,finalAncestors,item.inherited ?? style,emit).map(result=>result.region);

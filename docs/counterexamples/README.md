@@ -1788,6 +1788,26 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## A card badge with no positioned ancestor
+
+`W_LAYOUT_ABSOLUTE_PAGE` — viewport 320 × 480px
+
+> .badge is position: absolute with no positioned ancestor, so it is placed against the page (the initial containing block), not .card. Give the box it belongs to position: relative
+
+![absolute-page](absolute-page-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="gap"></div><div class="card"><span class="badge"></span></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:12px}.gap{height:120px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:120px;background:#eef;outline:1px dashed #999}.badge{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:12px;background:#c33}
+```
+
+</details>
+
 ## grid-column on an item of a flex container
 
 `W_LAYOUT_DECLARATION_INERT` — viewport 320 × 480px

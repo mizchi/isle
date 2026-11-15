@@ -463,3 +463,23 @@ test('sticky in an overflow-x wrapper: the header sticks in Chromium exactly whe
     expect(top === 0, `${wrap || 'no wrapper overflow'}: header top ${top} after scrolling 500px`).toBe(!warn);
   }
 });
+
+test('absolute with no positioned ancestor: placed against the initial containing block exactly as in Chromium', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const insets of ['top:8px;right:8px', 'bottom:8px;left:8px', 'bottom:10%;right:5%']) {
+    const css = `*{box-sizing:border-box;margin:0}html,body,.page,.card{${g}}body{margin:0}.gap{height:300px}.card{height:100px}.badge{position:absolute;${insets};width:20px;height:20px;background:red}`;
+    const html = '<main class="page"><div class="gap"></div><div class="card"><span class="badge"></span></div></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}});
+    expect(report.status, `${insets}: ${report.diagnostics.map(d => d.message).join(' | ')}`).toBe('verified');
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_ABSOLUTE_PAGE')).toBe(true);
+    const rect = report.sizes.find(s => s.box === '.badge').rect;
+    for (const [w, h] of [[360, 640], [700, 500]]) {
+      const n = t => { const [a, b = '1'] = String(t ?? '0').split('/'); return Number(a) / Number(b); };
+      const v = x => n(x.constant) + w * n(x.coefficient) + h * n(x.heightCoefficient);
+      await page.setViewportSize({width: w, height: h});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+      const box = await page.evaluate(() => { const b = document.querySelector('.badge').getBoundingClientRect(); return [b.x, b.y]; });
+      expect([v(rect.inlineStart), v(rect.blockStart)], `${insets} at ${w}×${h}`).toEqual(box);
+    }
+  }
+});
