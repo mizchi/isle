@@ -704,6 +704,16 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   for (const [i, box] of autofocused.entries()) {
     const ignored = earlier.find(Boolean);
     if (i > 0 && ignored) report(warnings, 'W_A11Y_AUTOFOCUS_MULTIPLE', 'warning', `${box.label} has autofocus, but an earlier autofocus element (${autofocused[0].label}) takes focus here: only one autofocus applies`, whole(box), ignored, { rule: 'autofocus' });
+    // Where this one takes focus and its bottom edge is below the viewport, the page opens scrolled to it (Chromium
+    // scrolls it into view on load: minimally when partly visible, to the centre when wholly below; measured).
+    if (block && viewportBlock) {
+      let takes = shownAt(box);
+      for (const region of earlier) takes = takes.flatMap(r => subtract(r, region));
+      for (const row of placed.filter(row => row.path === box.path && visible(row))) for (const piece of takes) {
+        const shared = intersect(piece, row.region), below = shared && clip(shared, diff(sum(row.origin.block, row.block), viewportBlock), true);
+        if (below && !warnings.some(w => w.code === 'W_A11Y_AUTOFOCUS_SCROLLS' && w.path === box.path)) report(warnings, 'W_A11Y_AUTOFOCUS_SCROLLS', 'warning', `${box.label} has autofocus and ends below the viewport here: the page opens scrolled down to it, past what is above`, row, below, { rule: 'autofocus' });
+      }
+    }
     earlier = [...earlier, ...shownAt(box)];
   }
   if (autofocused.length) {

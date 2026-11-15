@@ -1565,3 +1565,20 @@ test('autofocus: the static warnings say which candidate Chromium focuses at eac
     }
   }
 });
+
+test('autofocus below the fold: Chromium opens the page scrolled exactly where the static check warns', async ({page}) => {
+  const css = '*{box-sizing:border-box;margin:0}body{margin:0}html,body,.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{height:600px}.tall{height:2000px}.f{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff}';
+  const html = '<main class="page"><div class="hero"></div><input class="f" type="search" aria-label="Search" autofocus><div class="tall"></div></main>';
+  const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+  const ws = report.accessibility.warnings.filter(w => w.code === 'W_A11Y_AUTOFOCUS_SCROLLS');
+  const holds = (w, width, height) => (w.range.minInclusive ? width >= w.range.min : width > w.range.min) && (w.range.maxInclusive ? width <= w.range.max : width < w.range.max)
+    && (w.heightRange.minInclusive ? height >= w.heightRange.min : height > w.heightRange.min) && (w.heightRange.maxInclusive ? height <= w.heightRange.max : height < w.heightRange.max);
+  for (const height of [500, 620, 640, 800]) {
+    await page.setViewportSize({width: 400, height});
+    await page.route('http://af.test/', r => r.fulfill({contentType: 'text/html', body: `<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`}));
+    await page.goto('http://af.test/');
+    await page.waitForTimeout(150);
+    const scrolled = await page.evaluate(() => scrollY > 0);
+    expect(ws.some(w => holds(w, 400, height)), `height ${height}: opened scrolled ${scrolled}`).toBe(scrolled);
+  }
+});

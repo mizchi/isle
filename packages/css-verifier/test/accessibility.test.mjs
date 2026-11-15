@@ -1847,3 +1847,14 @@ test('autofocus falls through to the next candidate where the first one is hidde
   // .b takes focus below 500px (no HIDDEN anywhere) and is ignored above it.
   assert.deepEqual(ws.map(w => [w.code, w.box, w.range.min]), [['W_A11Y_AUTOFOCUS_MULTIPLE', '.f.b', 500]]);
 });
+
+test('autofocus below the fold: the page opens scrolled to it', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const run = hero => analyzeHTML('<html lang="en"><body><main class="page"><div class="hero"></div><input class="f" type="search" aria-label="Search" autofocus><div class="tall"></div></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body,.page{${g}}.hero{height:${hero}}.tall{height:2000px}.f{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff}`, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+  const scrolls = report => report.accessibility.warnings.filter(w => w.code === 'W_A11Y_AUTOFOCUS_SCROLLS');
+  assert.equal(scrolls(run('100px')).length, 0);
+  const [w] = scrolls(run('600px'));
+  assert.ok(w);
+  // Below 632px of viewport height the field (600 to 632) ends below the fold.
+  assert.ok(w.heightRange.max <= 632 && w.heightRange.min === 480, JSON.stringify(w.heightRange));
+});
