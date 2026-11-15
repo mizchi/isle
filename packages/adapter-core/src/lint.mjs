@@ -18,6 +18,7 @@ export const recommended = {
   W_LAYOUT_STICKY_SCROLLER: ['warning', 'use overflow-x: clip on the ancestor, or move the sticky box out'],
   W_LAYOUT_STICKY_INERT: ['warning', 'make it a child of the scrolling content'],
   W_LAYOUT_ABSOLUTE_PAGE: ['warning', 'give the box it belongs to position: relative'],
+  W_LAYOUT_FULL_WIDTH_MARGIN: ['warning', 'drop width: 100% (a grid or flex item stretches) or use calc(100% - the margins)'],
   W_LAYOUT_CONTENT_BOX_FULL: ['warning', 'use box-sizing: border-box'],
   W_LAYOUT_MEDIA_NO_MAX: ['warning', 'add max-width: 100%; height: auto'],
   W_LAYOUT_SOURCE_SHADOWED: ['warning', 'order the picture sources from the most specific media to the least'],

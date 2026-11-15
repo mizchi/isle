@@ -46,3 +46,10 @@ test('percentages resolve against the grid area, not the area less the margins',
   // width: 100% plus a start margin pushes the item past its area (Chromium scrolls the page by the margin).
   assert.ok(run('.c{width:100%;margin-left:20px}').diagnostics.some(d => d.code === 'E_LAYOUT_ITEM_SIZE' && d.box === '.c'));
 });
+
+test('W_LAYOUT_FULL_WIDTH_MARGIN explains a width: 100% item pushed out by its margin', () => {
+  const warned = css => (run(css).layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_FULL_WIDTH_MARGIN').map(w => w.properties.join());
+  assert.deepEqual(warned('.c{width:100%;margin-left:20px}'), ['margin-left']);
+  assert.deepEqual(warned('.c{margin:0 20px}'), []);
+  assert.deepEqual(warned('.c{width:50%;margin-left:20px}'), []);
+});

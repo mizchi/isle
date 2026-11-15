@@ -409,6 +409,20 @@ test('upscaled images: where the static check warns, the file Chromium shows is 
   }
 });
 
+test('width: 100% with a margin: where W_LAYOUT_FULL_WIDTH_MARGIN warns, the item sticks out of its area in Chromium', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [css, warn] of [['.c{width:100%;margin-left:20px}', true], ['.c{width:100%;margin:0 12px}', true], ['.c{margin:0 20px}', false], ['.c{width:50%;margin-left:20px}', false]]) {
+    const all = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};overflow:clip}.c{height:10px}${css}`;
+    const html = '<main class="p"><div class="c"></div></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: all, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_FULL_WIDTH_MARGIN'), css).toBe(warn);
+    await page.setViewportSize({width: 500, height: 600});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${all}</style></head><body>${html}</body></html>`);
+    const out = await page.evaluate(() => document.querySelector('.c').getBoundingClientRect().right > document.querySelector('.p').getBoundingClientRect().right);
+    expect(out, `${css}: sticks out in Chromium`).toBe(warn);
+  }
+});
+
 test('animation score bound: Chromium’s largest session window stays below the static window bound', async ({page}) => {
   const viewport = {min: 800, max: 800, height: {min: 600, max: 600}};
   const html = '<div class="page"><div class="a"></div><div class="b"></div></div>';
