@@ -1948,6 +1948,26 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## An image alt that repeats its caption
+
+`W_A11Y_REDUNDANT_ALT` — viewport 688 × 690px
+
+> .p has alt "Mount Fuji at dawn", which repeats the caption .c beside it: screen readers read it twice (use alt="" when the caption says it)
+
+![redundant-alt](redundant-alt-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><img class="p" src="/wide.png" width="320" height="160" alt="Mount Fuji at dawn"><p class="c">Mount Fuji at dawn</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:320px;background:#fff;color:#000}.p{display:block;width:100%;height:auto}.c{display:block;font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}
+```
+
+</details>
+
 ## A main landmark nested in an aside
 
 `W_A11Y_LANDMARK_TOP_LEVEL` — markup rule (nothing to see on screen)

@@ -243,8 +243,8 @@ const cases = [
   {id: 'p-as-heading', title: 'A bold paragraph used as a heading', code: 'W_A11Y_P_AS_HEADING', warning: true, options: {accessibility: true, boxes: {'.p': {text: {font: {...ro(16, 24), weight: 700}, content: 'Delivery options'}}, ...text('.q', 'Choose a delivery time', {}, 16, 24)}},
     html: '<main class="page"><p class="p">Delivery options</p><p class="q">Choose a delivery time</p></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p,.q{display:block;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}.p{font-weight:700}'},
   // --- markup (last) ---
-  // redundant-alt (an inline img whose alt repeats its text) is not pictured: an inline image inside a text leaf is
-  // not laid out yet, so a reliable counterexample page cannot be made.
+  {id: 'redundant-alt', title: 'An image alt that repeats its caption', code: 'W_A11Y_REDUNDANT_ALT', warning: true, options: {accessibility: true, boxes: text('.c', 'Mount Fuji at dawn')}, highlight: '.c',
+    html: '<main class="page"><img class="p" src="/wide.png" width="320" height="160" alt="Mount Fuji at dawn"><p class="c">Mount Fuji at dawn</p></main>', css: '.page{display:grid;grid-template-columns:320px;background:#fff;color:#000}.p{display:block;width:100%;height:auto}.c{display:block;font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}'},
   {id: 'landmark-top-level', title: 'A main landmark nested in an aside', code: 'W_A11Y_LANDMARK_TOP_LEVEL', warning: true, markup: true, mark: '<main class="m">', options: {accessibility: true},
     doc: '<html lang="en"><body><aside class="a"><main class="m"><div class="x"></div></main></aside></body></html>', html: '<body><aside class="a"><main class="m"><div class="x"></div></main></aside></body>', css: '.a{display:grid;grid-template-columns:minmax(0,1fr)}.m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}'},
   {id: 'duplicate-landmark', title: 'Two banner landmarks', code: 'W_A11Y_DUPLICATE_LANDMARK', warning: true, markup: true, mark: '<header class="h2">', options: {accessibility: true},

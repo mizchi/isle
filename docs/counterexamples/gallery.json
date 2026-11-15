@@ -1275,6 +1275,19 @@
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p,.q{display:block;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}.p{font-weight:700}"
  },
  {
+  "id": "redundant-alt",
+  "title": "An image alt that repeats its caption",
+  "code": "W_A11Y_REDUNDANT_ALT",
+  "width": 688,
+  "height": 690,
+  "message": ".p has alt \"Mount Fuji at dawn\", which repeats the caption .c beside it: screen readers read it twice (use alt=\"\" when the caption says it)",
+  "shots": [
+   "redundant-alt-violation.png"
+  ],
+  "html": "<main class=\"page\"><img class=\"p\" src=\"/wide.png\" width=\"320\" height=\"160\" alt=\"Mount Fuji at dawn\"><p class=\"c\">Mount Fuji at dawn</p></main>",
+  "css": ".page{display:grid;grid-template-columns:320px;background:#fff;color:#000}.p{display:block;width:100%;height:auto}.c{display:block;font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}"
+ },
+ {
   "id": "landmark-top-level",
   "title": "A main landmark nested in an aside",
   "code": "W_A11Y_LANDMARK_TOP_LEVEL",

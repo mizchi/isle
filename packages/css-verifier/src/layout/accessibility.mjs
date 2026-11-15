@@ -971,6 +971,13 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     const leaf = treeBoxes.get(row.parentText);
     if (leaf?.textContent && leaf.textContent !== 'dynamic' && normalize(leaf.textContent) === normalize(row.box.alt)) report(warnings, 'W_A11Y_REDUNDANT_ALT', 'warning', `${row.box.label} has alt ${JSON.stringify(row.box.alt)}, which repeats the text beside it`, row, row.region, { rule: 'redundant-alt' });
   }
+  // A block image whose next or previous rendered sibling is text with the same words (an image and its caption).
+  for (const row of geometry.filter(row => row.box.tag === 'img' && !row.inlineFlow && typeof row.box.alt === 'string' && row.box.alt.trim() && row.box.alt !== 'dynamic' && visible(row))) {
+    const parent = treeBoxes.get(row.path.slice(0, row.path.lastIndexOf('/')));
+    const siblings = parent?.children ?? [], at = siblings.findIndex(child => child.path === row.path);
+    const caption = [siblings[at - 1], siblings[at + 1]].find(sibling => sibling?.textContent && sibling.textContent !== 'dynamic' && normalize(sibling.textContent) === normalize(row.box.alt) && geometry.some(other => other.path === sibling.path && visible(other)));
+    if (caption && !warnings.some(w => w.code === 'W_A11Y_REDUNDANT_ALT' && w.path === row.path)) report(warnings, 'W_A11Y_REDUNDANT_ALT', 'warning', `${row.box.label} has alt ${JSON.stringify(row.box.alt)}, which repeats the caption ${caption.label} beside it: screen readers read it twice (use alt="" when the caption says it)`, row, row.region, { rule: 'redundant-alt', caption: caption.path });
+  }
   for (const row of geometry.filter(row => row.box.tag === 'input' && visible(row) && !hiddenFrom(row.path))) {
     if (row.box.inputType === 'button' && (row.box.value === undefined || (row.box.value !== 'dynamic' && !row.box.value.trim())) && nameOf(row.box) !== true) report(findings, 'E_A11Y_INPUT_BUTTON_NAME', 'error', `${row.box.label} is an input button without a value`, row, row.region, { rule: 'input-button-name' });
   }
