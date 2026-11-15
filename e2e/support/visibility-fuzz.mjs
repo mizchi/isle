@@ -27,7 +27,8 @@ export function generateCase(seed, { flex = false } = {}) {
     return {id, children};
   };
   const item = (inFlex = false) => {
-    const id = `i${n++}`, width = !inFlex && r() < 0.5 ? 'auto' : `${int(4, 45) * 10}px`, height = `${int(2, 9) * 10}px`;
+    // Flex children are narrower (30–200px) so that a flex row both fits and overflows across the domain.
+    const id = `i${n++}`, width = !inFlex && r() < 0.5 ? 'auto' : inFlex ? `${int(3, 20) * 10}px` : `${int(4, 45) * 10}px`, height = `${int(2, 9) * 10}px`;
     items.push({id, width, height, inFlex});
     return {id, children: []};
   };
@@ -46,7 +47,7 @@ export function generateCase(seed, { flex = false } = {}) {
     const body = Array.from({length: int(1, 3)}, () => {
       const kind = r();
       if (kind < 0.35) { const c = pick(containers); return c.kind === 'grid' ? `.${c.id}{grid-template-columns:${tracks()}}` : `.${c.id}{flex-direction:${pick(['row', 'column'])}}`; }
-      if (kind < 0.75) { const i = pick(items); return `.${i.id}{width:${!i.inFlex && r() < 0.3 ? 'auto' : `${int(4, 60) * 10}px`}}`; }
+      if (kind < 0.75) { const i = pick(items); return `.${i.id}{width:${!i.inFlex && r() < 0.3 ? 'auto' : i.inFlex ? `${int(3, 25) * 10}px` : `${int(4, 60) * 10}px`}}`; }
       const i = pick(items); return `.${i.id}{display:none}`;
     }).join('');
     return `@media ${condition}{${body}}`;

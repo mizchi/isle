@@ -631,3 +631,17 @@ test('fixed px grid columns: the grid overflows its container in Chromium exactl
     }
   }
 });
+
+test('a scroll container in an auto row of a too-short grid: Chromium shrinks the row below its content (the static check says Unknown)', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [c, unknown] of [['overflow:hidden', true], ['', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.g{display:grid;grid-template-columns:minmax(0,1fr);height:60px;overflow:hidden}.f{display:grid;grid-template-columns:minmax(0,1fr);padding:8px;${c}}.x{height:50px}.y{height:90px}`;
+    const html = '<div class="g"><div class="f"><div class="x"></div></div><div class="y"></div></div>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+    expect(report.diagnostics.some(d => d.code === 'U_LAYOUT_GRID_SHRINK'), c || 'visible').toBe(unknown);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const height = await page.evaluate(() => document.querySelector('.f').getBoundingClientRect().height);
+    // Content height 66 (50 + padding); a scroll container's row shrinks to its padding (16).
+    expect(height < 66, `${c || 'visible'}: row ${height}px`).toBe(unknown);
+  }
+});

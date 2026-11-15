@@ -43,3 +43,12 @@ test('a grid of fixed px columns wider than its container (W_LAYOUT_FIXED_TRACKS
   assert.deepEqual(warned(grid('200px minmax(0,1fr)')), []);
   assert.deepEqual(warned(grid('repeat(3,minmax(0,1fr))')), []);
 });
+
+test('auto rows of a too-short grid holding a scroll container are Unknown where they overflow (U_LAYOUT_GRID_SHRINK)', () => {
+  const run = c => analyzeHTML('<html lang="en"><body><div class="g"><div class="f"><div class="x"></div></div><div class="y"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.g{display:grid;grid-template-columns:minmax(0,1fr);height:60px;overflow:hidden}.f{display:grid;grid-template-columns:minmax(0,1fr);padding:8px;${c}}.x{height:50px}.y{height:90px}`, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+  assert.deepEqual(run('overflow:hidden').diagnostics.filter(d => d.code === 'U_LAYOUT_GRID_SHRINK').map(d => [d.box, d.items]), [['.g', ['.f']]]);
+  assert.equal(run('overflow:hidden').status, 'unknown');
+  // A visible item keeps its content size (min-content): the overflow is the ordinary violation.
+  assert.equal(run('').status, 'violated');
+  assert.deepEqual(run('').diagnostics.filter(d => d.code === 'U_LAYOUT_GRID_SHRINK'), []);
+});

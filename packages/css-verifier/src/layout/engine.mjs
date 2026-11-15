@@ -2033,6 +2033,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     for (const rs of layouts) {
                       const contentBlock = knownBlock ?? rs.required, blockSize = sum(contentBlock, blockEdges);
                       const finalAncestors = [...parents, { ...own, block: contentBlock, paddingBlock:diff(blockSize,scalar(add(px(style['border-top']),px(style['border-bottom'])))) }];
+                      // A scroll container's automatic minimum size is 0 (CSS Sizing 3 §4.5): in an auto row of a grid whose
+                      // height is definite and too small, Chromium shrinks that row toward the item's padding instead of
+                      // its content (measured), clipping the item's content. Row sizes there are not modeled: Unknown in the
+                      // region where the rows overflow.
+                      if (emit && knownBlock) {
+                        const shrinking = placed.filter(item => rows[item.row]?.auto && ['overflow-x', 'overflow-y'].some(key => item.style[key] !== 'visible'));
+                        const over = shrinking.length && clip(rs.region, diff(rs.required, knownBlock), true);
+                        if (over) diagnostics.push({ code: 'U_LAYOUT_GRID_SHRINK', severity: 'unknown', box: box.label, path: box.path, source: box.source, items: shrinking.map(item => item.box.label),
+                          message: `${box.label}'s auto rows need more than its height here, and ${shrinking.map(item => item.box.label).join(', ')} ${shrinking.length > 1 ? 'are scroll containers' : 'is a scroll container'} (overflow not visible), whose minimum size is 0: the browser shrinks those rows below their content, which is not modeled`, ...ranges(over) });
+                      }
                       if (emit) obligation(contentBlock, rs.required, box, rs.region, 'E_LAYOUT_TRACKS', 'block', (box.contract?.overflowBlock ?? 'fit') === 'fit', () => explanation(sizeChain([...parents, { box, style }], 'block', { hostInset: options.hostBlockInset }), trackProperties('block').map(property => fact(box, style, property))));
                       let endings = [rs.region];
                       // align-content center/end (unstretched rows in a known height): the rows move by part of the free space.
