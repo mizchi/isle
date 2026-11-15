@@ -9,6 +9,20 @@ import {generateCase, viewports} from './support/visibility-fuzz.mjs';
 
 const seeds = Number(process.env.FUZZ_SEEDS ?? 40), first = Number(process.env.FUZZ_FIRST ?? 1);
 const inRange = (range, v) => !range || ((range.minInclusive ? v >= range.min : v > range.min) && (range.maxInclusive ? v <= range.max : v < range.max));
+// A diagnostic's region is a convex polygon in (width, height): every constraint a·w + b·h + c ≥ 0 (> 0 when strict)
+// holds. Ranges are only its bounding box, which is not enough once a branch compares width with height
+// (orientation), so membership is decided on the constraints, in exact fractions.
+const frac = t => { const [n, d = '1'] = String(t ?? '0').split('/'); return [BigInt(n), BigInt(d)]; };
+const inRegion = (d, w, h) => {
+  if (!inRange(d.range, w) || !inRange(d.heightRange, h)) return false;
+  for (const k of d.region?.constraints ?? []) {
+    const [an, ad] = frac(k.coefficient), [bn, bd] = frac(k.heightCoefficient), [cn, cd] = frac(k.constant);
+    // a·w + b·h + c over the common denominator ad·bd·cd (all positive).
+    const value = an * BigInt(w) * bd * cd + bn * BigInt(h) * ad * cd + cn * ad * bd;
+    if (k.strict ? value <= 0n : value < 0n) return false;
+  }
+  return true;
+};
 
 // The grid area of each item from the parent's resolved tracks (getComputedStyle gives px), gaps and padding, in
 // auto placement order (one cell per item, rows by the resolved grid-template-rows).
@@ -43,7 +57,10 @@ test('fuzz: no invisible region — static item-fit verdicts agree with Chromium
     tally.cases++;
     const report = analyzeHTML(c.html, {name: 'P', css: c.css, viewport: {min: 320, max: 1024, height: {min: 480, max: 900}}, devicePixelRatios: [1, 2], scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
     if (report.status === 'unknown') { tally.unknown++; continue; }
-    const misfit = (id, w, h, dpr) => report.diagnostics.some(d => d.code === 'E_LAYOUT_ITEM_SIZE' && d.box === `.${id}` && inRange(d.range, w) && inRange(d.heightRange, h) && (d.devicePixelRatio === undefined || d.devicePixelRatio === dpr));
+    // FUZZ_MUTATE=ignore-dpr drops the pixel-ratio split from the static verdict: the harness must then fail (a
+    // check of the harness itself).
+    const mutate = process.env.FUZZ_MUTATE === 'ignore-dpr';
+    const misfit = (id, w, h, dpr) => report.diagnostics.some(d => d.code === 'E_LAYOUT_ITEM_SIZE' && d.box === `.${id}` && inRegion(d, w, h) && (mutate || d.devicePixelRatio === undefined || d.devicePixelRatio === dpr));
     for (const [w, h] of viewports(c, seed)) for (const dpr of [1, 2]) {
       const page = pages[dpr];
       await page.setViewportSize({width: w, height: h});

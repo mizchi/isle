@@ -63,5 +63,7 @@ export function viewports(c, seed, {min = 320, max = 1024, hmin = 480, hmax = 90
       if (m[2] === 'height' && at >= hmin && at <= hmax) points.add(`${min + Math.floor(r() * (max - min))}x${at}`);
     }
   }
+  // orientation compares width with height (portrait when height ≥ width): sample on w = h and on both sides of it.
+  if (c.css.includes('orientation')) for (const x of [hmin + 40, Math.min(max, hmax) - 60]) for (const [dw, dh] of [[0, 0], [0, 1], [1, 0]]) points.add(`${x + dw}x${x + dh}`);
   return [...points].map(p => p.split('x').map(Number));
 }
