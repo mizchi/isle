@@ -405,6 +405,9 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   const targets = placed.filter(row => interactive(row) && visible(row));
   for (const target of targets) {
     const own = layer(target);
+    // Every cover counts where it covers: one cover's region is not another's (the first found used to end the
+    // search, which lost the region where only a later cover overlaps; found by the occlusion fuzz).
+    let reported = [];
     for (const cover of placed) {
       if (related(cover.path, target.path) || !visible(cover) || cover.paint.pointerEvents === 'none') continue;
       const above = layer(cover);
@@ -412,7 +415,11 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
       // two in-flow block boxes paint (and hit-test) in tree order, the later one on top.
       if (!paintsAbove(cover, above, target, own)) continue;
       const region = overlap(target, cover);
-      if (region) { report(findings, 'E_A11Y_OCCLUDED', 'error', `${target.box.label} is covered by ${cover.box.label}, which is painted later and receives the pointer`, target, region, { rule: 'occluded-target', cover: cover.path }); break; }
+      if (!region) continue;
+      let fresh = [region];
+      for (const done of reported) fresh = fresh.flatMap(piece => subtract(piece, done));
+      for (const piece of fresh) report(findings, 'E_A11Y_OCCLUDED', 'error', `${target.box.label} is covered by ${cover.box.label}, which is painted later and receives the pointer`, target, piece, { rule: 'occluded-target', cover: cover.path });
+      reported.push(region);
     }
   }
 

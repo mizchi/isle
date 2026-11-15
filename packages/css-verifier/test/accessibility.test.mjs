@@ -1858,3 +1858,15 @@ test('autofocus below the fold: the page opens scrolled to it', () => {
   // Below 632px of viewport height the field (600 to 632) ends below the fold.
   assert.ok(w.heightRange.max <= 632 && w.heightRange.min === 480, JSON.stringify(w.heightRange));
 });
+
+test('occluded-target: each cover reports where it covers, not only the first found (occlusion fuzz seed 9)', () => {
+  // .b overflows its 120px card into the next card .k2 (positioned, later: on top) below 414px, and also meets .b2
+  // below 390px: between 390 and 414 only .k2 covers it.
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{background:#fff;color:#000}.page{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:16px;padding:8px;background:#fff}.k1,.k2{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:60px;padding:8px;position:relative;background:#eef}.b,.b2{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#246}.b{width:130px}.b2{width:150px}`;
+  const report = analyzeHTML('<html lang="en"><body><main class="page"><div class="k1"><button class="b" aria-label="A"></button></div><div class="k2"><button class="b2" aria-label="B"></button></div></main></body></html>', {name: 'P', css, viewport: {min: 320, max: 1024, height: {min: 480, max: 900}}, accessibility: true});
+  const covered = report.diagnostics.filter(d => d.code === 'E_A11Y_OCCLUDED' && d.box === '.b');
+  const at = w => covered.some(d => (d.range.minInclusive ? w >= d.range.min : w > d.range.min) && (d.range.maxInclusive ? w <= d.range.max : w < d.range.max));
+  assert.ok(at(350) && at(400) && at(413), JSON.stringify(covered.map(d => [d.message.slice(0, 40), d.range.min, d.range.max])));
+  assert.ok(!at(420));
+});
