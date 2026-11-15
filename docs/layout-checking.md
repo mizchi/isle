@@ -350,6 +350,8 @@ fieldset の最初の legend は border の中に描く(px の寸法が必要)�
 
 論理的な inline の辺(`padding-inline-start`/`-end`、`padding-inline`、`margin-inline-*`、`inset-inline-*`)は、箱の `direction` で物理の辺に解く(rtl では start が右)。物理の辺と同じ cascade で競い、後に勝った方が効く。以前は向きによらず ltr の辺(start が左)に固定していたため、rtl の箱で左右が逆になっていた。Chromium の照合(`e2e/layout-rtl-logical.spec.mjs`)は、rtl と ltr の箱に論理・物理の padding を乱数で混ぜ、子の位置と幅が一致することを確かめる。
 
+- **rtl の箱の物理の辺(`W_LAYOUT_PHYSICAL_IN_RTL`、警告)**: rtl の箱で、物理の辺として書いた左右の値(padding・border・margin の left/right が反対側と違う、positioned の `left`/`right`)と `text-align: left/right`。読む向きに合わせて反転しないので、ltr 用の style を rtl の内容へ持ち込んだ形になる。論理の辺(inline-start/end)で書いたもの、左右が同じもの、ltr の箱は対象外。意図して物理の辺を使う場合もあるので警告。Chromium の照合は、同じ CSS を ltr と rtl で描き、子の位置が鏡像にならないことと警告とが一致するかを確かめる。
+
 ## 反例の出典
 
 幾何の違反(`E_LAYOUT_ITEM_SIZE`、`E_LAYOUT_TRACKS`、`E_LAYOUT_CONTENT`、`E_LAYOUT_BOX_EDGES`)は、[ADR-0002](adr/0002-layout-counterexample-explanations.md)の`explanation`を持つ。両辺を決めたcascadeの勝者を、宣言のfile・line・selector・layer・指定値と、勝者を囲む`@media`/`@container`条件で示す。

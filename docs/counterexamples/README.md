@@ -1868,6 +1868,26 @@ html{font-size:16px}.page{display:grid;grid-template-columns:minmax(0,1fr)}.b{he
 
 </details>
 
+## padding-left in right-to-left content
+
+`W_LAYOUT_PHYSICAL_IN_RTL` — markup rule (nothing to see on screen)
+
+> .item is rtl, but padding-left: 32px is physical: it stays on that side instead of following the reading direction. Use the inline-start/inline-end sides
+
+![physical-in-rtl](physical-in-rtl-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page" dir="rtl"><div class="item"><div class="icon"></div></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.item{display:grid;grid-template-columns:minmax(0,1fr);padding-left:32px}.icon{height:20px}
+```
+
+</details>
+
 ## An autofocus search field hidden on mobile
 
 `W_A11Y_AUTOFOCUS_HIDDEN` — markup rule (nothing to see on screen)

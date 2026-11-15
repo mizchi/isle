@@ -74,3 +74,14 @@ test('logical inline sides resolve by direction: padding-inline-start is the rig
   // The later of a physical and a logical side wins, by the side the logical one means here.
   assert.equal(x('padding-left:5px;padding-inline-end:30px', 'rtl'), 280);
 });
+
+test('physical sides in an rtl box that do not flip (W_LAYOUT_PHYSICAL_IN_RTL)', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const warned = (decl, dir = 'rtl') => (analyzeHTML(`<html lang="en"><body><div class="c" dir="${dir}"><div class="x"><div class="y"></div></div></div></body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.c{display:grid;grid-template-columns:150px}.x{${g};${decl}}.y{height:20px}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_PHYSICAL_IN_RTL').map(w => w.properties.join(' '));
+  assert.deepEqual(warned('padding-left:30px'), ['padding-left']);
+  assert.deepEqual(warned('text-align:left'), ['text-align']);
+  // Logical sides, symmetric physical sides and ltr boxes are fine.
+  assert.deepEqual(warned('padding-inline-start:30px'), []);
+  assert.deepEqual(warned('padding-left:30px;padding-right:30px'), []);
+  assert.deepEqual(warned('padding-left:30px', 'ltr'), []);
+});

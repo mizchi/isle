@@ -30,3 +30,17 @@ test('logical and physical paddings in rtl and ltr boxes agree with Chromium (ra
   }
   expect(compared).toBe(40);
 });
+
+test('physical sides in rtl: Chromium does not mirror the ltr layout exactly where the static check warns', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  for (const [decl, warn] of [['padding-left:30px', true], ['padding-right:10px', true], ['padding-inline-start:30px', false], ['padding-inline:30px 10px', false], ['padding-left:20px;padding-right:20px', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.c{display:grid;grid-template-columns:150px}.x{${g};${decl}}.y{height:20px}`;
+    const at = async dir => { await page.setContent(`<!doctype html><style>${css}</style><div class="c" dir="${dir}"><div class="x"><div class="y"></div></div></div>`); return page.evaluate(() => { const b = document.querySelector('.y').getBoundingClientRect(), c = document.querySelector('.x').getBoundingClientRect(); return [b.x - c.x, b.width, c.width]; }); };
+    const [[lx, w, cw], [rx]] = [await at('ltr'), await at('rtl')];
+    const mirrored = rx === cw - lx - w;
+    const report = analyzeHTML(`<html lang="en"><body><div class="c" dir="rtl"><div class="x"><div class="y"></div></div></div></body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_PHYSICAL_IN_RTL');
+    expect(warned, `${decl}: mirrored ${mirrored}`).toBe(!mirrored);
+    expect(warned, decl).toBe(warn);
+  }
+});

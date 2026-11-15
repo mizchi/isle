@@ -1035,6 +1035,22 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             message: `${box.label} is set in the web font ${face.family} (font-display: ${face.display}) and takes its ${heightFromFont ? 'height' : 'width'} from its text: when the font file arrives the text is laid out again${fallback ? `; the fallback ${fallback.family} overrides metrics (${fallback.overrides.join(', ')}), which only reduces the change` : ''}. Use font-display: optional, preload the font, match the fallback metrics (size-adjust, ascent-override, descent-override), or reserve the box's height`, ...ranges(region) });
         }
       }
+      // Physical sides in an rtl box: a left/right value written physically (not as an inline-start/end side) that
+      // differs from the other side, or text-align: left/right, stays on that side instead of following the reading
+      // direction (an ltr style copied into rtl content). A warning: a deliberate physical side is possible.
+      if (emit && !box.pseudo && style.direction === 'rtl' && !layoutWarnings.some(w => w.code === 'W_LAYOUT_PHYSICAL_IN_RTL' && w.path === box.path)) {
+        const physical = key => style.$sources?.[key] && !style.$sources[key].logical;
+        const found = [];
+        for (const kind of ['padding', 'border', 'margin']) for (const side of ['left', 'right']) {
+          const key = `${kind}-${side}`, other = `${kind}-${side === 'left' ? 'right' : 'left'}`;
+          if (physical(key) && String(style[key]) !== String(style[other])) found.push(key);
+        }
+        for (const key of ['left', 'right']) if (style.position !== 'static' && physical(key) && style[key] !== 'auto') found.push(key);
+        if (physical('text-align') && ['left', 'right'].includes(style['text-align'])) found.push('text-align');
+        if (found.length) layoutWarnings.push({ code: 'W_LAYOUT_PHYSICAL_IN_RTL', severity: 'warning', box: box.label, path: box.path, properties: found,
+          css: found.map(key => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
+          message: `${box.label} is rtl, but ${found.map(key => `${key}: ${style[key]}`).join(', ')} ${found.length > 1 ? 'are' : 'is'} physical: it stays on that side instead of following the reading direction. Use ${found.includes('text-align') ? 'text-align: start/end and ' : ''}the inline-start/inline-end sides`, ...ranges(region) });
+      }
       // Declarations a display makes inert (the layout ignores them; the author meant something): grid placement on a
       // flex item, flex factors on a grid item, and container properties of the other layout model on the box itself.
       if (emit && !box.pseudo && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path)) {
