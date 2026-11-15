@@ -413,6 +413,19 @@
   "css": ".page{display:grid;grid-template-columns:240px;row-gap:12px;background:#fff;color:#111}.s,.f{appearance:none;display:block;width:240px;height:40px;padding:0;border:1px solid #767676;border-radius:4px;min-width:0;min-height:0;background-color:#fff}"
  },
  {
+  "id": "stretched-link",
+  "title": "A stretched link that covers the card's other button",
+  "code": "E_A11Y_OCCLUDED",
+  "width": 672,
+  "height": 690,
+  "message": ".b is covered by .l::after, which is painted later and receives the pointer",
+  "shots": [
+   "stretched-link-violation.png"
+  ],
+  "html": "<main class=\"page\"><article class=\"card\"><a class=\"l\" href=\"/item\" aria-label=\"Item\"></a><button class=\"b\" aria-label=\"Save\"></button></article></main>",
+  "css": ".page{display:grid;grid-template-columns:240px;background:#fff}.card{display:grid;grid-template-columns:minmax(0,1fr);position:relative;grid-auto-rows:40px;row-gap:8px;padding:0;background:#eef}.l{display:block;height:40px;background:#cde}.l::after{content:\"\";position:absolute;inset:0;outline:2px dashed #246}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#c33}"
+ },
+ {
   "id": "tabindex-removed",
   "title": "A visible button taken out of the tab order",
   "code": "W_A11Y_TABINDEX_REMOVED",

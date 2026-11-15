@@ -384,7 +384,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // An absolute box with both insets of an axis (inset: 0 overlays): an auto size fills the containing block
       // between them, width = 100% − start − end − its own padding and border under content-box (CSS 2 §10.3.7); with
       // an explicit size it is over-constrained and the end inset is ignored (right in ltr, left in rtl; bottom).
-      if (style.position === 'absolute' && !box.pseudo) {
+      if (style.position === 'absolute') {
         const sized = (start, end, size, edges) => {
           const set = side => style[side] !== undefined && style[side] !== 'auto';
           if (!set(start) || !set(end)) return;

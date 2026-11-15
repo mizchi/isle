@@ -1582,3 +1582,18 @@ test('autofocus below the fold: Chromium opens the page scrolled exactly where t
     expect(ws.some(w => holds(w, 400, height)), `height ${height}: opened scrolled ${scrolled}`).toBe(scrolled);
   }
 });
+
+test('stretched link: Chromium hits the link\'s ::after at the button exactly where the static check reports it covered', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const base = `*{box-sizing:border-box;margin:0}html,body,.page{${g}}body{margin:0}.page{background:#fff}.card{${g};position:relative;grid-auto-rows:40px;row-gap:8px;background:#fff}.l{display:block;height:40px}.l::after{content:"";position:absolute;inset:0}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#246}`;
+  const html = '<main class="page"><article class="card"><a class="l" href="/item" aria-label="Item"></a><button class="b" aria-label="Save"></button></article></main>';
+  for (const [fix, covered] of [['', true], ['.l::after{pointer-events:none}', false]]) {
+    const css = base + fix;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+    expect(report.diagnostics.some(d => d.code === 'E_A11Y_OCCLUDED' && d.box === '.b'), fix || 'bare').toBe(covered);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const hit = await page.evaluate(() => { const b = document.querySelector('.b').getBoundingClientRect(); return document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2)?.className; });
+    expect(hit === 'l', `${fix || 'bare'}: the button centre hits .${hit}`).toBe(covered);
+  }
+});

@@ -21,3 +21,10 @@ test('inset: 0 fills the containing block; insets with an auto size leave the ga
   // Over-constrained: width wins, right (ltr) and bottom are ignored.
   assert.deepEqual(rect('inset:0;width:100px;height:50px'), [0, 0, 100, 50]);
 });
+
+test('a stretched link (::after inset: 0 over the card) covers the other controls in the card', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const run = fix => analyzeHTML('<html lang="en"><body><main class="page"><article class="card"><a class="l" href="/item" aria-label="Item"></a><button class="b" aria-label="Save"></button></article></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body,.page{${g}}.page{background:#fff}.card{${g};position:relative;grid-auto-rows:40px;row-gap:8px;background:#fff}.l{display:block;height:40px}.l::after{content:"";position:absolute;inset:0}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#246}${fix}`, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+  assert.deepEqual(run('').diagnostics.filter(d => d.code === 'E_A11Y_OCCLUDED').map(d => d.box), ['.b']);
+  assert.equal(run('.l::after{pointer-events:none}').status, 'verified');
+});

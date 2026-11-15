@@ -622,6 +622,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);overflow:h
 
 </details>
 
+## A stretched link that covers the card's other button
+
+`E_A11Y_OCCLUDED` — viewport 672 × 690px
+
+> .b is covered by .l::after, which is painted later and receives the pointer
+
+![stretched-link](stretched-link-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><article class="card"><a class="l" href="/item" aria-label="Item"></a><button class="b" aria-label="Save"></button></article></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:240px;background:#fff}.card{display:grid;grid-template-columns:minmax(0,1fr);position:relative;grid-auto-rows:40px;row-gap:8px;padding:0;background:#eef}.l{display:block;height:40px;background:#cde}.l::after{content:"";position:absolute;inset:0;outline:2px dashed #246}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#c33}
+```
+
+</details>
+
 ## A visible button taken out of the tab order
 
 `W_A11Y_TABINDEX_REMOVED` — viewport 672 × 690px
