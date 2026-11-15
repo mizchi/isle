@@ -665,6 +665,19 @@
   "css": ".page{display:grid;grid-template-columns:160px;padding:8px;background:#fff}.b{appearance:none;display:block;padding:0;border:2px solid #246;min-width:0;min-height:0;height:44px;background:#fff}.b:focus{outline:none;box-shadow:0 0 0 4px #1a73e8}"
  },
  {
+  "id": "smooth-scroll",
+  "title": "Smooth page scrolling with no reduced-motion rule",
+  "code": "W_A11Y_SMOOTH_SCROLL",
+  "width": 0,
+  "height": 0,
+  "message": "html@P has scroll-behavior: smooth with no prefers-reduced-motion: reduce rule: every jump to an #id animates the page, also for people who asked for less motion. Set it in @media (prefers-reduced-motion: no-preference), or back to auto under reduce",
+  "shots": [
+   "smooth-scroll-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"x\"></div></main>",
+  "css": "html{scroll-behavior:smooth}.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
+ },
+ {
   "id": "html-lang",
   "title": "A document without lang",
   "code": "E_A11Y_HTML_LANG",

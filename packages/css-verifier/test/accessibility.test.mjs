@@ -1732,3 +1732,13 @@ test('forced-colors: a focus indicator made only of box-shadow or colour (W_A11Y
   assert.equal(warned('.b:focus{outline:2px solid #1a73e8}'), false);
   assert.equal(warned('.b:focus{outline:none;box-shadow:0 0 0 3px #1a73e8}@media (forced-colors: active){.b:focus{outline:2px solid}}'), false);
 });
+
+test('smooth scrolling of the page without a reduced-motion rule (W_A11Y_SMOOTH_SCROLL)', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const warned = css => analyzeHTML('<html lang="en"><body><main class="page"><div class="x"></div></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.x{height:20px}${css}`, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true})
+    .accessibility.warnings.some(w => w.code === 'W_A11Y_SMOOTH_SCROLL');
+  assert.equal(warned('html{scroll-behavior:smooth}'), true);
+  assert.equal(warned('html{scroll-behavior:smooth}@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}'), false);
+  assert.equal(warned('@media (prefers-reduced-motion: no-preference){html{scroll-behavior:smooth}}'), false);
+  assert.equal(warned('.page{scroll-behavior:smooth}'), false); // a scroll container of its own, not the page
+});

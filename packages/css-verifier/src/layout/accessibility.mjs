@@ -166,7 +166,7 @@ export const contrastRatio = (a, b) => { const [x, y] = [luminance(a), luminance
 
 /** The paint facts of one computed style, kept on each geometry row. */
 export function paintFacts(style) {
-  return { touchAction: style['touch-action'], color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
+  return { scrollBehavior: style['scroll-behavior'], touchAction: style['touch-action'], color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
     isolation: style.isolation, transform: style.transform, scrollMargin: { top: style['scroll-margin-top'], bottom: style['scroll-margin-bottom'] }, scrollPadding: { top: style['scroll-padding-top'], bottom: style['scroll-padding-bottom'] }, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], outlineColor: style['outline-color'], outlineOffset: style['outline-offset'], clippedAway: style['clip-path'] === 'empty' || (style.clip === 'empty' && ['absolute', 'fixed'].includes(style.$fixed ? 'fixed' : style.position)), borderColors: { top: style['border-top-color'], right: style['border-right-color'], bottom: style['border-bottom-color'], left: style['border-left-color'] }, boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
     animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] , direction: style['animation-direction'] } };
@@ -298,7 +298,7 @@ export function circleReach(region, dx, dy, r) {
   return { yes, maybe };
 }
 
-export function judgeAccessibility({ geometry, waived = [], root, domain }, { keyframeFrames = new Map(), contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0, viewportBlock = null, scrollPaddingDeclared = false, forcedColorsHandled = false }) {
+export function judgeAccessibility({ geometry, waived = [], root, domain }, { keyframeFrames = new Map(), contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0, viewportBlock = null, scrollPaddingDeclared = false, forcedColorsHandled = false, smoothReduced = false }) {
   const findings = [], warnings = [], unknowns = [], notes = [], exempted = [];
   // Generated boxes (::before/::after) paint and receive the pointer (for their element), but carry no DOM semantics.
   const everything = geometry;
@@ -1011,6 +1011,12 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     const drawn = (paint.boxShadow && paint.boxShadow !== 'none') || (paint.backgroundColor && !['transparent', 'rgba(0, 0, 0, 0)', 'initial'].includes(String(paint.backgroundColor)));
     if (noBorder && noOutline && drawn && !warnings.some(w => w.code === 'W_A11Y_FORCED_COLORS' && w.path === row.path))
       report(warnings, 'W_A11Y_FORCED_COLORS', 'warning', `${row.box.label} has no border: only its ${paint.boxShadow && paint.boxShadow !== 'none' ? 'box-shadow' : 'background'} shows its edge, which forced colors (Windows high contrast) replace, so the control loses its outline. Give it a border (transparent is enough: forced colors paint it) or style @media (forced-colors: active)`, row, row.region, { rule: 'forced-colors' });
+  }
+  // Smooth scrolling of the whole page (html or body): browsers keep it under prefers-reduced-motion: reduce (measured),
+  // so moving the page for every in-page jump needs a reduced-motion rule that sets it back to auto.
+  if (!smoothReduced) for (const row of geometry.filter(row => ((row.box === root && root.tag === 'html') || (row.box.tag === 'body' && root.children?.includes(row.box)) || (row.box === root && root.tag === 'body')) && row.paint?.scrollBehavior === 'smooth')) {
+    if (!warnings.some(w => w.code === 'W_A11Y_SMOOTH_SCROLL'))
+      report(warnings, 'W_A11Y_SMOOTH_SCROLL', 'warning', `${row.box.label} has scroll-behavior: smooth with no prefers-reduced-motion: reduce rule: every jump to an #id animates the page, also for people who asked for less motion. Set it in @media (prefers-reduced-motion: no-preference), or back to auto under reduce`, row, row.region, { rule: 'motion' });
   }
   // --- zoom ---
   if (root.tag === 'html' && typeof root.metaViewport === 'string') {

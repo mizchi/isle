@@ -70,6 +70,7 @@ box tree の DOM 事実だけを入力にし、違反は viewport の区間(領�
 | redundant-alt(block の画像) | block の画像の alt が、すぐ前か後の表示される要素の文字と同じ(画像とキャプション)。大文字小文字と空白の違いは無視する。文中の inline 画像の場合と同じく警告(読み上げが重複する) | W_A11Y_REDUNDANT_ALT |
 | forced-colors | border も outline もなく、背景色か box-shadow だけで形を示す操作要素(button・input・select・textarea)。強制カラーモード(Windows のハイコントラスト)では背景がシステムの色になり、影は描かれないので形が消える。`@media (forced-colors: active)` を書いたページは対象外。Chromium の強制カラーのエミュレーションで 4 例が一致した | W_A11Y_FORCED_COLORS |
 | forced-colors(フォーカス) | outline を消し、box-shadow か色の変化だけでフォーカスを示す要素。強制カラーモードでは影が描かれず色もシステムの色になるので、フォーカスの表示が消える(下線の変化は残る)。透明の outline を残す(`outline: 2px solid transparent`)か、`@media (forced-colors: active)` を書けば対象外。Chromium の強制カラーで 4 例が一致した | W_A11Y_FORCED_COLORS_FOCUS |
+| motion(スムーズスクロール) | html か body の `scroll-behavior: smooth` に、`prefers-reduced-motion: reduce` で `auto` に戻すルールがない(`no-preference` の中で指定した場合も対象外)。Chromium は reduce でも smooth のままにする(測定)ので、ページ内の移動のたびにページ全体が動く(SC 2.3.3) | W_A11Y_SMOOTH_SCROLL |
 | meta-viewport | viewport の meta tag が拡大を禁じる(`user-scalable=no`、`maximum-scale` が 2 未満)。`analyzeHTML` に `<html>` から始まる文書を渡したとき、head の meta を html の事実として持つ(SC 1.4.4) | E_A11Y_META_VIEWPORT |
 | touch-zoom | html か body の `touch-action` が pinch-zoom を含まない(`none`、`pan-*` だけ)。ページ全体のピンチズームが止まる。部品自身の `touch-action`(スライダーなど)は対象外(SC 1.4.4) | E_A11Y_TOUCH_ZOOM |
 | page-h1 / region / bypass | root が html/body のとき:h1 が描画されない領域、landmark の外の内容、main より前の nav に skip link がない | W_A11Y_PAGE_H1 / W_A11Y_REGION / W_A11Y_BYPASS(警告) |

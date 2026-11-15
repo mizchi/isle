@@ -1002,6 +1002,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{heig
 
 </details>
 
+## Smooth page scrolling with no reduced-motion rule
+
+`W_A11Y_SMOOTH_SCROLL` — markup rule (nothing to see on screen)
+
+> html@P has scroll-behavior: smooth with no prefers-reduced-motion: reduce rule: every jump to an #id animates the page, also for people who asked for less motion. Set it in @media (prefers-reduced-motion: no-preference), or back to auto under reduce
+
+![smooth-scroll](smooth-scroll-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="x"></div></main>
+```
+
+```css
+html{scroll-behavior:smooth}.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}
+```
+
+</details>
+
 ## A document without lang
 
 `E_A11Y_HTML_LANG` — markup rule (nothing to see on screen)

@@ -1398,3 +1398,12 @@ test('forced-colors focus: an indicator made only of box-shadow or colour disapp
     expect(warned, `${focus}: static ${warned}, Chromium indicator ${indicator} (${JSON.stringify(after)})`).toBe(!indicator);
   }
 });
+
+test('Chromium keeps scroll-behavior: smooth under prefers-reduced-motion: reduce unless a rule resets it', async ({page}) => {
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  for (const [css, smooth] of [['html{scroll-behavior:smooth}', true], ['html{scroll-behavior:smooth}@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}', false]]) {
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body><p>x</p></body></html>`);
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior), css).toBe(smooth ? 'smooth' : 'auto');
+  }
+  await page.emulateMedia({reducedMotion: 'no-preference'});
+});
