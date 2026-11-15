@@ -27,6 +27,7 @@ GitHub Issueは未作成で、各文書の「Issue化」を承認後の起票に
 | [0011](0011-flex-and-contents-subsets.md) | 追加の指示 | flex(row/column・nowrap)と`display: contents`の安全なサブセット | 既存CSS検証コア、mizchi/cssの差分検査 |
 | [0012](0012-static-integrity-rules.md) | 追加の指示 | vlmkit の integrity 検査(ページ溢れ・突出・衝突・target 寸法・clip・入れ子スクロール)の静的版 | 既存CSS検証コア |
 | [0013](0013-static-accessibility-rules.md) | 追加の指示 | DOM と CSS を組み合わせた静的アクセシビリティ検査(名前・コントラスト・覆い・見出し・id・フォーカス・reflow など) | 0012 の geometry、0007 |
+| [0014](0014-component-style-language.md) | 追加の意見 | テンプレートの節点に結び付くスタイル言語(selector 照合と cascade を component の中で使わない)の設計案。Proposed、未実装 | 既存CSS検証コア、0013 までの検査 |
 
 0001は上位の設計方針であり、残るADRの完了を一括して宣言するものではない。
 0006・0007は独立して進められる。0008・0009も互いの完了を必須条件にしない。
