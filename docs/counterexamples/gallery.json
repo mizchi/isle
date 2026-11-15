@@ -885,6 +885,214 @@
   "css": ".m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:120px;background:#9cf}@media (orientation: landscape){.m{display:none}}"
  },
  {
+  "id": "aria-attr",
+  "title": "An unknown aria-* attribute",
+  "code": "E_A11Y_ARIA_ATTR",
+  "width": 0,
+  "height": 0,
+  "message": ".b has aria-lable, which is not an ARIA attribute",
+  "shots": [
+   "aria-attr-markup.png"
+  ],
+  "html": "<main class=\"page\"><button class=\"b\" aria-label=\"Close\" aria-lable=\"Close\"></button></main>",
+  "css": ".page{display:grid;grid-template-columns:44px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}"
+ },
+ {
+  "id": "aria-value",
+  "title": "aria-expanded with an invalid value",
+  "code": "E_A11Y_ARIA_VALUE",
+  "width": 0,
+  "height": 0,
+  "message": ".b has aria-expanded=\"yes\", not a valid value",
+  "shots": [
+   "aria-value-markup.png"
+  ],
+  "html": "<main class=\"page\"><button class=\"b\" aria-label=\"Menu\" aria-expanded=\"yes\"></button></main>",
+  "css": ".page{display:grid;grid-template-columns:44px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}"
+ },
+ {
+  "id": "role-attr",
+  "title": "A checkbox role without aria-checked",
+  "code": "E_A11Y_ROLE_ATTR",
+  "width": 0,
+  "height": 0,
+  "message": ".c has role checkbox without aria-checked",
+  "shots": [
+   "role-attr-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"c\" role=\"checkbox\" tabindex=\"0\" aria-label=\"Agree\"></div></main>",
+  "css": ".page{display:grid;grid-template-columns:24px}.c{height:24px;border:2px solid #000}"
+ },
+ {
+  "id": "role-parent",
+  "title": "A tab outside a tablist",
+  "code": "E_A11Y_ROLE_PARENT",
+  "width": 0,
+  "height": 0,
+  "message": ".t has role tab outside tablist",
+  "shots": [
+   "role-parent-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"g\"><button class=\"t\" role=\"tab\" aria-label=\"Details\"></button></div></main>",
+  "css": ".page{display:grid;grid-template-columns:120px}.g{display:grid;grid-template-columns:minmax(0,1fr)}.t{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}"
+ },
+ {
+  "id": "interactive-role-focusable",
+  "title": "A role=button that cannot take focus",
+  "code": "E_A11Y_ROLE_FOCUS",
+  "width": 0,
+  "height": 0,
+  "message": ".b has role button but cannot take focus; add tabindex=\"0\"",
+  "shots": [
+   "interactive-role-focusable-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"b\" role=\"button\" aria-label=\"Save\"></div></main>",
+  "css": ".page{display:grid;grid-template-columns:120px}.b{height:44px;background:#246}"
+ },
+ {
+  "id": "presentation-conflict",
+  "title": "role=presentation on a focusable element",
+  "code": "E_A11Y_PRESENTATION_CONFLICT",
+  "width": 0,
+  "height": 0,
+  "message": ".l has role presentation but is focusable or labelled, so the role is ignored",
+  "shots": [
+   "presentation-conflict-markup.png"
+  ],
+  "html": "<main class=\"page\"><a class=\"l\" href=\"/home\" role=\"presentation\" aria-label=\"Home\"></a></main>",
+  "css": ".page{display:grid;grid-template-columns:120px}.l{display:block;height:44px;background:#246}"
+ },
+ {
+  "id": "label-for",
+  "title": "label for= that names no field",
+  "code": "E_A11Y_LABEL_FOR",
+  "width": 0,
+  "height": 0,
+  "message": ".l is for \"mail\", which is not a labelable element",
+  "shots": [
+   "label-for-markup.png"
+  ],
+  "html": "<main class=\"page\"><label class=\"l\" for=\"mail\" aria-label=\"Email\"></label><input class=\"i\" type=\"email\" id=\"email\" aria-label=\"Email\"></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.l{display:block;height:20px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}"
+ },
+ {
+  "id": "title-only",
+  "title": "A field named only by its title",
+  "code": "W_A11Y_TITLE_ONLY",
+  "width": 0,
+  "height": 0,
+  "message": ".i is named only by its title, which is not shown persistently",
+  "shots": [
+   "title-only-markup.png"
+  ],
+  "html": "<main class=\"page\"><input class=\"i\" type=\"tel\" title=\"Phone number\"></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}"
+ },
+ {
+  "id": "input-button-name",
+  "title": "input type=button with no value",
+  "code": "E_A11Y_INPUT_BUTTON_NAME",
+  "width": 0,
+  "height": 0,
+  "message": ".i is an input button without a value",
+  "shots": [
+   "input-button-name-markup.png"
+  ],
+  "html": "<main class=\"page\"><input class=\"i\" type=\"button\"></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}"
+ },
+ {
+  "id": "input-image-alt",
+  "title": "input type=image without alt",
+  "code": "E_A11Y_INPUT_IMAGE_ALT",
+  "width": 0,
+  "height": 0,
+  "message": ".i is an image button without alt text",
+  "shots": [
+   "input-image-alt-markup.png"
+  ],
+  "html": "<main class=\"page\"><input class=\"i\" type=\"image\" src=\"/wide.png\"></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}"
+ },
+ {
+  "id": "scope",
+  "title": "scope on a data cell",
+  "code": "E_A11Y_SCOPE",
+  "width": 0,
+  "height": 0,
+  "message": ".c has scope=\"col\" on a non-header cell",
+  "shots": [
+   "scope-markup.png"
+  ],
+  "html": "<main class=\"page\"><table class=\"t\"><tbody><tr class=\"r\"><td class=\"c\" scope=\"col\"></td></tr></tbody></table></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.t{table-layout:fixed;width:200px;border-spacing:0}.c{padding:0;height:20px}"
+ },
+ {
+  "id": "td-headers",
+  "title": "td headers= that names no th",
+  "code": "E_A11Y_TABLE_HEADERS_REF",
+  "width": 0,
+  "height": 0,
+  "message": ".c has headers=\"price\", which is not a th of this table",
+  "shots": [
+   "td-headers-markup.png"
+  ],
+  "html": "<main class=\"page\"><table class=\"t\"><tbody><tr class=\"r\"><th class=\"h\" id=\"name\" aria-label=\"Name\"></th><td class=\"c\" headers=\"price\"></td></tr></tbody></table></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.t{table-layout:fixed;width:200px;border-spacing:0}.h,.c{padding:0;height:20px;width:100px}"
+ },
+ {
+  "id": "empty-th",
+  "title": "A header cell with no text",
+  "code": "E_A11Y_EMPTY_TH",
+  "width": 0,
+  "height": 0,
+  "message": ".h is an empty table header here",
+  "shots": [
+   "empty-th-markup.png"
+  ],
+  "html": "<main class=\"page\"><table class=\"t\"><tbody><tr class=\"r\"><th class=\"h\"></th><td class=\"c\"></td></tr></tbody></table></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.t{table-layout:fixed;width:200px;border-spacing:0}.h,.c{padding:0;height:20px;width:100px}"
+ },
+ {
+  "id": "accesskeys",
+  "title": "The same accesskey twice",
+  "code": "W_A11Y_ACCESSKEY",
+  "width": 0,
+  "height": 0,
+  "message": ".b repeats accesskey \"s\" of .a",
+  "shots": [
+   "accesskeys-markup.png"
+  ],
+  "html": "<main class=\"page\"><button class=\"a\" accesskey=\"s\" aria-label=\"Save\"></button><button class=\"b\" accesskey=\"s\" aria-label=\"Search\"></button></main>",
+  "css": ".page{display:grid;grid-template-columns:120px;row-gap:4px}.a,.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}"
+ },
+ {
+  "id": "native-aria-conflict",
+  "title": "aria-checked that contradicts the native state",
+  "code": "W_A11Y_NATIVE_ARIA_CONFLICT",
+  "width": 0,
+  "height": 0,
+  "message": ".c has aria-checked=\"false\" but is checked natively; the native state is announced",
+  "shots": [
+   "native-aria-conflict-markup.png"
+  ],
+  "html": "<main class=\"page\"><input class=\"c\" type=\"checkbox\" checked aria-checked=\"false\" aria-label=\"Agree\"></main>",
+  "css": ".page{display:grid;grid-template-columns:24px}.c{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:24px;height:24px;border:2px solid #000;background:#fff;margin:0}.c:checked{background:#000}"
+ },
+ {
+  "id": "blink",
+  "title": "A marquee",
+  "code": "E_A11Y_BLINK",
+  "width": 0,
+  "height": 0,
+  "message": ".m is a <marquee>, which moves or blinks without a way to pause it",
+  "shots": [
+   "blink-markup.png"
+  ],
+  "html": "<main class=\"page\"><marquee class=\"m\"></marquee></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.m{display:block;width:200px;height:24px}"
+ },
+ {
   "id": "protrusion",
   "title": "A badge that sticks out of its card",
   "code": "E_LAYOUT_PROTRUSION",

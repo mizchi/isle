@@ -1348,6 +1348,326 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## An unknown aria-* attribute
+
+`E_A11Y_ARIA_ATTR` — markup rule (nothing to see on screen)
+
+> .b has aria-lable, which is not an ARIA attribute
+
+![aria-attr](aria-attr-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b" aria-label="Close" aria-lable="Close"></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:44px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}
+```
+
+</details>
+
+## aria-expanded with an invalid value
+
+`E_A11Y_ARIA_VALUE` — markup rule (nothing to see on screen)
+
+> .b has aria-expanded="yes", not a valid value
+
+![aria-value](aria-value-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b" aria-label="Menu" aria-expanded="yes"></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:44px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}
+```
+
+</details>
+
+## A checkbox role without aria-checked
+
+`E_A11Y_ROLE_ATTR` — markup rule (nothing to see on screen)
+
+> .c has role checkbox without aria-checked
+
+![role-attr](role-attr-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="c" role="checkbox" tabindex="0" aria-label="Agree"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:24px}.c{height:24px;border:2px solid #000}
+```
+
+</details>
+
+## A tab outside a tablist
+
+`E_A11Y_ROLE_PARENT` — markup rule (nothing to see on screen)
+
+> .t has role tab outside tablist
+
+![role-parent](role-parent-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="g"><button class="t" role="tab" aria-label="Details"></button></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px}.g{display:grid;grid-template-columns:minmax(0,1fr)}.t{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}
+```
+
+</details>
+
+## A role=button that cannot take focus
+
+`E_A11Y_ROLE_FOCUS` — markup rule (nothing to see on screen)
+
+> .b has role button but cannot take focus; add tabindex="0"
+
+![interactive-role-focusable](interactive-role-focusable-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="b" role="button" aria-label="Save"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px}.b{height:44px;background:#246}
+```
+
+</details>
+
+## role=presentation on a focusable element
+
+`E_A11Y_PRESENTATION_CONFLICT` — markup rule (nothing to see on screen)
+
+> .l has role presentation but is focusable or labelled, so the role is ignored
+
+![presentation-conflict](presentation-conflict-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><a class="l" href="/home" role="presentation" aria-label="Home"></a></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px}.l{display:block;height:44px;background:#246}
+```
+
+</details>
+
+## label for= that names no field
+
+`E_A11Y_LABEL_FOR` — markup rule (nothing to see on screen)
+
+> .l is for "mail", which is not a labelable element
+
+![label-for](label-for-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><label class="l" for="mail" aria-label="Email"></label><input class="i" type="email" id="email" aria-label="Email"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.l{display:block;height:20px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}
+```
+
+</details>
+
+## A field named only by its title
+
+`W_A11Y_TITLE_ONLY` — markup rule (nothing to see on screen)
+
+> .i is named only by its title, which is not shown persistently
+
+![title-only](title-only-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="i" type="tel" title="Phone number"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}
+```
+
+</details>
+
+## input type=button with no value
+
+`E_A11Y_INPUT_BUTTON_NAME` — markup rule (nothing to see on screen)
+
+> .i is an input button without a value
+
+![input-button-name](input-button-name-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="i" type="button"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}
+```
+
+</details>
+
+## input type=image without alt
+
+`E_A11Y_INPUT_IMAGE_ALT` — markup rule (nothing to see on screen)
+
+> .i is an image button without alt text
+
+![input-image-alt](input-image-alt-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="i" type="image" src="/wide.png"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}
+```
+
+</details>
+
+## scope on a data cell
+
+`E_A11Y_SCOPE` — markup rule (nothing to see on screen)
+
+> .c has scope="col" on a non-header cell
+
+![scope](scope-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><table class="t"><tbody><tr class="r"><td class="c" scope="col"></td></tr></tbody></table></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.t{table-layout:fixed;width:200px;border-spacing:0}.c{padding:0;height:20px}
+```
+
+</details>
+
+## td headers= that names no th
+
+`E_A11Y_TABLE_HEADERS_REF` — markup rule (nothing to see on screen)
+
+> .c has headers="price", which is not a th of this table
+
+![td-headers](td-headers-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><table class="t"><tbody><tr class="r"><th class="h" id="name" aria-label="Name"></th><td class="c" headers="price"></td></tr></tbody></table></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.t{table-layout:fixed;width:200px;border-spacing:0}.h,.c{padding:0;height:20px;width:100px}
+```
+
+</details>
+
+## A header cell with no text
+
+`E_A11Y_EMPTY_TH` — markup rule (nothing to see on screen)
+
+> .h is an empty table header here
+
+![empty-th](empty-th-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><table class="t"><tbody><tr class="r"><th class="h"></th><td class="c"></td></tr></tbody></table></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.t{table-layout:fixed;width:200px;border-spacing:0}.h,.c{padding:0;height:20px;width:100px}
+```
+
+</details>
+
+## The same accesskey twice
+
+`W_A11Y_ACCESSKEY` — markup rule (nothing to see on screen)
+
+> .b repeats accesskey "s" of .a
+
+![accesskeys](accesskeys-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="a" accesskey="s" aria-label="Save"></button><button class="b" accesskey="s" aria-label="Search"></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px;row-gap:4px}.a,.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}
+```
+
+</details>
+
+## aria-checked that contradicts the native state
+
+`W_A11Y_NATIVE_ARIA_CONFLICT` — markup rule (nothing to see on screen)
+
+> .c has aria-checked="false" but is checked natively; the native state is announced
+
+![native-aria-conflict](native-aria-conflict-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="c" type="checkbox" checked aria-checked="false" aria-label="Agree"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:24px}.c{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:24px;height:24px;border:2px solid #000;background:#fff;margin:0}.c:checked{background:#000}
+```
+
+</details>
+
+## A marquee
+
+`E_A11Y_BLINK` — markup rule (nothing to see on screen)
+
+> .m is a <marquee>, which moves or blinks without a way to pause it
+
+![blink](blink-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><marquee class="m"></marquee></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.m{display:block;width:200px;height:24px}
+```
+
+</details>
+
 ## A badge that sticks out of its card
 
 `E_LAYOUT_PROTRUSION` — viewport 672 × 690px
