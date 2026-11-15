@@ -57,6 +57,7 @@ error が 1 件でもあれば終了コードは 1 です。
 - `<picture>` の source、`srcset`/`sizes`、`iframe`。
 - grid item と flex の行の item の px margin。幅を指定した grid item の `margin: 0 auto`。
 - block の子だけを持つ `display: block` の container(block flow)と、`max-width` + `margin: 0 auto` のラッパー。
+- 既定の appearance のテキスト入力欄(text 系の input と textarea)。padding と border を 4 辺とも指定していれば、`appearance: none` でなくても同じ箱になる(測った)。UA の `display: inline-block`、`box-sizing: content-box`(search は border-box)、最小寸法 0 もモデル化した。
 - sr-only(視覚的に隠したテキスト)。名前には入るが、収まるかどうか、切り取り、コントラストは判定しない。
 
 `svelte-adapter/fixtures/Catalog.svelte` と `vue-adapter/fixtures/Article.vue` は、これらを組み合わせた例である。

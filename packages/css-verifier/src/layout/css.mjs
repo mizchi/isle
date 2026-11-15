@@ -566,6 +566,10 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag)) {
     for(const side of ['left','right','top','bottom']) {values[`padding-${side}`]='ua';values[`border-${side}`]='ua';}
     for(const key of ['display','box-sizing','min-inline-size','min-block-size']) values[key]='ua';
+    // Text fields: Chromium's UA values are known (measured): inline-block, content-box (search: border-box), no min size.
+    if (box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', undefined].includes(box.inputType))) {
+      values.display = 'inline-block'; values['box-sizing'] = box.inputType === 'search' ? 'border-box' : 'content-box'; values['min-inline-size'] = '0'; values['min-block-size'] = '0';
+    }
     // Controls do not inherit the page's font size: the UA's control font is the default size − 2.67px (13.33px
     // at a 16px default; measured in Chromium), until the author sets it (font: inherit, font-size).
     values['font-size']='ua';

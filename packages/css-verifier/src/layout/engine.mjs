@@ -384,7 +384,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       let style;
       try {style=computeStyle(relevant,box,active,inherited,{spend,state});}
       catch(error) {error.box ??= box;throw error;}
-      if (gridItem && inherited && style.display === 'inline') style = { ...style, display: 'block', $inlineLevel: true };
+      if (gridItem && inherited && ['inline', 'inline-block'].includes(style.display)) style = { ...style, display: 'block', $inlineLevel: true };
       // A list item lays out as a block: its outside marker takes no part in the layout (measured). An inside marker
       // is an inline box in the first line, which is not modeled.
       if (style.display === 'list-item') {
@@ -625,7 +625,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (box.contract?.font) { const reason = textFontMismatch(style, box.contract.font) ?? textLangMismatch(style.$lang, box.contract.textMetrics?.lang) ?? (box.contract.textMetrics?.kind === 'lines' ? textLinesMismatch(style, box.contract) : null); if (reason) throw Object.assign(new Error(reason), {code: 'U_LAYOUT_TEXT_FONT'}); }
     // A button with the reset may also be a grid or flex container (an icon and a label): measured in Chromium, it lays
     // its children out exactly as a div with the same CSS.
-    if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag) && (style.appearance!=='none' || (style.display!=='block' && !(box.tag === 'button' && ['grid', 'flex'].includes(style.display) && (box.children ?? []).length)))) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);
+    // A text field (text-like input or textarea) keeps the same box with its default appearance once the author sets
+    // its padding and border on every side (measured): only its UA paint differs.
+    const textField = box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', undefined].includes(box.inputType));
+    const authoredEdges = ['left', 'right', 'top', 'bottom'].every(side => style.$sources?.[`padding-${side}`] && style.$sources?.[`border-${side}`]);
+    if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag) && ((style.appearance!=='none' && !(textField && authoredEdges)) || (style.display!=='block' && !(box.tag === 'button' && ['grid', 'flex'].includes(style.display) && (box.children ?? []).length)))) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);
     // A fieldset's rendered legend sits in its border: modeled only when the fieldset generates no box.
     // Replaced elements and text fields have intrinsic sizes the model does not compute.
     // Layout shifts from images (Layout Instability, measured): an img without a reserved height gets one when it
