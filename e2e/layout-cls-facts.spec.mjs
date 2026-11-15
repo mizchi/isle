@@ -402,3 +402,25 @@ test('root font size: where the static check warns, text ignores the browser def
     expect(a === b, `${css || 'none'}: ${a} at default 16, ${b} at default 24`).toBe(warn);
   }
 });
+
+test('inert declarations: where the static check warns, Chromium lays the page out the same without the declaration', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const cases = [
+    ['.p{display:flex}', '.c{width:100px;height:10px}', 'grid-column:span 2', '.c', true],
+    ['.p{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}', '.c{height:10px}', 'flex:1', '.c', true],
+    ['.p{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}', '.c{height:10px}', 'grid-column:span 2', '.c', false],
+    ['.p{display:flex}', '.c{width:100px;height:10px}', 'flex-grow:1', '.c', false],
+    ['.p{display:flex}', '.c{width:100px;height:10px}', 'grid-template-columns:minmax(0,1fr)', '.p', true],
+    ['.p{display:grid;grid-template-columns:minmax(0,1fr)}', '.c{height:10px}', 'flex-direction:column', '.p', true],
+    ['.p{display:flex}', '.c{width:100px;height:10px}', 'flex-direction:column', '.p', false],
+  ];
+  const html = '<div class="p"><div class="c"></div><div class="c"></div></div>';
+  for (const [parent, child, decl, target, warn] of cases) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}${parent}${child}${target}{${decl}}`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    expect(report.status, `${decl}: ${report.diagnostics.map(d => d.message).join(' | ')}`).toBe('verified');
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT'), `${target}{${decl}} in ${parent}`).toBe(warn);
+    const rects = async withDecl => { await page.setContent(`<!doctype html><html lang="en"><head><style>*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}${parent}${child}${withDecl ? `${target}{${decl}}` : ''}</style></head><body>${html}</body></html>`); return page.evaluate(() => [...document.querySelectorAll('div')].map(e => { const r = e.getBoundingClientRect(); return [r.x, r.y, r.width, r.height].join(); }).join('|')); };
+    expect((await rects(true)) === (await rects(false)), `${target}{${decl}} in ${parent}: same layout without it`).toBe(warn);
+  }
+});

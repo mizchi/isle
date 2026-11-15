@@ -1728,6 +1728,26 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## grid-column on an item of a flex container
+
+`W_LAYOUT_DECLARATION_INERT` — viewport 320 × 480px
+
+> .c.wide: grid-column: span 2 has no effect (its parent .row is display: flex, not grid)
+
+![declaration-inert](declaration-inert-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="row"><div class="c wide"></div><div class="c"></div><div class="c"></div></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.row{display:flex;column-gap:8px}.c{width:80px;height:60px;background:#246}.wide{grid-column:span 2;background:#c33}
+```
+
+</details>
+
 ## hyphens: auto on a page with no lang
 
 `W_LAYOUT_HYPHENS_NO_LANG` — markup rule (nothing to see on screen)

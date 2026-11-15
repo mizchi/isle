@@ -1018,6 +1018,21 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             message: `${box.label} is set in the web font ${face.family} (font-display: ${face.display}) and takes its ${heightFromFont ? 'height' : 'width'} from its text: when the font file arrives the text is laid out again${fallback ? `; the fallback ${fallback.family} overrides metrics (${fallback.overrides.join(', ')}), which only reduces the change` : ''}. Use font-display: optional, preload the font, match the fallback metrics (size-adjust, ascent-override, descent-override), or reserve the box's height`, ...ranges(region) });
         }
       }
+      // Declarations a display makes inert (the layout ignores them; the author meant something): grid placement on a
+      // flex item, flex factors on a grid item, and container properties of the other layout model on the box itself.
+      if (emit && !box.pseudo && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path)) {
+        const initial = { 'grid-column': 'auto', 'grid-row': 'auto', 'flex-grow': '0', 'flex-shrink': '1', 'flex-basis': 'auto', 'grid-template-columns': 'none', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', 'grid-auto-flow': 'row', 'flex-direction': 'row', 'flex-wrap': 'nowrap' };
+        const written = key => style.$sources?.[key] && String(style[key]) !== initial[key];
+        const parentDisplay = parents.at(-1)?.style.display, inFlow = style.position !== 'absolute';
+        const reasons = [];
+        if (inFlow && parentDisplay === 'flex') for (const key of ['grid-column', 'grid-row']) if (written(key)) reasons.push([key, `its parent ${parents.at(-1).box.label} is display: flex, not grid`]);
+        if (inFlow && parentDisplay === 'grid') for (const key of ['flex-grow', 'flex-shrink', 'flex-basis']) if (written(key)) reasons.push([key, `its parent ${parents.at(-1).box.label} is display: grid, not flex`]);
+        if (style.display === 'flex') for (const key of ['grid-template-columns', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow']) if (written(key)) reasons.push([key, 'it is display: flex, not grid']);
+        if (style.display === 'grid') for (const key of ['flex-direction', 'flex-wrap']) if (written(key)) reasons.push([key, 'it is display: grid, not flex']);
+        if (reasons.length) layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: reasons.map(r => r[0]),
+          css: reasons.map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
+          message: `${box.label}: ${reasons.map(([key, why]) => `${key}: ${style[key]} has no effect (${why})`).join('; ')}`, ...ranges(region) });
+      }
       geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, ...(style.$imageRatio ? { imageRatio: style.$imageRatio } : {}), clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
         // overflow: clip clips without scrolling (hidden still scrolls a focused descendant into view).
