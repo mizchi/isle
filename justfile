@@ -3,6 +3,11 @@ set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 default:
     @just --list
 
+# The Svelte component adapter (generality check of the core outside Isle): unit tests against Svelte's own
+# compiler and SSR. The Chromium comparison is e2e/layout-svelte.spec.mjs.
+svelte-adapter-check:
+    node --test packages/svelte-adapter/test/*.test.mjs
+
 # Independent static CSS core, isolated package consumer and Isle adapter parity.
 css-verifier-check: check-types
     node --test tests/css-verifier.test.mjs tests/css-verifier-package.test.mjs tests/css-transitions.test.mjs
