@@ -276,6 +276,14 @@ ancestor 入力は継承用であり、host の寸法を再計算する入力で
 
 CSS による通常の in-flow parent と child の関係を検査する。pure component と client island の root を追い、有限な動的 class/id・分岐・上限付き loop の集合を検査する。opaque children、inline style、reset/adapter のない native control 等は unknown。初期 SSR に存在する構造だけで将来の構造を判断しない。
 
+## 最小幅のある fr トラックと auto-fill
+
+`minmax(Lpx, Nfr)` は、空き幅の取り分が L 未満のトラックを L で固定し、残りを分け直す(css-grid-1 §12.7.1 の fr の大きさの求め方)。各回は「取り分 ≥ L」による領域の分割になる。全てのトラックが L に固定され、さらに幅が足りない領域は `E_LAYOUT_TRACKS` になる。`minmax(min(Lpx, 100%), Nfr)` では、container の幅が L 未満の所で最小幅が container の幅になり、はみ出さない。
+
+`repeat(auto-fill, T)`(T は `Lpx` か上記の minmax)は、最小幅で並ぶ数だけトラックを作る(1 本以上)。本数は、container の幅に対する閾値 `n·L + (n−1)·gap` で領域を分けて決める。`auto-fit` は空のトラックをつぶすので Unknown にする。
+
+Chromium の照合は 2 つある。`e2e/layout-flex.spec.mjs` は、本数が変わる閾値の前後の幅で矩形が一致することを確かめる。`e2e/layout-fuzz-visibility.spec.mjs` の minmax 版では、これらのトラックを混ぜた入れ子の grid を生成し、item が Chromium の解決したトラックに収まるかどうかの判定が一致することを確かめる(60 seed、7,796 件の判定)。
+
 ## 名前付きの grid 領域
 
 `grid-template-areas` と `grid-area: <名前>` を扱える。`grid-row` / `grid-column` に名前を書いた場合も、その領域の線として扱う。名前は大文字と小文字を区別する。item は DOM の順序ではなく名前で配置される。以下は Unknown にする。

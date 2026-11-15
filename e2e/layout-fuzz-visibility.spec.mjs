@@ -58,13 +58,16 @@ const measure = () => {
   return out;
 };
 
-test('fuzz: no invisible region — static item-fit verdicts agree with Chromium across media, resolution and nesting', async ({browser}) => {
+// The minmax variant makes more rows (auto-fill packs fewer columns), so more cases hit the auto-row shrink of scroll
+// containers, which stays Unknown (U_LAYOUT_GRID_SHRINK): its Unknown share is allowed to be higher.
+for (const [title, options, maxUnknown] of [['', {}, 0.2], [' (minmax(px, fr) and auto-fill tracks)', {minmax: true}, 0.4]])
+test(`fuzz: no invisible region — static item-fit verdicts agree with Chromium across media, resolution and nesting${title}`, async ({browser}) => {
   test.setTimeout(1_800_000);
   const tally = {cases: 0, unknown: 0, compared: 0, misfits: 0};
   const pages = {};
   for (const dpr of [1, 2]) { const context = await browser.newContext({deviceScaleFactor: dpr}); pages[dpr] = await context.newPage(); }
   for (let seed = first; seed < first + seeds; seed++) {
-    const c = generateCase(seed);
+    const c = generateCase(seed, options);
     tally.cases++;
     const report = analyzeHTML(c.html, {name: 'P', css: c.css, viewport: {min: 320, max: 1024, height: {min: 480, max: 900}}, devicePixelRatios: [1, 2], scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
     if (report.status === 'unknown') { tally.unknown++; continue; }
@@ -88,7 +91,7 @@ test('fuzz: no invisible region — static item-fit verdicts agree with Chromium
   }
   console.log(`visibility fuzz: ${JSON.stringify(tally)}`);
   // The generator must exercise both outcomes and stay mostly inside the modeled subset.
-  expect(tally.unknown).toBeLessThan(tally.cases * 0.2);
+  expect(tally.unknown).toBeLessThan(tally.cases * maxUnknown);
   expect(tally.misfits).toBeGreaterThan(0);
   expect(tally.compared - tally.misfits).toBeGreaterThan(0);
 });

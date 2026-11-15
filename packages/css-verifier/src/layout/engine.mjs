@@ -701,6 +701,35 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (over) out.push({ region: over, values: definitions.map((t, i) => fixed[i] ? scalar(tops[i]) : sum(scalar(tops[i]), times(diff(S, scalar(C)), cmp(autoMax, zero) > 0 ? div(tops[i], autoMax) : div(one, q(autoCount))))), required: scalar(gap) });
       return out;
     }
+    // minmax(L, fr) tracks (css-grid-1 §12.7.1, find the size of an fr): each flexible track takes its share of the
+    // free space unless that is below its minimum L; such tracks are frozen at L and the rest is shared again. Each
+    // round is a region split by "share ≥ L". A capped minimum (min(L, 100%)) is the container width below L.
+    if (definitions.some(t => t.min !== undefined)) {
+      if (definitions.some(t => t.auto || t.autoTable)) throw new Error('minmax(px, fr) tracks with auto tracks are not modeled');
+      const fixedTotal = sum(definitions.reduce((acc, t, i) => t.weight ? acc : sum(acc, bases[i]), scalar(0)), scalar(gap));
+      const out = [];
+      let pieces = [{ region, mins: definitions.map(t => t.min !== undefined ? scalar(t.min) : t.weight ? scalar(0) : null) }];
+      for (const L of [...new Set(definitions.filter(t => t.minCap).map(t => exact(t.min)))]) pieces = pieces.flatMap(piece => {
+        const split = partition(piece.region, diff(available, scalar(q(L))), '>=');
+        return [...split.yes.map(r => ({ region: r, mins: piece.mins })), ...split.no.map(r => ({ region: r, mins: piece.mins.map((m, i) => definitions[i].minCap && exact(definitions[i].min) === L ? available : m) }))];
+      });
+      const resolve = (r, mins, frozen, depth) => {
+        if (depth > definitions.length + 1) throw new Error('Grid fr resolution did not converge');
+        const active = definitions.map((t, i) => t.weight && !frozen.has(i) ? i : -1).filter(i => i >= 0);
+        const weights = active.map(i => definitions[i].weight).reduce(add, zero), denominator = cmp(weights, one) < 0 ? one : weights;
+        const free = diff(diff(available, fixedTotal), [...frozen].reduce((acc, i) => sum(acc, mins[i]), scalar(0)));
+        const share = i => times(free, div(definitions[i].weight, denominator));
+        let cells = [{ region: r, violators: [] }];
+        for (const i of active) cells = cells.flatMap(cell => { const p = partition(cell.region, diff(share(i), mins[i]), '>='); return [...p.yes.map(x => ({ region: x, violators: cell.violators })), ...p.no.map(x => ({ region: x, violators: [...cell.violators, i] }))]; });
+        for (const cell of cells) {
+          if (cell.violators.length) { resolve(cell.region, mins, new Set([...frozen, ...cell.violators]), depth + 1); continue; }
+          const values = definitions.map((t, i) => !t.weight ? bases[i] : frozen.has(i) ? mins[i] : share(i));
+          out.push({ region: cell.region, values, required: sum(fixedTotal, definitions.reduce((acc, t, i) => t.weight ? sum(acc, mins[i]) : acc, scalar(0))) });
+        }
+      };
+      for (const piece of pieces) resolve(piece.region, piece.mins, new Set(), 0);
+      return out;
+    }
     const overhead = sum(total(bases), scalar(gap));
     return clamp(region, diff(available, overhead)).map(({ region, value: free }) => {
       const weights = definitions.filter(t => t.weight).map(t => t.weight).reduce(add, zero);
@@ -2081,7 +2110,27 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               if (isFlex) { for (const result of layoutFlex({ box, style, region: geometryRegion, inline, contentInline, knownBlock, blockEdges, available, parents, ancestors, contentOrigin, collect, emit })) results.push(result); continue; }
               const sharedColumns = inheritedAxes.inline;
               // Flex: the items' flex properties define one row of tracks.
-              const plans = [{ region: geometryRegion, columns: sharedColumns ? sharedColumns.values.map(value => ({ definite: value })) :
+              // repeat(auto-fill, T) with T = Lpx or minmax(Lpx | min(Lpx, 100%), Nfr): as many tracks as fit at their
+              // minimum, at least one (css-grid-1 §7.2.3.2). The count is a region split on the container width.
+              const autoRepeat = !sharedColumns && /^\s*repeat\(\s*auto-(fill|fit)\s*,(.*)\)\s*$/.exec(String(style['grid-template-columns']));
+              let plans;
+              if (autoRepeat) {
+                if (autoRepeat[1] === 'fit') throw Object.assign(new Error('repeat(auto-fit, …) collapses empty tracks, which is not modeled; use auto-fill'), { code: 'U_LAYOUT_CSS' });
+                const [track] = tracks(autoRepeat[2].trim());
+                const size = track.fixed ?? track.min;
+                if (!size || cmp(size, zero) <= 0) throw Object.assign(new Error(`repeat(auto-fill, ${autoRepeat[2].trim()}) needs a px or minmax(px, fr) track`), { code: 'U_LAYOUT_CSS' });
+                const gapPx = gapSize(style['column-gap']), step = add(size, gapPx);
+                const widest = Math.max(...geometryRegion.vertices.map(v => Number(number(evaluate(contentInline, v)))));
+                const most = Math.min(64, Math.max(1, Math.floor((widest + Number(number(gapPx))) / Number(number(step)))));
+                plans = [];
+                for (let n = 1; n <= most; n++) {
+                  // n tracks: n·size + (n−1)·gap ≤ W < (n+1)·size + n·gap (n = 1 also below one track: at least one).
+                  let r = [geometryRegion];
+                  if (n > 1) r = r.flatMap(x => partition(x, diff(contentInline, scalar(sub(mul(q(n), step), gapPx))), '>=').yes);
+                  if (n < most) r = r.flatMap(x => partition(x, diff(contentInline, scalar(sub(mul(q(n + 1), step), gapPx))), '>=').no);
+                  for (const region of r) plans.push({ region, columns: Array.from({ length: n }, () => track) });
+                }
+              } else plans = [{ region: geometryRegion, columns: sharedColumns ? sharedColumns.values.map(value => ({ definite: value })) :
                 style['grid-template-columns'] === 'none' ? [] : tracks(style['grid-template-columns'] ?? 'none') }];
               for (const plan of plans) {
               const columns = plan.columns;

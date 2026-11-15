@@ -8,13 +8,19 @@
 
 export function random(seed) { let s = (seed * 2654435761) >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 2 ** 32; }; }
 
-export function generateCase(seed, { flex = false } = {}) {
+export function generateCase(seed, { flex = false, minmax = false } = {}) {
   const r = random(seed), pick = list => list[Math.floor(r() * list.length)], int = (lo, hi) => lo + Math.floor(r() * (hi - lo + 1));
   let n = 0;
   const containers = [], items = [];
-  const tracks = () => pick([
+  // With minmax: true, half the templates are minmax(px, fr) tracks and repeat(auto-fill, …) (the responsive card grid),
+  // whose sizes and column counts change with the width (the earlier seeds keep their cases).
+  const basic = () => pick([
     'minmax(0,1fr)', `repeat(${int(2, 4)},minmax(0,1fr))`, `${int(8, 30) * 10}px minmax(0,1fr)`, `minmax(0,1fr) ${int(6, 20) * 10}px`,
     `repeat(${int(2, 3)},${int(8, 20) * 10}px)`, `minmax(0,2fr) minmax(0,1fr)`,
+  ]);
+  const tracks = () => !minmax || r() < 0.5 ? basic() : pick([
+    `repeat(auto-fill,minmax(${int(6, 20) * 10}px,1fr))`, `repeat(auto-fill,minmax(min(${int(10, 30) * 10}px,100%),1fr))`, `repeat(auto-fill,${int(6, 16) * 10}px)`,
+    `minmax(${int(6, 20) * 10}px,1fr) minmax(${int(6, 20) * 10}px,2fr)`, `${int(4, 12) * 10}px minmax(${int(8, 20) * 10}px,1fr)`,
   ]);
   // flex: some containers are flex rows or columns; their children never shrink (flex-shrink: 0) and have px widths
   // (the subset needs a definite basis), so an overflow is a real overflow, not a shrink.

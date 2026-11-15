@@ -25,6 +25,14 @@ export function tracks(value, automatic = false) {
     if (column) return { autoTable: { min: q(column[1]), max: q(column[2]) } };
     const fixedColumn = token.match(/^-isle-auto-table-fixed\((\d+(?:\.\d+)?),(\d+(?:\.\d+)?)\)$/);
     if (fixedColumn) return { autoTable: { min: q(fixedColumn[1]), max: q(fixedColumn[2]), fixed: true } };
+    // minmax(Lpx, Nfr): at least L, else its share of the free space; minmax(min(Lpx, 100%), Nfr) caps L at the
+    // container's width (the responsive-grid idiom).
+    const floored = token.match(/^minmax\(\s*(?:(\d+(?:\.\d+)?)px|min\(\s*(\d+(?:\.\d+)?)px\s*,\s*100%\s*\))\s*,\s*(\d+(?:\.\d+)?)fr\s*\)$/);
+    if (floored && cmp(q(floored[1] ?? floored[2]), q(0)) > 0) {
+      const weight = q(floored[3]);
+      if (cmp(weight, q(0)) <= 0) throw new Error('Grid fr weight must be positive');
+      return { weight, min: q(floored[1] ?? floored[2]), ...(floored[2] ? { minCap: true } : {}) };
+    }
     const flexible = token.match(/^minmax\(\s*0(?:px)?\s*,\s*(\d+(?:\.\d+)?)fr\s*\)$/);
     if (!flexible) return { fixed: px(token) };
     const weight = q(flexible[1]);
