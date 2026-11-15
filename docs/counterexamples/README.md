@@ -2867,3 +2867,242 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:
 ```
 
 </details>
+
+## Svelte Wide.svelte: the wide branch overflows the page (compact=false)
+
+`E_LAYOUT_ITEM_SIZE` — viewport 416 × 690px
+
+> .bar.wide requires 480px but receives 384px on inline axis at viewport 416px × 690px
+
+![svelte-wide](svelte-wide-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page">
+  
+    <div class="bar wide"></div>
+  
+</main>
+```
+
+```css
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .bar { height: 40px; }
+  .wide { width: 480px; }
+
+```
+
+</details>
+
+## Svelte Settings.svelte: class:wide adds grid-column to a flex item (wide=true, agree=true, rtl=false, saved=false, rows.length=0)
+
+`W_LAYOUT_DECLARATION_INERT` — viewport 320 × 480px
+
+> .save.wide: grid-column: span 2 has no effect (its parent .actions is display: flex, not grid)
+
+![svelte-inert](svelte-inert-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page" dir="ltr">
+  <header class="bar">
+    <span class="title">Settings</span>
+  </header>
+
+  <div class="actions">
+    <button class="save wide" aria-label="Save"></button>
+    <button class="reset" aria-label="Reset"></button>
+  </div>
+
+  <label class="check">
+    <input class="box" type="checkbox">
+    <span class="mark"></span>
+  </label>
+
+  
+
+  <div class="table-wrap">
+    <div class="thead"></div>
+    
+  </div>
+</main>
+```
+
+```css
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 8px; background: #fff; color: #111; }
+  .bar { position: sticky; top: 0; display: grid; grid-template-columns: minmax(0, 1fr); height: 48px; }
+  .title { display: block; line-height: 24px; padding-left: 16px; }
+  .actions { display: flex; column-gap: 8px; }
+  .save, .reset { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; width: 96px; height: 40px; background: #246; }
+  .wide { grid-column: span 2; }
+  .check { display: grid; grid-template-columns: 24px; }
+  .box { appearance: none; display: block; padding: 0; border: 1px solid #000; min-width: 0; min-height: 0; width: 24px; height: 24px; margin: 0; }
+  .hidden { display: none; }
+  .mark { display: block; height: 24px; background: #ccc; }
+  .toast { display: block; height: 32px; background: #eef; }
+  .table-wrap { display: grid; grid-template-columns: minmax(0, 1fr); overflow-x: auto; }
+  .thead { position: sticky; top: 0; height: 32px; background: #ddd; }
+  .row { display: block; height: 32px; }
+  .unused > .row { color: red; }
+.title{font-family:Roboto;font-size:16px}
+```
+
+</details>
+
+## Svelte Settings.svelte: class:hidden={!agree} hides the real checkbox (agree=false, wide=false, rtl=false, saved=false, rows.length=0)
+
+`E_A11Y_CONTROL_HIDDEN` — viewport 672 × 690px
+
+> .box.hidden is display: none but its label .check is shown: a pointer toggles it through the label, the keyboard and screen readers cannot reach it. Hide it visually instead (opacity: 0 or a clip, keeping it focusable) and draw the focus on the label
+
+![svelte-hidden-control](svelte-hidden-control-before.png) ![svelte-hidden-control](svelte-hidden-control-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page" dir="ltr">
+  <header class="bar">
+    <span class="title">Settings</span>
+  </header>
+
+  <div class="actions">
+    <button class="save" aria-label="Save"></button>
+    <button class="reset" aria-label="Reset"></button>
+  </div>
+
+  <label class="check">
+    <input class="box hidden" type="checkbox">
+    <span class="mark"></span>
+  </label>
+
+  
+
+  <div class="table-wrap">
+    <div class="thead"></div>
+    
+  </div>
+</main>
+```
+
+```css
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 8px; background: #fff; color: #111; }
+  .bar { position: sticky; top: 0; display: grid; grid-template-columns: minmax(0, 1fr); height: 48px; }
+  .title { display: block; line-height: 24px; padding-left: 16px; }
+  .actions { display: flex; column-gap: 8px; }
+  .save, .reset { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; width: 96px; height: 40px; background: #246; }
+  .wide { grid-column: span 2; }
+  .check { display: grid; grid-template-columns: 24px; }
+  .box { appearance: none; display: block; padding: 0; border: 1px solid #000; min-width: 0; min-height: 0; width: 24px; height: 24px; margin: 0; }
+  .hidden { display: none; }
+  .mark { display: block; height: 24px; background: #ccc; }
+  .toast { display: block; height: 32px; background: #eef; }
+  .table-wrap { display: grid; grid-template-columns: minmax(0, 1fr); overflow-x: auto; }
+  .thead { position: sticky; top: 0; height: 32px; background: #ddd; }
+  .row { display: block; height: 32px; }
+  .unused > .row { color: red; }
+.title{font-family:Roboto;font-size:16px}
+```
+
+</details>
+
+## Svelte Settings.svelte: dir={rtl ? "rtl" : "ltr"} keeps padding-left (rtl=true, wide=false, agree=true, saved=false, rows.length=0)
+
+`W_LAYOUT_PHYSICAL_IN_RTL` — viewport 320 × 480px
+
+> .title is rtl, but padding-left: 16px is physical: it stays on that side instead of following the reading direction. Use the inline-start/inline-end sides
+
+![svelte-rtl](svelte-rtl-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page" dir="rtl">
+  <header class="bar">
+    <span class="title">Settings</span>
+  </header>
+
+  <div class="actions">
+    <button class="save" aria-label="Save"></button>
+    <button class="reset" aria-label="Reset"></button>
+  </div>
+
+  <label class="check">
+    <input class="box" type="checkbox">
+    <span class="mark"></span>
+  </label>
+
+  
+
+  <div class="table-wrap">
+    <div class="thead"></div>
+    
+  </div>
+</main>
+```
+
+```css
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 8px; background: #fff; color: #111; }
+  .bar { position: sticky; top: 0; display: grid; grid-template-columns: minmax(0, 1fr); height: 48px; }
+  .title { display: block; line-height: 24px; padding-left: 16px; }
+  .actions { display: flex; column-gap: 8px; }
+  .save, .reset { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; width: 96px; height: 40px; background: #246; }
+  .wide { grid-column: span 2; }
+  .check { display: grid; grid-template-columns: 24px; }
+  .box { appearance: none; display: block; padding: 0; border: 1px solid #000; min-width: 0; min-height: 0; width: 24px; height: 24px; margin: 0; }
+  .hidden { display: none; }
+  .mark { display: block; height: 24px; background: #ccc; }
+  .toast { display: block; height: 32px; background: #eef; }
+  .table-wrap { display: grid; grid-template-columns: minmax(0, 1fr); overflow-x: auto; }
+  .thead { position: sticky; top: 0; height: 32px; background: #ddd; }
+  .row { display: block; height: 32px; }
+  .unused > .row { color: red; }
+.title{font-family:Roboto;font-size:16px}
+```
+
+</details>
+
+## Svelte Card.svelte: .page > .item never matches (also Svelte's css_unused_selector) (open=false, items.length=2)
+
+`W_CSS_SELECTOR_RELATION` — markup rule (nothing to see on screen)
+
+> .page > .item: 2 element(s) match .item, but none has a parent matching .page; their parents are .list. The selector and the template's structure disagree
+
+![svelte-unused-selector](svelte-unused-selector-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page">
+  
+    <div class="empty"></div>
+  
+  <ul class="list">
+    
+      <li class="item"></li>
+    
+      <li class="item"></li>
+    
+  </ul>
+</main>
+```
+
+```css
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 8px; }
+  .panel { height: 120px; }
+  .panel.active { background: #eef; }
+  .empty { height: 40px; }
+  .list { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 32px; padding: 0; margin: 0; }
+  .list > .item { display: block; background: #fff; }
+  .page > .item { color: red; }
+  .empty.active { color: blue; }
+
+```
+
+</details>

@@ -1882,5 +1882,71 @@
   ],
   "html": "<main class=\"page\"><div class=\"card\"><div class=\"badge\"></div></div></main>",
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr);padding:24px}.card{display:grid;grid-template-columns:minmax(0,1fr);height:80px;background:#eee}.badge{height:24px;background:#c33;transform:translate(20px,-16px)}"
+ },
+ {
+  "id": "svelte-wide",
+  "title": "Svelte Wide.svelte: the wide branch overflows the page (compact=false)",
+  "code": "E_LAYOUT_ITEM_SIZE",
+  "width": 416,
+  "height": 690,
+  "message": ".bar.wide requires 480px but receives 384px on inline axis at viewport 416px × 690px",
+  "shots": [
+   "svelte-wide-violation.png"
+  ],
+  "html": "<main class=\"page\">\n  \n    <div class=\"bar wide\"></div>\n  \n</main>",
+  "css": "\n  .page { display: grid; grid-template-columns: minmax(0, 1fr); }\n  .bar { height: 40px; }\n  .wide { width: 480px; }\n"
+ },
+ {
+  "id": "svelte-inert",
+  "title": "Svelte Settings.svelte: class:wide adds grid-column to a flex item (wide=true, agree=true, rtl=false, saved=false, rows.length=0)",
+  "code": "W_LAYOUT_DECLARATION_INERT",
+  "width": 320,
+  "height": 480,
+  "message": ".save.wide: grid-column: span 2 has no effect (its parent .actions is display: flex, not grid)",
+  "shots": [
+   "svelte-inert-violation.png"
+  ],
+  "html": "<main class=\"page\" dir=\"ltr\">\n  <header class=\"bar\">\n    <span class=\"title\">Settings</span>\n  </header>\n\n  <div class=\"actions\">\n    <button class=\"save wide\" aria-label=\"Save\"></button>\n    <button class=\"reset\" aria-label=\"Reset\"></button>\n  </div>\n\n  <label class=\"check\">\n    <input class=\"box\" type=\"checkbox\">\n    <span class=\"mark\"></span>\n  </label>\n\n  \n\n  <div class=\"table-wrap\">\n    <div class=\"thead\"></div>\n    \n  </div>\n</main>",
+  "css": "\n  .page { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 8px; background: #fff; color: #111; }\n  .bar { position: sticky; top: 0; display: grid; grid-template-columns: minmax(0, 1fr); height: 48px; }\n  .title { display: block; line-height: 24px; padding-left: 16px; }\n  .actions { display: flex; column-gap: 8px; }\n  .save, .reset { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; width: 96px; height: 40px; background: #246; }\n  .wide { grid-column: span 2; }\n  .check { display: grid; grid-template-columns: 24px; }\n  .box { appearance: none; display: block; padding: 0; border: 1px solid #000; min-width: 0; min-height: 0; width: 24px; height: 24px; margin: 0; }\n  .hidden { display: none; }\n  .mark { display: block; height: 24px; background: #ccc; }\n  .toast { display: block; height: 32px; background: #eef; }\n  .table-wrap { display: grid; grid-template-columns: minmax(0, 1fr); overflow-x: auto; }\n  .thead { position: sticky; top: 0; height: 32px; background: #ddd; }\n  .row { display: block; height: 32px; }\n  .unused > .row { color: red; }\n.title{font-family:Roboto;font-size:16px}"
+ },
+ {
+  "id": "svelte-hidden-control",
+  "title": "Svelte Settings.svelte: class:hidden={!agree} hides the real checkbox (agree=false, wide=false, rtl=false, saved=false, rows.length=0)",
+  "code": "E_A11Y_CONTROL_HIDDEN",
+  "width": 672,
+  "height": 690,
+  "message": ".box.hidden is display: none but its label .check is shown: a pointer toggles it through the label, the keyboard and screen readers cannot reach it. Hide it visually instead (opacity: 0 or a clip, keeping it focusable) and draw the focus on the label",
+  "shots": [
+   "svelte-hidden-control-before.png",
+   "svelte-hidden-control-after.png"
+  ],
+  "html": "<main class=\"page\" dir=\"ltr\">\n  <header class=\"bar\">\n    <span class=\"title\">Settings</span>\n  </header>\n\n  <div class=\"actions\">\n    <button class=\"save\" aria-label=\"Save\"></button>\n    <button class=\"reset\" aria-label=\"Reset\"></button>\n  </div>\n\n  <label class=\"check\">\n    <input class=\"box hidden\" type=\"checkbox\">\n    <span class=\"mark\"></span>\n  </label>\n\n  \n\n  <div class=\"table-wrap\">\n    <div class=\"thead\"></div>\n    \n  </div>\n</main>",
+  "css": "\n  .page { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 8px; background: #fff; color: #111; }\n  .bar { position: sticky; top: 0; display: grid; grid-template-columns: minmax(0, 1fr); height: 48px; }\n  .title { display: block; line-height: 24px; padding-left: 16px; }\n  .actions { display: flex; column-gap: 8px; }\n  .save, .reset { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; width: 96px; height: 40px; background: #246; }\n  .wide { grid-column: span 2; }\n  .check { display: grid; grid-template-columns: 24px; }\n  .box { appearance: none; display: block; padding: 0; border: 1px solid #000; min-width: 0; min-height: 0; width: 24px; height: 24px; margin: 0; }\n  .hidden { display: none; }\n  .mark { display: block; height: 24px; background: #ccc; }\n  .toast { display: block; height: 32px; background: #eef; }\n  .table-wrap { display: grid; grid-template-columns: minmax(0, 1fr); overflow-x: auto; }\n  .thead { position: sticky; top: 0; height: 32px; background: #ddd; }\n  .row { display: block; height: 32px; }\n  .unused > .row { color: red; }\n.title{font-family:Roboto;font-size:16px}"
+ },
+ {
+  "id": "svelte-rtl",
+  "title": "Svelte Settings.svelte: dir={rtl ? \"rtl\" : \"ltr\"} keeps padding-left (rtl=true, wide=false, agree=true, saved=false, rows.length=0)",
+  "code": "W_LAYOUT_PHYSICAL_IN_RTL",
+  "width": 320,
+  "height": 480,
+  "message": ".title is rtl, but padding-left: 16px is physical: it stays on that side instead of following the reading direction. Use the inline-start/inline-end sides",
+  "shots": [
+   "svelte-rtl-violation.png"
+  ],
+  "html": "<main class=\"page\" dir=\"rtl\">\n  <header class=\"bar\">\n    <span class=\"title\">Settings</span>\n  </header>\n\n  <div class=\"actions\">\n    <button class=\"save\" aria-label=\"Save\"></button>\n    <button class=\"reset\" aria-label=\"Reset\"></button>\n  </div>\n\n  <label class=\"check\">\n    <input class=\"box\" type=\"checkbox\">\n    <span class=\"mark\"></span>\n  </label>\n\n  \n\n  <div class=\"table-wrap\">\n    <div class=\"thead\"></div>\n    \n  </div>\n</main>",
+  "css": "\n  .page { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 8px; background: #fff; color: #111; }\n  .bar { position: sticky; top: 0; display: grid; grid-template-columns: minmax(0, 1fr); height: 48px; }\n  .title { display: block; line-height: 24px; padding-left: 16px; }\n  .actions { display: flex; column-gap: 8px; }\n  .save, .reset { appearance: none; display: block; padding: 0; border: 0; min-width: 0; min-height: 0; width: 96px; height: 40px; background: #246; }\n  .wide { grid-column: span 2; }\n  .check { display: grid; grid-template-columns: 24px; }\n  .box { appearance: none; display: block; padding: 0; border: 1px solid #000; min-width: 0; min-height: 0; width: 24px; height: 24px; margin: 0; }\n  .hidden { display: none; }\n  .mark { display: block; height: 24px; background: #ccc; }\n  .toast { display: block; height: 32px; background: #eef; }\n  .table-wrap { display: grid; grid-template-columns: minmax(0, 1fr); overflow-x: auto; }\n  .thead { position: sticky; top: 0; height: 32px; background: #ddd; }\n  .row { display: block; height: 32px; }\n  .unused > .row { color: red; }\n.title{font-family:Roboto;font-size:16px}"
+ },
+ {
+  "id": "svelte-unused-selector",
+  "title": "Svelte Card.svelte: .page > .item never matches (also Svelte's css_unused_selector) (open=false, items.length=2)",
+  "code": "W_CSS_SELECTOR_RELATION",
+  "width": 0,
+  "height": 0,
+  "message": ".page > .item: 2 element(s) match .item, but none has a parent matching .page; their parents are .list. The selector and the template's structure disagree",
+  "shots": [
+   "svelte-unused-selector-markup.png"
+  ],
+  "html": "<main class=\"page\">\n  \n    <div class=\"empty\"></div>\n  \n  <ul class=\"list\">\n    \n      <li class=\"item\"></li>\n    \n      <li class=\"item\"></li>\n    \n  </ul>\n</main>",
+  "css": "\n  .page { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 8px; }\n  .panel { height: 120px; }\n  .panel.active { background: #eef; }\n  .empty { height: 40px; }\n  .list { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 32px; padding: 0; margin: 0; }\n  .list > .item { display: block; background: #fff; }\n  .page > .item { color: red; }\n  .empty.active { color: blue; }\n"
  }
 ]

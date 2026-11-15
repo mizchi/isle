@@ -7,6 +7,7 @@ import {chromium} from 'playwright';
 import {readFileSync, writeFileSync, mkdirSync} from 'node:fs';
 import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
 import {loadTextMetrics} from '../packages/css-verifier/src/text-node.mjs';
+import {expandSvelte, unscopeCSS} from '../packages/svelte-adapter/src/index.mjs';
 
 const out = new URL('../docs/counterexamples/', import.meta.url);
 mkdirSync(out, {recursive: true});
@@ -365,6 +366,29 @@ const point = d => {
 };
 const browser = await chromium.launch();
 const rows = [];
+// Svelte components (packages/svelte-adapter/fixtures): the adapter expands the template into its states; a case
+// renders the state named by `choices` (the expansion equals Svelte's SSR markup for those props, which the adapter
+// tests check) with the component's scoped CSS unscoped, and the card names the props of that state.
+const svelteCase = ({file, choices, title, extraCSS = '', ...rest}) => {
+  const source = readFileSync(new URL(`../packages/svelte-adapter/fixtures/${file}`, import.meta.url), 'utf8');
+  const {states, css} = expandSvelte(source, {eachCounts: [0, 2]});
+  const state = states.find(s => Object.entries(choices).every(([k, v]) => s.choices[k] === v));
+  if (!state) throw new Error(`${file}: no state ${JSON.stringify(choices)}`);
+  const props = Object.entries(choices).map(([k, v]) => `${k.startsWith('#each') ? `${k.slice(6)}.length` : k}=${JSON.stringify(v)}`).join(', ');
+  return {...rest, title: `Svelte ${file}: ${title} (${props})`, html: state.html, css: unscopeCSS(css) + extraCSS};
+};
+cases.push(
+  svelteCase({id: 'svelte-wide', file: 'Wide.svelte', choices: {compact: false}, title: 'the wide branch overflows the page', code: 'E_LAYOUT_ITEM_SIZE', options: {}}),
+  svelteCase({id: 'svelte-inert', file: 'Settings.svelte', choices: {wide: true, agree: true, rtl: false, saved: false, '#each rows': 0}, title: 'class:wide adds grid-column to a flex item', code: 'W_LAYOUT_DECLARATION_INERT', warning: true,
+    options: {integrity: true, scrollbars: overlay, boxes: text('.title', 'Settings')}, extraCSS: '.title{font-family:Roboto;font-size:16px}'}),
+  svelteCase({id: 'svelte-hidden-control', file: 'Settings.svelte', choices: {agree: false, wide: false, rtl: false, saved: false, '#each rows': 0}, title: 'class:hidden={!agree} hides the real checkbox', code: 'E_A11Y_CONTROL_HIDDEN',
+    act: async page => { for (let i = 0; i < 3; i++) await page.keyboard.press('Tab'); }, afterLabel: 'after three Tabs: focus never reaches the checkbox',
+    options: {accessibility: true, integrity: true, scrollbars: overlay, boxes: text('.title', 'Settings')}, extraCSS: '.title{font-family:Roboto;font-size:16px}'}),
+  svelteCase({id: 'svelte-rtl', file: 'Settings.svelte', choices: {rtl: true, wide: false, agree: true, saved: false, '#each rows': 0}, title: 'dir={rtl ? "rtl" : "ltr"} keeps padding-left', code: 'W_LAYOUT_PHYSICAL_IN_RTL', warning: true,
+    options: {integrity: true, scrollbars: overlay, boxes: text('.title', 'Settings')}, extraCSS: '.title{font-family:Roboto;font-size:16px}'}),
+  svelteCase({id: 'svelte-unused-selector', file: 'Card.svelte', choices: {open: false, '#each items': 2}, title: '.page > .item never matches (also Svelte\'s css_unused_selector)', code: 'W_CSS_SELECTOR_RELATION', warning: true, markup: true, mark: '.page > .item',
+    source: '<main class="page">\n  <ul class="list">\n    {#each items as item}<li class="item"></li>{/each}\n  </ul>\n</main>\n<style>\n  .page > .item { color: red; }  /* .item is inside .list, never a child of .page */\n</style>', options: {selectors: true}}),
+);
 for (const c of cases) {
   const doc = c.doc ?? `<html lang="en"><body>${c.html}</body></html>`;
   const options = {name: 'P', css: base + c.css, viewport: {min: 320, max: 1024, height: {min: 480, max: 900}}, ...(c.options ?? {}), ...(c.boxes ? {boxes: {...(c.options?.boxes ?? {}), ...c.boxes}} : {})};
