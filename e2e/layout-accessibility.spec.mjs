@@ -1334,6 +1334,25 @@ test('text-wrap-style: balance leaves one-line text where it was; the text-wrap 
   const rects = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>*{margin:0}.page{display:grid;grid-template-columns:220px;font:16px/24px sans-serif}${css}</style></head><body>${html}</body></html>`); return page.evaluate(() => [...document.querySelectorAll('.t, .u')].map(e => { const r = e.getBoundingClientRect(); return [r.width, r.height, e.scrollWidth]; })); };
   const nowrap = await rects('.t,.u{white-space:nowrap;overflow:hidden}');
   expect(await rects('.t,.u{white-space:nowrap;text-wrap-style:balance;overflow:hidden}')).toEqual(nowrap);
-  // The shorthand after white-space: nowrap sets text-wrap-mode back to wrap (why the analysis keeps it Unknown).
+  // The shorthand after white-space: nowrap sets text-wrap-mode back to wrap (the later wrap-mode write wins).
   expect(await rects('.t,.u{white-space:nowrap;text-wrap:balance;overflow:hidden}')).not.toEqual(nowrap);
+});
+
+test('white-space and the text-wrap shorthand: the later or more specific wrap mode wins, like Chromium', async ({page}) => {
+  const cases = [
+    '.t{white-space:nowrap;text-wrap:balance}', '.t{text-wrap:balance;white-space:nowrap}', '.t.t{text-wrap:wrap}.t{white-space:nowrap}',
+    '.page{text-wrap:nowrap}', '.page{text-wrap:nowrap}.t{white-space:normal}', '.page{white-space:nowrap}.t{text-wrap:wrap}',
+    '.t{white-space:pre;text-wrap:wrap}', '.t{text-wrap:nowrap}', '.t{text-wrap-mode:nowrap}', '.t{white-space:pre-wrap;text-wrap-mode:nowrap}',
+  ];
+  for (const css of cases) {
+    const html = '<div class="page"><p class="t">x</p></div>';
+    const report = analyzeHTML(html, {name: 'P', css: `*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{line-height:20px}${css}`, viewport: {min: 320, max: 800}, boxes: {'.t': {minInlineSize: 10, intrinsicBlockSize: 20, wrap: 'nowrap'}}});
+    // balance on text that wraps is Unknown by design: that itself says the text wraps.
+    const balanced = report.diagnostics.some(d => d.severity === 'unknown' && /text-wrap: balance/.test(d.message));
+    expect(report.status === 'unknown' && !balanced, `${css}: ${JSON.stringify(report.diagnostics)}`).toBe(false);
+    const staticNowrap = !balanced && !report.diagnostics.some(d => d.code === 'E_LAYOUT_WRAP');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>.page{display:grid}${css}</style></head><body>${html}</body></html>`);
+    const mode = await page.evaluate(() => getComputedStyle(document.querySelector('.t')).textWrapMode);
+    expect(staticNowrap, `${css}: static nowrap ${staticNowrap}, Chromium text-wrap-mode ${mode}`).toBe(mode === 'nowrap');
+  }
 });

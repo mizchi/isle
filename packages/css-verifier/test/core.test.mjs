@@ -101,12 +101,19 @@ test('geometry-neutral properties are accepted; values that change breaking, sha
     assert.equal(run(decl), 'unknown', decl);
 });
 
-test('text-wrap-style: balance and pretty are Unknown only on wrapping text; the text-wrap shorthand stays Unknown', () => {
+test('text-wrap-style: balance and pretty are Unknown only on wrapping text; white-space and text-wrap share the wrap mode', () => {
   const run = css => analyzeHTML('<div class="page"><p class="t">x</p></div>', {name: 'P', css: '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{line-height:20px}' + css, viewport: {min: 320, max: 800}, boxes: {'.t': {minInlineSize: 10, intrinsicBlockSize: 20}}}).status;
   assert.equal(run('.page{text-wrap-style:balance}.t{white-space:nowrap}'), 'verified'); // inherited, but the text is one line
   assert.equal(run('.page{text-wrap-style:balance}'), 'unknown');
   assert.equal(run('.t{text-wrap-style:pretty}'), 'unknown');
   assert.equal(run('.t{text-wrap-style:stable}'), 'verified');
-  // The shorthand also resets the wrap mode that white-space sets (the later one wins, not modeled).
-  assert.equal(run('.t{white-space:nowrap;text-wrap:balance}'), 'unknown');
+  // The shorthand also writes the wrap mode white-space sets: the later or more specific one wins.
+  assert.equal(run('.t{white-space:nowrap;text-wrap:balance}'), 'unknown'); // balance wins: the text wraps, under balance
+  const wraps = css => analyzeHTML('<div class="page"><p class="t">x</p></div>', {name: 'P', css: '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{line-height:20px}' + css, viewport: {min: 320, max: 800}, boxes: {'.t': {minInlineSize: 10, intrinsicBlockSize: 20, wrap: 'nowrap'}}}).diagnostics.some(d => d.code === 'E_LAYOUT_WRAP');
+  assert.equal(wraps('.t{text-wrap:balance;white-space:nowrap}'), false);
+  assert.equal(wraps('.t.t{text-wrap:wrap}.t{white-space:nowrap}'), true);
+  assert.equal(wraps('.page{text-wrap:nowrap}'), false); // inherited
+  assert.equal(wraps('.page{text-wrap:nowrap}.t{white-space:normal}'), true);
+  assert.equal(wraps('.t{white-space:pre;text-wrap:wrap}'), true); // pre-wrap
+  assert.equal(run('.t{white-space:pre-line;text-wrap-mode:nowrap}'), 'unknown'); // no white-space keyword for it
 });
