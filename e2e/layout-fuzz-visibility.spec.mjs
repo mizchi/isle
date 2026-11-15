@@ -39,7 +39,9 @@ const measure = () => {
       const col = i % cols.length, row = Math.floor(i / cols.length);
       const x = left + cols.slice(0, col).reduce((a, b) => a + b + gx, 0), y = top + rows.slice(0, row).reduce((a, b) => a + b + gy, 0);
       const area = {x, y, w: cols[col], h: rows[row] ?? 0}, b = k.getBoundingClientRect();
-      const fits = b.left >= area.x - 0.5 && b.top >= area.y - 0.5 && b.right <= area.x + area.w + 0.5 && b.bottom <= area.y + area.h + 0.5;
+      // Chromium lays out in 1/64 px: a 0.33 px overflow (a 160px item in a 159.67px fr track) is real, so the
+      // tolerance only absorbs float noise.
+      const e = 0.02, fits = b.left >= area.x - e && b.top >= area.y - e && b.right <= area.x + area.w + e && b.bottom <= area.y + area.h + e;
       out[k.className] = {fits, shown: true};
     });
     for (const k of parent.children) if (getComputedStyle(k).display === 'none') out[k.className] = {fits: true, shown: false};
