@@ -467,6 +467,137 @@
   "css": ".page{display:grid;grid-template-columns:240px}.box{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px;height:90px;overflow:hidden;background:#eee;padding:8px}.item{height:40px;background:#69c}.b{background:#9c6}.c{background:#c96}"
  },
  {
+  "id": "hover-only",
+  "title": "A control that only hover reveals",
+  "code": "E_A11Y_HOVER_ONLY",
+  "width": 672,
+  "height": 690,
+  "message": ".b appears on :hover but stays hidden when focused, so keyboard users cannot see it",
+  "shots": [
+   "hover-only-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"row\"><div class=\"item\"></div><button class=\"b\" aria-label=\"Delete\"></button></div></main>",
+  "css": ".page{display:grid;grid-template-columns:240px;background:#fff}.row{display:grid;grid-template-columns:minmax(0,1fr) 44px;height:44px;background:#eee}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;opacity:0;background:#c33}.b:hover{opacity:1}"
+ },
+ {
+  "id": "text-spacing",
+  "title": "Text cut off at 1.5 line-height (user text spacing)",
+  "code": "E_A11Y_TEXT_SPACING",
+  "width": 672,
+  "height": 690,
+  "message": ".t clips its text with letter-spacing 0.12em and word-spacing 0.16em (needs 197.4375px)",
+  "shots": [
+   "text-spacing-before.png",
+   "text-spacing-after.png"
+  ],
+  "html": "<main class=\"page\"><p class=\"t\">Order status: shipped</p></main>",
+  "css": ".page{display:grid;grid-template-columns:190px;grid-template-rows:20px;background:#fff;color:#000}.t{font-family:Roboto;font-size:16px;line-height:20px;white-space:nowrap;overflow:hidden;background:#eef}"
+ },
+ {
+  "id": "small-text",
+  "title": "Text below 12px on narrow screens",
+  "code": "W_A11Y_SMALL_TEXT",
+  "width": 672,
+  "height": 690,
+  "message": ".t is set at 10px",
+  "shots": [
+   "small-text-violation.png"
+  ],
+  "html": "<main class=\"page\"><p class=\"t\">Terms and conditions apply</p></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.t{font-family:Roboto;font-size:10px;line-height:14px;white-space:nowrap}"
+ },
+ {
+  "id": "pointer-disabled",
+  "title": "A visible button under pointer-events: none",
+  "code": "E_A11Y_POINTER_DISABLED",
+  "width": 672,
+  "height": 690,
+  "message": ".go cannot be clicked: pointer-events is none here",
+  "shots": [
+   "pointer-disabled-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"panel\"><button class=\"go\" aria-label=\"Continue\"></button></div></main>",
+  "css": ".page{display:grid;grid-template-columns:160px;background:#fff}.panel{display:grid;grid-template-columns:minmax(0,1fr);pointer-events:none}.go{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}"
+ },
+ {
+  "id": "hidden-focusable",
+  "title": "A focusable button inside aria-hidden",
+  "code": "E_A11Y_HIDDEN_FOCUSABLE",
+  "width": 672,
+  "height": 690,
+  "message": ".b can take focus inside aria-hidden content",
+  "shots": [
+   "hidden-focusable-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"bar\" aria-hidden=\"true\"><button class=\"b\" aria-label=\"Share\"></button></div></main>",
+  "css": ".page{display:grid;grid-template-columns:120px;padding:4px;background:#fff}.bar{display:grid;grid-template-columns:minmax(0,1fr)}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.b:focus{outline:3px solid #1a73e8}"
+ },
+ {
+  "id": "modal-background",
+  "title": "Focus can leave an open modal dialog",
+  "code": "W_A11Y_MODAL_BACKGROUND",
+  "width": 672,
+  "height": 690,
+  "message": ".o can take focus outside the modal .d; make the background inert (or aria-hidden and unfocusable)",
+  "shots": [
+   "modal-background-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"bg\"><button class=\"o\" aria-label=\"Background action\"></button></div><div class=\"d\" role=\"dialog\" aria-modal=\"true\" aria-label=\"Confirm\"><button class=\"i\" aria-label=\"OK\"></button></div></main>",
+  "css": ".page{position:relative;display:grid;grid-template-columns:240px;grid-template-rows:44px;background:#fff}.bg{display:grid;grid-template-columns:minmax(0,1fr)}.o{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#999}.o:focus{outline:3px solid #1a73e8}.d{position:absolute;left:40px;top:60px;width:160px;height:80px;display:grid;grid-template-columns:minmax(0,1fr);padding:18px;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.3)}.i{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}"
+ },
+ {
+  "id": "box-edges",
+  "title": "Padding larger than the fixed size",
+  "code": "E_LAYOUT_BOX_EDGES",
+  "width": 672,
+  "height": 690,
+  "message": ".pill requires 32px but receives 24px on block axis at viewport 672px × 690px",
+  "shots": [
+   "box-edges-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"pill\"></div></main>",
+  "css": ".page{display:grid;grid-template-columns:200px}.pill{height:24px;padding:16px 0;background:#9cf}"
+ },
+ {
+  "id": "page-overflow-x",
+  "title": "A rigid row wider than the page",
+  "code": "E_LAYOUT_PAGE_OVERFLOW",
+  "width": 422,
+  "height": 690,
+  "message": ".b reaches past the viewport, so the page scrolls horizontally",
+  "shots": [
+   "page-overflow-x-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"row\"><div class=\"a\"></div><div class=\"b\"></div></div></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.row{display:flex;column-gap:8px}.a{flex:none;width:300px;height:60px;background:#9cf}.b{flex:none;width:200px;height:60px;background:#fc9}"
+ },
+ {
+  "id": "text-collision",
+  "title": "Text that spills into its neighbour",
+  "code": "E_LAYOUT_TEXT_COLLISION",
+  "width": 429,
+  "height": 690,
+  "message": ".t.a and .t.b overlap",
+  "shots": [
+   "text-collision-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"row\"><p class=\"t a\">A long product name that overflows</p><p class=\"t b\">19.99 USD</p></div></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.t{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}.b{background:rgba(255,200,120,.5)}"
+ },
+ {
+  "id": "nested-scroll",
+  "title": "A scroll area inside a scroll area",
+  "code": "W_LAYOUT_NESTED_SCROLL",
+  "width": 484,
+  "height": 690,
+  "message": ".inner scrolls inside .outer",
+  "shots": [
+   "nested-scroll-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"outer\"><div class=\"inner\"><div class=\"content\"></div></div></div></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.outer{display:grid;grid-template-columns:600px;overflow:auto;height:140px;background:#eee;padding:8px}.inner{display:grid;grid-template-columns:900px;overflow:auto;background:#cde}.content{min-width:0;height:100px;background:repeating-linear-gradient(90deg,#9cf 0 40px,#cde 40px 80px)}"
+ },
+ {
   "id": "protrusion",
   "title": "A badge that sticks out of its card",
   "code": "E_LAYOUT_PROTRUSION",

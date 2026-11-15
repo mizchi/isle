@@ -702,6 +702,206 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background
 
 </details>
 
+## A control that only hover reveals
+
+`E_A11Y_HOVER_ONLY` — viewport 672 × 690px
+
+> .b appears on :hover but stays hidden when focused, so keyboard users cannot see it
+
+![hover-only](hover-only-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="row"><div class="item"></div><button class="b" aria-label="Delete"></button></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:240px;background:#fff}.row{display:grid;grid-template-columns:minmax(0,1fr) 44px;height:44px;background:#eee}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;opacity:0;background:#c33}.b:hover{opacity:1}
+```
+
+</details>
+
+## Text cut off at 1.5 line-height (user text spacing)
+
+`E_A11Y_TEXT_SPACING` — viewport 672 × 690px
+
+> .t clips its text with letter-spacing 0.12em and word-spacing 0.16em (needs 197.4375px)
+
+![text-spacing](text-spacing-before.png) ![text-spacing](text-spacing-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><p class="t">Order status: shipped</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:190px;grid-template-rows:20px;background:#fff;color:#000}.t{font-family:Roboto;font-size:16px;line-height:20px;white-space:nowrap;overflow:hidden;background:#eef}
+```
+
+</details>
+
+## Text below 12px on narrow screens
+
+`W_A11Y_SMALL_TEXT` — viewport 672 × 690px
+
+> .t is set at 10px
+
+![small-text](small-text-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><p class="t">Terms and conditions apply</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.t{font-family:Roboto;font-size:10px;line-height:14px;white-space:nowrap}
+```
+
+</details>
+
+## A visible button under pointer-events: none
+
+`E_A11Y_POINTER_DISABLED` — viewport 672 × 690px
+
+> .go cannot be clicked: pointer-events is none here
+
+![pointer-disabled](pointer-disabled-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="panel"><button class="go" aria-label="Continue"></button></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:160px;background:#fff}.panel{display:grid;grid-template-columns:minmax(0,1fr);pointer-events:none}.go{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}
+```
+
+</details>
+
+## A focusable button inside aria-hidden
+
+`E_A11Y_HIDDEN_FOCUSABLE` — viewport 672 × 690px
+
+> .b can take focus inside aria-hidden content
+
+![hidden-focusable](hidden-focusable-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="bar" aria-hidden="true"><button class="b" aria-label="Share"></button></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px;padding:4px;background:#fff}.bar{display:grid;grid-template-columns:minmax(0,1fr)}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.b:focus{outline:3px solid #1a73e8}
+```
+
+</details>
+
+## Focus can leave an open modal dialog
+
+`W_A11Y_MODAL_BACKGROUND` — viewport 672 × 690px
+
+> .o can take focus outside the modal .d; make the background inert (or aria-hidden and unfocusable)
+
+![modal-background](modal-background-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="bg"><button class="o" aria-label="Background action"></button></div><div class="d" role="dialog" aria-modal="true" aria-label="Confirm"><button class="i" aria-label="OK"></button></div></main>
+```
+
+```css
+.page{position:relative;display:grid;grid-template-columns:240px;grid-template-rows:44px;background:#fff}.bg{display:grid;grid-template-columns:minmax(0,1fr)}.o{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#999}.o:focus{outline:3px solid #1a73e8}.d{position:absolute;left:40px;top:60px;width:160px;height:80px;display:grid;grid-template-columns:minmax(0,1fr);padding:18px;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.3)}.i{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}
+```
+
+</details>
+
+## Padding larger than the fixed size
+
+`E_LAYOUT_BOX_EDGES` — viewport 672 × 690px
+
+> .pill requires 32px but receives 24px on block axis at viewport 672px × 690px
+
+![box-edges](box-edges-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="pill"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.pill{height:24px;padding:16px 0;background:#9cf}
+```
+
+</details>
+
+## A rigid row wider than the page
+
+`E_LAYOUT_PAGE_OVERFLOW` — viewport 422 × 690px
+
+> .b reaches past the viewport, so the page scrolls horizontally
+
+![page-overflow-x](page-overflow-x-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="row"><div class="a"></div><div class="b"></div></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.row{display:flex;column-gap:8px}.a{flex:none;width:300px;height:60px;background:#9cf}.b{flex:none;width:200px;height:60px;background:#fc9}
+```
+
+</details>
+
+## Text that spills into its neighbour
+
+`E_LAYOUT_TEXT_COLLISION` — viewport 429 × 690px
+
+> .t.a and .t.b overlap
+
+![text-collision](text-collision-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="row"><p class="t a">A long product name that overflows</p><p class="t b">19.99 USD</p></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.t{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}.b{background:rgba(255,200,120,.5)}
+```
+
+</details>
+
+## A scroll area inside a scroll area
+
+`W_LAYOUT_NESTED_SCROLL` — viewport 484 × 690px
+
+> .inner scrolls inside .outer
+
+![nested-scroll](nested-scroll-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="outer"><div class="inner"><div class="content"></div></div></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.outer{display:grid;grid-template-columns:600px;overflow:auto;height:140px;background:#eee;padding:8px}.inner{display:grid;grid-template-columns:900px;overflow:auto;background:#cde}.content{min-width:0;height:100px;background:repeating-linear-gradient(90deg,#9cf 0 40px,#cde 40px 80px)}
+```
+
+</details>
+
 ## A badge that sticks out of its card
 
 `E_LAYOUT_PROTRUSION` — viewport 672 × 690px
