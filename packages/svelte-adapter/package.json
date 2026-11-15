@@ -5,6 +5,6 @@
   "type": "module",
   "description": "Svelte 5 component adapter for @mizchi/css-verifier: template branches as states, scoped styles, selector usage.",
   "exports": {".": {"import": "./src/index.mjs"}},
-  "dependencies": {"@mizchi/css-verifier": "workspace:*", "svelte": "5.57.2"},
+  "dependencies": {"@mizchi/css-verifier": "workspace:*", "@mizchi/css-verifier-adapter-core": "workspace:*", "svelte": "5.57.2"},
   "scripts": {"test": "node --test test/*.test.mjs"}
 }

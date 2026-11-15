@@ -240,6 +240,12 @@ importers:
         specifier: 8.3.5
         version: 8.3.5(esbuild@0.28.2)
 
+  packages/adapter-core:
+    dependencies:
+      '@mizchi/css-verifier':
+        specifier: workspace:*
+        version: link:../css-verifier
+
   packages/css-verifier:
     dependencies:
       css-tree:
@@ -260,6 +266,9 @@ importers:
       '@mizchi/css-verifier':
         specifier: workspace:*
         version: link:../css-verifier
+      '@mizchi/css-verifier-adapter-core':
+        specifier: workspace:*
+        version: link:../adapter-core
       svelte:
         specifier: 5.57.2
         version: 5.57.2

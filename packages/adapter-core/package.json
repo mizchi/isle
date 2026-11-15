@@ -1,0 +1,10 @@
+{
+  "name": "@mizchi/css-verifier-adapter-core",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Shared part of the component adapters: template states as choices, analysing every state, and the findings per state.",
+  "exports": {".": {"import": "./src/index.mjs"}},
+  "dependencies": {"@mizchi/css-verifier": "workspace:*"},
+  "scripts": {"test": "node --test test/*.test.mjs"}
+}

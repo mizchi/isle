@@ -13,7 +13,7 @@
 // Unknown (never verified): child components, {@html}, {@render}, <slot>, dynamic class={…} that is not a literal
 // conditional, style: directives and style={…}, <svelte:element>, and more states than `maxStates`.
 import { parse } from 'svelte/compiler';
-import { analyzeHTML } from '@mizchi/css-verifier/html';
+import { analyzeStates } from '@mizchi/css-verifier-adapter-core';
 
 const escapeText = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const escapeAttr = s => escapeText(s).replace(/"/g, '&quot;');
@@ -166,33 +166,7 @@ export const unscopeCSS = css => css.replace(/:global\(([^()]*)\)/g, '$1');
  *   pageCSS — CSS for the page around the component (html, body); page(html) — the document around it;
  *   maxStates, eachCounts — the enumeration bounds.
  */
-export function analyzeSvelte(source, { pageCSS = '', page = html => `<html lang="en"><body>${html}</body></html>`, maxStates, eachCounts, name = 'Component', ...options } = {}) {
+export function analyzeSvelte(source, { maxStates, eachCounts, ...options } = {}) {
   const { states, css, unknowns, assumptions } = expandSvelte(source, { maxStates, eachCounts });
-  const results = states.map(state => ({ choices: state.choices, html: state.html, report: analyzeHTML(page(state.html), { name, ...options, css: pageCSS + unscopeCSS(css) }) }));
-  const statuses = results.map(r => r.report.status);
-  // Verified only when every state is verified and the adapter itself met nothing unknown.
-  const status = statuses.includes('violated') ? 'violated' : unknowns.length || statuses.includes('unknown') ? 'unknown' : 'verified';
-  // Every error and warning of every state, grouped by code and box, with the states (choices) it holds in.
-  const grouped = new Map();
-  for (const r of results) for (const d of [...r.report.diagnostics.filter(d => d.severity !== 'unknown'), ...(r.report.layoutWarnings ?? []), ...(r.report.accessibility?.warnings ?? []), ...(r.report.integrity?.warnings ?? [])]) {
-    const key = `${d.code}\u0000${d.box ?? ''}`;
-    if (!grouped.has(key)) grouped.set(key, { code: d.code, box: d.box, severity: d.severity, message: d.message, states: [] });
-    const entry = grouped.get(key);
-    if (!entry.states.includes(r.choices)) entry.states.push(r.choices);
-  }
-  const out = { status, states: results, unknowns, coverage: { states: states.length, assumptions }, findings: [...grouped.values()] };
-  if (options.selectors) {
-    // A selector is unused only when it is unused in every state; a row's count is its largest over the states.
-    // The code may differ by state (no .item at 0 items: unmatched; with items: a broken relation); the explanation
-    // kept is the most specific one, a relation over an unmatched.
-    const keyOf = w => `${w.selector}\u0000${w.line}`;
-    const everywhere = results.map(r => new Set(r.report.selectors?.warnings.map(keyOf) ?? []));
-    const all = results.flatMap(r => r.report.selectors?.warnings ?? []);
-    const best = new Map();
-    for (const w of all) if (!best.has(keyOf(w)) || (w.code === 'W_CSS_SELECTOR_RELATION' && best.get(keyOf(w)).code !== w.code)) best.set(keyOf(w), w);
-    const warnings = [...best.values()].filter(w => everywhere.every(set => set.has(keyOf(w))));
-    const rows = (results[0]?.report.selectors?.rows ?? []).map(row => ({ ...row, matched: Math.max(...results.map(r => r.report.selectors?.rows.find(x => x.selector === row.selector && x.line === row.line)?.matched ?? 0)) }));
-    out.selectors = { rows, warnings };
-  }
-  return out;
+  return analyzeStates({ states, css: unscopeCSS(css), unknowns, assumptions }, options);
 }
