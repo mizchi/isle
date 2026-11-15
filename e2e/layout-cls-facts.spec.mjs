@@ -417,6 +417,9 @@ test('inert declarations: where the static check warns, Chromium lays the page o
     ['.p{display:grid;grid-template-columns:minmax(0,1fr)}', '.c{width:100px}', 'aspect-ratio:2', '.c', false],
     ['.p{display:grid;grid-template-columns:minmax(0,1fr)}', '.c{height:10px}', 'vertical-align:middle', '.c', true],
     ['.p{display:flex}', '.c{width:100px;height:10px}', 'vertical-align:top', '.c', true],
+    ['.p{display:flex}', '.c{width:100px;height:10px}', 'justify-self:end', '.c', true],
+    ['.p{display:flex}', '.c{width:100px;height:10px}', 'justify-items:center', '.p', true],
+    ['.p{display:flex}', '.c{width:100px;height:10px}', 'justify-content:center', '.p', false],
   ];
   const html = '<div class="p"><div class="c"></div><div class="c"></div></div>';
   for (const [parent, child, decl, target, warn] of cases) {

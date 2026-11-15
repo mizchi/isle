@@ -983,6 +983,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function finish(box, style, region, inline, contentInline, blockSize, contentBlock, available, parents, emit) {
     const contract = box.contract ?? {};
+    // Justify alignment is modeled as the default (stretch / start) only: where it applies — a grid container's items,
+    // a grid item, an absolute box — any other value is Unknown; on a flex item or container it does nothing.
+    {
+      const parentStyle = parents.at(-1)?.style, aligned = value => !['auto', 'normal', 'stretch', 'legacy'].includes(String(value ?? 'auto'));
+      const ownSelf = aligned(style['justify-self']), fromItems = String(style['justify-self'] ?? 'auto') === 'auto' && aligned(parentStyle?.['justify-items']);
+      const where = style.position === 'absolute' ? 'an absolute box' : ['grid', 'inline-grid'].includes(parentStyle?.display) ? 'a grid item' : null;
+      if (where && (ownSelf || fromItems)) throw Object.assign(new Error(`${box.label}: justify alignment ${ownSelf ? `justify-self: ${style['justify-self']}` : `justify-items: ${parentStyle['justify-items']} (from its parent)`} of ${where} is not modeled`), { code: 'U_LAYOUT_CSS', box });
+    }
     if (emit) {
       const self = [...parents, { box, style }];
       const offered = axis => () => parents.length ? [...trackProperties(axis).map(property => fact(parents.at(-1).box, parents.at(-1).style, property)),
@@ -1136,6 +1144,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // clipped, -webkit-line-clamp clamps a -webkit-box. (z-index always applies here: every parent is grid or flex.)
         const set = (key, unset) => style.$sources?.[key] && String(style[key]) !== unset;
         if (set('text-overflow', 'clip') && !['hidden', 'clip', 'auto', 'scroll'].includes(String(style['overflow-x']))) reasons.push(['text-overflow', `its overflow-x is ${style['overflow-x']}, so nothing is clipped to mark`]);
+        if (inFlow && ['flex', 'inline-flex'].includes(parentDisplay) && set('justify-self', 'auto')) reasons.push(['justify-self', `its parent ${parents.at(-1).box.label} is display: flex, which ignores justify-self (use margin-inline-start: auto, or justify-content on the parent)`]);
+        if (['flex', 'inline-flex'].includes(style.display) && set('justify-items', 'normal')) reasons.push(['justify-items', 'it is display: flex, which ignores justify-items (use justify-content)']);
         if (set('line-clamp', 'none') && style.$lineClamp === undefined && !['-webkit-box', '-webkit-inline-box'].includes(style.display)) reasons.push(['line-clamp', `it is display: ${style.display}, not -webkit-box`]);
         if (reasons.length) layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: reasons.map(r => r[0]),
           css: reasons.map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
