@@ -352,7 +352,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     const icon = [target, ...texts].some(row => generatedText(row.box) && !generatedSays(row.box)) || (generatedText(target.box) && !generatedSays(target.box));
     for (const region of missing) report(findings, icon ? 'E_A11Y_ICON_NAME' : 'E_A11Y_NAME', 'error', icon ? `${target.box.label} is named only by icon-font glyphs (generated Private Use Area characters), which say nothing` : `${target.box.label} has no accessible name here: no rendered text and no aria-label, aria-labelledby or title`, target, region, { rule: icon ? 'icon-font-name' : 'accessible-name' });
     // The name comes only from CSS generated content: a warning (it is easy to miss in translation and review).
-    if (!missing.length && !texts.some(row => row.box.text || (row.box.tag === 'img' && row.box.alt)) && texts.length) report(warnings, 'W_A11Y_GENERATED_NAME', 'warning', `${target.box.label} is named only by CSS generated content (${JSON.stringify(texts.map(row => generatedText(row.box)).join(' '))})`, target, target.region, { rule: 'generated-name' });
+    if (!missing.length && !texts.some(row => row.box.text || (row.box.tag === 'img' && row.box.alt) || row.box.tag === 'svg') && texts.length) report(warnings, 'W_A11Y_GENERATED_NAME', 'warning', `${target.box.label} is named only by CSS generated content (${JSON.stringify(texts.map(row => generatedText(row.box)).join(' '))})`, target, target.region, { rule: 'generated-name' });
   }
 
   // text-contrast over the DOM ancestors' backgrounds.

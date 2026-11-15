@@ -59,3 +59,12 @@ test('lint on a realistic Svelte component: icon button, grid areas, auto-fill c
   // The home link is named by its svg's <title>.
   assert.ok(!found.some(([code, line]) => code === 'E_A11Y_NAME' && line === 8));
 });
+
+test('lint: a box the analysis does not go into is listed as not checked, never a silent pass', async () => {
+  const {analyzeSvelte} = await import('../../svelte-adapter/src/index.mjs');
+  const source = '<section class="box"><div class="a"></div><div class="b"></div></section>\n<style>.box{display:block}.a,.b{height:20px}.b{width:2000px}</style>';
+  const messages = lint(analyzeSvelte(source, {pageCSS, viewport, accessibility: true, sourceLines: true}), {file: 'Block.svelte', source});
+  assert.ok(messages.some(m => m.code === 'E_LAYOUT_CONTAINER' && m.severity === 'info' && /not checked/.test(m.message) && m.line === 1), JSON.stringify(messages));
+  // Page-level rules are not about a component.
+  assert.ok(!messages.some(m => m.code === 'W_A11Y_PAGE_H1'));
+});

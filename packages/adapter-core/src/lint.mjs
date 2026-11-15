@@ -88,7 +88,10 @@ const lineOf = (source, needle) => {
  * Lint messages for an adapter result.
  * @returns {{file, line?, severity: 'error'|'warning'|'info', code, message, fix?, states?}[]}
  */
-export function lint(result, { file = '<component>', source = '', profile = 'recommended' } = {}) {
+// Rules about a whole page (its h1, main landmark, skip link, text outside landmarks): a component is not a page, so
+// they are left out unless page: true.
+const pageRules = new Set(['W_A11Y_PAGE_H1', 'W_A11Y_NO_MAIN', 'W_A11Y_MULTIPLE_MAIN', 'W_A11Y_REGION', 'W_A11Y_BYPASS', 'W_A11Y_LANDMARK_TOP_LEVEL', 'W_A11Y_DUPLICATE_LANDMARK']);
+export function lint(result, { file = '<component>', source = '', profile = 'recommended', page = false } = {}) {
   const total = result.states.length, out = [];
   const rules = profile === 'all' ? null : recommended;
   // One element under different class combinations (cx(a, cond && b)) is one finding: merge by code and element.
@@ -98,9 +101,17 @@ export function lint(result, { file = '<component>', source = '', profile = 'rec
     if (!merged.has(key)) merged.set(key, { ...f, states: [...f.states] });
     else merged.get(key).states.push(...f.states);
   }
+  // Codes that mean the analysis did not go into a box: what is under it is not checked (never a silent pass).
+  const refusals = new Set(['E_LAYOUT_CONTAINER']);
   for (const f of merged.values()) {
-    if (f.severity === 'unknown') continue;
-    if (rules && !rules[f.code]) continue;
+    if (f.severity === 'unknown' || (!page && pageRules.has(f.code))) continue;
+    if (rules && !rules[f.code]) {
+      // Outside the rule set: still listed (as info), so nothing found disappears from the output.
+      const box = cleanLabel(f.box), firstClass = /\.([\w-]+)/.exec(box)?.[1];
+      out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity: 'info', code: f.code,
+        message: refusals.has(f.code) ? `not checked: ${box} and what is inside it (${f.message.replace(/\.__text\d+/g, '')}; the analysis models grid and flex containers)` : `outside the ${profile} rules: ${f.message.replace(/\.__text\d+/g, '')}`, states: describe(f.states, total) });
+      continue;
+    }
     const [severity, fix] = rules?.[f.code] ?? [f.severity === 'error' ? 'error' : 'warning'];
     const box = cleanLabel(f.box), firstClass = /\.([\w-]+)/.exec(box)?.[1];
     out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity, code: f.code, message: f.message.replace(/\.__text\d+/g, ''), ...(fix ? { fix } : {}), states: describe(f.states, total) });

@@ -43,3 +43,9 @@ test('a link named only by its svg: aria-label or <title> names it, aria-hidden 
   assert.equal(unnamed('<svg width="24" height="24" aria-hidden="true"><title>Home</title></svg>'), true);
   assert.equal(unnamed('<svg width="24" height="24"></svg>'), true);
 });
+
+test('a link named by its svg is not reported as named only by generated content', () => {
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g};background:#fff}.t{height:10px}.l{display:grid;grid-template-columns:24px}svg{display:block}`;
+  const r = analyzeHTML('<html lang="en"><body><main class="p"><h1 class="t" aria-label="T"></h1><a class="l" href="/"><svg width="24" height="24"><title>Home</title></svg></a></main></body></html>', {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+  assert.deepEqual(r.accessibility.warnings.filter(w => w.code === 'W_A11Y_GENERATED_NAME'), []);
+});
