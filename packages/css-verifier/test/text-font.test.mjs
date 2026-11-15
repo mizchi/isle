@@ -36,7 +36,10 @@ test('the computed font must equal the measured font, otherwise the bound does n
     ['.name { font-weight: bold; }', /font-weight 700 differs/],
     ['.name { line-height: normal; }', /line-height normal must be/],
     ['.name { line-height: 1.5; }', null],
-    ['.name { font: 16px/24px "Noto Sans JP"; }', /font shorthand is not modeled/],
+    // The common font shorthand expands to its longhands (equal to the measured font here); other forms do not.
+    ['.name { font: 16px/24px "Noto Sans JP"; }', null],
+    ['.name { font: 700 16px/24px "Noto Sans JP"; }', /font-weight 700 differs/],
+    ['.name { font: small-caps 16px/24px "Noto Sans JP"; }', /font shorthand is not modeled/],
     ['.name { text-transform: uppercase; }', /text-transform uppercase/],
     ['.name { letter-spacing: 1px; }', /letter-spacing 1px differs from the measured 0px/],
     ['@media (width < 200px) { .name { font-size: 20px; } }', /font-size 20px differs/],

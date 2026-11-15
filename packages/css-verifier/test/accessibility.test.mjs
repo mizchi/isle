@@ -1870,3 +1870,12 @@ test('occluded-target: each cover reports where it covers, not only the first fo
   assert.ok(at(350) && at(400) && at(413), JSON.stringify(covered.map(d => [d.message.slice(0, 40), d.range.min, d.range.max])));
   assert.ok(!at(420));
 });
+
+test('the font shorthand sets the size and weight that make text large (3:1, not 4.5:1)', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  // #777 on #fff is 4.48:1: below 4.5 (normal text), above 3 (large text).
+  const run = font => analyzeHTML('<html lang="en"><body><main class="page"><p class="t">Big</p></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body,.page{${g}}.page{background:#fff}.t{display:block;color:#777;font:${font};height:24px}`, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, boxes: {'.t': {minInlineSize: 40, intrinsicBlockSize: 24}}}).diagnostics.filter(d => d.code === 'E_A11Y_CONTRAST').map(d => d.required);
+  assert.deepEqual(run('700 24px/24px sans-serif'), []);
+  assert.deepEqual(run('400 19px/24px sans-serif'), [4.5]);
+  assert.deepEqual(run('bold 19px/24px sans-serif'), []); // 14pt bold is large
+});

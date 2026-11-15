@@ -177,7 +177,16 @@ function expand(property, value) {
     if (property === 'word-spacing' && !wide.has(value) && !['normal', '0', '0px'].includes(value)) throw new Error(`Unsupported ${property}: ${value}`);
     return [[property, value]];
   }
-  if (property === 'font') return textProperties.filter(key => key.startsWith('font-') || key === 'line-height').map(key => [key, wide.has(value) ? value : fontShorthand]);
+  if (property === 'font') {
+    // The common form [style] [weight] size[/line-height] family is expanded (the rest of font resets to initial);
+    // anything else (system fonts, small-caps, stretch keywords) stays the unmodeled shorthand marker.
+    const keys = textProperties.filter(key => key.startsWith('font-') || key === 'line-height');
+    if (wide.has(value)) return keys.map(key => [key, value]);
+    const m = /^(?:(normal|italic|oblique)\s+)?(?:(normal|bold|bolder|lighter|[1-9]00)\s+)?((?:\d+(?:\.\d+)?)(?:px|em|rem|%)|xx-small|x-small|small|medium|large|x-large|xx-large|smaller|larger)(?:\s*\/\s*(normal|\d+(?:\.\d+)?(?:px|em|rem|%)?))?\s+(\S.*)$/i.exec(value.trim());
+    if (!m) return keys.map(key => [key, fontShorthand]);
+    const set = { 'font-style': m[1] ?? 'normal', 'font-weight': m[2] ?? 'normal', 'font-size': m[3], 'line-height': m[4] ?? 'normal', 'font-family': m[5].trim(), 'font-variant': 'normal', 'font-stretch': 'normal' };
+    return keys.map(key => [key, set[key] ?? fontShorthand]);
+  }
   // Paint only: whether a box draws a background (integrity `protrusion: 'painted'`).
   if (property === 'background-color' || property === 'background-image') return [[property, value]];
   // Table layout facts (fixed tables are modeled as an equivalent grid).
