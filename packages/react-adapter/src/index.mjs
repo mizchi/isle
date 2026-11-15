@@ -22,7 +22,10 @@ const kebab = name => name.startsWith('--') ? name : name.replace(/[A-Z]/g, c =>
 // Numbers StyleX (and React's style prop) keep unitless; other numbers are px.
 const unitless = new Set(['animationIterationCount', 'aspectRatio', 'flex', 'flexGrow', 'flexShrink', 'fontWeight', 'lineHeight', 'opacity', 'order', 'orphans', 'widows', 'zIndex', 'zoom', 'gridRow', 'gridColumn', 'gridRowStart', 'gridRowEnd', 'gridColumnStart', 'gridColumnEnd', 'columnCount', 'fillOpacity', 'strokeOpacity', 'tabSize']);
 const cssValue = (prop, v) => typeof v === 'number' ? (v === 0 || unitless.has(prop) ? String(v) : `${v}px`) : String(v);
-const attrName = name => ({ className: 'class', htmlFor: 'for', tabIndex: 'tabindex', autoFocus: 'autofocus', readOnly: 'readonly', maxLength: 'maxlength', colSpan: 'colspan', rowSpan: 'rowspan', srcSet: 'srcset', autoComplete: 'autocomplete', autoPlay: 'autoplay', playsInline: 'playsinline', crossOrigin: 'crossorigin', dateTime: 'datetime', encType: 'enctype', inputMode: 'inputmode' })[name] ?? name;
+// SVG presentation props are camelCase in JSX and hyphenated in the markup (React's attribute names); viewBox and
+// preserveAspectRatio keep their case.
+const svgAttr = name => /^(?:stroke|fill|clip|font|text|stop|flood|lighting|marker|color|dominant|alignment|baseline|glyph|horiz|vert|underline|overline|strikethrough|word|letter|shape|image|pointer|paint|vector|enable)[A-Z]/.test(name) ? name.replace(/[A-Z]/g, c => `-${c.toLowerCase()}`) : name === 'xlinkHref' ? 'xlink:href' : null;
+const attrName = name => svgAttr(name) ?? ({ className: 'class', htmlFor: 'for', tabIndex: 'tabindex', autoFocus: 'autofocus', readOnly: 'readonly', maxLength: 'maxlength', colSpan: 'colspan', rowSpan: 'rowspan', srcSet: 'srcset', autoComplete: 'autocomplete', autoPlay: 'autoplay', playsInline: 'playsinline', crossOrigin: 'crossorigin', dateTime: 'datetime', encType: 'enctype', inputMode: 'inputmode' })[name] ?? name;
 const hash = text => { let h = 5381; for (const c of text) h = ((h * 33) ^ c.charCodeAt(0)) >>> 0; return h.toString(36); };
 
 // A static literal value (StyleX objects, style props): strings, numbers, null, nested objects, negative numbers.

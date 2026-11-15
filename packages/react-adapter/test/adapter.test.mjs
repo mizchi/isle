@@ -59,3 +59,13 @@ test('what the component does not say statically is Unknown', () => {
   const report = analyzeReact('export default function C({on}) { return <main className="page"><div className={on ? "a" : "b"} /></main>; }', {pageCSS, viewport, css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}.b{height:20px;width:900px}'});
   assert.deepEqual(report.states.filter(s => s.report.status === 'violated').map(s => s.choices), [{on: false}]);
 });
+
+test('SVG props: camelCase presentation props become the attributes react-dom renders', async () => {
+  const source = `export default function Icon({open}) {
+  return <main className="p"><button className="b" type="button" aria-label="Close"><svg className="i" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">{open && <path d="M6 6l12 12" fillRule="evenodd" clipRule="evenodd" />}</svg></button></main>;
+}`;
+  const {states, unknowns} = expandReact(source);
+  assert.deepEqual(unknowns, []);
+  const canon = html => html.replace(/<(\w+)((?:\s+[\w:-]+(?:="[^"]*")?)*)\s*\/?>/g, (m, tag, attrs) => `<${tag}${[...attrs.matchAll(/\s+([\w:-]+)(?:="([^"]*)")?/g)].map(([, k, v]) => ` ${k}${v === undefined ? '' : `="${v}"`}`).sort().join('')}>`).replace(/<\/path>/g, '');
+  for (const s of states) assert.equal(canon(await render(source, propsOf(s.choices))), canon(s.html), JSON.stringify(s.choices));
+});

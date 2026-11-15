@@ -381,7 +381,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     if (!owner || geometry.some(row => row.box.tag !== 'svg' && speaks(row) && (row.path === owner.path || isAncestor(owner.path, row.path)))) continue;
     const paint = icon.chain.at(-1).iconPaint;
     if (paint === 'none') continue;
-    if (paint === 'dynamic') { report(unknowns, 'U_A11Y_CONTRAST', 'unknown', `${icon.box.label}: its shapes are drawn in several colors (or styled per shape), which are not modeled`, icon, icon.region, { rule: 'icon-contrast' }); continue; }
+    if (paint === 'dynamic') { report(unknowns, 'U_A11Y_CONTRAST', 'unknown', `${icon.box.label}: its shapes are not drawn in one opaque color (several colors, an opacity, or a style attribute on a shape), which is not modeled`, icon, icon.region, { rule: 'icon-contrast' }); continue; }
     const result = backdrop([...icon.chain.slice(0, -1), { ...icon.chain.at(-1), color: paint }]);
     if (result.unknown) { report(unknowns, 'U_A11Y_CONTRAST', 'unknown', `${icon.box.label}: ${result.unknown.replace('the text', 'the icon')}`, icon, icon.region, { rule: 'icon-contrast' }); continue; }
     const ratio = contrastRatio(result.fg, result.bg);

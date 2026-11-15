@@ -35,7 +35,7 @@ export function htmlBoxTree(html) {
     const attrs=Object.fromEntries(node.attrs.map(a=>[a.name,a.value]));
     for(const attr of node.attrs) {
       // An img's or source's size and selection attributes are modeled (width/height hints and aspect-ratio).
-      if(node.tagName==='svg' && !attr.namespace && /^(?:width|height|viewbox|xmlns|version|fill|stroke|stroke-width|stroke-linecap|stroke-linejoin|preserveaspectratio|focusable)$/i.test(attr.name)) continue;
+      if(node.tagName==='svg' && !attr.namespace && /^(?:width|height|viewbox|xmlns|version|fill|stroke|stroke-width|stroke-linecap|stroke-linejoin|stroke-miterlimit|stroke-dasharray|fill-rule|clip-rule|fill-opacity|stroke-opacity|opacity|preserveaspectratio|focusable)$/i.test(attr.name)) continue;
       if(node.tagName==='svg' && attr.namespace==='http://www.w3.org/2000/xmlns/') continue;
       if(!attr.namespace && ((['img','source'].includes(node.tagName) && /^(?:width|height|srcset|sizes|media|loading|decoding)$/.test(attr.name)) || (node.tagName==='video' && /^(?:width|height|preload)$/.test(attr.name)) || (node.tagName==='iframe' && /^(?:width|height)$/.test(attr.name)))) continue;
       if(attr.namespace || !/^(?:class|id|style|dir|target|title|role|lang|tabindex|href|disabled|alt|src|type|for|name|value|placeholder|required|readonly|checked|autocomplete|headers|scope|controls|autoplay|muted|loop|playsinline|poster|kind|srclang|label|accesskey|ismap|colspan|rowspan|hidden|inert|autofocus|popover|popovertarget|popovertargetaction|aria-[\w-]+|data-[\w-]+)$/.test(attr.name)) unknown(`HTML rendering attribute needs an adapter: ${attr.name}`);
@@ -52,8 +52,9 @@ export function htmlBoxTree(html) {
       // Leaf shapes with their ancestor chain inside the svg (a g's attributes inherit to its shapes).
       const shapes=[], leaves=[]; (function walk(n,chain){ for(const c of n.childNodes ?? []) if(c.tagName && c.tagName!=='title' && c.tagName!=='desc'){ shapes.push(c); const next=[...chain,c]; if(c.childNodes?.some(k=>k.tagName)) walk(c,next); else leaves.push(next); } })(node,[]);
       const own=Object.fromEntries(['fill','stroke'].filter(k=>attrs[k]!==undefined).map(k=>[k,attrs[k].trim().toLowerCase()]));
+      const translucent=[node,...shapes].some(c=>c.attrs.some(a=>/^(?:opacity|fill-opacity|stroke-opacity)$/.test(a.name) && Number(a.value)!==1));
       const of=key=>{
-        if(shapes.some(c=>c.attrs.some(a=>a.name==='style'))) return 'dynamic';
+        if(translucent || shapes.some(c=>c.attrs.some(a=>a.name==='style'))) return 'dynamic';
         const values=leaves.map(chain=>[...chain].reverse().map(c=>c.attrs.find(a=>a.name===key)?.value.trim().toLowerCase()).find(v=>v!==undefined));
         if(values.every(v=>v===undefined)) return undefined;
         return new Set(values).size===1 ? values[0] : 'mixed';
