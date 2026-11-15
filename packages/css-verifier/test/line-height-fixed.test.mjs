@@ -17,3 +17,11 @@ test('a px line-height on text that grows with the default font size', () => {
   // A px root font-size fixes rem and em against the default.
   assert.deepEqual(run('html{font-size:16px}.t{font-size:1rem;line-height:20px}'), []);
 });
+
+test('a px height on text that grows with the default font size (W_LAYOUT_HEIGHT_FIXED_TEXT)', () => {
+  const warned = css => (analyzeHTML('<html lang="en"><body><main class="page"><p class="t">Text</p></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body,.page{${g}}.t{display:block;line-height:1.25}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, boxes: {'.t': {minInlineSize: 40, intrinsicBlockSize: 20}}}).layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_HEIGHT_FIXED_TEXT').map(w => w.box);
+  assert.deepEqual(warned('.t{height:24px;font-size:1rem}'), ['.t']);
+  assert.deepEqual(warned('.t{min-height:24px;font-size:1rem}'), []);
+  assert.deepEqual(warned('.t{height:24px;font-size:16px}'), []);
+  assert.deepEqual(warned('html{font-size:16px}.t{height:24px;font-size:1rem}'), []);
+});

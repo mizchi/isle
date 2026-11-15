@@ -481,6 +481,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function validate(style, box, region, emit, available = {}) {
     if (style.display === 'none') return false;
     if(box.whitespace && !['normal','nowrap'].includes(style['white-space'])) throw new Error('Preserved whitespace needs explicit text geometry from the input adapter');
+    // A px height on text whose font-size follows the user's default font size: a larger default makes the text
+    // taller than the box, which then overflows it or clips it (min-height grows, so it is fine).
+    if ((box.text || box.inline?.length) && !box.pseudo && emit && /^\d+(?:\.\d+)?px$/.test(String(style['block-size'])) && style.$sources?.['block-size'] && !layoutWarnings.some(w => w.code === 'W_LAYOUT_HEIGHT_FIXED_TEXT' && w.path === box.path)) {
+      const size = String(style['font-size']);
+      const keyword = /^(?:medium|small|large|x-small|x-large|xx-small|xx-large|xxx-large|smaller|larger|ua)$/.test(size);
+      if (!/^\d+(?:\.\d+)?px$/.test(size) && (keyword || !unitContext.rootFontSize)) layoutWarnings.push({ code: 'W_LAYOUT_HEIGHT_FIXED_TEXT', severity: 'warning', box: box.label, path: box.path, blockSize: style['block-size'], fontSize: size,
+        message: `${box.label} has height: ${style['block-size']} but its text follows the user's default font size (font-size: ${size === 'ua' ? 'the UA default' : size}): with a larger default the text outgrows the box and ${['hidden', 'clip'].includes(style['overflow-y']) ? 'is cut off' : 'overflows it'}. Use min-height (or padding) instead`, ...ranges(region) });
+    }
     // A px line-height on text whose font-size follows the user's default font size (no px root size and a
     // relative size, or a keyword such as medium): a larger default grows the glyphs, not the line, so wrapped lines
     // overlap. Unitless or em line-heights grow with the text.

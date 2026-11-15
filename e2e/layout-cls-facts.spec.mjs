@@ -522,3 +522,18 @@ test('px line-height: with a 32px default font size the glyphs outgrow the line 
     expect(fontSize > lineHeight, `${css}: font ${fontSize}px, line ${lineHeight}px at a 32px default`).toBe(warn);
   }
 });
+
+test('px height on text: with a 32px default font size the text overflows its box in Chromium exactly where the static check warns', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Page.enable');
+  await cdp.send('Page.setFontSizes', {fontSizes: {standard: 32}});
+  for (const [css, warn] of [['.t{height:24px;font-size:1rem}', true], ['.t{min-height:24px;font-size:1rem}', false], ['.t{height:24px;font-size:16px}', false], ['html{font-size:16px}.t{height:24px;font-size:1rem}', false]]) {
+    const full = `*{box-sizing:border-box;margin:0}html,body,.page{${g}}.t{display:block;line-height:1.25}${css}`;
+    const report = analyzeHTML('<html lang="en"><body><main class="page"><p class="t">Text</p></main></body></html>', {name: 'P', css: full, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, boxes: {'.t': {minInlineSize: 40, intrinsicBlockSize: 20}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_HEIGHT_FIXED_TEXT'), css).toBe(warn);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${full}</style></head><body><main class="page"><p class="t">Text</p></main></body></html>`);
+    const overflows = await page.evaluate(() => { const t = document.querySelector('.t'); return t.scrollHeight > t.clientHeight; });
+    expect(overflows, `${css}: overflows at a 32px default`).toBe(warn);
+  }
+});
