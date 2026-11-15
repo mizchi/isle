@@ -483,3 +483,26 @@ test('absolute with no positioned ancestor: placed against the initial containin
     }
   }
 });
+
+test('font-size under 200% zoom (half the CSS width at twice the pixel ratio): short of 2× exactly where the static check warns', async ({browser}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const fs of ['5vw', 'calc(1rem + 1vw)', 'clamp(1rem, 4vw, 3rem)', 'max(4vw, 1rem)', '24px', 'min(6vw, 2rem)']) {
+    const css = `*{box-sizing:border-box;margin:0}html{font-size:16px}html,body,.page{${g}}body{margin:0}.t{height:40px;font-size:${fs}}`;
+    const html = '<main class="page"><h1 class="t">Title</h1></main>';
+    const report = analyzeHTML(`<html lang="en"><body><main class="page"><h1 class="t"></h1></main></body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    const warning = (report.layoutWarnings ?? []).find(w => w.code === 'W_LAYOUT_FONT_ZOOM');
+    for (const width of [360, 520, 760]) {
+      const physical = [];
+      for (const [w, dpr] of [[width, 1], [width / 2, 2]]) {
+        const context = await browser.newContext({viewport: {width: w, height: 600 / (dpr)}, deviceScaleFactor: dpr});
+        const page = await context.newPage();
+        await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+        physical.push(parseFloat(await page.evaluate(() => getComputedStyle(document.querySelector('.t')).fontSize)) * dpr);
+        await context.close();
+      }
+      const short = physical[1] < 2 * physical[0] - 0.01;
+      const warned = Boolean(warning?.intervals.some(([lo, hi]) => width >= lo && width <= hi));
+      expect(warned, `${fs} at ${width}px: ${physical[0]} → ${physical[1]} at 200%`).toBe(short);
+    }
+  }
+});

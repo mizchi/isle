@@ -1888,6 +1888,26 @@ html{overflow-y:auto}.hero{height:100px;width:100vw}.tall{height:3000px}
 
 </details>
 
+## A heading sized only in vw
+
+`W_LAYOUT_FONT_ZOOM` — markup rule (nothing to see on screen)
+
+> .t has font-size: 5vw: viewport units do not grow with page zoom, so at 200% zoom it shows at 1.00× (viewport 672px), short of 2× (SC 1.4.4). Add a rem or px part that grows, e.g. max(…, 1rem) only where the vw part is below it, or clamp with rem bounds
+
+![font-zoom](font-zoom-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><h1 class="t"></h1></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{height:40px;font-size:5vw}
+```
+
+</details>
+
 ## A px font-size on html
 
 `W_LAYOUT_ROOT_FONT_FIXED` — markup rule (nothing to see on screen)

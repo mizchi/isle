@@ -6,6 +6,7 @@ import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place } from './grid.mjs';
 import { compileSelector, PARENT } from './selectors.mjs';
 import { selectorUsage } from './selector-usage.mjs';
+import { viewportFont, zoomShortfall } from './zoom-font.mjs';
 import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
 import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
@@ -480,6 +481,23 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function validate(style, box, region, emit, available = {}) {
     if (style.display === 'none') return false;
     if(box.whitespace && !['normal','nowrap'].includes(style['white-space'])) throw new Error('Preserved whitespace needs explicit text geometry from the input adapter');
+    // A font-size in viewport units alone (or mostly): page zoom shrinks the viewport in CSS px, so the text does not
+    // grow with zoom; where 200% zoom shows it below twice its size it fails SC 1.4.4 unless it is resized otherwise.
+    // Judged on the declaring element (descendants inherit the computed px). Evaluated at every whole px of width.
+    if (!box.pseudo && emit && style.$sources?.['font-size'] && !layoutWarnings.some(w => w.code === 'W_LAYOUT_FONT_ZOOM' && w.path === box.path)) {
+      const specified = String(style.$sources['font-size'].specified ?? '');
+      const root = unitContext.rootFontSize ?? (/rem\b/.test(specified) ? undefined : 16);
+      const f = root === undefined ? null : viewportFont(specified, typeof root === 'object' ? Number(number(root)) : Number(root));
+      const heights = /vh|vmin|vmax/.test(specified) ? [options.viewport.height?.min, options.viewport.height?.max].filter(h => typeof h === 'number') : [600];
+      if (f && heights.length) {
+        const short = heights.flatMap(h => zoomShortfall(f, options.viewport, h));
+        if (short.length) {
+          const lo = Math.min(...short.map(r => r[0])), hi = Math.max(...short.map(r => r[1])), mid = Math.round((lo + hi) / 2), h = heights[0];
+          layoutWarnings.push({ code: 'W_LAYOUT_FONT_ZOOM', severity: 'warning', box: box.label, path: box.path, fontSize: specified, intervals: short, range: { min: lo, max: hi, minInclusive: true, maxInclusive: true },
+            message: `${box.label} has font-size: ${specified}: viewport units do not grow with page zoom, so at 200% zoom it shows at ${(2 * f(mid / 2, h / 2) / f(mid, h)).toFixed(2)}× (viewport ${mid}px), short of 2× (SC 1.4.4). Add a rem or px part that grows, e.g. max(…, 1rem) only where the vw part is below it, or clamp with rem bounds` });
+        }
+      }
+    }
     // An absolute font-size on html or body replaces the user's default font size (the browser's font size setting):
     // the page's text no longer follows it (relative sizes, %, em, rem and the medium keyword do).
     if (['html', 'body'].includes(box.tag) && !box.pseudo && style.$sources?.['font-size'] && /^\d+(?:\.\d+)?(?:px|pt|pc|cm|mm|in|q)$/i.test(String(style['font-size']))
