@@ -34,3 +34,12 @@ test('a wrapping text whose longest word does not fit (W_LAYOUT_LONG_WORD)', () 
   assert.deepEqual(warned(text('.t{white-space:nowrap}')), []);
   assert.deepEqual(warned(text('', {minInlineSize: 150, intrinsicBlockSize: 20})), []);
 });
+
+test('a grid of fixed px columns wider than its container (W_LAYOUT_FIXED_TRACKS)', () => {
+  const grid = t => analyzeHTML('<html lang="en"><body><div class="g"><div class="a"></div><div class="a"></div><div class="a"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.g{display:grid;column-gap:16px;grid-template-columns:${t}}.a{height:20px}`, viewport: {min: 320, max: 1024, height: {min: 480, max: 900}}});
+  const warned = r => (r.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_FIXED_TRACKS').map(w => [w.columns, w.range.max]);
+  assert.deepEqual(warned(grid('repeat(3,200px)')), [['repeat(3,200px)', 632]]);
+  assert.deepEqual(warned(grid('200px 200px 100px')), [['200px 200px 100px', 532]]);
+  assert.deepEqual(warned(grid('200px minmax(0,1fr)')), []);
+  assert.deepEqual(warned(grid('repeat(3,minmax(0,1fr))')), []);
+});

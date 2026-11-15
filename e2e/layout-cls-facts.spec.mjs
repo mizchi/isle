@@ -614,3 +614,20 @@ test('a long word: the text overflows its 200px box in Chromium exactly where th
     expect(overflows, `overflow-wrap: ${wrap} (word ${width}px)`).toBe(warn);
   }
 });
+
+test('fixed px grid columns: the grid overflows its container in Chromium exactly where the static check warns', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const t of ['repeat(3,200px)', '200px 200px 100px', '200px minmax(0,1fr)']) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.g{display:grid;column-gap:16px;grid-template-columns:${t}}.a{height:20px;background:#246}`;
+    const html = '<div class="g"><div class="a"></div><div class="a"></div><div class="a"></div></div>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 1024, height: {min: 480, max: 900}}});
+    const w = (report.layoutWarnings ?? []).find(x => x.code === 'W_LAYOUT_FIXED_TRACKS');
+    for (const width of [360, 540, 700, 1000]) {
+      await page.setViewportSize({width, height: 600});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+      const overflows = await page.evaluate(() => { const g = document.querySelector('.g'); return g.scrollWidth > g.clientWidth; });
+      const warned = Boolean(w) && (w.range.minInclusive ? width >= w.range.min : width > w.range.min) && (w.range.maxInclusive ? width <= w.range.max : width < w.range.max);
+      expect(warned, `${t} at ${width}`).toBe(overflows);
+    }
+  }
+});
