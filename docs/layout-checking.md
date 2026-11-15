@@ -282,6 +282,12 @@ CSS による通常の in-flow parent と child の関係を検査する。pure 
 
 grid item には、負でない px の margin を書ける(grid と flex の margin は相殺しない)。item は、grid の領域から margin を引いた幅と高さの中に配置され、左上の margin の分だけずれる。auto の行は、item の margin を含めた大きさで決まる。収まるかどうかは、始端の margin と border box を合わせて領域と比べる。終端の margin がはみ出しても、何も隠れず、スクロールも起きない(Chromium で測った)。幅を指定した item(px か %、ltr)の inline の `auto` margin は、領域の空きを取って item を中央(両側 auto)か端へ寄せる。空きが負なら取らずに始端に置く(Chromium で測った)。幅が auto で `auto` margin の item は内容に合わせて縮むので、Unknown にする。flex の行(row)の item の px margin は、主軸の外側の大きさ(基準・最小・最大)に含め、item はその内側に配置する。交差軸では、伸びる大きさから margin を引き、行の高さは margin を含めて決める。行がはみ出したかどうかの判定では、最後の item の終端の margin を除く。負の margin、column の flex item の px margin、subgrid の margin、rtl で左右の値が異なる margin は Unknown にする。Chromium の照合は 2 つある。`e2e/layout-flex.spec.mjs` は、入れ子と auto の行を含めて矩形が一致することを確かめる。`e2e/layout-fuzz-visibility.spec.mjs` の margin 版は、40 seed・5,944 件で、item が収まるかどうかの判定が一致することを確かめる。flex の margin 版は、40 seed で、flex の行がはみ出すかどうかの判定が一致することを確かめる。
 
+## 静的位置の absolute と視覚的に隠したテキスト
+
+inset がどちらも auto の absolute の箱は、静的位置に置かれる。grid container の中では、それは container の padding の端である(css-grid-1 §9.4)。その container 自身が containing block(positioned)の場合に限り、始端の inset 0(rtl では right: 0)として扱う。それ以外の場合は Unknown にする。こうして、inset を書かない sr-only の定番のパターンやバッジを扱える。
+
+視覚的に隠した箱(`clip-path: inset(50%)`、`clip: rect(0 0 0 0)`、または overflow を隠した 1px 以下の箱)の中身は、見せないことが目的である。そのため、収まるかどうか(`E_LAYOUT_CONTENT`)と固定高さのテキスト(`W_LAYOUT_HEIGHT_FIXED_TEXT`)は判定しない。名前には入る。Chromium の照合では、次の 2 点を確かめる。`e2e/layout-flex.spec.mjs`:静的位置の矩形が、padding・border・rtl を含めて一致する。`e2e/layout-accessibility.spec.mjs`:sr-only のテキストでリンクに名前が付くのは、`E_A11Y_NAME` が出ない場合とちょうど一致する。
+
 ## 最小幅のある fr トラックと auto-fill
 
 `minmax(Lpx, Nfr)` は、空き幅の取り分が L 未満のトラックを L で固定し、残りを分け直す(css-grid-1 §12.7.1 の fr の大きさの求め方)。各回は「取り分 ≥ L」による領域の分割になる。全てのトラックが L に固定され、さらに幅が足りない領域は `E_LAYOUT_TRACKS` になる。`minmax(min(Lpx, 100%), Nfr)` では、container の幅が L 未満の所で最小幅が container の幅になり、はみ出さない。

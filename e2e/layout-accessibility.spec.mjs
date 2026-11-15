@@ -1705,3 +1705,18 @@ test('focus shift: where W_LAYOUT_FOCUS_SHIFT warns, focusing the link moves the
     if (warning) expect(Number(warning.delta)).toBe(after - before);
   }
 });
+
+test('sr-only text names an icon link: Chromium names the link exactly where E_A11Y_NAME is not reported', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const sr = '.sr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}';
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff;color:#222}.t{height:10px}.l{display:grid;grid-template-columns:24px;position:relative;color:#222}svg{display:block}${sr}`;
+  for (const inner of ['<span class="sr">Home</span>', '']) {
+    const html = `<main class="p"><h1 class="t" aria-label="T"></h1><a class="l" href="/"><svg width="24" height="24" aria-hidden="true"></svg>${inner}</a></main>`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true, ...(inner ? {boxes: {'.sr': {minInlineSize: 10, intrinsicBlockSize: 24}}} : {})});
+    expect(report.status, report.diagnostics.map(d => d.message).join(' | ')).not.toBe('unknown');
+    const unnamed = report.diagnostics.some(d => d.code === 'E_A11Y_NAME');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const name = /link "([^"]*)"/.exec(await page.locator('main').ariaSnapshot())?.[1] ?? '';
+    expect(unnamed, `${inner || 'no text'}: Chromium names the link "${name}"`).toBe(name === '');
+  }
+});

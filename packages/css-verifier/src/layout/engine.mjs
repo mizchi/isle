@@ -19,6 +19,9 @@ import {fact, sizeChain, sizeProperties, trackProperties, contractFact, explanat
 const zero = q(0), one = q(1), minusOne = q(-1);
 const total = values => values.reduce(sum, scalar(0));
 const trackStart = (values,gap,index) => sum(total(values.slice(0,index)),scalar(mul(gap,q(index))));
+// Visually hidden (the "sr-only" pattern): clipped to nothing, or a box of at most 1px that hides its overflow. Its
+// content is meant not to be seen, so it is not judged for fit or clipping.
+const visuallyHiddenStyle = style => style['clip-path'] === 'empty' || style.clip === 'empty' || (['hidden', 'clip'].includes(style['overflow-x']) && /^\d+(?:\.\d+)?px$/.test(String(style['block-size'])) && Number(String(style['block-size']).slice(0, -2)) <= 1);
 const offset = (origin,inline,block) => origin ? {inline:sum(origin.inline,inline),block:sum(origin.block,block)} : null;
 const inlineFeature = feature => ['width', 'inline-size'].includes(feature);
 const compare = (value, relation) => relation === '>=' ? value >= 0 : relation === '>' ? value > 0 : relation === '<=' ? value <= 0 : relation === '<' ? value < 0 : value === 0;
@@ -392,6 +395,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // An absolute box with both insets of an axis (inset: 0 overlays): an auto size fills the containing block
       // between them, width = 100% − start − end − its own padding and border under content-box (CSS 2 §10.3.7); with
       // an explicit size it is over-constrained and the end inset is ignored (right in ltr, left in rtl; bottom).
+      // An absolute box with both insets of an axis auto sits at its static position. In a grid container that is the
+      // container's padding edge (css-grid-1 §9.4); when that container is also the containing block (positioned),
+      // it is an inset of 0 on the start side (the visually hidden "sr-only" pattern, a badge without offsets).
+      if (style.position === 'absolute' && !style.$fixed && !box.pseudo) {
+        const parentStyle = ancestors.at(-1)?.style;
+        if (parentStyle && ['grid', 'inline-grid'].includes(parentStyle.display) && parentStyle.position !== 'static') {
+          const none = side => style[side] === undefined || style[side] === 'auto';
+          const inlineStart = style.direction === 'rtl' ? 'right' : 'left';
+          if (none('left') && none('right')) style = { ...style, [inlineStart]: '0px', $staticPosition: true };
+          if (none('top') && none('bottom')) style = { ...style, top: '0px', $staticPosition: true };
+        }
+      }
       if (style.position === 'absolute') {
         const sized = (start, end, size, edges) => {
           const set = side => style[side] !== undefined && style[side] !== 'auto';
@@ -550,7 +565,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(box.whitespace && !['normal','nowrap'].includes(style['white-space'])) throw new Error('Preserved whitespace needs explicit text geometry from the input adapter');
     // A px height on text whose font-size follows the user's default font size: a larger default makes the text
     // taller than the box, which then overflows it or clips it (min-height grows, so it is fine).
-    if ((box.text || box.inline?.length) && !box.pseudo && emit && /^\d+(?:\.\d+)?px$/.test(String(style['block-size'])) && style.$sources?.['block-size'] && !layoutWarnings.some(w => w.code === 'W_LAYOUT_HEIGHT_FIXED_TEXT' && w.path === box.path)) {
+    // Visually hidden text (clipped to nothing, or a 1px box that hides its overflow) is meant not to be seen.
+    const visuallyHidden = visuallyHiddenStyle(style);
+    if ((box.text || box.inline?.length) && !box.pseudo && emit && !visuallyHidden && /^\d+(?:\.\d+)?px$/.test(String(style['block-size'])) && style.$sources?.['block-size'] && !layoutWarnings.some(w => w.code === 'W_LAYOUT_HEIGHT_FIXED_TEXT' && w.path === box.path)) {
       const size = String(style['font-size']);
       const keyword = /^(?:medium|small|large|x-small|x-large|xx-small|xx-large|xxx-large|smaller|larger|ua)$/.test(size);
       if (!/^\d+(?:\.\d+)?px$/.test(size) && (keyword || !unitContext.rootFontSize)) layoutWarnings.push({ code: 'W_LAYOUT_HEIGHT_FIXED_TEXT', severity: 'warning', box: box.label, path: box.path, blockSize: style['block-size'], fontSize: size,
@@ -1121,7 +1138,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (cut && !layoutWarnings.some(w => w.code === 'W_LAYOUT_TRUNCATED' && w.path === box.path)) { const p = sample(cut); layoutWarnings.push({ code: 'W_LAYOUT_TRUNCATED', severity: 'warning', box: box.label, path: box.path,
           message: `${box.label} is cut with an ellipsis: its text needs ${number(q(String(contract.minInlineSize)))}px but the box offers ${number(evaluate(contentInline, p))}px at viewport ${number(p.x)}px (keep the full text available, e.g. in its accessible name or the page it links to)`, ...ranges(cut) }); }
       }
-      if (contract.minInlineSize !== undefined) obligation(contentInline, scalar(contract.minInlineSize), box, region, 'E_LAYOUT_CONTENT', 'inline', (contract.overflow ?? 'fit') === 'fit' && !ellipsis, content('inline', 'minInlineSize'), domain);
+      if (contract.minInlineSize !== undefined) obligation(contentInline, scalar(contract.minInlineSize), box, region, 'E_LAYOUT_CONTENT', 'inline', (contract.overflow ?? 'fit') === 'fit' && !visuallyHiddenStyle(style) && !ellipsis, content('inline', 'minInlineSize'), domain);
       if (block) {
         // The document root may be taller than the viewport when the viewport scrolls (html overflow-y not hidden/clip):
         // that is an ordinary long page. With overflow-y visible and a classic scrollbar profile the scrollbar would
@@ -1137,7 +1154,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (box.documentRoot && available.root && available.block && !['hidden', 'clip', 'auto', 'scroll'].includes(style['overflow-y']) && scrollbarProfile?.inlineSize > 0 && clip(region, diff(blockSize, available.block), true))
           throw Object.assign(new Error(`${box.label} is taller than the viewport, so the viewport scrolls and its ${scrollbarProfile.name ?? 'classic'} scrollbar (${scrollbarProfile.inlineSize}px) narrows the page; that is laid out when html sets overflow-y: auto or scroll (the same in a browser)`), { code: 'U_LAYOUT_SCROLLBAR' });
         if (available.block) obligation(available.marginEnd ? sum(available.block, scalar(available.marginEnd.block)) : available.block, blockSize, box, region, 'E_LAYOUT_ITEM_SIZE', 'block', available.fitBlock !== false && !viewportScrolls, item('block'));
-        if (contract.minBlockSize !== undefined) (box.tableCell && (contract.overflowBlock ?? 'fit') === 'fit' ? cellGrows : obligation)(contentBlock, scalar(contract.minBlockSize), box, region, 'E_LAYOUT_CONTENT', 'block', (contract.overflowBlock ?? 'fit') === 'fit', content('block', 'minBlockSize'));
+        if (contract.minBlockSize !== undefined) (box.tableCell && (contract.overflowBlock ?? 'fit') === 'fit' ? cellGrows : obligation)(contentBlock, scalar(contract.minBlockSize), box, region, 'E_LAYOUT_CONTENT', 'block', !visuallyHiddenStyle(style) && (contract.overflowBlock ?? 'fit') === 'fit', content('block', 'minBlockSize'));
       }
       let positioned;
       if (style.position === 'absolute') {
@@ -1391,7 +1408,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           // Wrapped text reports the lines it needs at this width and how many the box holds.
           const needed = contract.textMetrics?.kind === 'lines' ? Math.round(number(evaluate(required.value, { x: zero, y: zero })) / contract.font.lineHeight) : 0;
           const annotate = needed ? offered => ({ text: { lines: needed, fitsLines: fittingLines(contract.font.lineHeight, offered, needed) } }) : undefined;
-          if (emit) (box.tableCell ? cellGrows : obligation)(contentBlock, required.value, box, required.region, 'E_LAYOUT_CONTENT', 'block', true, undefined, annotate);
+          if (emit) (box.tableCell ? cellGrows : obligation)(contentBlock, required.value, box, required.region, 'E_LAYOUT_CONTENT', 'block', !visuallyHiddenStyle(style), undefined, annotate);
         }
         else if (contract.minBlockSize === undefined) unknown('U_LAYOUT_INTRINSIC', 'Text needs a block-height contract or an explicit overflowBlock policy', undefined, box);
       }
