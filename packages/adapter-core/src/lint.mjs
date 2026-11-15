@@ -21,6 +21,7 @@ export const recommended = {
   W_LAYOUT_MEDIA_NO_MAX: ['warning', 'add max-width: 100%; height: auto'],
   W_LAYOUT_SOURCE_SHADOWED: ['warning', 'order the picture sources from the most specific media to the least'],
   W_LAYOUT_IMAGE_UPSCALED: ['warning', 'cap the image at its file width (max-width) or add a wider srcset candidate'],
+  W_LAYOUT_SVG_UNSIZED: ['warning', 'give the svg width and height (attributes or CSS)'],
   W_LAYOUT_EMBED_NO_RATIO: ['warning', 'add aspect-ratio (e.g. 16 / 9) or a height to the iframe'],
   W_LAYOUT_SIZES_MISSING: ['warning', 'add a sizes attribute with the width the image takes at each breakpoint'],
   W_LAYOUT_LONG_WORD: ['warning', 'use overflow-wrap: anywhere for URLs and long words'],

@@ -439,6 +439,28 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (style['block-size'] === 'auto' && !style.$sources['block-size'] && (hgt === undefined || Number.isFinite(hgt)) && (style['aspect-ratio'] === 'auto' || !style.$sources['aspect-ratio']))
           style = { ...style, 'block-size': `${hgt ?? 150}px`, ...(hgt === undefined && style.$sources['inline-size'] ? { $embedDefaultHeight: true } : {}) };
       }
+      // An inline svg (a replaced box, measured in Chromium): width/height attributes are presentational hints; with a
+      // width its height is the height attribute, else width × the viewBox ratio, else 150px; with only a height its
+      // width is height ÷ the ratio, else 300px; with neither, a viewBox fills the grid area (ratio height) and no
+      // viewBox is 300×150. Stretch-fit in a flex container is not modeled.
+      if (box.tag === 'svg' && !box.pseudo) {
+        const facts = box.svgSize ?? {}, vb = facts.viewBox;
+        if ([facts.width, facts.height].includes('dynamic') || vb === 'dynamic') throw Object.assign(new Error(`${box.label}: an svg with a dynamic width, height or viewBox is not modeled`), { code: 'U_LAYOUT_ELEMENT', box });
+        if (style.display === 'inline') style = { ...style, display: 'block' };
+        const authored = key => style.$sources[key] && style[key] !== 'auto';
+        if (!authored('inline-size') && facts.width) style = { ...style, 'inline-size': facts.width };
+        if (!authored('block-size') && facts.height) style = { ...style, 'block-size': facts.height };
+        const w = style['inline-size'], h = style['block-size'], ratio = vb ? `${vb.width}/${vb.height}` : null;
+        const parentDisplay = ancestors.at(-1)?.style?.display;
+        if (w !== 'auto' && h === 'auto') style = ratio && !authored('aspect-ratio') ? { ...style, 'aspect-ratio': ratio } : authored('aspect-ratio') ? style : { ...style, 'block-size': '150px' };
+        else if (w === 'auto' && h !== 'auto') {
+          if (!/^\d+(?:\.\d+)?px$/.test(h)) throw Object.assign(new Error(`${box.label}: an svg sized by a non-px height alone is not modeled`), { code: 'U_LAYOUT_ELEMENT', box });
+          style = { ...style, 'inline-size': vb ? `${+(parseFloat(h) * vb.width / vb.height).toFixed(6)}px` : '300px' };
+        } else if (w === 'auto' && h === 'auto') {
+          if (vb && !['grid', 'inline-grid'].includes(parentDisplay)) throw Object.assign(new Error(`${box.label}: an unsized svg with a viewBox fills its container; outside a grid area that is not modeled`), { code: 'U_LAYOUT_ELEMENT', box });
+          style = { ...(vb ? { ...style, 'inline-size': '100%', 'aspect-ratio': ratio } : { ...style, 'inline-size': '300px', 'block-size': '150px' }), $svgUnsized: vb ? 'fills' : 'default' };
+        }
+      }
       if (['img', 'video'].includes(box.tag) && imageFacts && !box.pseudo) {
         const { width: w, height: hgt } = imageFacts;
         if (Number.isFinite(w) && style['inline-size'] === 'auto' && !style.$sources['inline-size']) style = { ...style, 'inline-size': `${w}px`, ...(!style.$sources['max-inline-size'] ? { $widthFromAttribute: w } : {}) };
@@ -575,7 +597,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (['img', 'video'].includes(box.tag) && style.$imageRatioMismatch && emit) issue('E_LAYOUT_IMAGE_RATIO', `${box.label} reserves the ratio ${style.$imageRatioMismatch.reserved} but ${style.$imageRatioMismatch.src} is ${style.$imageRatioMismatch.natural.width}×${style.$imageRatioMismatch.natural.height}: its height changes when it loads`, box, region);
     if (box.tag === 'img' && !box.pseudo && style['block-size'] === 'auto' && !ratioOf(style) && block) throw Object.assign(new Error(`${box.label} has no reserved height (no height, aspect-ratio or width/height attributes) and its file's size is not known; it shifts the layout when it loads`), { code: 'U_LAYOUT_IMAGE' });
     // An img may leave its block-size auto when an aspect-ratio (CSS or its width/height attributes) gives it.
-    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto' && !(['img', 'video', 'iframe'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
+    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'svg', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto' && !(['img', 'video', 'iframe', 'svg'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
     // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
     // A closed popover that author CSS displays keeps the UA [popover] { position: fixed; inset: 0; margin: auto }:
@@ -1174,6 +1196,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (['flex', 'inline-flex'].includes(style.display) && set('justify-items', 'normal')) reasons.push(['justify-items', 'it is display: flex, which ignores justify-items (use justify-content)']);
         // A main size under a non-auto flex-basis (flex: 1; width: 200px): flex-basis replaces it (inertMainSize).
         if (style.$inertMain) reasons.push([style.$inertMain.property, `flex-basis: ${style['flex-basis']} sets its main size instead (use flex: 1 1 auto, or flex-basis: ${style.$inertMain.value})`]);
+        if (style.$svgUnsized && !layoutWarnings.some(w => w.code === 'W_LAYOUT_SVG_UNSIZED' && w.path === box.path))
+          layoutWarnings.push({ code: 'W_LAYOUT_SVG_UNSIZED', severity: 'warning', box: box.label, path: box.path,
+            message: style.$svgUnsized === 'fills'
+              ? `${box.label} is an svg with a viewBox but no width or height (attribute or CSS): it fills its container's width, so an icon grows with the layout. Give it a width and height (e.g. width="24" height="24")`
+              : `${box.label} is an svg with no width, height or viewBox: it is drawn at the default 300×150. Give it a width and height`, ...ranges(region) });
         if (style.$embedDefaultHeight && !layoutWarnings.some(w => w.code === 'W_LAYOUT_EMBED_NO_RATIO' && w.path === box.path))
           layoutWarnings.push({ code: 'W_LAYOUT_EMBED_NO_RATIO', severity: 'warning', box: box.label, path: box.path,
             message: `${box.label} sets its width (${style.$sources['inline-size'].specified ?? style['inline-size']}) but not its height: an iframe has no aspect ratio of its own, so it stays 150px tall at every width and the embedded page (a video, a map) is cut or letterboxed. Add aspect-ratio (e.g. 16 / 9) or a height`, ...ranges(region) });

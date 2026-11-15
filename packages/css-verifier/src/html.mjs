@@ -35,10 +35,15 @@ export function htmlBoxTree(html) {
     const attrs=Object.fromEntries(node.attrs.map(a=>[a.name,a.value]));
     for(const attr of node.attrs) {
       // An img's or source's size and selection attributes are modeled (width/height hints and aspect-ratio).
+      if(node.tagName==='svg' && !attr.namespace && /^(?:width|height|viewbox|xmlns|version|fill|stroke|stroke-width|stroke-linecap|stroke-linejoin|preserveaspectratio|focusable)$/i.test(attr.name)) continue;
+      if(node.tagName==='svg' && attr.namespace==='http://www.w3.org/2000/xmlns/') continue;
       if(!attr.namespace && ((['img','source'].includes(node.tagName) && /^(?:width|height|srcset|sizes|media|loading|decoding)$/.test(attr.name)) || (node.tagName==='video' && /^(?:width|height|preload)$/.test(attr.name)) || (node.tagName==='iframe' && /^(?:width|height)$/.test(attr.name)))) continue;
       if(attr.namespace || !/^(?:class|id|style|dir|target|title|role|lang|tabindex|href|disabled|alt|src|type|for|name|value|placeholder|required|readonly|checked|autocomplete|headers|scope|controls|autoplay|muted|loop|playsinline|poster|kind|srclang|label|accesskey|ismap|colspan|rowspan|hidden|inert|autofocus|popover|popovertarget|popovertargetaction|aria-[\w-]+|data-[\w-]+)$/.test(attr.name)) unknown(`HTML rendering attribute needs an adapter: ${attr.name}`);
     }
-    if(node.namespaceURI!=='http://www.w3.org/1999/xhtml') unknown('Foreign element needs a size adapter');
+    // An inline svg is one replaced box: its content is SVG, not CSS boxes, so its children are not converted.
+    const inlineSvg=node.tagName==='svg' && node.namespaceURI==='http://www.w3.org/2000/svg';
+    if(node.namespaceURI!=='http://www.w3.org/1999/xhtml' && !inlineSvg) unknown('Foreign element needs a size adapter');
+    if(inlineSvg) return {tag:'svg',...(attrs.id!==undefined ? {id:attrs.id} : {}),...accessibilityFacts('svg',attrs),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),text:false,runs:[],children:[]};
     return {tag:node.tagName,...(attrs.id!==undefined ? {id:attrs.id} : {}),...(attrs.lang!==undefined ? {lang:attrs.lang.trim()} : {}),...accessibilityFacts(node.tagName,attrs),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),
       text:node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)),
       ...(node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)) ? {textContent:node.childNodes.filter(n=>n.nodeName==='#text').map(n=>n.value).join(' ').replace(/[\t\n\r ]+/g,' ').trim()} : {}),
