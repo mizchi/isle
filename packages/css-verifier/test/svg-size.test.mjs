@@ -34,3 +34,12 @@ test('no size: a viewBox fills the grid area, no viewBox is 300×150; both are w
   // In a flex container the unsized svg is Unknown.
   assert.equal(run('<svg viewBox="0 0 24 12" aria-hidden="true">', '.p{display:flex}').status, 'unknown');
 });
+
+test('a link named only by its svg: aria-label or <title> names it, aria-hidden does not', () => {
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g};background:#fff}.t{height:10px}.l{display:grid;grid-template-columns:24px}svg{display:block}`;
+  const unnamed = svg => analyzeHTML(`<html lang="en"><body><main class="p"><h1 class="t" aria-label="T"></h1><a class="l" href="/">${svg}</a></main></body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true}).diagnostics.some(d => d.code === 'E_A11Y_NAME');
+  assert.equal(unnamed('<svg width="24" height="24" aria-label="Home" role="img"></svg>'), false);
+  assert.equal(unnamed('<svg width="24" height="24"><title>Home</title></svg>'), false);
+  assert.equal(unnamed('<svg width="24" height="24" aria-hidden="true"><title>Home</title></svg>'), true);
+  assert.equal(unnamed('<svg width="24" height="24"></svg>'), true);
+});

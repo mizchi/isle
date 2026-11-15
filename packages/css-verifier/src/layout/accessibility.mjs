@@ -331,7 +331,8 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   const pua = /[\uE000-\uF8FF]|[\u{F0000}-\u{FFFFD}]|[\u{100000}-\u{10FFFD}]/gu;
   const generatedText = box => [box.generated?.before, box.generated?.after].filter(Boolean).join(' ');
   const generatedSays = box => generatedText(box).replace(pua, '').trim().length > 0;
-  const speaks = row => (row.box.text || generatedSays(row.box) || (row.box.tag === 'img' && row.box.alt && row.box.alt !== 'dynamic')) && visible(row);
+  // An inline svg named by aria-label / aria-labelledby or its <title> child is part of the name too (Chromium).
+  const speaks = row => (row.box.text || generatedSays(row.box) || (row.box.tag === 'img' && row.box.alt && row.box.alt !== 'dynamic') || (row.box.tag === 'svg' && nameOf(row.box) === true && !hiddenFrom(row.path))) && visible(row);
   const nameOf = box => {
     if (box.named === true) return true;
     if (box.labelledBy === 'dynamic') return 'dynamic';

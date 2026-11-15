@@ -1620,3 +1620,18 @@ test('contents-focus: where the static rule reports, Tab never lands on the elem
     expect(reached, `${inner} ${extra}: Tab reaches it`).toBe(!warn);
   }
 });
+
+test('inline svg names: a link named only by its svg has a name in Chromium exactly where the static rule finds one', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff}.t{height:10px}.l{display:grid;grid-template-columns:24px}svg{display:block}`;
+  for (const svg of ['<svg width="24" height="24" aria-hidden="true"></svg>', '<svg width="24" height="24" aria-label="Home" role="img"></svg>', '<svg width="24" height="24"><title>Home</title></svg>', '<svg width="24" height="24" aria-hidden="true"><title>Home</title></svg>', '<svg width="24" height="24"></svg>']) {
+    const html = `<main class="p"><h1 class="t" aria-label="T"></h1><a class="l" href="/">${svg}</a></main>`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+    expect(report.status, svg).not.toBe('unknown');
+    const unnamed = report.diagnostics.some(d => d.code === 'E_A11Y_NAME' && d.box === '.l');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const snapshot = await page.locator('main').ariaSnapshot();
+    const name = /link "([^"]*)"/.exec(snapshot)?.[1] ?? '';
+    expect(unnamed, `${svg}: Chromium names the link "${name}" (${snapshot.replace(/\n/g, ' ')})`).toBe(name === '');
+  }
+});
