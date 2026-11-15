@@ -279,7 +279,7 @@ CSS による通常の in-flow parent と child の関係を検査する。pure 
 
 ## grid item の margin
 
-grid item には、負でない px の margin を書ける(grid と flex の margin は相殺しない)。item は、grid の領域から margin を引いた幅と高さの中に配置され、左上の margin の分だけずれる。auto の行は、item の margin を含めた大きさで決まる。収まるかどうかは、始端の margin と border box を合わせて領域と比べる。終端の margin がはみ出しても、何も隠れず、スクロールも起きない(Chromium で測った)。`auto` の margin、負の margin、flex item の px margin、subgrid の margin、rtl で左右の値が異なる margin は Unknown にする。Chromium の照合は 2 つある。`e2e/layout-flex.spec.mjs` は、入れ子と auto の行を含めて矩形が一致することを確かめる。`e2e/layout-fuzz-visibility.spec.mjs` の margin 版は、40 seed・5,944 件で、item が収まるかどうかの判定が一致することを確かめる。
+grid item には、負でない px の margin を書ける(grid と flex の margin は相殺しない)。item は、grid の領域から margin を引いた幅と高さの中に配置され、左上の margin の分だけずれる。auto の行は、item の margin を含めた大きさで決まる。収まるかどうかは、始端の margin と border box を合わせて領域と比べる。終端の margin がはみ出しても、何も隠れず、スクロールも起きない(Chromium で測った)。幅を指定した item(px か %、ltr)の inline の `auto` margin は、領域の空きを取って item を中央(両側 auto)か端へ寄せる。空きが負なら取らずに始端に置く(Chromium で測った)。幅が auto で `auto` margin の item は内容に合わせて縮むので、Unknown にする。負の margin、flex item の px margin、subgrid の margin、rtl で左右の値が異なる margin は Unknown にする。Chromium の照合は 2 つある。`e2e/layout-flex.spec.mjs` は、入れ子と auto の行を含めて矩形が一致することを確かめる。`e2e/layout-fuzz-visibility.spec.mjs` の margin 版は、40 seed・5,944 件で、item が収まるかどうかの判定が一致することを確かめる。
 
 ## 最小幅のある fr トラックと auto-fill
 

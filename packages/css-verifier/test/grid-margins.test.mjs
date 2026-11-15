@@ -24,7 +24,17 @@ test('the start margin pushes the item out of its area; an end margin that stick
   assert.deepEqual([d.range.min, d.range.max], [320, 330]);
 });
 
-test('negative margins and auto margins on grid items stay Unknown', () => {
+test('negative margins, and auto margins without an explicit width, stay Unknown', () => {
   assert.equal(run('.c{margin-top:-4px}').status, 'unknown');
-  assert.equal(run('.c{width:100px;margin:0 auto}').status, 'unknown');
+  assert.equal(run('.c{max-width:600px;margin:0 auto}').status, 'unknown');
+});
+
+test('inline auto margins with an explicit width center or push the item; none when it does not fit', () => {
+  const start = (css, viewport) => { const r = run(css); assert.equal(r.status === 'unknown', false, JSON.stringify(r.diagnostics)); const row = r.sizes.find(s => s.box === '.c' && s.rect && s.range.min <= viewport && viewport <= s.range.max); const v = t => t.split('/').map(Number).reduce((a, b) => a / b); return v(row.rect.inlineStart.coefficient) * viewport + v(row.rect.inlineStart.constant); };
+  assert.equal(start('.c{width:400px;margin:0 auto}', 700), 150);
+  assert.equal(start('.c{width:400px;margin:0 auto}', 330), 0);
+  assert.equal(start('.c{width:400px;margin-left:auto}', 700), 300);
+  assert.equal(start('.c{width:50%;margin:0 auto}', 700), 175);
+  assert.equal(start('.c{width:200px;margin:0 auto 0 20px}', 700), 20);
+  assert.equal(start('.c{width:200px;box-sizing:content-box;padding:0 10px;margin:0 auto}', 700), 240);
 });

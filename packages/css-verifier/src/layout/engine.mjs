@@ -633,7 +633,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // Main-axis auto margins of flex items absorb free space (resolved by the flex line).
     // A grid item may also have px margins: its grid area less the margins is what it is laid out in (margins of grid
     // and flex items never collapse).
-    const marginOk = (key, axis) => style[key] === '0' || (style[key] === 'auto' && available.flexItem?.main === axis) || (available.gridItem && /^\d+(?:\.\d+)?px$/.test(String(style[key])));
+    const marginOk = (key, axis) => style[key] === '0' || (style[key] === 'auto' && available.flexItem?.main === axis) || (available.gridItem && /^\d+(?:\.\d+)?px$/.test(String(style[key]))) || (available.gridItem && axis === 'inline' && style[key] === 'auto' && available.autoMargins);
     if (available.flexItem && ['margin-left', 'margin-right', 'margin-top', 'margin-bottom'].some(key => /px$/.test(String(style[key])))) throw Object.assign(new Error('px margins on flex items are outside the subset (only zero or auto margins are modeled there)'), { code: 'U_LAYOUT_FLEX' });
     if (['margin-left', 'margin-right'].some(key => !marginOk(key, 'inline'))) throw new Error(available.flexItem && ['margin-left', 'margin-right'].some(key => style[key] === 'auto') ? 'Cross-axis auto margins of a flex item are outside the subset' : 'Only known zero inline margins are supported');
     if (block && ['margin-top', 'margin-bottom'].some(key => !marginOk(key, 'block'))) throw new Error(available.flexItem && ['margin-top', 'margin-bottom'].some(key => style[key] === 'auto') ? 'Cross-axis auto margins of a flex item are outside the subset' : 'Reset native block margins explicitly before block checking');
@@ -2188,10 +2188,29 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     if (style.direction === 'rtl' && cmp(marginOf(item, 'left'), marginOf(item, 'right')) !== 0) throw Object.assign(new Error(`${item.box.label}: unequal inline margins in rtl are not modeled`), { code: 'U_LAYOUT_CSS', box: item.box });
                   }
                   const itemInline = item => diff(areaInline(item), scalar(marginInline(item)));
+                  // Inline auto margins of a grid item with an explicit width take the free space of its area (both: half
+                  // each), and none of it when it is negative (start-aligned; measured). With an auto width the item
+                  // would shrink to fit its content: Unknown.
+                  const autoMargins = item => ['margin-left', 'margin-right'].some(key => item.style[key] === 'auto');
+                  for (const item of placed) if (autoMargins(item)) {
+                    const w = String(item.style['inline-size']);
+                    if (!/^\d+(?:\.\d+)?(?:px|%)$/.test(w) || (item.style['box-sizing'] === 'content-box' && ['left', 'right'].some(side => !/^(?:0|\d+(?:\.\d+)?px)$/.test(String(item.style[`padding-${side}`])) || !/^(?:0|ua|\d+(?:\.\d+)?px)$/.test(String(item.style[`border-${side}`])))) || style.direction === 'rtl')
+                      throw Object.assign(new Error(`${item.box.label}: auto margins on a grid item are modeled only with a px or % width (ltr); with an auto width it shrinks to fit its content`), { code: 'U_LAYOUT_CSS', box: item.box });
+                  }
+                  const autoOffsets = (item, region) => {
+                    if (!autoMargins(item)) return [{ region, offset: scalar(0) }];
+                    const w = String(item.style['inline-size']), area = itemInline(item);
+                    const outer = w.endsWith('%') ? times(areaInline(item), div(q(w.slice(0, -1)), q(100))) : scalar(px(w));
+                    const extra = item.style['box-sizing'] === 'content-box' ? ['left', 'right'].flatMap(side => [item.style[`padding-${side}`], item.style[`border-${side}`]]).filter(v => v && !['0', 'ua'].includes(String(v))).reduce((acc, v) => add(acc, px(v)), zero) : zero;
+                    const free = diff(area, sum(outer, scalar(extra)));
+                    const share = item.style['margin-left'] === 'auto' ? (item.style['margin-right'] === 'auto' ? div(one, q(2)) : one) : zero;
+                    const split = partition(region, free, '>=');
+                    return [...split.yes.map(r => ({ region: r, offset: times(free, share) })), ...split.no.map(r => ({ region: r, offset: scalar(0) }))];
+                  };
                   const childColumns = item => trackSlice(cs.values, columnGap, box, item.start, item.span);
                   if (!block) {
                     let endings = [children.region];
-                    for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: itemInline(item), tracks: { inline: childColumns(item) }, gridItem: true, marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') }, fitInline: (box.contract?.overflow ?? 'fit') === 'fit' }, r, ancestors, item.inherited ?? style, emit).map(result => result.region)));
+                    for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: itemInline(item), tracks: { inline: childColumns(item) }, gridItem: true, autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') }, fitInline: (box.contract?.overflow ?? 'fit') === 'fit' }, r, ancestors, item.inherited ?? style, emit).map(result => result.region)));
                     for (const r of endings) results.push(finish(box, style, r, inline, contentInline, null, null, available, parents, emit));
                     continue;
                   }
@@ -2209,7 +2228,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   }
                   let measurements = [{ region: children.region, bases: rows.map(row => row.definite ?? scalar(row.fixed ?? row.edges ?? zero)) }];
                   for (const item of placed.filter(item => rows[item.row].auto || (!knownBlock && rows[item.row].weight))) {
-                    measurements = bounded(measurements.flatMap(m => solve(item.box, { inline: itemInline(item), tracks: { inline: childColumns(item) }, gridItem: true }, m.region, ancestors, item.inherited ?? style, false).flatMap(measured => maximum(measured.region, m.bases[item.row], sum(measured.block, scalar(marginBlock(item)))).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))));
+                    measurements = bounded(measurements.flatMap(m => solve(item.box, { inline: itemInline(item), tracks: { inline: childColumns(item) }, gridItem: true, autoMargins: autoMargins(item) }, m.region, ancestors, item.inherited ?? style, false).flatMap(measured => maximum(measured.region, m.bases[item.row], sum(measured.block, scalar(marginBlock(item)))).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))));
                   }
                   for (const m of measurements) {
                     let fractions = [{ region: m.region, value: scalar(0) }];
@@ -2238,8 +2257,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       let endings = [rs.region];
                       // align-content center/end (unstretched rows in a known height): the rows move by part of the free space.
                       const blockLead = knownBlock && ['center', 'end'].includes(style['align-content']) ? times(diff(knownBlock, rs.required), style['align-content'] === 'center' ? div(one, q(2)) : one) : scalar(zero);
-                      for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: itemInline(item), block: diff(trackArea(rs.values, rowGap, item.row, item.rowSpan), scalar(marginBlock(item))), gridItem: true, marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') },
-                        origin:cs.shift ? offset(contentOrigin,sum(sum(sum(trackStart(cs.values,columnGap,item.start),cs.shift.lead),times(cs.shift.extra,q(item.start))),scalar(marginOf(item, 'left'))),sum(sum(trackStart(rs.values,rowGap,item.row),blockLead),scalar(marginOf(item, 'top')))) : null,
+                      for (const item of placed) endings = bounded(endings.flatMap(r0 => autoOffsets(item, r0)).flatMap(({ region: r, offset: autoLead }) => solve(item.box, { inline: itemInline(item), block: diff(trackArea(rs.values, rowGap, item.row, item.rowSpan), scalar(marginBlock(item))), gridItem: true, autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') },
+                        origin:cs.shift ? offset(contentOrigin,sum(sum(sum(sum(trackStart(cs.values,columnGap,item.start),cs.shift.lead),times(cs.shift.extra,q(item.start))),scalar(marginOf(item, 'left'))),autoLead),sum(sum(trackStart(rs.values,rowGap,item.row),blockLead),scalar(marginOf(item, 'top')))) : null,
                         tracks: { inline: childColumns(item), block: trackSlice(rs.values, rowGap, box, item.row, item.rowSpan) },
                         fitInline: (box.contract?.overflow ?? 'fit') === 'fit', fitBlock: (box.contract?.overflowBlock ?? 'fit') === 'fit' }, r, finalAncestors, item.inherited ?? style, emit).map(result => result.region)));
                       for (const item of children.children.filter(child=>child.style.position==='absolute')) endings = bounded(endings.flatMap(r => {
