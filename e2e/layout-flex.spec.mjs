@@ -145,6 +145,8 @@ const cases = [
     css: '.grid{display:grid;grid-template-columns:120px minmax(0,1fr);grid-template-areas:"head head" "nav main" ". foot";grid-auto-rows:30px;column-gap:8px;row-gap:4px}.h{grid-area:head}.n{grid-area:nav}.m{grid-area:main}.f{grid-column:foot;grid-row:foot}'},
   {name: 'repeat(auto-fill, minmax(min(160px, 100%), 1fr)) cards', html: '<main class="grid"><div></div><div></div><div></div><div></div><div></div></main>',
     css: '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(160px,100%),1fr));column-gap:12px;row-gap:8px;grid-auto-rows:30px;padding:0 6px}', widths: [172, 345, 346, 520, 700, 865]},
+  {name: 'repeat(auto-fit, minmax(120px, 1fr)) with fewer items than tracks', html: '<main class="grid"><div></div><div></div></main>',
+    css: '.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));column-gap:10px;grid-auto-rows:20px}', widths: [249, 250, 251, 380, 640]},
   {name: 'minmax(px, fr) tracks freeze at their minimum and overflow below it', html: '<main class="grid"><div></div><div></div><div></div></main>',
     css: '.grid{display:grid;grid-template-columns:minmax(60px,1fr) minmax(150px,2fr) 40px;column-gap:10px;grid-auto-rows:20px}', expected: 'violated', widths: [270, 300, 450, 600]},
   {name: 'repeat(auto-fill, minmax(180px, 1fr)) across its column-count thresholds', html: '<main class="grid"><div></div><div></div><div></div></main>',

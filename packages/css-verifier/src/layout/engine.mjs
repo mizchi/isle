@@ -2115,7 +2115,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               const autoRepeat = !sharedColumns && /^\s*repeat\(\s*auto-(fill|fit)\s*,(.*)\)\s*$/.exec(String(style['grid-template-columns']));
               let plans;
               if (autoRepeat) {
-                if (autoRepeat[1] === 'fit') throw Object.assign(new Error('repeat(auto-fit, …) collapses empty tracks, which is not modeled; use auto-fill'), { code: 'U_LAYOUT_CSS' });
+                // auto-fit collapses the tracks no item occupies (and their gaps): with k auto-placed single-span items
+                // it is auto-fill capped at k tracks (measured). The item count is checked per state below.
+                const fitItems = autoRepeat[1] === 'fit' ? (box.children ?? []).filter(child => !child.pseudo).length : null;
                 const [track] = tracks(autoRepeat[2].trim());
                 const size = track.fixed ?? track.min;
                 if (!size || cmp(size, zero) <= 0) throw Object.assign(new Error(`repeat(auto-fill, ${autoRepeat[2].trim()}) needs a px or minmax(px, fr) track`), { code: 'U_LAYOUT_CSS' });
@@ -2128,7 +2130,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   let r = [geometryRegion];
                   if (n > 1) r = r.flatMap(x => partition(x, diff(contentInline, scalar(sub(mul(q(n), step), gapPx))), '>=').yes);
                   if (n < most) r = r.flatMap(x => partition(x, diff(contentInline, scalar(sub(mul(q(n + 1), step), gapPx))), '>=').no);
-                  for (const region of r) plans.push({ region, columns: Array.from({ length: n }, () => track) });
+                  for (const region of r) plans.push({ region, columns: Array.from({ length: fitItems === null ? n : Math.max(1, Math.min(n, fitItems)) }, () => track), ...(fitItems !== null ? { fitItems } : {}) });
                 }
               } else plans = [{ region: geometryRegion, columns: sharedColumns ? sharedColumns.values.map(value => ({ definite: value })) :
                 style['grid-template-columns'] === 'none' ? [] : tracks(style['grid-template-columns'] ?? 'none') }];
@@ -2153,6 +2155,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                 for (const children of childStates) {
                   if (!block && children.children.some(child=>child.style.position==='absolute')) throw new Error('Absolute boxes require both-axis analysis');
                   if (!columns.length && children.children.some(child=>child.style.position!=='absolute')) throw new Error('In-flow Grid children require explicit supported columns');
+                  if (plan.fitItems !== undefined) {
+                    const flow = children.children.filter(child => child.style.position !== 'absolute');
+                    if (flow.length !== plan.fitItems || flow.some(child => child.style['grid-column'] !== 'auto' || child.style['grid-row'] !== 'auto'))
+                      throw Object.assign(new Error('repeat(auto-fit, …) is modeled only when every child is an auto-placed, single-cell item that renders'), { code: 'U_LAYOUT_CSS', region: children.region });
+                  }
                   let placed;
                   // A grid-area name the parent's grid-template-areas does not define: a typo or a stale name. Chromium
                   // puts the item on implicit lines (outside the subset); the warning names it.

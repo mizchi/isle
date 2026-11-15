@@ -280,9 +280,9 @@ CSS による通常の in-flow parent と child の関係を検査する。pure 
 
 `minmax(Lpx, Nfr)` は、空き幅の取り分が L 未満のトラックを L で固定し、残りを分け直す(css-grid-1 §12.7.1 の fr の大きさの求め方)。各回は「取り分 ≥ L」による領域の分割になる。全てのトラックが L に固定され、さらに幅が足りない領域は `E_LAYOUT_TRACKS` になる。`minmax(min(Lpx, 100%), Nfr)` では、container の幅が L 未満の所で最小幅が container の幅になり、はみ出さない。
 
-`repeat(auto-fill, T)`(T は `Lpx` か上記の minmax)は、最小幅で並ぶ数だけトラックを作る(1 本以上)。本数は、container の幅に対する閾値 `n·L + (n−1)·gap` で領域を分けて決める。`auto-fit` は空のトラックをつぶすので Unknown にする。
+`repeat(auto-fill, T)`(T は `Lpx` か上記の minmax)は、最小幅で並ぶ数だけトラックを作る(1 本以上)。本数は、container の幅に対する閾値 `n·L + (n−1)·gap` で領域を分けて決める。`auto-fit` は、item の入らないトラックとその gap をつぶす。そのため、すべての子が自動配置で 1 マスの item で、どの状態でも描画される場合に限り、auto-fill の本数を item 数で頭打ちにしたものとして扱う(Chromium で測った)。それ以外の場合は Unknown にする。
 
-Chromium の照合は 2 つある。`e2e/layout-flex.spec.mjs` は、本数が変わる閾値の前後の幅で矩形が一致することを確かめる。`e2e/layout-fuzz-visibility.spec.mjs` の minmax 版では、これらのトラックを混ぜた入れ子の grid を生成し、item が Chromium の解決したトラックに収まるかどうかの判定が一致することを確かめる(60 seed、7,796 件の判定)。
+Chromium の照合は 2 つある。`e2e/layout-flex.spec.mjs` は、本数が変わる閾値の前後の幅で矩形が一致することを確かめる。`e2e/layout-fuzz-visibility.spec.mjs` の minmax 版では、これらのトラックを混ぜた入れ子の grid を生成し、item が Chromium の解決したトラックに収まるかどうかの判定が一致することを確かめる(auto-fill は 60 seed で 7,796 件、auto-fit を加えた版は 30 seed で 3,166 件の判定)。
 
 ## 名前付きの grid 領域
 

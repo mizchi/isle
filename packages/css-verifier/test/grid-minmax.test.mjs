@@ -36,6 +36,11 @@ test('repeat(auto-fill, minmax(200px, 1fr)) has as many columns as fit', () => {
   assert.equal(run('repeat(auto-fill,minmax(min(400px,100%),1fr))', 2).status, 'verified');
 });
 
-test('auto-fit stays Unknown', () => {
-  assert.equal(run('repeat(auto-fit,minmax(200px,1fr))').status, 'unknown');
+test('auto-fit: with fewer items than tracks the items share the width', () => {
+  // At 1000px (content 980): 4 tracks fit; 2 items take (980 − 16) / 2 = 482 each.
+  assert.deepEqual(widths(run('repeat(auto-fit,minmax(200px,1fr))', 2), 1000), [482, 482]);
+  assert.deepEqual(widths(run('repeat(auto-fit,minmax(200px,1fr))', 6), 1000), [233, 233, 233, 233, 233, 233]);
+  // An item that may not render, or is placed explicitly: Unknown.
+  assert.equal(run('repeat(auto-fit,minmax(200px,1fr))', 2, '@media (max-width:500px){.c{display:none}}').status, 'unknown');
+  assert.equal(run('repeat(auto-fit,minmax(200px,1fr))', 2, '.c{grid-column:span 2}').status, 'unknown');
 });

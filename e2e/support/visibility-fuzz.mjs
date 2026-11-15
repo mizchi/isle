@@ -19,7 +19,7 @@ export function generateCase(seed, { flex = false, minmax = false } = {}) {
     `repeat(${int(2, 3)},${int(8, 20) * 10}px)`, `minmax(0,2fr) minmax(0,1fr)`,
   ]);
   const tracks = () => !minmax || r() < 0.5 ? basic() : pick([
-    `repeat(auto-fill,minmax(${int(6, 20) * 10}px,1fr))`, `repeat(auto-fill,minmax(min(${int(10, 30) * 10}px,100%),1fr))`, `repeat(auto-fill,${int(6, 16) * 10}px)`,
+    `repeat(auto-fill,minmax(${int(6, 20) * 10}px,1fr))`, `repeat(auto-fill,minmax(min(${int(10, 30) * 10}px,100%),1fr))`, `repeat(auto-fill,${int(6, 16) * 10}px)`, `repeat(auto-fit,minmax(${int(6, 20) * 10}px,1fr))`,
     `minmax(${int(6, 20) * 10}px,1fr) minmax(${int(6, 20) * 10}px,2fr)`, `${int(4, 12) * 10}px minmax(${int(8, 20) * 10}px,1fr)`,
   ]);
   // flex: some containers are flex rows or columns; their children never shrink (flex-shrink: 0) and have px widths
