@@ -8,6 +8,7 @@ import {readFileSync, writeFileSync, mkdirSync} from 'node:fs';
 import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
 import {loadTextMetrics} from '../packages/css-verifier/src/text-node.mjs';
 import {expandSvelte, unscopeCSS} from '../packages/svelte-adapter/src/index.mjs';
+import {generateContrastCase} from '../e2e/support/contrast-fuzz.mjs';
 
 const out = new URL('../docs/counterexamples/', import.meta.url);
 mkdirSync(out, {recursive: true});
@@ -377,6 +378,13 @@ const svelteCase = ({file, choices, title, extraCSS = '', ...rest}) => {
   const props = Object.entries(choices).map(([k, v]) => `${k.startsWith('#each') ? `${k.slice(6)}.length` : k}=${JSON.stringify(v)}`).join(', ');
   return {...rest, title: `Svelte ${file}: ${title} (${props})`, html: state.html, css: unscopeCSS(css) + extraCSS};
 };
+// Contrast fuzz cases (e2e/layout-fuzz-contrast.spec.mjs): a generated page whose verdict Chromium's pixels confirmed.
+const fuzzContrast = ({seed, ...rest}) => { const c = generateContrastCase(seed); return {...rest, title: `${rest.title} (contrast fuzz seed ${seed})`, html: c.body, css: c.css,
+  options: {accessibility: true, boxes: Object.fromEntries(c.texts.map(t => [`.${t}`, {minInlineSize: 40, intrinsicBlockSize: 24}]))}}; };
+cases.push(
+  fuzzContrast({id: 'fuzz-contrast-translucent', seed: 301, title: 'Large text on stacked translucent backgrounds', code: 'E_A11Y_CONTRAST'}),
+  fuzzContrast({id: 'fuzz-contrast-dark', seed: 367, title: 'Text that fails only in the dark scheme', code: 'E_A11Y_CONTRAST', act: async page => { await page.emulateMedia({colorScheme: 'dark'}); }, afterLabel: 'prefers-color-scheme: dark'}),
+);
 cases.push(
   svelteCase({id: 'svelte-wide', file: 'Wide.svelte', choices: {compact: false}, title: 'the wide branch overflows the page', code: 'E_LAYOUT_ITEM_SIZE', options: {}}),
   svelteCase({id: 'svelte-inert', file: 'Settings.svelte', choices: {wide: true, agree: true, rtl: false, saved: false, '#each rows': 0}, title: 'class:wide adds grid-column to a flex item', code: 'W_LAYOUT_DECLARATION_INERT', warning: true,

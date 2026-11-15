@@ -2868,6 +2868,46 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:
 
 </details>
 
+## Large text on stacked translucent backgrounds (contrast fuzz seed 301)
+
+`E_A11Y_CONTRAST` — viewport 520 × 690px
+
+> .t0 has contrast 2.65:1, below 3:1
+
+![fuzz-contrast-translucent](fuzz-contrast-translucent-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="w0_0"><div class="w0_1"><div class="w0_2"><p class="t0">Text 0</p></div></div></div><div class="w1_0"><div class="w1_1"><p class="t1">Text 1</p></div></div></main>
+```
+
+```css
+*{box-sizing:border-box;margin:0}html,body,.page{display:grid;grid-template-columns:minmax(0,1fr)}body{margin:0}.page{background:#ffddff;padding:8px;row-gap:8px}.w0_0{display:grid;grid-template-columns:minmax(0,1fr);padding:6px;}.w0_1{display:grid;grid-template-columns:minmax(0,1fr);padding:6px;background:rgba(93,15,173,0.4);}.w0_2{display:grid;grid-template-columns:minmax(0,1fr);padding:6px;background:rgba(55,21,241,0.8);}.t0{display:block;color:#779933;font:400 24px/24px sans-serif;height:24px}.w1_0{display:grid;grid-template-columns:minmax(0,1fr);padding:6px;background:rgba(179,122,207,0.8);}.w1_1{display:grid;grid-template-columns:minmax(0,1fr);padding:6px;background:#99bb55;}.t1{display:block;color:#77dddd;font:400 16px/24px sans-serif;height:24px}@media (min-width: 420px){.t1{color:#ffffdd}}@media (max-width: 620px){.page{background:#00bb33}}
+```
+
+</details>
+
+## Text that fails only in the dark scheme (contrast fuzz seed 367)
+
+`E_A11Y_CONTRAST` — viewport 440 × 690px
+
+> .t0 has contrast 2.05:1, below 4.5:1
+
+![fuzz-contrast-dark](fuzz-contrast-dark-before.png) ![fuzz-contrast-dark](fuzz-contrast-dark-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="w0_0"><p class="t0">Text 0</p></div><div class="w1_0"><p class="t1">Text 1</p></div><div class="w2_0"><div class="w2_1"><p class="t2">Text 2</p></div></div></main>
+```
+
+```css
+*{box-sizing:border-box;margin:0}html,body,.page{display:grid;grid-template-columns:minmax(0,1fr)}body{margin:0}.page{background:#00dd55;padding:8px;row-gap:8px}.w0_0{display:grid;grid-template-columns:minmax(0,1fr);padding:6px;background:#bbbb33;}.t0{display:block;color:#fff;font:400 16px/24px sans-serif;height:24px}.w1_0{display:grid;grid-template-columns:minmax(0,1fr);padding:6px;}.t1{display:block;color:#ddd;font:700 19px/24px sans-serif;height:24px}.w2_0{display:grid;grid-template-columns:minmax(0,1fr);padding:6px;}.w2_1{display:grid;grid-template-columns:minmax(0,1fr);padding:6px;background:#ff99dd;}.t2{display:block;color:#222;font:400 19px/24px sans-serif;height:24px}@media (prefers-color-scheme: dark){.t2{color:rgba(244,84,132,0.6)}}@media (max-width: 560px){.page{background:#007700}}@media (max-width: 810px){.page{background:#9977dd}}
+```
+
+</details>
+
 ## Svelte Wide.svelte: the wide branch overflows the page (compact=false)
 
 `E_LAYOUT_ITEM_SIZE` — viewport 416 × 690px
