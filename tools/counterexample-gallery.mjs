@@ -30,6 +30,9 @@ const files = {'/wide.png': image(32, 16, [70, 130, 180]), '/square.png': image(
 // srcset candidates: a 4px checkerboard at the file's own size, so an upscaled (too small) file looks blurry.
 const checker = (w, h) => { const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 2; const rows = []; for (let y = 0; y < h; y++) { const row = [0]; for (let x = 0; x < w; x++) row.push(...((((x >> 2) + (y >> 2)) & 1) ? [40, 110, 60] : [235, 245, 235])); rows.push(Buffer.from(row)); } return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(Buffer.concat(rows))), chunk('IEND', Buffer.alloc(0))]); };
 for (let w = 40; w <= 1200; w += 40) files[`/w${w}.png`] = checker(w, w / 2);
+// A disc on a square file: drawn with object-fit: fill into a wide box, it becomes an ellipse.
+const disc = n => { const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(n, 0); ihdr.writeUInt32BE(n, 4); ihdr[8] = 8; ihdr[9] = 2; const rows = []; for (let y = 0; y < n; y++) { const row = [0]; for (let x = 0; x < n; x++) { const d = Math.hypot(x - n / 2 + 0.5, y - n / 2 + 0.5); row.push(...(d < n * 0.42 ? [226, 120, 40] : d < n * 0.46 ? [120, 60, 20] : [236, 242, 250])); } rows.push(...row); } return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(Buffer.from(rows))), chunk('IEND', Buffer.alloc(0))]); };
+files['/disc.png'] = disc(120);
 const images = {'/wide.png': {width: 32, height: 16}, '/square.png': {width: 16, height: 16}};
 
 const cases = [
@@ -55,6 +58,8 @@ const cases = [
     html: '<main class="page"><h1 class="t">A heading set in a web font that wraps onto three lines</h1><div class="below"></div></main>', css: '@font-face{font-family:Roboto;src:url(/roboto.ttf);font-display:swap}.page{display:grid;grid-template-columns:300px}.t{font-family:Roboto,serif;font-size:32px;line-height:40px;font-weight:400}.below{height:40px;background:#fc9}'},
   {id: 'lazy-in-viewport', title: 'loading="lazy" on an image above the fold', code: 'W_LAYOUT_LAZY_IN_VIEWPORT', warning: true,
     html: '<main class="page"><img class="hero" src="/wide.png" width="800" height="400" loading="lazy" alt=""></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{display:block;width:100%;height:auto}'},
+  {id: 'image-distorted', title: 'A square photo stretched by width: 100% and a fixed height', code: 'W_LAYOUT_IMAGE_DISTORTED', warning: true, state: 'load', options: {images: {'/disc.png': {width: 120, height: 120}}},
+    html: '<main class="page"><img class="hero" src="/disc.png" width="120" height="120" alt="A logo"></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{display:block;width:100%;height:160px}'},
   {id: 'sizes-small', title: 'A sizes attribute smaller than the rendered width', code: 'W_LAYOUT_SIZES_SMALL', warning: true,
     html: `<main class="page"><img class="hero" src="/w400.png" srcset="${Array.from({length: 30}, (_, i) => `/w${(i + 1) * 40}.png ${(i + 1) * 40}w`).join(', ')}" sizes="25vw" width="800" height="400" alt=""></main>`, css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{display:block;width:100%;height:auto}'},
   {id: 'truncated', title: 'A product name cut with an ellipsis', code: 'W_LAYOUT_TRUNCATED', warning: true, options: {boxes: text('.t', 'Wireless noise-cancelling headphones, midnight blue')},

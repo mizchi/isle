@@ -40,7 +40,7 @@ const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachmen
 // Properties a :hover/:focus rule may set: they repaint (or restack) without changing geometry.
 const statePaint = /^(?:z-index|color|clip|clip-path|background(?:-.*)?|border-(?:(?:top|right|bottom|left)-)?color|border-radius|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?|color-scheme)$/;
 // Paint and hit-testing facts for the accessibility rules (never geometry).
-export const paintProperties = ['scroll-behavior', 'text-wrap-mode', 'text-wrap-style', 'text-overflow', 'line-clamp', 'box-orient', 'touch-action', 'color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'outline-color', 'outline-offset', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'animation-direction', 'color-scheme', 'z-index', 'isolation', 'transform'];
+export const paintProperties = ['object-fit', 'scroll-behavior', 'text-wrap-mode', 'text-wrap-style', 'text-overflow', 'line-clamp', 'box-orient', 'touch-action', 'color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'outline-color', 'outline-offset', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'animation-direction', 'color-scheme', 'z-index', 'isolation', 'transform'];
 const inheritedPaint = ['color', 'visibility', 'pointer-events', 'cursor', 'list-style-type', 'color-scheme', 'text-wrap-style', 'text-wrap-mode'];
 // Inherited text properties. They are kept as specified strings and only
 // interpreted for boxes whose contract derives text metrics from a font.
@@ -58,6 +58,13 @@ function expand(property, value) {
   if (value === 'revert-layer') throw new Error('revert-layer is outside this subset');
   // white-space also writes text-wrap-mode (CSS Text 4); its mark says white-space itself decides after substitution.
   if (property === 'white-space') return [['white-space', value], ['text-wrap-mode', 'white-space']];
+  // aspect-ratio: auto, a ratio (w / h, or one number), or both (auto w / h): normalized to 'auto', 'w/h' or 'auto w/h'.
+  if (property === 'aspect-ratio') {
+    if (wide.has(value) || value === 'auto') return [[property, value]];
+    const m = /^(auto\s+)?(\d+(?:\.\d+)?)\s*(?:\/\s*(\d+(?:\.\d+)?))?(\s+auto)?$/.exec(value);
+    if (!m || (m[1] && m[4]) || Number(m[2]) <= 0 || (m[3] !== undefined && Number(m[3]) <= 0)) throw new Error(`Unsupported aspect-ratio: ${value}`);
+    return [[property, `${m[1] || m[4] ? 'auto ' : ''}${m[2]}/${m[3] ?? '1'}`]];
+  }
   if (geometry.has(property)) return [[property, value]];
   if (['left','right','top','bottom'].includes(property)) return [[property,value]];
   if (['inset','inset-inline','inset-block'].includes(property)) {
@@ -96,13 +103,6 @@ function expand(property, value) {
     const m = /^inset\(\s*(\d+(?:\.\d+)?)%\s*\)$/.exec(value);
     if (!m || Number(m[1]) < 50) throw new Error(`Unsupported clip-path: ${value} (only inset(50%) or more is modeled)`);
     return [[property, 'empty']];
-  }
-  // aspect-ratio: auto, a ratio (w / h, or one number), or both (auto w / h): normalized to 'auto', 'w/h' or 'auto w/h'.
-  if (property === 'aspect-ratio') {
-    if (wide.has(value) || value === 'auto') return [[property, value]];
-    const m = /^(auto\s+)?(\d+(?:\.\d+)?)\s*(?:\/\s*(\d+(?:\.\d+)?))?(\s+auto)?$/.exec(value);
-    if (!m || (m[1] && m[4]) || Number(m[2]) <= 0 || (m[3] !== undefined && Number(m[3]) <= 0)) throw new Error(`Unsupported aspect-ratio: ${value}`);
-    return [[property, `${m[1] || m[4] ? 'auto ' : ''}${m[2]}/${m[3] ?? '1'}`]];
   }
   if (property==='scrollbar-color') return [];
   if (property === 'all') {
@@ -210,6 +210,8 @@ function expand(property, value) {
     const direction = parts.find(p => ['normal', 'reverse', 'alternate', 'alternate-reverse'].includes(p)) ?? 'normal';
     return [['animation-name', name], ['animation-duration', times[0] ?? '0s'], ['animation-iteration-count', count ?? '1'], ['animation-play-state', state ?? 'running'], ['animation-direction', direction]];
   }
+  // object-fit (how a replaced element's content fills its box; no geometry of the box itself).
+  if (property === 'object-fit' && !wide.has(value) && !/^(?:fill|contain|cover|none|scale-down)$/.test(value)) throw new Error(`Unsupported object-fit: ${value}`);
   // touch-action (gestures only, no geometry): auto, none, manipulation, or pan-x/pan-y/pinch-zoom (and their -left/-right/-up/-down forms).
   if (property === 'touch-action' && !wide.has(value) && !/^(?:auto|none|manipulation|(?:(?:pan-(?:x|left|right)|pan-(?:y|up|down)|pinch-zoom)(?:\s+|$))+)$/.test(value)) throw new Error(`Unsupported touch-action: ${value}`);
   if (property === 'color-scheme' && !wide.has(value) && !/^(?:normal|(?:only\s+)?(?:light|dark)(?:\s+(?:light|dark))?(?:\s+only)?)$/.test(value)) throw new Error(`Unsupported color-scheme: ${value}`);
@@ -263,7 +265,7 @@ function expand(property, value) {
   // Properties that never change the checked geometry or paint (scrolling behaviour, selection, caret and accent
   // colours, font smoothing, snapping, view transitions, image sampling, …) are accepted and ignored.
   if (property === 'scroll-behavior') { if (!wide.has(value) && !['auto', 'smooth'].includes(value)) throw new Error(`Unsupported scroll-behavior: ${value}`); return [['scroll-behavior', value]]; }
-  if (/^(?:object-fit|object-position|user-select|-webkit-user-select|accent-color|caret-color|-webkit-font-smoothing|-moz-osx-font-smoothing|-webkit-tap-highlight-color|print-color-adjust|-webkit-print-color-adjust|color-adjust|overflow-anchor|image-rendering|text-decoration-skip-ink|overscroll-behavior(?:-[xy]|-inline|-block)?|scroll-snap-(?:type|align|stop)|view-transition-name|view-transition-class|interpolate-size|anchor-name|anchor-scope|quotes|counter-(?:reset|increment|set)|-webkit-touch-callout|backface-visibility|-webkit-backface-visibility|text-underline-position|font-optical-sizing|font-kerning)$/.test(property)) return [];
+  if (/^(?:object-position|user-select|-webkit-user-select|accent-color|caret-color|-webkit-font-smoothing|-moz-osx-font-smoothing|-webkit-tap-highlight-color|print-color-adjust|-webkit-print-color-adjust|color-adjust|overflow-anchor|image-rendering|text-decoration-skip-ink|overscroll-behavior(?:-[xy]|-inline|-block)?|scroll-snap-(?:type|align|stop)|view-transition-name|view-transition-class|interpolate-size|anchor-name|anchor-scope|quotes|counter-(?:reset|increment|set)|-webkit-touch-callout|backface-visibility|-webkit-backface-visibility|text-underline-position|font-optical-sizing|font-kerning)$/.test(property)) return [];
   // Accepted only at values that leave line breaking, shaping, containing blocks and painting as modeled; any other
   // value changes what is checked, so it stays Unknown.
   const neutral = {
@@ -486,7 +488,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
     'column-gap': 'normal', 'grid-column': 'auto', 'grid-row': 'auto',
     'background-color': 'transparent', 'background-image': 'none',
     'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none',
-    'scroll-behavior': 'auto', 'text-wrap-mode': inherited['text-wrap-mode'] ?? 'white-space', 'text-wrap-style': inherited['text-wrap-style'] ?? 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'z-index': 'auto', isolation: 'auto', transform: 'none', clip: 'auto', 'clip-path': 'none', ...Object.fromEntries(['margin', 'padding'].flatMap(kind => ['top', 'right', 'bottom', 'left'].map(side => [`scroll-${kind}-${side}`, kind === 'padding' ? 'auto' : '0']))), 'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal',
+    'object-fit': 'fill', 'scroll-behavior': 'auto', 'text-wrap-mode': inherited['text-wrap-mode'] ?? 'white-space', 'text-wrap-style': inherited['text-wrap-style'] ?? 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'z-index': 'auto', isolation: 'auto', transform: 'none', clip: 'auto', 'clip-path': 'none', ...Object.fromEntries(['margin', 'padding'].flatMap(kind => ['top', 'right', 'bottom', 'left'].map(side => [`scroll-${kind}-${side}`, kind === 'padding' ? 'auto' : '0']))), 'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal',
     'table-layout': 'auto', // HTML UA: table { border-collapse: separate; border-spacing: 2px } (a UA rule on table, not inherited from above).
     'border-collapse': box.tag === 'table' ? 'separate' : inherited['border-collapse'] ?? 'separate', 'border-spacing': box.tag === 'table' ? '2px' : inherited['border-spacing'] ?? '0', 'caption-side': inherited['caption-side'] ?? 'top', 'empty-cells': 'show',
     // HTML UA: thead, tbody, tfoot, tr { vertical-align: middle } and td, th { vertical-align: inherit }.
@@ -543,7 +545,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state}=
   if(box.popover==='dynamic') throw Object.assign(new Error('A dynamic popover attribute decides whether it renders'),{code:'U_LAYOUT_ELEMENT'});
   if(box.hiddenAttr==='until-found' || box.hiddenAttr==='dynamic') throw Object.assign(new Error(`hidden=${box.hiddenAttr === 'dynamic' ? '(dynamic)' : 'until-found'} is outside the modeled rendering`),{code:'U_LAYOUT_ELEMENT'});
   const ua = { ...values };
-  const initial = { ...defaults, ...textInitial, 'scroll-behavior': 'auto', 'text-wrap-mode': 'white-space', 'text-wrap-style': 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none', 'z-index': 'auto', isolation: 'auto', transform: 'none', 'color-scheme': 'normal', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
+  const initial = { ...defaults, ...textInitial, 'object-fit': 'fill', 'scroll-behavior': 'auto', 'text-wrap-mode': 'white-space', 'text-wrap-style': 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none', 'z-index': 'auto', isolation: 'auto', transform: 'none', 'color-scheme': 'normal', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
   const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', 'border-collapse', 'border-spacing', 'caption-side', 'empty-cells', ...textProperties, ...inheritedPaint]);
   const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={};
   const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};

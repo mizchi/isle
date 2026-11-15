@@ -135,6 +135,20 @@
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{display:block;width:100%;height:auto}"
  },
  {
+  "id": "image-distorted",
+  "title": "A square photo stretched by width: 100% and a fixed height",
+  "code": "W_LAYOUT_IMAGE_DISTORTED",
+  "width": 320,
+  "height": 480,
+  "message": ".hero is drawn 640×160px at viewport 672px, but its picture is 120×120 (the file): object-fit: fill stretches it wider. Use object-fit: cover (or contain), or let one size be auto",
+  "shots": [
+   "image-distorted-before.png",
+   "image-distorted-after.png"
+  ],
+  "html": "<main class=\"page\"><img class=\"hero\" src=\"/disc.png\" width=\"120\" height=\"120\" alt=\"A logo\"></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{display:block;width:100%;height:160px}"
+ },
+ {
   "id": "sizes-small",
   "title": "A sizes attribute smaller than the rendered width",
   "code": "W_LAYOUT_SIZES_SMALL",

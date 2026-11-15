@@ -202,6 +202,26 @@ html{overflow-y:scroll}body{padding:0}.page{display:grid;grid-template-columns:m
 
 </details>
 
+## A square photo stretched by width: 100% and a fixed height
+
+`W_LAYOUT_IMAGE_DISTORTED` — viewport 320 × 480px
+
+> .hero is drawn 640×160px at viewport 672px, but its picture is 120×120 (the file): object-fit: fill stretches it wider. Use object-fit: cover (or contain), or let one size be auto
+
+![image-distorted](image-distorted-before.png) ![image-distorted](image-distorted-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><img class="hero" src="/disc.png" width="120" height="120" alt="A logo"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{display:block;width:100%;height:160px}
+```
+
+</details>
+
 ## A sizes attribute smaller than the rendered width
 
 `W_LAYOUT_SIZES_SMALL` — viewport 320 × 480px

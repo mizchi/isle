@@ -408,6 +408,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           if (style['aspect-ratio'] === 'auto') style = { ...style, 'aspect-ratio': `auto ${natural.width}/${natural.height}`, $imageUnreserved: { ...natural, src: imageFacts.src } };
           else if (reserved && Number(reserved[1]) * natural.height !== Number(reserved[2]) * natural.width) style = { ...style, $imageRatioMismatch: { src: imageFacts.src, natural, reserved: `${reserved[1]}/${reserved[2]}` } };
         }
+        // The ratio an img's picture is drawn at (its file's size, else its width/height attributes), for object-fit: fill.
+        // A box with aspect-ratio auto … and an auto size follows the loaded file, so it cannot stretch it.
+        const drawn = natural ?? (Number.isFinite(w) && Number.isFinite(hgt) && w > 0 && hgt > 0 ? { width: w, height: hgt } : null);
+        if (box.tag === 'img' && drawn) style = { ...style, $imageRatio: { width: drawn.width, height: drawn.height, basis: natural ? 'file' : 'attributes', follows: /^auto\b/.test(style['aspect-ratio']) && (style['inline-size'] === 'auto' || style['block-size'] === 'auto') } };
       }
       // A user-agent checkbox or radio (appearance auto, size, padding, border and minimum untouched): Chromium draws it
       // 13×13 border-box (measured). Laid out at that size for the accessibility checks; SC 2.5.8/2.5.5 exempt it.
@@ -997,7 +1001,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             message: `${box.label} is set in the web font ${face.family} (font-display: ${face.display}) and takes its ${heightFromFont ? 'height' : 'width'} from its text: when the font file arrives the text is laid out again${fallback ? `; the fallback ${fallback.family} overrides metrics (${fallback.overrides.join(', ')}), which only reduces the change` : ''}. Use font-display: optional, preload the font, match the fallback metrics (size-adjust, ascent-override, descent-override), or reserve the box's height`, ...ranges(region) });
         }
       }
-      geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
+      geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, ...(style.$imageRatio ? { imageRatio: style.$imageRatio } : {}), clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
         // overflow: clip clips without scrolling (hidden still scrolls a focused descendant into view).
         clipAxes: { inline: style['overflow-x'] === 'clip', block: style['overflow-y'] === 'clip' },
@@ -2174,6 +2178,22 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (layoutWarnings.filter(w => w.code === 'W_LAYOUT_SIZES_SMALL' && w.path === row.path).length >= 8) break;
     layoutWarnings.push({ code: 'W_LAYOUT_SIZES_SMALL', severity: 'warning', box: row.box, path: row.path, sizes: facts.sizes,
       message: `${row.box} is laid out ${number(evaluate(row.$shown.inline, p))}px wide at viewport ${number(p.x)}px but its sizes attribute says ${number(evaluate(L, p))}px: the browser picks a srcset file for the smaller width, so the image is upscaled (blurry). Make sizes match the layout width`, ...ranges(short) }); }
+  }
+  // object-fit: fill (the initial value) scales an img's picture to its content box on each axis: a box whose ratio
+  // differs from the picture's (by more than 2%) draws it stretched. Boxes with padding or borders are not judged.
+  if (hovered === undefined && !options.$animationFrame && !options.$slideVariant) for (const row of geometry.filter(row => row.imageRatio && !row.imageRatio.follows && row.paint?.objectFit === 'fill' && row.inline && row.block && !row.box.pseudo)) {
+    if (layoutWarnings.some(w => w.code === 'W_LAYOUT_IMAGE_DISTORTED' && w.path === row.path)) continue;
+    if (['left', 'right', 'top', 'bottom'].some(side => cmp(row.borders?.[side] ?? zero, zero) !== 0) || cmp(row.content.left, zero) !== 0 || cmp(row.content.top, zero) !== 0) continue;
+    const { width: w, height: h } = row.imageRatio;
+    // inline·h vs block·w: wider when inline·h·50 > block·w·51, taller when inline·h·51 < block·w·50.
+    const wide = clip(row.region, diff(times(row.inline, q(String(h * 50))), times(row.block, q(String(w * 51)))), true);
+    const tall = clip(row.region, diff(times(row.block, q(String(w * 50))), times(row.inline, q(String(h * 51)))), true);
+    for (const [found, way] of [[wide, 'wider'], [tall, 'taller']]) {
+      if (!found) continue;
+      const p = sample(found), iw = number(evaluate(row.inline, p)), ih = number(evaluate(row.block, p));
+      layoutWarnings.push({ code: 'W_LAYOUT_IMAGE_DISTORTED', severity: 'warning', box: row.box.label, path: row.path, natural: `${w}/${h}`, basis: row.imageRatio.basis, stretched: way,
+        message: `${row.box.label} is drawn ${iw}×${ih}px at viewport ${number(p.x)}px, but its picture is ${w}×${h} (${row.imageRatio.basis === 'file' ? 'the file' : 'its width/height attributes'}): object-fit: fill stretches it ${way}. Use object-fit: cover (or contain), or let one size be auto`, ...ranges(found) });
+    }
   }
   // A lazily loaded image in the initial viewport (its layout top above the viewport height somewhere, at the
   // initial scroll position): it starts loading only after layout, later than an eager one, which delays the largest

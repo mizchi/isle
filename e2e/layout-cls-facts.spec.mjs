@@ -325,3 +325,33 @@ test('animation score bound: Chromium’s largest session window stays below the
   }
   console.log('animation window vs bound', JSON.stringify(results));
 });
+
+test('image distortion: the static fill-stretch warning holds exactly where Chromium draws the picture off its natural ratio', async ({page}) => {
+  // The file is 2×1; the attributes say 2:1 too (or 1:1 where the case is about a wrong attribute).
+  await page.route('**/photo.png', route => route.fulfill({body: png, contentType: 'image/png'}));
+  const base = '*{box-sizing:border-box;margin:0}body{margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}img{display:block}';
+  const cases = [
+    ['img{width:100%;height:240px}', 'width="200" height="100"'],
+    ['img{width:100%;height:240px;object-fit:cover}', 'width="200" height="100"'],
+    ['img{width:100%;height:auto}', 'width="200" height="100"'],
+    ['img{width:100%}', 'width="200" height="100"'],
+    ['img{width:100%;height:auto;aspect-ratio:1}', 'width="200" height="100"'],
+    ['img{width:100%;height:auto;aspect-ratio:2 / 1}', 'width="200" height="100"'],
+    ['img{width:min(100%,480px);height:240px}', 'width="200" height="100"'],
+  ];
+  for (const [css, attrs] of cases) {
+    const html = `<div class="page"><img src="http://cls.test/photo.png" ${attrs} alt="A photo"></div>`;
+    const report = analyzeHTML(html, {name: 'P', css: base + css, viewport: {min: 320, max: 1280, height: {min: 2000, max: 2000}}, images: {'http://cls.test/photo.png': {width: 2, height: 1}}});
+    const warnings = (report.layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_IMAGE_DISTORTED');
+    for (const width of [360, 480, 700, 1200]) {
+      await page.setViewportSize({width, height: 800});
+      await page.route('http://cls.test/', route => route.fulfill({contentType: 'text/html', body: `<!doctype html><html lang="en"><head><style>${base + css}</style></head><body>${html}</body></html>`}));
+      await page.goto('http://cls.test/');
+      const m = await page.evaluate(async () => { const i = document.querySelector('img'); await i.decode(); const r = i.getBoundingClientRect(); return {w: r.width, h: r.height, nw: i.naturalWidth, nh: i.naturalHeight, fit: getComputedStyle(i).objectFit}; });
+      const browser = m.fit === 'fill' && Math.abs(m.w * m.nh - m.h * m.nw) > 0.02 * Math.min(m.w * m.nh, m.h * m.nw);
+      const inRange = w => (w.range.minInclusive ? width >= w.range.min : width > w.range.min) && (w.range.maxInclusive ? width <= w.range.max : width < w.range.max);
+      // The warnings' regions (stretched wider, stretched taller) cover exactly the widths drawn off the natural ratio.
+      expect(warnings.some(inRange), `${css} at ${width}: drawn ${m.w}×${m.h}, natural ${m.nw}×${m.nh}`).toBe(browser);
+    }
+  }
+});
