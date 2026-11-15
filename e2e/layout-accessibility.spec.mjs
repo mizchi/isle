@@ -1483,3 +1483,24 @@ test('live-hidden: the static warning holds exactly where Chromium leaves the li
     expect(warned).toBe(warn);
   }
 });
+
+test('tabindex-removed: where the static rule warns, Tab never reaches the visible control in Chromium', async ({page}) => {
+  const base = '*{box-sizing:border-box;margin:0}body{margin:0}.page{display:grid;grid-template-columns:200px;grid-auto-rows:30px;row-gap:8px;padding:8px;background:#fff}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;background:#246}.t{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:30px}';
+  const cases = [
+    ['<button class="b" aria-label="Save" tabindex="-1"></button>', true],
+    ['<button class="b" aria-label="Save"></button>', false],
+    ['<div class="t" role="toolbar" aria-label="Tools"><button class="b" aria-label="Bold"></button><button class="b x" aria-label="Italic" tabindex="-1"></button></div>', false],
+  ];
+  for (const [inner, warn] of cases) {
+    const html = `<main class="page">${inner}</main>`;
+    const report = analyzeHTML(html, {name: 'P', css: base, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+    expect(report.status, report.diagnostics.map(d => d.message).join(' | ')).not.toBe('unknown');
+    expect(report.accessibility.warnings.some(w => w.code === 'W_A11Y_TABINDEX_REMOVED'), inner).toBe(warn);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${base}</style></head><body>${html}</body></html>`);
+    const reached = new Set();
+    for (let i = 0; i < 4; i++) { await page.keyboard.press('Tab'); reached.add(await page.evaluate(() => document.activeElement?.getAttribute('tabindex'))); }
+    // The warned case: Tab never lands on the tabindex=-1 control (in the toolbar the arrow keys would, by script).
+    if (warn) expect(reached.has('-1'), inner).toBe(false);
+  }
+});

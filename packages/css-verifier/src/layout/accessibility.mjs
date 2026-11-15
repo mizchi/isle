@@ -99,7 +99,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
@@ -832,6 +832,18 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
       else if (box.placeholder) report(warnings, 'W_A11Y_PLACEHOLDER_LABEL', 'warning', `${box.label} is named only by its placeholder here, which disappears on input`, row, region, { rule: 'form-label' });
       else report(findings, 'E_A11Y_LABEL', 'error', `${box.label} has no label here: add a visible <label>, aria-label, aria-labelledby or title`, row, region, { rule: 'form-label' });
     }
+  }
+  // tabindex-removed (SC 2.1.1): a visible native control (button, link with href, field) with a negative tabindex is
+  // shown and clickable but Tab skips it. Exempt: roving tabindex in a composite widget (arrow keys move inside it),
+  // and a duplicate link whose href another focusable link already takes (a card's image link). A warning: a script
+  // may focus it another way, which is not visible here.
+  const composite = new Set(['toolbar', 'tablist', 'menu', 'menubar', 'listbox', 'grid', 'treegrid', 'tree', 'radiogroup']);
+  const nativeControl = box => ['button', 'select', 'textarea'].includes(box.tag) || (box.tag === 'input' && box.inputType !== 'hidden') || (box.tag === 'a' && typeof box.href === 'string');
+  for (const row of geometry.filter(row => nativeControl(row.box) && typeof row.box.tabIndex === 'number' && row.box.tabIndex < 0 && visible(row) && !hiddenFrom(row.path) && !row.box.pseudo)) {
+    if (ancestorsOf(row.path).some(a => composite.has(roleOf(a)))) continue;
+    if (row.box.tag === 'a' && row.box.href !== 'dynamic' && geometry.some(other => other.box.tag === 'a' && other.box.href === row.box.href && other.path !== row.path && !(other.box.tabIndex < 0) && visible(other))) continue;
+    if (!warnings.some(w => w.code === 'W_A11Y_TABINDEX_REMOVED' && w.path === row.path))
+      report(warnings, 'W_A11Y_TABINDEX_REMOVED', 'warning', `${row.box.label} is a visible ${row.box.tag === 'a' ? 'link' : 'control'} with tabindex ${row.box.tabIndex}: a pointer can use it, but Tab skips it. Drop the tabindex (or make it part of a composite widget with arrow-key navigation)`, row, row.region, { rule: 'tabindex-removed' });
   }
   // hidden-control (SC 2.1.1, 4.1.2): the custom checkbox pattern gone wrong — the field itself is display: none or
   // visibility: hidden (out of the tab order and the accessibility tree) while its label is shown. A pointer can toggle

@@ -622,6 +622,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);overflow:h
 
 </details>
 
+## A visible button taken out of the tab order
+
+`W_A11Y_TABINDEX_REMOVED` — viewport 672 × 690px
+
+> .b.r is a visible control with tabindex -1: a pointer can use it, but Tab skips it. Drop the tabindex (or make it part of a composite widget with arrow-key navigation)
+
+![tabindex-removed](tabindex-removed-before.png) ![tabindex-removed](tabindex-removed-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b" aria-label="Back"></button><button class="b r" aria-label="Save" tabindex="-1"></button><button class="b" aria-label="Next"></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:repeat(3,80px);column-gap:16px;grid-auto-rows:40px;background:#fff}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;background:#246}.r{background:#c33}.b:focus{outline:3px solid #e8710a;outline-offset:2px}
+```
+
+</details>
+
 ## A visually hidden skip link that :focus does not reveal
 
 `E_A11Y_FOCUS_CLIPPED_AWAY` — viewport 672 × 690px
