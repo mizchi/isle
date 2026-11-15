@@ -8,7 +8,7 @@
 
 export function random(seed) { let s = (seed * 2654435761) >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 2 ** 32; }; }
 
-export function generateCase(seed) {
+export function generateCase(seed, { flex = false } = {}) {
   const r = random(seed), pick = list => list[Math.floor(r() * list.length)], int = (lo, hi) => lo + Math.floor(r() * (hi - lo + 1));
   let n = 0;
   const containers = [], items = [];
@@ -16,24 +16,28 @@ export function generateCase(seed) {
     'minmax(0,1fr)', `repeat(${int(2, 4)},minmax(0,1fr))`, `${int(8, 30) * 10}px minmax(0,1fr)`, `minmax(0,1fr) ${int(6, 20) * 10}px`,
     `repeat(${int(2, 3)},${int(8, 20) * 10}px)`, `minmax(0,2fr) minmax(0,1fr)`,
   ]);
-  const container = (depth) => {
-    const id = `c${n++}`, columns = tracks(), rule = {columns, gap: pick([0, 8, 16]), rowGap: pick([0, 8]), padding: pick([0, 8, 12]), autoRows: pick(['auto', 'auto', `${int(3, 8) * 10}px`]), clip: r() < 0.6};
+  // flex: some containers are flex rows or columns; their children never shrink (flex-shrink: 0) and have px widths
+  // (the subset needs a definite basis), so an overflow is a real overflow, not a shrink.
+  const container = (depth, inFlex = false) => {
+    const id = `c${n++}`, kind = flex && depth > 0 && r() < 0.45 ? pick(['row', 'column']) : 'grid';
+    const rule = {kind, columns: tracks(), gap: pick([0, 8, 16]), rowGap: pick([0, 8]), padding: pick([0, 8, 12]), autoRows: pick(['auto', 'auto', `${int(3, 8) * 10}px`]), clip: r() < 0.6, width: inFlex ? `${int(10, 40) * 10}px` : null};
     containers.push({id, ...rule});
     const count = int(1, 4);
-    const children = Array.from({length: count}, () => depth < 3 && r() < 0.35 ? container(depth + 1) : item());
+    const children = Array.from({length: count}, () => depth < 3 && r() < 0.35 && kind === 'grid' ? container(depth + 1) : item(kind !== 'grid'));
     return {id, children};
   };
-  const item = () => {
-    const id = `i${n++}`, width = r() < 0.5 ? 'auto' : `${int(4, 45) * 10}px`, height = `${int(2, 9) * 10}px`;
-    items.push({id, width, height});
+  const item = (inFlex = false) => {
+    const id = `i${n++}`, width = !inFlex && r() < 0.5 ? 'auto' : `${int(4, 45) * 10}px`, height = `${int(2, 9) * 10}px`;
+    items.push({id, width, height, inFlex});
     return {id, children: []};
   };
   const root = container(0);
   const html = node => node.children.length || node.id.startsWith('c') ? `<div class="${node.id}">${node.children.map(html).join('')}</div>` : `<div class="${node.id}"></div>`;
-  const decl = c => `display:grid;grid-template-columns:${c.columns};column-gap:${c.gap}px;row-gap:${c.rowGap}px;padding:${c.padding}px;grid-auto-rows:${c.autoRows};${c.clip ? 'overflow:hidden;' : ''}`;
+  const decl = c => (c.kind === 'grid' ? `display:grid;grid-template-columns:${c.columns};column-gap:${c.gap}px;row-gap:${c.rowGap}px;grid-auto-rows:${c.autoRows};` : `display:flex;flex-direction:${c.kind};column-gap:${c.gap}px;row-gap:${c.rowGap}px;`)
+    + `padding:${c.padding}px;${c.clip ? 'overflow:hidden;' : ''}${c.width ? `width:${c.width};flex-shrink:0;` : ''}`;
   let css = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr);overflow-x:clip}body{margin:0}';
   css += containers.map(c => `.${c.id}{${decl(c)}background:#eef}`).join('');
-  css += items.map(i => `.${i.id}{${i.width === 'auto' ? '' : `width:${i.width};`}height:${i.height};background:#246}`).join('');
+  css += items.map(i => `.${i.id}{${i.width === 'auto' ? '' : `width:${i.width};`}height:${i.height};${i.inFlex ? 'flex-shrink:0;' : ''}background:#246}`).join('');
   // Media branches: each changes a container's tracks, an item's size, or hides an item.
   const conditions = [() => `(min-width: ${int(36, 90) * 10}px)`, () => `(max-width: ${int(36, 90) * 10}px)`, () => `(min-height: ${int(55, 85) * 10}px)`,
     () => '(orientation: portrait)', () => '(min-resolution: 2dppx)', () => `(min-width: ${int(40, 70) * 10}px) and (max-height: ${int(55, 80) * 10}px)`];
@@ -41,14 +45,14 @@ export function generateCase(seed) {
     const condition = pick(conditions)();
     const body = Array.from({length: int(1, 3)}, () => {
       const kind = r();
-      if (kind < 0.35) { const c = pick(containers); return `.${c.id}{grid-template-columns:${tracks()}}`; }
-      if (kind < 0.75) { const i = pick(items); return `.${i.id}{width:${r() < 0.3 ? 'auto' : `${int(4, 60) * 10}px`}}`; }
+      if (kind < 0.35) { const c = pick(containers); return c.kind === 'grid' ? `.${c.id}{grid-template-columns:${tracks()}}` : `.${c.id}{flex-direction:${pick(['row', 'column'])}}`; }
+      if (kind < 0.75) { const i = pick(items); return `.${i.id}{width:${!i.inFlex && r() < 0.3 ? 'auto' : `${int(4, 60) * 10}px`}}`; }
       const i = pick(items); return `.${i.id}{display:none}`;
     }).join('');
     return `@media ${condition}{${body}}`;
   });
   css += branches.join('');
-  return {seed, html: `<html lang="en"><body>${html(root)}</body></html>`, body: html(root), css, items: items.map(i => i.id), containers: containers.map(c => c.id)};
+  return {seed, html: `<html lang="en"><body>${html(root)}</body></html>`, body: html(root), css, items: items.map(i => i.id), containers: containers.map(c => c.id), flexContainers: containers.filter(c => c.kind !== 'grid').map(c => c.id)};
 }
 
 // Viewports to sample: random points plus both sides of every px breakpoint in the CSS.

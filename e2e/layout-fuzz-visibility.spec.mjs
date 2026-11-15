@@ -32,6 +32,15 @@ const measure = () => {
   const px = v => parseFloat(v) || 0, out = {};
   for (const parent of document.querySelectorAll('[class^="c"]')) {
     const s = getComputedStyle(parent), box = parent.getBoundingClientRect();
+    if (s.display === 'flex') {
+      // A flex container overflows when a shown child leaves its content box (children never shrink here).
+      const l = box.left + px(s.borderLeftWidth) + px(s.paddingLeft), t = box.top + px(s.borderTopWidth) + px(s.paddingTop);
+      const r = box.right - px(s.borderRightWidth) - px(s.paddingRight), b = box.bottom - px(s.borderBottomWidth) - px(s.paddingBottom), e = 0.02;
+      const shown = [...parent.children].filter(k => getComputedStyle(k).display !== 'none');
+      out[`flex:${parent.className}`] = {fits: shown.every(k => { const c = k.getBoundingClientRect(); return c.left >= l - e && c.top >= t - e && c.right <= r + e && c.bottom <= b + e; }), shown: true};
+      for (const k of parent.children) out[k.className] = {fits: true, shown: getComputedStyle(k).display !== 'none', inFlex: true};
+      continue;
+    }
     const cols = s.gridTemplateColumns.split(' ').map(px), rows = s.gridTemplateRows.split(' ').map(px);
     const gx = px(s.columnGap), gy = px(s.rowGap), left = box.left + px(s.borderLeftWidth) + px(s.paddingLeft), top = box.top + px(s.borderTopWidth) + px(s.paddingTop);
     const kids = [...parent.children].filter(k => getComputedStyle(k).display !== 'none');
@@ -82,4 +91,36 @@ test('fuzz: no invisible region — static item-fit verdicts agree with Chromium
   expect(tally.unknown).toBeLessThan(tally.cases * 0.2);
   expect(tally.misfits).toBeGreaterThan(0);
   expect(tally.compared - tally.misfits).toBeGreaterThan(0);
+});
+
+
+test('fuzz with flex rows and columns: a flex container overflows in Chromium exactly where the static check finds it does', async ({browser}) => {
+  test.setTimeout(1_800_000);
+  const tally = {cases: 0, unknown: 0, compared: 0, overflows: 0};
+  const page = await (await browser.newContext()).newPage();
+  for (let seed = first; seed < first + seeds; seed++) {
+    const c = generateCase(seed, {flex: true});
+    if (!c.flexContainers.length) continue;
+    tally.cases++;
+    const report = analyzeHTML(c.html, {name: 'P', css: c.css, viewport: {min: 320, max: 1024, height: {min: 480, max: 900}}, devicePixelRatios: [1], scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+    if (report.status === 'unknown') { tally.unknown++; continue; }
+    const childrenOf = id => [...c.body.matchAll(new RegExp(`<div class="${id}">((?:<div class="i\\d+"></div>)*)</div>`, 'g'))].flatMap(m => [...m[1].matchAll(/class="(i\d+)"/g)].map(x => x[1]));
+    for (const [w, h] of viewports(c, seed)) {
+      await page.setViewportSize({width: w, height: h});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${c.css}</style></head><body>${c.body}</body></html>`);
+      const seen = await page.evaluate(measure);
+      for (const id of c.flexContainers) {
+        const fact = seen[`flex:${id}`];
+        if (!fact) continue;
+        const kids = childrenOf(id);
+        const staticOverflow = report.diagnostics.some(d => inRegion(d, w, h) && ((d.code === 'E_LAYOUT_TRACKS' && d.box === `.${id}`) || (d.code === 'E_LAYOUT_ITEM_SIZE' && kids.some(k => d.box === `.${k}`))));
+        tally.compared++; if (!fact.fits) tally.overflows++;
+        expect(staticOverflow, `seed ${seed} .${id} at ${w}×${h}: static ${staticOverflow}, Chromium ${!fact.fits}\n${c.css}`).toBe(!fact.fits);
+      }
+    }
+  }
+  console.log(`flex visibility fuzz: ${JSON.stringify(tally)}`);
+  expect(tally.unknown).toBeLessThan(Math.max(1, tally.cases * 0.2));
+  expect(tally.overflows).toBeGreaterThan(0);
+  expect(tally.compared - tally.overflows).toBeGreaterThan(0);
 });
