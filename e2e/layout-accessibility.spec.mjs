@@ -1520,3 +1520,20 @@ test('bar-covered: where the static rule warns, a scrolled card is the topmost e
     expect(top === 'card', `${extra || 'static card'}: topmost at the header is .${top}`).toBe(warn);
   }
 });
+
+test('bar-transparent: where the static rule warns, the scrolled card shows through the sticky header in Chromium', async ({page}) => {
+  const base = '*{box-sizing:border-box;margin:0}body{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.h{position:sticky;top:0;display:grid;grid-template-columns:minmax(0,1fr);height:50px}.t{display:block;font:16px/20px sans-serif}.card{height:200px;background:#c33}.tall{height:2000px}';
+  for (const [extra, warn] of [['', true], ['.h{background:rgba(255,255,255,.5)}', true], ['.h{background:#fff}', false]]) {
+    const css = base + extra, html = '<main class="page"><header class="h"><span class="t">Menu</span></header><div class="card"></div><div class="tall"></div></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], boxes: {'.t': {minInlineSize: 1, intrinsicBlockSize: 20}}});
+    const warned = report.accessibility.warnings.some(w => w.code === 'W_A11Y_BAR_TRANSPARENT');
+    expect(warned, extra || 'no background').toBe(warn);
+    await page.setViewportSize({width: 400, height: 600});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(async () => { scrollTo(0, 100); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); });
+    const [r, g, b] = await page.evaluate(async data => { const i = new Image(); i.src = `data:image/png;base64,${data}`; await i.decode(); const c = document.createElement('canvas'); c.width = c.height = 1; const x = c.getContext('2d'); x.drawImage(i, 0, 0); return [...x.getImageData(0, 0, 1, 1).data]; }, (await page.screenshot({clip: {x: 350, y: 25, width: 1, height: 1}})).toString('base64'));
+    // The card is #c33 (204, 51, 51): seen through the header, its red is in the header's pixel.
+    const showsThrough = r - g > 40;
+    expect(showsThrough, `${extra || 'no background'}: header pixel rgb(${r}, ${g}, ${b})`).toBe(warn);
+  }
+});

@@ -468,6 +468,20 @@
   "css": "body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.card{display:grid;grid-template-columns:minmax(0,1fr);height:240px;background:#eef;transform:translateX(0px)}.bar{position:fixed;left:0;bottom:0;width:100%;height:56px;background:rgba(36,68,102,.97)}.gap{height:2000px;background:repeating-linear-gradient(#fff 0 40px,#f3f3f3 40px 80px)}"
  },
  {
+  "id": "bar-transparent",
+  "title": "A sticky header with no background",
+  "code": "W_A11Y_BAR_TRANSPARENT",
+  "width": 672,
+  "height": 690,
+  "message": ".h is sticky with no background: the content scrolling under it shows through its text. Give it an opaque background",
+  "shots": [
+   "bar-transparent-before.png",
+   "bar-transparent-after.png"
+  ],
+  "html": "<main class=\"page\"><header class=\"h\"><span class=\"t\">Menu</span></header><div class=\"card\"></div><div class=\"tall\"></div></main>",
+  "css": "body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#111}.h{position:sticky;top:0;display:grid;grid-template-columns:minmax(0,1fr);height:56px}.t{display:block;font-family:Roboto;font-size:16px;line-height:24px}.card{height:200px;background:repeating-linear-gradient(90deg,#246 0 20px,#f2c94c 20px 40px)}.tall{height:2000px}"
+ },
+ {
   "id": "bar-covered",
   "title": "Cards that slide over a sticky header",
   "code": "W_A11Y_BAR_COVERED",

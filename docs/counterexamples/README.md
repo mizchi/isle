@@ -702,6 +702,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background
 
 </details>
 
+## A sticky header with no background
+
+`W_A11Y_BAR_TRANSPARENT` — viewport 672 × 690px
+
+> .h is sticky with no background: the content scrolling under it shows through its text. Give it an opaque background
+
+![bar-transparent](bar-transparent-before.png) ![bar-transparent](bar-transparent-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><header class="h"><span class="t">Menu</span></header><div class="card"></div><div class="tall"></div></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#111}.h{position:sticky;top:0;display:grid;grid-template-columns:minmax(0,1fr);height:56px}.t{display:block;font-family:Roboto;font-size:16px;line-height:24px}.card{height:200px;background:repeating-linear-gradient(90deg,#246 0 20px,#f2c94c 20px 40px)}.tall{height:2000px}
+```
+
+</details>
+
 ## Cards that slide over a sticky header
 
 `W_A11Y_BAR_COVERED` — viewport 672 × 690px
