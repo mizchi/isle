@@ -49,6 +49,8 @@
 //   autocomplete     → E_A11Y_AUTOCOMPLETE      tokens outside the HTML autofill grammar (SC 1.3.5)
 //   scope            → E_A11Y_SCOPE             scope on a td, or not row/col/rowgroup/colgroup
 //   html-lang / lang-valid → E_A11Y_HTML_LANG / E_A11Y_LANG_VALID  a document without lang, or an invalid language tag (SC 3.1.1)
+//   forced-colors    → W_A11Y_FORCED_COLORS     a control whose only edge is its background or box-shadow (no border, no outline): forced colors
+//                      (Windows high contrast) replace the background and drop the shadow, so the control loses its shape
 //   meta-viewport    → E_A11Y_META_VIEWPORT     the viewport meta tag disables zoom (user-scalable=no, or maximum-scale below 2) (SC 1.4.4)
 //   touch-zoom       → E_A11Y_TOUCH_ZOOM        touch-action on html or body leaves out pinch-zoom (none, or pan-* only) (SC 1.4.4)
 //   page-h1 / region / bypass → W_A11Y_PAGE_H1 / W_A11Y_REGION / W_A11Y_BYPASS  page roots: no rendered h1, text outside landmarks, no skip link before navigation
@@ -95,7 +97,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main',
   'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text',
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
-  'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
+  'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
   'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance'];
 
@@ -296,7 +298,7 @@ export function circleReach(region, dx, dy, r) {
   return { yes, maybe };
 }
 
-export function judgeAccessibility({ geometry, waived = [], root, domain }, { keyframeFrames = new Map(), contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0, viewportBlock = null, scrollPaddingDeclared = false }) {
+export function judgeAccessibility({ geometry, waived = [], root, domain }, { keyframeFrames = new Map(), contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0, viewportBlock = null, scrollPaddingDeclared = false, forcedColorsHandled = false }) {
   const findings = [], warnings = [], unknowns = [], notes = [], exempted = [];
   // Generated boxes (::before/::after) paint and receive the pointer (for their element), but carry no DOM semantics.
   const everything = geometry;
@@ -999,6 +1001,17 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
 
   // --- language ---
   if (root.tag === 'html' && (root.lang === undefined || !String(root.lang).trim())) report(findings, 'E_A11Y_HTML_LANG', 'error', `${root.label} has no lang attribute`, whole(root), domain, { rule: 'html-lang' });
+  // --- forced colors ---
+  // A control drawn only by its fill or shadow: in forced colors the fill becomes the system background and box-shadow
+  // is not painted, so nothing shows where it is (unless the page styles @media (forced-colors: active) itself).
+  if (!forcedColorsHandled) for (const row of geometry.filter(row => !row.box.pseudo && visible(row) && (['button', 'select', 'textarea'].includes(row.box.tag) || (row.box.tag === 'input' && !['hidden', 'checkbox', 'radio'].includes(row.box.inputType ?? 'text'))))) {
+    const paint = row.paint ?? {};
+    const noBorder = ['left', 'right', 'top', 'bottom'].every(side => !row.borders?.[side] || cmp(row.borders[side], q(0)) === 0);
+    const noOutline = !paint.outlineStyle || paint.outlineStyle === 'none';
+    const drawn = (paint.boxShadow && paint.boxShadow !== 'none') || (paint.backgroundColor && !['transparent', 'rgba(0, 0, 0, 0)', 'initial'].includes(String(paint.backgroundColor)));
+    if (noBorder && noOutline && drawn && !warnings.some(w => w.code === 'W_A11Y_FORCED_COLORS' && w.path === row.path))
+      report(warnings, 'W_A11Y_FORCED_COLORS', 'warning', `${row.box.label} has no border: only its ${paint.boxShadow && paint.boxShadow !== 'none' ? 'box-shadow' : 'background'} shows its edge, which forced colors (Windows high contrast) replace, so the control loses its outline. Give it a border (transparent is enough: forced colors paint it) or style @media (forced-colors: active)`, row, row.region, { rule: 'forced-colors' });
+  }
   // --- zoom ---
   if (root.tag === 'html' && typeof root.metaViewport === 'string') {
     const settings = Object.fromEntries(root.metaViewport.split(/[,;]/).map(part => part.split('=').map(x => x.trim().toLowerCase())).filter(([key]) => key));

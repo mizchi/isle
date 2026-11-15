@@ -611,6 +611,20 @@
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.outer{display:grid;grid-template-columns:600px;overflow:auto;height:140px;background:#eee;padding:8px}.inner{display:grid;grid-template-columns:900px;overflow:auto;background:#cde}.content{min-width:0;height:100px;background:repeating-linear-gradient(90deg,#9cf 0 40px,#cde 40px 80px)}"
  },
  {
+  "id": "forced-colors",
+  "title": "A button drawn only by its fill, in forced colors",
+  "code": "W_A11Y_FORCED_COLORS",
+  "width": 674,
+  "height": 690,
+  "message": ".b has no border: only its background shows its edge, which forced colors (Windows high contrast) replace, so the control loses its outline. Give it a border (transparent is enough: forced colors paint it) or style @media (forced-colors: active)",
+  "shots": [
+   "forced-colors-before.png",
+   "forced-colors-after.png"
+  ],
+  "html": "<main class=\"page\"><button class=\"b\" aria-label=\"Save\"></button><button class=\"c\" aria-label=\"Cancel\"></button></main>",
+  "css": ".page{display:grid;grid-template-columns:140px 140px;column-gap:12px;background:#fff}.b,.c{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.c{background:#ddd}"
+ },
+ {
   "id": "html-lang",
   "title": "A document without lang",
   "code": "E_A11Y_HTML_LANG",

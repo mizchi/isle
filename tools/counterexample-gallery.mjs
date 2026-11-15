@@ -135,6 +135,8 @@ const cases = [
   {id: 'nested-scroll', title: 'A scroll area inside a scroll area', code: 'W_LAYOUT_NESTED_SCROLL', warning: true, options: {integrity: true, boxes: {'.outer': {overflow: 'scroll'}, '.inner': {overflow: 'scroll'}}},
     html: '<main class="page"><div class="outer"><div class="inner"><div class="content"></div></div></div></main>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.outer{display:grid;grid-template-columns:600px;overflow:auto;height:140px;background:#eee;padding:8px}.inner{display:grid;grid-template-columns:900px;overflow:auto;background:#cde}.content{min-width:0;height:100px;background:repeating-linear-gradient(90deg,#9cf 0 40px,#cde 40px 80px)}'},
 
+  {id: 'forced-colors', title: 'A button drawn only by its fill, in forced colors', code: 'W_A11Y_FORCED_COLORS', warning: true, act: async page => { await page.emulateMedia({forcedColors: 'active'}); }, afterLabel: 'forced colors (Windows high contrast)', options: {accessibility: true},
+    html: '<main class="page"><button class="b" aria-label="Save"></button><button class="c" aria-label="Cancel"></button></main>', css: '.page{display:grid;grid-template-columns:140px 140px;column-gap:12px;background:#fff}.b,.c{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.c{background:#ddd}'},
   // --- markup (DOM rules: nothing to see on screen, so the picture is the markup with the reported part marked) ---
   {id: 'html-lang', title: 'A document without lang', code: 'E_A11Y_HTML_LANG', markup: true, mark: '<html>', options: {accessibility: true},
     doc: '<html><body><main class="page"><div class="x"></div></main></body></html>', html: '<html>\n  <body>\n    <main class="page">…</main>\n  </body>\n</html>', css: '.page{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}'},
@@ -372,7 +374,7 @@ for (const c of cases) {
   }), ...(extra ? [document.querySelector(extra)] : [])].map(n => { if (!n) return null; const r = n.getBoundingClientRect(); return {x: r.left, y: r.top, w: r.width, h: r.height}; }), {paths, extra: c.highlight});
   const draw = (boxes, ghosts, label) => page.evaluate(({boxes, ghosts, label, whole, band}) => {
     document.querySelectorAll('.__ce').forEach(e => e.remove());
-    const add = (r, style) => { if (!r) return; const e = document.createElement('div'); e.className = '__ce'; Object.assign(e.style, {position: 'fixed', left: r.x - 2 + 'px', top: r.y - 2 + 'px', width: r.w + 4 + 'px', height: r.h + 4 + 'px', zIndex: 2147483647, pointerEvents: 'none', boxSizing: 'border-box', ...style}); document.body.append(e); };
+    const add = (r, style) => { if (!r) return; const e = document.createElement('div'); e.className = '__ce'; Object.assign(e.style, {position: 'fixed', left: r.x - 2 + 'px', top: r.y - 2 + 'px', width: r.w + 4 + 'px', height: r.h + 4 + 'px', zIndex: 2147483647, pointerEvents: 'none', boxSizing: 'border-box', forcedColorAdjust: 'none', ...style}); document.body.append(e); };
     for (const r of ghosts) add(r, {border: '2px dashed #e00', background: 'rgba(255,0,0,.06)'});
     if (band) { const e = document.createElement('div'); e.className = '__ce'; e.textContent = `safe area ${band}px (home indicator)`; Object.assign(e.style, {position: 'fixed', left: 0, right: 0, bottom: 0, height: band + 'px', zIndex: 2147483646, pointerEvents: 'none', font: '600 11px Roboto, sans-serif', color: '#fff', display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(135deg, rgba(0,0,0,.55) 0 6px, rgba(0,0,0,.35) 6px 12px)'}); document.body.append(e); }
     for (const r of boxes) add(r, {border: '3px solid #e00'});
@@ -384,7 +386,7 @@ for (const c of cases) {
     if (whole) { x0 = 0; y0 = 0; x1 = innerWidth; y1 = full - 30; }
     x1 = Math.max(x1, Math.min(innerWidth, x0 + 280));
     const tag = document.createElement('div'); tag.className = '__ce'; tag.textContent = label;
-    Object.assign(tag.style, {position: 'fixed', left: x0 + 'px', top: (band ? 4 : y1 + 4) + 'px', maxWidth: (x1 - x0 - 8) + 'px', font: '600 12px/1.3 Roboto, sans-serif', color: '#fff', background: 'rgba(200,0,0,.92)', padding: '4px 6px', borderRadius: '3px', zIndex: 2147483647, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'});
+    Object.assign(tag.style, {position: 'fixed', left: x0 + 'px', top: (band ? 4 : y1 + 4) + 'px', maxWidth: (x1 - x0 - 8) + 'px', font: '600 12px/1.3 Roboto, sans-serif', color: '#fff', background: 'rgba(200,0,0,.92)', padding: '4px 6px', borderRadius: '3px', zIndex: 2147483647, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', forcedColorAdjust: 'none'});
     document.body.append(tag);
     // The DevTools clip is in document coordinates: add the scroll offset.
     return {x: x0 + scrollX, y: y0 + scrollY, width: x1 - x0, height: Math.min(full, y1 + 30) - y0};

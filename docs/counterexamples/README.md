@@ -922,6 +922,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background
 
 </details>
 
+## A button drawn only by its fill, in forced colors
+
+`W_A11Y_FORCED_COLORS` — viewport 674 × 690px
+
+> .b has no border: only its background shows its edge, which forced colors (Windows high contrast) replace, so the control loses its outline. Give it a border (transparent is enough: forced colors paint it) or style @media (forced-colors: active)
+
+![forced-colors](forced-colors-before.png) ![forced-colors](forced-colors-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b" aria-label="Save"></button><button class="c" aria-label="Cancel"></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:140px 140px;column-gap:12px;background:#fff}.b,.c{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.c{background:#ddd}
+```
+
+</details>
+
 ## A document without lang
 
 `E_A11Y_HTML_LANG` — markup rule (nothing to see on screen)

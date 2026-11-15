@@ -1356,3 +1356,26 @@ test('white-space and the text-wrap shorthand: the later or more specific wrap m
     expect(staticNowrap, `${css}: static nowrap ${staticNowrap}, Chromium text-wrap-mode ${mode}`).toBe(mode === 'nowrap');
   }
 });
+
+test('forced-colors: controls drawn only by fill or shadow lose their edge in Chromium forced colors, as warned', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:160px;row-gap:8px;background:#fff';
+  const cases = [
+    ['fill only', '.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}', true],
+    ['shadow only', '.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:transparent;box-shadow:0 0 0 2px #246}', true],
+    ['transparent border', '.b{appearance:none;display:block;padding:0;border:2px solid transparent;min-width:0;min-height:0;height:44px;background:#246}', false],
+    ['handled by a forced-colors rule', '.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}@media (forced-colors: active){.b{outline:2px solid}}', false],
+  ];
+  for (const [name, css, expectWarning] of cases) {
+    const html = '<main class="page"><button class="b" aria-label="Save"></button></main>';
+    const report = analyzeHTML(html, {name: 'P', css: `*{box-sizing:border-box;margin:0}.page{${g}}${css}`, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+    expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
+    const warned = report.accessibility.warnings.some(w => w.code === 'W_A11Y_FORCED_COLORS');
+    expect(warned, name).toBe(expectWarning);
+    // Chromium forced colors: is any edge left (a border, or a fill different from the page's)?
+    await page.emulateMedia({forcedColors: 'active'});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>*{box-sizing:border-box;margin:0}.page{${g}}${css}</style></head><body>${html}</body></html>`);
+    const edge = await page.evaluate(() => { const b = getComputedStyle(document.querySelector('.b')), p = getComputedStyle(document.querySelector('.page')); const clear = c => /,\s*0\)$/.test(c) || c === "transparent"; return parseFloat(b.borderTopWidth) > 0 || (b.outlineStyle !== 'none' && parseFloat(b.outlineWidth) > 0) || (!clear(b.backgroundColor) && b.backgroundColor !== p.backgroundColor) || b.boxShadow !== 'none'; });
+    await page.emulateMedia({forcedColors: 'none'});
+    expect(warned, `${name}: static ${warned}, Chromium edge ${edge}`).toBe(!edge);
+  }
+});
