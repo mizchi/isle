@@ -431,6 +431,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // A selected source with width or height attributes is the image's dimension source; else the img's own.
       const imageFacts = chosen ? { ...((chosen.facts.width !== undefined || chosen.facts.height !== undefined) ? { width: chosen.facts.width, height: chosen.facts.height } : { width: box.imageSize?.width, height: box.imageSize?.height }), src: chosen.src } : box.imageSize && { ...box.imageSize, src: loadedSource(box.imageSize.srcset, box.imageSize.src) };
       // video: its width/height attributes are size hints and aspect-ratio auto w / h too (HTML rendering §15.4.3).
+      // An iframe is a replaced box of 300×150 by default (its width/height attributes are presentational hints) with
+      // no natural aspect ratio: an auto height stays 150px whatever its width, unless aspect-ratio sizes it.
+      if (box.tag === 'iframe' && !box.pseudo && style.display === 'block') {
+        const { width: w, height: hgt } = box.imageSize ?? {};
+        if (style['inline-size'] === 'auto' && !style.$sources['inline-size'] && (w === undefined || Number.isFinite(w))) style = { ...style, 'inline-size': `${w ?? 300}px` };
+        if (style['block-size'] === 'auto' && !style.$sources['block-size'] && (hgt === undefined || Number.isFinite(hgt)) && (style['aspect-ratio'] === 'auto' || !style.$sources['aspect-ratio']))
+          style = { ...style, 'block-size': `${hgt ?? 150}px`, ...(hgt === undefined && style.$sources['inline-size'] ? { $embedDefaultHeight: true } : {}) };
+      }
       if (['img', 'video'].includes(box.tag) && imageFacts && !box.pseudo) {
         const { width: w, height: hgt } = imageFacts;
         if (Number.isFinite(w) && style['inline-size'] === 'auto' && !style.$sources['inline-size']) style = { ...style, 'inline-size': `${w}px`, ...(!style.$sources['max-inline-size'] ? { $widthFromAttribute: w } : {}) };
@@ -567,7 +575,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (['img', 'video'].includes(box.tag) && style.$imageRatioMismatch && emit) issue('E_LAYOUT_IMAGE_RATIO', `${box.label} reserves the ratio ${style.$imageRatioMismatch.reserved} but ${style.$imageRatioMismatch.src} is ${style.$imageRatioMismatch.natural.width}×${style.$imageRatioMismatch.natural.height}: its height changes when it loads`, box, region);
     if (box.tag === 'img' && !box.pseudo && style['block-size'] === 'auto' && !ratioOf(style) && block) throw Object.assign(new Error(`${box.label} has no reserved height (no height, aspect-ratio or width/height attributes) and its file's size is not known; it shifts the layout when it loads`), { code: 'U_LAYOUT_IMAGE' });
     // An img may leave its block-size auto when an aspect-ratio (CSS or its width/height attributes) gives it.
-    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto' && !(['img', 'video'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
+    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto' && !(['img', 'video', 'iframe'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
     // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
     // A closed popover that author CSS displays keeps the UA [popover] { position: fixed; inset: 0; margin: auto }:
@@ -1166,6 +1174,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (['flex', 'inline-flex'].includes(style.display) && set('justify-items', 'normal')) reasons.push(['justify-items', 'it is display: flex, which ignores justify-items (use justify-content)']);
         // A main size under a non-auto flex-basis (flex: 1; width: 200px): flex-basis replaces it (inertMainSize).
         if (style.$inertMain) reasons.push([style.$inertMain.property, `flex-basis: ${style['flex-basis']} sets its main size instead (use flex: 1 1 auto, or flex-basis: ${style.$inertMain.value})`]);
+        if (style.$embedDefaultHeight && !layoutWarnings.some(w => w.code === 'W_LAYOUT_EMBED_NO_RATIO' && w.path === box.path))
+          layoutWarnings.push({ code: 'W_LAYOUT_EMBED_NO_RATIO', severity: 'warning', box: box.label, path: box.path,
+            message: `${box.label} sets its width (${style.$sources['inline-size'].specified ?? style['inline-size']}) but not its height: an iframe has no aspect ratio of its own, so it stays 150px tall at every width and the embedded page (a video, a map) is cut or letterboxed. Add aspect-ratio (e.g. 16 / 9) or a height`, ...ranges(region) });
         if (style.$containerCollapse && !layoutWarnings.some(w => w.code === 'W_LAYOUT_CONTAINER_COLLAPSE' && w.path === box.path))
           layoutWarnings.push({ code: 'W_LAYOUT_CONTAINER_COLLAPSE', severity: 'warning', box: box.label, path: box.path,
             message: `${box.label} is position: absolute and container-type: ${style['container-type']} with no width: an absolute box shrinks to fit its content, which size containment ignores, so it is only as wide as its padding and border and its content overflows. Give it a width (or both left and right)`, ...ranges(region) });
