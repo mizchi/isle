@@ -1668,6 +1668,266 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## Same-name radios outside a group
+
+`W_A11Y_RADIO_GROUP` — markup rule (nothing to see on screen)
+
+> radios named "size" are not grouped in a fieldset or radiogroup
+
+![radio-group](radio-group-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="a" type="radio" name="size" aria-label="Small"><input class="b" type="radio" name="size" aria-label="Large"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:24px;row-gap:6px}.a,.b{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:24px;height:24px;border:2px solid #000;border-radius:50%;background:#fff;margin:0}
+```
+
+</details>
+
+## A fieldset with no legend
+
+`W_A11Y_FIELDSET_NAME` — markup rule (nothing to see on screen)
+
+> .f groups controls without a legend
+
+![fieldset-name](fieldset-name-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><fieldset class="f"><input class="i" type="text" aria-label="City"></fieldset></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:240px}.f{display:grid;grid-template-columns:200px;border:1px solid #999;padding:8px;min-width:0}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}
+```
+
+</details>
+
+## A form with fields but no submit button
+
+`W_A11Y_FORM_SUBMIT` — markup rule (nothing to see on screen)
+
+> .f has fields but no submit button
+
+![form-submit](form-submit-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><form class="f"><input class="i" type="search" aria-label="Search"></form></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.f{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff}
+```
+
+</details>
+
+## aria-invalid with no message
+
+`W_A11Y_INVALID_NO_MESSAGE` — markup rule (nothing to see on screen)
+
+> .i is aria-invalid="true" with no aria-errormessage or aria-describedby saying what is wrong
+
+![error-message](error-message-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="i" type="email" aria-label="Email" aria-invalid="true"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #c00;background:#fff}
+```
+
+</details>
+
+## Two unnamed navigation landmarks
+
+`W_A11Y_LANDMARK_NAME` — markup rule (nothing to see on screen)
+
+> .b and .a are navigation landmarks without names to tell them apart
+
+![landmark-name](landmark-name-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><nav class="a"><a class="l" href="/" aria-label="Home"></a></nav><nav class="b"><a class="l" href="/help" aria-label="Help"></a></nav></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px;row-gap:6px}.a,.b{display:grid;grid-template-columns:minmax(0,1fr)}.l{display:block;height:44px;background:#246}
+```
+
+</details>
+
+## A list styled without markers loses its role in Safari
+
+`W_A11Y_LIST_STYLE` — markup rule (nothing to see on screen)
+
+> .u has list-style-type: none; Safari/VoiceOver then drops its list semantics unless it has role="list"
+
+![list-style](list-style-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><ul class="u"><li class="a"></li><li class="b"></li></ul></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.u{display:grid;grid-template-columns:minmax(0,1fr);list-style:none;padding:0}.a,.b{display:block;height:20px;background:#eee}
+```
+
+</details>
+
+## cursor: pointer on something that is not a control
+
+`W_A11Y_CLICK_LOOK` — markup rule (nothing to see on screen)
+
+> .card has cursor: pointer but is neither focusable nor an interactive role; if it handles clicks, keyboard users cannot reach it
+
+![clickable-look](clickable-look-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="card"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.card{height:60px;background:#9cf;cursor:pointer}
+```
+
+</details>
+
+## A hidden element that author CSS shows
+
+`W_A11Y_HIDDEN_OVERRIDDEN` — markup rule (nothing to see on screen)
+
+> .note has the hidden attribute but renders: an author display rule overrides [hidden] { display: none }
+
+![hidden-overridden](hidden-overridden-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="note" hidden></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.note{display:block !important;height:40px;background:#fc9}
+```
+
+</details>
+
+## aria-expanded=true while the panel is hidden
+
+`W_A11Y_STATE_MISMATCH` — markup rule (nothing to see on screen)
+
+> .b has aria-expanded="true" but #panel does not render here
+
+![state-mismatch](state-mismatch-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b" aria-label="Filters" aria-expanded="true" aria-controls="panel"></button><div class="p" id="panel"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246}.p{display:none}
+```
+
+</details>
+
+## A focusable control that stays at opacity 0
+
+`W_A11Y_FOCUS_TRANSPARENT` — markup rule (nothing to see on screen)
+
+> .b stays at opacity 0 when focused, so its own focus indicator is invisible; another element must show where focus is
+
+![focus-transparent](focus-transparent-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b" aria-label="Upload"></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:44px;background:#246;opacity:0}
+```
+
+</details>
+
+## Autoplaying media that is not muted
+
+`W_A11Y_AUTOPLAY_AUDIO` — markup rule (nothing to see on screen)
+
+> .v plays automatically with sound; mute it or offer a control within 3 seconds
+
+![autoplay-audio](autoplay-audio-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><video class="v" src="/intro.mp4" autoplay><track kind="captions" src="/intro.vtt"></video></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.v{display:block;width:320px;height:180px}
+```
+
+</details>
+
+## A long animation that reduced motion does not stop
+
+`W_A11Y_MOTION` — markup rule (nothing to see on screen)
+
+> .spinner runs animation spin (10s × infinite) and prefers-reduced-motion: reduce does not stop it; moving content over 5s needs a pause mechanism
+
+![motion](motion-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="spinner"></div></main>
+```
+
+```css
+@keyframes spin{to{transform:rotate(90deg)}}.page{display:grid;grid-template-columns:60px}.spinner{height:60px;background:#9cf;animation:spin 10s infinite}
+```
+
+</details>
+
+## A bold paragraph used as a heading
+
+`W_A11Y_P_AS_HEADING` — viewport 672 × 690px
+
+> .p is styled as a heading (bold) but is a paragraph
+
+![p-as-heading](p-as-heading-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><p class="p">Delivery options</p><p class="q">Choose a delivery time</p></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p,.q{display:block;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}.p{font-weight:700}
+```
+
+</details>
+
 ## A badge that sticks out of its card
 
 `E_LAYOUT_PROTRUSION` — viewport 672 × 690px
