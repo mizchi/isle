@@ -318,7 +318,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   // Widget roles that need focus and a name (WAI-ARIA 1.2), on any element.
   const widgetRoles = new Set(['button', 'link', 'checkbox', 'radio', 'switch', 'tab', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'option', 'slider', 'spinbutton', 'textbox', 'searchbox', 'combobox', 'treeitem', 'gridcell']);
   const roleOf = box => box.role && box.role !== 'dynamic' ? box.role.split(/\s+/)[0] : undefined;
-  const control = row => !row.box.pseudo && (row.box.tag === 'button' || (row.box.tag === 'a' && row.box.focusable !== false) || widgetRoles.has(roleOf(row.box)));
+  const control = row => !row.box.pseudo && (row.box.tag === 'button' || row.box.tag === 'summary' || (row.box.tag === 'a' && row.box.focusable !== false) || widgetRoles.has(roleOf(row.box)));
   const interactive = row => control(row) || (!row.box.pseudo && field(row.box));
   const placed = everything.filter(row => row.origin && row.block);
   const boxes = new Map(geometry.map(row => [row.path, row.box]));

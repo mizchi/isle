@@ -2158,7 +2158,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   })));
                 };
                 if (!box.pseudo) pseudo('before');
-                for (const child of box.children) if (child !== rendered?.box) visit(child, style);
+                // A closed details renders only its first summary (measured); an open attribute set by script is Unknown.
+                if (box.tag === 'details' && box.detailsOpen === 'dynamic') throw Object.assign(new Error(`${box.label}: whether this details is open is decided at run time`), { code: 'U_LAYOUT_ELEMENT', box });
+                const summary = box.tag === 'details' ? box.children.find(child => child.tag === 'summary') : null;
+                for (const child of box.children) if (child !== rendered?.box && !(box.tag === 'details' && box.detailsOpen === false && child !== summary)) visit(child, style);
                 if (!box.pseudo) pseudo('after');
                 for (const state of states) for (const child of state.children) if (child.style.order !== '0') throw Object.assign(new Error('order changes the item sequence; only order: 0 is modeled'), { code: isFlex ? 'U_LAYOUT_FLEX' : undefined });
                 return states;

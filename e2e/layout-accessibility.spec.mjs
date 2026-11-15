@@ -1752,3 +1752,19 @@ test('label-pointer: where W_A11Y_LABEL_POINTER warns, clicking the label in Chr
     expect(warned, `${css || 'no pointer-events'}: toggled ${toggled}`).toBe(!toggled);
   }
 });
+
+test('summary: Tab reaches it, and Chromium gives it a name exactly where E_A11Y_NAME is not reported', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff}.t{height:10px}.s{height:18px}summary{list-style:none}`;
+  for (const summary of ['<summary class="s" aria-label="Details"></summary>', '<summary class="s"></summary>']) {
+    const html = `<main class="p"><h1 class="t" aria-label="T"></h1><details class="d">${summary}<div class="c"></div></details></main>`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+    expect(report.status, report.diagnostics.map(d => d.message).join(' | ')).not.toBe('unknown');
+    const unnamed = report.diagnostics.some(d => d.code === 'E_A11Y_NAME' && d.box === '.s');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => document.activeElement.tagName)).toBe('SUMMARY');
+    const name = await page.evaluate(() => document.activeElement.getAttribute('aria-label') ?? document.activeElement.textContent.trim());
+    expect(unnamed, `${summary}: Chromium name "${name}"`).toBe(name === '');
+  }
+});

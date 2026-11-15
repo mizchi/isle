@@ -544,6 +544,9 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   };
   const defaults={...values};
   // Lists: UA margins and the start padding for markers; li defaults to display: list-item (unsupported).
+  // details is a block; summary a list item with an inside disclosure marker (Chromium's UA sheet, measured).
+  if (box.tag === 'details' && !box.pseudo) values.display = 'block';
+  if (box.tag === 'summary' && !box.pseudo) { values.display = 'list-item'; values['list-style-type'] = 'disclosure-closed'; values['list-style-position'] = 'inside'; }
   if(['ul', 'ol'].includes(box.tag)) { values['list-style-type'] = box.tag === 'ol' ? 'decimal' : 'disc'; values['margin-top']='ua'; values['margin-bottom']='ua'; values['padding-left']='ua'; }
   if(box.tag==='li') values.display='list-item';
   // dl margins and the dd indent (1em / 40px) stay UA until reset; marquee is inline-block.
