@@ -4,7 +4,37 @@ import postcss from 'postcss';
 export {simpleSelector} from './simple-selector.mjs';
 export const greaterRank = (a, b) => { for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] > b[i]; return true; };
 const combine = (a, b) => a.map((value, i) => value + b[i]);
+/** The parent element of a box (set by the tree builder; a symbol, so spread copies keep it and JSON skips it). */
+export const PARENT = Symbol('parent');
+// Split a complex selector at its top-level combinators: [{ combinator, text }], combinator joining it to the left.
+function splitComplex(source) {
+  const out = []; let depth = 0, current = '', pending = null, i = 0;
+  const push = () => { if (current.trim()) { out.push({ combinator: out.length ? (pending ?? ' ') : null, text: current.trim() }); current = ''; pending = null; } };
+  for (; i < source.length; i++) {
+    const c = source[i];
+    if (c === '(' || c === '[') depth++;
+    if (c === ')' || c === ']') depth--;
+    if (depth === 0 && (c === '>' || c === '+' || c === '~')) { if (!current.trim() && !out.length) throw new Error(`Unsupported selector: ${source}`); push(); if (pending) throw new Error(`Unsupported selector: ${source}`); pending = c; continue; }
+    if (depth === 0 && /\s/.test(c)) { push(); continue; }
+    current += c;
+  }
+  push();
+  if (pending) throw new Error(`Unsupported selector: ${source}`);
+  return out;
+}
 export function compileSelector(source, depth = 0) {
+  const compounds = splitComplex(String(source));
+  if (compounds.length <= 1) return compileCompound(source, depth);
+  // Combinators inside :is()/:where() are not modeled.
+  if (depth > 0) throw new Error(`Unsupported selector: ${source}`);
+  const compiled = compounds.map(c => ({ ...compileCompound(c.text, depth), combinator: c.combinator }));
+  for (const c of compiled.slice(0, -1)) if (c.state || c.pseudoElement) throw new Error(`Unsupported selector (a state or pseudo-element before a combinator): ${source}`);
+  const subject = compiled.at(-1);
+  // chain: from the compound left of the subject outward, each with the combinator that joins it to its right.
+  const chain = compiled.slice(0, -1).map((c, i) => ({ compound: c, combinator: compiled[i + 1].combinator })).reverse();
+  return { ...subject, source, specificity: compiled.reduce((a, c) => combine(a, c.specificity), [0, 0, 0]), chain, combinator: undefined };
+}
+function compileCompound(source, depth = 0) {
   if (depth > 8 || !source.trim()) throw new Error('Selector nesting limit or empty selector');
   let rest = source.trim(), specificity = [0, 0, 0], pseudoElement, state;
   const parts = [];
@@ -53,6 +83,24 @@ export function matches(selector, box, state) {
   const pseudo = [...(state ?? [])].find(s => s === '::before' || s === '::after' || s === '::placeholder');
   if (selector.pseudoElement ? `::${selector.pseudoElement}` !== pseudo : pseudo) return false;
   if (selector.state && !state?.has(selector.state)) return false;
+  return compoundMatches(selector, box) && (!selector.chain || related(selector.chain, 0, box));
+}
+const elementSiblings = box => (box[PARENT]?.children ?? []).filter(child => !child.anonymous && !child.pseudo);
+function related(chain, i, box) {
+  if (i >= chain.length) return true;
+  const { compound, combinator } = chain[i];
+  let candidates = [];
+  if (combinator === '>') candidates = box[PARENT] ? [box[PARENT]] : [];
+  else if (combinator === ' ') for (let p = box[PARENT]; p; p = p[PARENT]) candidates.push(p);
+  else {
+    const siblings = elementSiblings(box), at = siblings.findIndex(s => s === box || s.path === box.path);
+    const before = at > 0 ? siblings.slice(0, at) : [];
+    candidates = combinator === '+' ? before.slice(-1) : before.reverse();
+  }
+  return candidates.some(c => compoundMatches(compound, c) && related(chain, i + 1, c));
+}
+function compoundMatches(selector, box) {
+  if (box.anonymous) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
     part.kind === 'root' ? box.documentRoot === true : part.kind === 'path' ? box.path === part.value : part.choices.some(choice => matches(choice, box)));

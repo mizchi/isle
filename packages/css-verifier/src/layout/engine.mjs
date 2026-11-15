@@ -4,7 +4,7 @@ import { validateOptions } from './input.mjs';
 import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea } from './css.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place } from './grid.mjs';
-import { compileSelector } from './selectors.mjs';
+import { compileSelector, PARENT } from './selectors.mjs';
 import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
 import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
@@ -225,7 +225,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   const issue = (code, message, box, region, axis) => diagnostics.push({ code, severity: 'error', message, box: box.label, path: box.path, source: box.source, ...(axis ? { axis } : {}), ...ranges(region) });
   const subgridError = (message, box, region, axis) => Object.assign(new Error(message), { code: 'U_LAYOUT_SUBGRID', box, region, axis });
   const boxes = [];
-  const collect = box => { if (box) { boxes.push(box); box.children.forEach(collect); } };
+  // Parent links for combinator matching (a symbol: a structuredClone of the tree drops them, so set them here).
+  const collect = box => { if (box) { boxes.push(box); for (const child of [...box.children, ...(box.inline ?? [])]) child[PARENT] = box; box.children.forEach(collect); } };
   collect(root);
   // Contracts of generated boxes (selector::before / ::after) are applied when the pseudo-element is generated.
   const pseudoContracts = Object.entries(options.boxes ?? {}).flatMap(([selector, contract]) => { const m = /^(.*)::(before|after)$/.exec(selector); return m ? [{ base: m[1], kind: m[2], selector, contract }] : []; });
