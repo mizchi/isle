@@ -355,3 +355,20 @@ test('image distortion: the static fill-stretch warning holds exactly where Chro
     }
   }
 });
+
+test('position: fixed under a transformed ancestor scrolls with the page; the static check says Unknown (U_LAYOUT_FIXED_CONTAINED) exactly then', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const card of ['', 'transform:translateX(0px)', 'transform:scale(1)']) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.page{${g}}.card{${g};height:200px;${card}}.bar{position:fixed;left:0;bottom:0;width:100%;height:56px;background:#123}.tall{height:3000px}`;
+    const html = '<main class="page"><div class="card"><div class="bar"></div></div><div class="tall"></div></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+    const contained = report.diagnostics.some(d => d.code === 'U_LAYOUT_FIXED_CONTAINED');
+    await page.setViewportSize({width: 400, height: 600});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const top = y => page.evaluate(async y => { scrollTo(0, y); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); return [scrollY, document.querySelector('.bar').getBoundingClientRect().top]; }, y);
+    const [[y0, before], [y1, after]] = [await top(0), await top(500)];
+    expect(y1 - y0, 'the page scrolls').toBe(500);
+    expect(contained, `${card || 'no transform'}: bar top ${before} → ${after} after scrolling 500px`).toBe(after !== before);
+    if (!contained) expect(report.status).not.toBe('unknown');
+  }
+});

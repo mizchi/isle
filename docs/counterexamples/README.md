@@ -622,6 +622,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background
 
 </details>
 
+## A fixed bottom bar inside a transformed card
+
+`U_LAYOUT_FIXED_CONTAINED` — viewport 320 × 480px
+
+> .bar is position: fixed, but its ancestor .card has transform: affine(1 0 0 1 0 0 0 0 0 0 0 0 0 0), which makes it the containing block: .bar is placed against .card and scrolls with it, not with the viewport. Move it outside the transformed box (for example to the end of body), or drop the transform
+
+![fixed-contained](fixed-contained-before.png) ![fixed-contained](fixed-contained-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="card"><p class="t"></p><div class="bar"></div></div><div class="gap"></div></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.card{display:grid;grid-template-columns:minmax(0,1fr);height:240px;background:#eef;transform:translateX(0px)}.bar{position:fixed;left:0;bottom:0;width:100%;height:56px;background:rgba(36,68,102,.97)}.gap{height:2000px;background:repeating-linear-gradient(#fff 0 40px,#f3f3f3 40px 80px)}
+```
+
+</details>
+
 ## A fixed footer that covers the end of the page
 
 `E_A11Y_FIXED_HIDES` — viewport 672 × 690px

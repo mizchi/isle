@@ -1910,6 +1910,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                         // position: fixed: the viewport is the containing block, unless an ancestor transform (or a clip or
                         // scroll that would move it relative to the page) intervenes, which is not modeled.
                         if (item.style.$fixed) {
+                          // An ancestor transform makes that ancestor the containing block of fixed descendants (CSS Transforms 1
+                          // §2): the box is placed against it and scrolls with it instead of staying on the viewport.
+                          const trap = finalAncestors.findLast(ancestor => ancestor.style && ancestor.style.transform !== 'none' && ancestor.box);
+                          if (trap) throw Object.assign(new Error(`${item.box.label} is position: fixed, but its ancestor ${trap.box.label} has transform: ${trap.style.transform}, which makes it the containing block: ${item.box.label} is placed against ${trap.box.label} and scrolls with it, not with the viewport. Move it outside the transformed box (for example to the end of body), or drop the transform`), { code: 'U_LAYOUT_FIXED_CONTAINED', box: item.box, region: r, ancestor: trap.box.label, ancestorPath: trap.box.path, property: 'transform' });
                           if (finalAncestors.some(ancestor=>ancestor.clipped || ancestor.subgrid || (ancestor.style && (ancestor.style.transform !== 'none' || ['overflow-x','overflow-y'].some(key=>ancestor.style[key] !== 'visible'))))) throw Object.assign(new Error(`${item.box.label} is position: fixed inside a transformed, clipped or scrolling ancestor`), { code: 'U_LAYOUT_CSS' });
                           const viewport = { inline: width, block: height, origin: { inline: scalar(0), block: scalar(0) } };
                           return solve(item.box,{inline:viewport.inline,block:viewport.block,containingBlock:{path:'viewport',...viewport}},r,finalAncestors,item.inherited ?? style,emit).map(result=>result.region);
@@ -1932,6 +1936,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
     } catch (error) {
       if (error.code?.startsWith('E_LAYOUT_')) issue(error.code, error.message, error.box ?? box, error.region ?? region, error.axis);
+      else if (error.code === 'U_LAYOUT_FIXED_CONTAINED') diagnostics.push({ code: error.code, severity: 'unknown', message: error.message, box: error.box.label, path: error.box.path, source: error.box.source, ancestor: error.ancestor, ancestorPath: error.ancestorPath, property: error.property, ...ranges(error.region) });
       else if (error.code === 'U_LAYOUT_SUBGRID') diagnostics.push({ code: error.code, severity: 'unknown', message: error.message, box: error.box.label, path: error.box.path, source: error.box.source, axis: error.axis, ...ranges(error.region) });
       else unknown(error.code?.startsWith('U_LAYOUT_') ? error.code : 'U_LAYOUT_GEOMETRY', error.message, error.css?.line, error.box ?? box,error.css?.file);
     }

@@ -413,6 +413,20 @@
   "css": "body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:fixed;top:0;left:0;width:100%;height:60px;background:rgba(36,68,102,.97)}.gap{height:1010px}.tall{height:2000px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#c33}.b:focus{outline:3px solid #1a73e8}"
  },
  {
+  "id": "fixed-contained",
+  "title": "A fixed bottom bar inside a transformed card",
+  "code": "U_LAYOUT_FIXED_CONTAINED",
+  "width": 320,
+  "height": 480,
+  "message": ".bar is position: fixed, but its ancestor .card has transform: affine(1 0 0 1 0 0 0 0 0 0 0 0 0 0), which makes it the containing block: .bar is placed against .card and scrolls with it, not with the viewport. Move it outside the transformed box (for example to the end of body), or drop the transform",
+  "shots": [
+   "fixed-contained-before.png",
+   "fixed-contained-after.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"card\"><p class=\"t\"></p><div class=\"bar\"></div></div><div class=\"gap\"></div></main>",
+  "css": "body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.card{display:grid;grid-template-columns:minmax(0,1fr);height:240px;background:#eef;transform:translateX(0px)}.bar{position:fixed;left:0;bottom:0;width:100%;height:56px;background:rgba(36,68,102,.97)}.gap{height:2000px;background:repeating-linear-gradient(#fff 0 40px,#f3f3f3 40px 80px)}"
+ },
+ {
   "id": "fixed-hides",
   "title": "A fixed footer that covers the end of the page",
   "code": "E_A11Y_FIXED_HIDES",
