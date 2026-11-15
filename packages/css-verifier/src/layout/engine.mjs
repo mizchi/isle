@@ -1136,7 +1136,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           css: reasons.map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
           message: `${box.label}: ${reasons.map(([key, why]) => `${key}: ${style[key]} has no effect (${why})`).join('; ')}`, ...ranges(region) });
       }
-      geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, ...(/\dvw\b|\bvw\)/.test(String(style.$sources?.['inline-size']?.specified ?? '')) ? { vwInline: style.$sources['inline-size'].specified } : {}), ...(style.$imageRatio ? { imageRatio: style.$imageRatio } : {}), clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
+      geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, ...(/\dvw\b|\bvw\)/.test(String(style.$sources?.['inline-size']?.specified ?? '')) ? { vwInline: style.$sources['inline-size'].specified } : {}), ...(style['box-sizing'] === 'content-box' && /^100%$/.test(String(style.$sources?.['inline-size']?.specified ?? '').trim()) && ['left', 'right'].some(side => cmp(px(style[`padding-${side}`] === 'ua' ? '0' : style[`padding-${side}`]), zero) > 0 || cmp(px(style[`border-${side}`] === 'ua' ? '0' : style[`border-${side}`]), zero) > 0) ? { contentBoxFull: ['left', 'right'].flatMap(side => [`padding-${side}`, `border-${side}`]).filter(key => style[key] && !['0', '0px', 'ua'].includes(String(style[key]))) } : {}), ...(style.$imageRatio ? { imageRatio: style.$imageRatio } : {}), clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
         // overflow: clip clips without scrolling (hidden still scrolls a focused descendant into view).
         clipAxes: { inline: style['overflow-x'] === 'clip', block: style['overflow-y'] === 'clip' },
@@ -2345,6 +2345,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       layoutWarnings.push({ code: 'W_LAYOUT_IMAGE_DISTORTED', severity: 'warning', box: row.box.label, path: row.path, natural: `${w}/${h}`, basis: row.imageRatio.basis, stretched: way,
         message: `${row.box.label} is drawn ${iw}×${ih}px at viewport ${number(p.x)}px, but its picture is ${w}×${h} (${row.imageRatio.basis === 'file' ? 'the file' : 'its width/height attributes'}): object-fit: fill stretches it ${way}. Use object-fit: cover (or contain), or let one size be auto`, ...ranges(found) });
     }
+  }
+  // width: 100% under box-sizing: content-box is the content width: the padding and border come on top, so the box
+  // is wider than its container (the content-box pitfall, the default for most boxes and for text inputs).
+  if (hovered === undefined && !options.$animationFrame && !options.$slideVariant) for (const row of geometry.filter(row => row.contentBoxFull?.length)) {
+    const failed = diagnostics.find(d => d.code === 'E_LAYOUT_ITEM_SIZE' && d.path === row.path && d.axis === 'inline');
+    if (!failed || layoutWarnings.some(w => w.code === 'W_LAYOUT_CONTENT_BOX_FULL' && w.path === row.path)) continue;
+    layoutWarnings.push({ code: 'W_LAYOUT_CONTENT_BOX_FULL', severity: 'warning', box: row.box.label, path: row.path, properties: row.contentBoxFull,
+      message: `${row.box.label} is width: 100% with box-sizing: content-box, so its ${row.contentBoxFull.join(', ')} come on top of the container's width and it overflows. Use box-sizing: border-box (or width: auto in a grid or flex parent)`, range: failed.range, ...(failed.heightRange ? { heightRange: failed.heightRange } : {}) });
   }
   // A vw width is a share of the whole viewport, the classic scrollbar included: on a scrolling page it is wider
   // than the space beside the scrollbar (100vw → a horizontal scrollbar). Explains the inline E_LAYOUT_ITEM_SIZE.

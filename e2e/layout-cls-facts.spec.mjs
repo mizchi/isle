@@ -569,3 +569,16 @@ test('position: sticky with no inset scrolls away in Chromium exactly where the 
     expect(top < 0, `${h}: top ${top}`).toBe(warn);
   }
 });
+
+test('width: 100% under content-box: the box sticks out of its container in Chromium exactly where the static check warns', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [c, warn] of [['.f{width:100%;padding:0 12px}', true], ['.f{width:100%;border:2px solid #000}', true], ['.f{width:100%;padding:0 12px;box-sizing:border-box}', false], ['.f{padding:0 12px}', false]]) {
+    const css = `html,body,.page{${g}}body{margin:0}.f{height:20px}${c}`, html = '<main class="page"><div class="f"></div></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_CONTENT_BOX_FULL'), c).toBe(warn);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const out = await page.evaluate(() => document.querySelector('.f').getBoundingClientRect().right > document.querySelector('.page').getBoundingClientRect().right);
+    expect(out, `${c}: sticks out ${out}`).toBe(warn);
+  }
+});
