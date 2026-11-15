@@ -2848,6 +2848,226 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:
 
 </details>
 
+## A card link with display: contents: drawn, but Tab skips it
+
+`E_A11Y_CONTENTS_FOCUS` — viewport 672 × 690px
+
+> .l is a link with display: contents: its children draw it, but it has no box, so Tab skips it and the keyboard cannot use it. Give it a box (display: block, or grid/flex) and move the layout to it
+
+![contents-focus](contents-focus-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><a class="l" href="/item" aria-label="Item"><span class="card"></span></a></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.l{display:contents}.card{display:block;height:80px;background:#9cf}
+```
+
+</details>
+
+## An icon-only button whose icon is drawn in black on dark blue
+
+`E_A11Y_ICON_CONTRAST` — viewport 672 × 690px
+
+> .i is the only content of .b and is drawn in black at contrast 2.09:1 against its background, below the 3:1 for graphics (SC 1.4.11)
+
+![icon-contrast](icon-contrast-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b" type="button" aria-label="Close"><svg class="i" width="24" height="24" viewBox="0 0 24 24"><path d="M5 3l7 7 7-7 2 2-7 7 7 7-2 2-7-7-7 7-2-2 7-7-7-7z"/></svg></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:44px;background:#fff}.b{appearance:none;display:grid;grid-template-columns:24px;padding:10px;border:0;min-width:0;min-height:0;background:#246;color:#123}.i{display:block}
+```
+
+</details>
+
+## A srcset without sizes in a three-column grid downloads a full-width file
+
+`W_LAYOUT_SIZES_MISSING` — viewport 900 × 600px
+
+> .p has a srcset with width descriptors but no sizes attribute, so the browser assumes 100vw: at viewport 900px it is laid out 281.3333333333333px wide and downloads a file for 900px. Add sizes (for this layout, the width it takes at each breakpoint)
+
+![sizes-missing](sizes-missing-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><img class="p" src="/w400.png" srcset="/w400.png 400w, /w800.png 800w, /w1200.png 1200w" width="400" height="200" alt=""><div></div><div></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:12px}.p{display:block;width:100%;height:auto}
+```
+
+</details>
+
+## An image laid out wider than its widest file
+
+`W_LAYOUT_IMAGE_UPSCALED` — viewport 900 × 600px
+
+> .p is laid out 868px wide at viewport 900px, but its largest srcset candidate is 400w: the browser upscales it, so it looks blurry even at 1x. Cap it (max-width: 400px) or add a wider file
+
+![image-upscaled](image-upscaled-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><img class="p" src="/w200.png" srcset="/w200.png 200w, /w400.png 400w" width="400" height="200" alt=""></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:block;width:100%;height:auto}
+```
+
+</details>
+
+## A picture source after a broader one is never used
+
+`W_LAYOUT_SOURCE_SHADOWED` — markup rule (nothing to see on screen)
+
+> <source media="(min-width: 900px)"> (source 2) of .p's picture is never used: wherever it matches, an earlier source ((min-width: 600px)) matches too, and the first match wins. Order the sources from the most specific media to the least
+
+![source-shadowed](source-shadowed-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><picture class="pic"><source media="(min-width: 600px)" srcset="/w800.png" width="400" height="200"><source media="(min-width: 900px)" srcset="/w1200.png" width="400" height="200"><img class="p" src="/w400.png" width="400" height="200" alt=""></picture></main>
+```
+
+```css
+.page,.pic{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:block;width:100%;height:auto}
+```
+
+</details>
+
+## An iframe with width: 100% stays 150px tall
+
+`W_LAYOUT_EMBED_NO_RATIO` — viewport 320 × 480px
+
+> .v sets its width (100%) but not its height: an iframe has no aspect ratio of its own, so it stays 150px tall at every width and the embedded page (a video, a map) is cut or letterboxed. Add aspect-ratio (e.g. 16 / 9) or a height
+
+![embed-no-ratio](embed-no-ratio-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><iframe class="v" src="about:blank" title="Video"></iframe></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.v{display:block;width:100%;border:0;background:#246}
+```
+
+</details>
+
+## An svg icon with only a viewBox fills its container
+
+`W_LAYOUT_SVG_UNSIZED` — viewport 320 × 480px
+
+> .i is an svg with a viewBox but no width or height (attribute or CSS): it fills its container's width, so an icon grows with the layout. Give it a width and height (e.g. width="24" height="24")
+
+![svg-unsized](svg-unsized-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#c33"/></svg></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block}
+```
+
+</details>
+
+## container-type: inline-size on a flex item with no width collapses it
+
+`W_LAYOUT_CONTAINER_COLLAPSE` — viewport 320 × 480px
+
+> .card is container-type: inline-size with no width in a flex row: size containment ignores its content, so it is only as wide as its padding and border and its content overflows. Give it a width (or flex: 1, or a flex-basis)
+
+![container-collapse](container-collapse-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="card"><div class="k"></div></div><div class="o"></div></main>
+```
+
+```css
+.page{display:flex;column-gap:12px}.card{display:grid;grid-template-columns:minmax(0,1fr);container-type:inline-size;padding:0 6px;background:#eee}.k{height:40px;background:#9cf}.o{width:120px;height:40px;background:#246}
+```
+
+</details>
+
+## grid-area: sidebar where the template names it aside
+
+`W_LAYOUT_GRID_AREA_UNKNOWN` — markup rule (nothing to see on screen)
+
+> .s is placed in the grid area sidebar, but .page's grid-template-areas defines only head, aside, main: the browser puts it on new implicit tracks after the explicit grid
+
+![grid-area-unknown](grid-area-unknown-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><header class="h"></header><aside class="s"></aside><div class="m"></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:160px minmax(0,1fr);grid-template-areas:"head head" "aside main";grid-auto-rows:40px;gap:8px}.h{grid-area:head;background:#246}.s{grid-area:sidebar;background:#c33}.m{grid-area:main;background:#9cf}
+```
+
+</details>
+
+## A container query with no container: its rule never applies
+
+`W_CSS_CONTAINER_QUERY_NEVER` — markup rule (nothing to see on screen)
+
+> @container card (min-width: 400px) never matches: no ancestor of .c has container-name: card, so its rules never apply (give an ancestor container-type: inline-size and container-name: card)
+
+![container-query-never](container-query-never-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="w"><div class="c"></div></div></main>
+```
+
+```css
+.page,.w{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:40px;background:#9cf}@container card (min-width: 400px){.c{height:80px;background:#c33}}
+```
+
+</details>
+
+## repeat(auto-fill, minmax(360px, 1fr)) overflows a phone
+
+`E_LAYOUT_TRACKS` — viewport 356 × 690px
+
+> .cards requires 360px but receives 324px on inline axis at viewport 356px × 690px
+
+![autofill-overflow](autofill-overflow-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="cards"><div class="c"></div><div class="c"></div></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}.c{height:60px;background:#9cf}
+```
+
+</details>
+
 ## A badge that sticks out of its card
 
 `E_LAYOUT_PROTRUSION` — viewport 672 × 690px

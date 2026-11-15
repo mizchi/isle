@@ -1871,6 +1871,149 @@
   "css": "body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:200px;background:#eee}.bar{position:fixed;left:0;bottom:0;width:100%;height:56px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:8px;padding:4px 8px 0;background:#246}.l{display:block;height:48px;background:#9cf}"
  },
  {
+  "id": "contents-focus",
+  "title": "A card link with display: contents: drawn, but Tab skips it",
+  "code": "E_A11Y_CONTENTS_FOCUS",
+  "width": 672,
+  "height": 690,
+  "message": ".l is a link with display: contents: its children draw it, but it has no box, so Tab skips it and the keyboard cannot use it. Give it a box (display: block, or grid/flex) and move the layout to it",
+  "shots": [
+   "contents-focus-violation.png"
+  ],
+  "html": "<main class=\"page\"><a class=\"l\" href=\"/item\" aria-label=\"Item\"><span class=\"card\"></span></a></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.l{display:contents}.card{display:block;height:80px;background:#9cf}"
+ },
+ {
+  "id": "icon-contrast",
+  "title": "An icon-only button whose icon is drawn in black on dark blue",
+  "code": "E_A11Y_ICON_CONTRAST",
+  "width": 672,
+  "height": 690,
+  "message": ".i is the only content of .b and is drawn in black at contrast 2.09:1 against its background, below the 3:1 for graphics (SC 1.4.11)",
+  "shots": [
+   "icon-contrast-violation.png"
+  ],
+  "html": "<main class=\"page\"><button class=\"b\" type=\"button\" aria-label=\"Close\"><svg class=\"i\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path d=\"M5 3l7 7 7-7 2 2-7 7 7 7-2 2-7-7-7 7-2-2 7-7-7-7z\"/></svg></button></main>",
+  "css": ".page{display:grid;grid-template-columns:44px;background:#fff}.b{appearance:none;display:grid;grid-template-columns:24px;padding:10px;border:0;min-width:0;min-height:0;background:#246;color:#123}.i{display:block}"
+ },
+ {
+  "id": "sizes-missing",
+  "title": "A srcset without sizes in a three-column grid downloads a full-width file",
+  "code": "W_LAYOUT_SIZES_MISSING",
+  "width": 900,
+  "height": 600,
+  "message": ".p has a srcset with width descriptors but no sizes attribute, so the browser assumes 100vw: at viewport 900px it is laid out 281.3333333333333px wide and downloads a file for 900px. Add sizes (for this layout, the width it takes at each breakpoint)",
+  "shots": [
+   "sizes-missing-violation.png"
+  ],
+  "html": "<main class=\"page\"><img class=\"p\" src=\"/w400.png\" srcset=\"/w400.png 400w, /w800.png 800w, /w1200.png 1200w\" width=\"400\" height=\"200\" alt=\"\"><div></div><div></div></main>",
+  "css": ".page{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:12px}.p{display:block;width:100%;height:auto}"
+ },
+ {
+  "id": "image-upscaled",
+  "title": "An image laid out wider than its widest file",
+  "code": "W_LAYOUT_IMAGE_UPSCALED",
+  "width": 900,
+  "height": 600,
+  "message": ".p is laid out 868px wide at viewport 900px, but its largest srcset candidate is 400w: the browser upscales it, so it looks blurry even at 1x. Cap it (max-width: 400px) or add a wider file",
+  "shots": [
+   "image-upscaled-violation.png"
+  ],
+  "html": "<main class=\"page\"><img class=\"p\" src=\"/w200.png\" srcset=\"/w200.png 200w, /w400.png 400w\" width=\"400\" height=\"200\" alt=\"\"></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:block;width:100%;height:auto}"
+ },
+ {
+  "id": "source-shadowed",
+  "title": "A picture source after a broader one is never used",
+  "code": "W_LAYOUT_SOURCE_SHADOWED",
+  "width": 0,
+  "height": 0,
+  "message": "<source media=\"(min-width: 900px)\"> (source 2) of .p's picture is never used: wherever it matches, an earlier source ((min-width: 600px)) matches too, and the first match wins. Order the sources from the most specific media to the least",
+  "shots": [
+   "source-shadowed-markup.png"
+  ],
+  "html": "<main class=\"page\"><picture class=\"pic\"><source media=\"(min-width: 600px)\" srcset=\"/w800.png\" width=\"400\" height=\"200\"><source media=\"(min-width: 900px)\" srcset=\"/w1200.png\" width=\"400\" height=\"200\"><img class=\"p\" src=\"/w400.png\" width=\"400\" height=\"200\" alt=\"\"></picture></main>",
+  "css": ".page,.pic{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:block;width:100%;height:auto}"
+ },
+ {
+  "id": "embed-no-ratio",
+  "title": "An iframe with width: 100% stays 150px tall",
+  "code": "W_LAYOUT_EMBED_NO_RATIO",
+  "width": 320,
+  "height": 480,
+  "message": ".v sets its width (100%) but not its height: an iframe has no aspect ratio of its own, so it stays 150px tall at every width and the embedded page (a video, a map) is cut or letterboxed. Add aspect-ratio (e.g. 16 / 9) or a height",
+  "shots": [
+   "embed-no-ratio-violation.png"
+  ],
+  "html": "<main class=\"page\"><iframe class=\"v\" src=\"about:blank\" title=\"Video\"></iframe></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.v{display:block;width:100%;border:0;background:#246}"
+ },
+ {
+  "id": "svg-unsized",
+  "title": "An svg icon with only a viewBox fills its container",
+  "code": "W_LAYOUT_SVG_UNSIZED",
+  "width": 320,
+  "height": 480,
+  "message": ".i is an svg with a viewBox but no width or height (attribute or CSS): it fills its container's width, so an icon grows with the layout. Give it a width and height (e.g. width=\"24\" height=\"24\")",
+  "shots": [
+   "svg-unsized-violation.png"
+  ],
+  "html": "<main class=\"page\"><svg class=\"i\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#c33\"/></svg></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block}"
+ },
+ {
+  "id": "container-collapse",
+  "title": "container-type: inline-size on a flex item with no width collapses it",
+  "code": "W_LAYOUT_CONTAINER_COLLAPSE",
+  "width": 320,
+  "height": 480,
+  "message": ".card is container-type: inline-size with no width in a flex row: size containment ignores its content, so it is only as wide as its padding and border and its content overflows. Give it a width (or flex: 1, or a flex-basis)",
+  "shots": [
+   "container-collapse-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"card\"><div class=\"k\"></div></div><div class=\"o\"></div></main>",
+  "css": ".page{display:flex;column-gap:12px}.card{display:grid;grid-template-columns:minmax(0,1fr);container-type:inline-size;padding:0 6px;background:#eee}.k{height:40px;background:#9cf}.o{width:120px;height:40px;background:#246}"
+ },
+ {
+  "id": "grid-area-unknown",
+  "title": "grid-area: sidebar where the template names it aside",
+  "code": "W_LAYOUT_GRID_AREA_UNKNOWN",
+  "width": 0,
+  "height": 0,
+  "message": ".s is placed in the grid area sidebar, but .page's grid-template-areas defines only head, aside, main: the browser puts it on new implicit tracks after the explicit grid",
+  "shots": [
+   "grid-area-unknown-markup.png"
+  ],
+  "html": "<main class=\"page\"><header class=\"h\"></header><aside class=\"s\"></aside><div class=\"m\"></div></main>",
+  "css": ".page{display:grid;grid-template-columns:160px minmax(0,1fr);grid-template-areas:\"head head\" \"aside main\";grid-auto-rows:40px;gap:8px}.h{grid-area:head;background:#246}.s{grid-area:sidebar;background:#c33}.m{grid-area:main;background:#9cf}"
+ },
+ {
+  "id": "container-query-never",
+  "title": "A container query with no container: its rule never applies",
+  "code": "W_CSS_CONTAINER_QUERY_NEVER",
+  "width": 0,
+  "height": 0,
+  "message": "@container card (min-width: 400px) never matches: no ancestor of .c has container-name: card, so its rules never apply (give an ancestor container-type: inline-size and container-name: card)",
+  "shots": [
+   "container-query-never-markup.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"w\"><div class=\"c\"></div></div></main>",
+  "css": ".page,.w{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:40px;background:#9cf}@container card (min-width: 400px){.c{height:80px;background:#c33}}"
+ },
+ {
+  "id": "autofill-overflow",
+  "title": "repeat(auto-fill, minmax(360px, 1fr)) overflows a phone",
+  "code": "E_LAYOUT_TRACKS",
+  "width": 356,
+  "height": 690,
+  "message": ".cards requires 360px but receives 324px on inline axis at viewport 356px × 690px",
+  "shots": [
+   "autofill-overflow-violation.png"
+  ],
+  "html": "<main class=\"page\"><div class=\"cards\"><div class=\"c\"></div><div class=\"c\"></div></div></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}.c{height:60px;background:#9cf}"
+ },
+ {
   "id": "protrusion",
   "title": "A badge that sticks out of its card",
   "code": "E_LAYOUT_PROTRUSION",
