@@ -1928,6 +1928,166 @@ body{touch-action:pan-x pan-y}.page{display:grid;grid-template-columns:minmax(0,
 
 </details>
 
+## A main landmark nested in an aside
+
+`W_A11Y_LANDMARK_TOP_LEVEL` — markup rule (nothing to see on screen)
+
+> .m (main) is inside .a; keep it at the top level
+
+![landmark-top-level](landmark-top-level-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<body><aside class="a"><main class="m"><div class="x"></div></main></aside></body>
+```
+
+```css
+.a{display:grid;grid-template-columns:minmax(0,1fr)}.m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}
+```
+
+</details>
+
+## Two banner landmarks
+
+`W_A11Y_DUPLICATE_LANDMARK` — markup rule (nothing to see on screen)
+
+> .h2 is a second banner landmark
+
+![duplicate-landmark](duplicate-landmark-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<body><header class="h1"><div class="x"></div></header><header class="h2"><div class="x"></div></header><main class="m"><div class="x"></div></main></body>
+```
+
+```css
+.h1,.h2,.m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}
+```
+
+</details>
+
+## A page with no h1
+
+`W_A11Y_PAGE_H1` — markup rule (nothing to see on screen)
+
+> no h1 renders here
+
+![page-h1](page-h1-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<body><main class="m"><div class="x"></div></main></body>
+```
+
+```css
+.m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}
+```
+
+</details>
+
+## A page with no main landmark
+
+`W_A11Y_NO_MAIN` — markup rule (nothing to see on screen)
+
+> no main landmark renders here
+
+![no-main](no-main-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<body><div class="m"><div class="x"></div></div></body>
+```
+
+```css
+.m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}
+```
+
+</details>
+
+## Two links with the same name to different pages
+
+`W_A11Y_LINK_PURPOSE` — markup rule (nothing to see on screen)
+
+> .b and .a are both named "details" but go to different places
+
+![link-purpose](link-purpose-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><a class="a" href="/plans/basic" aria-label="Details"></a><a class="b" href="/plans/pro" aria-label="Details"></a></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px;row-gap:6px}.a,.b{display:block;height:44px;background:#246}
+```
+
+</details>
+
+## A button named only by CSS generated text
+
+`W_A11Y_GENERATED_NAME` — markup rule (nothing to see on screen)
+
+> .b is named only by CSS generated content ("Next")
+
+![generated-name](generated-name-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><button class="b"></button></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:120px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;width:120px;height:44px;background:#246;color:#fff;font-family:Roboto;font-size:16px;line-height:24px}.b::before{content:"Next"}
+```
+
+</details>
+
+## A server-side image map
+
+`W_A11Y_ISMAP` — markup rule (nothing to see on screen)
+
+> .p is a server-side image map (ismap); its regions cannot be reached by keyboard
+
+![ismap](ismap-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><a class="l" href="/map"><img class="p" src="/wide.png" width="320" height="160" alt="Store map" ismap></a></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.l{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:block;width:100%;height:auto}
+```
+
+</details>
+
+## aria-hidden on body
+
+`W_A11Y_ARIA_HIDDEN_BODY` — markup rule (nothing to see on screen)
+
+> body@P/0 has aria-hidden="true"; Chromium ignores it, but user agents that honor it hide the whole document
+
+![aria-hidden-body](aria-hidden-body-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<body aria-hidden="true"><main class="m"><div class="x"></div></main></body>
+```
+
+```css
+.m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}
+```
+
+</details>
+
 ## A badge that sticks out of its card
 
 `E_LAYOUT_PROTRUSION` — viewport 672 × 690px

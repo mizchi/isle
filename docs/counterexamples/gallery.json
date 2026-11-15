@@ -1262,6 +1262,110 @@
   "css": ".page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p,.q{display:block;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}.p{font-weight:700}"
  },
  {
+  "id": "landmark-top-level",
+  "title": "A main landmark nested in an aside",
+  "code": "W_A11Y_LANDMARK_TOP_LEVEL",
+  "width": 0,
+  "height": 0,
+  "message": ".m (main) is inside .a; keep it at the top level",
+  "shots": [
+   "landmark-top-level-markup.png"
+  ],
+  "html": "<body><aside class=\"a\"><main class=\"m\"><div class=\"x\"></div></main></aside></body>",
+  "css": ".a{display:grid;grid-template-columns:minmax(0,1fr)}.m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
+ },
+ {
+  "id": "duplicate-landmark",
+  "title": "Two banner landmarks",
+  "code": "W_A11Y_DUPLICATE_LANDMARK",
+  "width": 0,
+  "height": 0,
+  "message": ".h2 is a second banner landmark",
+  "shots": [
+   "duplicate-landmark-markup.png"
+  ],
+  "html": "<body><header class=\"h1\"><div class=\"x\"></div></header><header class=\"h2\"><div class=\"x\"></div></header><main class=\"m\"><div class=\"x\"></div></main></body>",
+  "css": ".h1,.h2,.m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
+ },
+ {
+  "id": "page-h1",
+  "title": "A page with no h1",
+  "code": "W_A11Y_PAGE_H1",
+  "width": 0,
+  "height": 0,
+  "message": "no h1 renders here",
+  "shots": [
+   "page-h1-markup.png"
+  ],
+  "html": "<body><main class=\"m\"><div class=\"x\"></div></main></body>",
+  "css": ".m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
+ },
+ {
+  "id": "no-main",
+  "title": "A page with no main landmark",
+  "code": "W_A11Y_NO_MAIN",
+  "width": 0,
+  "height": 0,
+  "message": "no main landmark renders here",
+  "shots": [
+   "no-main-markup.png"
+  ],
+  "html": "<body><div class=\"m\"><div class=\"x\"></div></div></body>",
+  "css": ".m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
+ },
+ {
+  "id": "link-purpose",
+  "title": "Two links with the same name to different pages",
+  "code": "W_A11Y_LINK_PURPOSE",
+  "width": 0,
+  "height": 0,
+  "message": ".b and .a are both named \"details\" but go to different places",
+  "shots": [
+   "link-purpose-markup.png"
+  ],
+  "html": "<main class=\"page\"><a class=\"a\" href=\"/plans/basic\" aria-label=\"Details\"></a><a class=\"b\" href=\"/plans/pro\" aria-label=\"Details\"></a></main>",
+  "css": ".page{display:grid;grid-template-columns:120px;row-gap:6px}.a,.b{display:block;height:44px;background:#246}"
+ },
+ {
+  "id": "generated-name",
+  "title": "A button named only by CSS generated text",
+  "code": "W_A11Y_GENERATED_NAME",
+  "width": 0,
+  "height": 0,
+  "message": ".b is named only by CSS generated content (\"Next\")",
+  "shots": [
+   "generated-name-markup.png"
+  ],
+  "html": "<main class=\"page\"><button class=\"b\"></button></main>",
+  "css": ".page{display:grid;grid-template-columns:120px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;width:120px;height:44px;background:#246;color:#fff;font-family:Roboto;font-size:16px;line-height:24px}.b::before{content:\"Next\"}"
+ },
+ {
+  "id": "ismap",
+  "title": "A server-side image map",
+  "code": "W_A11Y_ISMAP",
+  "width": 0,
+  "height": 0,
+  "message": ".p is a server-side image map (ismap); its regions cannot be reached by keyboard",
+  "shots": [
+   "ismap-markup.png"
+  ],
+  "html": "<main class=\"page\"><a class=\"l\" href=\"/map\"><img class=\"p\" src=\"/wide.png\" width=\"320\" height=\"160\" alt=\"Store map\" ismap></a></main>",
+  "css": ".page{display:grid;grid-template-columns:minmax(0,1fr)}.l{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:block;width:100%;height:auto}"
+ },
+ {
+  "id": "aria-hidden-body",
+  "title": "aria-hidden on body",
+  "code": "W_A11Y_ARIA_HIDDEN_BODY",
+  "width": 0,
+  "height": 0,
+  "message": "body@P/0 has aria-hidden=\"true\"; Chromium ignores it, but user agents that honor it hide the whole document",
+  "shots": [
+   "aria-hidden-body-markup.png"
+  ],
+  "html": "<body aria-hidden=\"true\"><main class=\"m\"><div class=\"x\"></div></main></body>",
+  "css": ".m{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}"
+ },
+ {
   "id": "protrusion",
   "title": "A badge that sticks out of its card",
   "code": "E_LAYOUT_PROTRUSION",
