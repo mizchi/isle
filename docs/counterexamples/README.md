@@ -602,6 +602,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);overflow:h
 
 </details>
 
+## An appearance: none select with no arrow
+
+`W_A11Y_SELECT_INDICATOR` — viewport 672 × 690px
+
+> .s is appearance: none and nothing draws its arrow: it does not look like a dropdown. Draw an arrow (a background-image, or a ::after on its wrapper)
+
+![select-indicator](select-indicator-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><select class="s" aria-label="Size"></select><input class="f" type="text" aria-label="Name"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:240px;row-gap:12px;background:#fff;color:#111}.s,.f{appearance:none;display:block;width:240px;height:40px;padding:0;border:1px solid #767676;border-radius:4px;min-width:0;min-height:0;background-color:#fff}
+```
+
+</details>
+
 ## A visually hidden skip link that :focus does not reveal
 
 `E_A11Y_FOCUS_CLIPPED_AWAY` — viewport 672 × 690px

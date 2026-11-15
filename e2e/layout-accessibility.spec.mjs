@@ -1448,3 +1448,21 @@ test('hidden-control: where the static rule fires, the label toggles the field b
     expect(fired).toBe(expected);
   }
 });
+
+test('select-indicator: where the static rule warns, Chromium draws nothing at the select end; with an arrow it does', async ({page}) => {
+  const arrow = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8"><path d="M0 0h12L6 8z" fill="#000"/></svg>')}")`;
+  const base = '*{box-sizing:border-box;margin:0}body{margin:0}.page{display:grid;grid-template-columns:200px;padding:8px;background:#fff;color:#000}.w{position:relative;display:grid;grid-template-columns:minmax(0,1fr)}.s{appearance:none;display:block;width:200px;height:32px;padding:0 0 0 8px;border:1px solid #888;min-width:0;min-height:0;background-color:#fff;color:#000;font:14px sans-serif}';
+  const cases = [['', true], [`.s{background-image:${arrow};background-repeat:no-repeat;background-position:right 8px center}`, false], ['.w::after{content:"";pointer-events:none;position:absolute;right:10px;top:12px;width:8px;height:8px;background:#000}', false]];
+  for (const [extra, warn] of cases) {
+    const css = base + extra, html = '<main class="page"><div class="w"><select class="s" aria-label="Size"></select></div></main>';
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+    // A background-image behind a field keeps its contrast checks Unknown (not modeled); the warning is judged anyway.
+    if (!extra.includes('background-image')) expect(report.status, report.diagnostics.map(d => d.message).join(' | ')).not.toBe('unknown');
+    expect(report.accessibility.warnings.some(w => w.code === 'W_A11Y_SELECT_INDICATOR'), extra || 'bare').toBe(warn);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const r = await page.evaluate(() => { const b = document.querySelector('.s').getBoundingClientRect(); return {x: b.right - 30, y: b.top + 4, width: 28, height: b.height - 8}; });
+    const dark = await page.evaluate(async data => { const i = new Image(); i.src = `data:image/png;base64,${data}`; await i.decode(); const c = document.createElement('canvas'); c.width = i.width; c.height = i.height; const g = c.getContext('2d'); g.drawImage(i, 0, 0); const d = g.getImageData(0, 0, i.width, i.height).data; let n = 0; for (let k = 0; k < d.length; k += 4) if (d[k] + d[k + 1] + d[k + 2] < 300) n++; return n; }, (await page.screenshot({clip: r})).toString('base64'));
+    expect(dark > 0, `${extra || 'bare'}: ${dark} dark pixels at the select end`).toBe(!warn);
+  }
+});

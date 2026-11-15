@@ -99,13 +99,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['hidden-control', 'focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['select-indicator', 'hidden-control', 'focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -849,6 +849,17 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
       if (at && !findings.some(f => f.code === 'E_A11Y_CONTROL_HIDDEN' && f.path === box.path))
         report(findings, 'E_A11Y_CONTROL_HIDDEN', 'error', `${box.label} is ${geometry.some(row => row.path === box.path) ? 'visibility: hidden' : 'display: none'} but its label ${label.label} is shown: a pointer toggles it through the label, the keyboard and screen readers cannot reach it. Hide it visually instead (opacity: 0 or a clip, keeping it focusable) and draw the focus on the label`, { box, path: box.path }, at, { rule: 'hidden-control', label: label.path });
     }
+  }
+  // select-indicator: a dropdown select with appearance: none loses the UA arrow; with no background-image on it and
+  // nothing drawn beside it by its parent (a ::before/::after, an absolutely placed icon or an img sibling), nothing
+  // tells a sighted user it opens a list (a cue, not a WCAG failure: a warning). Modeled selects are always
+  // appearance: none, and multiple/size selects (list boxes, no arrow) stay Unknown at the adapter.
+  for (const row of geometry.filter(row => row.box.tag === 'select' && !row.box.pseudo && visible(row) && !hiddenFrom(row.path))) {
+    if (row.paint.backgroundImage !== 'none' || warnings.some(w => w.code === 'W_A11Y_SELECT_INDICATOR' && w.path === row.path)) continue;
+    const parent = row.path.slice(0, row.path.lastIndexOf('/'));
+    const drawn = everything.some(other => other.path !== row.path && other.path.slice(0, other.path.lastIndexOf('/')) === parent && visible(other) && intersect(other.region, row.region)
+      && (other.box.pseudo || other.containingPath !== undefined || ['img', 'svg'].includes(other.box.tag)));
+    if (!drawn) report(warnings, 'W_A11Y_SELECT_INDICATOR', 'warning', `${row.box.label} is appearance: none and nothing draws its arrow: it does not look like a dropdown. Draw an arrow (a background-image, or a ::after on its wrapper)`, row, row.region, { rule: 'select-indicator' });
   }
   // label-for: the id must name a labelable element (button, input other than hidden, select, textarea, output).
   const labelable = box => box && (['button', 'select', 'textarea', 'output'].includes(box.tag) || (box.tag === 'input' && box.inputType !== 'hidden'));

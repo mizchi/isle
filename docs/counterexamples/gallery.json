@@ -400,6 +400,19 @@
   "css": ".page{display:grid;grid-template-columns:220px;row-gap:12px;background:#fff;color:#111}.f{display:none}.l{display:grid;grid-template-columns:24px minmax(0,1fr);column-gap:8px}.box{display:block;height:24px;border:2px solid #246;border-radius:4px}.t{display:block;font-family:Roboto;font-size:16px;line-height:24px}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;background:#246}.b:focus{outline:3px solid #e8710a;outline-offset:2px}"
  },
  {
+  "id": "select-indicator",
+  "title": "An appearance: none select with no arrow",
+  "code": "W_A11Y_SELECT_INDICATOR",
+  "width": 672,
+  "height": 690,
+  "message": ".s is appearance: none and nothing draws its arrow: it does not look like a dropdown. Draw an arrow (a background-image, or a ::after on its wrapper)",
+  "shots": [
+   "select-indicator-violation.png"
+  ],
+  "html": "<main class=\"page\"><select class=\"s\" aria-label=\"Size\"></select><input class=\"f\" type=\"text\" aria-label=\"Name\"></main>",
+  "css": ".page{display:grid;grid-template-columns:240px;row-gap:12px;background:#fff;color:#111}.s,.f{appearance:none;display:block;width:240px;height:40px;padding:0;border:1px solid #767676;border-radius:4px;min-width:0;min-height:0;background-color:#fff}"
+ },
+ {
   "id": "focus-clipped-away",
   "title": "A visually hidden skip link that :focus does not reveal",
   "code": "E_A11Y_FOCUS_CLIPPED_AWAY",
