@@ -968,6 +968,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (style.$fixed && cover && options.safeArea?.bottom > 0 && ['0', '0px'].includes(style.bottom) && (box.children ?? []).length && cmp(px(style['padding-bottom']), q(String(options.safeArea.bottom))) < 0 && !layoutWarnings.some(w => w.code === 'W_LAYOUT_SAFE_AREA' && w.path === box.path))
         layoutWarnings.push({ code: 'W_LAYOUT_SAFE_AREA', severity: 'warning', box: box.label, path: box.path, inset: options.safeArea.bottom,
           message: `${box.label} is fixed to the bottom edge of a viewport-fit=cover page, but its bottom padding (${style['padding-bottom']}) is less than the ${options.safeArea.bottom}px safe area: its content sits under the home indicator. Use padding-bottom: max(…, env(safe-area-inset-bottom))`, ...ranges(region) });
+      // iOS Safari zooms the page in when a field under 16px text takes focus (unless the page forbids zooming, which
+      // meta-viewport reports): the layout jumps on every tap into the field.
+      if (!box.pseudo && (['select', 'textarea'].includes(box.tag) || (box.tag === 'input' && !['hidden', 'checkbox', 'radio', 'button', 'submit', 'reset', 'image', 'range', 'color', 'file'].includes(box.inputType ?? 'text')))
+        && /^\d+(?:\.\d+)?px$/.test(style['font-size']) && Number.parseFloat(style['font-size']) < 16 && !/maximum-scale\s*=\s*1(?:\.0+)?\b|user-scalable\s*=\s*(?:no|0)/i.test(String(root.metaViewport ?? '')) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_INPUT_ZOOM' && w.path === box.path))
+        layoutWarnings.push({ code: 'W_LAYOUT_INPUT_ZOOM', severity: 'warning', box: box.label, path: box.path, fontSize: style['font-size'],
+          message: `${box.label} has ${style['font-size']} text: iOS Safari zooms the page in when a field under 16px takes focus. Use font-size: 16px (or more) for fields`, ...ranges(region) });
+      // A height in vh is the large viewport on mobile browsers (toolbars hidden): while the toolbar shows, the bottom
+      // of the box is under it. svh / dvh follow the visible viewport.
+      if (!box.pseudo && /(^|[^sld])\bvh\b|\d(?:vh|vmin|vmax)\b/.test(String(style['block-size']).replace(/[sld]v(?:h|min|max)/g, '')) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_VH_TOOLBAR' && w.path === box.path))
+        layoutWarnings.push({ code: 'W_LAYOUT_VH_TOOLBAR', severity: 'warning', box: box.label, path: box.path, value: style['block-size'],
+          message: `${box.label} is ${style['block-size']} tall: on mobile browsers vh is the viewport with the toolbars hidden, so its bottom is under the toolbar until the page scrolls. Use svh (or dvh) for a box that must fit the visible screen`, ...ranges(region) });
       // Font swap: text in a web font (an @font-face family first in font-family) whose box takes its height from the
       // text is laid out with a fallback font until the file arrives, then again with the web font; unless the font is
       // optional (never swapped in late) the text's lines can change and move what follows (a layout shift).

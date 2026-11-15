@@ -99,3 +99,16 @@ test('text-overflow: ellipsis is intended one-line truncation (W_LAYOUT_TRUNCATE
   assert.equal(run('.t{text-overflow:ellipsis;white-space:normal}').diagnostics[0]?.code, 'E_LAYOUT_CONTENT');
   assert.equal(run('.t{text-overflow:fade}').status, 'unknown');
 });
+
+test('mobile: fields under 16px (iOS focus zoom) and vh heights under the toolbar', () => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const run = (css, meta = '') => analyzeHTML(`<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width${meta}"><title>T</title></head><body><main class="page"><div class="h"></div><input class="i" type="text" aria-label="Search"></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}.h{height:40px}.i{appearance:none;display:block;padding:0;min-width:0;min-height:0;width:200px;height:30px;border:1px solid #000;background:#fff;font-size:16px}${css}`, viewport: {min: 320, max: 800, height: {min: 400, max: 900}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+  const codes = (css, meta) => (run(css, meta).layoutWarnings ?? []).map(w => w.code);
+  assert.deepEqual(codes('.i{font-size:14px}'), ['W_LAYOUT_INPUT_ZOOM']);
+  assert.deepEqual(codes('.i{font-size:16px}'), []);
+  assert.deepEqual(codes('.i{font-size:14px}', ', maximum-scale=1'), []); // zoom is disabled (meta-viewport reports that)
+  assert.deepEqual(codes('.h{height:100vh}'), ['W_LAYOUT_VH_TOOLBAR']);
+  assert.deepEqual(codes('.h{height:calc(100vh - 60px)}'), ['W_LAYOUT_VH_TOOLBAR']);
+  for (const css of ['.h{height:100svh}', '.h{height:calc(100dvh - 60px)}', '.h{height:50vw}']) assert.deepEqual(codes(css), [], css);
+});

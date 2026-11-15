@@ -942,6 +942,46 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background
 
 </details>
 
+## A 14px field that iOS zooms into on focus
+
+`W_LAYOUT_INPUT_ZOOM` — markup rule (nothing to see on screen)
+
+> .i has 14px text: iOS Safari zooms the page in when a field under 16px takes focus. Use font-size: 16px (or more) for fields
+
+![input-zoom](input-zoom-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><input class="i" type="search" aria-label="Search"></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:200px}.i{appearance:none;display:block;padding:0 8px;min-width:0;min-height:0;width:200px;height:36px;border:1px solid #000;background:#fff;font-size:14px}
+```
+
+</details>
+
+## A 100vh hero under the mobile toolbar
+
+`W_LAYOUT_VH_TOOLBAR` — markup rule (nothing to see on screen)
+
+> .hero is 100vh tall: on mobile browsers vh is the viewport with the toolbars hidden, so its bottom is under the toolbar until the page scrolls. Use svh (or dvh) for a box that must fit the visible screen
+
+![vh-toolbar](vh-toolbar-markup.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><section class="hero"></section></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.hero{height:100vh;background:#246}
+```
+
+</details>
+
 ## A document without lang
 
 `E_A11Y_HTML_LANG` — markup rule (nothing to see on screen)
