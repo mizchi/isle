@@ -1720,3 +1720,17 @@ test('sr-only text names an icon link: Chromium names the link exactly where E_A
     expect(unnamed, `${inner || 'no text'}: Chromium names the link "${name}"`).toBe(name === '');
   }
 });
+
+test('caret-hidden: the static warning agrees with Chromium’s computed caret color and field background', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const base = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff}.t{height:10px}.f{appearance:none;display:block;width:200px;height:32px;padding:0;border:1px solid #000;min-width:0;min-height:0;background:#fff;color:#000}`;
+  for (const css of ['.f{caret-color:transparent}', '.f{caret-color:#fff}', '.f{caret-color:#c00}', '', '.p{caret-color:transparent}', '.f{caret-color:rgba(0,0,0,0)}']) {
+    const html = '<main class="p"><h1 class="t" aria-label="T"></h1><input class="f" type="text" aria-label="Name"></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+    const warned = report.accessibility.warnings.some(w => w.code === 'W_A11Y_CARET_HIDDEN');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${base}${css}</style></head><body>${html}</body></html>`);
+    const {caret, bg} = await page.evaluate(() => { const s = getComputedStyle(document.querySelector('.f')); return {caret: s.caretColor, bg: s.backgroundColor}; });
+    const hidden = /rgba\(.*,\s*0\)$/.test(caret) || caret === bg;
+    expect(warned, `${css || 'auto'}: Chromium caret ${caret} on ${bg}`).toBe(hidden);
+  }
+});

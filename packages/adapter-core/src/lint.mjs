@@ -51,6 +51,7 @@ export const recommended = {
   E_A11Y_TARGET_SIZE: ['error', 'make the target at least 24×24 px'],
   W_A11Y_BAR_COVERED: ['warning', 'give the bar a z-index'],
   W_A11Y_BAR_TRANSPARENT: ['warning', 'give the bar an opaque background'],
+  W_A11Y_CARET_HIDDEN: ['warning', 'leave caret-color auto, or give it a visible color'],
   W_A11Y_TABINDEX_REMOVED: ['warning', 'drop the negative tabindex'],
   E_A11Y_ICON_CONTRAST: ['error', 'draw the icon in a color with 3:1 against the control background (fill: currentColor and a contrasting color)'],
   E_A11Y_CONTENTS_FOCUS: ['error', 'give the link or button a box (display: grid/flex/block) instead of display: contents'],

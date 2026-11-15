@@ -88,6 +88,7 @@
 //   native-aria-conflict → W_A11Y_NATIVE_ARIA_CONFLICT an ARIA state that contradicts the native one (required/disabled/checked), which Chromium announces instead
 //   target-size      → E_A11Y_TARGET_SIZE       SC 2.5.8: under 24px, and its 24px circle meets another target or undersized circle
 //   icon-contrast    → E_A11Y_ICON_CONTRAST     the svg icon of a control without text under 3:1 against its background (SC 1.4.11)
+//   caret-hidden     → W_A11Y_CARET_HIDDEN      a text field whose caret is transparent or its background color
 //   contents-focus   → E_A11Y_CONTENTS_FOCUS    a link, button or tabindex element with display: contents (drawn by its children; Tab skips it)
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
@@ -101,7 +102,7 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'bar-covered', 'bar-transparent', 'autofocus'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'bar-covered', 'bar-transparent', 'autofocus'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
@@ -170,7 +171,7 @@ export const contrastRatio = (a, b) => { const [x, y] = [luminance(a), luminance
 export function paintFacts(style) {
   // Visually hidden (sr-only): clipped to nothing, or at most 1px tall hiding its overflow. Read, not seen.
   const hiddenVisually = style['clip-path'] === 'empty' || style.clip === 'empty' || (['hidden', 'clip'].includes(style['overflow-x']) && /^\d+(?:\.\d+)?px$/.test(String(style['block-size'])) && Number(String(style['block-size']).slice(0, -2)) <= 1);
-  return { ...(style.$iconPaint !== undefined ? { iconPaint: style.$iconPaint } : {}), ...(hiddenVisually ? { hiddenVisually: true } : {}), objectFit: style['object-fit'], scrollBehavior: style['scroll-behavior'], touchAction: style['touch-action'], color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
+  return { ...(style.$iconPaint !== undefined ? { iconPaint: style.$iconPaint } : {}), ...(hiddenVisually ? { hiddenVisually: true } : {}), caretColor: style['caret-color'], objectFit: style['object-fit'], scrollBehavior: style['scroll-behavior'], touchAction: style['touch-action'], color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
     isolation: style.isolation, transform: style.transform, scrollMargin: { top: style['scroll-margin-top'], bottom: style['scroll-margin-bottom'] }, scrollPadding: { top: style['scroll-padding-top'], bottom: style['scroll-padding-bottom'] }, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], outlineColor: style['outline-color'], outlineOffset: style['outline-offset'], clippedAway: style['clip-path'] === 'empty' || (style.clip === 'empty' && ['absolute', 'fixed'].includes(style.$fixed ? 'fixed' : style.position)), borderColors: { top: style['border-top-color'], right: style['border-right-color'], bottom: style['border-bottom-color'], left: style['border-left-color'] }, boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
     animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] , direction: style['animation-direction'] } };
@@ -391,6 +392,17 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     if (Math.abs(ratio - 3) < 1e-9) { report(unknowns, 'U_A11Y_CONTRAST', 'unknown', `${icon.box.label} has contrast ${ratio}:1, at the 3:1 threshold within numeric error`, icon, icon.region, { rule: 'icon-contrast' }); continue; }
     if (ratio < 3 && !findings.some(f => f.code === 'E_A11Y_ICON_CONTRAST' && f.path === icon.path))
       report(findings, 'E_A11Y_ICON_CONTRAST', 'error', `${icon.box.label} is the only content of ${owner.box.label} and is drawn in ${paint} at contrast ${ratio.toFixed(2)}:1 against its background, below the 3:1 for graphics (SC 1.4.11)`, icon, icon.region, { rule: 'icon-contrast', ratio, required: 3, foreground: result.fg, background: result.bg, control: owner.box.label });
+  }
+
+  // caret-hidden: a text field whose caret is transparent, or painted in the field's own background color, does not
+  // show where typing goes (the caret is the focus indicator inside a field).
+  const textEntry = box => box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', undefined].includes(box.inputType));
+  for (const row of geometry.filter(row => textEntry(row.box) && visible(row) && row.chain?.at(-1)?.caretColor && row.chain.at(-1).caretColor !== 'auto')) {
+    const layer = row.chain.at(-1), caret = parseColor(String(layer.caretColor).toLowerCase() === 'currentcolor' ? layer.color : layer.caretColor), bg = parseColor(layer.backgroundColor);
+    if (!caret) continue;
+    const same = bg && bg.a >= 1 && caret.a >= 1 && caret.r === bg.r && caret.g === bg.g && caret.b === bg.b;
+    if ((caret.a === 0 || same) && !warnings.some(w => w.code === 'W_A11Y_CARET_HIDDEN' && w.path === row.path))
+      report(warnings, 'W_A11Y_CARET_HIDDEN', 'warning', `${row.box.label} is a text field with caret-color: ${layer.caretColor}${same ? `, its own background color` : ''}: the caret that shows where typing goes is not seen. Leave caret-color auto (or give it a visible color)`, row, row.region, { rule: 'caret-hidden' });
   }
 
   // occluded-target: a hit-testable box from a later paint layer covers a target.
