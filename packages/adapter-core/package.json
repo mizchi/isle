@@ -5,6 +5,6 @@
   "type": "module",
   "description": "Shared part of the component adapters: template states as choices, analysing every state, and the findings per state.",
   "exports": {".": {"import": "./src/index.mjs"}},
-  "dependencies": {"@mizchi/css-verifier": "workspace:*"},
+  "dependencies": {"@mizchi/css-verifier": "workspace:*", "parse5": "8.0.1"},
   "scripts": {"test": "node --test test/*.test.mjs"}
 }

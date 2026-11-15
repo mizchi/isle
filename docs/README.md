@@ -26,6 +26,7 @@ Isleは、Qwik型の事前コンパイルとresumeを基盤とするUIライブ�
 - [CSS 変数の解析](css-variables.md)：`var()`、継承・カスケード、循環、fallback と移植性の制約。
 - [レイアウト契約の形式化](layout-contract-language.md)：ContractIR・LayoutIR・ObligationIR、被覆と適合、親子の要求。
 - [汎用CSS検証と静的モデルの方針](static-ui-verification.md)：独立コア、Isle adapter、動的寸法の前提と保証範囲。
+- [コンポーネントの CSS×DOM lint](component-lint.md)：Svelte・Vue・React（StyleX・Linaria）を状態ごとに検査する CLI、recommended ルール、ソース行。
 - [状態間のレイアウト契約](layout-transitions.md)：noshift/1、位置・寸法・存在の比較、被覆と反例、ブラウザーなしの検査。
 - [Form とアクセシビリティ](forms.md)：入力制約、非同期検証、エラー、pending、reset。
 - [チャンクとプロファイル](chunk-profiling.md)：イベント名、manifest、User Timing。

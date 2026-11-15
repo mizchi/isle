@@ -31,7 +31,7 @@ function condition(source, node) {
  * Enumerate the component's trees.
  * @returns {{ states: { html: string, choices: Record<string, unknown> }[], css: string, unknowns: { code: string, message: string }[], assumptions: string[] }}
  */
-export function expandSvelte(source, { maxStates = 64, eachCounts = [0, 1, 2] } = {}) {
+export function expandSvelte(source, { maxStates = 64, eachCounts = [0, 1, 2], sourceLines = false } = {}) {
   const ast = parse(source, { modern: true });
   const unknowns = [], assumptions = new Set();
   const unknown = (code, message) => { if (!unknowns.some(u => u.message === message)) unknowns.push({ code, message }); };
@@ -117,7 +117,7 @@ export function expandSvelte(source, { maxStates = 64, eachCounts = [0, 1, 2] } 
         for (const a of own) for (const b of inner) {
           const choices = merge(a.choices, b.choices); if (!choices) continue;
           const cls = a.classList.length ? ` class="${escapeAttr(a.classList.join(' '))}"` : '';
-          out.push({ html: `<${node.name}${cls}${a.statics}>${voidTags.has(node.name) ? '' : `${b.html}</${node.name}>`}`, choices });
+          out.push({ html: `<${node.name}${cls}${a.statics}${sourceLines ? ` data-src-line="${source.slice(0, node.start).split('\n').length}"` : ''}>${voidTags.has(node.name) ? '' : `${b.html}</${node.name}>`}`, choices });
         }
         return out;
       }
@@ -166,7 +166,7 @@ export const unscopeCSS = css => css.replace(/:global\(([^()]*)\)/g, '$1');
  *   pageCSS — CSS for the page around the component (html, body); page(html) — the document around it;
  *   maxStates, eachCounts — the enumeration bounds.
  */
-export function analyzeSvelte(source, { maxStates, eachCounts, ...options } = {}) {
-  const { states, css, unknowns, assumptions } = expandSvelte(source, { maxStates, eachCounts });
+export function analyzeSvelte(source, { maxStates, eachCounts, sourceLines, ...options } = {}) {
+  const { states, css, unknowns, assumptions } = expandSvelte(source, { maxStates, eachCounts, sourceLines });
   return analyzeStates({ states, css: unscopeCSS(css), unknowns, assumptions }, options);
 }

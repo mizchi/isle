@@ -39,7 +39,8 @@
     "eval": "node tools/eval.mjs",
     "dev": "vite --config examples/counter/vite.config.mjs",
     "build": "pnpm build:compiler && vite build --config examples/counter/vite.config.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "css-lint": "node tools/css-lint.mjs"
   },
   "devDependencies": {
     "@mizchi/vlmkit": "0.24.0",

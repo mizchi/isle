@@ -245,6 +245,9 @@ importers:
       '@mizchi/css-verifier':
         specifier: workspace:*
         version: link:../css-verifier
+      parse5:
+        specifier: 8.0.1
+        version: 8.0.1
 
   packages/css-verifier:
     dependencies:

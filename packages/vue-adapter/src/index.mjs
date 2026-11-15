@@ -18,7 +18,7 @@ const voidTags = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'in
 
 export const unscopeVueCSS = css => css.replace(/:(?:deep|slotted|global)\(([^()]*)\)/g, '$1');
 
-export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2] } = {}) {
+export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2], sourceLines = false } = {}) {
   const { descriptor, errors } = parse(source);
   const unknowns = [], assumptions = new Set();
   const unknown = (code, message) => { if (!unknowns.some(u => u.message === message)) unknowns.push({ code, message }); };
@@ -103,7 +103,7 @@ export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2] } = {
       for (const shown of show ? [true, false] : [null]) {
         const all = shown === null ? choices : merge(choices, exprChoice(show, shown)); if (!all) continue;
         const list = [...classes, ...c.classes];
-        own.push({ open: `<${node.tag}${list.length ? ` class="${escapeAttr(list.join(' '))}"` : ''}${statics.join('')}${a.html}${shown === false ? ' style="display: none"' : ''}>`, choices: all });
+        own.push({ open: `<${node.tag}${list.length ? ` class="${escapeAttr(list.join(' '))}"` : ''}${statics.join('')}${a.html}${shown === false ? ' style="display: none"' : ''}${sourceLines ? ` data-src-line="${node.loc.start.line}"` : ''}>`, choices: all });
       }
     }
     if (node.tag === 'template' || node.tagType === TEMPLATE) return children(node.children);
@@ -161,6 +161,6 @@ export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2] } = {
 }
 
 /** Analyse every template state of a Vue SFC (options: css-verifier options, pageCSS, page, maxStates, eachCounts). */
-export function analyzeVue(source, { maxStates, eachCounts, ...options } = {}) {
-  return analyzeStates(expandVue(source, { maxStates, eachCounts }), options);
+export function analyzeVue(source, { maxStates, eachCounts, sourceLines, ...options } = {}) {
+  return analyzeStates(expandVue(source, { maxStates, eachCounts, sourceLines }), options);
 }

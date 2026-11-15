@@ -67,7 +67,7 @@ function linariaRules(className, text) {
  * @param {string} source a module (JSX/TSX) whose default export (or `component`) is a function component
  * @param {{component?: string, maxStates?: number, eachCounts?: number[]}} options
  */
-export function expandReact(source, { component, maxStates = 64, eachCounts = [0, 1, 2] } = {}) {
+export function expandReact(source, { component, maxStates = 64, eachCounts = [0, 1, 2], sourceLines = false } = {}) {
   const ast = parse(source, { sourceType: 'module', plugins: ['jsx', 'typescript'] });
   const unknowns = [], assumptions = new Set();
   const unknown = (code, message) => { if (!unknowns.some(u => u.message === message)) unknowns.push({ code, message }); };
@@ -197,7 +197,7 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
     for (const c of classLists) for (const r of refLists ?? [null]) for (const at of product(attrLists)) {
       let choices = merge(c.choices, at.choices); if (r) choices = choices && merge(choices, r.choices); if (!choices) continue;
       const list = [...baseClasses, ...c.classes, ...(r ? [stylexClass(r.refs)] : [])];
-      own.push({ open: `<${tag}${list.length ? ` class="${escapeAttr(list.join(' '))}"` : ''}${statics.join('')}${at.html}>`, choices });
+      own.push({ open: `<${tag}${list.length ? ` class="${escapeAttr(list.join(' '))}"` : ''}${statics.join('')}${at.html}${sourceLines ? ` data-src-line="${node.loc.start.line}"` : ''}>`, choices });
     }
     const inner = voidTags.has(tag) ? empty : children(node.children);
     const out = [];
@@ -257,7 +257,7 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
  * @param {object} options css-verifier options plus pageCSS, page, css (an external stylesheet for plain classNames),
  *   component, maxStates, eachCounts
  */
-export function analyzeReact(source, { component, maxStates, eachCounts, css = '', ...options } = {}) {
-  const expanded = expandReact(source, { component, maxStates, eachCounts });
+export function analyzeReact(source, { component, maxStates, eachCounts, sourceLines, css = '', ...options } = {}) {
+  const expanded = expandReact(source, { component, maxStates, eachCounts, sourceLines });
   return analyzeStates({ ...expanded, css: css + expanded.css }, options);
 }
