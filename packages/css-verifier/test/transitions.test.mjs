@@ -164,5 +164,6 @@ test('noshift compares layout boxes: a transform moves only the painted box (a l
   assert.equal(state('').sizes.some(row=>'layoutRect' in row),false);
   const grown=await check(state(''),state('.card{height:120px}'),targets);
   assert.equal(grown.status,'violated');
-  assert.equal(grown.change.target,'action');assert.equal(grown.change.delta.exact,'20');
+  // The card grows by 20px and the following box moves by 20px: the solver's witness may name either.
+  assert.ok(['card','action'].includes(grown.change.target),grown.change.target);assert.equal(grown.change.delta.exact,'20');
 });

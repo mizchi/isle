@@ -40,6 +40,8 @@ function markText(html, start = 0) {
   const fragment = parseFragment(html);
   let n = start;
   const walk = node => {
+    // An inline svg is one replaced box: its <title>/<text> are not CSS text boxes.
+    if (node.tagName === 'svg') return;
     for (const child of node.childNodes ?? []) walk(child);
     if (node.tagName && (node.childNodes ?? []).some(c => c.nodeName === '#text' && c.value.trim())) {
       const id = `__text${n++}`, cls = node.attrs.find(a => a.name === 'class');

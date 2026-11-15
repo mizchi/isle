@@ -46,3 +46,16 @@ test('css-lint CLI: exit status 1 on errors, file:line output', () => {
   const json = JSON.parse((() => { try { return execFileSync('node', [cli, '--format', 'json', '--viewport', '320-800', '--height', '600-900', fixture], {encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore']}); } catch (error) { return error.stdout; } })());
   assert.ok(json.some(m => m.code === 'E_LAYOUT_PAGE_OVERFLOW' && m.line === 4));
 });
+
+test('lint on a realistic Svelte component: icon button, grid areas, auto-fill cards, srcset', async () => {
+  const {analyzeSvelte} = await import('../../svelte-adapter/src/index.mjs');
+  const {readFileSync} = await import('node:fs');
+  const file = fileURLToPath(new URL('../../svelte-adapter/fixtures/Catalog.svelte', import.meta.url));
+  const source = readFileSync(file, 'utf8');
+  const result = analyzeSvelte(source, {pageCSS: `${pageCSS}body{margin:0}`, viewport: {min: 320, max: 1280, height: {min: 480, max: 900}}, assumeText: true, sourceLines: true, accessibility: true, selectors: true, eachCounts: [0, 2], scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+  const found = lint(result, {file: 'Catalog.svelte', source}).filter(m => m.severity !== 'info').map(m => [m.code, m.line]);
+  for (const expected of [['E_A11Y_NAME', 7], ['E_LAYOUT_TRACKS', 13], ['W_LAYOUT_GRID_AREA_UNKNOWN', 11], ['W_LAYOUT_SIZES_MISSING', 16]])
+    assert.ok(found.some(([code, line]) => code === expected[0] && line === expected[1]), `${expected}: ${JSON.stringify(found)}`);
+  // The home link is named by its svg's <title>.
+  assert.ok(!found.some(([code, line]) => code === 'E_A11Y_NAME' && line === 8));
+});

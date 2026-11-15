@@ -30,8 +30,12 @@ export function clip(region, slack, strict = false) {
       vertices.push({ x: add(a.x, mul(t, sub(b.x, a.x))), y: add(a.y, mul(t, sub(b.y, a.y))) });
     }
   }
-  const result = { vertices: unique(vertices), constraints: [...region.constraints, { slack, strict }] };
-  if (!result.vertices.length) return null;
+  // A constraint that every vertex satisfies strictly is implied by the (convex) polygon: it is dropped, so the list
+  // stays near the polygon's edge count however many splits led here (each clip re-checks the list).
+  const kept = unique(vertices);
+  if (!kept.length) return null;
+  const binding = c => kept.some(v => cmp(evaluate(c.slack, v), z) <= 0);
+  const result = { vertices: kept, constraints: [...region.constraints, { slack, strict }].filter(binding) };
   // The centroid lies in the relative interior, including degenerate lines/points.
   const point = sample(result);
   if (result.constraints.some(c => cmp(evaluate(c.slack, point), z) < (c.strict ? 1 : 0))) return null;
