@@ -702,6 +702,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background
 
 </details>
 
+## Cards that slide over a sticky header
+
+`W_A11Y_BAR_COVERED` — viewport 672 × 690px
+
+> .h is sticky with z-index auto, and .card later in the page is position: relative: it paints over the bar as it scrolls under it. Give .h a z-index
+
+![bar-covered](bar-covered-before.png) ![bar-covered](bar-covered-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><header class="h"></header><div class="card"></div><div class="card"></div><div class="tall"></div></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:12px;background:#fff}.h{position:sticky;top:0;height:56px;background:#246}.card{position:relative;height:90px;background:#f2c94c}.tall{height:2000px}
+```
+
+</details>
+
 ## A fixed footer that covers the end of the page
 
 `E_A11Y_FIXED_HIDES` — viewport 672 × 690px

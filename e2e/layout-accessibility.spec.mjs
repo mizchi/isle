@@ -1504,3 +1504,19 @@ test('tabindex-removed: where the static rule warns, Tab never reaches the visib
     if (warn) expect(reached.has('-1'), inner).toBe(false);
   }
 });
+
+test('bar-covered: where the static rule warns, a scrolled card is the topmost element under the sticky header in Chromium', async ({page}) => {
+  const base = '*{box-sizing:border-box;margin:0}body{margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:sticky;top:0;height:50px;background:#246}.card{height:80px;background:#eee}.tall{height:2000px}';
+  for (const [extra, warn] of [['.card{position:relative}', true], ['.card{transform:translateX(0px)}', true], ['.card{position:relative}.h{z-index:1}', false], ['', false]]) {
+    const css = base + extra, html = '<main class="page"><header class="h"></header><div class="card"></div><div class="tall"></div></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: css + 'html,body{display:grid;grid-template-columns:minmax(0,1fr)}', viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+    const warned = report.accessibility.warnings.some(w => w.code === 'W_A11Y_BAR_COVERED');
+    expect(warned, extra || 'static card').toBe(warn);
+    await page.setViewportSize({width: 400, height: 600});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    // Scroll the card under the header: its top 20px down the header.
+    await page.evaluate(async () => { scrollTo(0, 30); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); });
+    const top = await page.evaluate(() => document.elementFromPoint(200, 40)?.className);
+    expect(top === 'card', `${extra || 'static card'}: topmost at the header is .${top}`).toBe(warn);
+  }
+});

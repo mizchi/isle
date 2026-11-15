@@ -468,6 +468,20 @@
   "css": "body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.card{display:grid;grid-template-columns:minmax(0,1fr);height:240px;background:#eef;transform:translateX(0px)}.bar{position:fixed;left:0;bottom:0;width:100%;height:56px;background:rgba(36,68,102,.97)}.gap{height:2000px;background:repeating-linear-gradient(#fff 0 40px,#f3f3f3 40px 80px)}"
  },
  {
+  "id": "bar-covered",
+  "title": "Cards that slide over a sticky header",
+  "code": "W_A11Y_BAR_COVERED",
+  "width": 672,
+  "height": 690,
+  "message": ".h is sticky with z-index auto, and .card later in the page is position: relative: it paints over the bar as it scrolls under it. Give .h a z-index",
+  "shots": [
+   "bar-covered-before.png",
+   "bar-covered-after.png"
+  ],
+  "html": "<main class=\"page\"><header class=\"h\"></header><div class=\"card\"></div><div class=\"card\"></div><div class=\"tall\"></div></main>",
+  "css": "body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);row-gap:12px;background:#fff}.h{position:sticky;top:0;height:56px;background:#246}.card{position:relative;height:90px;background:#f2c94c}.tall{height:2000px}"
+ },
+ {
   "id": "fixed-hides",
   "title": "A fixed footer that covers the end of the page",
   "code": "E_A11Y_FIXED_HIDES",
