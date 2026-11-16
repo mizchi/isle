@@ -169,7 +169,7 @@ function expand(property, value) {
     // Zero, or auto (only flex items may use it on their main axis; checked by the engine).
     // Zero, auto, or a non-negative px length (grid items take px margins; checked by the engine).
     // A non-negative rem margin stays rem until computeStyle resolves it against the root font size.
-    const margin = v => { if (v === 'auto') return 'auto'; if (/^\d+(?:\.\d{1,6})?rem$/.test(v)) return /^0+(?:\.0+)?rem$/.test(v) ? '0' : v; const n = px(v); if (cmp(n, q(0)) === 0) return '0'; if (cmp(n, q(0)) < 0) throw new Error('Negative margins are not modeled'); if (!/^\d+(?:\.\d+)?px$/.test(v)) throw new Error('Only px, zero or auto margins are supported'); return v; };
+    const margin = v => { if (v === 'auto') return 'auto'; if (/^\d+(?:\.\d{1,6})?rem$/.test(v)) return /^0+(?:\.0+)?rem$/.test(v) ? '0' : v; if (/^-\d+(?:\.\d{1,6})?px$/.test(v)) return v; /* a negative px margin: the engine models it on a flex row's main axis only */ const n = px(v); if (cmp(n, q(0)) === 0) return '0'; if (cmp(n, q(0)) < 0) throw new Error('Negative margins are not modeled'); if (!/^\d+(?:\.\d+)?px$/.test(v)) throw new Error('Only px, zero or auto margins are supported'); return v; };
     const values = property === 'margin' ? [parts[0], parts[1] ?? parts[0], parts[2] ?? parts[0], parts[3] ?? parts[1] ?? parts[0]] : sides.length === 2 ? [parts[0], parts[1] ?? parts[0]] : [parts[0]];
     return sides.map((side, i) => [`margin-${side}`, margin(values[i])]);
   }

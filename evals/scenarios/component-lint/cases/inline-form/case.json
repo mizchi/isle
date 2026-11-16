@@ -1,0 +1,1 @@
+{"framework": "linaria", "intent": "A coupon row: a label text and a fixed-width input in one flex row.", "planted": "the input does not shrink (flex: 0 0 240px): with the label text beside it the row is wider than a 320px phone", "expect": ["E_LAYOUT_TRACKS"]}

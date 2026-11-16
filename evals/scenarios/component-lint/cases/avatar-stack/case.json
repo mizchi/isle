@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "Overlapping avatars followed by who is editing.", "planted": "the names are nowrap in a 1fr track: on a phone 'Ana, Ben and Chloé are editing' runs past the row", "expect": ["E_LAYOUT_CONTENT"]}

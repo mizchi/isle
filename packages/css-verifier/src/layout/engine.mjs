@@ -722,7 +722,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // Main-axis auto margins of flex items absorb free space (resolved by the flex line).
     // A grid item may also have px margins: its grid area less the margins is what it is laid out in (margins of grid
     // and flex items never collapse).
-    const marginOk = (key, axis) => style[key] === '0' || (style[key] === 'auto' && available.flexItem?.main === axis) || ((available.gridItem || available.flexItem) && /^\d+(?:\.\d+)?px$/.test(String(style[key]))) || (available.gridItem && axis === 'inline' && style[key] === 'auto' && available.autoMargins);
+    // A negative px margin on a flex row item's main axis (an overlapping avatar stack): its outer size shrinks by it.
+    const marginOk = (key, axis) => (available.flexItem?.main === 'inline' && axis === 'inline' && /^-\d+(?:\.\d+)?px$/.test(String(style[key]))) || style[key] === '0' || (style[key] === 'auto' && available.flexItem?.main === axis) || ((available.gridItem || available.flexItem) && /^\d+(?:\.\d+)?px$/.test(String(style[key]))) || (available.gridItem && axis === 'inline' && style[key] === 'auto' && available.autoMargins);
     // px margins on items of a row flex container are modeled (layoutFlex adds them to the outer sizes); a column's not.
     // px margins on flex items are modeled (layoutFlex adds them to the outer sizes on both axes).
     if (['margin-left', 'margin-right'].some(key => !marginOk(key, 'inline'))) throw new Error(available.flexItem && ['margin-left', 'margin-right'].some(key => style[key] === 'auto') ? 'Cross-axis auto margins of a flex item are outside the subset' : 'Only known zero inline margins are supported');
@@ -1038,7 +1039,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           if (main === 'block' && align !== 'stretch' && !/^\d+(?:\.\d+)?px$/.test(child.style['inline-size'])) throw flexUnknown('A column item that is not stretched (align) shrink-wraps its content; give it a px width');
           // px margins of a row item: its outer main size (base, minimum, maximum) includes them; layoutFlex lays the
           // item out inside them on both axes.
-          const m = side => /^\d+(?:\.\d+)?px$/.test(String(child.style[`margin-${side}`])) ? px(child.style[`margin-${side}`]) : zero;
+          const m = side => /^\d+(?:\.\d+)?px$/.test(String(child.style[`margin-${side}`])) ? px(child.style[`margin-${side}`]) : main === 'inline' && ['left', 'right'].includes(side) && /^-\d+(?:\.\d+)?px$/.test(String(child.style[`margin-${side}`])) ? q(String(child.style[`margin-${side}`]).slice(0, -2)) : zero;
           const margins = { left: m('left'), right: m('right'), top: m('top'), bottom: m('bottom') };
           // A row item sized by its content (flex-basis auto or content, auto width): its max- and min-content widths
           // are its flex base size and automatic minimum.
@@ -1282,7 +1283,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const content = (axis, property) => () => explanation(sizeChain(self, axis, { hostInset: options.hostInset }), [contractFact(box, property)]);
       // An end margin may stick out of the area: it creates no overflow and hides nothing (measured), so the fit check
       // is start margin + border box against the area.
-      obligation(available.marginEnd ? sum(available.inline, scalar(available.marginEnd.inline)) : available.inline, inline, box, region, 'E_LAYOUT_ITEM_SIZE', 'inline', available.fitInline !== false, item('inline'));
+      // (The end margin may stick out; a negative one does not narrow the box's room.)
+      obligation(available.marginEnd && cmp(available.marginEnd.inline, zero) > 0 ? sum(available.inline, scalar(available.marginEnd.inline)) : available.inline, inline, box, region, 'E_LAYOUT_ITEM_SIZE', 'inline', available.fitInline !== false, item('inline'));
       // A text domain reports how many characters still fit at the witness.
       const domain = contract.textMetrics?.kind === 'domain' ? offeredInline => ({ text: { maxLength: contract.textMetrics.maxLength, fitsUpTo: fittingLength(contract.textMetrics, offeredInline), widest: contract.textMetrics.widest } }) : undefined;
       // A one-line text cut with an ellipsis (text-overflow: ellipsis, overflow hidden or clip, nowrap) is intended

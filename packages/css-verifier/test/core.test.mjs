@@ -152,3 +152,10 @@ test('shrinking percentage flex bases: shares of one width are modeled; padding 
   assert.equal(run('.c{flex:0 1 120px}'), 'unknown'); // a px item shrinks with them
   assert.equal(run('.b{min-width:auto}'), 'unknown'); // the automatic minimum needs the content
 });
+
+test('a negative margin is modeled on a flex row item\'s main axis only; on a grid item it stays Unknown', () => {
+  const run = (css, block = true) => analyzeHTML('<div class="p"><div class="a"></div><div class="b"></div></div>', {name: 'P', css: `*{box-sizing:border-box;margin:0}.a,.b{height:10px}${css}`, viewport: {min: 320, max: 800, ...(block ? {height: {min: 600, max: 900}} : {})}}).status;
+  assert.equal(run('.p{display:flex}.a{flex:0 0 40px;margin-right:-12px}.b{flex:1 1 0;min-width:0}'), 'verified');
+  assert.equal(run('.p{display:grid;grid-template-columns:40px minmax(0,1fr)}.b{margin-left:-12px}'), 'unknown');
+  assert.equal(run('.p{display:flex}.a{flex:0 0 40px;margin-top:-4px}.b{flex:1 1 0;min-width:0}'), 'unknown'); // cross axis, with block checking
+});

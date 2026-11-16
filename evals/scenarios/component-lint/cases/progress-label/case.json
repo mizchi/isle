@@ -1,0 +1,1 @@
+{"framework": "vue", "intent": "An upload progress bar with its percentage label inside the filled part.", "planted": "the label sits inside the 8% fill, which hides its overflow: at small progress the label is cut off", "expect": ["E_LAYOUT_CONTENT"]}

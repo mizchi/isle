@@ -175,7 +175,9 @@ function measuredContract(facts, textMetrics, fonts) {
   const wrap = nowrap ? 'nowrap' : facts.oneLine ? 'one-line' : domain ? null : ['normal', 'pre-line', 'pre-wrap'].includes(facts.whiteSpace) ? (facts.overflowWrap === 'anywhere' ? 'anywhere' : 'normal') : null;
   if (!wrap) return null;
   const contract = { text: { font: { family, size, lineHeight, weight }, ...(domain ?? { content: facts.text }), ...(facts.lang ? { lang: facts.lang } : {}), ...(wrap === 'normal' && facts.overflowWrap !== 'normal' ? { overflowWrap: facts.overflowWrap } : {}) }, wrap };
-  try { return textMetrics.resolveBoxes({ x: contract }).x; } catch { return null; }
+  // A text the font file cannot measure (a character it lacks, a feature not modeled): not a size, but a reason the
+  // caller reports as Unknown (its text is then only assumed to fit).
+  try { return textMetrics.resolveBoxes({ x: contract }).x; } catch (error) { return { unmeasurable: error.message }; }
 }
 
 // Overflow-like findings that text resizing can cause (SC 1.4.4 compares them at 1× and 2× the default font size).
@@ -201,7 +203,7 @@ export function analyzeStates(component, allOptions = {}) {
 function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope }, { pageCSS = '', page: wrap = page, name = 'Component', assumeText, textMetrics, fonts = {}, textResize, ...options } = {}) {
   // unmeasured: text boxes (markers the analysis laid out as text) left at the assumed size; null until fonts were reported.
   let assumedTexts = 0, measuredTexts = 0, unmeasured = null;
-  const unbounded = new Map();
+  const unbounded = new Map(), unmeasurable = new Map();
   // Component scope: the component's own CSS starts on its own line after the page CSS, so the scope check can tell
   // the component's selectors from the page's.
   const allCSS = scope ? `${pageCSS}\n${css}` : pageCSS + css;
@@ -239,7 +241,8 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope
             continue;
           }
           const marker = (facts.classes ?? []).find(c => /^__text\d+$/.test(c));
-          const contract = marker && !options.boxes?.[`.${marker}`] ? measuredContract(facts, textMetrics, fonts) : null;
+          let contract = marker && !options.boxes?.[`.${marker}`] ? measuredContract(facts, textMetrics, fonts) : null;
+          if (contract?.unmeasurable) { unmeasurable.set(facts.label.replace(/\.__(?:text|anon)\d+/g, ''), contract.unmeasurable); contract = null; }
           if (contract) measured[`.${marker}`] = contract;
           // Not measurable (no font file for its family, or the UA control font): still one assumed line, but of its own
           // computed line height when that is known, not the default.
@@ -291,8 +294,10 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope
     for (const e of scope.escapes ?? []) grouped.set(`E_SCOPE_ESCAPE\u0000${e.selector}`, { code: 'E_SCOPE_ESCAPE', box: e.selector, severity: 'error', rule: 'component-scope', selector: e.selector, states: results.map(r => r.choices),
       message: `${e.selector} uses ${e.kind}, which reaches outside the component's own elements (the page, a parent or a child component): style those elements in the component that renders them, and pass context in as a custom property or a prop` });
   }
+  // Texts the given font files could not measure: their size is only assumed, so what depends on it is not checked.
+  for (const [label, reason] of unmeasurable) { const message = `${label}: ${reason}; its text is only assumed to fit, so its overflow is not checked`; if (!unknowns.some(u => u.message === message)) unknowns.push({ code: 'U_TEXT_NOT_MEASURED', message }); }
   // data-noshift contracts the component declares on its own elements, compared between its states.
-  let finalStatus = [...grouped.values()].some(f => /^E_SCOPE_/.test(f.code)) ? 'violated' : status, allUnknowns = unknowns;
+  let finalStatus = [...grouped.values()].some(f => /^E_SCOPE_/.test(f.code)) ? 'violated' : unmeasurable.size && status === 'verified' ? 'unknown' : status, allUnknowns = unknowns;
   if (results.some(r => /data-noshift/.test(r.html))) {
     const shift = noShift(results, { wrap, name, viewport: options.viewport });
     for (const f of shift.findings) grouped.set(`${f.code}\u0000${f.box}`, f);

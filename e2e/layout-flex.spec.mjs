@@ -257,6 +257,8 @@ const cases = [
     css: '.g{display:grid;grid-template-columns:minmax(0,1fr)}.f{display:flex;flex-wrap:wrap}.a{flex:0 0 25%;margin-left:12px;block-size:20px}.n{display:flex}.b{flex:0 0 40%;margin-right:10px;block-size:10px}'},
   {name: 'shrinking percentage bases with min-width 0, wrapping and not', html: '<main class="g"><div class="f"><div class="a"></div><div class="a"></div><div class="a"></div></div><div class="n"><div class="b"></div><div class="b"></div><div class="c"></div></div></main>',
     css: '.g{display:grid;grid-template-columns:minmax(0,1fr)}.f{display:flex;flex-wrap:wrap;column-gap:12px}.a{flex:1 1 40%;min-width:0;block-size:20px}.n{display:flex;column-gap:8px}.b{flex:1 1 50%;min-width:0;block-size:10px}.c{flex:0 0 120px;block-size:10px}'},
+  {name: 'negative main-axis margins on a flex row (an avatar stack, an overlapping start)', html: '<main class="g"><div class="s"><div class="a"></div><div class="a"></div><div class="a"></div></div><div class="r"><div class="b"></div><div class="c"></div></div></main>',
+    css: '.g{display:grid;grid-template-columns:minmax(0,1fr)}.s{display:flex}.a{flex:0 0 32px;block-size:32px;margin-right:-12px}.r{display:flex;column-gap:8px}.b{flex:0 0 60px;block-size:10px}.c{flex:1 1 0;min-width:0;margin-left:-20px;block-size:10px}'},
   {name: 'text input sized by a px flex-basis and min-width 0', html: '<main class="f"><div class="t"></div><input class="i" type="text"></main>',
     css: '.f{display:flex;column-gap:8px;padding:8px;align-items:center}.t{flex:0 0 60px;block-size:20px}.i{display:block;flex:1 1 120px;min-width:0;height:32px;padding:0 4px;border:1px solid #777;font-size:16px}'},
 ];

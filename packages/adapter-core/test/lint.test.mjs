@@ -243,3 +243,14 @@ test('text beside a button in a flex row is an anonymous item (an unstyled span)
   for (const css of ['.tag > span { padding: 4px; }', '.tag > * { margin: 0; }', '.x + .x { margin: 0; }', '.tag :first-child { margin: 0; }'])
     assert.equal(structure(analyzeSvelte(src(css), scopeOptions)), true, css);
 });
+
+test('a text the font file cannot measure (a character it lacks) is Unknown with the reason, not an assumed pass', async () => {
+  const {loadTextMetrics} = await import('../../css-verifier/src/text-node.mjs');
+  const file = fileURLToPath(new URL('../../css-verifier/text-metrics/fixtures/roboto-variable.ttf', import.meta.url));
+  const textMetrics = await loadTextMetrics({fonts: {Roboto: {file}}});
+  const src = name => `<div class="row"><span class="n">${name}</span></div>\n<style>.row { display: grid; grid-template-columns: minmax(0, 1fr); } .n { display: block; white-space: nowrap; font-family: Roboto; font-size: 14px; line-height: 20px; }</style>`;
+  const r = analyzeSvelte(src('Chloé is editing'), {...scopeOptions, textMetrics, fonts: {Roboto: {}}});
+  assert.equal(r.status, 'unknown');
+  assert.match(r.unknowns.find(u => u.code === 'U_TEXT_NOT_MEASURED')?.message ?? '', /\.n: Font Roboto lacks U\+00E9/);
+  assert.equal(analyzeSvelte(src('Chloe is editing'), {...scopeOptions, textMetrics, fonts: {Roboto: {}}}).status, 'verified');
+});
