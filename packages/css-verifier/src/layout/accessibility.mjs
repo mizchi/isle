@@ -183,12 +183,17 @@ const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(Stri
  * innermost first, until an opaque one, over the canvas. Returns
  * {fg, bg, layers} or {unknown} with the reason.
  */
+// defaultColors (a caller-stated assumption, judgeAccessibility sets it): the UA canvas and its text color under the
+// light preference when the page opts into no dark color-scheme: black text on a white canvas (measured in Chromium).
+// Under the dark preference Chromium paints that canvas #121212 while canvastext stays black (measured), so it is not
+// assumed there; a user's own default colors or forced colors are outside the assumption.
+let uaColors = null;
 function backdrop(chain) {
   const self = chain.at(-1);
   for (const layer of chain) if (!opaqueValue(layer.opacity)) return { unknown: `opacity ${layer.opacity} blends the text with what lies behind it` };
   // ADR-0007: no implicit black-on-white. The UA text and canvas colors depend on the user's color scheme.
-  if (String(self.color).toLowerCase() === 'canvastext') return { unknown: 'the text color is the user-agent default (canvastext); declare color' };
-  const fg = parseColor(self.color);
+  if (String(self.color).toLowerCase() === 'canvastext' && !uaColors) return { unknown: 'the text color is the user-agent default (canvastext); declare color' };
+  const fg = String(self.color).toLowerCase() === 'canvastext' ? parseColor(uaColors.canvastext) : parseColor(self.color);
   if (!fg) return { unknown: `color ${self.color} is not a modeled color` };
   const layers = [];
   let bg = null;
@@ -201,6 +206,8 @@ function backdrop(chain) {
     if (color.a > 0) layers.push({ index: i, color });
     if (color.a >= 1) { bg = color; break; }
   }
+  // Every layer translucent: the assumed UA canvas lies under all of them.
+  if (!bg && uaColors) { let base = parseColor(uaColors.canvas); for (const layer of [...layers].reverse()) base = over(layer.color, base); return { fg: over(fg, base), bg: base, opaqueAt: -1, canvas: true }; }
   if (!bg) return { unknown: 'no ancestor has an opaque background color; the canvas color depends on the user agent' };
   // Composite translucent layers bottom-up over the opaque one.
   let base = bg;
@@ -304,7 +311,8 @@ export function circleReach(region, dx, dy, r) {
   return { yes, maybe };
 }
 
-export function judgeAccessibility({ geometry, waived = [], root, domain }, { keyframeFrames = new Map(), contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0, viewportBlock = null, scrollPaddingDeclared = false, forcedColorsHandled = false, smoothReduced = false }) {
+export function judgeAccessibility({ geometry, waived = [], root, domain }, { keyframeFrames = new Map(), contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0, viewportBlock = null, scrollPaddingDeclared = false, forcedColorsHandled = false, smoothReduced = false, defaultColors = null }) {
+  uaColors = defaultColors;
   const findings = [], warnings = [], unknowns = [], notes = [], exempted = [];
   // Generated boxes (::before/::after) paint and receive the pointer (for their element), but carry no DOM semantics.
   const everything = geometry;

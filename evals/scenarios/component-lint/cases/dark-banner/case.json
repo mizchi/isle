@@ -1,0 +1,1 @@
+{"framework": "linaria", "intent": "Notice banner that follows the dark color scheme.", "planted": "the dark scheme changes the background but not the text color: dark grey text on a near-black background", "expect": ["E_A11Y_CONTRAST"]}

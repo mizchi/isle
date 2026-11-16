@@ -1889,3 +1889,41 @@ test('page-clipped: with overflow-x hidden or clip on html, Chromium cannot scro
   }
 });
 
+
+test('defaultColors: with no dark color-scheme Chromium paints canvastext black on a white canvas under the light preference; under dark the canvas is #121212', async ({page}) => {
+  const html = '<html lang="en"><body><main class="m"><p class="a">Plain</p><p class="b">Grey</p></main></body></html>';
+  const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.a,.b{font-size:16px;line-height:24px}.b{color:#bbb}';
+  const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800}, accessibility: true, defaultColors: true, boxes: {'.a': {minInlineSize: 0, intrinsicBlockSize: 24}, '.b': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+  const low = report.diagnostics.filter(d => d.code === 'E_A11Y_CONTRAST').map(d => d.box);
+  expect(low).toEqual(['.b']);
+  expect(report.diagnostics.some(d => d.code === 'U_A11Y_CONTRAST')).toBe(false);
+  for (const colorScheme of ['light']) {
+    await page.emulateMedia({colorScheme});
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const painted = await page.evaluate(() => ({a: getComputedStyle(document.querySelector('.a')).color, canvas: getComputedStyle(document.documentElement).backgroundColor, scheme: getComputedStyle(document.documentElement).colorScheme}));
+    expect(painted.a).toBe('rgb(0, 0, 0)');
+    // The root background is transparent: the canvas shows through, white for color-scheme normal.
+    expect(painted.canvas).toBe('rgba(0, 0, 0, 0)');
+    // The canvas pixels equal those of an explicitly white page.
+    const shot = await page.screenshot({clip: {x: 300, y: 2, width: 4, height: 4}});
+    await page.setContent('<!doctype html><style>html{background:#fff}</style>');
+    expect(shot.equals(await page.screenshot({clip: {x: 300, y: 2, width: 4, height: 4}}))).toBe(true);
+    await page.setContent('<!doctype html><style>html{background:#000}</style>');
+    expect(shot.equals(await page.screenshot({clip: {x: 300, y: 2, width: 4, height: 4}}))).toBe(false);
+  }
+  // Under the dark preference the canvas is not white (#121212 behind black text): not assumed. A page with
+  // prefers-color-scheme rules is analysed there too, and that state's contrast stays Unknown.
+  await page.emulateMedia({colorScheme: 'dark'});
+  await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+  const darkCanvas = await page.screenshot({clip: {x: 300, y: 2, width: 4, height: 4}});
+  await page.setContent('<!doctype html><style>html{background:#121212}</style>');
+  expect(darkCanvas.equals(await page.screenshot({clip: {x: 300, y: 2, width: 4, height: 4}}))).toBe(true);
+  const prefers = analyzeHTML(html, {name: 'P', css: css + '@media (prefers-color-scheme: dark){.b{color:#ddd}}', viewport: {min: 320, max: 800}, accessibility: true, defaultColors: true, boxes: {'.a': {minInlineSize: 0, intrinsicBlockSize: 24}, '.b': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+  expect(prefers.diagnostics.some(d => d.code === 'U_A11Y_CONTRAST' && /prefers-color-scheme: dark/.test(d.message))).toBe(true);
+  // Opting into dark: the canvas follows the OS scheme, and the static check stays Unknown.
+  const dark = analyzeHTML(html, {name: 'P', css: css + ':root{color-scheme:light dark}', viewport: {min: 320, max: 800}, accessibility: true, defaultColors: true, boxes: {'.a': {minInlineSize: 0, intrinsicBlockSize: 24}, '.b': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+  expect(dark.diagnostics.some(d => d.code === 'U_A11Y_CONTRAST')).toBe(true);
+  await page.emulateMedia({colorScheme: 'dark'});
+  await page.setContent(`<!doctype html><style>${css}:root{color-scheme:light dark}</style>${html}`);
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('.a')).color)).toBe('rgb(255, 255, 255)');
+});

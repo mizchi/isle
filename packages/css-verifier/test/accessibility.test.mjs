@@ -755,7 +755,12 @@ test('fixed tables are laid out like their equivalent grid', () => {
   const empty = run(table([row(2)]), css('.t { table-layout: auto; }'), {viewport: tableView});
   assert.equal(empty.status, 'verified', JSON.stringify(empty.diagnostics));
   assert.equal(rect(empty, 'c0').inlineSize.constant, rect(empty, 'c1').inlineSize.constant);
-  for (const extra of ['.t { border-collapse: collapse; }', '.t { inline-size: auto; }'])
+  // Collapsed with no border is the separated model with no spacing (2px UA spacing gone: 200 each of 400).
+  const collapsed = run(table([row(2)]), css('.t { border-collapse: collapse; }'), {viewport: tableView});
+  assert.equal(collapsed.status, 'verified', JSON.stringify(collapsed.diagnostics));
+  assert.equal(rect(collapsed, 'c0').inlineSize.constant, rect(collapsed, 'c1').inlineSize.constant);
+  assert.equal(rect(collapsed, 'c0').inlineStart.constant, '0');
+  for (const extra of ['.t { border-collapse: collapse; border: 1px solid #000; }', '.t { border-collapse: collapse; }\n.c0 { border-bottom: 1px solid #000; }', '.t { inline-size: auto; }'])
     assert.equal(run(table([row(2)]), css(extra), {viewport: tableView}).status, 'unknown', extra);
   assert.equal(run(table([row(2), row(1)]), css(''), {viewport: tableView}).status, 'unknown');
 });
@@ -1983,4 +1988,19 @@ test('image-fallback-contrast: text over a background image needs a background c
   assert.ok(!warned('background: #123 url(/hero.jpg);'));
   // A gradient always paints: not a fallback question.
   assert.ok(!warned('background: linear-gradient(#000, #111);'));
+});
+
+test('defaultColors (a stated assumption): UA canvastext on the UA canvas is black on white, only without a dark color-scheme', () => {
+  const opts = {boxes: cardBoxes, defaultColors: true};
+  // No declared colors: black on white, 21:1.
+  assert.ok(!run(card, cardCSS(''), opts).diagnostics.some(d => /CONTRAST/.test(d.code)), JSON.stringify(run(card, cardCSS(''), opts).diagnostics));
+  // Light grey text on the default canvas fails.
+  assert.ok(find(run(card, cardCSS('.card { color: #ccc; }'), opts), 'E_A11Y_CONTRAST').length);
+  // A declared color on the default text color: white text on a #fff background is still the author's error.
+  assert.ok(find(run(card, cardCSS('.card { background: #eee; }'), opts), 'E_A11Y_CONTRAST').length === 0);
+  // Opting into a dark scheme makes the canvas depend on the user's setting: Unknown again.
+  const dark = run(card, cardCSS('.card { color-scheme: light dark; }'), opts);
+  assert.ok(dark.diagnostics.some(d => d.code === 'U_A11Y_CONTRAST'), JSON.stringify(dark.diagnostics));
+  // Without the option nothing changes (ADR-0007).
+  assert.ok(run(card, cardCSS(''), {boxes: cardBoxes}).diagnostics.some(d => d.code === 'U_A11Y_CONTRAST'));
 });

@@ -40,7 +40,7 @@ for (const id of cases) {
   if (!name) { rows.push({id, skipped: 'no file'}); continue; }
   const file = join(dir, name), source = readFileSync(file, 'utf8'), adapter = adapters[extname(file)];
   // Lint as the CLI does with --font.
-  const options = {defaultFontSize: 16, sourceLines: true, eachCounts: [0, 2], pageCSS, viewport: {min: 320, max: 1280, height: {min: 480, max: 900}}, accessibility: true, integrity: true, selectors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], assumeText: true, textMetrics, fonts, textResize: true};
+  const options = {defaultFontSize: 16, defaultColors: true, sourceLines: true, eachCounts: [0, 2], pageCSS, viewport: {min: 320, max: 1280, height: {min: 480, max: 900}}, accessibility: true, integrity: true, selectors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], assumeText: true, textMetrics, fonts, textResize: true};
   const result = adapter.analyze(source, options);
   const messages = lint(result, {file: name, source});
   // Chromium: every state the adapter expands, at each width, at 1× and 2× default font size.
@@ -48,8 +48,9 @@ for (const id of cases) {
   const breaks = new Map();
   const page = await browser.newPage();
   const cdp = await page.context().newCDPSession(page);
-  for (const [scale, standard] of [['1x', 16], ['2x', 32]]) {
+  for (const [scale, standard, scheme] of [['1x', 16, 'light'], ['2x', 32, 'light'], ['dark', 16, 'dark']]) {
     await cdp.send('Page.setFontSizes', {fontSizes: {standard}});
+    await page.emulateMedia({colorScheme: scheme});
     // The widths lint names in its counterexamples are laid out too, so an error at 552px is confirmed or refuted there.
     const witnessWidths = [...new Set(messages.flatMap(m => [...m.message.matchAll(/at viewport (\d+(?:\.\d+)?)px/g)].map(x => Math.floor(Number(x[1])))))].filter(w => !widths.includes(w)).slice(0, 6);
     for (const width of [...widths, ...witnessWidths]) for (const state of states) {
@@ -72,6 +73,22 @@ for (const id of cases) {
         }
         const covered = () => { for (const e of texts) { const t = [...e.childNodes].find(n => n.nodeType === 3 && n.textContent.trim()); const r = document.createRange(); const i = t.textContent.search(/\S/); r.setStart(t, i); r.setEnd(t, i + 1); const b = r.getClientRects()[0]; if (!b || b.bottom < 0 || b.top > innerHeight) continue; const hit = document.elementFromPoint(b.left + 1, (b.top + b.bottom) / 2); if (hit && !e.contains(hit) && !hit.contains(e)) out.push(['text-covered', label(e)]); } };
         covered(); scrollTo(0, document.documentElement.scrollHeight); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); covered(); scrollTo(0, 0);
+        // Content clipped by a box that hides its overflow (a fixed height with overflow: hidden).
+        for (const e of document.querySelectorAll('body *')) { if (/^(IMG|INPUT|TEXTAREA|SELECT|VIDEO|IFRAME|PICTURE)$/.test(e.tagName)) continue; const cs = getComputedStyle(e); if ((cs.overflowY !== 'visible' && e.scrollHeight > e.clientHeight + 1) || (cs.overflowX !== 'visible' && e.scrollWidth > e.clientWidth + 1)) out.push(['clipped', label(e)]); }
+        // Text contrast against the nearest opaque background (WCAG 1.4.3: 4.5:1, 3:1 for large text).
+        const rgb = v => (v.match(/[\d.]+/g) ?? []).map(Number), lum = ([r, g, b]) => [r, g, b].map(c => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }).reduce((a, c, i) => a + c * [0.2126, 0.7152, 0.0722][i], 0);
+        for (const e of texts) {
+          let bg = null; for (let n = e; n; n = n.parentElement) { const c = rgb(getComputedStyle(n).backgroundColor); if (c.length >= 3 && (c[3] ?? 1) === 1) { bg = c; break; } }
+          // No background: the canvas Chromium paints (measured): white under the light preference, #121212 under dark
+          // when the page declares no color-scheme.
+          let canvas = false;
+          if (!bg) { const declared = getComputedStyle(document.documentElement).colorScheme; if (declared !== 'normal') continue; bg = matchMedia('(prefers-color-scheme: dark)').matches ? [18, 18, 18] : [255, 255, 255]; canvas = bg[0] === 18; }
+          const cs = getComputedStyle(e), fg = rgb(cs.color), [a, b] = [lum(fg), lum(bg)].sort((x, y) => y - x), ratio = (a + 0.05) / (b + 0.05);
+          const large = parseFloat(cs.fontSize) >= 24 || (parseFloat(cs.fontSize) >= 18.66 && Number(cs.fontWeight) >= 700);
+          // Against the emulated dark canvas: environment-dependent (whether a dark OS darkens a page with no
+          // color-scheme is the browser's choice), reported apart from the component's breaks.
+          if (ratio < (large ? 3 : 4.5)) out.push([canvas ? 'env-dark-canvas-contrast' : 'low-contrast', label(e)]);
+        }
         for (const i of document.querySelectorAll('input[placeholder]')) { const s = getComputedStyle(i), c = document.createElement('canvas').getContext('2d'); c.font = `${s.fontWeight} ${s.fontSize} ${s.fontFamily}`; if (c.measureText(i.placeholder).width > i.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight) + 1) out.push(['placeholder-clipped', label(i)]); }
         return out;
       });
@@ -83,6 +100,8 @@ for (const id of cases) {
   const reported = messages.filter(m => ['error', 'warning'].includes(m.severity));
   const boxOf = m => (m.message.match(/^(?:the start of )?([.#][\w.-]+|[a-z]+@[\w/]+)/) ?? [])[1] ?? '';
   const matches = (b, m) => b.kind === 'page-overflow' ? /PAGE_OVERFLOW|REFLOW|PAGE_CLIPPED|E_LAYOUT_TRACKS/.test(m.code) || (/TEXT_RESIZE/.test(m.code) && /viewport|page/.test(m.message)) : boxOf(m) && (b.box === boxOf(m) || b.box.split('.').filter(Boolean).every(c => boxOf(m).includes(c)) || boxOf(m).split('.').filter(Boolean).every(c => b.box.includes(c)));
+  const environment = [...breaks.values()].filter(b => b.kind.startsWith('env-')).map(b => `${b.kind} ${b.box} [${b.at.join(' ')}]`);
+  for (const [key, b] of breaks) if (b.kind.startsWith('env-')) breaks.delete(key);
   const caught = [], missed = [];
   // Page overflow that a reported content overflow explains (visible text spilling past the viewport) is caught via it.
   for (const b of breaks.values()) {
@@ -97,12 +116,12 @@ for (const id of cases) {
   const notChecked = messages.filter(m => m.severity === 'info' && /not checked/.test(m.message)).map(m => ({code: m.code, reason: m.message.replace(/^not checked: /, '').replace(/\.[\w-]+/g, '.X').replace(/\d+(?:\.\d+)?px/g, 'Npx').slice(0, 160), line: m.line}));
   const expected = meta.expect ?? [];
   const expectedFound = expected.map(code => ({code, found: reported.some(m => m.code === code)}));
-  rows.push({id, file: name, framework: meta.framework, intent: meta.intent, status: result.status, expected: expectedFound, caught: caught.map(b => `${b.kind} ${b.box} [${b.at.join(' ')}]${b.via ? ` via ${b.via}` : ''}`), missed: missed.map(b => `${b.kind} ${b.box} [${b.at.join(' ')}]`), unconfirmed: unconfirmed.map(m => `${m.code} ${m.message.slice(0, 120)}`), notChecked, errors: reported.filter(m => m.severity === 'error').length, warnings: reported.filter(m => m.severity === 'warning').length, assumptions: messages.filter(m => m.code === 'ASSUMPTION').map(m => m.message)});
+  rows.push({id, file: name, framework: meta.framework, intent: meta.intent, status: result.status, expected: expectedFound, caught: caught.map(b => `${b.kind} ${b.box} [${b.at.join(' ')}]${b.via ? ` via ${b.via}` : ''}`), missed: missed.map(b => `${b.kind} ${b.box} [${b.at.join(' ')}]`), unconfirmed: unconfirmed.map(m => `${m.code} ${m.message.slice(0, 120)}`), environment, notChecked, errors: reported.filter(m => m.severity === 'error').length, warnings: reported.filter(m => m.severity === 'warning').length, assumptions: messages.filter(m => m.code === 'ASSUMPTION').map(m => m.message)});
 }
 await browser.close();
 const tally = new Map();
 for (const r of rows) for (const u of r.notChecked ?? []) tally.set(`${u.code}: ${u.reason}`, (tally.get(`${u.code}: ${u.reason}`) ?? 0) + 1);
-const summary = {run: opt.attempt ?? 'before', cases: rows.length, breaks: rows.reduce((n, r) => n + (r.caught?.length ?? 0) + (r.missed?.length ?? 0), 0), caught: rows.reduce((n, r) => n + (r.caught?.length ?? 0), 0), missed: rows.reduce((n, r) => n + (r.missed?.length ?? 0), 0), unconfirmedErrors: rows.reduce((n, r) => n + (r.unconfirmed?.length ?? 0), 0), clean: rows.filter(r => !r.errors && !(r.missed?.length) && !(r.caught?.length)).map(r => r.id), backlog: [...tally].sort((a, b) => b[1] - a[1]).map(([reason, count]) => ({reason, count})), rows};
+const summary = {run: opt.attempt ?? 'before', cases: rows.length, breaks: rows.reduce((n, r) => n + (r.caught?.length ?? 0) + (r.missed?.length ?? 0), 0), caught: rows.reduce((n, r) => n + (r.caught?.length ?? 0), 0), missed: rows.reduce((n, r) => n + (r.missed?.length ?? 0), 0), unconfirmedErrors: rows.reduce((n, r) => n + (r.unconfirmed?.length ?? 0), 0), environment: rows.reduce((n, r) => n + (r.environment?.length ?? 0), 0), clean: rows.filter(r => !r.skipped && !r.errors && !(r.missed?.length) && !(r.caught?.length)).map(r => r.id), skipped: rows.filter(r => r.skipped).map(r => r.id), backlog: [...tally].sort((a, b) => b[1] - a[1]).map(([reason, count]) => ({reason, count})), rows};
 const out = opt.out ?? join(root, 'evals/results/component-lint', `${summary.run}.json`);
 mkdirSync(dirname(out), {recursive: true});
 writeFileSync(out, JSON.stringify(summary, null, 2) + '\n');

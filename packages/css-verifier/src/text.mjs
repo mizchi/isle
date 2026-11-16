@@ -452,7 +452,9 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         const overflowWrap = rest.wrap === 'anywhere' ? 'anywhere' : (text.overflowWrap ?? 'normal');
         if (rest.wrap === 'anywhere' && text.overflowWrap !== undefined && text.overflowWrap !== 'anywhere') fail(`${selector}: wrap anywhere measures overflow-wrap: anywhere`);
         const lines = breakLines({font, text: text.content, overflowWrap, lang: text.lang});
-        out[selector] = {...rest, minInlineSize: lines.minContent, intrinsicBlockSize: lines.profile.map(entry => ({atLeastInlineSize: entry.atLeastInlineSize, blockSize: entry.lines === null ? null : entry.lines * font.lineHeight})),
+        // The max-content width: the narrowest width at which the text takes one line (the profile's upper bound).
+        const oneLine = lines.profile.find(entry => entry.lines === 1)?.atLeastInlineSize;
+        out[selector] = {...rest, minInlineSize: lines.minContent, ...(oneLine !== undefined ? {maxInlineSize: Math.max(oneLine, lines.minContent)} : {}), intrinsicBlockSize: lines.profile.map(entry => ({atLeastInlineSize: entry.atLeastInlineSize, blockSize: entry.lines === null ? null : entry.lines * font.lineHeight})),
           font: fontContract, textMetrics: {kind: 'lines', text: lines.text, width: lines.width, minContent: lines.minContent, overflowWrap, profile: lines.profile, ...(text.lang !== undefined ? {lang: text.lang} : {}),
             ...(text.inline ? {inline: wrappedInlineBounds({font, text: text.content, lang: text.lang, inline: text.inline, lines})} : {}), baseline: baselineMetrics(font),
             // WCAG 1.4.12 text spacing: the same text with letter-spacing 0.12em and word-spacing 0.16em.
@@ -472,7 +474,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         metrics = {kind: 'domain', ...domain};
       }
       // one-line: the text is expected to fit on one line whatever white-space allows (measured as unwrapped).
-      out[selector] = {...rest, minInlineSize: width, intrinsicBlockSize: font.lineHeight, wrap: rest.wrap === 'one-line' ? 'one-line' : 'nowrap', font: fontContract,
+      out[selector] = {...rest, minInlineSize: width, maxInlineSize: width, intrinsicBlockSize: font.lineHeight, wrap: rest.wrap === 'one-line' ? 'one-line' : 'nowrap', font: fontContract,
         textMetrics: {...metrics, ...(text.lang !== undefined ? {lang: text.lang} : {}), font: provenance(font), allowance: metrics.kind === 'domain' ? domainAllowance : layoutAllowance.rule}};
     }
     return out;

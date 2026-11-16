@@ -8,13 +8,14 @@
 //   --profile recommended|all   the rule set (recommended: rules checked against Chromium)
 //   --no-assume-text         keep text without size contracts Unknown instead of one assumed line
 //   --format text|json
+//   --default-colors light|none   assume the UA's black-on-white canvas (light preference, no dark color-scheme); none: Unknown
 //   --each-counts 0,2        item counts checked for {#each} / v-for / .map (default 0 and 2)
 // Exit status 1 when any error is reported.
 import {readFileSync} from 'node:fs';
 import {extname} from 'node:path';
 import {lint, formatText} from '../packages/adapter-core/src/index.mjs';
 
-const args = process.argv.slice(2), files = [], opt = {viewport: '320-1280', height: '480-900', profile: 'recommended', format: 'text', assumeText: true, defaultFontSize: '16'};
+const args = process.argv.slice(2), files = [], opt = {viewport: '320-1280', height: '480-900', profile: 'recommended', format: 'text', assumeText: true, defaultFontSize: '16', defaultColors: 'light'};
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (a === '--no-assume-text') opt.assumeText = false;
@@ -26,7 +27,7 @@ if (!files.length) { console.error('usage: css-lint [--viewport 320-1280] [--fon
 const range = text => { const [min, max] = String(text).split('-').map(Number); return {min, max: max ?? min}; };
 // The default page around a component: block flow (html and body are display: block), border-box, no UA margins.
 const pageCSS = opt.pageCss ? readFileSync(opt.pageCss, 'utf8') : '*{box-sizing:border-box;margin:0}';
-const options = {...(opt.defaultFontSize !== 'none' ? {defaultFontSize: Number(opt.defaultFontSize)} : {}), sourceLines: true, eachCounts: (opt.eachCounts ?? '0,2').split(',').map(Number), pageCSS, viewport: {...range(opt.viewport), height: range(opt.height)}, accessibility: true, integrity: true, selectors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], ...(opt.assumeText ? {assumeText: true} : {})};
+const options = {...(opt.defaultFontSize !== 'none' ? {defaultFontSize: Number(opt.defaultFontSize)} : {}), ...(opt.defaultColors !== 'none' ? {defaultColors: true} : {}), sourceLines: true, eachCounts: (opt.eachCounts ?? '0,2').split(',').map(Number), pageCSS, viewport: {...range(opt.viewport), height: range(opt.height)}, accessibility: true, integrity: true, selectors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], ...(opt.assumeText ? {assumeText: true} : {})};
 
 // --font Family=file.ttf: the component's texts in that family are measured from the font file (widths, line breaks).
 if (opt.fonts) { const {loadTextMetrics} = await import('../packages/css-verifier/src/text-node.mjs'); options.textMetrics = await loadTextMetrics({fonts: opt.fonts}); options.fonts = opt.fonts; if (opt.textResize !== 'off') options.textResize = true; }

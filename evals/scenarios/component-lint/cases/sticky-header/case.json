@@ -1,0 +1,1 @@
+{"framework": "vue", "intent": "Page with a sticky header above the article.", "planted": "the sticky header has no top inset (it never sticks) and a 60px fixed height its two-line title overflows on phones", "expect": ["W_LAYOUT_STICKY_NO_INSET", "E_LAYOUT_TRACKS"]}

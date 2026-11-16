@@ -1666,7 +1666,19 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // is empty or its content's min-content bound fits its px column, no spans or caption, and
     // at most one (empty) auto column, which needs an explicit table width; an auto width is the sum.
     const automatic = style['table-layout'] !== 'fixed';
-    if (style['border-collapse'] !== 'separate') fail('border-collapse: collapse is not modeled');
+    // The collapsing border model (CSS 2.2 §17.6.2) without any border is the separated model with no spacing: borders
+    // of 0 collapse to 0, border-spacing does not apply, and the table has no padding (measured equal in Chromium).
+    // With a border on the table, a row group, a row or a cell, the shared borders are not modeled.
+    if (style['border-collapse'] === 'collapse') {
+      const zero = v => ['0', '0px', 'none'].includes(String(v));
+      const sides = ['top', 'right', 'bottom', 'left'];
+      if (!sides.every(side => zero(style[`border-${side}`]))) fail('border-collapse: collapse with a border on the table is not modeled (shared borders)');
+      if (!sides.every(side => zero(style[`padding-${side}`]))) fail('border-collapse: collapse with padding on the table is not modeled (the browser ignores it)');
+      const parts = (table.children ?? []).flatMap(section => [section, ...(section.children ?? []).flatMap(row => [row, ...(row.children ?? [])])]).filter(part => part.tag !== 'caption');
+      for (const part of parts) for (const st of styles(part, region, parents, style, false, false)) if (!sides.every(side => zero(st.style[`border-${side}`]))) fail(`border-collapse: collapse with a border on ${part.label} is not modeled (shared borders)`);
+      style = { ...style, 'border-spacing': '0' };
+    }
+    else if (style['border-collapse'] !== 'separate') fail(`border-collapse: ${style['border-collapse']} is not modeled`);
     if (style['inline-size'] === 'auto' && !automatic) fail('A fixed table needs an explicit inline-size');
     const caption = table.children?.[0]?.tag === 'caption' ? table.children[0] : null;
     const sections = (table.children ?? []).slice(caption ? 1 : 0);
@@ -2843,7 +2855,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     integrityWarnings = judged.warnings; integrityExempted = judged.exempted;
   }
   if (options.accessibility && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant && !diagnostics.some(d => d.severity === 'unknown')) {
-    const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { forcedColorsHandled: rules.some(rule => rule.preferences?.some(p => p.feature === 'forced-colors')), smoothReduced: rules.some(rule => rule.declarations.some(d => d.property === 'scroll-behavior') && (rule.preferences?.some(p => p.feature === 'prefers-reduced-motion'))), keyframeFrames, hostInset: options.hostInset ?? 0, hostBlockInset: options.hostBlockInset ?? 0, viewportBlock: block && options.viewport.height ? height : null, scrollPaddingDeclared: rules.some(rule => rule.declarations.some(d => /^scroll-padding-(?:top|bottom)$/.test(d.property))), viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), ranges, block });
+    const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { defaultColors: options.defaultColors && !preferences.includes('prefers-color-scheme:dark') && !rules.some(rule => rule.declarations.some(d => d.property === 'color-scheme' && /dark/.test(String(d.value)))) ? { canvas: '#ffffff', canvastext: '#000000' } : null, forcedColorsHandled: rules.some(rule => rule.preferences?.some(p => p.feature === 'forced-colors')), smoothReduced: rules.some(rule => rule.declarations.some(d => d.property === 'scroll-behavior') && (rule.preferences?.some(p => p.feature === 'prefers-reduced-motion'))), keyframeFrames, hostInset: options.hostInset ?? 0, hostBlockInset: options.hostBlockInset ?? 0, viewportBlock: block && options.viewport.height ? height : null, scrollPaddingDeclared: rules.some(rule => rule.declarations.some(d => /^scroll-padding-(?:top|bottom)$/.test(d.property))), viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), ranges, block });
     diagnostics.push(...judged.findings, ...judged.unknowns);
     // Dark color scheme: when the CSS has prefers-color-scheme: dark rules, the contrast rules run
     // again with them (paint only, so the geometry is the same). System colors stay the light ones:

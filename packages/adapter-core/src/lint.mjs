@@ -81,14 +81,17 @@ const describe = (states, total) => {
 import { parseFragment } from 'parse5';
 // The source line of a finding's box: adapters given sourceLines mark each element with data-src-line; the box path
 // (name/0/… : html, body, then the component's elements) leads to it in the state's markup.
-const lineAt = (html, path) => {
+const nodeAt = (html, path) => {
   if (!html || !path) return undefined;
   const steps = path.split('/').slice(2).map(Number);
   let node = parseFragment(html);
   for (const i of steps) { node = (node.childNodes ?? []).filter(c => c.tagName)[i]; if (!node) return undefined; }
-  const line = node.attrs?.find(a => a.name === 'data-src-line')?.value;
-  return line ? Number(line) : undefined;
+  return node;
 };
+const lineAt = (html, path) => { const line = nodeAt(html, path)?.attrs?.find(a => a.name === 'data-src-line')?.value; return line ? Number(line) : undefined; };
+// A fix that depends on the element: a table's columns are sized by its cells, not by grid tracks.
+const fixFor = (code, fix, html, path) => code === 'E_LAYOUT_TRACKS' && nodeAt(html, path)?.tagName === 'table'
+  ? 'let the cells wrap (no white-space: nowrap, shorter headers), or scroll the table inside a wrapper with overflow-x: auto' : fix;
 // The source line of a box or selector: the first line that mentions its first class, or the selector text.
 const lineOf = (source, needle) => {
   if (!needle) return undefined;
@@ -141,7 +144,7 @@ export function lint(result, { file = '<component>', source = '', profile = 'rec
     }
     const [severity, fix] = rules?.[f.code] ?? [f.severity === 'error' ? 'error' : 'warning'];
     const box = cleanLabel(f.box), firstClass = /\.([\w-]+)/.exec(box)?.[1];
-    out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity, code: f.code, message: readable(f.message), ...(fix ? { fix } : {}), states: describe(f.states, total) });
+    out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity, code: f.code, message: readable(f.message), ...(fix ? { fix: fixFor(f.code, fix, f.html, f.path) } : {}), states: describe(f.states, total) });
   }
   for (const w of result.selectors?.warnings ?? []) {
     if (rules && !rules[w.code]) continue;

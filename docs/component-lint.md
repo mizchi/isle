@@ -29,6 +29,7 @@ error が 1 件でもあれば終了コードは 1 です。
 | `--no-assume-text` | 仮定あり | テキストを 1 行 24px と仮定せず、Unknown のままにする |
 | `--font Family=file.ttf` | なし | 繰り返し指定できる。CSS の計算後のフォントがこの family になるテキストは、仮定の大きさの代わりに、フォントファイルから幅と改行を測る(`auto` の列や、中身で大きさの決まる flex の item を判定できるようになる)。測れないもの(px でない font-size、`line-height: normal`、letter-spacing、斜体)は仮定のまま。測った数は info に出す |
 | `--default-font-size 16` | `16` | ブラウザーの既定のフォントサイズ(px)。html が px のフォントサイズを指定しないとき、`rem`(と html の `%`/`em`/`medium`)をこの値で解決する。仮定として info に出す。`none` で解決せず Unknown にする |
+| `--default-colors light\|none` | `light` | ページが dark の color-scheme を宣言しないとき、light の preference では UA の既定の色(白い canvas に黒い文字)を仮定し、color を指定しないテキストのコントラストを検査する(Chromium で測った)。仮定として info に出す。dark の preference では Chromium が canvas を #121212 にするので仮定しない。`none` で Unknown のままにする |
 | `--format text\|json` | `text` | 出力形式 |
 
 ## ルールセット
@@ -83,6 +84,8 @@ error が 1 件でもあれば終了コードは 1 です。
 - grid item の block 軸の自己整列(`align-items` / `align-self` の start、center、end と、その flex-*/self-* の別名)。item は自分の高さを保ち、area の空きのその割合だけずれる(Chromium と照合した)。baseline は Unknown。
 - h1–h6 と th のテキストは、UA の `font-weight: bold`(700)として測る。strong/b は親に対する `bolder` なので、author が太さを書くまで Unknown。
 - 子が 1 つの block container(`<li><a>…</a></li>`)は、子が `display: inline` のときだけテキストの葉として扱う。`nav > a { display: block }` の a は block の子になる。
+- `border-collapse: collapse` の表。表、行グループ、行、セルのどこにも枠線がなく、表に padding もないとき、`border-spacing: 0` の分離モデルと同じ箱になる(Chromium と照合した)。枠線があれば Unknown。
+- フォントファイルで測ったテキストは max-content の幅も持つ。表の自動の列幅と、中身で大きさの決まる flex item が解ける。
 - sr-only(視覚的に隠したテキスト)。名前には入るが、収まるかどうか、切り取り、コントラストは判定しない。
 
 `svelte-adapter/fixtures/Catalog.svelte` と `vue-adapter/fixtures/Article.vue` は、これらを組み合わせた例である。

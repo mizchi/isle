@@ -1,4 +1,4 @@
-# コンポーネント lint 評価の結果(1 回目の改善ループ)
+# コンポーネント lint 評価の結果
 
 対象は [component-lint の評価](../scenarios/component-lint/README.md) の 8 例です。Svelte 4 例、Vue 2 例、Linaria 1 例、StyleX 1 例で、そのうち 1 例は崩れのない対照、1 例は表現できない書き方の例です。Chromium での実測を正解とし、lint の検出と照合しました。
 
@@ -47,9 +47,34 @@
   - 評価器そのものの誤りも見つかりました。scrollWidth は整数に丸められるので、0.66px のはみ出しが見えていませんでした。縦方向のはみ出しも測っていませんでした。
 - **Chromium の実測では確かめていない検出**: カートのボタンのコントラスト 3.05:1(#fff の上に #0a5)は、lint だけが出しました。ここでの描画の照合では判定していません(コントラストのルールは、別の e2e で axe と照合しています)。
 
+## 2 回目のループ: 例を 12 に増やした
+
+表(Svelte)、sticky のヘッダー(Vue)、16:9 のサムネイルのカードの grid(StyleX)、ダークモードのバナー(Linaria)を加えました。
+
+| 段階 | 崩れ | 検出 | 見逃し | 確認できない error |
+|---|---|---|---|---|
+| 4 例を加えた直後 | 11 | 10 | 1 | 2 |
+| `border-collapse: collapse`(枠線なし)と表の自動の列幅 | 11 | 11 | 0 | 2 |
+| 評価器: overflow で隠れた中身、テキストのコントラスト(ライト/ダーク) | 15 | 15 | 0 | 0 |
+| 既定の色の仮定(`defaultColors`)を入れたあと | 15 | 15 | 0 | 0 |
+
+- **表**:
+  - `border-collapse: collapse` は、それだけで Unknown になっていました。表、行グループ、行、セルのどこにも枠線がなく、表に padding もないときは、`border-spacing: 0` の分離モデルと同じ箱になります。Chromium の矩形で確かめ、そのとおりモデル化しました。
+  - 次は自動の列幅で止まりました。フォントファイルから測ったテキストに max-content の幅(`maxInlineSize`)を足すと、既にある内容の大きさの列のモデル(`-isle-auto-table`)で解けました。
+  - fix の文言が grid 向け(「minmax(0, 1fr) にする」)だったので、表には「セルを折り返す、または overflow-x: auto のラッパーでスクロールさせる」と出すようにしました。
+- **sticky のヘッダー**: `top` のない sticky(`W_LAYOUT_STICKY_NO_INSET`)と、固定の高さで隠れる 2 行目のタイトル(`E_LAYOUT_TRACKS`)の二つが出ました。評価器が overflow で隠れた中身を測るようにして、Chromium でも確認できました。
+- **ダークモード**: dark の preference でだけ文字色が背景と同化するもの(1.38:1)を、lint は `(prefers-color-scheme: dark)` 付きで出していました。評価器がダークの描画でコントラストを測るようにして、確認できました。
+- **既定の色の仮定**:
+  - backlog のいちばん上は「文字色が UA の既定(canvastext)」「どの祖先にも不透明な背景がない」で、20 件ありました。ページが dark の color-scheme を宣言せず、light の preference なら、Chromium は白い canvas に黒い文字を描きます(スクリーンショットで確かめた)。これを仮定として明示し、info に出すようにしました。`--default-colors none` で外せます。ADR-0007 の「暗黙の黒と白はない」は、呼び出し側が述べる仮定として守っています。
+  - 測ったところ、dark の preference では、color-scheme を宣言しないページでも、Chromium は canvas を #121212 にし、canvastext は黒のままでした。そのため dark の状態では仮定を置かず、Unknown のままにしました。
+  - 評価器は、このダークの canvas とのコントラスト不足を、コンポーネントの崩れとは別の「環境依存」(14 件)として数えています。実際のブラウザーでダークの OS がこの描画になるかは、まだ確かめていません。
+
+修正版(run-1 に追加)は、warning と fix の文言どおりに直しました(nowrap を外す、`top: 0` を足して高さの固定を外す、`auto-fill` にする、dark の色を指定する)。4 例とも、1 回で error と warning が 0 になり、Chromium でも崩れはありません。
+
 ## 次の課題(backlog)
 
-- ページの canvas 色が分からないとき(どの祖先にも不透明な背景色がない)、コントラスト、placeholder のコントラスト、入力欄の境界の検査が Unknown になります。対照の例もこれでした。ページ CSS で背景色を与えるか、canvas 色を仮定として選べるようにすると、検査が進みます。
+- (解決済み) canvas の色が分からないときのコントラストの Unknown は、既定の色の仮定(light の preference)で検査できるようになりました。dark の preference での canvas は、Chromium が #121212 にするので、まだ Unknown です。
+- 位置指定された箱で、自分の不透明な背景を持たないものは、後ろの箱が祖先ではないので、コントラストが Unknown のままです(固定サイドバーの例)。
 - `{expression}` のテキストは、`data-text-max-length` がないと寸法が仮定のままです。adapter がテンプレートの型(props の文字列の長さ)を読めれば、属性なしで済みます。
 - inline-block の行レイアウトはモデル外です(chips の before)。
-- 例の数がまだ少ない(8 例)。次は、表(table)、`position: sticky` のヘッダー、`aspect-ratio` の画像のカード、ダークモードの色を加えます。
+- 次に加える例: フォームの検証メッセージ、モーダル、タブ、カルーセル、RTL。

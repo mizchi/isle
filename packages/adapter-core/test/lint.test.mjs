@@ -124,3 +124,22 @@ test('lint messages: decimal px, no internal markers, and one finding per root c
   // The fixed bar hiding part of the text includes its start: one finding.
   assert.deepEqual(messages.filter(m => m.code.startsWith('E_A11Y')).map(m => m.code), ['E_A11Y_FIXED_HIDES_PART']);
 });
+
+test('lint fix: a table whose columns overflow is told to wrap its cells or scroll, not to use grid tracks', () => {
+  const result = {states: [{choices: {}, report: {diagnostics: []}}], unknowns: [], coverage: {assumptions: []}, findings: [
+    {code: 'E_LAYOUT_TRACKS', path: 'Component/0/0', box: '.plans', severity: 'error', message: '.plans requires 400px but receives 360px on inline axis at viewport 360px × 690px', states: [{}], html: '<table class="plans"><tbody><tr><td>a</td></tr></tbody></table>'},
+    {code: 'E_LAYOUT_TRACKS', path: 'Component/0/1', box: '.g', severity: 'error', message: '.g requires 400px but receives 360px on inline axis at viewport 360px × 690px', states: [{}], html: '<table class="plans"></table><div class="g"></div>'},
+  ]};
+  const [table, grid] = lint(result, {file: 'T.svelte'}).filter(m => m.code === 'E_LAYOUT_TRACKS');
+  assert.match(table.fix, /overflow-x: auto/);
+  assert.match(grid.fix, /minmax\(0, 1fr\)/);
+});
+
+test('css-lint assumes the UA default colors (stated), and --default-colors none keeps them Unknown', () => {
+  const file = fileURLToPath(new URL('../../svelte-adapter/fixtures/Card.svelte', import.meta.url));
+  const cli = fileURLToPath(new URL('../../../tools/css-lint.mjs', import.meta.url));
+  const out = args => { try { return JSON.parse(execFileSync('node', [cli, '--format', 'json', ...args, file], {encoding: 'utf8'})); } catch (e) { return JSON.parse(e.stdout); } };
+  const on = out([]), off = out(['--default-colors', 'none']);
+  assert.ok(on.some(m => m.code === 'ASSUMPTION' && /user-agent default colors/.test(m.message)));
+  assert.ok(!off.some(m => m.code === 'ASSUMPTION' && /user-agent default colors/.test(m.message)));
+});
