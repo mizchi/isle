@@ -386,6 +386,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       try {style=computeStyle(relevant,box,active,inherited,{spend,state});}
       catch(error) {error.box ??= box;throw error;}
       if (gridItem && inherited && ['inline', 'inline-block'].includes(style.display)) style = { ...style, display: 'block', $inlineLevel: true };
+      // content-visibility: auto: on screen the box lays out as usual; offscreen it is size-contained. Admitted where
+      // its width does not come from its content (block flow, or grid columns that are not content-sized), so that
+      // only its height changes offscreen (W_LAYOUT_CONTENT_VISIBILITY_SIZE).
+      if (style['content-visibility'] === 'auto') {
+        const ps = ancestors.at(-1)?.style;
+        const contentSized = !ps || !(ps.$blockFlow || ['block', 'list-item'].includes(ps.display) || (ps.display === 'grid' && !/\b(?:auto|min-content|max-content|fit-content)\b/.test(String(ps['grid-template-columns'])) && String(ps['grid-template-columns']) !== 'none')) || ['absolute', 'fixed'].includes(style.position) || style.$fixed;
+        if (contentSized) throw Object.assign(new Error(`${box.label}: content-visibility: auto size-contains it offscreen, and its width depends on its content here; that is not modeled`), { code: 'U_LAYOUT_CSS', box });
+      }
       // A list item lays out as a block: its outside marker takes no part in the layout (measured). An inside marker
       // is an inline box in the first line, which is not modeled.
       if (style.display === 'list-item') {
@@ -1297,6 +1305,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (set('text-overflow', 'clip') && !['hidden', 'clip', 'auto', 'scroll'].includes(String(style['overflow-x']))) reasons.push(['text-overflow', `its overflow-x is ${style['overflow-x']}, so nothing is clipped to mark`]);
         if (inFlow && ['flex', 'inline-flex'].includes(parentDisplay) && set('justify-self', 'auto')) reasons.push(['justify-self', `its parent ${parents.at(-1).box.label} is display: flex, which ignores justify-self (use margin-inline-start: auto, or justify-content on the parent)`]);
         if (['flex', 'inline-flex'].includes(style.display) && set('justify-items', 'normal')) reasons.push(['justify-items', 'it is display: flex, which ignores justify-items (use justify-content)']);
+        if (style['content-visibility'] === 'auto' && String(style['contain-intrinsic-block-size']) === 'none' && style['block-size'] === 'auto' && !layoutWarnings.some(w => w.code === 'W_LAYOUT_CONTENT_VISIBILITY_SIZE' && w.path === box.path))
+          layoutWarnings.push({ code: 'W_LAYOUT_CONTENT_VISIBILITY_SIZE', severity: 'warning', box: box.label, path: box.path,
+            ...(style.$sources?.['content-visibility'] ? { css: [{ property: 'content-visibility', file: style.$sources['content-visibility'].file, line: style.$sources['content-visibility'].line, selector: style.$sources['content-visibility'].selector }] } : {}),
+            message: `${box.label} is content-visibility: auto with no contain-intrinsic-size and an auto height: offscreen it is 0px tall, so the page's scroll height and the scrollbar jump as it comes into view (and an in-page link past it lands in the wrong place). Add contain-intrinsic-size: auto <its usual height>`, ...ranges(region) });
         // A main size under a non-auto flex-basis (flex: 1; width: 200px): flex-basis replaces it (inertMainSize).
         if (style.$inertMain) reasons.push([style.$inertMain.property, `flex-basis: ${style['flex-basis']} sets its main size instead (use flex: 1 1 auto, or flex-basis: ${style.$inertMain.value})`]);
         if (style.$svgUnsized && !layoutWarnings.some(w => w.code === 'W_LAYOUT_SVG_UNSIZED' && w.path === box.path))

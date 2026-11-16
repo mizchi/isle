@@ -26,6 +26,7 @@ export const recommended = {
   W_LAYOUT_IMAGE_UPSCALED: ['warning', 'cap the image at its file width (max-width) or add a wider srcset candidate'],
   W_LAYOUT_SVG_UNSIZED: ['warning', 'give the svg width and height (attributes or CSS)'],
   W_LAYOUT_EMBED_NO_RATIO: ['warning', 'add aspect-ratio (e.g. 16 / 9) or a height to the iframe'],
+  W_LAYOUT_CONTENT_VISIBILITY_SIZE: ['warning', 'add contain-intrinsic-size: auto <its usual height>'],
   W_LAYOUT_SIZES_MISSING: ['warning', 'add a sizes attribute with the width the image takes at each breakpoint'],
   W_LAYOUT_LONG_WORD: ['warning', 'use overflow-wrap: anywhere for URLs and long words'],
   W_LAYOUT_GRID_AREA_UNKNOWN: ['warning', 'use a name from the parent\'s grid-template-areas'],

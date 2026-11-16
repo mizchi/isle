@@ -554,6 +554,26 @@ test('root font size: where the static check warns, text ignores the browser def
   }
 });
 
+test('content-visibility: auto: the static warning fires exactly where Chromium sizes the box differently offscreen', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const html = '<main class="p"><div class="spacer"></div><section class="s"><div class="k"></div></section></main>';
+  for (const own of ['', 'contain-intrinsic-size:auto 300px', 'contain-intrinsic-height:300px', 'contain-intrinsic-size:200px 300px', 'contain-intrinsic-width:300px', 'height:300px', 'height:200px']) {
+    for (const parent of ['display:block', g]) {
+      const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${parent}}.k{height:300px}.s{content-visibility:auto;${own}}`;
+      const report = analyzeHTML(`<html lang="en"><body><main class="p"><section class="s"><div class="k"></div></section></main></body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+      expect(report.status, `${own} in ${parent}`).not.toBe('unknown');
+      const warn = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_CONTENT_VISIBILITY_SIZE');
+      const modeled = Number(report.sizes.find(s => s.box === '.s').blockSize.constant);
+      await page.setViewportSize({width: 500, height: 600});
+      // Offscreen: below a 2000px spacer. On screen: no spacer.
+      const height = async spacer => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css}.spacer{height:${spacer}px}</style></head><body>${html}</body></html>`); await page.waitForTimeout(50); return page.evaluate(() => document.querySelector('.s').getBoundingClientRect().height); };
+      const onscreen = await height(0), offscreen = await height(2000);
+      expect(onscreen, `${own} in ${parent}: on screen it is the modeled size`).toBe(modeled);
+      expect(offscreen !== onscreen, `${own} in ${parent}: offscreen size differs`).toBe(warn);
+    }
+  }
+});
+
 test('inert z-index: a static block-level box in block flow does not stack above a positioned sibling; a grid item does', async ({page}) => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   for (const [parent, warn] of [['display:block', true], [g, false]]) {

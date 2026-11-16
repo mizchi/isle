@@ -101,7 +101,7 @@ test('geometry-neutral properties are accepted; values that change breaking, sha
   // hyphens: auto acts only on text (a text-less box is verified; text: see hyphens.test.mjs).
   for (const decl of ['object-fit:cover', 'hyphens:auto', 'scroll-behavior:smooth', 'user-select:none', 'accent-color:#246', 'scroll-snap-type:x mandatory', '-webkit-font-smoothing:antialiased', 'overscroll-behavior-y:contain', 'word-break:normal', 'filter:none', 'contain:style', 'will-change:scroll-position', 'text-size-adjust:100%'])
     assert.equal(run(decl), 'verified', decl);
-  for (const decl of ['word-break:break-all', 'font-variant-numeric:tabular-nums', 'filter:blur(2px)', 'contain:paint', 'will-change:transform', 'content-visibility:auto', 'resize:both', 'mix-blend-mode:multiply'])
+  for (const decl of ['word-break:break-all', 'font-variant-numeric:tabular-nums', 'filter:blur(2px)', 'contain:paint', 'will-change:transform', 'content-visibility:hidden', 'resize:both', 'mix-blend-mode:multiply'])
     assert.equal(run(decl), 'unknown', decl);
 });
 
