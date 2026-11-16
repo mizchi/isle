@@ -41,3 +41,24 @@ test('an unknown minimum stays Unknown: text without a contract, a % width, span
   assert.equal(run('.s{grid-template-columns:1fr 1fr}.a{grid-column:span 2}', '<div class="a"></div><div class="b"></div>').status, 'unknown');
   assert.equal(run('.s{grid-template-columns:1fr 1fr}', '<div class="a">text</div><div class="b"></div>').status, 'unknown');
 });
+
+test('bare fr rows: the minimum is the items\' measured height (min-height or a scroll container lower it)', () => {
+  const lay = (css, inner = '') => analyzeHTML(`<html lang="en"><body><div class="s"><div class="h"></div><div class="m">${inner}</div><div class="f"></div></div></body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.s{display:grid;grid-template-columns:minmax(0,1fr)}.k{display:block}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  const rect = (r, b, vh = 600) => { const s = r.sizes.find(x => x.box === b && x.rect); const v = a => Number(String(a.constant).split('/').reduce((p, c) => p / c)) + Number(String(a.heightCoefficient ?? 0).split('/').reduce((p, c) => p / c)) * vh; return [v(s.rect.blockStart), v(s.rect.blockSize)]; };
+  const cases = [
+    ['.s{grid-template-rows:auto 1fr auto;height:300px}.h{height:20px}.m{height:30px}.f{height:10px}', '', 'verified', [[0, 300], [0, 20], [20, 30], [290, 10]]],
+    ['.s{grid-template-rows:auto 1fr auto;min-height:100vh}.h{height:20px}.m{height:30px}.f{height:10px}', '', 'verified', [[0, 600], [0, 20], [20, 30], [590, 10]]],
+    ['.s{grid-template-rows:1fr 2fr;height:300px}.h{height:150px}', '', 'verified', [[0, 300], [0, 150], [150, 150], [300, 0]]],
+    ['.s{grid-template-rows:auto 1fr auto}.h{height:20px}.m{height:30px}.f{height:10px}', '', 'verified', [[0, 60], [0, 20], [20, 30], [50, 10]]],
+  ];
+  for (const [css, inner, status, expected] of cases) {
+    const r = lay(css, inner);
+    assert.equal(r.status, status, `${css} ${JSON.stringify(r.diagnostics.map(d => d.message))}`);
+    assert.deepEqual(['.s', '.h', '.m', '.f'].map(b => rect(r, b)), expected, css);
+  }
+  // min-height: 0 lets the fr row share the space; the 500px content overflows .m (as in Chromium).
+  const low = lay('.s{grid-template-rows:auto 1fr;height:300px}.h{height:20px}.m{min-height:0}.k{height:500px}', '<i class="k"></i>');
+  assert.deepEqual(['.h', '.m'].map(b => rect(low, b)), [[0, 20], [20, 280]]);
+  // A 50px grid that the rows need 60px of overflows.
+  assert.equal(lay('.s{grid-template-rows:auto 1fr auto;height:50px}.h{height:20px}.m{height:30px}.f{height:10px}').status, 'violated');
+});

@@ -769,11 +769,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // minmax(L, fr) tracks (css-grid-1 §12.7.1, find the size of an fr): each flexible track takes its share of the
     // free space unless that is below its minimum L; such tracks are frozen at L and the rest is shared again. Each
     // round is a region split by "share ≥ L". A capped minimum (min(L, 100%)) is the container width below L.
-    if (definitions.some(t => t.min !== undefined)) {
-      if (definitions.some(t => t.auto || t.autoTable)) throw new Error('minmax(px, fr) tracks with auto tracks are not modeled');
+    if (definitions.some(t => t.min !== undefined || t.autoMin)) {
+      // (Auto tracks keep their measured base: the fr tracks take all the free space, none is left to stretch them.)
+      if (definitions.some(t => t.autoTable) || (definitions.some(t => t.auto) && definitions.some(t => t.min !== undefined))) throw new Error('minmax(px, fr) tracks with auto tracks are not modeled');
       const fixedTotal = sum(definitions.reduce((acc, t, i) => t.weight ? acc : sum(acc, bases[i]), scalar(0)), scalar(gap));
       const out = [];
-      let pieces = [{ region, mins: definitions.map(t => t.min !== undefined ? scalar(t.min) : t.weight ? scalar(0) : null) }];
+      let pieces = [{ region, mins: definitions.map((t, i) => t.min !== undefined ? scalar(t.min) : t.autoMin ? bases[i] : t.weight ? scalar(0) : null) }];
       for (const L of [...new Set(definitions.filter(t => t.minCap).map(t => exact(t.min)))]) pieces = pieces.flatMap(piece => {
         const split = partition(piece.region, diff(available, scalar(q(L))), '>=');
         return [...split.yes.map(r => ({ region: r, mins: piece.mins })), ...split.no.map(r => ({ region: r, mins: piece.mins.map((m, i) => definitions[i].minCap && exact(definitions[i].min) === L ? available : m) }))];
@@ -2535,7 +2536,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     throw subgridError('Intrinsic row contributions across subgrids or row spans are not modeled; use independently sized parent rows', item.box, children.region, 'block');
                   }
                   let measurements = [{ region: children.region, bases: rows.map(row => row.definite ?? scalar(row.fixed ?? row.edges ?? zero)) }];
-                  for (const item of placed.filter(item => rows[item.row].auto || (!knownBlock && rows[item.row].weight))) {
+                  for (const item of placed.filter(item => rows[item.row].auto || rows[item.row].autoMin || (!knownBlock && rows[item.row].weight))) {
+                    // In a bare fr row an item's minimum contribution is its min-height when set, or its edges for a
+                    // scroll container (Grid §6.6); otherwise its measured height.
+                    if (rows[item.row].autoMin) {
+                      if ((item.rowSpan ?? 1) > 1) throw Object.assign(new Error(`${item.box.label} spans several rows, one of them a bare fr row; that is not modeled`), { code: 'U_LAYOUT_GRID_FR', box: item.box });
+                      const st = item.style, pxOf = v => ['0', '0px'].includes(String(v)) ? zero : /^\d+(?:\.\d+)?px$/.test(String(v)) ? px(v) : null;
+                      const edgesOf = ['top', 'bottom'].map(side => [pxOf(st[`padding-${side}`]), pxOf(st[`border-${side}`])]).flat();
+                      let lower = null;
+                      if (st['min-block-size'] !== 'auto') { const m = pxOf(st['min-block-size']); if (m === null || edgesOf.includes(null)) throw Object.assign(new Error(`${item.box.label}: min-height ${st['min-block-size']} in a bare fr row is not modeled`), { code: 'U_LAYOUT_GRID_FR', box: item.box }); lower = st['box-sizing'] === 'content-box' ? edgesOf.reduce(add, m) : m; }
+                      else if (['hidden', 'auto', 'scroll'].includes(String(st['overflow-y']))) { if (edgesOf.includes(null)) throw Object.assign(new Error(`${item.box.label}: UA edges in a bare fr row are not modeled`), { code: 'U_LAYOUT_GRID_FR', box: item.box }); lower = edgesOf.reduce(add, zero); }
+                      if (lower !== null) { const edgesTotal = edgesOf.includes(null) ? zero : edgesOf.reduce(add, zero); if (cmp(lower, edgesTotal) < 0) lower = edgesTotal; measurements = bounded(measurements.flatMap(m => maximum(m.region, m.bases[item.row], sum(scalar(lower), scalar(marginBlock(item)))).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))); continue; }
+                    }
                     measurements = bounded(measurements.flatMap(m => solve(item.box, { inline: itemInline(item), percentInline: areaInline(item), tracks: { inline: childColumns(item) }, gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true, ...(item.style.$collapsedTop ? { collapsedTop: true } : {}), ...(item.style.$collapsedBottom ? { collapsedBottom: true } : {}) } : {}), autoMargins: autoMargins(item) }, m.region, ancestors, item.inherited ?? style, false).flatMap(measured => maximum(measured.region, m.bases[item.row], sum(measured.block, scalar(marginBlock(item)))).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))));
                   }
                   for (const m of measurements) {

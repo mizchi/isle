@@ -36,6 +36,10 @@ export function tracks(value, automatic = false, tokensOnly = false) {
       if (cmp(weight, q(0)) <= 0) throw new Error('Grid fr weight must be positive');
       return { weight, min: q(floored[1] ?? floored[2]), ...(floored[2] ? { minCap: true } : {}) };
     }
+    // A bare Nfr row (minmax(auto, Nfr)): its minimum is its items' measured minimum contribution (rows only; the
+    // engine rewrites bare fr columns before they get here).
+    const bareFr = automatic && (token.match(/^(\d+(?:\.\d+)?)fr$/) ?? token.match(/^minmax\(\s*auto\s*,\s*(\d+(?:\.\d+)?)fr\s*\)$/));
+    if (bareFr) { const weight = q(bareFr[1]); if (cmp(weight, q(0)) <= 0) throw new Error('Grid fr weight must be positive'); return { weight, autoMin: true }; }
     const flexible = token.match(/^minmax\(\s*0(?:px)?\s*,\s*(\d+(?:\.\d+)?)fr\s*\)$/);
     if (!flexible) return { fixed: px(token) };
     const weight = q(flexible[1]);
