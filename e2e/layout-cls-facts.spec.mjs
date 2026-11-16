@@ -617,6 +617,25 @@ test('object-fit on an img sized by its own ratio: the static warning fires exac
   }
 });
 
+test('image-fallback-contrast: with the background image blocked, Chromium paints the text on the color the static warning names', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const pixel = async (x, y) => [...await page.evaluate(async data => { const i = new Image(); i.src = `data:image/png;base64,${data}`; await i.decode(); const c = document.createElement('canvas'); c.width = 1; c.height = 1; const x2 = c.getContext('2d'); x2.drawImage(i, 0, 0); return x2.getImageData(0, 0, 1, 1).data; }, (await page.screenshot({clip: {x, y, width: 1, height: 1}})).toString('base64'))].slice(0, 3);
+  const lum = rgb => { const [r, gg, b] = rgb.map(v => v / 255).map(v => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * r + 0.7152 * gg + 0.0722 * b; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  await page.route('**/hero.jpg', route => route.abort());
+  for (const bg of ['background:#fff url(/hero.jpg)', 'background:#123 url(/hero.jpg)', 'background-image:url(/hero.jpg)', 'background:#777 url(/hero.jpg)']) {
+    const css = `*{box-sizing:border-box;margin:0}html,body,.p{${g}}.p{background:#fff;color:#000}.hero{${g};${bg}}.t{line-height:24px;color:#fff;padding:4px}`;
+    const html = '<main class="p"><section class="hero"><h1 class="t">Welcome</h1></section></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true, boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+    const warn = (report.accessibility?.warnings ?? []).some(w => w.code === 'W_A11Y_IMAGE_FALLBACK_CONTRAST');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    await page.waitForTimeout(100);
+    const box = await page.evaluate(() => { const r = document.querySelector('.t').getBoundingClientRect(); return [r.left + 1, r.top + 1]; });
+    const behind = await pixel(...box);
+    expect(ratio([255, 255, 255], behind) < 4.5, `${bg}: the background shown is ${behind}`).toBe(warn);
+  }
+});
+
 test('inert z-index: a static block-level box in block flow does not stack above a positioned sibling; a grid item does', async ({page}) => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   for (const [parent, warn] of [['display:block', true], [g, false]]) {
