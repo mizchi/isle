@@ -2933,6 +2933,24 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     diagnostics.length = 0; diagnostics.push(...kept);
     accessibilityWarnings = tiered(judged.warnings); accessibilityNotes = judged.notes; accessibilityExempted = judged.exempted;
   }
+  // accessible-name from the markup alone, where the layout is Unknown (and the geometric checks did not run): a button
+  // or link with no text, no image text and no naming attribute has no name whatever its geometry. It is reported
+  // only when no CSS rule could hide it (display: none, visibility hidden/collapse, content-visibility: hidden) or
+  // give it generated text (content), and no ancestor hides it from the accessibility tree.
+  else if (options.accessibility && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant
+    && !rules.some(rule => rule.declarations.some(d => d.property === 'content' || (d.property === 'display' && String(d.value) === 'none') || (d.property === 'visibility' && /hidden|collapse/.test(String(d.value))) || (d.property === 'content-visibility' && String(d.value) === 'hidden')))) {
+    const speaks = box => box.text || box.inline?.length || (box.textContent ?? '').trim() || (box.tag === 'img' && (box.alt ?? '').trim()) || box.alt === undefined && box.tag === 'img' || (box.tag === 'svg' && box.named) || (box.children ?? []).some(speaks) || (box.inline ?? []).some(speaks);
+    const walk = (box, hidden) => {
+      // UA-hidden: a popover (closed until shown), a dialog that is not open, and a closed details' content.
+      const gone = hidden || box.ariaHidden || box.hiddenAttr || box.inert || box.popover || (box.tag === 'dialog' && box.dialogOpen !== true) || box.tag === 'template';
+      const control = !box.pseudo && (box.tag === 'button' || (box.tag === 'a' && box.focusable !== false && box.href !== undefined));
+      if (control && !gone && !box.named && !box.labelledBy && !speaks(box))
+        diagnostics.push({ code: 'E_A11Y_NAME', severity: 'error', box: box.label, path: box.path, source: box.source, rule: 'accessible-name', ...ranges(initial),
+          message: `${box.label} has no accessible name: no text, no image text and no aria-label, aria-labelledby or title (checked from the markup; the layout was not analysed)` });
+      for (const child of [...(box.children ?? []), ...(box.inline ?? [])]) walk(child, gone || (box.tag === 'details' && box.detailsOpen !== true && child.tag !== 'summary'));
+    };
+    walk(root, false);
+  }
   // Layout rectangles: a transform moves the painted box but not the layout box (a layout shift ignores it; measured
   // in docs/cls-evaluation.md). With a transform anywhere, every row's layoutRect comes from the untransformed
   // re-layout, matched by path and condition region; a row without a match gets layoutRect null (not decided).

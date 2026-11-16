@@ -2,8 +2,8 @@
   "run": "before",
   "cases": 20,
   "breaks": 26,
-  "caught": 24,
-  "missed": 2,
+  "caught": 25,
+  "missed": 1,
   "unconfirmedErrors": 0,
   "environment": 14,
   "clean": [
@@ -695,13 +695,13 @@
       "expected": [
         {
           "code": "E_A11Y_NAME",
-          "found": false
+          "found": true
         }
       ],
-      "caught": [],
-      "missed": [
+      "caught": [
         "no-name .lx-sort [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
       ],
+      "missed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -718,7 +718,7 @@
           "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
         }
       ],
-      "errors": 0,
+      "errors": 1,
       "warnings": 0,
       "assumptions": [
         "3 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",

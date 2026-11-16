@@ -92,6 +92,7 @@ error が 1 件でもあれば終了コードは 1 です。
 - overflow が auto/scroll の container は、その軸で中身をスクロールさせる意図とみなす(コアのオプション `scrollIntent: 'css'`。lint が渡す)。hidden/clip で切れる中身は報告する。
 - StyleX の同じ entry の shorthand と longhand(`padding` と `paddingBottom`)。StyleX と同じく、順序によらず longhand が勝つ(実際の StyleX のビルドと Chromium で照合した)。
 - 自動の列幅の表で、px の幅の空の block が一つだけのセル(アイコンのボタン)。
+- レイアウトが Unknown でも、テキスト、画像のテキスト、名前の属性のどれもないボタンとリンクは、マークアップだけで `E_A11Y_NAME` を出す(CSS がそれを隠すことも、生成テキストを付けることもできない場合だけ。Chromium の accessibility tree と照合した)。
 - sr-only(視覚的に隠したテキスト)。名前には入るが、収まるかどうか、切り取り、コントラストは判定しない。
 
 `svelte-adapter/fixtures/Catalog.svelte` と `vue-adapter/fixtures/Article.vue` は、これらを組み合わせた例である。

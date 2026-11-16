@@ -2015,3 +2015,18 @@ test('live-hidden is not reported where nothing was laid out (an analysis stoppe
   // Really hidden: still reported.
   assert.ok(analyzeHTML(html, {...opts, css: base + '.t{visibility:hidden}'}).accessibility.warnings.some(w => w.code === 'W_A11Y_LIVE_HIDDEN'));
 });
+
+test('accessible-name from the markup alone when the layout is Unknown: an empty button is still reported, unless CSS could hide or name it', () => {
+  // A table cell holding an inline button: the table layout is Unknown (not modeled), the name check is not.
+  const html = btn => `<html lang="en"><body><main class="m"><table class="t"><tbody><tr><td class="c">${btn}</td></tr></tbody></table></main></body></html>`;
+  const css = extra => `*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.b{width:24px;height:24px}${extra}`;
+  const run = (b, extra = '') => analyzeHTML(html(b), {name: 'P', css: css(extra), viewport: {min: 320, max: 800}, accessibility: true});
+  const empty = run('<button class="b" type="button"></button>');
+  assert.ok(empty.diagnostics.some(d => d.severity === 'unknown'), 'the layout stays Unknown');
+  assert.ok(empty.diagnostics.some(d => d.code === 'E_A11Y_NAME' && d.box === '.b'), JSON.stringify(empty.diagnostics.map(d => d.code)));
+  for (const named of ['<button class="b" type="button" aria-label="Sort"></button>', '<button class="b" type="button">Sort</button>', '<button class="b" type="button"><img src="/s.svg" alt="Sort"></button>', '<button class="b" type="button" aria-hidden="true" tabindex="-1"></button>'])
+    assert.ok(!run(named).diagnostics.some(d => d.code === 'E_A11Y_NAME'), named);
+  // CSS that could hide it or give it generated text: left to the (Unknown) layout analysis.
+  for (const extra of ['.b::before{content:"Sort"}', '@media (width < 500px){.b{display:none}}', '.c{visibility:hidden}'])
+    assert.ok(!run('<button class="b" type="button"></button>', extra).diagnostics.some(d => d.code === 'E_A11Y_NAME'), extra);
+});

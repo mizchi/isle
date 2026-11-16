@@ -1948,3 +1948,16 @@ test('focus-offscreen: Tab focuses each link of a drawer moved off screen by a t
     }
   }
 });
+
+test('accessible-name from the markup alone (the layout Unknown): each button has an empty name in Chromium exactly where the static check reports one', async ({page}) => {
+  const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.b{width:24px;height:24px}';
+  for (const button of ['<button class="b" type="button"></button>', '<button class="b" type="button" aria-label="Sort"></button>', '<button class="b" type="button">Sort</button>', '<button class="b" type="button"><img src="data:," alt="Sort"></button>', '<button class="b" type="button" title="Sort"></button>', '<button class="b" type="button"><span></span></button>', '<a class="b" href="/x"></a>']) {
+    // A table cell with an inline button: the table layout is not modeled (Unknown).
+    const html = `<html lang="en"><body><main class="m"><table class="t"><tbody><tr><td class="c">${button}</td></tr></tbody></table></main></body></html>`;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800}, accessibility: true});
+    expect(report.diagnostics.some(d => d.severity === 'unknown'), button).toBe(true);
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const name = await axName(page, '.b');
+    expect(report.diagnostics.some(d => d.code === 'E_A11Y_NAME'), `${button}: Chromium name ${JSON.stringify(name)}`).toBe(name === '');
+  }
+});
