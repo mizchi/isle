@@ -257,7 +257,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // Likewise a structural pseudo-class on the root of a component: its siblings in the page are not known.
   for (const box of boxes) if (box.attributes || !box[PARENT]) for (const rule of rules) for (const selector of rule.selectors ?? []) {
     const tests = dynamicAttributeTests(selector, box);
-    const attributes = tests.filter(t => t.kind === 'attribute'), structural = tests.filter(t => t.kind === 'structural');
+    const attributes = tests.filter(t => t.kind === 'attribute'), structural = tests.filter(t => ['structural', 'has'].includes(t.kind));
     if (attributes.length && !diagnostics.some(d => d.code === 'U_LAYOUT_ATTRIBUTE' && d.path === box.path)) unknown('U_LAYOUT_ATTRIBUTE', `${box.label}: ${selector.source} tests the value of ${attributes.map(t => t.name).join(', ')}, which is dynamic here`, rule.line, box, rule.file);
     if (structural.length && !diagnostics.some(d => d.code === 'U_LAYOUT_STRUCTURAL' && d.path === box.path)) unknown('U_LAYOUT_STRUCTURAL', `${box.label}: ${selector.source} tests its position among its siblings, which are outside the analyzed root`, rule.line, box, rule.file);
   }

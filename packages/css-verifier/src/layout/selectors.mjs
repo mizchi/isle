@@ -75,6 +75,22 @@ function compileCompound(source, depth = 0) {
       if (!formula) throw new Error(`Unsupported selector: ${source}`);
       parts.push({ kind: 'structural', name: nth[1].toLowerCase(), ...formula }); specificity[1]++; rest = rest.slice(nth[0].length); continue;
     }
+    // :has(relative list): an argument is one compound with an optional leading combinator (descendant by default).
+    const has = rest.match(/^:has\(/i);
+    if (has) {
+      let level = 1, end = has[0].length;
+      while (end < rest.length && level) { if (rest[end] === '(') level++; if (rest[end] === ')') level--; end++; }
+      if (level) throw new Error(`Unclosed selector function: ${source}`);
+      const relative = postcss.list.comma(rest.slice(has[0].length, end - 1)).map(arg => {
+        const m = arg.trim().match(/^([>+~])?\s*(.*)$/s);
+        const compiled = compileSelector(m[2], depth + 1);
+        if (compiled.state || compiled.pseudoElement || compiled.chain?.length || compiled.parts.some(p => p.kind === 'has')) throw new Error(`Unsupported selector (:has() takes one compound without states here): ${source}`);
+        return { combinator: m[1] ?? ' ', selector: compiled };
+      });
+      parts.push({ kind: 'has', relative, choices: relative.map(r => r.selector) });
+      specificity = combine(specificity, relative.reduce((best, r) => greaterRank(r.selector.specificity, best) ? r.selector.specificity : best, [0, 0, 0]));
+      rest = rest.slice(end); continue;
+    }
     // :not(list): matches when no argument does; its specificity is its most specific argument's. States and
     // pseudo-elements inside it are not modeled.
     const not = rest.match(/^:not\(/i);
@@ -133,7 +149,7 @@ export function compoundMatches(selector, box) {
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
     part.kind === 'root' ? box.documentRoot === true : part.kind === 'path' ? box.path === part.value :
-    part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'structural' ? structuralMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
+    part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'structural' ? structuralMatches(part, box) : part.kind === 'has' ? hasMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
     part.choices.some(choice => matches(choice, box)));
 }
 // An+B: odd, even, An+B, B (no "of S").
@@ -168,6 +184,18 @@ function structuralMatches(part, box) {
     default: return nthHolds(part, fromEnd);
   }
 }
+const elementChildren = box => [...(box.children ?? []), ...(box.inline ?? [])].filter(child => !child.anonymous && !child.pseudo);
+const descendants = box => elementChildren(box).flatMap(child => [child, ...descendants(child)]);
+function hasMatches(part, box) {
+  return part.relative.some(({ combinator, selector }) => {
+    if (combinator === ' ') return descendants(box).some(d => matches(selector, d));
+    if (combinator === '>') return elementChildren(box).some(d => matches(selector, d));
+    const all = siblingsOf(box);
+    if (!all) return false; // reported by dynamicAttributeTests
+    const later = all.slice(all.findIndex(s => s === box || s.path === box.path) + 1);
+    return (combinator === '+' ? later.slice(0, 1) : later).some(d => matches(selector, d));
+  });
+}
 // An adapter renders a dynamic attribute value as this placeholder: a value test against it is not known.
 const DYNAMIC_VALUE = 'dynamic';
 function attributeMatches(part, box) {
@@ -196,7 +224,7 @@ export function dynamicAttributeTests(selector, box) {
   const attributeTest = part => part.kind === 'attribute' && part.operator && Object.hasOwn(box.attributes ?? {}, part.name) && [undefined, DYNAMIC_VALUE].includes(box.attributes[part.name]);
   // A component root's position among its siblings: tested only where the root is the subject of a selector without
   // combinators (with a combinator, the root matches only through elements outside the tree anyway).
-  const structuralTest = (part, subjectOnly) => part.kind === 'structural' && part.name !== 'empty' && root && subjectOnly;
+  const structuralTest = (part, subjectOnly) => ((part.kind === 'structural' && part.name !== 'empty') || (part.kind === 'has' && part.relative.some(r => ['+', '~'].includes(r.combinator)))) && root && subjectOnly;
   const out = [];
   const visit = (sel, subjectOnly) => {
     const compounds = [sel, ...(sel.chain ?? []).map(link => link.compound)];
@@ -205,7 +233,7 @@ export function dynamicAttributeTests(selector, box) {
       for (const part of compound.parts) if (part.choices) part.choices.forEach(choice => visit(choice, alone));
       const unknown = part => attributeTest(part) || structuralTest(part, alone);
       const tests = compound.parts.filter(unknown);
-      if (tests.length && compound.parts.filter(part => !unknown(part) && !part.choices && part.kind !== 'structural').every(part => compoundMatches({ parts: [part] }, box))) out.push(...tests);
+      if (tests.length && compound.parts.filter(part => !unknown(part) && !part.choices && !['structural', 'has'].includes(part.kind)).every(part => compoundMatches({ parts: [part] }, box))) out.push(...tests);
     });
   };
   visit(selector, true);
