@@ -60,6 +60,25 @@ function compileCompound(source, depth = 0) {
     if (checkedMark) { state = 'checked'; pseudoElement = checkedMark[1].toLowerCase(); specificity[1]++; specificity[2]++; rest = ''; continue; }
     const pseudo = rest.match(/^::?(before|after)$/i) ?? rest.match(/^::(placeholder)$/i);
     if (pseudo) { pseudoElement = pseudo[1].toLowerCase(); specificity[2]++; rest = ''; continue; }
+    // Attribute selectors: [a], [a=v], [a~=v], [a|=v], [a^=v], [a$=v], [a*=v], with the i/s flags.
+    const attribute = rest.match(/^\[\s*([a-zA-Z_][\w:-]*)\s*(?:([~|^$*]?=)\s*(?:"([^"]*)"|'([^']*)'|([^\s\]"']+))\s*([iIsS])?\s*)?\]/);
+    if (attribute) {
+      parts.push({ kind: 'attribute', name: attribute[1].toLowerCase(), ...(attribute[2] ? { operator: attribute[2], value: attribute[3] ?? attribute[4] ?? attribute[5], insensitive: /i/i.test(attribute[6] ?? '') } : {}) });
+      specificity[1]++; rest = rest.slice(attribute[0].length); continue;
+    }
+    // :not(list): matches when no argument does; its specificity is its most specific argument's. States and
+    // pseudo-elements inside it are not modeled.
+    const not = rest.match(/^:not\(/i);
+    if (not) {
+      let level = 1, end = not[0].length;
+      while (end < rest.length && level) { if (rest[end] === '(') level++; if (rest[end] === ')') level--; end++; }
+      if (level) throw new Error(`Unclosed selector function: ${source}`);
+      const choices = postcss.list.comma(rest.slice(not[0].length, end - 1)).map(s => compileSelector(s, depth + 1));
+      if (choices.some(c => c.state || c.pseudoElement)) throw new Error(`Unsupported selector (a state or pseudo-element inside :not()): ${source}`);
+      parts.push({ kind: 'not', choices });
+      specificity = combine(specificity, choices.reduce((best, c) => greaterRank(c.specificity, best) ? c.specificity : best, [0, 0, 0]));
+      rest = rest.slice(end); continue;
+    }
     const fn = rest.match(/^:(where|is)\(/i);
     if (fn) {
       let level = 1, end = fn[0].length;
@@ -104,5 +123,44 @@ export function compoundMatches(selector, box) {
   if (box.anonymous) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
-    part.kind === 'root' ? box.documentRoot === true : part.kind === 'path' ? box.path === part.value : part.choices.some(choice => matches(choice, box)));
+    part.kind === 'root' ? box.documentRoot === true : part.kind === 'path' ? box.path === part.value :
+    part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
+    part.choices.some(choice => matches(choice, box)));
+}
+// An adapter renders a dynamic attribute value as this placeholder: a value test against it is not known.
+const DYNAMIC_VALUE = 'dynamic';
+function attributeMatches(part, box) {
+  const attributes = box.attributes ?? {};
+  if (!Object.hasOwn(attributes, part.name)) return false;
+  if (!part.operator) return true;
+  const raw = attributes[part.name];
+  // Not known: treated as no match here; dynamicAttributeTests reports it (the analysis is Unknown).
+  if (raw === undefined || raw === DYNAMIC_VALUE) return false;
+  const fold = v => part.insensitive ? v.toLowerCase() : v, have = fold(String(raw)), want = fold(part.value);
+  switch (part.operator) {
+    case '=': return have === want;
+    case '~=': return want !== '' && !/\s/.test(want) && have.split(/\s+/).includes(want);
+    case '|=': return have === want || have.startsWith(`${want}-`);
+    case '^=': return want !== '' && have.startsWith(want);
+    case '$=': return want !== '' && have.endsWith(want);
+    case '*=': return want !== '' && have.includes(want);
+  }
+  return false;
+}
+
+/** The value tests of a selector (any compound, :is/:where/:not arguments) on an attribute that is dynamic on this
+ * box, where the compound's other parts match it: whether the rule applies is not known. */
+export function dynamicAttributeTests(selector, box) {
+  const dynamic = part => part.kind === 'attribute' && part.operator && Object.hasOwn(box.attributes ?? {}, part.name) && [undefined, DYNAMIC_VALUE].includes(box.attributes[part.name]);
+  const compounds = sel => [sel, ...(sel.chain ?? []).map(link => link.compound)];
+  const out = [];
+  const visit = sel => {
+    for (const compound of compounds(sel)) {
+      for (const part of compound.parts) if (part.choices) part.choices.forEach(visit);
+      const tests = compound.parts.filter(dynamic);
+      if (tests.length && compound.parts.filter(part => !dynamic(part) && !part.choices).every(part => compoundMatches({ parts: [part] }, box))) out.push(...tests);
+    }
+  };
+  visit(selector);
+  return out;
 }

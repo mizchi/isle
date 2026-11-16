@@ -4,7 +4,7 @@ import { validateOptions } from './input.mjs';
 import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea } from './css.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas } from './grid.mjs';
-import { compileSelector, PARENT } from './selectors.mjs';
+import { compileSelector, PARENT, dynamicAttributeTests } from './selectors.mjs';
 import { selectorUsage } from './selector-usage.mjs';
 import { viewportFont, zoomShortfall } from './zoom-font.mjs';
 import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
@@ -252,6 +252,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
+  // A selector testing the value of an attribute that is dynamic on an element (an adapter's placeholder): whether
+  // the rule applies there is not known.
+  for (const box of boxes) if (box.attributes) for (const rule of rules) for (const selector of rule.selectors ?? []) {
+    const tests = dynamicAttributeTests(selector, box);
+    if (tests.length && !diagnostics.some(d => d.code === 'U_LAYOUT_ATTRIBUTE' && d.path === box.path)) unknown('U_LAYOUT_ATTRIBUTE', `${box.label}: ${selector.source} tests the value of ${tests.map(t => t.name).join(', ')}, which is dynamic here`, rule.line, box, rule.file);
+  }
   if (rules.some(rule => rule.stateLayout && !rule.hoverLayout) && !options.accessibility) unknown('U_LAYOUT_SELECTOR', 'A :focus rule changes the layout; the focused layout is modeled for the accessibility checks only');
   if (rules.some(rule => rule.stateGeometry) && !options.accessibility && !options.integrity) unknown('U_LAYOUT_SELECTOR', 'A state rule moves a box (focus insets or a transform); that is modeled for the accessibility and integrity checks only');
   // style attributes: each element's declarations as a rule that matches only it, element-attached in the cascade.

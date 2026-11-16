@@ -41,3 +41,17 @@ test('selector usage over the states agrees with the Svelte compiler', () => {
   assert.deepEqual(ours, svelte);
   assert.deepEqual(ours, ['.unused > .row']);
 });
+
+test('attribute selectors follow attribute states; a dynamic attribute value is Unknown', async () => {
+  const {analyzeSvelte} = await import('../src/index.mjs');
+  const pageCSS = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}';
+  const viewport = {min: 320, max: 800, height: {min: 600, max: 900}};
+  const source = `<script>let { open = false } = $props();</script>
+<div class="w"><button class="t" type="button" aria-expanded={open ? 'true' : 'false'}>Menu</button><div class="m"></div></div>
+<style>.w{display:grid;grid-template-columns:minmax(0,1fr)}.t{appearance:none;display:block;border:0;padding:0;min-width:0;min-height:0;height:24px}.m{height:10px;width:200px}.t[aria-expanded="true"] + .m{width:2000px}</style>`;
+  const r = analyzeSvelte(source, {pageCSS, viewport, assumeText: true});
+  const bad = r.states.filter(s => s.report.diagnostics.some(d => d.code === 'E_LAYOUT_ITEM_SIZE'));
+  assert.deepEqual(bad.map(s => s.choices.open), [true]);
+  const dynamic = analyzeSvelte(source.replace(`{open ? 'true' : 'false'}`, '{open}'), {pageCSS, viewport, assumeText: true});
+  assert.equal(dynamic.status, 'unknown');
+});

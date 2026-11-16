@@ -1,4 +1,6 @@
-import { compoundMatches, neighbors } from './selectors.mjs';
+import { compoundMatches as exactMatches, neighbors } from './selectors.mjs';
+// A match that is not known (a dynamic attribute value) counts as a match: such a selector is never reported.
+const compoundMatches = (selector, box) => { try { return exactMatches(selector, box); } catch { return true; } };
 
 // Selector usage (opt-in, options.selectors): every stylesheet selector against the elements of the analysed tree.
 // A selector is judged on the element it styles: user-action states and pseudo-elements are ignored, since the
