@@ -997,7 +997,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           // item out inside them on both axes.
           const m = side => /^\d+(?:\.\d+)?px$/.test(String(child.style[`margin-${side}`])) ? px(child.style[`margin-${side}`]) : zero;
           const margins = { left: m('left'), right: m('right'), top: m('top'), bottom: m('bottom') };
-          let item = flexItem(child.style, { empty: !child.box.text && !child.box.children.length, axis: main });
+          // A row item sized by its content (flex-basis auto or content, auto width): its max- and min-content widths
+          // are its flex base size and automatic minimum.
+          const contentSized = main === 'inline' && ['auto', 'content'].includes(String(child.style['flex-basis'])) && child.style['inline-size'] === 'auto'
+            && child.style['min-inline-size'] === 'auto' && ['visible', 'clip'].includes(child.style['overflow-x']) && !['inline-size', 'size'].includes(child.style['container-type']);
+          const contentSizes = contentSized ? frAutoMinimums(child.box, child.style, state.region, [...parents, { box, style }], true) : null;
+          let item = flexItem(child.style, { empty: !child.box.text && !child.box.children.length, axis: main, ...(contentSizes ? { contentSizes } : {}) });
           const marginMain = main === 'inline' ? add(margins.left, margins.right) : add(margins.top, margins.bottom);
           if (cmp(add(add(margins.left, margins.right), add(margins.top, margins.bottom)), zero) !== 0) {
             if ((item.autoStart || item.autoEnd) && cmp(marginMain, zero) !== 0) throw flexUnknown('A flex item with both auto and px main-axis margins is outside the subset');
@@ -2028,13 +2033,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // A bare Nfr column is minmax(auto, Nfr): its minimum is the largest minimum contribution of its single-span items
   // (Grid §6.6). Where every one is a known constant C the column is rewritten to minmax(Cpx, Nfr) (minmax(0, Nfr)
   // for 0), which the fr sizing (with its freezing loop) handles; otherwise Unknown.
-  function frAutoMinimums(box, style, region, parents) {
-    if (!['grid', 'inline-grid'].includes(style.display) || style.$blockFlow) return style;
+  // probe: instead, the min- and max-content widths (border box) of box itself: { min, max } (a flex item's content).
+  function frAutoMinimums(box, style, region, parents, probe = false) {
+    if (!probe && (!['grid', 'inline-grid'].includes(style.display) || style.$blockFlow)) return style;
     const source = String(style['grid-template-columns']);
     // repeat(auto-fill | auto-fit, …) takes no bare fr (invalid there); subgrid has no own tracks.
-    if (/auto-fill|auto-fit|subgrid/.test(source) || !/fr\b|\bauto\b|min-content|max-content|fit-content/.test(source)) return style;
-    const unknown = why => { throw Object.assign(new Error(`${box.label}: a bare fr column (minmax(auto, fr)) ${why}; its minimum is not known`), { code: 'U_LAYOUT_GRID_FR', box, region }); };
-    let tokens; try { tokens = expandTracks(source); } catch { return style; }
+    if (!probe && (/auto-fill|auto-fit|subgrid/.test(source) || !/fr\b|\bauto\b|min-content|max-content|fit-content/.test(source))) return style;
+    const unknown = why => { throw Object.assign(new Error(probe ? `${box.label}: its content ${why.replace(/^has /, 'has ')}; its content width is not known (give it a px width or flex-basis)` : `${box.label}: a bare fr column (minmax(auto, fr)) ${why}; its minimum is not known`), { code: probe ? 'U_LAYOUT_FLEX' : 'U_LAYOUT_GRID_FR', box, region }); };
+    let tokens; try { tokens = probe ? ['auto'] : expandTracks(source); } catch { return style; }
     const frOf = token => { const m = token.match(/^(\d+(?:\.\d+)?)fr$/) ?? token.match(/^minmax\(\s*auto\s*,\s*(\d+(?:\.\d+)?)fr\s*\)$/); return m ? m[1] : null; };
     const bare = tokens.map(frOf);
     const kindOf = token => token === 'auto' ? 'auto' : token === 'min-content' ? 'min' : token === 'max-content' ? 'max' : /^fit-content\(\s*\d+(?:\.\d+)?px\s*\)$/.test(token) ? 'fit' : null;
@@ -2109,6 +2115,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (cmp(size, edges(st)) < 0) size = edges(st);
       return add(size, margins(st));
     };
+    if (probe) return { min: clampMax(style, minContent(box, style, parents)), max: clampMax(style, minContent(box, style, parents, true)) };
     const n = tokens.length, mins = tokens.map(() => zero), minContents = tokens.map(() => zero), maxContents = tokens.map(() => zero);
     let next = 0;
     for (const item of (box.children ?? []).filter(k => !k.pseudo && !k.anonymous)) {
@@ -2268,7 +2275,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const cssInlineEdges=edge(['left','right']),cssBlockEdges=edge(['top','bottom']);
         const inlineEdges = sum(cssInlineEdges,scalar(box.documentRoot ? 0 : frame.inlineSize)), blockEdges = sum(cssBlockEdges,scalar(box.documentRoot ? 0 : frame.blockSize));
         // The preferred width (a viewport unit or calc() may split the region), as a border-box size.
-        const preferredPieces = (style['inline-size'] === 'auto' ? [{ region: state.region, value: available.inline }] : lengthPieces(style['inline-size'], available.percentInline ?? available.inline, state.region, style))
+        // A grid item (or block-flow child) with an aspect-ratio, a definite height and an auto width is not
+        // stretched: justify-self: normal behaves as start for it, and its width follows the ratio (Grid §6.2, CSS
+        // Sizing 4; measured). Flex items stretch on the cross axis or size by flex: not this case.
+        const ratioWidth = block && style['inline-size'] === 'auto' && ratioOf(style) && /^\d+(?:\.\d+)?px$/.test(String(style['block-size'])) && available.gridItem && !available.flexItem
+          && ['auto', 'normal'].includes(String(style['justify-self'] ?? 'auto')) && style.direction !== 'rtl' && !available.autoMargins?.inline;
+        const ratioInline = () => {
+          const h = length(style['block-size'], available.percentBlock ?? available.block, style), r = ratioOf(style);
+          // ratio = height / width, on the box named by box-sizing.
+          return style['box-sizing'] === 'content-box' ? sum(times(h, div(one, r)), cssInlineEdges) : times(h, div(one, r));
+        };
+        const preferredPieces = (style['inline-size'] === 'auto' ? [{ region: state.region, value: ratioWidth ? ratioInline() : available.inline }] : lengthPieces(style['inline-size'], available.percentInline ?? available.inline, state.region, style))
           .map(piece => ({ ...piece, value: style['inline-size'] !== 'auto' && style['box-sizing'] === 'content-box' ? sum(piece.value, cssInlineEdges) : piece.value }));
         const minimum = style['min-inline-size'] === 'auto' ? zero : px(style['min-inline-size']);
         const minimumBorderBox = sum(scalar(minimum), style['box-sizing'] === 'content-box' ? cssInlineEdges : scalar(0));

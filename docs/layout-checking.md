@@ -312,6 +312,10 @@ inset がどちらも auto の absolute の箱は、静的位置に置かれる�
 
 中身で決まる列(`auto`、`min-content`、`max-content`、`fit-content(Lpx)`)も、item の寄与から解く。`min-content` と `max-content` の列は、item の min-content / max-content の寄与の最大値に固定する。`auto` の列は最小寄与(上と同じ)から始め、空き幅(fr の列は最小の大きさとする)を均等に受け取って max-content の寄与まで伸びる(上限に達した列はそこで止まる。Grid §12.6)。残りは fr の列が取る。fr の列がなければ `auto` の列が均等に伸びる(`justify-content: normal` のとき。start などなら伸びない)。`fit-content(L)` は伸びる上限が min(max-content, L)(最小は下回らない)で、残りへは伸びない。max-content の幅は、テキストの葉では契約の `maxInlineSize`、block flow では子の最大、flex の行では item の和(1 行の場合と max-content)か最大(折り返す場合の min-content)とする。flex-basis で大きさの決まる flex item や、契約のないテキストは Unknown にする。Chromium の照合(単体テストの期待値は Chromium の実測、`e2e/layout-flex.spec.mjs` は幅の範囲全体の矩形)で一致を確かめる。
 
+flex の行の item で、`flex-basis` が auto(か content)で幅が auto、`min-width` が auto、スクロールコンテナでないものは、同じ寄与の計算で、max-content の幅を flex の基準の大きさ、min-content の幅を自動の最小とする(Flexbox §9.2、§4.5)。中身のない item は padding と border の幅になる。中身の幅が分からない場合(契約のないテキストなど)は Unknown のまま。
+
+`aspect-ratio` を持ち、高さが px で幅が auto の grid の item(と block flow の子)は、伸ばされない。`justify-self: normal` はこの item では start として働き、幅は比から決まる(Grid §6.2。box-sizing の箱に比を当てる。測った)。`justify-self: stretch` と column の flex の item は伸びる。高さが % の場合は Unknown のまま(Chromium の循環する % の解決はモデル化していない)。
+
 `repeat(auto-fill, T)`(T は `Lpx` か上記の minmax)は、最小幅で並ぶ数だけトラックを作る(1 本以上)。本数は、container の幅に対する閾値 `n·L + (n−1)·gap` で領域を分けて決める。`auto-fit` は、item の入らないトラックとその gap をつぶす。そのため、すべての子が自動配置で 1 マスの item で、どの状態でも描画される場合に限り、auto-fill の本数を item 数で頭打ちにしたものとして扱う(Chromium で測った)。それ以外の場合は Unknown にする。
 
 Chromium の照合は 2 つある。`e2e/layout-flex.spec.mjs` は、本数が変わる閾値の前後の幅で矩形が一致することを確かめる。`e2e/layout-fuzz-visibility.spec.mjs` の minmax 版では、これらのトラックを混ぜた入れ子の grid を生成し、item が Chromium の解決したトラックに収まるかどうかの判定が一致することを確かめる(auto-fill は 60 seed で 7,796 件、auto-fit を加えた版は 30 seed で 3,166 件の判定)。

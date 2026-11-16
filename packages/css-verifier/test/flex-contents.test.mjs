@@ -50,7 +50,8 @@ test('flex outside the modeled subset is Unknown', () => {
     ['.name { flex: 1 1 0; width: 50px; min-width: auto; }', /flex-basis and width and an automatic minimum/],
     ['.name { align-self: baseline; }', /baseline/],
     ['.name { margin-left: -4px; }', /Negative margins|pixel length/],
-    ['.avatar { width: auto; }', /content size/],
+    // (An empty item with an auto width is its padding and border wide: modeled. Text without a max-content width is not.)
+    ['.name { flex: none; min-width: 0; }', /content (?:size|width)/],
     ['.avatar { order: 1; }', /order/],
     ['.name { flex: 1 1 30%; }', /flex-basis/],
   ]) {

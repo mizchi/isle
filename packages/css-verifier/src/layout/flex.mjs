@@ -8,7 +8,7 @@
 // (empty box or scroll container) or, for content-sized column items, the
 // content size itself. Main-axis auto margins, justify-content and
 // align-items/align-self (except baseline) only move items.
-import { q, add, cmp, div } from './linear.mjs';
+import { q, add, cmp, div, mul } from './linear.mjs';
 import { px } from './css.mjs';
 
 export const flexUnknown = message => Object.assign(new Error(message), { code: 'U_LAYOUT_FLEX' });
@@ -74,7 +74,7 @@ const outer = (size, own, contentBox) => contentBox ? add(size, own) : (cmp(size
  * - automaticBelowBase: the automatic minimum is unknown but at most the base;
  *   the item must then never shrink.
  */
-export function flexItem(style, { empty = false, axis = 'inline' } = {}) {
+export function flexItem(style, { empty = false, axis = 'inline', contentSizes } = {}) {
   const n = names(axis);
   if (style.order !== '0') unknown('order changes the item sequence; only order: 0 is modeled');
   const [startSide, endSide] = n.sides;
@@ -94,6 +94,8 @@ export function flexItem(style, { empty = false, axis = 'inline' } = {}) {
   else if (basis === 'auto' && definite(style[n.size])) base = px(style[n.size]);
   else if ((basis === 'auto' || basis === 'content') && style[n.size] === 'auto' && contained) base = q(0);
   else if ((basis === 'auto' || basis === 'content') && axis === 'block' && style[n.size] === 'auto') base = 'content';
+  // Content widths given by the engine (border box): the max-content width is the base (§9.2.3 C/E).
+  else if ((basis === 'auto' || basis === 'content') && style[n.size] === 'auto' && contentSizes) base = contentBox ? add(contentSizes.max, mul(own, q(-1))) : contentSizes.max;
   else if (basis === 'auto' || basis === 'content') unknown(`flex-basis: ${basis} with an auto ${n.label} uses the content size; give a px ${n.label} or basis`);
   else unknown(`flex-basis ${basis} is outside the subset`);
   // A non-auto flex-basis replaces the main size; the size still feeds the automatic minimum (the specified size
@@ -114,6 +116,8 @@ export function flexItem(style, { empty = false, axis = 'inline' } = {}) {
   }
   if (style[n.min] !== 'auto') item.minimum = outer(px(style[n.min]), own, contentBox);
   else if (!automatic) item.minimum = own;
+  // The content-based minimum of an auto-width item: its min-content width (already capped by max-width, §4.5).
+  else if (contentSizes && style[n.size] === 'auto') item.minimum = cmp(contentSizes.min, own) < 0 ? own : contentSizes.min;
   else if (basis === 'auto') {
     // min(content size, specified size) ≤ the base: safe while it never shrinks.
     if (item.maximum !== undefined) unknown('An automatic minimum together with a max size depends on the content');
