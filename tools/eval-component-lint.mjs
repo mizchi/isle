@@ -1,0 +1,109 @@
+// Component lint evaluation (evals/scenarios/component-lint): for each case, lint the component as an author would
+// (with the font file, as `css-lint --font` does) and lay every state out in Chromium to find what actually breaks.
+//   node tools/eval-component-lint.mjs [--attempt <run>] [--out <file>]
+// Without --attempt it evaluates each case's before.*; with it, attempts/<run>/<case>.* (the author's fix made by
+// following the warnings). The summary separates: breaks Chromium shows and lint reports (caught), breaks lint misses
+// (missed), lint errors Chromium does not show (unconfirmed), and what lint could not check (Unknown, by reason).
+import {chromium} from 'playwright';
+import {readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync} from 'node:fs';
+import {join, extname, dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {lint} from '../packages/adapter-core/src/index.mjs';
+import {loadTextMetrics} from '../packages/css-verifier/src/text-node.mjs';
+import {expandSvelte, analyzeSvelte, unscopeCSS} from '../packages/svelte-adapter/src/index.mjs';
+import {expandVue, analyzeVue} from '../packages/vue-adapter/src/index.mjs';
+import {expandReact, analyzeReact} from '../packages/react-adapter/src/index.mjs';
+
+const root = fileURLToPath(new URL('..', import.meta.url));
+const scenario = join(root, 'evals/scenarios/component-lint');
+const args = process.argv.slice(2), opt = {};
+for (let i = 0; i < args.length; i += 2) opt[args[i].replace(/^--/, '')] = args[i + 1];
+const fontFile = join(root, 'packages/css-verifier/text-metrics/fixtures/roboto-variable.ttf');
+const fonts = {Roboto: {file: fontFile}};
+const face = `@font-face{font-family:Roboto;src:url(data:font/ttf;base64,${readFileSync(fontFile).toString('base64')})}`;
+const pageCSS = '*{box-sizing:border-box;margin:0}html{font-family:Roboto;line-height:1.5}';
+const widths = [320, 375, 768, 1280];
+const textMetrics = await loadTextMetrics({fonts});
+const adapters = {
+  '.svelte': {analyze: analyzeSvelte, expand: s => { const e = expandSvelte(s); return {...e, css: unscopeCSS(e.css)}; }},
+  '.vue': {analyze: analyzeVue, expand: expandVue},
+  '.jsx': {analyze: analyzeReact, expand: expandReact},
+};
+
+const browser = await chromium.launch();
+const cases = readdirSync(join(scenario, 'cases')).sort();
+const rows = [];
+for (const id of cases) {
+  const meta = JSON.parse(readFileSync(join(scenario, 'cases', id, 'case.json'), 'utf8'));
+  const dir = opt.attempt ? join(scenario, 'attempts', opt.attempt) : join(scenario, 'cases', id);
+  const name = opt.attempt ? readdirSync(dir).find(f => f.startsWith(`${id}.`)) : readdirSync(dir).find(f => f.startsWith('before.'));
+  if (!name) { rows.push({id, skipped: 'no file'}); continue; }
+  const file = join(dir, name), source = readFileSync(file, 'utf8'), adapter = adapters[extname(file)];
+  // Lint as the CLI does with --font.
+  const options = {defaultFontSize: 16, sourceLines: true, eachCounts: [0, 2], pageCSS, viewport: {min: 320, max: 1280, height: {min: 480, max: 900}}, accessibility: true, integrity: true, selectors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], assumeText: true, textMetrics, fonts, textResize: true};
+  const result = adapter.analyze(source, options);
+  const messages = lint(result, {file: name, source});
+  // Chromium: every state the adapter expands, at each width, at 1× and 2× default font size.
+  const {states, css} = adapter.expand(source, {eachCounts: [0, 2]});
+  const breaks = new Map();
+  const page = await browser.newPage();
+  const cdp = await page.context().newCDPSession(page);
+  for (const [scale, standard] of [['1x', 16], ['2x', 32]]) {
+    await cdp.send('Page.setFontSizes', {fontSizes: {standard}});
+    // The widths lint names in its counterexamples are laid out too, so an error at 552px is confirmed or refuted there.
+    const witnessWidths = [...new Set(messages.flatMap(m => [...m.message.matchAll(/at viewport (\d+(?:\.\d+)?)px/g)].map(x => Math.floor(Number(x[1])))))].filter(w => !widths.includes(w)).slice(0, 6);
+    for (const width of [...widths, ...witnessWidths]) for (const state of states) {
+      await page.setViewportSize({width, height: 700});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${pageCSS}${css}</style></head><body>${state.html}</body></html>`);
+      await page.evaluate(() => document.fonts.ready);
+      const found = await page.evaluate(async () => {
+        const out = [], label = e => e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\s+/).filter(c => !/^(svelte|s)-/.test(c)).join('.') : e.tagName.toLowerCase();
+        if (document.documentElement.scrollWidth > innerWidth + 1) out.push(['page-overflow', 'html']);
+        const texts = [...document.querySelectorAll('body *')].filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && e.getClientRects().length);
+        for (const e of texts) if (getComputedStyle(e).display !== 'inline') {
+          // Sub-pixel: the text's line boxes (a Range) against the content box, not the integer scrollWidth.
+          const cs0 = getComputedStyle(e), b0 = e.getBoundingClientRect(), rg = document.createRange(); rg.selectNodeContents(e);
+          const right = Math.max(...[...rg.getClientRects()].map(r => r.right)), left = Math.min(...[...rg.getClientRects()].map(r => r.left));
+          const innerRight = b0.right - parseFloat(cs0.paddingRight) - parseFloat(cs0.borderRightWidth), innerLeft = b0.left + parseFloat(cs0.paddingLeft) + parseFloat(cs0.borderLeftWidth);
+          if (e.scrollWidth > e.clientWidth + 1 || right > innerRight + 0.1 || left < innerLeft - 0.1) out.push(['text-overflow', label(e)]);
+          // The text's lines taller than its box (a fixed height): clipped or spilling over what follows.
+          const r = document.createRange(); r.selectNodeContents(e); const lines = r.getBoundingClientRect(), box = e.getBoundingClientRect(), cs = getComputedStyle(e);
+          if (lines.height > box.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - parseFloat(cs.borderTopWidth) - parseFloat(cs.borderBottomWidth) + 1) out.push(['text-overflow-block', label(e)]);
+        }
+        const covered = () => { for (const e of texts) { const t = [...e.childNodes].find(n => n.nodeType === 3 && n.textContent.trim()); const r = document.createRange(); const i = t.textContent.search(/\S/); r.setStart(t, i); r.setEnd(t, i + 1); const b = r.getClientRects()[0]; if (!b || b.bottom < 0 || b.top > innerHeight) continue; const hit = document.elementFromPoint(b.left + 1, (b.top + b.bottom) / 2); if (hit && !e.contains(hit) && !hit.contains(e)) out.push(['text-covered', label(e)]); } };
+        covered(); scrollTo(0, document.documentElement.scrollHeight); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); covered(); scrollTo(0, 0);
+        for (const i of document.querySelectorAll('input[placeholder]')) { const s = getComputedStyle(i), c = document.createElement('canvas').getContext('2d'); c.font = `${s.fontWeight} ${s.fontSize} ${s.fontFamily}`; if (c.measureText(i.placeholder).width > i.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight) + 1) out.push(['placeholder-clipped', label(i)]); }
+        return out;
+      });
+      for (const [kind, box] of found) { const key = `${kind} ${box}`; if (!breaks.has(key)) breaks.set(key, {kind, box, at: []}); const b = breaks.get(key); const where = `${scale}@${width}`; if (!b.at.includes(where)) b.at.push(where); }
+    }
+  }
+  await page.close();
+  // A break is caught when lint reports an error or warning on that box (or on the page for page overflow).
+  const reported = messages.filter(m => ['error', 'warning'].includes(m.severity));
+  const boxOf = m => (m.message.match(/^(?:the start of )?([.#][\w.-]+|[a-z]+@[\w/]+)/) ?? [])[1] ?? '';
+  const matches = (b, m) => b.kind === 'page-overflow' ? /PAGE_OVERFLOW|REFLOW|PAGE_CLIPPED|E_LAYOUT_TRACKS/.test(m.code) || (/TEXT_RESIZE/.test(m.code) && /viewport|page/.test(m.message)) : boxOf(m) && (b.box === boxOf(m) || b.box.split('.').filter(Boolean).every(c => boxOf(m).includes(c)) || boxOf(m).split('.').filter(Boolean).every(c => b.box.includes(c)));
+  const caught = [], missed = [];
+  // Page overflow that a reported content overflow explains (visible text spilling past the viewport) is caught via it.
+  for (const b of breaks.values()) {
+    if (reported.some(m => matches(b, m))) caught.push(b);
+    else if (b.kind === 'page-overflow' && reported.some(m => /E_LAYOUT_CONTENT|E_LAYOUT_ITEM_SIZE/.test(m.code))) caught.push({...b, via: reported.find(m => /E_LAYOUT_CONTENT|E_LAYOUT_ITEM_SIZE/.test(m.code)).code});
+    else missed.push(b);
+  }
+  // An error is confirmed by a break on its box, or by any break at the width its counterexample names (the same
+  // root cause seen as a different symptom: a grid's tracks overflowing show as the page scrolling).
+  const witnessOf = m => { const w = m.message.match(/at viewport (\d+(?:\.\d+)?)px/)?.[1] && Math.floor(Number(m.message.match(/at viewport (\d+(?:\.\d+)?)px/)[1])); return w ? `${/at 200% text size/.test(m.message) ? '2x' : '1x'}@${w}` : null; };
+  const unconfirmed = reported.filter(m => m.severity === 'error' && ![...breaks.values()].some(b => matches(b, m) || (witnessOf(m) && b.at.includes(witnessOf(m)))));
+  const notChecked = messages.filter(m => m.severity === 'info' && /not checked/.test(m.message)).map(m => ({code: m.code, reason: m.message.replace(/^not checked: /, '').replace(/\.[\w-]+/g, '.X').replace(/\d+(?:\.\d+)?px/g, 'Npx').slice(0, 160), line: m.line}));
+  const expected = meta.expect ?? [];
+  const expectedFound = expected.map(code => ({code, found: reported.some(m => m.code === code)}));
+  rows.push({id, file: name, framework: meta.framework, intent: meta.intent, status: result.status, expected: expectedFound, caught: caught.map(b => `${b.kind} ${b.box} [${b.at.join(' ')}]${b.via ? ` via ${b.via}` : ''}`), missed: missed.map(b => `${b.kind} ${b.box} [${b.at.join(' ')}]`), unconfirmed: unconfirmed.map(m => `${m.code} ${m.message.slice(0, 120)}`), notChecked, errors: reported.filter(m => m.severity === 'error').length, warnings: reported.filter(m => m.severity === 'warning').length, assumptions: messages.filter(m => m.code === 'ASSUMPTION').map(m => m.message)});
+}
+await browser.close();
+const tally = new Map();
+for (const r of rows) for (const u of r.notChecked ?? []) tally.set(`${u.code}: ${u.reason}`, (tally.get(`${u.code}: ${u.reason}`) ?? 0) + 1);
+const summary = {run: opt.attempt ?? 'before', cases: rows.length, breaks: rows.reduce((n, r) => n + (r.caught?.length ?? 0) + (r.missed?.length ?? 0), 0), caught: rows.reduce((n, r) => n + (r.caught?.length ?? 0), 0), missed: rows.reduce((n, r) => n + (r.missed?.length ?? 0), 0), unconfirmedErrors: rows.reduce((n, r) => n + (r.unconfirmed?.length ?? 0), 0), clean: rows.filter(r => !r.errors && !(r.missed?.length) && !(r.caught?.length)).map(r => r.id), backlog: [...tally].sort((a, b) => b[1] - a[1]).map(([reason, count]) => ({reason, count})), rows};
+const out = opt.out ?? join(root, 'evals/results/component-lint', `${summary.run}.json`);
+mkdirSync(dirname(out), {recursive: true});
+writeFileSync(out, JSON.stringify(summary, null, 2) + '\n');
+console.log(JSON.stringify({run: summary.run, cases: summary.cases, breaks: summary.breaks, caught: summary.caught, missed: summary.missed, unconfirmedErrors: summary.unconfirmedErrors, clean: summary.clean, backlog: summary.backlog.slice(0, 8)}, null, 2));

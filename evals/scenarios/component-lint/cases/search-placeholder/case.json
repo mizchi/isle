@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "Compact search box in a toolbar.", "planted": "the placeholder is longer than the 160px input and its end is cut off", "expect": ["W_A11Y_PLACEHOLDER_CLIPPED"]}

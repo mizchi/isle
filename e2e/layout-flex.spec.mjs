@@ -221,6 +221,10 @@ const cases = [
     css: '.wrap{display:grid;grid-template-columns:minmax(0,1fr);position:relative}.filler{block-size:100px}.a,.b{position:absolute;top:10px;left:20px;block-size:30px;container-type:inline-size;display:grid;grid-template-columns:minmax(0,1fr)}.a{padding:0 6px}.b{box-sizing:content-box;padding:0 7px;top:50px}.k{block-size:10px}'},
   {name: 'container-type: inline-size collapses a non-growing flex item to its padding', html: '<main class="row"><div class="c"><div class="k"></div></div><div class="g"><div class="k"></div></div><div class="o"></div></main>',
     css: '.row{display:flex;column-gap:10px}.c,.g{display:grid;grid-template-columns:minmax(0,1fr);container-type:inline-size;padding:0 8px}.g{flex-grow:1}.k{block-size:20px}.o{inline-size:50px;block-size:10px}'},
+  {name: 'grid align-items center, end and start with align-self', html: '<main class="g"><div class="a"></div><div class="b"></div><div class="c"></div><div class="d"><div class="k"></div></div></main>',
+    css: '.g{display:grid;grid-template-columns:40px minmax(0,1fr) 30px 50px;align-items:center;column-gap:8px;padding:6px}.a{block-size:20px}.b{block-size:64px}.c{block-size:10px;align-self:end}.d{display:grid;grid-template-columns:minmax(0,1fr);align-self:start;padding:3px}.k{block-size:12px}'},
+  {name: 'grid align-items center in fixed rows', html: '<main class="g"><div class="a"></div><div class="b"></div><div class="c"></div></main>',
+    css: '.g{display:grid;grid-template-columns:minmax(0,1fr) 100px;grid-auto-rows:50px;align-items:center;row-gap:4px}.a{block-size:20px}.b{block-size:30px;align-self:flex-end}.c{block-size:44px}'},
 ];
 const evaluate = (affine, width, height) => {
   const value = text => { const [n, d = '1'] = text.split('/'); return Number(n) / Number(d); };

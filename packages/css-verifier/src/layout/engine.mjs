@@ -755,7 +755,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     }
     // Flex containers and items validate their alignment in the flex model.
     // (align-items does nothing on a block container: reported as inert, not Unknown.)
-    if (block && ((style.display !== 'flex' && !['block', 'list-item'].includes(style.display) && !['normal', 'stretch'].includes(style['align-items'])) || (!available.flexItem && !available.blockFlowChild && !['auto', 'normal', 'stretch'].includes(style['align-self'])) || (style.display !== 'flex' && !['normal', 'stretch', 'start', ...(style.display === 'grid' ? ['center', 'end'] : []), ...(style.display === 'block' && !box.text && !box.inline?.length ? ['center', 'end', 'flex-end', 'flex-start', 'space-between', 'space-around', 'space-evenly'] : [])].includes(style['align-content'])))) throw new Error('Only stretch items and normal/stretch/start (grid: center/end) content alignment are supported');
+    // Grid items align in their area's block axis by align-self (align-items of the grid): start, center and end are
+    // modeled (gridAlign); baseline is not.
+    const gridSelf = ['normal', 'stretch', 'start', 'end', 'center', 'flex-start', 'flex-end', 'self-start', 'self-end'];
+    if (block && ((style.display !== 'flex' && !['block', 'list-item'].includes(style.display) && !(style.display === 'grid' ? gridSelf : ['normal', 'stretch']).includes(style['align-items'])) || (!available.flexItem && !available.blockFlowChild && !(available.gridItem ? ['auto', ...gridSelf] : ['auto', 'normal', 'stretch']).includes(style['align-self'])) || (style.display !== 'flex' && !['normal', 'stretch', 'start', ...(style.display === 'grid' ? ['center', 'end'] : []), ...(style.display === 'block' && !box.text && !box.inline?.length ? ['center', 'end', 'flex-end', 'flex-start', 'space-between', 'space-around', 'space-evenly'] : [])].includes(style['align-content'])))) throw new Error('Only stretch items and normal/stretch/start (grid: center/end) content alignment are supported');
     return true;
   }
 
@@ -2250,7 +2253,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // text contract. In a grid or flex container the element would be an item instead (not folded).
         if (style.display === 'block' && !box.text && !box.inline?.length && box.children.length && !box.pseudo) {
           const kids = box.children, textual = k => k.text || k.inline?.length;
-          const allInline = kids.every(k => phrasingTags.has(k.tag) && k.tag !== 'img' && !(k.children ?? []).length);
+          // Only elements that stay display: inline are folded (nav > a { display: block } is a block-level child).
+          const staysInline = k => { try { return styles(k, state.region, [...parents.map(p => ({ ...p, names: [] })), { box, style, names: [] }], style, false, false).every(s => s.style.display === 'inline'); } catch { return true; } };
+          const allInline = kids.every(k => phrasingTags.has(k.tag) && k.tag !== 'img' && !(k.children ?? []).length) && kids.every(staysInline);
           // One element: it brings its text contract. Several: the container's own contract sizes the line(s).
           if (allInline && kids.length === 1 && textual(kids[0]) && kids[0].contract && !box.contract)
             box = { ...box, text: true, inline: kids, children: [], contract: kids[0].contract, $foldedInline: true };
@@ -2690,6 +2695,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     return [...split.yes.map(r => ({ region: r, offset: times(free, share) })), ...split.no.map(r => ({ region: r, offset: scalar(0) }))];
                   };
                   const childColumns = item => trackSlice(cs.values, columnGap, box, item.start, item.span);
+                  // Block-axis self-alignment (align-self, or the grid's align-items): an item that is not stretched keeps its
+                  // own height and is offset in its area by that share of the free space (CSS Box Alignment §6.1).
+                  const gridAlign = item => { if (style.$blockFlow) return {}; const a = crossAlignment(style['align-items'], item.style['align-self']); return a === 'stretch' ? {} : { alignBlock: a }; };
                   if (!block) {
                     let endings = [children.region];
                     for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: itemInline(item), percentInline: areaInline(item), tracks: { inline: childColumns(item) }, gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true, ...(item.style.$collapsedTop ? { collapsedTop: true } : {}), ...(item.style.$collapsedBottom ? { collapsedBottom: true } : {}) } : {}), autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') }, fitInline: (box.contract?.overflow ?? 'fit') === 'fit' }, r, ancestors, item.inherited ?? style, emit).map(result => result.region)));
@@ -2753,7 +2761,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       let endings = [rs.region];
                       // align-content center/end (unstretched rows in a known height): the rows move by part of the free space.
                       const blockLead = knownBlock && ['center', 'end'].includes(style['align-content']) ? times(diff(knownBlock, rs.required), style['align-content'] === 'center' ? div(one, q(2)) : one) : scalar(zero);
-                      for (const item of placed) endings = bounded(endings.flatMap(r0 => autoOffsets(item, r0)).flatMap(({ region: r, offset: autoLead }) => solve(item.box, { inline: itemInline(item), block: diff(trackArea(rs.values, rowGap, item.row, item.rowSpan), scalar(marginBlock(item))), percentInline: areaInline(item), percentBlock: trackArea(rs.values, rowGap, item.row, item.rowSpan), gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true, ...(item.style.$collapsedTop ? { collapsedTop: true } : {}), ...(item.style.$collapsedBottom ? { collapsedBottom: true } : {}) } : {}), autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') },
+                      for (const item of placed) endings = bounded(endings.flatMap(r0 => autoOffsets(item, r0)).flatMap(({ region: r, offset: autoLead }) => solve(item.box, { inline: itemInline(item), block: diff(trackArea(rs.values, rowGap, item.row, item.rowSpan), scalar(marginBlock(item))), ...gridAlign(item), percentInline: areaInline(item), percentBlock: trackArea(rs.values, rowGap, item.row, item.rowSpan), gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true, ...(item.style.$collapsedTop ? { collapsedTop: true } : {}), ...(item.style.$collapsedBottom ? { collapsedBottom: true } : {}) } : {}), autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') },
                         origin:cs.shift ? offset(contentOrigin,sum(sum(sum(sum(trackStart(cs.values,columnGap,item.start),cs.shift.lead),times(cs.shift.extra,q(item.start))),scalar(marginOf(item, 'left'))),autoLead),sum(sum(trackStart(rs.values,rowGap,item.row),blockLead),scalar(marginOf(item, 'top')))) : null,
                         tracks: { inline: childColumns(item), block: trackSlice(rs.values, rowGap, box, item.row, item.rowSpan) },
                         fitInline: (box.contract?.overflow ?? 'fit') === 'fit', fitBlock: (box.contract?.overflowBlock ?? 'fit') === 'fit' }, r, finalAncestors, item.inherited ?? style, emit).map(result => result.region)));

@@ -101,3 +101,26 @@ test('a state whose analysis throws is Unknown, not a crash', async () => {
   assert.equal(result.status, 'unknown');
   assert.ok(lint(result, {file: 'X.svelte'}).some(m => m.code === 'U_ADAPTER_ANALYSIS' && m.severity === 'info'));
 });
+
+test('lint messages: decimal px, no internal markers, and one finding per root cause', () => {
+  const f = (code, path, box, message) => ({code, path, box, severity: 'error', message, states: [{}], html: ''});
+  const result = {states: [{choices: {}, report: {diagnostics: []}}], unknowns: [], coverage: {assumptions: []}, findings: [
+    f('E_LAYOUT_CONTENT', 'C/0/1', '.title.__text0', '.title.__text0 requires 22065/64px but receives 33329/128px on inline axis at viewport 51761/128px × 690px'),
+    f('E_LAYOUT_TRACKS', 'C/1', '.grid', '.grid requires 752px but receives 520px on inline axis at viewport 552px × 690px'),
+    f('E_LAYOUT_PAGE_OVERFLOW', 'C/1/0', '.plan', '.plan reaches past the viewport, so the page scrolls horizontally'),
+    f('E_LAYOUT_PAGE_OVERFLOW', 'C/1/0/0', '.name.__text1', '.name.__text1 reaches past the viewport, so the page scrolls horizontally'),
+    f('E_A11Y_FIXED_HIDES_PART', 'C/2', '.lead', '.lead runs under the fixed .side'),
+    f('E_A11Y_TEXT_START_OBSCURED', 'C/2', '.lead', 'the start of .lead\'s text is hidden behind .side'),
+    f('W_A11Y_PLACEHOLDER_CLIPPED', 'C/3', '.input.__ph0', '.input.__ph0\'s placeholder needs 246.5px'),
+  ]};
+  result.findings.at(-1).severity = 'warning';
+  const messages = lint(result, {file: 'X.svelte'});
+  const content = messages.find(m => m.code === 'E_LAYOUT_CONTENT');
+  assert.equal(content.message, '.title requires 344.77px but receives 260.38px on inline axis at viewport 404.38px × 690px');
+  assert.ok(!messages.some(m => /__ph|__text/.test(m.message)), JSON.stringify(messages));
+  // The tracks overflow explains its descendants reaching past the viewport: they are folded into it.
+  assert.deepEqual(messages.filter(m => /PAGE_OVERFLOW|TRACKS/.test(m.code)).map(m => m.code), ['E_LAYOUT_TRACKS']);
+  assert.match(messages.find(m => m.code === 'E_LAYOUT_TRACKS').message, /\(also: 2 boxes inside it reach past the viewport\)/);
+  // The fixed bar hiding part of the text includes its start: one finding.
+  assert.deepEqual(messages.filter(m => m.code.startsWith('E_A11Y')).map(m => m.code), ['E_A11Y_FIXED_HIDES_PART']);
+});

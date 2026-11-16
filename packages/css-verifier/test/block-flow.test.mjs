@@ -129,3 +129,23 @@ test('a block of several inline elements with its own contract is one text leaf'
   assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
   assert.equal(r.sizes.find(s => s.box === '.n' && s.rect).rect.blockStart.constant, '34');
 });
+
+test('a block container with one display: block link is block flow, not a text leaf folding the link', () => {
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
+  const boxes = {'.a': {minInlineSize: 100, intrinsicBlockSize: 24, font}};
+  // nav > a { display: block }: the link is a block-level child with its own font (the nav's is medium).
+  const r = analyzeHTML(`<html lang="en"><body><main class="p"><nav class="box"><a class="a" href="/s">Getting started</a></nav></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}.box{display:block;padding:7px}.a{display:block;font-family:Roboto;font-size:16px;line-height:24px}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, boxes});
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.deepEqual(rects(r, 500), [['.a', 7, 7, 486, 24]]);
+});
+
+test('grid align-items center / align-self end: items keep their height and move in their area', () => {
+  const r = analyzeHTML(`<html lang="en"><body><main class="p"><section class="g"><div class="a"></div><div class="b"></div><div class="c"></div></section></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}.g{display:grid;grid-template-columns:40px minmax(0,1fr) 30px;align-items:center}.a{height:20px}.b{height:60px}.c{height:10px;align-self:end}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.deepEqual(rects(r, 500), [['.a', 0, 20, 40, 20], ['.b', 40, 0, 430, 60]]);
+  // baseline stays Unknown.
+  assert.equal(analyzeHTML(`<html lang="en"><body><main class="p"><section class="g"><div class="a"></div></section></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}.g{display:grid;grid-template-columns:minmax(0,1fr);align-items:baseline}.a{height:20px}`, viewport: {min: 320, max: 800}}).status, 'unknown');
+});

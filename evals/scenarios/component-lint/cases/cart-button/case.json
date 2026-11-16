@@ -1,0 +1,1 @@
+{"framework": "vue", "intent": "Add-to-cart button of a fixed width next to the quantity.", "planted": "rem text in a fixed 120px button: fits at the default font size, overflows when text is enlarged to 200%", "expect": ["E_A11Y_TEXT_RESIZE"]}

@@ -1,0 +1,368 @@
+{
+  "run": "run-3",
+  "cases": 8,
+  "breaks": 0,
+  "caught": 0,
+  "missed": 0,
+  "unconfirmedErrors": 0,
+  "clean": [
+    "badge-heading",
+    "cart-button",
+    "chips",
+    "fixed-sidebar",
+    "pricing-grid",
+    "product-card",
+    "profile-ok",
+    "search-placeholder"
+  ],
+  "backlog": [
+    {
+      "reason": "U_A11Y_CONTRAST: .X: the text color is the user-agent default (canvastext); declare color",
+      "count": 17
+    },
+    {
+      "reason": "ASSUMPTION: rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked",
+      "count": 8
+    },
+    {
+      "reason": "ASSUMPTION: 1 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked",
+      "count": 1
+    },
+    {
+      "reason": "U_A11Y_CONTRAST: .X: no ancestor has an opaque background color; the canvas color depends on the user agent",
+      "count": 1
+    },
+    {
+      "reason": "U_A11Y_PLACEHOLDER_CONTRAST: .X: no ancestor has an opaque background color; the canvas color depends on the user agent",
+      "count": 1
+    },
+    {
+      "reason": "U_A11Y_FIELD_BOUNDARY: .X: no ancestor has an opaque background color; the canvas color depends on the user agent",
+      "count": 1
+    }
+  ],
+  "rows": [
+    {
+      "id": "badge-heading",
+      "file": "badge-heading.jsx",
+      "framework": "stylex",
+      "intent": "Section header with a NEW badge in the corner.",
+      "status": "unknown",
+      "expected": [
+        {
+          "code": "E_A11Y_TEXT_START_OBSCURED",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "unconfirmed": [],
+      "notChecked": [
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "cart-button",
+      "file": "cart-button.vue",
+      "framework": "vue",
+      "intent": "Add-to-cart button of a fixed width next to the quantity.",
+      "status": "unknown",
+      "expected": [
+        {
+          "code": "E_A11Y_TEXT_RESIZE",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "unconfirmed": [],
+      "notChecked": [
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color",
+          "line": 3
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "chips",
+      "file": "chips.svelte",
+      "framework": "svelte",
+      "intent": "Tag chips that wrap onto lines.",
+      "status": "unknown",
+      "expected": [],
+      "caught": [],
+      "missed": [],
+      "unconfirmed": [],
+      "notChecked": [
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color",
+          "line": 7
+        },
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color",
+          "line": 7
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "1 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "{#each} is checked at 0, 2 items, all items taking the same branch choices",
+        "{expression} text is rendered as placeholder text; its size comes from the box contracts",
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "1 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "fixed-sidebar",
+      "file": "fixed-sidebar.vue",
+      "framework": "vue",
+      "intent": "Docs layout: a fixed sidebar on the left and the article and footer beside it.",
+      "status": "unknown",
+      "expected": [
+        {
+          "code": "E_A11Y_FIXED_HIDES_PART",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "unconfirmed": [],
+      "notChecked": [
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color",
+          "line": 5
+        },
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color",
+          "line": 6
+        },
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color",
+          "line": 8
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "4 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "pricing-grid",
+      "file": "pricing-grid.jsx",
+      "framework": "linaria",
+      "intent": "Three pricing plans side by side.",
+      "status": "unknown",
+      "expected": [
+        {
+          "code": "E_LAYOUT_PAGE_OVERFLOW",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "unconfirmed": [],
+      "notChecked": [
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color"
+        },
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color"
+        },
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color"
+        },
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color"
+        },
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color"
+        },
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "6 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "product-card",
+      "file": "product-card.svelte",
+      "framework": "svelte",
+      "intent": "Product card: thumbnail beside a title that must stay on one line.",
+      "status": "unknown",
+      "expected": [
+        {
+          "code": "E_LAYOUT_CONTENT",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "unconfirmed": [],
+      "notChecked": [
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color",
+          "line": 4
+        },
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color",
+          "line": 5
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "profile-ok",
+      "file": "profile-ok.svelte",
+      "framework": "svelte",
+      "intent": "Control: a profile row that is already fluid and should produce no errors.",
+      "status": "unknown",
+      "expected": [],
+      "caught": [],
+      "missed": [],
+      "unconfirmed": [],
+      "notChecked": [
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color",
+          "line": 4
+        },
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: no ancestor has an opaque background color; the canvas color depends on the user agent",
+          "line": 5
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "search-placeholder",
+      "file": "search-placeholder.svelte",
+      "framework": "svelte",
+      "intent": "Compact search box in a toolbar.",
+      "status": "unknown",
+      "expected": [
+        {
+          "code": "W_A11Y_PLACEHOLDER_CLIPPED",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "unconfirmed": [],
+      "notChecked": [
+        {
+          "code": "U_A11Y_CONTRAST",
+          "reason": ".X: the text color is the user-agent default (canvastext); declare color",
+          "line": 2
+        },
+        {
+          "code": "U_A11Y_PLACEHOLDER_CONTRAST",
+          "reason": ".X: no ancestor has an opaque background color; the canvas color depends on the user agent",
+          "line": 4
+        },
+        {
+          "code": "U_A11Y_FIELD_BOUNDARY",
+          "reason": ".X: no ancestor has an opaque background color; the canvas color depends on the user agent",
+          "line": 4
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    }
+  ]
+}

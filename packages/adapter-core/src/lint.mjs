@@ -70,7 +70,7 @@ export const recommended = {
   W_A11Y_SELECT_INDICATOR: ['warning', 'draw an arrow for the select'],
 };
 
-const cleanLabel = label => String(label ?? '').replace(/\.__text\d+/g, '');
+const cleanLabel = label => String(label ?? '').replace(/\.__(?:text|ph)\d+/g, '');
 const describe = (states, total) => {
   if (!states || states.length === total) return 'every state';
   const keys = new Set(states.flatMap(s => Object.keys(s)));
@@ -103,6 +103,8 @@ const lineOf = (source, needle) => {
 // Rules about a whole page (its h1, main landmark, skip link, text outside landmarks): a component is not a page, so
 // they are left out unless page: true.
 const pageRules = new Set(['W_A11Y_PAGE_H1', 'W_A11Y_NO_MAIN', 'W_A11Y_MULTIPLE_MAIN', 'W_A11Y_REGION', 'W_A11Y_BYPASS', 'W_A11Y_LANDMARK_TOP_LEVEL', 'W_A11Y_DUPLICATE_LANDMARK']);
+// Messages as an author reads them: the adapter's internal text markers removed, exact fractions as px decimals.
+const readable = message => message.replace(/\.__(?:text|ph)\d+/g, '').replace(/(\d+)\/(\d+)(?=px)/g, (m, a, b) => String(Math.round(Number(a) / Number(b) * 100) / 100));
 export function lint(result, { file = '<component>', source = '', profile = 'recommended', page = false } = {}) {
   const total = result.states.length, out = [];
   const rules = profile === 'all' ? null : recommended;
@@ -113,6 +115,19 @@ export function lint(result, { file = '<component>', source = '', profile = 'rec
     if (!merged.has(key)) merged.set(key, { ...f, states: [...f.states] });
     else merged.get(key).states.push(...f.states);
   }
+  // One root cause, one finding: a box reaching past the viewport inside a box whose overflow is already reported (its
+  // tracks, its size, its own page overflow) is folded into that outermost finding, and a fixed bar hiding part of a
+  // text (E_A11Y_FIXED_HIDES_PART) already says its start is hidden.
+  const overflowRoots = new Set(['E_LAYOUT_TRACKS', 'E_LAYOUT_ITEM_SIZE', 'E_LAYOUT_PAGE_OVERFLOW', 'E_LAYOUT_CONTENT']);
+  const roots = [...merged.values()].filter(f => overflowRoots.has(f.code) && f.path && f.severity !== 'unknown');
+  for (const [key, f] of merged) {
+    if (f.code === 'E_LAYOUT_PAGE_OVERFLOW' && f.path) {
+      const root = roots.filter(r => f.path.startsWith(`${r.path}/`)).sort((a, b) => a.path.length - b.path.length)[0];
+      if (root) { root.folded = (root.folded ?? 0) + 1; merged.delete(key); }
+    }
+    if (f.code === 'E_A11Y_TEXT_START_OBSCURED' && [...merged.values()].some(g => g.code === 'E_A11Y_FIXED_HIDES_PART' && g.path === f.path)) merged.delete(key);
+  }
+  for (const f of merged.values()) if (f.folded) f.message = `${f.message} (also: ${f.folded} ${f.folded > 1 ? 'boxes' : 'box'} inside it reach${f.folded > 1 ? '' : 'es'} past the viewport)`;
   // Codes that mean the analysis did not go into a box: what is under it is not checked (never a silent pass).
   const refusals = new Set(['E_LAYOUT_CONTAINER']);
   for (const f of merged.values()) {
@@ -121,12 +136,12 @@ export function lint(result, { file = '<component>', source = '', profile = 'rec
       // Outside the rule set: still listed (as info), so nothing found disappears from the output.
       const box = cleanLabel(f.box), firstClass = /\.([\w-]+)/.exec(box)?.[1];
       out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity: 'info', code: f.code,
-        message: refusals.has(f.code) ? `not checked: ${box} and what is inside it (${f.message.replace(/\.__text\d+/g, '')}; the analysis models grid and flex containers)` : `outside the ${profile} rules: ${f.message.replace(/\.__text\d+/g, '')}`, states: describe(f.states, total) });
+        message: refusals.has(f.code) ? `not checked: ${box} and what is inside it (${readable(f.message)}; the analysis models grid and flex containers)` : `outside the ${profile} rules: ${readable(f.message)}`, states: describe(f.states, total) });
       continue;
     }
     const [severity, fix] = rules?.[f.code] ?? [f.severity === 'error' ? 'error' : 'warning'];
     const box = cleanLabel(f.box), firstClass = /\.([\w-]+)/.exec(box)?.[1];
-    out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity, code: f.code, message: f.message.replace(/\.__text\d+/g, ''), ...(fix ? { fix } : {}), states: describe(f.states, total) });
+    out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity, code: f.code, message: readable(f.message), ...(fix ? { fix } : {}), states: describe(f.states, total) });
   }
   for (const w of result.selectors?.warnings ?? []) {
     if (rules && !rules[w.code]) continue;
@@ -134,11 +149,11 @@ export function lint(result, { file = '<component>', source = '', profile = 'rec
     out.push({ file, line: lineOf(source, w.selector) ?? lineOf(source, /\.([\w-]+)/.exec(w.selector)?.[1]), severity: rules?.[w.code]?.[0] ?? 'warning', code: w.code, message: w.message, fix: rules?.[w.code]?.[1], states: 'every state' });
   }
   // Not checked: the adapter's Unknowns, each state's Unknowns, and the assumptions made.
-  for (const u of result.unknowns) out.push({ file, severity: 'info', code: u.code, message: `not checked: ${u.message}` });
+  for (const u of result.unknowns) out.push({ file, severity: 'info', code: u.code, message: `not checked: ${readable(u.message)}` });
   const seen = new Set();
   for (const s of result.states) for (const d of s.report.diagnostics.filter(d => d.severity === 'unknown')) {
     const key = `${d.code} ${d.box}`; if (seen.has(key)) continue; seen.add(key);
-    out.push({ file, line: lineOf(source, /\.([\w-]+)/.exec(cleanLabel(d.box))?.[1]), severity: 'info', code: d.code, message: `not checked: ${d.message.replace(/\.__text\d+/g, '')}` });
+    out.push({ file, line: lineOf(source, /\.([\w-]+)/.exec(cleanLabel(d.box))?.[1]), severity: 'info', code: d.code, message: `not checked: ${readable(d.message)}` });
   }
   for (const a of result.coverage?.assumptions ?? []) out.push({ file, severity: 'info', code: 'ASSUMPTION', message: a });
   return out.sort((a, b) => ({ error: 0, warning: 1, info: 2 })[a.severity] - ({ error: 0, warning: 1, info: 2 })[b.severity] || (a.line ?? 1e9) - (b.line ?? 1e9));

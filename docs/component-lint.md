@@ -41,6 +41,8 @@ error が 1 件でもあれば終了コードは 1 です。
 - recommended に含まれないルールの検出も、info として残す(「outside the recommended rules」)。解析が中に入らなかった箱(grid でも flex でもない container の `E_LAYOUT_CONTAINER`)は、「not checked」として、その箱と中身が検査されていないことを示す。検出が黙って消えることはない。
 - ページ全体についてのルール(h1、main ランドマーク、スキップリンク、ランドマーク外のテキスト)は、コンポーネントには当てはまらないので出さない(API の `page: true` で出す)。
 
+一つの原因は一件にまとめる。tracks や大きさのはみ出しの中で、ページの外へ出る箱は、いちばん外の検出に「(also: N boxes inside it reach past the viewport)」として足す。固定バーがテキストの一部を隠す `E_A11Y_FIXED_HIDES_PART` があるときは、同じテキストの `E_A11Y_TEXT_START_OBSCURED` は出さない。寸法は小数の px で出す。
+
 `--profile all` にすると、エンジンの全診断を出します。
 
 ## テキストの期待を書く属性(`--font` と組み合わせる)
@@ -78,6 +80,9 @@ error が 1 件でもあれば終了コードは 1 です。
 - 既定の appearance のボタン(`button` と type が button / submit / reset の `input`)。UA の padding(1px 6px)、border(2px)、`display: inline-block`、`box-sizing: border-box` と、色(ライトでは #efefef の上に黒、ダークでは #6b6b6b の上に白。author が `color` / `background-color` を書かない限り親から継がない)をモデル化した。`appearance: none` と同じ箱になる(測った)。
 - `rem` の margin、padding、幅、gap(既定のフォントサイズの仮定のもとで px に直す)。
 - 既定の appearance のテキスト入力欄(text 系の input と textarea)。padding と border を 4 辺とも指定していれば、`appearance: none` でなくても同じ箱になる(測った)。UA の `display: inline-block`、`box-sizing: content-box`(search は border-box)、最小寸法 0 もモデル化した。
+- grid item の block 軸の自己整列(`align-items` / `align-self` の start、center、end と、その flex-*/self-* の別名)。item は自分の高さを保ち、area の空きのその割合だけずれる(Chromium と照合した)。baseline は Unknown。
+- h1–h6 と th のテキストは、UA の `font-weight: bold`(700)として測る。strong/b は親に対する `bolder` なので、author が太さを書くまで Unknown。
+- 子が 1 つの block container(`<li><a>…</a></li>`)は、子が `display: inline` のときだけテキストの葉として扱う。`nav > a { display: block }` の a は block の子になる。
 - sr-only(視覚的に隠したテキスト)。名前には入るが、収まるかどうか、切り取り、コントラストは判定しない。
 
 `svelte-adapter/fixtures/Catalog.svelte` と `vue-adapter/fixtures/Article.vue` は、これらを組み合わせた例である。

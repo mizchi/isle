@@ -105,14 +105,15 @@ test('a line profile applies only to the white-space and overflow-wrap it was me
   status(wrapRun({...lines('anywhere'), wrap: 'anywhere'}, '.name { overflow-wrap: anywhere; }', viewport), 'verified');
 });
 
-test('UA heading fonts are not inherited: a measured h1 needs author font longhands', () => {
+test('UA heading fonts: h1–h6 are bold (HTML rendering §15.3.7), so a measured heading needs weight 700 or an author weight', () => {
   const heading = () => ({tag: 'main', classes: ['row'], children: [{tag: 'h1', classes: ['name'], text: true}]});
-  const run = extra => analyzeLayout(heading(), {name: 'Card', css: css(extra), viewport: {min: 300, max: 400}, ancestors: [{tag: 'html'}],
-    boxes: {'.name': {minInlineSize: bounds[10], intrinsicBlockSize: 24, wrap: 'nowrap', font, textMetrics: domain}}});
+  const run = (extra, f = font) => analyzeLayout(heading(), {name: 'Card', css: css(extra), viewport: {min: 300, max: 400}, ancestors: [{tag: 'html'}],
+    boxes: {'.name': {minInlineSize: bounds[10], intrinsicBlockSize: 24, wrap: 'nowrap', font: f, textMetrics: {...domain, font: f}}}});
   const report = run('');
   status(report, 'unknown');
-  assert.ok(report.diagnostics.some(d => d.code === 'U_LAYOUT_TEXT_FONT' && /font-weight ua must be absolute/.test(d.message)), JSON.stringify(report.diagnostics));
+  assert.ok(report.diagnostics.some(d => d.code === 'U_LAYOUT_TEXT_FONT' && /font-weight 700 differs from the measured 400/.test(d.message)), JSON.stringify(report.diagnostics));
   status(run('h1 { font-weight: 400; }'), 'verified');
+  status(run('', {...font, weight: 700}), 'verified');
 });
 
 // Content language (lang attribute): a contract measured for one language applies only there.

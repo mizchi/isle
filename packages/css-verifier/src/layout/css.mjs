@@ -575,7 +575,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   // Tables keep their UA table-* display (unsupported) until the author restyles them; th is bold and centred.
   const tableDisplay = {table: 'table', caption: 'table-caption', thead: 'table-header-group', tbody: 'table-row-group', tfoot: 'table-footer-group', tr: 'table-row', th: 'table-cell', td: 'table-cell'};
   if (tableDisplay[box.tag]) values.display = tableDisplay[box.tag];
-  if (box.tag === 'th') { values['font-weight'] = 'ua'; values['text-align'] = 'ua'; }
+  if (box.tag === 'th') { values['font-weight'] = 'bold'; values['text-align'] = 'ua'; }
   // UA cell padding (HTML rendering: td, th { padding: 1px }).
   if (['td', 'th'].includes(box.tag)) for (const side of ['left', 'right', 'top', 'bottom']) values[`padding-${side}`] = '1px';
   // fieldset/legend: UA border, padding, margin and min-inline-size until reset.
@@ -603,9 +603,10 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     // at a 16px default; measured in Chromium), until the author sets it (font: inherit, font-size).
     values['font-size']='ua';
   }
-  // UA font rules (h1–h6 size and weight, strong/b weight, em/i style, small
-  // size) are not author facts: they stay 'ua' until author CSS sets them.
-  if (/^h[1-6]$/.test(box.tag)) { values['font-size'] = 'ua'; values['font-weight'] = 'ua'; }
+  // UA font rules (h1–h6 size, strong/b weight, em/i style, small size) are not author facts: they stay 'ua' until
+  // author CSS sets them. h1–h6 (and th) are font-weight: bold in the HTML rendering rules and in Chromium, a fixed
+  // absolute weight (strong/b are bolder, relative to the parent, and stay 'ua').
+  if (/^h[1-6]$/.test(box.tag)) { values['font-size'] = 'ua'; values['font-weight'] = 'bold'; }
   if (['strong', 'b'].includes(box.tag)) values['font-weight'] = 'ua';
   if (['em', 'i'].includes(box.tag)) values['font-style'] = 'ua';
   if (box.tag === 'small') values['font-size'] = 'ua';

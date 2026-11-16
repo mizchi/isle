@@ -1,0 +1,1 @@
+{"framework": "linaria", "intent": "Three pricing plans side by side.", "planted": "three fixed 240px columns: wider than phones and tablets in portrait", "expect": ["E_LAYOUT_PAGE_OVERFLOW"]}

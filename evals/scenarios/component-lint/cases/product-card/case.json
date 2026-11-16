@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "Product card: thumbnail beside a title that must stay on one line.", "planted": "nowrap title in a bare 1fr column; the column grows to the title and the card overflows narrow viewports", "expect": ["E_LAYOUT_CONTENT"]}

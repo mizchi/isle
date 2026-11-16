@@ -505,3 +505,10 @@ lexical-events-check: build-compiler
 
 lexical-events-quality: build-compiler
     node tools/check-lexical-events.mjs
+
+# Component lint eval: planted breakages linted and laid out in Chromium (evals/scenarios/component-lint).
+component-lint-eval:
+    node tools/eval-component-lint.mjs
+    node tools/eval-component-lint.mjs --attempt run-1
+    node tools/eval-component-lint.mjs --attempt run-2
+    node tools/eval-component-lint.mjs --attempt run-3
