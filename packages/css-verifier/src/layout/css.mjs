@@ -601,6 +601,13 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     if (box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', 'date', 'time', 'datetime-local', 'month', 'week', undefined].includes(box.inputType))) {
       values.display = 'inline-block'; values['box-sizing'] = box.inputType === 'search' ? 'border-box' : 'content-box'; values['min-inline-size'] = '0'; values['min-block-size'] = '0';
     }
+    // A range slider: Chromium's UA box is inline-block, content-box, no padding or border, a 2px margin on every side,
+    // and it takes its author width and height whatever they are (measured: 160×24, 20×4; 296px wide in a 300px column
+    // with the UA margin).
+    if (box.tag === 'input' && box.inputType === 'range') {
+      values.display = 'inline-block'; values['box-sizing'] = 'content-box'; values['min-inline-size'] = '0'; values['min-block-size'] = '0';
+      for (const side of ['left', 'right', 'top', 'bottom']) { values[`padding-${side}`] = '0'; values[`border-${side}`] = '0'; values[`margin-${side}`] = '2px'; }
+    }
     // Buttons: Chromium's UA box is padding 1px 6px, a 2px border, inline-block, border-box, no min size (measured,
     // with or without appearance: none).
     if (box.tag === 'button' || (box.tag === 'input' && ['button', 'submit', 'reset'].includes(box.inputType))) {

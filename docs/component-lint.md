@@ -83,6 +83,8 @@ error が 1 件でもあれば終了コードは 1 です。
 - 伸び縮みしない flex item のパーセントの basis(`flex: 0 0 100%` のカルーセルの slide)。1 行の flex の行で、container の内容の幅の割合になる。折り返す container では Unknown。
 - `flex: 1`(0% の basis)の item の自動の最小は、中身の min-content。
 - スクロールコンテナの中のテキストを、その外の不透明な箱が覆いうるときは `U_A11Y_SCROLLED_COVER`(検査していない)を出す。
+- `type="range"` のスライダー(Chromium で測った: content-box、UA の padding と border はなく margin が 2px、作者の大きさをそのまま使う、grid item で幅が auto なら伸びる)。
+- 位置指定された祖先(または初期の containing block)より背の高い absolute の箱(ドロップダウン)は、block 方向の大きさを error にしない。fixed でビューポートより高い箱は error。
 - `rem` の margin、padding、幅、gap(既定のフォントサイズの仮定のもとで px に直す)。
 - 既定の appearance のテキスト入力欄(text 系の input と textarea)。padding と border を 4 辺とも指定していれば、`appearance: none` でなくても同じ箱になる(測った)。UA の `display: inline-block`、`box-sizing: content-box`(search は border-box)、最小寸法 0 もモデル化した。
 - grid item の block 軸の自己整列(`align-items` / `align-self` の start、center、end と、その flex-*/self-* の別名)。item は自分の高さを保ち、area の空きのその割合だけずれる(Chromium と照合した)。baseline は Unknown。

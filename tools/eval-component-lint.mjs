@@ -58,7 +58,7 @@ for (const id of cases) {
       await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${pageCSS}${css}</style></head><body>${state.html}</body></html>`);
       await page.evaluate(() => document.fonts.ready);
       const found = await page.evaluate(async () => {
-        const out = [], label = e => e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\s+/).filter(c => !/^(svelte|s)-/.test(c)).join('.') : e.tagName.toLowerCase();
+        const out = [], label = e => e.id ? '#' + e.id : e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\s+/).filter(c => !/^(svelte|s)-/.test(c)).join('.') : e.tagName.toLowerCase();
         if (document.documentElement.scrollWidth > innerWidth + 1) out.push(['page-overflow', 'html']);
         const texts = [...document.querySelectorAll('body *')].filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && e.getClientRects().length && e.checkVisibility({visibilityProperty: true}));
         for (const e of texts) if (getComputedStyle(e).display !== 'inline') {
@@ -95,6 +95,8 @@ for (const id of cases) {
         }
         // Buttons and links with no accessible name (no text, aria-label, aria-labelledby, title or img alt).
         for (const e of document.querySelectorAll('button, a[href]')) { const named = e.textContent.trim() || e.getAttribute('aria-label')?.trim() || e.getAttribute('aria-labelledby') || e.getAttribute('title')?.trim() || [...e.querySelectorAll('img[alt]')].some(i => i.alt.trim()) || [...e.querySelectorAll('svg title')].some(t => t.textContent.trim()); if (!named) out.push(['no-name', label(e)]); }
+        // A control whose visible label is its only way in, but which cannot take focus (Chromium's focus()).
+        for (const l of document.querySelectorAll('label[for]')) { const c = document.getElementById(l.htmlFor); if (!c || !l.checkVisibility() || c.disabled) continue; c.focus(); if (document.activeElement !== c) out.push(['unfocusable', label(c)]); c.blur?.(); }
         for (const i of document.querySelectorAll('input[placeholder]')) { const s = getComputedStyle(i), c = document.createElement('canvas').getContext('2d'); c.font = `${s.fontWeight} ${s.fontSize} ${s.fontFamily}`; if (c.measureText(i.placeholder).width > i.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight) + 1) out.push(['placeholder-clipped', label(i)]); }
         return out;
       });

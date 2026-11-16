@@ -669,7 +669,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // A button's box is the same with its default appearance (measured: sizes, padding, border, grid content); its
     // UA padding, border, colors and display are modeled.
     const buttonLike = box.tag === 'button' || (box.tag === 'input' && ['button', 'submit', 'reset'].includes(box.inputType));
-    if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag) && ((style.appearance!=='none' && !(textField && authoredEdges) && !buttonLike) || (style.display!=='block' && !(box.tag === 'button' && ['grid', 'flex'].includes(style.display) && (box.children ?? []).length)))) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);
+    // A range slider keeps the same box with its default appearance (no padding or border; measured).
+    const rangeLike = box.tag === 'input' && box.inputType === 'range';
+    if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag) && ((style.appearance!=='none' && !(textField && authoredEdges) && !buttonLike && !rangeLike) || (style.display!=='block' && !(box.tag === 'button' && ['grid', 'flex'].includes(style.display) && (box.children ?? []).length)))) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);
     // A fieldset's rendered legend sits in its border: modeled only when the fieldset generates no box.
     // Replaced elements and text fields have intrinsic sizes the model does not compute.
     // Layout shifts from images (Layout Instability, measured): an img without a reserved height gets one when it
@@ -682,7 +684,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // stretched to its area like a block (measured in Chromium: 368px in a 368px column; in block flow it keeps its
     // intrinsic width instead, which is not modeled). Its intrinsic minimum stays Unknown where a track probes it.
     // (A grid's justify-items other than normal/stretch is Unknown for its items, checked with the item's alignment.)
-    const stretchedField = textField && available.gridItem && !available.blockFlowChild && style['inline-size'] === 'auto'
+    const stretchedField = (textField || rangeLike) && available.gridItem && !available.blockFlowChild && style['inline-size'] === 'auto'
       && ['auto', 'normal', 'stretch'].includes(String(style['justify-self'] ?? 'auto'));
     if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'svg', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || (style['inline-size']==='auto' && !stretchedField) || (block && style['block-size']==='auto' && !(['img', 'video', 'iframe', 'svg'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
@@ -1289,7 +1291,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // root taller than the viewport here is Unknown, not a violation (the page does scroll in a browser).
         if (box.documentRoot && available.root && available.block && !['hidden', 'clip', 'auto', 'scroll'].includes(style['overflow-y']) && scrollbarProfile?.inlineSize > 0 && clip(region, diff(blockSize, available.block), true))
           throw Object.assign(new Error(`${box.label} is taller than the viewport, so the viewport scrolls and its ${scrollbarProfile.name ?? 'classic'} scrollbar (${scrollbarProfile.inlineSize}px) narrows the page; that is laid out when html sets overflow-y: auto or scroll (the same in a browser)`), { code: 'U_LAYOUT_SCROLLBAR' });
-        if (available.block) obligation(available.marginEnd ? sum(available.block, scalar(available.marginEnd.block)) : available.block, blockSize, box, region, 'E_LAYOUT_ITEM_SIZE', 'block', available.fitBlock !== false && !viewportScrolls, item('block'));
+        // An absolute box taller than its containing block (a dropdown under a short field) hangs out of it: that hides
+        // nothing by itself (clipping and page overflow are checked on their own), so there is no block-size obligation
+        // against a positioned ancestor or the initial containing block. A fixed box taller than the viewport keeps it.
+        const hangs = available.containingBlock && available.containingBlock.path !== 'viewport';
+        if (available.block && !hangs) obligation(available.marginEnd ? sum(available.block, scalar(available.marginEnd.block)) : available.block, blockSize, box, region, 'E_LAYOUT_ITEM_SIZE', 'block', available.fitBlock !== false && !viewportScrolls, item('block'));
         if (contract.minBlockSize !== undefined && !visuallyHiddenStyle(style)) (box.tableCell && (contract.overflowBlock ?? 'fit') === 'fit' ? cellGrows : obligation)(contentBlock, scalar(contract.minBlockSize), box, region, 'E_LAYOUT_CONTENT', 'block', (contract.overflowBlock ?? 'fit') === 'fit', content('block', 'minBlockSize'));
       }
       let positioned;

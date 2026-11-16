@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "Search box with a suggestion list under it.", "planted": "the suggestion list is absolutely positioned 320px wide under a narrower field: it reaches past the page on phones", "expect": ["E_LAYOUT_PAGE_OVERFLOW"]}

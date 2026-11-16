@@ -193,3 +193,11 @@ test('a date input takes the text field box: content-box with its author width, 
   assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
   assert.deepEqual(rects(r, 500), [['.a', 7, 7, 218, 42]]);
 });
+
+test('an absolute dropdown taller than its positioned parent hangs out of it without an error; a fixed box taller than the viewport is still one', () => {
+  const page = (pos, h) => analyzeHTML(`<html lang="en"><body><main class="p"><section class="box"><div class="f"></div><ul class="list"></ul></section></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0;padding:0}html,body{${g}}.p{${g}}.box{position:relative;display:grid;grid-template-columns:minmax(0,1fr)}.f{height:40px}.list{position:${pos};top:44px;left:0;width:200px;height:${h}px;background:#fff}`, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], integrity: true});
+  const hang = page('absolute', 120);
+  assert.ok(!hang.diagnostics.some(d => d.code === 'E_LAYOUT_ITEM_SIZE'), JSON.stringify(hang.diagnostics.map(d => d.message)));
+  assert.ok(page('fixed', 1000).diagnostics.some(d => d.code === 'E_LAYOUT_ITEM_SIZE'), 'a fixed box taller than the viewport cannot be scrolled to');
+});
