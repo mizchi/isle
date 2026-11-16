@@ -1790,3 +1790,15 @@ test('a link that is the only child of a paragraph: Tab reaches it and Chromium 
   expect(await axName(page, '.l')).toBe('Pricing');
   expect(await page.evaluate(() => document.querySelector('.t').getBoundingClientRect().height)).toBe(24);
 });
+
+test('a field whose label is hidden: E_A11Y_LABEL holds exactly where Chromium’s accessibility tree gives it no name', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const base = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff;color:#000}.t{height:10px}.lab{display:block;height:20px}.f{width:200px;height:32px;padding:0 4px;border:1px solid #000;background:#fff;color:#000}`;
+  const html = '<main class="p"><h1 class="t" aria-label="T"></h1><label class="lab" for="x">Email</label><input class="f" id="x" type="text"></main>';
+  for (const css of ['', '.lab{display:none}', '.lab{visibility:hidden}', '.lab{opacity:0}']) {
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true, boxes: {'.lab': {minInlineSize: 10, intrinsicBlockSize: 20}}});
+    const unlabelled = report.diagnostics.some(d => d.code === 'E_A11Y_LABEL');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${base}${css}</style></head><body>${html}</body></html>`);
+    expect(unlabelled, `${css || 'visible'}: Chromium name "${await axName(page, '.f')}"`).toBe((await axName(page, '.f')) === '');
+  }
+});
