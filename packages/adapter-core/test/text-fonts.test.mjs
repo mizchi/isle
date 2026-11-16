@@ -60,3 +60,12 @@ test('textResize: what breaks only at 200% text size is E_A11Y_TEXT_RESIZE', asy
   assert.ok(!codes(button('OK', '')).includes('E_A11Y_TEXT_RESIZE'));
   assert.ok(!codes(button('Save changes', 'font-size:16px;line-height:24px')).includes('E_A11Y_TEXT_RESIZE'));
 });
+
+test('the assumed-text count counts only text boxes: a marked inline run laid out as a grid (spans as items) is not one', async () => {
+  const textMetrics = await loadTextMetrics({fonts});
+  const states = [{html: '<ul class="f"><li class="r"><span class="a">quarterly.pdf</span><span class="b">2 MB</span></li></ul>', choices: {}}];
+  const css = '.f{display:grid;grid-template-columns:minmax(0,1fr);padding:0;margin:0;list-style:none}.r{display:grid;grid-template-columns:minmax(0,1fr) 80px}.a,.b{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;color:#000;white-space:nowrap}';
+  const result = analyzeStates({states, css}, {pageCSS, viewport, assumeText: true, textMetrics, fonts});
+  assert.ok(result.coverage.assumptions.some(a => /2 text box\(es\) measured/.test(a)), JSON.stringify(result.coverage.assumptions));
+  assert.ok(!result.coverage.assumptions.some(a => /sized by assumption/.test(a)), JSON.stringify(result.coverage.assumptions));
+});

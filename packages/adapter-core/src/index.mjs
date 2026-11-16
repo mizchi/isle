@@ -118,7 +118,8 @@ export function analyzeStates(component, allOptions = {}) {
 }
 
 function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { pageCSS = '', page: wrap = page, name = 'Component', assumeText, textMetrics, fonts = {}, textResize, ...options } = {}) {
-  let assumedTexts = 0, measuredTexts = 0;
+  // unmeasured: text boxes (markers the analysis laid out as text) left at the assumed size; null until fonts were reported.
+  let assumedTexts = 0, measuredTexts = 0, unmeasured = null;
   const results = states.map(state => {
     let html = state.html, boxes = options.boxes;
     if (assumeText) {
@@ -136,6 +137,8 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { p
       // new texts to measure.)
       for (let pass = 0; pass < 6; pass++) try {
         const first = analyzeHTML(wrap(html), { name, ...options, boxes, css: pageCSS + css, reportTextFonts: true });
+        // The markers that became text boxes (a marked inline run laid out as a grid or flex container is not one).
+        var textLeaves = new Set((first.textFonts ?? []).filter(facts => !facts.placeholder).flatMap(facts => (facts.classes ?? []).filter(c => /^__text\d+$/.test(c))));
         const measured = {};
         for (const facts of first.textFonts ?? []) {
           if (facts.placeholder) {
@@ -150,7 +153,7 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { p
         const fresh = Object.keys(measured).filter(key => JSON.stringify(boxes[key]) !== JSON.stringify(measured[key]));
         boxes = { ...boxes, ...measured };
         measuredTexts = Math.max(measuredTexts, Object.keys(boxes).filter(key => boxes[key]?.font || boxes[key]?.placeholderInlineSize !== undefined).length);
-        if (!fresh.length) break;
+        if (!fresh.length) { unmeasured = Math.max(unmeasured ?? 0, [...textLeaves].filter(m => !boxes[`.${m}`]?.font).length); break; }
       } catch { break; /* the final analysis below reports the failure */ }
     }
     try { report = analyzeHTML(wrap(html), { name, ...options, ...(boxes ? { boxes } : {}), css: pageCSS + css }); }
@@ -158,7 +161,8 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { p
     return { choices: state.choices, html: state.html, report };
   });
   if (measuredTexts) assumptions = [...assumptions, `${measuredTexts} text box(es) measured with the given font files (${Object.keys(fonts).join(', ')}): their widths and line breaks are derived, not assumed`];
-  if (assumedTexts - measuredTexts > 0) assumptions = [...assumptions, `${assumedTexts - measuredTexts} text box(es) sized by assumption (one line, no minimum width): text overflow is not checked`];
+  const assumedLeft = unmeasured ?? assumedTexts - measuredTexts;
+  if (assumedLeft > 0) assumptions = [...assumptions, `${assumedLeft} text box(es) sized by assumption (one line, no minimum width): text overflow is not checked`];
   if (options.defaultColors) assumptions = [...assumptions, 'the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user\'s own default colors and forced colors are not checked'];
   if (options.defaultFontSize) assumptions = [...assumptions, `rem (and a root font-size in %, em or medium) resolved at a ${options.defaultFontSize}px browser default font size; other user settings are not checked`];
   const statuses = results.map(r => r.report.status);

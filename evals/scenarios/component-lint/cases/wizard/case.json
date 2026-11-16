@@ -1,0 +1,1 @@
+{"framework": "linaria", "intent": "Back and Next buttons at the bottom of a wizard step.", "planted": "the Next button is a fixed 64px wide nowrap button with overflow hidden: its label 'Continue to payment' is cut", "expect": ["E_LAYOUT_CONTENT"]}
