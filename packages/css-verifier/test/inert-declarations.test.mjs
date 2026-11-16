@@ -70,3 +70,20 @@ test('a main size under a non-auto flex-basis does nothing once the automatic mi
   assert.deepEqual(inert(run(`${f}.c{height:10px;flex-grow:1;width:200px}`)), []);
   assert.deepEqual(inert(run('.p{display:flex;flex-direction:column;height:300px}.c{flex:1;width:50px}')), []);
 });
+
+test('offsets on a static box, z-index outside a stacking context, gap and flex factors in block flow do nothing', () => {
+  // top/left/right/bottom position only a positioned box.
+  assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:10px;top:8px;left:4px}')), [['.c', 'top left']]);
+  assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:10px;position:relative;top:8px}')), []);
+  // z-index on a static box: applies to grid and flex items, not to a block-level box in block flow.
+  assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:10px;z-index:2}')), []);
+  assert.deepEqual(inert(run('.p{display:block}.c{height:10px;z-index:2}')), [['.c', 'z-index']]);
+  assert.deepEqual(inert(run('.p{display:block}.c{height:10px;z-index:2;position:relative}')), []);
+  // gap spaces grid and flex items; a block container has none.
+  assert.deepEqual(inert(run('.p{display:block;gap:12px}.c{height:10px}')), [['.p', 'row-gap column-gap']]);
+  // Flex factors and grid templates of a block child of a block container: its parent is display: block.
+  const r = inert(run('.p{display:block}.c{height:10px;flex:1}'));
+  assert.deepEqual(r, [['.c', 'flex-grow flex-basis']]);
+  assert.deepEqual(inert(run('.p{display:block}.c{height:10px;vertical-align:middle}')), [['.c', 'vertical-align']]);
+  assert.match(run('.p{display:block}.c{height:10px;flex:1}').layoutWarnings.find(w => w.code === 'W_LAYOUT_DECLARATION_INERT').message, /display: block/);
+});

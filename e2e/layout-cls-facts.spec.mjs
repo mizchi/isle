@@ -554,6 +554,21 @@ test('root font size: where the static check warns, text ignores the browser def
   }
 });
 
+test('inert z-index: a static block-level box in block flow does not stack above a positioned sibling; a grid item does', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [parent, warn] of [['display:block', true], [g, false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${parent}}.c{height:20px}.a{background:#c00;z-index:2}.b{position:relative;z-index:1;background:#00c}`;
+    const html = '<div class="p"><div class="c a" id="a"></div><div class="c b" id="b"></div></div>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    expect(report.status, parent).toBe('verified');
+    // In the browser a transform moves .a down over .b (a transform alone does not make z-index apply, measured).
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}.a{transform:translateY(10px)}</style></head><body>${html}</body></html>`);
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.box === '#a' && w.properties.includes('z-index')), parent).toBe(warn);
+    // The overlap: .a (z-index: 2) is on top only where its z-index applies.
+    expect(await page.evaluate(() => document.elementFromPoint(50, 25).id), parent).toBe(warn ? 'b' : 'a');
+  }
+});
+
 test('inert declarations: where the static check warns, Chromium lays the page out the same without the declaration', async ({page}) => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   const cases = [
@@ -579,6 +594,11 @@ test('inert declarations: where the static check warns, Chromium lays the page o
     ['.p{display:flex;height:100px}', '.c{width:100px;height:10px}', 'align-items:center', '.p', false],
     ['.p{display:block}', '.c{height:10px}', 'grid-column:2', '.c', true],
     ['.p{display:block;height:100px}', '.c{height:10px}', 'align-self:end', '.c', true],
+    ['.p{display:grid;grid-template-columns:minmax(0,1fr)}', '.c{height:10px}', 'top:8px;left:4px', '.c', true],
+    ['.p{display:block}', '.c{height:10px}', 'gap:12px', '.p', true],
+    ['.p{display:grid;grid-template-columns:minmax(0,1fr)}', '.c{height:10px}', 'gap:12px', '.p', false],
+    ['.p{display:block}', '.c{height:10px}', 'flex:1 1 50px', '.c', true],
+    ['.p{display:block}', '.c{height:10px}', 'vertical-align:middle', '.c', true],
   ];
   const html = '<div class="p"><div class="c"></div><div class="c"></div></div>';
   for (const [parent, child, decl, target, warn] of cases) {
