@@ -32,10 +32,6 @@
       "count": 2
     },
     {
-      "reason": "U_LAYOUT_STRUCTURE: .X mixes text with child elements: wrap the text in its own element (a span) so it is not an anonymous box (anonymous flex, grid and block boxes beside elements",
-      "count": 2
-    },
-    {
       "reason": "U_A11Y_CONTRAST: .X is positioned without an opaque background of its own; the boxes behind it are not its ancestors",
       "count": 1
     },
@@ -69,6 +65,10 @@
     },
     {
       "reason": "U_LAYOUT_TABLE: .X in a table cell must be a static block-level box (block flow of inline content is not modeled)",
+      "count": 1
+    },
+    {
+      "reason": "U_A11Y_TARGET_SIZE: .X is under Npx and its position is not proved, so the spacing exception cannot be checked",
       "count": 1
     }
   ],
@@ -2449,13 +2449,8 @@
       "environment": [],
       "notChecked": [
         {
-          "code": "U_LAYOUT_STRUCTURE",
-          "reason": ".X mixes text with child elements: wrap the text in its own element (a span) so it is not an anonymous box (anonymous flex, grid and block boxes beside elements",
-          "line": 2
-        },
-        {
-          "code": "U_LAYOUT_STRUCTURE",
-          "reason": ".X mixes text with child elements: wrap the text in its own element (a span) so it is not an anonymous box (anonymous flex, grid and block boxes beside elements",
+          "code": "U_A11Y_TARGET_SIZE",
+          "reason": ".X is under Npx and its position is not proved, so the spacing exception cannot be checked",
           "line": 2
         },
         {
@@ -2468,8 +2463,9 @@
         }
       ],
       "errors": 1,
-      "warnings": 1,
+      "warnings": 3,
       "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
