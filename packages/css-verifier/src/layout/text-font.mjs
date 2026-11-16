@@ -66,6 +66,7 @@ export function textFontMismatch(style, font) {
   for (const key of ['font-family', 'font-size', 'line-height', 'font-weight', 'font-style', 'font-stretch', 'font-variant']) {
     if (style[key] === fontShorthand) return 'The font shorthand is not modeled; use font-family/font-size/line-height/font-weight longhands';
   }
+  if (style['font-family'] === 'ua-control') return 'a form control keeps the user-agent control font (Arial, or monospace in a textarea), not the page font; set font: inherit (or font-family) on it';
   if (style['font-family'] === 'ua-default') return 'font-family is the user-agent default; declare the measured family';
   if (family(style['font-family']) !== font.family.trim().toLowerCase()) return `font-family ${style['font-family']} differs from the measured family ${font.family}; fallback fonts are not modeled`;
   const size = pxValue(style['font-size']);

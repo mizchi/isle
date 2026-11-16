@@ -629,6 +629,12 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     // Controls do not inherit the page's font size: the UA's control font is the default size − 2.67px (13.33px
     // at a 16px default; measured in Chromium), until the author sets it (font: inherit, font-size).
     values['font-size']='ua';
+    // The rest of the UA control font (font: -webkit-small-control; measured in Chromium under a page that sets
+    // Roboto, weight 300, line-height 2 and letter-spacing 1px: Arial (textarea monospace) 400, line-height normal,
+    // letter- and word-spacing normal). The family is the platform's control font: its text is not measured until
+    // the author sets the family (font: inherit or font-family).
+    values['font-family'] = 'ua-control'; values['font-weight'] = 'normal'; values['font-style'] = 'normal';
+    values['line-height'] = 'normal'; values['letter-spacing'] = 'normal'; values['word-spacing'] = 'normal';
   }
   // UA font rules (h1–h6 size, strong/b weight, em/i style, small size) are not author facts: they stay 'ua' until
   // author CSS sets them. h1–h6 (and th) are font-weight: bold in the HTML rendering rules and in Chromium, a fixed

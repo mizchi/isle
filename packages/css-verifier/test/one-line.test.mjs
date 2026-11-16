@@ -26,3 +26,15 @@ test('one-line: checked against the unwrapped width, with white-space: normal', 
   assert.equal((await run('200px', {text: {font, characters: 'abcdefghij ', maxLength: 12}, wrap: 'one-line'})).status, 'verified');
   assert.deepEqual(codes(await run('80px', {text: {font, characters: 'abcdefghij ', maxLength: 12}, wrap: 'one-line'})), ['E_LAYOUT_CONTENT']);
 });
+
+test('a control does not inherit the page font (family, weight, line-height, spacing): its text is not measured with the page family', async () => {
+  const m = await loadTextMetrics({fonts: {Roboto: {file}}});
+  const html = '<html lang="en"><body><div class="p"><button class="b" type="button">Save all changes</button></div></body></html>';
+  const report = css => analyzeHTML(html, m.resolveOptions({name: 'P', css: `*{box-sizing:border-box;margin:0}html{font-family:Roboto;font-weight:400;line-height:24px}html,body{${g}}.p{display:grid;grid-template-columns:200px}.b{appearance:none;display:block;padding:0 8px;border:0;min-width:0;min-height:0;font-size:16px}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, boxes: {'.b': {text: {font, content: 'Save all changes'}, wrap: 'one-line'}}}));
+  // Chromium draws the button in its control font (Arial at 13.33px; normal weight and line-height), not Roboto.
+  const inherited = report('');
+  assert.ok(inherited.diagnostics.some(d => d.severity === 'unknown' && /user-agent control font/.test(d.message)), JSON.stringify(inherited.diagnostics.map(d => d.message)));
+  // font: inherit (or each longhand) takes the page font: measured.
+  const reset = report('.b{font-family:inherit;line-height:inherit;font-weight:inherit}');
+  assert.equal(reset.status, 'verified', JSON.stringify(reset.diagnostics.map(d => d.message)));
+});
