@@ -7,7 +7,7 @@ import {customName,variableValue,variableEnvironment,substituteDeclaration} from
 import { compileSelector, matches, greaterRank } from './selectors.mjs';
 export { matches, simpleSelector } from './selectors.mjs';
 const pointSize = /^(?:\d+(?:\.\d{1,6})?px|0)$/;
-const remLengths = ['top', 'right', 'bottom', 'left'].flatMap(side => [`margin-${side}`, `padding-${side}`, side]).concat(['inline-size', 'block-size', 'min-inline-size', 'max-inline-size', 'min-block-size', 'max-block-size', 'row-gap', 'column-gap', 'flex-basis']);
+const remLengths = ['top', 'right', 'bottom', 'left'].flatMap(side => [`margin-${side}`, `padding-${side}`, side]).concat(['inline-size', 'block-size', 'min-inline-size', 'max-inline-size', 'min-block-size', 'max-block-size', 'row-gap', 'column-gap', 'flex-basis', 'font-size']);
 // rem resolves against the analysed html root's px font-size once the engine has seen it (setRootFontSize).
 let rootFontSize = null;
 export function setRootFontSize(size) { rootFontSize = size; }

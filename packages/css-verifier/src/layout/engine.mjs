@@ -1015,7 +1015,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           // A row item sized by its content (flex-basis auto or content, auto width): its max- and min-content widths
           // are its flex base size and automatic minimum.
           const contentSized = main === 'inline' && ['auto', 'content'].includes(String(child.style['flex-basis'])) && child.style['inline-size'] === 'auto'
-            && child.style['min-inline-size'] === 'auto' && ['visible', 'clip'].includes(child.style['overflow-x']) && !['inline-size', 'size'].includes(child.style['container-type']);
+            && ['auto', '0', '0px'].includes(String(child.style['min-inline-size'])) && ['visible', 'clip'].includes(child.style['overflow-x']) && !['inline-size', 'size'].includes(child.style['container-type']);
           const contentSizes = contentSized ? frAutoMinimums(child.box, child.style, state.region, [...parents, { box, style }], true) : null;
           let item = flexItem(child.style, { empty: !child.box.text && !child.box.children.length, axis: main, ...(contentSizes ? { contentSizes } : {}) });
           const marginMain = main === 'inline' ? add(margins.left, margins.right) : add(margins.top, margins.bottom);
@@ -2082,7 +2082,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const margins = st => ['left', 'right'].map(side => st[`margin-${side}`] === 'auto' ? zero : length(st[`margin-${side}`], 'margin')).reduce(add, zero);
     const borderBox = (st, value) => st['box-sizing'] === 'content-box' ? add(value, edges(st)) : value;
     const clampMax = (st, value) => { const m = st['max-inline-size']; if (m === 'none') return value; const v = borderBox(st, length(m, 'max-width')); return cmp(value, v) > 0 ? v : value; };
-    const replaced = new Set(['img', 'svg', 'iframe', 'video', 'audio', 'canvas', 'input', 'select', 'textarea', 'button', 'embed', 'object']);
+    // (A button is not replaced: its content is laid out like a block's.)
+    const replaced = new Set(['img', 'svg', 'iframe', 'video', 'audio', 'canvas', 'input', 'select', 'textarea', 'embed', 'object']);
     // The min-content (or max-content) width (border box) of a box, or Unknown.
     const minContent = (target, st, at, max = false) => {
       if (replaced.has(target.tag)) unknown(`has a replaced or form element (${target.label}) without a px width`);
