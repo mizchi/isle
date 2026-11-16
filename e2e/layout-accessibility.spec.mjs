@@ -2056,3 +2056,23 @@ test('color-only-state: in Chromium the singled-out item differs from its siblin
     expect(warned, extra).toBe(colorOnly);
   }
 });
+
+// An absolute box in a containing block that hides its overflow: laid out as usual, and cut off where it reaches
+// past that block (E_LAYOUT_ABSOLUTE_CLIPPED) exactly when Chromium clips it.
+test('an absolute menu inside an overflow: hidden card is cut off exactly when Chromium clips it', async ({page}) => {
+  const html = '<main class="page"><div class="card"><div class="menu"></div></div></main>';
+  const base = `${reset}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:8px}.card{position:relative;display:grid;grid-template-columns:minmax(0,1fr);height:60px;background:#fff}.menu{position:absolute;top:20px;left:10px;width:120px;background:#333}`;
+  for (const [extra, name] of [['.card{overflow:hidden}.menu{height:100px}', 'cut below'], ['.card{overflow:hidden}.menu{height:30px}', 'fits'], ['.card{overflow:visible}.menu{height:100px}', 'not clipped'], ['.card{overflow:hidden}.menu{height:30px;left:auto;right:-40px}', 'cut at the side']]) {
+    const css = base + extra;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280, height: {min: 600, max: 1000}}, accessibility: true});
+    expect(report.status === 'unknown', `${name}: ${JSON.stringify(report.diagnostics)}`).toBe(false);
+    const flagged = report.diagnostics.some(d => d.code === 'E_LAYOUT_ABSOLUTE_CLIPPED');
+    let cut = false;
+    for (const width of [320, 800]) {
+      await page.setViewportSize({width, height: 700});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+      cut ||= await page.evaluate(() => { const c = document.querySelector('.card'), m = document.querySelector('.menu').getBoundingClientRect(), r = c.getBoundingClientRect(); return getComputedStyle(c).overflow === 'hidden' && (m.bottom > r.bottom + 0.01 || m.right > r.right + 0.01 || m.left < r.left - 0.01 || m.top < r.top - 0.01); });
+    }
+    expect(flagged, name).toBe(cut);
+  }
+});

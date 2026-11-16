@@ -1,0 +1,1 @@
+{"framework": "linaria", "intent": "A card with an overflow menu that opens below its button.", "planted": "the card hides its overflow (for its rounded corners), so the absolute menu reaching below the card is cut off", "expect": ["E_LAYOUT_ABSOLUTE_CLIPPED"]}

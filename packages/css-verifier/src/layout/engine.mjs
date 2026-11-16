@@ -301,7 +301,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (!failed) return;
     const p = sample(failed), need = evaluate(required, p), offered = evaluate(available, p);
     findings.push({ code, severity: 'error', box: box.label, path: box.path, source: box.source, axis,
-      message: `${box.label} requires ${exact(need)}px but receives ${exact(offered)}px on ${axis} axis at viewport ${exact(p.x)}px${block ? ` × ${exact(p.y)}px` : ''}`,
+      message: code === 'E_LAYOUT_ABSOLUTE_CLIPPED' ? `${box.label} reaches past its containing block ${box[PARENT]?.label ?? ''}, which hides its overflow: it needs ${exact(need)}px but only ${exact(offered)}px is visible on the ${axis} axis at viewport ${exact(p.x)}px${block ? ` × ${exact(p.y)}px` : ''}, so the rest is cut off`
+        : `${box.label} requires ${exact(need)}px but receives ${exact(offered)}px on ${axis} axis at viewport ${exact(p.x)}px${block ? ` × ${exact(p.y)}px` : ''}`,
       ...ranges(failed), signature: JSON.stringify([box.path, code, axis, affine(available), affine(required)]),
       witness: { viewport: number(p.x), viewportExact: exact(p.x), ...(block ? { viewportHeight: number(p.y), viewportHeightExact: exact(p.y) } : {}), available: number(offered), required: number(need) },
       ...(explain ? { explanation: explain() } : {}),
@@ -1309,8 +1310,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (!containing || !blockSize) throw new Error('Absolute box has no independently resolved local containing block');
         const origin = absoluteOrigin(style, containing, {inline, block:blockSize});
         for (const [axis, dimension] of [['inline',inline],['block',blockSize]]) {
-          obligation(origin[axis], scalar(0), box, region, 'E_LAYOUT_ABSOLUTE_START', axis);
-          obligation(containing[axis], sum(origin[axis],dimension), box, region, 'E_LAYOUT_ABSOLUTE_END', axis);
+          // Against a containing block that clips on this axis, reaching past it is the box being cut off.
+          const cut = containing.clips && containing.clips[axis === 'inline' ? 'x' : 'y'];
+          obligation(origin[axis], scalar(0), box, region, cut ? 'E_LAYOUT_ABSOLUTE_CLIPPED' : 'E_LAYOUT_ABSOLUTE_START', axis);
+          obligation(containing[axis], sum(origin[axis],dimension), box, region, cut ? 'E_LAYOUT_ABSOLUTE_CLIPPED' : 'E_LAYOUT_ABSOLUTE_END', axis);
         }
         positioned = {origin:{inline:affine(origin.inline),block:affine(origin.block)},containingBlock:{path:containing.path,inline:affine(containing.inline),block:affine(containing.block)}};
       }
@@ -2899,9 +2902,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                           const initial = { inline: width, block: height, origin: { inline: scalar(0), block: scalar(0) } };
                           return solve(item.box,{inline:initial.inline,block:initial.block,containingBlock:{path:'initial',...initial}},r,finalAncestors,item.inherited ?? style,emit).map(result=>result.region);
                         }
-                        if (!containing?.paddingBlock || containing.subgrid || finalAncestors.some(ancestor=>ancestor.clipped)) throw new Error('Absolute boxes require an owned non-scrolling, unclipped containing block without subgrid placement');
+                        // A containing block that hides its overflow (overflow: hidden, not scrolling) clips the box at its
+                        // padding box: the box is laid out as usual, and what reaches past that edge is cut off
+                        // (E_LAYOUT_ABSOLUTE_CLIPPED). Any other clipping ancestor stays Unknown.
+                        const clipping = finalAncestors.filter(ancestor => ancestor.clipped);
+                        const ownClip = clipping.length === 1 && clipping[0] === finalAncestors.at(-1) && ['hidden', 'visible'].includes(clipping[0].style?.['overflow-x']) && ['hidden', 'visible'].includes(clipping[0].style?.['overflow-y']);
+                        if (!containing?.paddingBlock || containing.subgrid || (clipping.length && !ownClip)) throw new Error('Absolute boxes require an owned non-scrolling, unclipped containing block without subgrid placement');
+                        if (ownClip) containing.clips = { box: clipping[0].box.label, x: clipping[0].style['overflow-x'] === 'hidden', y: clipping[0].style['overflow-y'] === 'hidden' };
                         return solve(item.box,{inline:containing.paddingInline,block:containing.paddingBlock,
-                          containingBlock:{path:containing.box.path,inline:containing.paddingInline,block:containing.paddingBlock,origin:containing.paddingOrigin}},r,finalAncestors,item.inherited ?? style,emit).map(result=>result.region);
+                          containingBlock:{path:containing.box.path,inline:containing.paddingInline,block:containing.paddingBlock,origin:containing.paddingOrigin,...(containing.clips ? { clips: containing.clips } : {})}},r,finalAncestors,item.inherited ?? style,emit).map(result=>result.region);
                       }));
                       for (const r of endings) results.push(finish(box, style, r, inline, contentInline, blockSize, contentBlock, available, parents, emit));
                     }

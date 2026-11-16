@@ -120,7 +120,8 @@ for (const id of cases) {
   const reported = messages.filter(m => ['error', 'warning'].includes(m.severity));
   const boxOf = m => (m.message.match(/^(?:the start of )?([.#][\w.-]+|[a-z]+@[\w/]+)/) ?? [])[1] ?? '';
   const sameBox = (box, m) => boxOf(m) && (box === boxOf(m) || box.split('.').filter(Boolean).every(c => boxOf(m).includes(c)) || boxOf(m).split('.').filter(Boolean).every(c => box.includes(c)));
-  const matches = (b, m) => (b.by && sameBox(b.by, m)) || (b.kind === 'page-overflow' || b.kind === 'offscreen' && /E_LAYOUT_TRACKS|PAGE_OVERFLOW|PAGE_CLIPPED/.test(m.code) ? /PAGE_OVERFLOW|REFLOW|PAGE_CLIPPED|E_LAYOUT_TRACKS/.test(m.code) || (/TEXT_RESIZE/.test(m.code) && /viewport|page/.test(m.message)) : boxOf(m) && (b.box === boxOf(m) || b.box.split('.').filter(Boolean).every(c => boxOf(m).includes(c)) || boxOf(m).split('.').filter(Boolean).every(c => b.box.includes(c))));
+  // A clipped box is also caught by a finding about what it cuts off (E_LAYOUT_ABSOLUTE_CLIPPED names it).
+  const matches = (b, m) => (b.by && sameBox(b.by, m)) || (b.kind === 'clipped' && m.code === 'E_LAYOUT_ABSOLUTE_CLIPPED' && m.message.includes(`containing block ${b.box},`)) || (b.kind === 'page-overflow' || b.kind === 'offscreen' && /E_LAYOUT_TRACKS|PAGE_OVERFLOW|PAGE_CLIPPED/.test(m.code) ? /PAGE_OVERFLOW|REFLOW|PAGE_CLIPPED|E_LAYOUT_TRACKS/.test(m.code) || (/TEXT_RESIZE/.test(m.code) && /viewport|page/.test(m.message)) : boxOf(m) && (b.box === boxOf(m) || b.box.split('.').filter(Boolean).every(c => boxOf(m).includes(c)) || boxOf(m).split('.').filter(Boolean).every(c => b.box.includes(c))));
   const environment = [...breaks.values()].filter(b => b.kind.startsWith('env-')).map(b => `${b.kind} ${b.box} [${b.at.join(' ')}]`);
   for (const [key, b] of breaks) if (b.kind.startsWith('env-')) breaks.delete(key);
   const caught = [], missed = [];
