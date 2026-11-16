@@ -1,0 +1,1 @@
+{"framework": "vue", "intent": "Product image gallery: a main photo and a row of thumbnails.", "planted": "the main image has no alt text and no reserved height", "expect": ["E_A11Y_IMAGE_ALT"]}

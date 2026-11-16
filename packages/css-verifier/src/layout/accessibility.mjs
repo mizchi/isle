@@ -1140,7 +1140,12 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     if (box.role === 'dynamic') { report(unknowns, 'U_A11Y_ROLE', 'unknown', `${box.label}: a dynamic role decides its semantics`, whole(box), domain, { rule: 'role-valid' }); continue; }
     if (box.role && !ariaRoles.has(roleOf(box))) report(findings, 'E_A11Y_ROLE', 'error', `${box.label} has role ${JSON.stringify(roleOf(box))}, which is not a WAI-ARIA role`, whole(box), domain, { rule: 'role-valid', role: roleOf(box) });
   }
-  for (const row of geometry.filter(row => widgetRoles.has(roleOf(row.box)) && visible(row) && !hiddenFrom(row.path)))
+  // Items of a composite widget (option in a listbox, treeitem in a tree, gridcell in a grid, menuitem in a menu) get
+  // focus from their owner: aria-activedescendant on a combobox or listbox, or a roving tabindex set by script
+  // (WAI-ARIA APG). They need no tabindex of their own.
+  const composites = { option: ['listbox'], treeitem: ['tree'], gridcell: ['grid', 'treegrid'], row: ['grid', 'treegrid'], menuitem: ['menu', 'menubar'], menuitemcheckbox: ['menu', 'menubar'], menuitemradio: ['menu', 'menubar'] };
+  const ownedItem = row => { const owners = composites[roleOf(row.box)]; if (!owners) return false; for (let p = row.path; p.includes('/'); ) { p = p.slice(0, p.lastIndexOf('/')); const b = treeBoxes.get(p); if (b && owners.includes(roleOf(b))) return true; } return false; };
+  for (const row of geometry.filter(row => widgetRoles.has(roleOf(row.box)) && visible(row) && !hiddenFrom(row.path) && !ownedItem(row)))
     if (!(row.box.focusable === true || row.box.tabIndex >= 0 || ['button', 'input', 'select', 'textarea'].includes(row.box.tag) || (row.box.tag === 'a' && row.box.focusable !== false)))
       report(findings, 'E_A11Y_ROLE_FOCUS', 'error', `${row.box.label} has role ${roleOf(row.box)} but cannot take focus; add tabindex="0"`, row, row.region, { rule: 'interactive-role-focusable' });
 

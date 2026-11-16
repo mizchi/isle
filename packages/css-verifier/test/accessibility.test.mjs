@@ -2041,3 +2041,24 @@ test('text inside a scroll container under an opaque box outside it: not checked
   const beside = analyzeHTML(html, {...opts, css: css('.c{padding-left:44px}')});
   assert.ok(!beside.diagnostics.some(d => d.code === 'U_A11Y_SCROLLED_COVER'), JSON.stringify(beside.diagnostics.map(d => d.code)));
 });
+
+test('image-alt from the markup alone when the layout is Unknown (an img without a reserved height)', () => {
+  const html = img => `<html lang="en"><body><main class="m">${img}</main></body></html>`;
+  const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block;width:100%}';
+  const run = img => analyzeHTML(html(img), {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+  const missing = run('<img class="i" src="/a.jpg">');
+  assert.ok(missing.diagnostics.some(d => d.code === 'U_LAYOUT_IMAGE'), 'the layout stays Unknown');
+  assert.ok(missing.diagnostics.some(d => d.code === 'E_A11Y_IMAGE_ALT' && d.box === '.i'), JSON.stringify(missing.diagnostics.map(d => d.code)));
+  for (const ok of ['<img class="i" src="/a.jpg" alt="">', '<img class="i" src="/a.jpg" alt="Shoe">', '<img class="i" src="/a.jpg" aria-hidden="true">', '<img class="i" src="/a.jpg" role="presentation">'])
+    assert.ok(!run(ok).diagnostics.some(d => d.code === 'E_A11Y_IMAGE_ALT'), ok);
+});
+
+test('interactive-role-focusable: items owned by a composite widget (option in a listbox) need no tabindex; a lone role="switch" does', () => {
+  const html = inner => `<html lang="en"><body><main class="m">${inner}</main></body></html>`;
+  const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.l,.s{display:block}.o{display:block;height:24px;color:#000}.s{width:48px;height:28px}';
+  const run = inner => analyzeHTML(html(inner), {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, ...(inner.includes('class="o"') ? {boxes: {'.o': {minInlineSize: 0, intrinsicBlockSize: 24}}} : {})});
+  assert.ok(!run('<ul class="l" role="listbox" aria-label="Options"><li class="o" role="option" aria-selected="false">One</li></ul>').diagnostics.some(d => d.code === 'E_A11Y_ROLE_FOCUS'));
+  assert.ok(run('<div class="s" role="switch" aria-checked="false" aria-label="Wi-Fi"></div>').diagnostics.some(d => d.code === 'E_A11Y_ROLE_FOCUS'));
+  // An option outside any listbox is not owned: still reported.
+  assert.ok(run('<div class="o" role="option" aria-selected="false">One</div>').diagnostics.some(d => d.code === 'E_A11Y_ROLE_FOCUS'));
+});

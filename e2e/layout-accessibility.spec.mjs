@@ -516,7 +516,7 @@ async function runtime(page, sample) {
   }
   // Roles: Chromium's computed AX role must be the authored one; widget roles need focus.
   for (const element of elements) {
-    const info = await (await handle(element.path)).evaluate(node => ({role: (node.getAttribute('role') ?? '').trim().split(/\s+/)[0], tabIndex: node.tabIndex, shown: getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility === 'visible'}));
+    const info = await (await handle(element.path)).evaluate(node => ({role: (node.getAttribute('role') ?? '').trim().split(/\s+/)[0], tabIndex: node.tabIndex, ownedItem: (() => { const owners = {option: 'listbox', treeitem: 'tree', gridcell: 'grid,treegrid', row: 'grid,treegrid', menuitem: 'menu,menubar', menuitemcheckbox: 'menu,menubar', menuitemradio: 'menu,menubar'}[(node.getAttribute('role') ?? '').trim().split(/\s+/)[0]]; return Boolean(owners && node.parentElement?.closest(owners.split(',').map(r => `[role="${r}"]`).join(','))); })(), shown: getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility === 'visible'}));
     if (!info.role) continue;
     const {result} = await client.send('Runtime.evaluate', {expression: `(() => { let n = document.body.firstElementChild; for (const i of ${JSON.stringify(element.path.split('/').slice(1).map(Number))}) n = n.children[i]; return n; })()`});
     const {node} = await client.send('DOM.describeNode', {objectId: result.objectId});
@@ -524,7 +524,7 @@ async function runtime(page, sample) {
     // none/presentation on a focusable element is overridden by conflict resolution (presentation-conflict).
     // Only a rendered element has an AX role to compare (a display: none one is absent from the tree).
     if (info.shown && !['none', 'presentation'].includes(info.role) && nodes[0]?.role?.value !== info.role) found.get('role-valid').add(element.path);
-    if (info.shown && /^(?:button|link|checkbox|radio|switch|tab|menuitem|menuitemcheckbox|menuitemradio|option|slider|spinbutton|textbox|searchbox|combobox|treeitem|gridcell)$/.test(info.role) && info.tabIndex < 0) found.get('interactive-role-focusable').add(element.path);
+    if (info.shown && /^(?:button|link|checkbox|radio|switch|tab|menuitem|menuitemcheckbox|menuitemradio|option|slider|spinbutton|textbox|searchbox|combobox|treeitem|gridcell)$/.test(info.role) && info.tabIndex < 0 && !info.ownedItem) found.get('interactive-role-focusable').add(element.path);
   }
   for (const path of media.dangling) found.get('label-for').add(path);
   for (const path of media.unlabelled) {
@@ -1959,5 +1959,23 @@ test('accessible-name from the markup alone (the layout Unknown): each button ha
     await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
     const name = await axName(page, '.b');
     expect(report.diagnostics.some(d => d.code === 'E_A11Y_NAME'), `${button}: Chromium name ${JSON.stringify(name)}`).toBe(name === '');
+  }
+});
+
+test('image-alt from the markup alone (the layout Unknown): Chromium exposes an unnamed img exactly where the static check reports a missing alt', async ({page}) => {
+  const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block;width:100%}';
+  for (const img of ['<img class="i" src="data:,">', '<img class="i" src="data:," alt="">', '<img class="i" src="data:," alt="Shoe">', '<img class="i" src="data:," role="presentation">', '<img class="i" src="data:," aria-hidden="true">']) {
+    const html = `<html lang="en"><body><main class="m">${img}</main></body></html>`;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+    expect(report.diagnostics.some(d => d.severity === 'unknown'), img).toBe(true);
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const client = await page.context().newCDPSession(page);
+    const {root} = await client.send('DOM.getDocument');
+    const {nodeId} = await client.send('DOM.querySelector', {nodeId: root.nodeId, selector: '.i'});
+    const {nodes} = await client.send('Accessibility.getPartialAXTree', {nodeId, fetchRelatives: false});
+    await client.detach();
+    // Exposed as an image with no alt attribute: Chromium's name comes from nowhere (an empty name, role image).
+    const exposedWithoutAlt = !nodes[0].ignored && nodes[0].role?.value === 'image' && !img.includes('alt=');
+    expect(report.diagnostics.some(d => d.code === 'E_A11Y_IMAGE_ALT'), `${img}: Chromium ${JSON.stringify({ignored: nodes[0].ignored, role: nodes[0].role?.value, name: nodes[0].name?.value})}`).toBe(exposedWithoutAlt);
   }
 });

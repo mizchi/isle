@@ -3008,6 +3008,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // UA-hidden: a popover (closed until shown), a dialog that is not open, and a closed details' content.
       const gone = hidden || box.ariaHidden || box.hiddenAttr || box.inert || box.popover || (box.tag === 'dialog' && box.dialogOpen !== true) || box.tag === 'template';
       const control = !box.pseudo && (box.tag === 'button' || (box.tag === 'a' && box.focusable !== false && box.href !== undefined));
+      // An exposed img without an alt attribute (role none/presentation or aria-hidden take it out of the tree).
+      if (box.tag === 'img' && !box.pseudo && !gone && box.alt === undefined && !['none', 'presentation'].includes(String(box.role ?? '').split(/\s+/)[0]))
+        diagnostics.push({ code: 'E_A11Y_IMAGE_ALT', severity: 'error', box: box.label, path: box.path, source: box.source, rule: 'image-alt', ...ranges(initial),
+          message: `${box.label} has no alt; use alt="" if it is decorative (checked from the markup; the layout was not analysed)` });
       if (control && !gone && !box.named && !box.labelledBy && !speaks(box))
         diagnostics.push({ code: 'E_A11Y_NAME', severity: 'error', box: box.label, path: box.path, source: box.source, rule: 'accessible-name', ...ranges(initial),
           message: `${box.label} has no accessible name: no text, no image text and no aria-label, aria-labelledby or title (checked from the markup; the layout was not analysed)` });

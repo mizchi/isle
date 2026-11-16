@@ -99,6 +99,10 @@ for (const id of cases) {
         for (const e of document.querySelectorAll('button, a[href]')) { const named = e.textContent.trim() || e.getAttribute('aria-label')?.trim() || e.getAttribute('aria-labelledby') || e.getAttribute('title')?.trim() || [...e.querySelectorAll('img[alt]')].some(i => i.alt.trim()) || [...e.querySelectorAll('svg title')].some(t => t.textContent.trim()); if (!named) out.push(['no-name', label(e)]); }
         // A control whose visible label is its only way in, but which cannot take focus (Chromium's focus()).
         for (const l of document.querySelectorAll('label[for]')) { const c = document.getElementById(l.htmlFor); if (!c || !l.checkVisibility() || c.disabled) continue; c.focus(); if (document.activeElement !== c) out.push(['unfocusable', label(c)]); c.blur?.(); }
+        // An exposed image with no alt attribute.
+        for (const i of document.querySelectorAll('img')) if (!i.hasAttribute('alt') && i.checkVisibility() && !i.closest('[aria-hidden="true"]') && !/^(none|presentation)$/.test(i.getAttribute('role') ?? '')) out.push(['no-alt', label(i)]);
+        // An element with an interactive role that cannot take focus (Chromium's focus()), so the keyboard cannot reach it.
+        for (const e of document.querySelectorAll('[role="switch"],[role="checkbox"],[role="button"],[role="tab"],[role="slider"],[role="option"],[role="menuitem"],[role="radio"],[role="link"]')) { if (!e.checkVisibility() || e.closest('[aria-hidden="true"]')) continue; const owner = {option: '[role="listbox"]', menuitem: '[role="menu"],[role="menubar"]'}[e.getAttribute('role')]; if (owner && e.parentElement?.closest(owner)) continue; e.focus(); if (document.activeElement !== e) out.push(['unfocusable', label(e)]); e.blur?.(); }
         for (const i of document.querySelectorAll('input[placeholder]')) { const s = getComputedStyle(i), c = document.createElement('canvas').getContext('2d'); c.font = `${s.fontWeight} ${s.fontSize} ${s.fontFamily}`; if (c.measureText(i.placeholder).width > i.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight) + 1) out.push(['placeholder-clipped', label(i)]); }
         return out;
       });

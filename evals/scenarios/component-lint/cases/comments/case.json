@@ -1,0 +1,1 @@
+{"framework": "stylex", "intent": "A comment thread with replies indented by depth.", "planted": "the reply indent is a fixed 280px left margin: replies are squeezed past the edge on phones", "expect": ["E_LAYOUT_CONTENT"]}

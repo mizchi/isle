@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "A monthly / yearly toggle above the plans.", "planted": "two fixed 160px nowrap toggle buttons side by side: wider than small phones", "expect": ["E_LAYOUT_TRACKS"]}

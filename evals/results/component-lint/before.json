@@ -1,8 +1,8 @@
 {
   "run": "before",
-  "cases": 36,
-  "breaks": 45,
-  "caught": 44,
+  "cases": 40,
+  "breaks": 54,
+  "caught": 53,
   "missed": 1,
   "silentMisses": 0,
   "unconfirmedErrors": 0,
@@ -16,14 +16,22 @@
   "backlog": [
     {
       "reason": "ASSUMPTION: the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul",
-      "count": 36
+      "count": 40
     },
     {
       "reason": "ASSUMPTION: rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked",
-      "count": 36
+      "count": 40
     },
     {
       "reason": "ASSUMPTION: 1 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked",
+      "count": 2
+    },
+    {
+      "reason": "U_A11Y_ARIA_VALUE: .X: a dynamic aria-pressed may be invalid",
+      "count": 2
+    },
+    {
+      "reason": "U_A11Y_ARIA_VALUE: .X.X: a dynamic aria-pressed may be invalid",
       "count": 2
     },
     {
@@ -44,6 +52,10 @@
     },
     {
       "reason": "U_A11Y_ARIA_VALUE: .X: a dynamic aria-expanded may be invalid",
+      "count": 1
+    },
+    {
+      "reason": "U_LAYOUT_IMAGE: .X has no reserved height (no height, aspect-ratio or width/height attributes) and its file's size is not known; it shifts the layout when it loads",
       "count": 1
     },
     {
@@ -469,6 +481,45 @@
       ]
     },
     {
+      "id": "comments",
+      "file": "before.jsx",
+      "framework": "stylex",
+      "intent": "A comment thread with replies indented by depth.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_LAYOUT_CONTENT",
+          "found": true
+        }
+      ],
+      "caught": [
+        "page-overflow html [1x@320 1x@328 2x@320 2x@328 dark@320 dark@328] via E_LAYOUT_ITEM_SIZE",
+        "text-overflow .sx-oojilc [1x@320 1x@375 1x@328 2x@320 2x@375 2x@328 dark@320 dark@375 dark@328]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 2,
+      "warnings": 1,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "compare-table",
       "file": "before.jsx",
       "framework": "linaria",
@@ -787,6 +838,48 @@
       ]
     },
     {
+      "id": "gallery",
+      "file": "before.vue",
+      "framework": "vue",
+      "intent": "Product image gallery: a main photo and a row of thumbnails.",
+      "status": "unknown",
+      "expected": [
+        {
+          "code": "E_A11Y_IMAGE_ALT",
+          "found": true
+        }
+      ],
+      "caught": [
+        "no-alt .main [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "U_LAYOUT_IMAGE",
+          "reason": ".X has no reserved height (no height, aspect-ratio or width/height attributes) and its file's size is not known; it shifts the layout when it loads",
+          "line": 3
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 1,
+      "warnings": 0,
+      "assumptions": [
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "media-card",
       "file": "before.jsx",
       "framework": "stylex",
@@ -1016,6 +1109,69 @@
       "warnings": 1,
       "assumptions": [
         "6 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "pricing-toggle",
+      "file": "before.svelte",
+      "framework": "svelte",
+      "intent": "A monthly / yearly toggle above the plans.",
+      "status": "unknown",
+      "expected": [
+        {
+          "code": "E_LAYOUT_TRACKS",
+          "found": true
+        }
+      ],
+      "caught": [
+        "page-overflow html [1x@320 1x@330 2x@320 2x@330 dark@320 dark@330]",
+        "text-overflow .opt.on [1x@320 1x@375 1x@768 1x@1280 1x@330 2x@320 2x@375 2x@768 2x@1280 2x@330 dark@320 dark@375 dark@768 dark@1280 dark@330]",
+        "clipped .opt.on [1x@320 1x@375 1x@768 1x@1280 1x@330 2x@320 2x@375 2x@768 2x@1280 2x@330 dark@320 dark@375 dark@768 dark@1280 dark@330]",
+        "text-overflow .opt [1x@320 1x@375 1x@768 1x@1280 1x@330 2x@320 2x@375 2x@768 2x@1280 2x@330 dark@320 dark@375 dark@768 dark@1280 dark@330]",
+        "clipped .opt [1x@320 1x@375 1x@768 1x@1280 1x@330 2x@320 2x@375 2x@768 2x@1280 2x@330 dark@320 dark@375 dark@768 dark@1280 dark@330]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "U_A11Y_ARIA_VALUE",
+          "reason": ".X: a dynamic aria-pressed may be invalid",
+          "line": 6
+        },
+        {
+          "code": "U_A11Y_ARIA_VALUE",
+          "reason": ".X.X: a dynamic aria-pressed may be invalid",
+          "line": 6
+        },
+        {
+          "code": "U_A11Y_ARIA_VALUE",
+          "reason": ".X.X: a dynamic aria-pressed may be invalid",
+          "line": 6
+        },
+        {
+          "code": "U_A11Y_ARIA_VALUE",
+          "reason": ".X: a dynamic aria-pressed may be invalid",
+          "line": 6
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 2,
+      "warnings": 1,
+      "assumptions": [
+        "dynamic attribute aria-pressed on <button> is rendered with a non-empty placeholder value",
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
@@ -1371,6 +1527,44 @@
       "warnings": 1,
       "assumptions": [
         "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "switch",
+      "file": "before.jsx",
+      "framework": "linaria",
+      "intent": "A settings row with a label and an on/off switch.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_A11Y_ROLE_FOCUS",
+          "found": true
+        }
+      ],
+      "caught": [
+        "unfocusable .lx-sw [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 1,
+      "warnings": 0,
+      "assumptions": [
+        "1 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
