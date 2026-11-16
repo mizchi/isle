@@ -69,7 +69,9 @@ function markText(html, start = 0) {
 // A text leaf's computed font (reportTextFonts) as a text contract measured with the given font files, or null when
 // the font is not one of them or is not measurable (a non-px size, line-height: normal, letter-spacing).
 function measuredContract(facts, textMetrics, fonts) {
-  if (!facts || facts.varied || !facts.text) return null;
+  // Dynamic text ({expression}, {{ … }}) is rendered as the placeholder '…': its real string is not known, so it is
+  // never measured (a literal '…' in the template stays assumed too).
+  if (!facts || facts.varied || !facts.text || facts.text.includes('…')) return null;
   const family = Object.keys(fonts).find(name => name.toLowerCase() === String(facts.family).replace(/["']/g, '').split(',')[0].trim().toLowerCase());
   const px = v => /^\d+(?:\.\d+)?px$/.test(String(v)) ? Number(String(v).slice(0, -2)) : undefined;
   const size = px(facts.size);

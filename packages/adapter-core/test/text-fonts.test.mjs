@@ -21,4 +21,7 @@ test('an auto column of text is Unknown with assumed text, checked with the font
   assert.ok(result.coverage.assumptions.some(a => /measured with the given font files/.test(a)));
   // A family that was not given stays assumed (and the column Unknown).
   assert.equal(analyzeStates({states, css: css.replace(/Roboto/g, 'Inter')}, {pageCSS, viewport, assumeText: true, textMetrics, fonts}).status, 'unknown');
+  // Dynamic text (the adapters' '…' placeholder) is never measured: its real length is not known.
+  const dynamic = [{html: '<div class="row"><span class="label">Hello …</span><span class="value">Example</span></div>', choices: {}}];
+  assert.equal(analyzeStates({states: dynamic, css}, {pageCSS, viewport, assumeText: true, textMetrics, fonts}).status, 'unknown');
 });
