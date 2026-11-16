@@ -73,7 +73,7 @@ export function htmlBoxTree(html) {
       runs:(()=>{ let i=0; return node.childNodes.flatMap(n=>n.tagName ? [i++] : n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value) ? [n.value.replace(/[\t\n\r ]+/g,' ').trim()] : []); })(),
       // Component boundaries an adapter marks (<!--isle-boundary:component Item-->, slot, children, html): content
       // rendered here comes from another component or the caller.
-      ...(node.childNodes.some(n=>n.nodeName==='#comment' && /^isle-boundary:/.test(n.data)) ? {boundaries:node.childNodes.filter(n=>n.nodeName==='#comment' && /^isle-boundary:/.test(n.data)).map(n=>{ const m=/^isle-boundary:(\w+)(?: (.*))?$/.exec(n.data); return {kind:m?.[1] ?? 'component',...(m?.[2] ? {name:m[2]} : {})}; })} : {}),
+      ...(node.childNodes.some(n=>n.nodeName==='#comment' && /^isle-boundary:/.test(n.data)) ? {boundaries:node.childNodes.filter(n=>n.nodeName==='#comment' && /^isle-boundary:/.test(n.data)).map(n=>{ const m=/^isle-boundary:(\w+)(?: ([^\s=]+))?/.exec(n.data); return {kind:m?.[1] ?? 'component',...(m?.[2] ? {name:m[2]} : {})}; })} : {}),
       children:node.childNodes.filter(n=>n.tagName).map(child=>convert(child,depth+1))};
   }
   const tree=convert(roots[0]);

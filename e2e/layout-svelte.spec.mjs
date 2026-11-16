@@ -70,3 +70,31 @@ test('Settings.svelte: the newer checks\' findings per state agree with the serv
   }
   expect(checked).toBe(16);
 });
+
+// data-noshift: the element's box between the component's states, as Chromium lays them out, against the verdict.
+test('data-noshift: E_LAYOUT_NOSHIFT exactly when Chromium moves the marked element between the states', async ({page}) => {
+  const g = 'display: grid; grid-template-columns: minmax(0, 1fr);';
+  const variants = [
+    ['pushes', '.banner { height: 48px; }'],
+    ['overlays', '.slot { position: relative; } .banner { position: absolute; top: 0; left: 0; width: 100px; height: 48px; }'],
+    ['reserves', '.page { grid-template-rows: 48px auto; } .slot { height: 48px; } .banner { height: 48px; }'],
+  ];
+  for (const [name, css] of variants) {
+    const source = `<script>let { open = false } = $props();</script>\n<div class="page"><div class="slot">{#if open}<div class="banner"></div>{/if}</div><main class="content" data-noshift="content"></main></div>\n<style>.page { ${g} } .slot { display: grid; grid-template-columns: minmax(0, 1fr); } .content { height: 100px; } ${css}</style>`;
+    const report = analyzeSvelte(source, {pageCSS, viewport});
+    const flagged = report.findings.some(f => f.code === 'E_LAYOUT_NOSHIFT');
+    expect(report.unknowns.filter(u => u.code === 'U_LAYOUT_NOSHIFT'), name).toEqual([]);
+    let moved = false;
+    for (const width of [320, 480, 800]) {
+      const rects = [];
+      for (const state of report.states) {
+        const {html, css: built} = await renderSSR(source, propsOf(state.choices));
+        await page.setViewportSize({width, height: 700});
+        await page.setContent(`<!doctype html><html lang="en"><head><style>${pageCSS}${built}</style></head><body>${html}</body></html>`);
+        rects.push(await page.evaluate(() => { const r = document.querySelector('[data-noshift]').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }));
+      }
+      if (rects.some(r => r.some((v, i) => Math.abs(v - rects[0][i]) > 0.01))) moved = true;
+    }
+    expect(flagged, name).toBe(moved);
+  }
+});

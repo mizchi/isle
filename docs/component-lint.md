@@ -79,6 +79,16 @@ Svelte はセレクタのすべての compound をスコープするので、コ
 
 adapter は、子のコンポーネントなどの境界を、状態のマークアップに `<!--isle-boundary:component Item-->` のようなコメントとして残す。css-verifier の `scope` オプション(`{mode: 'scoped' | 'global', ancestors?: 'scoped', owned?: [...], firstLine?}`)が、これと解析した木を照合する。
 
+## レイアウトシフトの契約(`data-noshift`)
+
+親子の配置についての契約も、コンポーネントの定義として書く。コンポーネントは、自分の要素に `data-noshift="名前"` を付けて、その要素の箱(位置と大きさ)が状態の間で変わらないことを宣言する。adapter が展開した状態どうしを、検査する viewport の全区間で比べる。
+
+- `data-noshift-on="open loading"`: その条件(props の名前、`.map` / `v-for` / `{#each}` のリスト)だけが違う状態どうしを比べる。省略すると、すべての状態の組を比べる。
+- 要素がない状態は比べない(条件付きの要素がないことはシフトではない)。
+- `E_LAYOUT_NOSHIFT`(error): 要素が動くか大きさが変わる。反例の幅と、上・左・幅・高さのどれがいくつからいくつに変わるかを示す。Chromium で 2 つの状態を描いて比べ、判定が一致することを確かめた(`e2e/layout-svelte.spec.mjs`)。
+- `U_LAYOUT_NOSHIFT`: どちらかの状態で箱が決まらない(その状態が Unknown か、検査する幅の一部しか分からない)。成功にはしない。
+- `E_SCOPE_CONTRACT`(error): 子のコンポーネントのタグに `data-noshift` を付けた。その要素は子のコンポーネントのものなので、子の中で宣言するか、このコンポーネントの要素で包んで、その要素に付ける。
+
 ## 状態とソース行
 
 - 状態はテンプレートの分岐で決まります。Svelte の `{#if}` / `class:`、Vue の `v-if` / `v-show` / `:class`、JSX の `&&` / 三項演算子 / `cx()` / `stylex.props()` が分岐になります。同じ要素が複数のクラスの組み合わせで出す検出は 1 件にまとめ、状態の表示（`[compact=false]` など）にはすべての状態に共通する条件だけを出します。

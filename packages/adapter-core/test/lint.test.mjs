@@ -201,3 +201,29 @@ test('scope (Linaria): a nested selector may not style the li another component 
   const out = lint(linaria('<ul className={list}><Item /></ul>'), {file: 'L.jsx'});
   assert.equal(out.find(m => m.code === 'E_SCOPE_REACHES')?.severity, 'error');
 });
+
+test('noshift (component-declared): data-noshift on its own element is compared between its states', () => {
+  const g = 'display: grid; grid-template-columns: minmax(0, 1fr);';
+  const svelte = (banner, extra = '', attrs = 'data-noshift="content"') => analyzeSvelte(`<script>let { open = false, wide = false } = $props();</script>\n<div class="page">{#if open}<div class="banner"></div>{/if}<main class="content" class:wide ${attrs}></main></div>\n<style>.page { ${g} } .banner { ${banner} } .content { height: 100px; } .wide { margin-left: 20px; } ${extra}</style>`, scopeOptions);
+  const shifted = svelte('height: 48px;');
+  const f = shifted.findings.find(f => f.code === 'E_LAYOUT_NOSHIFT');
+  assert.ok(f, JSON.stringify(shifted.findings.map(f => f.code)));
+  assert.match(f.message, /\[data-noshift="content"\] moves between .* its (top|left) is/);
+  assert.equal(shifted.status, 'violated');
+  // The banner overlays (absolute) instead of pushing the content, and .wide is outside the contract's conditions.
+  const kept = svelte('position: absolute; top: 0; left: 0; width: 100px; height: 48px;', '.page { position: relative; }', 'data-noshift="content" data-noshift-on="open"');
+  assert.deepEqual(kept.findings.filter(f => f.code === 'E_LAYOUT_NOSHIFT'), []);
+  // Without data-noshift-on, the .wide state is compared too: its margin moves the content.
+  assert.ok(svelte('position: absolute; top: 0; left: 0; width: 100px; height: 48px;', '.page { position: relative; }').findings.some(f => f.code === 'E_LAYOUT_NOSHIFT'));
+  // The contract belongs to the component that owns the element: on a child component's tag it is an error.
+  const foreign = analyzeSvelte(`<div class="page"><Panel data-noshift="p" /></div>\n<style>.page { ${g} }</style>`, scopeOptions);
+  assert.deepEqual(foreign.findings.filter(f => f.code === 'E_SCOPE_CONTRACT').map(f => f.box), ['<Panel>']);
+});
+
+test('noshift (Vue, React): the same contract, and the same error on a child component tag', () => {
+  const g = 'display: grid; grid-template-columns: minmax(0, 1fr);';
+  const vue = analyzeVue(`<template><div class="page"><div v-if="open" class="banner"></div><main class="content" data-noshift="content"></main><Panel data-noshift="p" /></div></template>\n<script setup>defineProps({ open: Boolean });</script>\n<style scoped>.page { ${g} } .banner { height: 48px; } .content { height: 100px; }</style>`, scopeOptions);
+  assert.deepEqual(vue.findings.filter(f => ['E_LAYOUT_NOSHIFT', 'E_SCOPE_CONTRACT'].includes(f.code)).map(f => f.code).sort(), ['E_LAYOUT_NOSHIFT', 'E_SCOPE_CONTRACT']);
+  const react = analyzeReact(`import { css } from '@linaria/core';\nconst page = css\`${g}\`;\nconst banner = css\`height: 48px;\`;\nconst content = css\`height: 100px;\`;\nexport default function P({ open }) { return <div className={page}>{open && <div className={banner}></div>}<main className={content} data-noshift="content"></main></div>; }`, scopeOptions);
+  assert.deepEqual(react.findings.filter(f => f.code === 'E_LAYOUT_NOSHIFT').length, 1);
+});

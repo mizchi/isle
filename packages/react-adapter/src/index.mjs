@@ -210,7 +210,7 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
     let tag = name.type === 'JSXIdentifier' ? name.name : text(name), baseClasses = [];
     if (styled.has(tag)) { baseClasses = [styled.get(tag).className]; tag = styled.get(tag).tag; }
     else if (tag === 'Fragment' || tag === 'React.Fragment') return children(node.children);
-    else if (/^[A-Z]/.test(tag) || tag.includes('.')) { unknown('U_REACT_COMPONENT', `child component <${tag}>: its markup is analysed with that component, not here`); return [{ html: boundary('component', tag), choices: {} }]; }
+    else if (/^[A-Z]/.test(tag) || tag.includes('.')) { unknown('U_REACT_COMPONENT', `child component <${tag}>: its markup is analysed with that component, not here`); return [{ html: boundary('component', tag, node.openingElement.attributes.some(a => a.type === 'JSXAttribute' && a.name?.name === 'data-noshift') ? 'data-noshift' : undefined), choices: {} }]; }
     let classLists = [{ classes: [], choices: {} }], refLists = null;
     const statics = [], attrLists = [];
     for (const a of node.openingElement.attributes) {

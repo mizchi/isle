@@ -145,7 +145,7 @@ export function expandSvelte(source, { maxStates = 64, eachCounts = [0, 1, 2], s
       case 'HtmlTag': unknown('U_SVELTE_HTML', '{@html …} inserts markup that is not known statically'); return [{ html: boundary('html'), choices: {} }];
       case 'RenderTag': unknown('U_SVELTE_RENDER', '{@render …} inserts a snippet from the caller; its markup is not known here'); return [{ html: boundary('children'), choices: {} }];
       case 'SlotElement': unknown('U_SVELTE_SLOT', '<slot> content comes from the caller'); return [{ html: boundary('slot'), choices: {} }];
-      case 'Component': case 'SvelteComponent': case 'SvelteSelf': unknown('U_SVELTE_COMPONENT', `child component <${node.name}>: its markup is analysed with that component, not here`); return [{ html: boundary('component', node.name), choices: {} }];
+      case 'Component': case 'SvelteComponent': case 'SvelteSelf': unknown('U_SVELTE_COMPONENT', `child component <${node.name}>: its markup is analysed with that component, not here`); return [{ html: boundary('component', node.name, node.attributes?.some(a => a.name === 'data-noshift') ? 'data-noshift' : undefined), choices: {} }];
       case 'SvelteElement': unknown('U_SVELTE_ELEMENT', '<svelte:element> has a dynamic tag'); return [{ html: '', choices: {} }];
       default: unknown('U_SVELTE_NODE', `unsupported template node ${node.type}`); return [{ html: '', choices: {} }];
     }

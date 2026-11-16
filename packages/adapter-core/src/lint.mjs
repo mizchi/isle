@@ -12,6 +12,9 @@ export const recommended = {
   // Component scope: a component's selectors and the parent-child relations they rely on stay inside it.
   E_SCOPE_OUTSIDE: ['error', 'keep the relation inside the component (a class or prop on its own root), or pass the context in as a custom property'],
   E_SCOPE_REACHES: ['error', 'style the child component\'s elements in that component (a class or variant prop it exposes); name this component\'s own class here'],
+  E_SCOPE_CONTRACT: ['error', 'declare data-noshift inside the child component, or wrap it in an element of this component and mark that'],
+  // Layout shift: an element the component marks data-noshift moves or resizes between its states.
+  E_LAYOUT_NOSHIFT: ['error', 'reserve the space the changing content needs (a fixed track or min-height), overlay it (position: absolute), or limit the contract to the states it should hold in (data-noshift-on)'],
   E_SCOPE_ESCAPE: ['error', 'drop :global/:deep/:slotted: style each element in the component that renders it'],
   E_A11Y_FIXED_HIDES: ['error', 'offset the content by the fixed bar\'s size (padding or margin), as the rest of the page is'],
   E_A11Y_TEXT_RESIZE: ['error', 'let the box grow with its text (no fixed height, min-width: 0, wrapping) so it holds at 200% text size'],

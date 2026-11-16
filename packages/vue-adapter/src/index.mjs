@@ -72,7 +72,7 @@ export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2], sour
   }
 
   function element(node) {
-    if (node.tagType === COMPONENT) { unknown('U_VUE_COMPONENT', `child component <${node.tag}>: its markup is analysed with that component, not here`); return [{ html: boundary('component', node.tag), choices: {} }]; }
+    if (node.tagType === COMPONENT) { unknown('U_VUE_COMPONENT', `child component <${node.tag}>: its markup is analysed with that component, not here`); return [{ html: boundary('component', node.tag, node.props.some(p => p.name === 'data-noshift' || p.arg?.content === 'data-noshift') ? 'data-noshift' : undefined), choices: {} }]; }
     if (node.tagType === SLOT) { unknown('U_VUE_SLOT', '<slot> content comes from the parent'); return [{ html: boundary('slot'), choices: {} }]; }
     if (node.tag === 'component') { unknown('U_VUE_DYNAMIC_COMPONENT', '<component :is> has a dynamic tag'); return empty; }
     const statics = [], classes = [];

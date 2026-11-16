@@ -3,6 +3,7 @@
 // analyses every state with the generic core and reports what holds per state. The core knows nothing of components.
 import { analyzeHTML, phrasingTags } from '@mizchi/css-verifier/html';
 import { parseFragment, serialize } from 'parse5';
+import { noShift } from './noshift.mjs';
 
 /** Choices of two variants merge unless they take one condition both ways (that combination cannot happen). */
 export const merge = (a, b) => { const out = { ...a }; for (const [k, v] of Object.entries(b)) { if (k in out && out[k] !== v) return null; out[k] = v; } return out; };
@@ -44,7 +45,7 @@ export const scopeEscapes = (css, kinds) => selectorsOf(css).flatMap(selector =>
   return found.length ? [{ selector, kind: found.map(k => `:${k}`).join(', ') }] : [];
 });
 // A boundary marker in a state's markup: content another component (or the caller) renders here.
-export const boundary = (kind, name) => `<!--isle-boundary:${kind}${name ? ` ${String(name).replace(/[^\w.$-]/g, '')}` : ''}-->`;
+export const boundary = (kind, name, contract) => `<!--isle-boundary:${kind}${name ? ` ${String(name).replace(/[^\w.$-]/g, '')}` : ''}${contract ? ` contract=${contract}` : ''}-->`;
 
 export function conditionKey(text) {
   let key = String(text).trim(), negate = false;
@@ -224,7 +225,16 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope
     for (const e of scope.escapes ?? []) grouped.set(`E_SCOPE_ESCAPE\u0000${e.selector}`, { code: 'E_SCOPE_ESCAPE', box: e.selector, severity: 'error', rule: 'component-scope', selector: e.selector, states: results.map(r => r.choices),
       message: `${e.selector} uses ${e.kind}, which reaches outside the component's own elements (the page, a parent or a child component): style those elements in the component that renders them, and pass context in as a custom property or a prop` });
   }
-  const out = { status, states: results, unknowns, coverage: { states: states.length, assumptions }, findings: [...grouped.values()] };
+  // data-noshift contracts the component declares on its own elements, compared between its states.
+  let finalStatus = [...grouped.values()].some(f => /^E_SCOPE_/.test(f.code)) ? 'violated' : status, allUnknowns = unknowns;
+  if (results.some(r => /data-noshift/.test(r.html))) {
+    const shift = noShift(results, { wrap, name, viewport: options.viewport });
+    for (const f of shift.findings) grouped.set(`${f.code}\u0000${f.box}`, f);
+    if (shift.findings.length) finalStatus = 'violated';
+    else if (shift.unknowns.length && finalStatus === 'verified') finalStatus = 'unknown';
+    allUnknowns = [...unknowns, ...shift.unknowns];
+  }
+  const out = { status: finalStatus, states: results, unknowns: allUnknowns, coverage: { states: states.length, assumptions }, findings: [...grouped.values()] };
   if (options.selectors) {
     // A selector is unused only when it is unused in every state; a row's count is its largest over the states.
     // The code may differ by state (no .item at 0 items: unmatched; with items: a broken relation); the explanation
