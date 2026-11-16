@@ -56,7 +56,13 @@ function markText(html, start = 0) {
       const id = `__text${n++}`, cls = node.attrs.find(a => a.name === 'class');
       if (cls) cls.value = `${cls.value} ${id}`.trim(); else node.attrs.push({ name: 'class', value: id });
     }
+    // A text field with a placeholder: marked so its measured placeholder width can be given to it.
+    if (node.tagName === 'input' && node.attrs.some(a => a.name === 'placeholder' && a.value.trim() && !a.value.includes('…') && a.value !== 'dynamic')) {
+      const id = `__ph${placeholders++}`, cls = node.attrs.find(a => a.name === 'class');
+      if (cls) cls.value = `${cls.value} ${id}`.trim(); else node.attrs.push({ name: 'class', value: id });
+    }
   };
+  let placeholders = 0;
   walk(fragment);
   return { html: serialize(fragment), count: n - start };
 }
@@ -110,6 +116,11 @@ export function analyzeStates({ states, css, unknowns = [], assumptions = [] }, 
         const first = analyzeHTML(wrap(html), { name, ...options, boxes, css: pageCSS + css, reportTextFonts: true });
         const measured = {};
         for (const facts of first.textFonts ?? []) {
+          if (facts.placeholder) {
+            const ph = (facts.classes ?? []).find(c => /^__ph\d+$/.test(c)), measured_ = ph ? measuredContract({ ...facts, placeholder: undefined }, textMetrics, fonts) : null;
+            if (measured_?.minInlineSize !== undefined) measured[`.${ph}`] = { placeholderInlineSize: Math.ceil(Number(measured_.minInlineSize) * 1e6 - 1e-9) / 1e6 };
+            continue;
+          }
           const marker = (facts.classes ?? []).find(c => /^__text\d+$/.test(c));
           const contract = marker && !options.boxes?.[`.${marker}`] ? measuredContract(facts, textMetrics, fonts) : null;
           if (contract) measured[`.${marker}`] = contract;

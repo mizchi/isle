@@ -396,6 +396,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       catch(error) {error.box ??= box;throw error;}
       // reportTextFonts: the computed font of each text leaf (for a caller that measures it with a font file and
       // analyses again with a font contract); 'varied' where it differs across the domain.
+      // (A text field's placeholder too: its text and the field's font.)
+      if (options.reportTextFonts && !state && box.tag === 'input' && typeof box.attributes?.placeholder === 'string' && box.attributes.placeholder.trim()) {
+        const facts = { placeholder: true, classes: box.classes, text: box.attributes.placeholder, family: style['font-family'], size: style['font-size'], lineHeight: style['line-height'], weight: style['font-weight'], style: style['font-style'], whiteSpace: 'nowrap', overflowWrap: 'normal', letterSpacing: style['letter-spacing'], lang: style.$lang };
+        const seen = textFonts.get(box.path);
+        textFonts.set(box.path, seen && (seen === 'varied' || JSON.stringify(seen) !== JSON.stringify(facts)) ? 'varied' : facts);
+      }
       if (options.reportTextFonts && !state && box.text && !box.pseudo && !(box.inline ?? []).length && !box.anonymous) {
         const hint = name => box.attributes && Object.hasOwn(box.attributes, name) ? box.attributes[name] : undefined;
         const facts = { classes: box.classes, text: box.textContent ?? '', ...(hint('data-text-one-line') !== undefined ? { oneLine: true } : {}), ...(hint('data-text-max-length') !== undefined ? { maxLength: hint('data-text-max-length') } : {}), ...(hint('data-text-chars') !== undefined ? { characters: hint('data-text-chars') } : {}), family: style['font-family'], size: style['font-size'], lineHeight: style['line-height'], weight: style['font-weight'], style: style['font-style'], whiteSpace: style['white-space'], overflowWrap: style['overflow-wrap'], letterSpacing: style['letter-spacing'], lang: style.$lang };
@@ -2323,6 +2329,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const contentStates = preferredStates.flatMap(proposal => clamp(proposal.region, diff(proposal.value, inlineEdges)));
         for (const content of contentStates) {
           const inline = sum(content.value, inlineEdges), contentInline = content.value;
+          // A text field's placeholder measured with its font (placeholderInlineSize): wider than the field's content
+          // box, its end is cut off (the hint the user reads before typing).
+          if (emit && box.contract?.placeholderInlineSize !== undefined && !layoutWarnings.some(w => w.code === 'W_A11Y_PLACEHOLDER_CLIPPED' && w.path === box.path)) {
+            const cut = clip(content.region, diff(scalar(box.contract.placeholderInlineSize), contentInline), true);
+            if (cut) { const p = sample(cut); layoutWarnings.push({ code: 'W_A11Y_PLACEHOLDER_CLIPPED', severity: 'warning', box: box.label, path: box.path, needs: box.contract.placeholderInlineSize,
+              message: `${box.label}'s placeholder needs ${box.contract.placeholderInlineSize}px but the field shows ${number(evaluate(contentInline, p))}px at viewport ${number(p.x)}px: its end is cut off. Shorten the placeholder (or put the hint in a label) or widen the field`, ...ranges(cut) }); }
+          }
           let fixedBlock = null;
           if (block) {
             if (style['block-size'] !== 'auto') fixedBlock = /^\d+(?:\.\d+)?(?:px|%)$/.test(style['block-size']) ? length(style['block-size'], available.percentBlock ?? available.block, style) : scalar(zero);

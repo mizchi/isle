@@ -15,6 +15,7 @@ export const recommended = {
   E_A11Y_FIXED_HIDES_PART: ['error', 'offset this content by the fixed sidebar\'s width (padding or margin), as the rest of the page is'],
   E_LAYOUT_IMAGE_UNRESERVED: ['error', 'add width and height attributes (or aspect-ratio) so the image reserves its box'],
   E_LAYOUT_IMAGE_RATIO: ['error', 'make the reserved ratio match the file'],
+  W_A11Y_PLACEHOLDER_CLIPPED: ['warning', 'shorten the placeholder (or put the hint in a label) or widen the field'],
   W_A11Y_IMAGE_FALLBACK_CONTRAST: ['warning', 'give the image\'s box a background-color that keeps the text readable without the image'],
   W_LAYOUT_DECLARATION_INERT: ['warning', 'remove it, or change the parent display it needs'],
   W_LAYOUT_FOCUS_SHIFT: ['warning', 'draw focus with outline or box-shadow, or keep the size (change border-color, not border-width)'],

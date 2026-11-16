@@ -40,3 +40,11 @@ test('data-text-max-length measures dynamic text by its longest string; data-tex
   assert.ok(codes(card('data-text-one-line', 'Notification preferences')).includes('E_LAYOUT_CONTENT'));
   assert.equal(card('data-text-one-line', 'Notify', '120px').status, 'verified');
 });
+
+test('a placeholder wider than its field is cut off (measured with the field font)', async () => {
+  const textMetrics = await loadTextMetrics({fonts});
+  const field = (placeholder, width) => analyzeStates({states: [{html: `<div class="f"><label class="l" for="e">Email</label><input class="i" id="e" type="email" placeholder="${placeholder}"></div>`, choices: {}}], css: `.f{display:grid;grid-template-columns:${width}}.i{display:block;width:100%;height:34px;padding:4px 8px;border:1px solid #666;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;color:#000;background:#fff}`}, {pageCSS: pageCSS + 'label{display:block;color:#000;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400}', viewport, assumeText: true, textMetrics, fonts});
+  const clipped = r => r.findings.some(f => f.code === 'W_A11Y_PLACEHOLDER_CLIPPED');
+  assert.ok(clipped(field('Enter the email address you use at work', '200px')));
+  assert.ok(!clipped(field('you@example.com', '200px')));
+});

@@ -704,3 +704,24 @@ test('one-line text: the static violation fires exactly at the widths where Chro
     }
   }
 });
+
+test('placeholder clipped: the static warning fires exactly where Chromium\'s placeholder text is wider than the field', async ({page}) => {
+  const {analyzeStates} = await import('../packages/adapter-core/src/index.mjs');
+  const fonts = {Roboto: {file: new URL('roboto-variable.ttf', fixtures).pathname}};
+  const pageCSS = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}label{display:block;color:#000;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400}';
+  for (const [placeholder, columns] of [['Enter the email address you use at work', 'minmax(0,1fr)'], ['you@example.com', '200px'], ['Search products, brands and more', 'minmax(0,1fr) minmax(0,1fr)']]) {
+    const css = `.f{display:grid;grid-template-columns:${columns}}.i{display:block;width:100%;height:34px;padding:4px 8px;border:1px solid #666;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;color:#000;background:#fff}`;
+    const html = `<div class="f"><label class="l" for="e">Email</label><input class="i" id="e" type="email" placeholder="${placeholder}"></div>`;
+    const result = analyzeStates({states: [{html, choices: {}}], css}, {pageCSS, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, assumeText: true, textMetrics: metrics, fonts});
+    const warned = result.states[0].report.layoutWarnings?.find(w => w.code === 'W_A11Y_PLACEHOLDER_CLIPPED');
+    for (const width of [320, 480, 640, 800]) {
+      await page.setViewportSize({width, height: 700});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${pageCSS}${css}</style></head><body>${html}</body></html>`);
+      await page.evaluate(() => document.fonts.ready);
+      const [text, room] = await page.evaluate(() => { const i = document.querySelector('.i'), s = getComputedStyle(i), c = document.createElement('canvas').getContext('2d'); c.font = `${s.fontWeight} ${s.fontSize} Roboto`; return [c.measureText(i.placeholder).width, i.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight)]; });
+      const statically = Boolean(warned && warned.range.min <= width && width <= warned.range.max);
+      // (Within the 1px allowance of the derived bound the static side may warn first.)
+      if (Math.abs(text - room) > 1) expect(statically, `${placeholder} at ${width}px: text ${text}, room ${room}`).toBe(text > room);
+    }
+  }
+});

@@ -48,6 +48,7 @@ error が 1 件でもあれば終了コードは 1 です。
 - `data-text-one-line`: その要素のテキストは 1 行に収まるはず(CSS が折り返しを許していても)。収まらない幅で `E_LAYOUT_CONTENT` を出す。
 - `data-text-max-length="12"`: 動的なテキスト(`{name}` など、adapter は「…」として描画する)の最大文字数。その長さ以下のどの文字列でも収まるかを、最悪の幅で検査する。文字集合は `data-text-chars="…"` で指定する(既定は印字可能な ASCII)。折り返し位置は決まらないので、`white-space: nowrap` か `data-text-one-line` が要る(なければ仮定のまま)。
 - 属性のない動的なテキストは測らない(実際の文字列が分からないため)。
+- テキスト入力欄の `placeholder` も、入力欄のフォントで測る。入力欄の内容の箱より広い幅では、末尾が切れて見えないので `W_A11Y_PLACEHOLDER_CLIPPED`(警告)を出す(Chromium の描画と照合した)。
 
 ```svelte
 <span class="name" data-text-one-line data-text-max-length="20">{user.name}</span>
