@@ -725,3 +725,25 @@ test('placeholder clipped: the static warning fires exactly where Chromium\'s pl
     }
   }
 });
+
+test('text resize (SC 1.4.4): with Chromium\'s default font size doubled, the text overflows exactly where E_A11Y_TEXT_RESIZE is reported', async ({page}) => {
+  const {analyzeStates} = await import('../packages/adapter-core/src/index.mjs');
+  const fonts = {Roboto: {file: new URL('roboto-variable.ttf', fixtures).pathname}};
+  const pageCSS = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}';
+  const cdp = await page.context().newCDPSession(page);
+  for (const [label, size] of [['Save changes', 'font-size:1rem;line-height:1.5'], ['OK', 'font-size:1rem;line-height:1.5'], ['Save changes', 'font-size:16px;line-height:24px'], ['Continue to payment', 'font-size:0.875rem;line-height:1.5']]) {
+    const css = `.w{display:grid;grid-template-columns:200px}.b{display:block;width:100%;padding:0 8px;border:0;font-family:Roboto;${size};font-weight:400;color:#000;background:#eee;white-space:nowrap}`;
+    const html = `<div class="w"><button class="b" type="button">${label}</button></div>`;
+    const result = analyzeStates({states: [{html, choices: {}}], css}, {pageCSS, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, assumeText: true, textMetrics: metrics, fonts, defaultFontSize: 16, textResize: true});
+    const reported = result.findings.some(f => f.code === 'E_A11Y_TEXT_RESIZE');
+    await cdp.send('Page.setFontSizes', {fontSizes: {standard: 32}});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${pageCSS}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const overflows = await page.evaluate(() => { const b = document.querySelector('.b'); return b.scrollWidth > b.clientWidth; });
+    await cdp.send('Page.setFontSizes', {fontSizes: {standard: 16}});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${pageCSS}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const atOne = await page.evaluate(() => { const b = document.querySelector('.b'); return b.scrollWidth > b.clientWidth; });
+    expect(reported, `${label} (${size}): overflows at 2× ${overflows}, at 1× ${atOne}`).toBe(overflows && !atOne);
+  }
+});

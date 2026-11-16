@@ -97,7 +97,27 @@ function measuredContract(facts, textMetrics, fonts) {
   try { return textMetrics.resolveBoxes({ x: contract }).x; } catch { return null; }
 }
 
-export function analyzeStates({ states, css, unknowns = [], assumptions = [] }, { pageCSS = '', page: wrap = page, name = 'Component', assumeText, textMetrics, fonts = {}, ...options } = {}) {
+// Overflow-like findings that text resizing can cause (SC 1.4.4 compares them at 1× and 2× the default font size).
+const resizeCodes = new Set(['E_LAYOUT_CONTENT', 'E_LAYOUT_ITEM_SIZE', 'E_LAYOUT_TRACKS', 'E_LAYOUT_PAGE_OVERFLOW', 'E_LAYOUT_PROTRUSION', 'E_A11Y_TEXT_OBSCURED', 'E_A11Y_TEXT_START_OBSCURED', 'W_LAYOUT_CLIPPED', 'W_LAYOUT_TRUNCATED']);
+
+export function analyzeStates(component, allOptions = {}) {
+  const result = analyzeStatesOnce(component, allOptions);
+  // textResize (with defaultFontSize and measured fonts): the component analysed again with the default font size
+  // doubled (rem, em, % and keyword font sizes follow it); what breaks only then is E_A11Y_TEXT_RESIZE.
+  if (allOptions.textResize && allOptions.defaultFontSize && allOptions.textMetrics) {
+    const doubled = analyzeStatesOnce(component, { ...allOptions, defaultFontSize: allOptions.defaultFontSize * 2 });
+    const before = new Set(result.findings.map(f => `${f.code}\u0000${f.box}`));
+    for (const f of doubled.findings) {
+      if (!resizeCodes.has(f.code) || before.has(`${f.code}\u0000${f.box}`) || result.findings.some(g => g.code === 'E_A11Y_TEXT_RESIZE' && g.box === f.box)) continue;
+      result.findings.push({ ...f, code: 'E_A11Y_TEXT_RESIZE', severity: 'error', resized: f.code, message: `at 200% text size (a ${allOptions.defaultFontSize * 2}px default font size) ${f.message}` });
+    }
+    if (doubled.status === 'violated' && result.status === 'verified') result.status = 'violated';
+    result.coverage.assumptions = [...result.coverage.assumptions, `text resized to 200% (a ${allOptions.defaultFontSize * 2}px default font size) analysed too (SC 1.4.4)`];
+  }
+  return result;
+}
+
+function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { pageCSS = '', page: wrap = page, name = 'Component', assumeText, textMetrics, fonts = {}, textResize, ...options } = {}) {
   let assumedTexts = 0, measuredTexts = 0;
   const results = states.map(state => {
     let html = state.html, boxes = options.boxes;

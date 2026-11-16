@@ -48,3 +48,15 @@ test('a placeholder wider than its field is cut off (measured with the field fon
   assert.ok(clipped(field('Enter the email address you use at work', '200px')));
   assert.ok(!clipped(field('you@example.com', '200px')));
 });
+
+test('textResize: what breaks only at 200% text size is E_A11Y_TEXT_RESIZE', async () => {
+  const textMetrics = await loadTextMetrics({fonts});
+  const button = (label, css) => analyzeStates({states: [{html: `<div class="w"><button class="b" type="button">${label}</button></div>`, choices: {}}], css: `.w{display:grid;grid-template-columns:200px}.b{display:block;width:100%;padding:0 8px;border:0;font-family:Roboto;font-size:1rem;line-height:1.5;font-weight:400;color:#000;background:#eee;white-space:nowrap;${css}}`}, {pageCSS, viewport, assumeText: true, textMetrics, fonts, defaultFontSize: 16, textResize: true});
+  const codes = r => r.findings.map(f => f.code);
+  // "Save changes" fits 200px at 16px, not at 32px.
+  assert.ok(codes(button('Save changes', '')).includes('E_A11Y_TEXT_RESIZE'));
+  assert.ok(!codes(button('Save changes', '')).includes('E_LAYOUT_CONTENT'));
+  // A short label fits at both sizes; a px font size does not resize.
+  assert.ok(!codes(button('OK', '')).includes('E_A11Y_TEXT_RESIZE'));
+  assert.ok(!codes(button('Save changes', 'font-size:16px;line-height:24px')).includes('E_A11Y_TEXT_RESIZE'));
+});
