@@ -1,0 +1,1 @@
+{"framework": "stylex", "intent": "A toast fixed at the bottom of the screen above the page.", "planted": "the fixed toast covers the end of the page, so the last paragraph can never be read", "expect": ["E_A11Y_FIXED_HIDES"]}

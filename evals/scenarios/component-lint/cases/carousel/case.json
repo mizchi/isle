@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "Horizontal carousel of product slides with previous/next buttons over the edges.", "planted": "the arrow buttons are 24px squares (small targets) and the next button sits on the slide text", "expect": ["E_A11Y_TARGET_SIZE"]}

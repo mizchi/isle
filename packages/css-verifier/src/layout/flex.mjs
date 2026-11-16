@@ -97,6 +97,9 @@ export function flexItem(style, { empty = false, axis = 'inline', contentSizes }
   // Content widths given by the engine (border box): the max-content width is the base (§9.2.3 C/E).
   else if ((basis === 'auto' || basis === 'content') && style[n.size] === 'auto' && contentSizes) base = contentBox ? add(contentSizes.max, mul(own, q(-1))) : contentSizes.max;
   else if (basis === 'auto' || basis === 'content') unknown(`flex-basis: ${basis} with an auto ${n.label} uses the content size; give a px ${n.label} or basis`);
+  // A percentage basis is a share of the container's main size, which varies with the viewport; items are modeled with
+  // constant sizes here. (A full-width slide: flex: 0 0 100% in a scrolling row.)
+  else if (/%$/.test(String(basis))) unknown(`flex-basis ${basis} (a share of the container, which varies with the viewport) is outside the subset; give a px basis, or lay the items out as a grid (grid-template-columns with minmax(0, 1fr) tracks)`);
   else unknown(`flex-basis ${basis} is outside the subset`);
   // A non-auto flex-basis replaces the main size; the size still feeds the automatic minimum (the specified size
   // suggestion, §4.5), which is outside the subset. Without it the size does nothing (W_LAYOUT_DECLARATION_INERT).

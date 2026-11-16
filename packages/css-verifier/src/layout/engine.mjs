@@ -1991,7 +1991,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // Content-sized columns: no px widths at all, and every non-empty cell a leaf with trusted min- and max-content
       // widths (minInlineSize, maxInlineSize). Each column's range is its cells' widest (plus the cell edges).
       // Px columns may join (Chromium's auto table layout, measured): their range is [content minimum, px].
-      const leafWith = (cell, auto) => !(cell.children ?? []).length && cell.contract?.minInlineSize !== undefined && (!auto || cell.contract?.maxInlineSize !== undefined);
+      // A cell holding only one empty static block of a px width (an icon button, a swatch): its min- and max-content
+      // width is that width (plus the block's px margins).
+      const sizedChild = cell => {
+        if (cell.text || cell.contract || (cell.children ?? []).length !== 1) return null;
+        const child = cell.children[0];
+        if (child.text || child.contract || (child.children ?? []).length || child.inline?.length) return null;
+        const sts = styles(child, region, parents, style, false, false);
+        const widths = new Set(sts.map(st => st.style.display === 'block' && st.style.position === 'static' && /^\d+(?:\.\d+)?px$/.test(String(st.style['inline-size'])) && ['margin-left', 'margin-right'].every(k => ['0', '0px'].includes(String(st.style[k]))) && (st.style['box-sizing'] === 'border-box' || ['left', 'right'].every(side => ['0', '0px', 'ua'].includes(String(st.style[`padding-${side}`])) && ['0', '0px'].includes(String(st.style[`border-${side}`])))) ? st.style['inline-size'] : null));
+        return widths.size === 1 && [...widths][0] ? px([...widths][0]) : null;
+      };
+      const leafWith = (cell, auto) => sizedChild(cell) !== null || (!(cell.children ?? []).length && cell.contract?.minInlineSize !== undefined && (!auto || cell.contract?.maxInlineSize !== undefined));
       const emptyCell = cell => !cell.text && !cell.contract && !(cell.children ?? []).length;
       const contentColumns = widths.some(w => !w) && rows.every(row => row.children.every((cell, c) => emptyCell(cell) || leafWith(cell, !widths[c]))) && (widths.every(w => !w) || rows.some(row => row.children.some((cell, c) => !widths[c] && !emptyCell(cell))));
       const ranges = contentColumns ? Array.from({ length: columns }, () => ({ min: zero, max: zero })) : null;
@@ -2005,7 +2015,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             if (!widths[c] || cmp(w, widths[c]) !== 0) fail('In automatic table layout every px width of a column must be the first row\'s');
           }
           if (widths[c]) ranges[c].fixed = widths[c];
-          const lo = add(q(String(cell.contract?.minInlineSize ?? 0)), cellEdges), hi = add(q(String(cell.contract?.maxInlineSize ?? 0)), cellEdges);
+          const sized = sizedChild(cell);
+          const lo = add(sized ?? q(String(cell.contract?.minInlineSize ?? 0)), cellEdges), hi = add(sized ?? q(String(cell.contract?.maxInlineSize ?? 0)), cellEdges);
           if (cmp(lo, ranges[c].min) > 0) ranges[c].min = lo;
           if (cmp(hi, ranges[c].max) > 0) ranges[c].max = hi;
           return;

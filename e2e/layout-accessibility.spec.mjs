@@ -1927,3 +1927,24 @@ test('defaultColors: with no dark color-scheme Chromium paints canvastext black 
   await page.setContent(`<!doctype html><style>${css}:root{color-scheme:light dark}</style>${html}`);
   expect(await page.evaluate(() => getComputedStyle(document.querySelector('.a')).color)).toBe('rgb(255, 255, 255)');
 });
+
+test('focus-offscreen: Tab focuses each link of a drawer moved off screen by a transform, and Chromium shows none of it, exactly where the static check reports', async ({page}) => {
+  const html = '<html lang="en"><body><div class="app"><nav class="drawer" aria-label="Main"><a class="link" href="/a">Home</a><a class="link2" href="/b">Settings</a></nav><main class="content"><p class="text">Welcome</p></main></div></body></html>';
+  const css = (shift) => `*{box-sizing:border-box;margin:0}html,body,.app{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.drawer{position:fixed;top:0;left:0;bottom:0;width:240px;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;padding:16px;background:#fff;transform:${shift}}.link,.link2{display:block;padding:12px 0;font-size:16px;line-height:24px;color:#0b57d0}.content{padding:16px}.text{font-size:16px;line-height:24px;color:#111}`;
+  const boxes = {'.link': {minInlineSize: 0, intrinsicBlockSize: 24}, '.link2': {minInlineSize: 0, intrinsicBlockSize: 24}, '.text': {minInlineSize: 0, intrinsicBlockSize: 24}};
+  for (const [shift, offscreen] of [['translateX(-100%)', true], ['translateX(-50%)', false], ['none', false]]) {
+    const report = analyzeHTML(html, {name: 'P', css: css(shift), viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, defaultColors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], boxes});
+    const flagged = report.diagnostics.filter(d => d.code === 'E_A11Y_FOCUS_OFFSCREEN').map(d => d.box).sort();
+    expect(flagged, shift).toEqual(offscreen ? ['.link', '.link2'] : []);
+    for (const width of [320, 800]) {
+      await page.setViewportSize({width, height: 600});
+      await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css(shift)}</style></head><body>`)}`);
+      for (const cls of ['.link', '.link2']) {
+        await page.keyboard.press('Tab');
+        const seen = await page.evaluate(cls => { const e = document.activeElement, r = e.getBoundingClientRect(); return {focused: e.matches(cls), visible: r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight}; }, cls);
+        expect(seen.focused, `${shift} ${cls}`).toBe(true);
+        expect(seen.visible, `${shift} ${cls} at ${width}`).toBe(!offscreen);
+      }
+    }
+  }
+});

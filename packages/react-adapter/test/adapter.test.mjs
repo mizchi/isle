@@ -84,3 +84,13 @@ test('Linaria interpolations: module constants, object members and class referen
   // A function of props, or an imported value, is not evaluated: Unknown.
   assert.ok(expandReact("import { css } from '@linaria/core';\nimport { size } from './tokens';\nconst a = css`width: ${size};`;\nexport default function A() { return <div className={a} />; }").unknowns.some(u => u.code === 'U_LINARIA_INTERPOLATION'));
 });
+
+test('StyleX: a longhand wins over its shorthand in either order (a second rule of higher specificity), with no write conflict', () => {
+  const src = `import * as stylex from '@stylexjs/stylex';
+const s = stylex.create({ a: { display: 'block', height: 20, paddingBottom: 40, padding: 16 } });
+export default function C() { return <main {...stylex.props(s.a)} />; }`;
+  const {css} = expandReact(src);
+  assert.match(css, /\.(sx-\w+)\{[^}]*padding:16px[^}]*\}\.\1\.\1\{padding-bottom:40px\}/);
+  const r = analyzeReact(src, {pageCSS: '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}', viewport: {min: 320, max: 800}});
+  assert.ok(!r.states.some(s => s.report.diagnostics.some(d => d.code === 'E_CSS_SHORTHAND_CONFLICT')));
+});

@@ -60,7 +60,7 @@ for (const id of cases) {
       const found = await page.evaluate(async () => {
         const out = [], label = e => e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\s+/).filter(c => !/^(svelte|s)-/.test(c)).join('.') : e.tagName.toLowerCase();
         if (document.documentElement.scrollWidth > innerWidth + 1) out.push(['page-overflow', 'html']);
-        const texts = [...document.querySelectorAll('body *')].filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && e.getClientRects().length);
+        const texts = [...document.querySelectorAll('body *')].filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && e.getClientRects().length && e.checkVisibility({visibilityProperty: true}));
         for (const e of texts) if (getComputedStyle(e).display !== 'inline') {
           // Sub-pixel: the text's line boxes (a Range) against the content box, not the integer scrollWidth.
           const cs0 = getComputedStyle(e), b0 = e.getBoundingClientRect(), rg = document.createRange(); rg.selectNodeContents(e);
@@ -93,6 +93,8 @@ for (const id of cases) {
           // color-scheme is the browser's choice), reported apart from the component's breaks.
           if (ratio < (large ? 3 : 4.5)) out.push([canvas ? 'env-dark-canvas-contrast' : 'low-contrast', label(e)]);
         }
+        // Buttons and links with no accessible name (no text, aria-label, aria-labelledby, title or img alt).
+        for (const e of document.querySelectorAll('button, a[href]')) { const named = e.textContent.trim() || e.getAttribute('aria-label')?.trim() || e.getAttribute('aria-labelledby') || e.getAttribute('title')?.trim() || [...e.querySelectorAll('img[alt]')].some(i => i.alt.trim()) || [...e.querySelectorAll('svg title')].some(t => t.textContent.trim()); if (!named) out.push(['no-name', label(e)]); }
         for (const i of document.querySelectorAll('input[placeholder]')) { const s = getComputedStyle(i), c = document.createElement('canvas').getContext('2d'); c.font = `${s.fontWeight} ${s.fontSize} ${s.fontFamily}`; if (c.measureText(i.placeholder).width > i.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight) + 1) out.push(['placeholder-clipped', label(i)]); }
         return out;
       });

@@ -1232,7 +1232,11 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   // ancestor) or visibility: hidden, the messages written into it are not announced.
   for (const box of all.filter(box => !box.pseudo && (['alert', 'status', 'log', 'timer', 'marquee'].includes(roleOf(box)) || ['polite', 'assertive'].includes(String(box.aria?.['aria-live'] ?? '').trim().toLowerCase())))) {
     if (box.aria?.['aria-live'] === 'dynamic') continue;
-    let hidden = [domain];
+    // Only where the page was laid out (the root has rows): a region with no rows at all was not analysed (Unknown
+    // elsewhere), which is not the region being hidden.
+    const rootRows = geometry.filter(row => row.path === root?.path);
+    if (!rootRows.length && !hiddenFrom(box.path)) continue;
+    let hidden = rootRows.length ? rootRows.map(row => row.region) : [domain];
     if (!hiddenFrom(box.path)) for (const row of geometry.filter(row => row.path === box.path && visible(row))) hidden = hidden.flatMap(region => subtract(region, row.region));
     const at = hidden.find(Boolean);
     if (at) report(warnings, 'W_A11Y_LIVE_HIDDEN', 'warning', `${box.label} is a live region (${roleOf(box) ?? `aria-live ${box.aria['aria-live']}`}) but is ${hiddenFrom(box.path) ? 'aria-hidden' : 'not rendered (display: none or visibility: hidden)'} here: what is written into it is not announced. Keep the region rendered and empty, and hide it visually if needed`, whole(box), at, { rule: 'live-hidden' });

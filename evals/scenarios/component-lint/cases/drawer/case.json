@@ -1,0 +1,1 @@
+{"framework": "vue", "intent": "Off-canvas navigation drawer that slides in when open.", "planted": "the closed drawer is moved off-screen with a transform but stays focusable (its links take Tab focus while invisible)", "expect": ["E_A11Y_HIDDEN_FOCUSABLE"]}

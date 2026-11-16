@@ -152,7 +152,15 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
           }
         } else base.push(`${kebab(prop)}:${cssValue(prop, value)}`);
       }
-      stylexRules.set(id, `.${id}{${base.join(';')}}${conditional.join('')}`);
+      // StyleX gives a longhand priority over a shorthand that sets it (paddingBottom over padding), whatever their
+      // order: such longhands go into a second rule of higher specificity, so the shorthand never overrides them and
+      // no rule writes the same property twice.
+      const nameOf = decl => decl.slice(0, decl.indexOf(':'));
+      const extra = { gap: ['row-gap', 'column-gap'], inset: ['top', 'right', 'bottom', 'left'], 'place-items': ['align-items', 'justify-items'], 'place-content': ['align-content', 'justify-content'], 'place-self': ['align-self', 'justify-self'], overflow: ['overflow-x', 'overflow-y'] };
+      const shorthands = new Set(base.map(nameOf));
+      const longhandOfPresent = name => [...shorthands].some(sh => sh !== name && (name.startsWith(`${sh}-`) || extra[sh]?.includes(name)));
+      const strong = base.filter(decl => longhandOfPresent(nameOf(decl))), weak = base.filter(decl => !longhandOfPresent(nameOf(decl)));
+      stylexRules.set(id, `.${id}{${weak.join(';')}}${strong.length ? `.${id}.${id}{${strong.join(';')}}` : ''}${conditional.join('')}`);
     }
     return id;
   };

@@ -178,3 +178,11 @@ test('minmax(0, 480px) grows to its limit and shrinks with the container; minmax
   // 400px each at least: overflows below 814px.
   assert.ok(grid('minmax(400px, 500px) minmax(400px, 500px)').diagnostics.some(d => d.code === 'E_LAYOUT_TRACKS'));
 });
+
+test('an automatic table column whose cells each hold one px-wide block is as wide as the widest block plus the cell padding', () => {
+  const r = analyzeHTML(`<html lang="en"><body><main class="p"><table class="t"><tbody><tr><td class="c"><div class="x1"></div></td><td class="c"><div class="x2"></div></td></tr><tr><td class="c"><div class="x1"></div></td><td class="c"><div class="x3"></div></td></tr></tbody></table></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{display:block}.t{border-collapse:collapse}.c{padding:8px}.x1,.x2,.x3{display:block;height:24px}.x1{width:24px}.x2{width:60px}.x3{width:90px}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  const cells = r.sizes.filter(s => s.box === '.c' && s.rect).slice(0, 2).map(s => Number(s.rect.inlineSize.constant));
+  assert.deepEqual(cells, [40, 106]);
+});

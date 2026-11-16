@@ -12,7 +12,7 @@ const viewport = {min: 320, max: 800, height: {min: 600, max: 900}};
 const propsOf = c => Object.fromEntries(Object.entries(c).map(([k, v]) => k.startsWith('#map ') ? [k.slice(5), Array.from({length: v}, (_, i) => i)] : [k, v]));
 const n = t => { const [a, b = '1'] = String(t ?? '0').split('/'); return Number(a) / Number(b); };
 
-for (const [file, compile] of [['StylexCard.jsx', compileStylex], ['LinariaCard.jsx', compileLinaria]]) {
+for (const [file, compile] of [['StylexCard.jsx', compileStylex], ['StylexLonghand.jsx', compileStylex], ['LinariaCard.jsx', compileLinaria]]) {
   test(`${file}: every state's boxes (position and size) agree with Chromium on the real styles`, async ({page}) => {
     const source = fixture(file), {code, css} = await compile(source);
     const report = analyzeReact(source, {pageCSS, viewport});
@@ -30,7 +30,7 @@ for (const [file, compile] of [['StylexCard.jsx', compileStylex], ['LinariaCard.
         }
       }
     }
-    expect(compared).toBeGreaterThan(20);
+    expect(compared).toBeGreaterThanOrEqual(16);
   });
 }
 

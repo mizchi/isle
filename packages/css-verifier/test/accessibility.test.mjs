@@ -2004,3 +2004,14 @@ test('defaultColors (a stated assumption): UA canvastext on the UA canvas is bla
   // Without the option nothing changes (ADR-0007).
   assert.ok(run(card, cardCSS(''), {boxes: cardBoxes}).diagnostics.some(d => d.code === 'U_A11Y_CONTRAST'));
 });
+
+test('live-hidden is not reported where nothing was laid out (an analysis stopped by a CSS error is not a hidden region)', () => {
+  const html = '<html lang="en"><body><main class="m"><div class="t" role="status">Saved</div></main></body></html>';
+  const base = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.t{font-size:16px;line-height:24px;color:#000;background:#fff}';
+  const opts = {name: 'P', viewport: {min: 320, max: 800}, accessibility: true, boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 24}}};
+  const stopped = analyzeHTML(html, {...opts, css: base + '.m{padding:4px;padding-bottom:8px}'});
+  assert.ok(stopped.diagnostics.some(d => d.code === 'E_CSS_SHORTHAND_CONFLICT'));
+  assert.ok(!(stopped.accessibility?.warnings ?? []).some(w => w.code === 'W_A11Y_LIVE_HIDDEN'), JSON.stringify(stopped.accessibility?.warnings));
+  // Really hidden: still reported.
+  assert.ok(analyzeHTML(html, {...opts, css: base + '.t{visibility:hidden}'}).accessibility.warnings.some(w => w.code === 'W_A11Y_LIVE_HIDDEN'));
+});
