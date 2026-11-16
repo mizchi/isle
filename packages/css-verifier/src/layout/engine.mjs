@@ -2444,7 +2444,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                 const summary = box.tag === 'details' ? box.children.find(child => child.tag === 'summary') : null;
                 for (const child of box.children) if (child !== rendered?.box && !(box.tag === 'details' && box.detailsOpen === false && child !== summary)) visit(child, style);
                 if (!box.pseudo) pseudo('after');
-                for (const state of states) for (const child of state.children) if (child.style.order !== '0') throw Object.assign(new Error('order changes the item sequence; only order: 0 is modeled'), { code: isFlex ? 'U_LAYOUT_FLEX' : undefined });
+                // order: items are laid out (and painted) in order-modified document order, a stable sort by order. Modeled
+                // where in-flow items cannot overlap (so paint order does not matter): flex items, and grid items that are
+                // all auto-placed; with a transform or relative offsets on a reordered item it stays Unknown. Tab order
+                // still follows the DOM (visual-order reports the difference).
+                for (const state of states) {
+                  if (state.children.every(child => child.style.order === '0')) continue;
+                  const reject = why => { throw Object.assign(new Error(`order changes the item sequence; ${why}`), { code: isFlex ? 'U_LAYOUT_FLEX' : 'U_LAYOUT_CSS', box }); };
+                  if (state.children.some(child => !/^-?\d+$/.test(String(child.style.order)))) reject('only integer order values are modeled');
+                  if (!isFlex && state.children.some(child => child.style['grid-column'] !== 'auto' || child.style['grid-row'] !== 'auto' || child.style['grid-area'] && child.style['grid-area'] !== 'auto')) reject('with explicitly placed grid items (which may overlap) it is not modeled');
+                  if (state.children.some(child => child.style.transform !== 'none' || (child.style.position === 'relative' && ['top', 'left', 'right', 'bottom'].some(k => child.style[k] !== 'auto')))) reject('with transformed or offset items (whose paint order matters) it is not modeled');
+                  state.children = [...state.children].sort((a, b) => Number(a.style.order) - Number(b.style.order));
+                }
                 return states;
               };
               if (isFlex) { for (const result of layoutFlex({ box, style, region: geometryRegion, inline, contentInline, knownBlock, blockEdges, available, parents, ancestors, contentOrigin, collect, emit })) results.push(result); continue; }

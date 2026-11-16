@@ -52,7 +52,7 @@ test('flex outside the modeled subset is Unknown', () => {
     ['.name { margin-left: -4px; }', /Negative margins|pixel length/],
     // (An empty item with an auto width is its padding and border wide: modeled. Text without a max-content width is not.)
     ['.name { flex: none; min-width: 0; }', /content (?:size|width)/],
-    ['.avatar { order: 1; }', /order/],
+    ['.avatar { order: 1.5; }', /order/],
     ['.name { flex: 1 1 30%; }', /flex-basis/],
   ]) {
     const report = run(card(base + extra + '\n'), {viewport: {min: 188, max: 600}});

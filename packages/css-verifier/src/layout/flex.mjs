@@ -76,7 +76,7 @@ const outer = (size, own, contentBox) => contentBox ? add(size, own) : (cmp(size
  */
 export function flexItem(style, { empty = false, axis = 'inline', contentSizes } = {}) {
   const n = names(axis);
-  if (style.order !== '0') unknown('order changes the item sequence; only order: 0 is modeled');
+  if (!/^-?\d+$/.test(String(style.order))) unknown('only integer order values are modeled');
   const [startSide, endSide] = n.sides;
   const autoStart = style[`margin-${startSide}`] === 'auto', autoEnd = style[`margin-${endSide}`] === 'auto';
   const grow = q(style['flex-grow']), shrink = q(style['flex-shrink']), basis = style['flex-basis'];
