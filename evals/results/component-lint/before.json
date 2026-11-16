@@ -1,8 +1,8 @@
 {
   "run": "before",
-  "cases": 63,
-  "breaks": 86,
-  "caught": 86,
+  "cases": 66,
+  "breaks": 91,
+  "caught": 91,
   "missed": 0,
   "silentMisses": 0,
   "analysisFailures": [],
@@ -17,11 +17,11 @@
   "backlog": [
     {
       "reason": "ASSUMPTION: the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul",
-      "count": 63
+      "count": 66
     },
     {
       "reason": "ASSUMPTION: rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked",
-      "count": 63
+      "count": 66
     },
     {
       "reason": "U_A11Y_ARIA_VALUE: .X: a dynamic aria-pressed may be invalid",
@@ -57,6 +57,10 @@
     },
     {
       "reason": "U_LAYOUT_FIXED_CONTAINED: .X is position: fixed, but its ancestor .X has backdrop-filter: blur(Npx), which makes it the containing block: .X is placed against .X and scrolls with it, not",
+      "count": 1
+    },
+    {
+      "reason": "U_TEXT_NOT_MEASURED: .X: Font Roboto lacks U+00B7; fallback fonts are not modeled; its text is only assumed to fit, so its overflow is not checked",
       "count": 1
     },
     {
@@ -112,6 +116,46 @@
       "warnings": 0,
       "assumptions": [
         "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "avatar-stack",
+      "file": "before.svelte",
+      "framework": "svelte",
+      "intent": "Overlapping avatars followed by who is editing.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_LAYOUT_CONTENT",
+          "found": true
+        }
+      ],
+      "caught": [
+        "page-overflow html [1x@320 1x@339 2x@320 2x@339 dark@320 dark@339] via E_LAYOUT_CONTENT",
+        "text-overflow .names [1x@320 1x@339 2x@320 2x@339 dark@320 dark@339]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 1,
+      "warnings": 0,
+      "assumptions": [
+        "1 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
@@ -1145,6 +1189,45 @@
       ]
     },
     {
+      "id": "inline-form",
+      "file": "before.jsx",
+      "framework": "linaria",
+      "intent": "A coupon row: a label text and a fixed-width input in one flex row.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_LAYOUT_TRACKS",
+          "found": true
+        }
+      ],
+      "caught": [
+        "text-overflow .lx-row [1x@320 1x@324 2x@320 2x@324 dark@320 dark@324]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 1,
+      "warnings": 0,
+      "assumptions": [
+        "1 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "login",
       "file": "before.jsx",
       "framework": "stylex",
@@ -1331,6 +1414,10 @@
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
+        {
+          "code": "U_TEXT_NOT_MEASURED",
+          "reason": ".X: Font Roboto lacks U+00B7; fallback fonts are not modeled; its text is only assumed to fit, so its overflow is not checked"
+        },
         {
           "code": "ASSUMPTION",
           "reason": "1 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked"
@@ -1807,6 +1894,46 @@
       "warnings": 0,
       "assumptions": [
         "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "progress-label",
+      "file": "before.vue",
+      "framework": "vue",
+      "intent": "An upload progress bar with its percentage label inside the filled part.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_LAYOUT_CONTENT",
+          "found": true
+        }
+      ],
+      "caught": [
+        "text-overflow .pct [1x@320 1x@375 1x@768 1x@766 2x@320 2x@375 2x@768 2x@766 dark@320 dark@375 dark@768 dark@766]",
+        "clipped .fill [1x@320 1x@375 1x@768 1x@766 2x@320 2x@375 2x@768 2x@766 dark@320 dark@375 dark@768 dark@766]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 1,
+      "warnings": 0,
+      "assumptions": [
+        "1 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"

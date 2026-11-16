@@ -1,6 +1,6 @@
 {
   "run": "run-3",
-  "cases": 63,
+  "cases": 66,
   "breaks": 0,
   "caught": 0,
   "missed": 0,
@@ -10,6 +10,7 @@
   "environment": 14,
   "clean": [
     "accordion",
+    "avatar-stack",
     "badge-heading",
     "badge-icon",
     "bell-badge",
@@ -35,6 +36,7 @@
     "fixed-sidebar",
     "gallery",
     "glass-header",
+    "inline-form",
     "login",
     "map-popup",
     "media-card",
@@ -51,6 +53,7 @@
     "product-card",
     "profile-edit",
     "profile-ok",
+    "progress-label",
     "rating",
     "recipe-card",
     "ribbon-card",
@@ -77,11 +80,11 @@
   "backlog": [
     {
       "reason": "ASSUMPTION: the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul",
-      "count": 63
+      "count": 66
     },
     {
       "reason": "ASSUMPTION: rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked",
-      "count": 63
+      "count": 66
     },
     {
       "reason": "U_A11Y_ARIA_VALUE: .X: a dynamic aria-pressed may be invalid",
@@ -97,6 +100,10 @@
     },
     {
       "reason": "U_A11Y_ARIA_VALUE: .X: a dynamic aria-expanded may be invalid",
+      "count": 1
+    },
+    {
+      "reason": "U_TEXT_NOT_MEASURED: .X: Font Roboto lacks U+00B7; fallback fonts are not modeled; its text is only assumed to fit, so its overflow is not checked",
       "count": 1
     },
     {
@@ -145,6 +152,43 @@
       "warnings": 0,
       "assumptions": [
         "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "avatar-stack",
+      "file": "avatar-stack.svelte",
+      "framework": "svelte",
+      "intent": "Overlapping avatars followed by who is editing.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_LAYOUT_CONTENT",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "1 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
@@ -1096,6 +1140,43 @@
       ]
     },
     {
+      "id": "inline-form",
+      "file": "inline-form.jsx",
+      "framework": "linaria",
+      "intent": "A coupon row: a label text and a fixed-width input in one flex row.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_LAYOUT_TRACKS",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "1 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "login",
       "file": "login.jsx",
       "framework": "stylex",
@@ -1250,7 +1331,7 @@
       "file": "news-cards.vue",
       "framework": "vue",
       "intent": "News cards with a thumbnail, a headline and a byline.",
-      "status": "verified",
+      "status": "unknown",
       "expected": [
         {
           "code": "E_A11Y_CONTRAST",
@@ -1268,6 +1349,10 @@
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
+        {
+          "code": "U_TEXT_NOT_MEASURED",
+          "reason": ".X: Font Roboto lacks U+00B7; fallback fonts are not modeled; its text is only assumed to fit, so its overflow is not checked"
+        },
         {
           "code": "ASSUMPTION",
           "reason": "1 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked"
@@ -1718,6 +1803,43 @@
       "warnings": 0,
       "assumptions": [
         "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "progress-label",
+      "file": "progress-label.vue",
+      "framework": "vue",
+      "intent": "An upload progress bar with its percentage label inside the filled part.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_LAYOUT_CONTENT",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "1 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
