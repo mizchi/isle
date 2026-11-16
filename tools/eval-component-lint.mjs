@@ -59,8 +59,10 @@ for (const id of cases) {
       await page.evaluate(() => document.fonts.ready);
       const found = await page.evaluate(async () => {
         const out = [], label = e => e.id ? '#' + e.id : e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\s+/).filter(c => !/^(svelte|s)-/.test(c)).join('.') : e.tagName.toLowerCase();
+        // Visually hidden on purpose (sr-only: a clip-path or clip, or a box of at most 1px hiding its overflow, on it or an ancestor): read, not seen.
+        const srOnly = e => { for (let n = e; n && n !== document.body; n = n.parentElement) { const cs = getComputedStyle(n), r = n.getBoundingClientRect(); if ((cs.clipPath && cs.clipPath !== 'none') || (cs.clip && cs.clip !== 'auto') || (cs.overflow !== 'visible' && (r.width <= 1 || r.height <= 1))) return true; } return false; };
         if (document.documentElement.scrollWidth > innerWidth + 1) out.push(['page-overflow', 'html']);
-        const texts = [...document.querySelectorAll('body *')].filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && e.getClientRects().length && e.checkVisibility({visibilityProperty: true}));
+        const texts = [...document.querySelectorAll('body *')].filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && e.getClientRects().length && e.checkVisibility({visibilityProperty: true}) && !srOnly(e));
         for (const e of texts) if (getComputedStyle(e).display !== 'inline') {
           // Sub-pixel: the text's line boxes (a Range) against the content box, not the integer scrollWidth.
           const cs0 = getComputedStyle(e), b0 = e.getBoundingClientRect(), rg = document.createRange(); rg.selectNodeContents(e);
@@ -74,7 +76,7 @@ for (const id of cases) {
         const covered = () => { for (const e of texts) { const t = [...e.childNodes].find(n => n.nodeType === 3 && n.textContent.trim()); const r = document.createRange(); const i = t.textContent.search(/\S/); r.setStart(t, i); r.setEnd(t, i + 1); const b = r.getClientRects()[0]; if (!b || b.bottom < 0 || b.top > innerHeight) continue; const hit = document.elementFromPoint(b.left + 1, (b.top + b.bottom) / 2); if (hit && !e.contains(hit) && !hit.contains(e)) out.push(['text-covered', label(e)]); } };
         covered(); scrollTo(0, document.documentElement.scrollHeight); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); covered(); scrollTo(0, 0);
         // Content clipped by a box that hides its overflow (a fixed height with overflow: hidden).
-        for (const e of document.querySelectorAll('body *')) { if (/^(IMG|INPUT|TEXTAREA|SELECT|VIDEO|IFRAME|PICTURE)$/.test(e.tagName)) continue; const cs = getComputedStyle(e), cuts = v => ['hidden', 'clip'].includes(v); if ((cuts(cs.overflowY) && e.scrollHeight > e.clientHeight + 1) || (cuts(cs.overflowX) && e.scrollWidth > e.clientWidth + 1)) out.push(['clipped', label(e)]); }
+        for (const e of document.querySelectorAll('body *')) { if (/^(IMG|INPUT|TEXTAREA|SELECT|VIDEO|IFRAME|PICTURE)$/.test(e.tagName) || srOnly(e)) continue; const cs = getComputedStyle(e), cuts = v => ['hidden', 'clip'].includes(v); if ((cuts(cs.overflowY) && e.scrollHeight > e.clientHeight + 1) || (cuts(cs.overflowX) && e.scrollWidth > e.clientWidth + 1)) out.push(['clipped', label(e)]); }
         // Text outside the viewport sideways that the page cannot scroll to (inside a fixed box, or left of 0).
         const pageScrolls = document.documentElement.scrollWidth > innerWidth + 1;
         const inScroller = e => { for (let n = e.parentElement; n && n !== document.body; n = n.parentElement) if (['auto', 'scroll'].includes(getComputedStyle(n).overflowX)) return true; return false; };

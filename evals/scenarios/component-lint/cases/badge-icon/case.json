@@ -1,0 +1,1 @@
+{"framework": "vue", "intent": "A bell icon button with an unread count badge in its corner.", "planted": "the badge text is white on #ff8a80 (low contrast); the button is named only by the count (3), which says little but is a name", "expect": ["E_A11Y_CONTRAST"]}

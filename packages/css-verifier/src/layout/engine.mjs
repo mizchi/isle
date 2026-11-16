@@ -2314,8 +2314,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // text contract. In a grid or flex container the element would be an item instead (not folded).
         if (style.display === 'block' && !box.text && !box.inline?.length && box.children.length && !box.pseudo) {
           const kids = box.children, textual = k => k.text || k.inline?.length;
-          // Only elements that stay display: inline are folded (nav > a { display: block } is a block-level child).
-          const staysInline = k => { try { return styles(k, state.region, [...parents.map(p => ({ ...p, names: [] })), { box, style, names: [] }], style, false, false).every(s => s.style.display === 'inline'); } catch { return true; } };
+          // Only elements that stay display: inline and in flow are folded (nav > a { display: block } is a block-level
+          // child; an absolutely positioned badge in a button is out of flow).
+          const staysInline = k => { try { return styles(k, state.region, [...parents.map(p => ({ ...p, names: [] })), { box, style, names: [] }], style, false, false).every(s => s.style.display === 'inline' && s.style.position === 'static' && s.style.float === 'none'); } catch { return true; } };
           const allInline = kids.every(k => phrasingTags.has(k.tag) && k.tag !== 'img' && !(k.children ?? []).length) && kids.every(staysInline);
           // One element: it brings its text contract. Several: the container's own contract sizes the line(s).
           if (allInline && kids.length === 1 && textual(kids[0]) && kids[0].contract && !box.contract)

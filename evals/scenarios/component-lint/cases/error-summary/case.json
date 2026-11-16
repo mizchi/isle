@@ -1,0 +1,1 @@
+{"framework": "linaria", "intent": "An error summary box at the top of a form.", "planted": "the summary is a fixed 40px tall box that clips its second error line", "expect": ["E_LAYOUT_TRACKS"]}

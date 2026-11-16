@@ -213,3 +213,9 @@ test('a one-column grid (minmax(0, 1fr)) holding only text lays the text out as 
   // Item alignment other than stretch (the anonymous item shrinks to its text): still Unknown.
   assert.equal(run2('b', {minInlineSize: 100, intrinsicBlockSize: 24}).status, 'unknown');
 });
+
+test('a button whose only child is an absolutely positioned badge is a container with an out-of-flow child, not a text leaf folding it', () => {
+  const r = analyzeHTML(`<html lang="en"><body><main class="p"><section class="box"><button class="a" type="button"><span class="c">3</span></button></section></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}.box{display:block}.a{position:relative;display:block;width:44px;height:44px;padding:0;border:1px solid #555}.c{position:absolute;top:0;right:0;width:20px;height:20px;font-family:Roboto;font-size:12px;line-height:20px;font-weight:400}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, boxes: {'.c': {minInlineSize: 8, intrinsicBlockSize: 20, font: {family: 'Roboto', size: 12, lineHeight: 20, weight: 400}}}, integrity: true});
+  assert.ok(!r.diagnostics.some(d => d.code === 'U_LAYOUT_TEXT_FONT'), JSON.stringify(r.diagnostics.map(d => d.message)));
+});
