@@ -726,7 +726,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (axis === 'inline') {
         if (style['min-inline-size'] !== 'auto') px(style['min-inline-size']);
       // A column flex item's minimum is resolved by the flex line (its track is never smaller).
-      } else if (!['auto', '0', '0px'].includes(style['min-block-size']) && !available.flexBlockMinimum) throw new Error('CSS min-block-size clamping is not modeled');
+      // min-block-size raises a leaf's content height, an explicit or stretched height, and a block-flow container
+      // whose content stays at the top. Grid and flex containers (it stretches their rows or line) and flex items
+      // are not modeled.
+      } else if (!['auto', '0', '0px'].includes(style['min-block-size']) && !available.flexBlockMinimum) {
+        const leaf = !(box.children ?? []).length && !['grid', 'inline-grid', 'flex', 'inline-flex', 'table'].includes(style.display);
+        const blockFlow = ['block', 'list-item'].includes(style.display) && ['normal', 'start', 'flex-start'].includes(String(style['align-content']));
+        if (available.flexItem || !(leaf || blockFlow || (style['block-size'] !== 'auto' && !['flex', 'inline-flex', 'table'].includes(style.display)))) throw new Error('CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)');
+      }
     }
     // Flex containers and items validate their alignment in the flex model.
     if (block && ((style.display !== 'flex' && !['normal', 'stretch'].includes(style['align-items'])) || (!available.flexItem && !available.blockFlowChild && !['auto', 'normal', 'stretch'].includes(style['align-self'])) || (style.display !== 'flex' && !['normal', 'stretch', 'start', ...(style.display === 'grid' ? ['center', 'end'] : []), ...(style.display === 'block' && !box.text && !box.inline?.length ? ['center', 'end', 'flex-end', 'flex-start', 'space-between', 'space-around', 'space-evenly'] : [])].includes(style['align-content'])))) throw new Error('Only stretch items and normal/stretch/start (grid: center/end) content alignment are supported');
@@ -2107,7 +2114,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             : [{ region: content.region, value: fixedBlock }];
           const fixedPieces = blockPieces.flatMap(piece => !(block && style['max-block-size'] !== 'none' && piece.value) ? [piece]
             : lengthPieces(style['max-block-size'], available.percentBlock ?? available.block, piece.region, style).flatMap(cap => minimumOf(cap.region, piece.value, sum(cap.value, contentEdges))));
-          const blockStates = fixedPieces.flatMap(piece => piece.value ? clamp(piece.region, diff(piece.value, blockEdges)) : [{ region: piece.region, value: null }]);
+          // min-block-size (content-box value, outer minus edges): wins over max-block-size, so it is applied after it.
+          const minBlock = block && !['auto', '0', '0px'].includes(String(style['min-block-size'])) && !available.flexBlockMinimum
+            ? region => lengthPieces(style['min-block-size'], available.percentBlock ?? available.block, region, style).map(m => ({ region: m.region, value: diff(sum(m.value, contentEdges), blockEdges) })) : null;
+          const raisedPieces = !minBlock ? fixedPieces : fixedPieces.flatMap(piece => !piece.value ? [piece] : minBlock(piece.region).flatMap(m => maximum(m.region, piece.value, sum(m.value, blockEdges))));
+          const blockStates = raisedPieces.flatMap(piece => piece.value ? clamp(piece.region, diff(piece.value, blockEdges)) : [{ region: piece.region, value: null }]);
           for (const piece of fixedPieces) if (piece.value && emit) obligation(piece.value, blockEdges, box, piece.region, 'E_LAYOUT_BOX_EDGES', 'block', true, edgeExplanation('block'));
           for (const bs of blockStates) {
             const origin=resolvedOrigin(style,available,inline,bs.value ? sum(bs.value,blockEdges) : null,parents);
@@ -2145,6 +2156,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   if (c.value !== h.value && emit) obligation(c.value, h.value, box, c.region, 'E_LAYOUT_CONTENT', 'block', (box.contract?.overflowBlock ?? 'fit') === 'fit');
                   return c;
                 }) : [h]);
+                if (minBlock && !knownBlock) heights = heights.flatMap(h => h.value ? minBlock(h.region).flatMap(m => maximum(m.region, h.value, m.value)) : [h]);
                 for (const h of heights) {
                   results.push(finish(box, style, h.region, inline, contentInline, h.value ? sum(h.value, blockEdges) : null, h.value, available, parents, emit));
                   // Absolute ::before/::after of the leaf, against the nearest positioned box (this leaf when it is).
@@ -2436,8 +2448,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       const values = rows.map((row, i) => row.weight ? times(f.value, row.weight) : m.bases[i]);
                       return { region: f.region, values, required: sum(total(values), scalar(gaps)) };
                     });
-                    for (const rs of layouts) {
-                      const contentBlock = knownBlock ?? rs.required, blockSize = sum(contentBlock, blockEdges);
+                    // A block-flow container raised by min-block-size: its rows stay at the top (align-content: start).
+                    for (const rs of layouts.flatMap(rs => minBlock && !knownBlock && style.$blockFlow ? minBlock(rs.region).flatMap(m => maximum(m.region, rs.required, m.value).map(x => ({ ...rs, region: x.region, raised: x.value }))) : [rs])) {
+                      const contentBlock = knownBlock ?? rs.raised ?? rs.required, blockSize = sum(contentBlock, blockEdges);
                       const finalAncestors = [...parents, { ...own, block: contentBlock, paddingBlock:diff(blockSize,scalar(add(px(style['border-top']),px(style['border-bottom'])))) }];
                       // A scroll container's automatic minimum size is 0 (CSS Sizing 3 §4.5): in an auto row of a grid whose
                       // height is definite and too small, Chromium shrinks that row toward the item's padding instead of
