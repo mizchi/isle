@@ -1768,3 +1768,16 @@ test('summary: Tab reaches it, and Chromium gives it a name exactly where E_A11Y
     expect(unnamed, `${summary}: Chromium name "${name}"`).toBe(name === '');
   }
 });
+
+test('a link that is the only child of a paragraph: Tab reaches it and Chromium names it as the static analysis does', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff;color:#000}.h{height:10px}.t{display:block;font:16px/24px sans-serif}.l{color:#000}`;
+  const html = '<main class="p"><h1 class="h" aria-label="T"></h1><p class="t"><a class="l" href="/x">Pricing</a></p></main>';
+  const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true, boxes: {'.l': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+  expect(report.status, report.diagnostics.map(d => d.message).join(' | ')).toBe('verified');
+  await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+  await page.keyboard.press('Tab');
+  expect(await page.evaluate(() => document.activeElement.className)).toBe('l');
+  expect(/link "Pricing"/.test(await page.locator('main').ariaSnapshot())).toBe(true);
+  expect(await page.evaluate(() => document.querySelector('.t').getBoundingClientRect().height)).toBe(24);
+});

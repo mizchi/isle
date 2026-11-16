@@ -86,3 +86,11 @@ test('a block container that is a formatting context root keeps its children\'s 
   // A plain block child: the margin collapses through it, which is not modeled.
   assert.equal(box('display:block', '').status, 'unknown');
 });
+
+test('a block whose only child is an inline link with text is a text leaf (the link is its inline content)', () => {
+  const doc = inner => analyzeHTML(`<html lang="en"><body><main class="p"><h1 class="h" aria-label="T"></h1>${inner}<div class="n"></div></main></body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g};background:#fff;color:#000}.h{height:10px}.t{display:block;line-height:24px}.l{color:#000}.n{height:5px}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true, boxes: {'.l': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+  const r = doc('<p class="t"><a class="l" href="/x">Pricing</a></p>');
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.equal(r.sizes.find(s => s.box === '.n' && s.rect).rect.blockStart.constant, '34');
+  assert.ok(!r.diagnostics.some(d => d.code === 'E_A11Y_NAME'));
+});

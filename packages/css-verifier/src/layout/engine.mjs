@@ -15,6 +15,7 @@ import {validateFlexContainer, flexItem, crossAlignment, distribution, flexUnkno
 import {judgeIntegrity, intersect } from './integrity.mjs';
 import {judgeAccessibility, accessibilityRules, accessibilityProfiles, ruleTier, paintFacts} from './accessibility.mjs';
 import {fact, sizeChain, sizeProperties, trackProperties, contractFact, explanation} from './explain.mjs';
+import {phrasingTags} from '../tree.mjs';
 
 const zero = q(0), one = q(1), minusOne = q(-1);
 const total = values => values.reduce(sum, scalar(0));
@@ -1999,6 +2000,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       };
       for (const state of styles(box, region, parents, inherited, emit, !available.root).flatMap(tableStates)) {
         let { style } = state;
+        // A block container whose only child is one inline phrasing element with text (<p><a>Read more</a></p>,
+        // <li><a>Item</a></li>) is a text leaf with that element as its inline content: it takes the element's
+        // text contract. In a grid or flex container the element would be an item instead (not folded).
+        if (style.display === 'block' && !box.text && !box.inline?.length && box.children.length === 1 && !box.pseudo) {
+          const only = box.children[0];
+          if (phrasingTags.has(only.tag) && only.tag !== 'img' && (only.text || only.inline?.length) && !(only.children ?? []).length && only.contract && !box.contract)
+            box = { ...box, text: true, inline: [only], children: [], contract: only.contract, $foldedInline: true };
+        }
         const inertMain = available.flexItem && style.position !== 'absolute' ? inertMainSize(style, box, available.flexItem.main) : null;
         if (inertMain) style = { ...style, [inertMain]: 'auto', $inertMain: { property: inertMain, value: style[inertMain] } };
         if (box.tag === 'html' && !parents.length && /^\d+(?:\.\d{1,6})?px$/.test(style['font-size'])) { rootFontSize = px(style['font-size']); unitContext.rootFontSize = rootFontSize; setRootFontSize(rootFontSize); }
