@@ -141,3 +141,11 @@ test('without a measured lang, a declared language must use the modeled break ru
   status(report, 'unknown');
   assert.ok(report.diagnostics.some(d => /lang zh-Hans: line breaking is modeled for en, ja, ko/.test(d.message)), JSON.stringify(report.diagnostics));
 });
+
+test('a middle dot (U+00B7) breaks only at the spaces around it (UAX #14 AI as AL, checked against Chromium)', async () => {
+  const {breakOpportunities} = await import('../src/text.mjs');
+  assert.deepEqual(breakOpportunities('Sam · 3 min'), [4, 6, 8]);
+  assert.deepEqual(breakOpportunities('a·b'), []);
+  // Next to ASCII punctuation it follows ICU, which is not modeled.
+  assert.throws(() => breakOpportunities('a·-b'), /not modeled/);
+});

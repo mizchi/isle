@@ -1979,3 +1979,21 @@ test('image-alt from the markup alone (the layout Unknown): Chromium exposes an 
     expect(report.diagnostics.some(d => d.code === 'E_A11Y_IMAGE_ALT'), `${img}: Chromium ${JSON.stringify({ignored: nodes[0].ignored, role: nodes[0].role?.value, name: nodes[0].name?.value})}`).toBe(exposedWithoutAlt);
   }
 });
+
+test('placeholder-label: Chromium names the field from its placeholder exactly where the static check warns that the placeholder is its only name', async ({page}) => {
+  const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.i{display:block;height:40px;padding:0 8px;border:1px solid #767676;font-size:16px;color:#000}.l{display:block;font-size:16px;line-height:24px;color:#000}';
+  for (const field of ['<input class="i" type="email" placeholder="Email">', '<label class="l" for="e">Email</label><input class="i" id="e" type="email" placeholder="you@example.com">', '<input class="i" type="email" placeholder="Email" aria-label="Email address">', '<input class="i" type="email" placeholder="Email" title="Email">']) {
+    const html = `<html lang="en"><body><main class="m">${field}</main></body></html>`;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, ...(field.includes('class="l"') ? {boxes: {'.l': {minInlineSize: 0, intrinsicBlockSize: 24}}} : {})});
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const client = await page.context().newCDPSession(page);
+    const {root} = await client.send('DOM.getDocument');
+    const {nodeId} = await client.send('DOM.querySelector', {nodeId: root.nodeId, selector: '.i'});
+    const {nodes} = await client.send('Accessibility.getPartialAXTree', {nodeId, fetchRelatives: false});
+    await client.detach();
+    // The source Chromium used for the name: the first source with a value that is not superseded.
+    const used = (nodes[0].name?.sources ?? []).find(src => src.value?.value && !src.superseded);
+    const fromPlaceholder = used?.attribute === 'placeholder';
+    expect((report.accessibility?.warnings ?? []).some(w => w.code === 'W_A11Y_PLACEHOLDER_LABEL'), `${field}: Chromium name source ${JSON.stringify(used?.attribute ?? used?.type)}`).toBe(fromPlaceholder);
+  }
+});

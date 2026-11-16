@@ -99,6 +99,8 @@ for (const id of cases) {
         for (const e of document.querySelectorAll('button, a[href]')) { const named = e.textContent.trim() || e.getAttribute('aria-label')?.trim() || e.getAttribute('aria-labelledby') || e.getAttribute('title')?.trim() || [...e.querySelectorAll('img[alt]')].some(i => i.alt.trim()) || [...e.querySelectorAll('svg title')].some(t => t.textContent.trim()); if (!named) out.push(['no-name', label(e)]); }
         // A control whose visible label is its only way in, but which cannot take focus (Chromium's focus()).
         for (const l of document.querySelectorAll('label[for]')) { const c = document.getElementById(l.htmlFor); if (!c || !l.checkVisibility() || c.disabled) continue; c.focus(); if (document.activeElement !== c) out.push(['unfocusable', label(c)]); c.blur?.(); }
+        // A field named only by its placeholder (Chromium's name source), which disappears on input.
+        for (const i of document.querySelectorAll('input[placeholder], textarea[placeholder]')) if (i.checkVisibility() && !i.labels?.length && !i.getAttribute('aria-label') && !i.getAttribute('aria-labelledby') && !i.title) out.push(['placeholder-name', label(i)]);
         // An exposed image with no alt attribute.
         for (const i of document.querySelectorAll('img')) if (!i.hasAttribute('alt') && i.checkVisibility() && !i.closest('[aria-hidden="true"]') && !/^(none|presentation)$/.test(i.getAttribute('role') ?? '')) out.push(['no-alt', label(i)]);
         // An element with an interactive role that cannot take focus (Chromium's focus()), so the keyboard cannot reach it.

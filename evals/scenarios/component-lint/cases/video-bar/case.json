@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "Video controls: play, a time label, a seek slider and a fullscreen button in one row.", "planted": "the icon buttons are 20px (small targets close together) and the play button has no name", "expect": ["E_A11Y_NAME", "E_A11Y_TARGET_SIZE"]}

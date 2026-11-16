@@ -204,7 +204,7 @@ test('break opportunities match Chromium on every class pair and random strings'
   test.setTimeout(600_000);
   const members = [];
   for (let c = 0x21; c < 0x7f; c++) members.push(String.fromCharCode(c));
-  members.push(...'「『（［【〈《〔」』）］】〉》〕、。，．・：；！？〜…‥々ヽヾゝゞ日あアッーぁゃァéÀ');
+  members.push(...'「『（［【〈《〔」』）］】〉》〕、。，．・：；！？〜…‥々ヽヾゝゞ日あアッーぁゃァéÀ·');
   const strings = [];
   for (const x of members) for (const y of members) strings.push(x + y, `${x} ${y}`);
   let state = 3;

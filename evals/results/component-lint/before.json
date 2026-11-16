@@ -1,8 +1,8 @@
 {
   "run": "before",
-  "cases": 44,
-  "breaks": 59,
-  "caught": 58,
+  "cases": 48,
+  "breaks": 65,
+  "caught": 64,
   "missed": 1,
   "silentMisses": 0,
   "unconfirmedErrors": 0,
@@ -16,11 +16,11 @@
   "backlog": [
     {
       "reason": "ASSUMPTION: the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul",
-      "count": 44
+      "count": 48
     },
     {
       "reason": "ASSUMPTION: rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked",
-      "count": 44
+      "count": 48
     },
     {
       "reason": "U_A11Y_ARIA_VALUE: .X: a dynamic aria-pressed may be invalid",
@@ -52,6 +52,10 @@
     },
     {
       "reason": "U_LAYOUT_IMAGE: .X has no reserved height (no height, aspect-ratio or width/height attributes) and its file's size is not known; it shifts the layout when it loads",
+      "count": 1
+    },
+    {
+      "reason": "ASSUMPTION: 1 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked",
       "count": 1
     },
     {
@@ -904,6 +908,44 @@
       ]
     },
     {
+      "id": "login",
+      "file": "before.jsx",
+      "framework": "stylex",
+      "intent": "A login form: email, password and a submit button.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "W_A11Y_PLACEHOLDER_LABEL",
+          "found": true
+        }
+      ],
+      "caught": [
+        "placeholder-name .sx-wmj9rm [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 2,
+      "assumptions": [
+        "3 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "map-popup",
       "file": "before.svelte",
       "framework": "svelte",
@@ -1015,6 +1057,55 @@
       "warnings": 1,
       "assumptions": [
         "3 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "news-cards",
+      "file": "before.vue",
+      "framework": "vue",
+      "intent": "News cards with a thumbnail, a headline and a byline.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_A11Y_CONTRAST",
+          "found": true
+        },
+        {
+          "code": "E_LAYOUT_CONTENT",
+          "found": true
+        }
+      ],
+      "caught": [
+        "text-overflow-block .headline [1x@320 1x@375 1x@349 2x@320 2x@375 2x@349 dark@320 dark@375 dark@349]",
+        "clipped .headline [1x@320 1x@375 1x@349 2x@320 2x@375 2x@349 dark@320 dark@375 dark@349]",
+        "low-contrast .byline [1x@320 1x@375 1x@768 1x@1280 1x@349 2x@320 2x@375 2x@768 2x@1280 2x@349 dark@320 dark@375 dark@768 dark@1280 dark@349]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "1 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 2,
+      "warnings": 0,
+      "assumptions": [
+        "1 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "1 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
@@ -1274,6 +1365,44 @@
       ],
       "errors": 1,
       "warnings": 0,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "profile-edit",
+      "file": "before.jsx",
+      "framework": "linaria",
+      "intent": "Profile edit: an avatar beside name and bio fields.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_LAYOUT_TRACKS",
+          "found": true
+        }
+      ],
+      "caught": [
+        "page-overflow html [1x@320 1x@375 1x@404 2x@320 2x@375 2x@404 dark@320 dark@375 dark@404]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 1,
+      "warnings": 1,
       "assumptions": [
         "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
@@ -1760,6 +1889,48 @@
       ],
       "caught": [
         "low-contrast #tip [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 1,
+      "warnings": 0,
+      "assumptions": [
+        "1 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "video-bar",
+      "file": "before.svelte",
+      "framework": "svelte",
+      "intent": "Video controls: play, a time label, a seek slider and a fullscreen button in one row.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_A11Y_NAME",
+          "found": true
+        },
+        {
+          "code": "E_A11Y_TARGET_SIZE",
+          "found": false
+        }
+      ],
+      "caught": [
+        "no-name .icon [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
       ],
       "missed": [],
       "silentMissed": [],

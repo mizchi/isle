@@ -155,7 +155,20 @@ test('border-width: 0 (a reset, StyleX borderWidth: 0) is no border; a non-zero 
   assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
   assert.deepEqual(rects(r, 500), [['.a', 7, 7, 486, 20]]);
   assert.equal(run('<div class="a"></div>', '.a{height:20px;border-top-width:0px}').status, 'verified');
-  assert.equal(run('<div class="a"></div>', '.a{height:20px;border-width:2px}').status, 'unknown');
+  // border-width without a border-style draws no border (the initial style is none).
+  assert.deepEqual(rects(run('<div class="a"></div>', '.a{height:20px;border-width:2px}'), 500), [['.a', 7, 7, 486, 20]]);
+});
+
+test('border longhands (StyleX borderWidth/borderStyle/borderColor) combine in cascade order with the shorthand', () => {
+  const r = css => run('<div class="a"><div class="b"></div></div>', `.a{display:grid;grid-template-columns:minmax(0,1fr);box-sizing:content-box}.b{height:10px}${css}`);
+  const inner = report => rects(report, 500).find(x => x[0] === '.b');
+  assert.deepEqual(inner(r('.a{border-width:2px;border-style:solid;border-color:#000}')), ['.b', 9, 9, 482, 10]);
+  assert.deepEqual(inner(r('.a{border-style:solid;border-width:1px 4px}')), ['.b', 11, 8, 478, 10]);
+  // A later shorthand wins over earlier longhands, and border-style: none removes the width.
+  assert.deepEqual(inner(r('.a{border-width:5px;border-style:solid}.a{border:1px solid #000}')), ['.b', 8, 8, 484, 10]);
+  assert.deepEqual(inner(r('.a{border:3px solid #000}.a{border-style:none}')), ['.b', 7, 7, 486, 10]);
+  // border-style alone takes the initial medium width (3px).
+  assert.deepEqual(inner(r('.a{border-top-style:solid}')), ['.b', 7, 10, 486, 10]);
 });
 
 test('a text field with an auto width stretches in a grid column, not in block flow', () => {

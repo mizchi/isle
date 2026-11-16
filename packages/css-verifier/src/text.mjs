@@ -81,11 +81,14 @@ const breakTable = Object.fromEntries([
   '001110111011011101', '000000000000000101', '000000100001000101', '000000000000000000', '001110110011010101', '001100110011010101',
 ].map((row, i) => [classNames[i], Object.fromEntries([...row].map((bit, j) => [classNames[j], bit === '1']))]));
 const asciiClass = new Map(asciiClasses.flatMap(([name, members]) => [...members].map(c => [c, name])));
-const latin1 = c => /[\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]/u.test(c);
+const latin1 = c => /[\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]/u.test(c);
 function lineClass(c) {
   if (c === ' ') return 'SP';
   if (asciiClass.has(c)) return asciiClass.get(c);
   if (latin1(c)) return 'AL';
+  // U+00B7 MIDDLE DOT (UAX #14 AI, resolved to AL outside East Asian contexts): no break of its own beside letters;
+  // breaks only at the spaces around it (checked against Chromium in every class pair).
+  if (c === '\u00B7') return 'AL';
   // Hebrew letters (no marks or punctuation): no break inside a word, one at a space (measured).
   if (/[\u05D0-\u05EA]/u.test(c)) return 'AR';
   if (/[\u3400-\u4DBF\u4E00-\u9FFF\u3041-\u3096\u30A1-\u30FA\u30FC]/u.test(c)) return 'ID';
