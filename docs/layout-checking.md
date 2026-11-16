@@ -319,6 +319,8 @@ inset がどちらも auto の absolute の箱は、静的位置に置かれる�
 
 flex の行の item で、`flex-basis` が auto(か content)で幅が auto、`min-width` が auto、スクロールコンテナでないものは、同じ寄与の計算で、max-content の幅を flex の基準の大きさ、min-content の幅を自動の最小とする(Flexbox §9.2、§4.5)。中身のない item は padding と border の幅になる。中身の幅が分からない場合(契約のないテキストなど)は Unknown のまま。
 
+`flex-basis` が % の item は、縮まない(`flex-shrink: 0`)なら、伸びるもの(`flex: 1 0 30%`)も含めて、容器の内容幅の割合(viewport の一次式)を基準の大きさにする。margin と content-box の edges も足す。折り返す行(`flex-wrap: wrap`)では、行の分け方もその一次式で決まるので、幅のしきい値で分かれる(4 つの `flex: 1 0 30%` と 16px の gap で、内容幅 320px 以上なら 1 行に 3 つ)。縮む % の item は、自動の最小サイズが要るので Unknown のまま。Chromium と矩形を比べた(`e2e/layout-flex.spec.mjs`)。
+
 `aspect-ratio` を持ち、高さが px で幅が auto の grid の item(と block flow の子)は、伸ばされない。`justify-self: normal` はこの item では start として働き、幅は比から決まる(Grid §6.2。box-sizing の箱に比を当てる。測った)。`justify-self: stretch` と column の flex の item は伸びる。高さが % の場合は Unknown のまま(Chromium の循環する % の解決はモデル化していない)。
 
 `repeat(auto-fill, T)`(T は `Lpx` か上記の minmax)は、最小幅で並ぶ数だけトラックを作る(1 本以上)。本数は、container の幅に対する閾値 `n·L + (n−1)·gap` で領域を分けて決める。`auto-fit` は、item の入らないトラックとその gap をつぶす。そのため、すべての子が自動配置で 1 マスの item で、どの状態でも描画される場合に限り、auto-fill の本数を item 数で頭打ちにしたものとして扱う(Chromium で測った)。それ以外の場合は Unknown にする。

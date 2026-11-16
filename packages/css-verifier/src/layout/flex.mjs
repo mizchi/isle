@@ -99,9 +99,10 @@ export function flexItem(style, { empty = false, axis = 'inline', contentSizes }
   else if (basis === 'auto' || basis === 'content') unknown(`flex-basis: ${basis} with an auto ${n.label} uses the content size; give a px ${n.label} or basis`);
   // A percentage basis is a share of the container's main size, which varies with the viewport; items are modeled with
   // constant sizes here. (A full-width slide: flex: 0 0 100% in a scrolling row.)
-  // A percentage basis on an item that neither grows nor shrinks (flex: 0 0 P%) on a row: its main size is P% of the
-  // container's content width, an affine size the engine supplies (percentBasis); its minimum is checked there.
-  else if (/^\d+(?:\.\d+)?%$/.test(String(basis)) && axis === 'inline' && cmp(grow, q(0)) === 0 && cmp(shrink, q(0)) === 0 && style[n.size] === 'auto' && style['max-inline-size'] === 'none') {
+  // A percentage basis on an item that does not shrink (flex: 0 0 P%, or growing: 1 0 P%) on a row: its base is P% of
+  // the container's content width, an affine size the engine supplies (percentBasis); its minimum is checked there
+  // (it never goes below the base). A shrinking one would need its automatic minimum: Unknown.
+  else if (/^\d+(?:\.\d+)?%$/.test(String(basis)) && axis === 'inline' && cmp(shrink, q(0)) === 0 && style[n.size] === 'auto' && style['max-inline-size'] === 'none') {
     const item = { grow, shrink, edges: own, autoStart, autoEnd, automaticBelowBase: false, base: q(0), percentBasis: div(q(String(basis).slice(0, -1)), q(100)), contentBox };
     if (style[n.min] !== 'auto') item.minimum = outer(px(style[n.min]), own, contentBox);
     else if (!automatic) item.minimum = own;

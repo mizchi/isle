@@ -249,6 +249,12 @@ const cases = [
     css: '.g{display:grid;grid-template-columns:40px minmax(0,1fr) 30px 50px;align-items:center;column-gap:8px;padding:6px}.a{block-size:20px}.b{block-size:64px}.c{block-size:10px;align-self:end}.d{display:grid;grid-template-columns:minmax(0,1fr);align-self:start;padding:3px}.k{block-size:12px}'},
   {name: 'grid align-items center in fixed rows', html: '<main class="g"><div class="a"></div><div class="b"></div><div class="c"></div></main>',
     css: '.g{display:grid;grid-template-columns:minmax(0,1fr) 100px;grid-auto-rows:50px;align-items:center;row-gap:4px}.a{block-size:20px}.b{block-size:30px;align-self:flex-end}.c{block-size:44px}'},
+  {name: 'wrapping row of percentage bases: three per line only from a width threshold', html: '<main class="f"><div class="a"></div><div class="a"></div><div class="a"></div><div class="a"></div></main>',
+    css: '.f{display:flex;flex-wrap:wrap;column-gap:16px;row-gap:8px}.a{flex:1 0 30%;block-size:20px}', widths: [330, 340, 360]},
+  {name: 'wrapping row of 50% bases with a gap: one per line', html: '<main class="f"><div class="a"></div><div class="a"></div><div class="a"></div></main>',
+    css: '.f{display:flex;flex-wrap:wrap;column-gap:8px}.a{flex:0 0 50%;block-size:20px}'},
+  {name: 'percentage bases with margins, wrapping and not', html: '<main class="g"><div class="f"><div class="a"></div><div class="a"></div><div class="a"></div></div><div class="n"><div class="b"></div><div class="b"></div></div></main>',
+    css: '.g{display:grid;grid-template-columns:minmax(0,1fr)}.f{display:flex;flex-wrap:wrap}.a{flex:0 0 25%;margin-left:12px;block-size:20px}.n{display:flex}.b{flex:0 0 40%;margin-right:10px;block-size:10px}'},
   {name: 'text input sized by a px flex-basis and min-width 0', html: '<main class="f"><div class="t"></div><input class="i" type="text"></main>',
     css: '.f{display:flex;column-gap:8px;padding:8px;align-items:center}.t{flex:0 0 60px;block-size:20px}.i{display:block;flex:1 1 120px;min-width:0;height:32px;padding:0 4px;border:1px solid #777;font-size:16px}'},
 ];

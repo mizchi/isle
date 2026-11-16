@@ -985,8 +985,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const p = pending.pop();
           const line = [...Array(p.end - state.start).keys()].map(k => state.start + k);
           if (p.end >= n) { next.push({ region: p.region, start: n, lines: [...state.lines, line] }); continue; }
-          const need = add(hypothetical.slice(state.start, p.end + 1).reduce(add, zero), mul(gap, q(p.end - state.start)));
-          const split = partition(p.region, diff(available, scalar(need)), '>=');
+          // Sizes may be affine in the viewport (a percentage flex-basis): the break is then a width threshold too.
+          const need = sum(hypothetical.slice(state.start, p.end + 1).map(h => h && typeof h === 'object' && 'b' in h ? h : scalar(h)).reduce(sum, scalar(zero)), scalar(mul(gap, q(p.end - state.start))));
+          const split = partition(p.region, diff(available, need), '>=');
           for (const r of split.yes) pending.push({ region: r, end: p.end + 1 });
           for (const r of split.no) next.push({ region: r, start: p.end, lines: [...state.lines, line] });
         }
@@ -1059,16 +1060,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (main === 'inline') {
         // A percentage basis (a frozen item): its size is that share of the content width (plus its edges in
         // content-box), affine in the viewport. Where its minimum would exceed that, the browser would use the
-        // minimum instead: Unknown there. Line breaking needs constant sizes, so wrapping containers stay Unknown.
+        // minimum instead: Unknown there. In a wrapping container its size breaks lines at width thresholds.
         const items = model.map(entry => {
           const item = constantItem(entry.item);
           if (entry.item.percentBasis === undefined) return item;
-          if (wrap) throw flexUnknown('A percentage flex-basis in a wrapping flex container is outside the subset (line breaks need constant sizes)');
-          const base = sum(times(contentInline, entry.item.percentBasis), scalar(entry.item.contentBox ? entry.item.edges : zero));
+          // Its outer size: the share, its edges in content-box, and its main-axis margins.
+          const base = sum(sum(times(contentInline, entry.item.percentBasis), scalar(entry.item.contentBox ? entry.item.edges : zero)), scalar(entry.item.marginMain ?? zero));
           if (clip(state.region, diff(item.minimum, base), true)) throw flexUnknown(`${entry.child.box.label}: its minimum width can exceed its flex-basis ${entry.child.style['flex-basis']} here, which is not modeled`);
           return { ...item, base, minimum: base, maximum: null };
         });
-        const hypothetical = wrap ? items.map(item => maximumConstant(item.base, item.minimum)).map(v => v.b) : items.map(item => item.base);
+        const hypothetical = wrap ? items.map((item, i) => model[i].item.percentBasis !== undefined ? item.base : maximumConstant(item.base, item.minimum).b) : items.map(item => item.base);
         const sets = wrap ? breakLines(state.region, contentInline, hypothetical, mainGap) : [{ region: state.region, lines: model.length ? [model.map((_, i) => i)] : [] }];
         for (const set of sets) {
           let combos = [{ region: set.region, lines: [] }];
