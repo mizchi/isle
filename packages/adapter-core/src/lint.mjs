@@ -10,6 +10,7 @@ export const recommended = {
   E_LAYOUT_CONTENT: ['error', 'let the content wrap (overflow-wrap: anywhere) or give the box more room'],
   E_LAYOUT_PAGE_OVERFLOW: ['error', 'keep the box inside the viewport width'],
   E_A11Y_FIXED_HIDES: ['error', 'offset the content by the fixed bar\'s size (padding or margin), as the rest of the page is'],
+  E_A11Y_PAGE_CLIPPED: ['error', 'let the content fit the viewport (min-width: 0, max-width: 100%, wrapping) instead of hiding the overflow'],
   E_A11Y_TEXT_START_OBSCURED: ['error', 'move the covering box off the text, or give the text room (padding) beside it'],
   E_A11Y_FIXED_HIDES_PART: ['error', 'offset this content by the fixed sidebar\'s width (padding or margin), as the rest of the page is'],
   E_LAYOUT_IMAGE_UNRESERVED: ['error', 'add width and height attributes (or aspect-ratio) so the image reserves its box'],

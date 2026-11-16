@@ -1433,7 +1433,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         overflow: ['hidden','clip'].includes(overflowValue) ? 'clip' : ['auto','scroll'].includes(overflowValue) ? 'scroll' : 'visible', overflowValue,
         // Where a single line of text starts inside the box (font-derived text extents).
         content: { left: add(px(style['border-left']), px(style['padding-left'])), top: add(px(style['border-top']), px(style['padding-top'])), inline: contentInline },
-        textAlign: style['text-align'], lineHeight: style['line-height'], direction: style.direction, painted: paints(style),
+        textAlign: style['text-align'], lineHeight: style['line-height'], direction: style.direction, overflowX: style['overflow-x'], painted: paints(style),
         // z-index applies to positioned boxes and to grid/flex items.
         zIndex: style['z-index'] !== 'auto' && (style.position !== 'static' || ['grid', 'flex'].includes(parents.at(-1)?.style.display)) ? Number(style['z-index']) : null,
         paint: paintFacts(style), chain: [...ancestorPaint, ...parents.map((parent, i) => captionBackdrop(parent, parents[i + 1]?.box ?? box, paintFacts(parent.style))), paintFacts(style)],
@@ -1594,7 +1594,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function untranslatedOrigin(style,available,inline,blockSize,parents) {
     // overflow: clip never scrolls, so positions inside it stay exact; hidden/auto/scroll may be scrolled.
-    if(!block || parents.some(p=>p.clipped || p.subgrid) || ['overflow-x','overflow-y'].some(key=>!['visible','clip'].includes(style[key])) ||
+    // (The document root's overflow is the viewport's: its scrolling is the page scroll, already modeled; at scroll 0
+    // positions inside it are exact.)
+    if(!block || parents.some(p=>p.clipped || p.subgrid) || (!available.root && ['overflow-x','overflow-y'].some(key=>!['visible','clip'].includes(style[key]))) ||
       ['grid-template-columns','grid-template-rows'].some(key=>style[key]==='subgrid')) return null;
     if(style.position!=='absolute') {
       // Cross-axis alignment of a flex item that is not stretched.
@@ -2343,7 +2345,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             const knownBlock = bs.value, own = { box, style, inline: contentInline, block: knownBlock, positioned:style.position!=='static' || style.transform !== 'none',
               contentOrigin,paddingOrigin:offset(origin,scalar(px(style['border-left'])),scalar(px(style['border-top']))),
               subgrid:style['grid-template-columns']==='subgrid' || style['grid-template-rows']==='subgrid',
-              clipped:!['visible','clip'].includes(style['overflow-x']) || !['visible','clip'].includes(style['overflow-y']), clipScope: style['overflow-x'] === 'clip' || style['overflow-y'] === 'clip',
+              clipped:!(box.documentRoot && available.root) && (!['visible','clip'].includes(style['overflow-x']) || !['visible','clip'].includes(style['overflow-y'])), clipScope: !(box.documentRoot && available.root) && (style['overflow-x'] === 'clip' || style['overflow-y'] === 'clip'),
               paddingInline:diff(inline,scalar(add(px(style['border-left']),px(style['border-right'])))),
               paddingBlock:knownBlock ? diff(sum(knownBlock,blockEdges),scalar(add(px(style['border-top']),px(style['border-bottom'])))) : null,
               type: style['container-type'], names: style['container-name'] === 'none' ? [] : style['container-name'].split(/\s+/) };

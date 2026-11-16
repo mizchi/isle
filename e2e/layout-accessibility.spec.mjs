@@ -1865,3 +1865,27 @@ test('a paragraph of a link and a span: Tab reaches the link and Chromium’s tr
   expect(await axName(page, '.l')).toBe('Alex');
   expect(await page.evaluate(() => document.querySelector('.t').getBoundingClientRect().height)).toBe(24);
 });
+
+test('page-clipped: with overflow-x hidden or clip on html, Chromium cannot scroll sideways to what the static check reports as cut off', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const body = '<main class="p"><h1 class="h">Title</h1><p class="w">Wide text</p><a class="l" href="/x">Link</a></main>';
+  for (const extra of ['html{overflow-x:hidden}', 'html{overflow-x:clip}', 'html{overflow-x:hidden}.w,.l{width:auto}', 'html{overflow-x:clip}.w{width:300px}']) {
+    const css = `*{box-sizing:border-box;margin:0}html,body,.p{${g}}.p{background:#fff;color:#000}.h,.w,.l{display:block;line-height:24px;color:#000}.w,.l{width:500px}${extra}`;
+    const report = analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'Page', css, viewport: {min: 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], boxes: {'.w': {minInlineSize: 0, intrinsicBlockSize: 24}, '.h': {minInlineSize: 0, intrinsicBlockSize: 24}, '.l': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+    for (const width of [375, 480]) {
+      await page.setViewportSize({width, height: 700});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${body}</body></html>`);
+      // The user cannot scroll sideways (a horizontal wheel does nothing); then what reaches past the right edge is cut:
+      // text always, a link only when nothing scrolls it into view (clip).
+      await page.mouse.move(20, 20); await page.mouse.wheel(300, 0); await page.waitForTimeout(50);
+      const browser = await page.evaluate(() => {
+        if (scrollX !== 0) return ['scrolled'];
+        const clip = getComputedStyle(document.documentElement).overflowX === 'clip';
+        return ['.w', '.l'].filter(sel => { const n = document.querySelector(sel); return n.getBoundingClientRect().right > innerWidth + 1 && (n.tabIndex < 0 || clip); }).sort();
+      });
+      const statics = [...new Set(report.diagnostics.filter(d => d.code === 'E_A11Y_PAGE_CLIPPED' && d.range.min <= width && width <= d.range.max).map(d => d.box))].sort();
+      expect(statics, `${extra} at ${width}`).toEqual(browser);
+    }
+  }
+});
+

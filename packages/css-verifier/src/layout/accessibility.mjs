@@ -103,13 +103,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'label-pointer', 'bar-covered', 'bar-transparent', 'autofocus'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'page-clipped', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'label-pointer', 'bar-covered', 'bar-transparent', 'autofocus'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['bar-transparent', 'bar-covered', 'live-hidden', 'select-indicator', 'hidden-control', 'focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['bar-transparent', 'bar-covered', 'live-hidden', 'select-indicator', 'hidden-control', 'focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'page-clipped', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -574,9 +574,19 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     }
   }
 
-  // reflow: no horizontal page scrolling at 320 CSS px (or narrower widths in the domain).
+  // page-clipped: overflow-x: hidden (or clip) on the document root turns horizontal page scrolling off, so whatever
+  // lies past the viewport's right edge is cut off for good (SC 1.4.10 fails as loss of content instead of a
+  // scrollbar). With hidden, focusing an element scrolls it into view, so only text is judged; with clip, controls too.
+  const viewportRoot = geometry.find(row => row.path === root.path && row.box.documentRoot);
+  const pageClips = viewportRoot && ['hidden', 'clip'].includes(String(viewportRoot.overflowX));
+  if (pageClips) for (const row of placed.filter(row => ((row.box.text && !focusable(row)) || (viewportRoot.overflowX === 'clip' && (row.box.text || interactive(row)))) && visible(row) && !hiddenFrom(row.path) && !row.box.pseudo && !row.fixed)) {
+    const cut = atMost(row.region, sum(domainWidth, scalar(1)), right(row));
+    if (cut) report(findings, 'E_A11Y_PAGE_CLIPPED', 'error', `${row.box.label} reaches past the viewport's right edge, and overflow-x: ${viewportRoot.overflowX} on ${viewportRoot.box.label} turns horizontal scrolling off: the part past the edge can never be seen. Let it fit the viewport (min-width: 0, max-width: 100%, wrapping) instead of hiding the overflow`, row, cut, { rule: 'page-clipped' });
+  }
+  // reflow: no horizontal page scrolling at 320 CSS px (or narrower widths in the domain). With horizontal page
+  // scrolling turned off the overflow is cut instead (page-clipped above).
   if (viewportMin !== undefined && viewportMin > 320) notes.push('reflow: the viewport domain starts above 320px, so SC 1.4.10 at 320 CSS px is not checked');
-  for (const row of placed) {
+  for (const row of pageClips ? [] : placed) {
     const narrow = row.region && clip(row.region, diff(scalar(320), domainWidth));
     const failed = narrow && below(narrow, domainWidth, right(row));
     if (failed) report(findings, 'E_A11Y_REFLOW', 'error', `${row.box.label} makes the page scroll horizontally at 320 CSS px`, row, failed, { rule: 'reflow' });
