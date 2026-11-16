@@ -1170,7 +1170,8 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     for (const text of textRows(target)) {
       const label = target.box.ariaLabel, words = text.box.textContent;
       if (label === 'dynamic' || words === 'dynamic') { const region = intersect(target.region, text.region); if (region) report(unknowns, 'U_A11Y_LABEL_IN_NAME', 'unknown', `${target.box.label}: a dynamic aria-label or text decides whether the name contains the visible text`, target, region, { rule: 'label-in-name' }); continue; }
-      if (!words || normalize(label).includes(normalize(words))) continue;
+      // Visible text of symbols only (⋯, ×, →) is an icon, not a text label: SC 2.5.3 does not apply to it.
+      if (!words || normalize(label).includes(normalize(words)) || !/[\p{L}\p{N}]/u.test(words)) continue;
       const region = intersect(target.region, text.region);
       if (region) report(findings, 'E_A11Y_LABEL_IN_NAME', 'error', `${target.box.label} is named ${JSON.stringify(label)}, which does not contain its visible text ${JSON.stringify(words)}`, target, region, { rule: 'label-in-name', visible: words });
     }

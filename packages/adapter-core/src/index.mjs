@@ -112,7 +112,9 @@ export function analyzeStates({ states, css, unknowns = [], assumptions = [] }, 
     // With font files (textMetrics), the assumed texts whose computed font is one of them are measured instead: a
     // first pass reports each text's font, a second analyses with the measured contracts.
     if (assumeText && textMetrics && boxes) {
-      try {
+      // (A pass can stop at the first text it cannot size, before the next is styled: passes repeat while they find
+      // new texts to measure.)
+      for (let pass = 0; pass < 6; pass++) try {
         const first = analyzeHTML(wrap(html), { name, ...options, boxes, css: pageCSS + css, reportTextFonts: true });
         const measured = {};
         for (const facts of first.textFonts ?? []) {
@@ -125,8 +127,11 @@ export function analyzeStates({ states, css, unknowns = [], assumptions = [] }, 
           const contract = marker && !options.boxes?.[`.${marker}`] ? measuredContract(facts, textMetrics, fonts) : null;
           if (contract) measured[`.${marker}`] = contract;
         }
-        if (Object.keys(measured).length) { boxes = { ...boxes, ...measured }; measuredTexts = Math.max(measuredTexts, Object.keys(measured).length); }
-      } catch { /* the second pass below reports the failure */ }
+        const fresh = Object.keys(measured).filter(key => JSON.stringify(boxes[key]) !== JSON.stringify(measured[key]));
+        boxes = { ...boxes, ...measured };
+        measuredTexts = Math.max(measuredTexts, Object.keys(boxes).filter(key => boxes[key]?.font || boxes[key]?.placeholderInlineSize !== undefined).length);
+        if (!fresh.length) break;
+      } catch { break; /* the final analysis below reports the failure */ }
     }
     try { report = analyzeHTML(wrap(html), { name, ...options, ...(boxes ? { boxes } : {}), css: pageCSS + css }); }
     catch (error) { report = { status: 'unknown', diagnostics: [{ code: 'U_ADAPTER_ANALYSIS', severity: 'unknown', message: `the analysis of this state failed: ${error.message}` }], sizes: [] }; }

@@ -552,6 +552,9 @@ test('label-in-name (SC 2.5.3): an aria-label must contain the visible text', ()
   // Hidden text is not visible text.
   assert.equal(find(run(btn('Find', 'Search'), css + '.t { display: none; }', {boxes: b}), 'E_A11Y_LABEL_IN_NAME').length, 0);
   assert.equal(run(btn('Find', 'dynamic'), css, {boxes: b}).status, 'unknown');
+  // Symbols only (an icon character) are not a text label.
+  assert.equal(find(run(btn('More actions', '⋯'), css, {boxes: b}), 'E_A11Y_LABEL_IN_NAME').length, 0);
+  assert.equal(find(run(btn('Close', '×'), css, {boxes: b}), 'E_A11Y_LABEL_IN_NAME').length, 0);
 });
 
 test('link-purpose and link-text: same text to different places, and generic link text', () => {
