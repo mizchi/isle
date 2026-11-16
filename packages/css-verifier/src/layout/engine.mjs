@@ -2082,7 +2082,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (target.text || target.inline?.length) {
         const key = max ? 'maxInlineSize' : 'minInlineSize';
         // A measured text contract carries its max-content width as textMetrics.width (or, unwrapped, its one width).
-        const value = !max ? target.contract?.minInlineSize : target.contract?.maxInlineSize ?? target.contract?.textMetrics?.width ?? (target.contract?.wrap === 'nowrap' && target.contract?.font ? target.contract.minInlineSize : undefined);
+        // (The measured width is rounded up to six decimals, the precision of layout numbers.)
+        const up = v => v === undefined ? undefined : Math.ceil(Number(v) * 1e6 - 1e-9) / 1e6;
+        const value = up(!max ? target.contract?.minInlineSize : target.contract?.maxInlineSize ?? target.contract?.textMetrics?.width ?? (target.contract?.wrap === 'nowrap' && target.contract?.font ? target.contract.minInlineSize : undefined));
         if (value === undefined) unknown(`has text without a ${max ? 'max' : 'min'}-content width (${target.label}; give it a ${key} contract)`);
         return add(q(String(value)), edges(st));
       }

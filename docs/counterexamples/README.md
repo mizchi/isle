@@ -1082,6 +1082,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background
 
 </details>
 
+## A long label in an auto column crowds out its value (measured with the font)
+
+`E_LAYOUT_CONTENT` — viewport 328 × 690px
+
+> .value requires 1271/64px but receives 0px on inline axis at viewport 41927/128px × 690px
+
+![auto-column-text](auto-column-text-violation.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><div class="row"><span class="label">Notification preferences for this device</span><span class="value">On</span></div></main>
+```
+
+```css
+.page{display:grid;grid-template-columns:minmax(0,1fr)}.row{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;padding:8px;background:#f4f6f8}.label,.value{display:block;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}.value{background:#dfe8f0}
+```
+
+</details>
+
 ## A rigid row wider than the page
 
 `E_LAYOUT_PAGE_OVERFLOW` — viewport 422 × 690px
