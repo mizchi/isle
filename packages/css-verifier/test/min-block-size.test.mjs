@@ -36,3 +36,22 @@ test('grid and flex containers and flex items stay Unknown', () => {
   assert.equal(run('.a{display:grid;grid-template-columns:minmax(0,1fr);min-height:40px}.a::before{content:"";display:block;height:10px}').status, 'unknown');
   assert.equal(run('.p{display:flex}.a{width:10px;min-height:40px}.n{width:10px}').status, 'unknown');
 });
+
+test('grid and flex containers: where the content is shorter, laid out at the minimum (rows and the line stretch)', () => {
+  const g2 = 'display:grid;grid-template-columns:minmax(0,1fr);align-content:start';
+  const lay = css => analyzeHTML('<html lang="en"><body><div class="s"><div class="h"></div><div class="m"></div><div class="f"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g2}}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  const rect = (r, b, vh) => { const s = r.sizes.find(x => x.box === b).rect; const v = a => Number(String(a.constant).split('/').reduce((p, c) => p / c)) + Number(String(a.heightCoefficient ?? 0).split('/').reduce((p, c) => p / c)) * vh; return [v(s.blockStart), v(s.blockSize)]; };
+  const cases = [
+    ['.s{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;min-height:100vh}.h{height:20px}.m{height:30px}.f{height:10px}', 600, [[0, 600], [0, 20], [20, 30], [590, 10]]],
+    ['.s{display:grid;grid-template-columns:minmax(0,1fr);min-height:200px}.h{height:20px}', 600, [[0, 200], [0, 20], [80, 60], [140, 60]]],
+    ['.s{display:grid;grid-template-columns:minmax(0,1fr);min-height:200px;align-content:start}.h{height:20px}', 600, [[0, 200], [0, 20], [20, 0], [20, 0]]],
+    ['.s{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;min-height:200px;padding:10px}.h{height:20px}', 600, [[0, 200], [10, 20], [30, 160], [190, 0]]],
+    ['.s{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);min-height:100px;padding:10px;box-sizing:content-box}.h{height:20px}', 600, [[0, 120], [10, 20], [30, 80], [110, 0]]],
+    ['.s{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;min-height:50px}.h{height:20px}.m{height:30px}.f{height:10px}', 600, [[0, 60], [0, 20], [20, 30], [50, 10]]],
+  ];
+  for (const [css, vh, expected] of cases) {
+    const r = lay(css);
+    assert.equal(r.status, 'verified', `${css} ${JSON.stringify(r.diagnostics.map(d => d.message))}`);
+    assert.deepEqual(['.s', '.h', '.m', '.f'].map(b => rect(r, b, vh)), expected, css);
+  }
+});

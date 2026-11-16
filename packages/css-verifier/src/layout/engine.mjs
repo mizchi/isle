@@ -732,7 +732,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       } else if (!['auto', '0', '0px'].includes(style['min-block-size']) && !available.flexBlockMinimum) {
         const leaf = !(box.children ?? []).length && !['grid', 'inline-grid', 'flex', 'inline-flex', 'table'].includes(style.display);
         const blockFlow = ['block', 'list-item'].includes(style.display) && ['normal', 'start', 'flex-start'].includes(String(style['align-content']));
-        if (available.flexItem || !(leaf || blockFlow || (style['block-size'] !== 'auto' && !['flex', 'inline-flex', 'table'].includes(style.display)))) throw new Error('CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)');
+        const stretched = available.block && available.alignBlock === undefined && !available.root;
+        if (!available.$minNatural && !available.$minRaised && !(stretched && !available.flexItem && !['table'].includes(style.display)) && (available.flexItem || !(leaf || blockFlow || (style['block-size'] !== 'auto' && !['flex', 'inline-flex', 'table'].includes(style.display))))) throw new Error('CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)');
       }
     }
     // Flex containers and items validate their alignment in the flex model.
@@ -2065,6 +2066,24 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (!['grid', 'flex'].includes(style.display) && style.display !== 'none') { const generatedText = generatedElsewhere(box, state.region, [...parents, { box, style }], style); if (generatedText) box.generated = generatedText; }
         // A cell's width seeds its column (the cell fills the column); its height stretches to the row.
         style = tablePlacement(box, style);
+        // min-block-size on a grid or flex container (auto height, not stretched by its parent): Grid §12.7.1 and
+        // Flexbox §9.4 size the tracks or the line again against the container at its minimum, so where the natural
+        // height falls short it lays out as if its height were the minimum (rows, fr rows and the flex line stretch).
+        if (block && ['grid', 'inline-grid', 'flex', 'inline-flex'].includes(style.display) && !['auto', '0', '0px'].includes(String(style['min-block-size'])) && style['block-size'] === 'auto'
+          && !available.$minNatural && !available.$minRaised && !available.root && !available.flexItem && !available.flexBlockMinimum && !(available.block && available.alignBlock === undefined)) {
+          const edge = key => style[key] === 'ua' ? zero : px(style[key]);
+          const edges = scalar(['padding-top', 'padding-bottom', 'border-top', 'border-bottom'].map(edge).reduce(add, zero));
+          for (const natural of solve(box, { ...available, $minNatural: true }, state.region, parents, inherited, false)) {
+            if (!natural.block) throw new Error('CSS min-block-size on a container whose height is not known is not modeled');
+            for (const m of lengthPieces(style['min-block-size'], available.percentBlock ?? available.block, natural.region, style)) {
+              const minimum = style['box-sizing'] === 'content-box' ? sum(m.value, edges) : m.value;
+              const split = partition(m.region, diff(natural.block, minimum), '>=');
+              for (const r of split.yes) results.push(...solve(box, { ...available, $minNatural: true }, r, parents, inherited, emit));
+              for (const r of split.no) results.push(...solve(box, { ...available, block: minimum, $minRaised: true }, r, parents, inherited, emit));
+            }
+          }
+          continue;
+        }
         if (!validate(style, box, state.region, emit, available)) continue;
         // A fieldset's first legend is rendered in its block-start border (HTML §15.3.13): it is not a
         // layout child, and the fieldset's effective border-top is max(border-top, legend height).
@@ -2115,7 +2134,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const fixedPieces = blockPieces.flatMap(piece => !(block && style['max-block-size'] !== 'none' && piece.value) ? [piece]
             : lengthPieces(style['max-block-size'], available.percentBlock ?? available.block, piece.region, style).flatMap(cap => minimumOf(cap.region, piece.value, sum(cap.value, contentEdges))));
           // min-block-size (content-box value, outer minus edges): wins over max-block-size, so it is applied after it.
-          const minBlock = block && !['auto', '0', '0px'].includes(String(style['min-block-size'])) && !available.flexBlockMinimum
+          const minBlock = block && !['auto', '0', '0px'].includes(String(style['min-block-size'])) && !available.flexBlockMinimum && !available.$minNatural
             ? region => lengthPieces(style['min-block-size'], available.percentBlock ?? available.block, region, style).map(m => ({ region: m.region, value: diff(sum(m.value, contentEdges), blockEdges) })) : null;
           const raisedPieces = !minBlock ? fixedPieces : fixedPieces.flatMap(piece => !piece.value ? [piece] : minBlock(piece.region).flatMap(m => maximum(m.region, piece.value, sum(m.value, blockEdges))));
           const blockStates = raisedPieces.flatMap(piece => piece.value ? clamp(piece.region, diff(piece.value, blockEdges)) : [{ region: piece.region, value: null }]);
