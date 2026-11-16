@@ -1997,3 +1997,60 @@ test('placeholder-label: Chromium names the field from its placeholder exactly w
     expect((report.accessibility?.warnings ?? []).some(w => w.code === 'W_A11Y_PLACEHOLDER_LABEL'), `${field}: Chromium name source ${JSON.stringify(used?.attribute ?? used?.type)}`).toBe(fromPlaceholder);
   }
 });
+
+test('form-label from the markup alone (the layout Unknown): an error exactly where Chromium gives the field no name, a placeholder warning exactly where its name comes from the placeholder', async ({page}) => {
+  const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block;width:100%}';
+  for (const field of ['<input class="f" type="email">', '<input class="f" type="email" placeholder="Email">', '<label for="e">Email</label><input class="f" id="e" type="email">', '<label>Email <input class="f" type="email"></label>', '<input class="f" type="email" aria-label="Email">', '<input class="f" type="email" title="Email">', '<label for="e"></label><input class="f" id="e" type="email">']) {
+    const html = `<html lang="en"><body><main class="m"><img class="i" src="data:," alt="">${field}</main></body></html>`;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+    expect(report.diagnostics.some(d => d.severity === 'unknown'), field).toBe(true);
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const client = await page.context().newCDPSession(page);
+    const {root} = await client.send('DOM.getDocument');
+    const {nodeId} = await client.send('DOM.querySelector', {nodeId: root.nodeId, selector: '.f'});
+    const {nodes} = await client.send('Accessibility.getPartialAXTree', {nodeId, fetchRelatives: false});
+    await client.detach();
+    const used = (nodes[0].name?.sources ?? []).find(src => src.value?.value && !src.superseded);
+    const codes = report.diagnostics.map(d => d.code);
+    expect(codes.includes('E_A11Y_LABEL'), `${field}: Chromium name ${JSON.stringify(nodes[0].name?.value)}`).toBe(!nodes[0].name?.value);
+    expect(codes.includes('W_A11Y_PLACEHOLDER_LABEL'), `${field}: Chromium source ${JSON.stringify(used?.attribute)}`).toBe(used?.attribute === 'placeholder');
+  }
+});
+
+test('scroll-zero cover: at the initial scroll position Chromium hides the start of the text inside the scroll container exactly where the static check reports it', async ({page}) => {
+  const html = '<html lang="en"><body><main class="m"><section class="c"><div class="track"><div class="s"><p class="t">Trail shoes</p></div><div class="s"><p class="t2">Boots</p></div></div><button class="prev" type="button" aria-label="Previous"></button></section></main></body></html>';
+  for (const extra of ['', '.prev{width:12px}', '.prev{left:auto;right:0}', '.s{padding-left:40px}', '.prev{top:80px}']) {
+    const css = `*{margin:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.c{position:relative;display:grid;grid-template-columns:minmax(0,1fr)}.track{display:flex;overflow-x:auto}.s{flex:none;width:300px;display:grid;grid-template-columns:minmax(0,1fr);padding:16px}.t,.t2{font-size:16px;line-height:24px;color:#000}.prev{position:absolute;top:16px;left:0;width:24px;height:24px;padding:0;border:0;background:#333}${extra}`;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 24}, '.t2': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+    const reported = [];
+    for (const width of [320, 400, 640]) {
+      const within = (r, v) => r && (r.minInclusive === false ? v > r.min : v >= r.min) && (r.maxInclusive === false ? v < r.max : v <= r.max);
+      const at = report.diagnostics.filter(d => d.code === 'E_A11Y_TEXT_START_OBSCURED' && within(d.range, width) && (!d.heightRange || within(d.heightRange, 600))).map(d => d.box).sort();
+      await page.setViewportSize({width, height: 600});
+      await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+      const shown = await page.evaluate(() => ['.t', '.t2'].filter(sel => { const e = document.querySelector(sel), r = document.createRange(); r.setStart(e.firstChild, 0); r.setEnd(e.firstChild, 1); const b = r.getClientRects()[0]; if (!b || b.left + 2 > innerWidth || b.left < 0) return false; const hit = document.elementFromPoint(b.left + 1, (b.top + b.bottom) / 2); return hit && !e.contains(hit); }));
+      expect(at, `${extra} at ${width}`).toEqual(shown);
+      reported.push(...at);
+    }
+    if (extra === '') expect(reported.length).toBeGreaterThan(0);
+  }
+});
+
+test('color-only-state: in Chromium the singled-out item differs from its siblings in no computed property but color and background, and the two colors contrast below 3:1, exactly where the static check warns', async ({page}) => {
+  const html = '<html lang="en"><body><main class="m"><ol class="l"><li class="s">Shipping</li><li class="s cur" aria-current="step">Payment</li><li class="s">Review</li></ol></main></body></html>';
+  for (const extra of ['', '.cur{font-weight:700}', '.cur{text-decoration:underline}', '.s{color:#9e9e9e}.s.cur{color:#000}', '.cur{background:#e8f0fe}', '.cur{color:#1a73e8;font-style:italic}']) {
+    const css = `*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.l{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:0;list-style:none}.s{display:block;font-size:16px;line-height:24px;color:#616161}.cur{color:#1a73e8}${extra}`;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, boxes: {'.s': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+    const warned = (report.accessibility?.warnings ?? []).some(w => w.code === 'W_A11Y_COLOR_ONLY_STATE');
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const colorOnly = await page.evaluate(() => {
+      const [a, b] = [document.querySelector('.cur'), document.querySelector('.s:not(.cur)')].map(e => getComputedStyle(e));
+      // Colors (every *-color longhand follows currentcolor) and the used sizes of the grid columns (fractional px) aside.
+      const diff = [...a].filter(p => a.getPropertyValue(p) !== b.getPropertyValue(p) && !/(^|-)color$|^(background-color|fill|stroke|width|inline-size|height|block-size|transform-origin|perspective-origin)$/.test(p));
+      const rgb = s => s.match(/[\d.]+/g).map(Number), lum = ([r, g, b]) => [r, g, b].map(c => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }).reduce((t, c, i) => t + c * [0.2126, 0.7152, 0.0722][i], 0);
+      const [x, y] = [lum(rgb(a.color)), lum(rgb(b.color))].sort((m, n) => n - m);
+      return diff.length === 0 && (a.color !== b.color || a.backgroundColor !== b.backgroundColor) && (x + 0.05) / (y + 0.05) < 3;
+    });
+    expect(warned, extra).toBe(colorOnly);
+  }
+});

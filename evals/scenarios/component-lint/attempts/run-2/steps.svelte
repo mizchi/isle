@@ -7,5 +7,5 @@
 <style>
   .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 16px; padding: 16px; margin: 0; list-style: none; background: #fff; }
   .step { font-size: 16px; line-height: 24px; color: #616161; }
-  .current { color: #1a73e8; }
+  .current { color: #1a73e8; font-weight: 700; }
 </style>

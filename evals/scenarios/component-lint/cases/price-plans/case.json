@@ -1,0 +1,1 @@
+{"framework": "linaria", "intent": "Two plan columns showing monthly and yearly prices.", "planted": "the yearly price label is nowrap in a fixed 120px column: '$96 per year, billed once' overflows it", "expect": ["E_LAYOUT_CONTENT"]}

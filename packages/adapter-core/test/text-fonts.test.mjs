@@ -69,3 +69,13 @@ test('the assumed-text count counts only text boxes: a marked inline run laid ou
   assert.ok(result.coverage.assumptions.some(a => /2 text box\(es\) measured/.test(a)), JSON.stringify(result.coverage.assumptions));
   assert.ok(!result.coverage.assumptions.some(a => /sized by assumption/.test(a)), JSON.stringify(result.coverage.assumptions));
 });
+
+test('dynamic text with no length bound in a nowrap box is a warning (a long value overflows); a length, an ellipsis or wrapping clears it', async () => {
+  const textMetrics = await loadTextMetrics({fonts});
+  const run = (attrs, extra = '') => analyzeStates({states: [{html: `<div class="c"><span class="name" ${attrs}>…</span></div>`, choices: {}}], css: `.c{display:grid;grid-template-columns:minmax(0,1fr)}.name{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;color:#000;white-space:nowrap}${extra}`}, {pageCSS, viewport, assumeText: true, textMetrics, fonts});
+  const has = r => r.findings.some(f => f.code === 'W_TEXT_DYNAMIC_UNBOUNDED');
+  assert.ok(has(run('')));
+  assert.ok(!has(run('data-text-max-length="20"')));
+  assert.ok(!has(run('', '.name{overflow:hidden;text-overflow:ellipsis}')));
+  assert.ok(!has(run('', '.name{white-space:normal}')));
+});

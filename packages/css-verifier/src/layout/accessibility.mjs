@@ -103,14 +103,14 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'page-clipped', 'image-fallback-contrast', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'label-pointer', 'bar-covered', 'bar-transparent', 'autofocus'];
+  'color-only-state', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'page-clipped', 'image-fallback-contrast', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'label-pointer', 'bar-covered', 'bar-transparent', 'autofocus'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
   core: ['bar-transparent', 'bar-covered', 'live-hidden', 'select-indicator', 'hidden-control', 'focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'page-clipped', 'image-fallback-contrast', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
-  heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
+  heuristic: ['color-only-state', 'visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
 export const ruleTier = rule => Object.entries(tierLists).find(([, list]) => list.includes(rule))?.[0] ?? 'dom';
@@ -173,7 +173,7 @@ export function paintFacts(style) {
   // Visually hidden (sr-only): clipped to nothing, or at most 1px tall hiding its overflow. Read, not seen.
   const hiddenVisually = style['clip-path'] === 'empty' || style.clip === 'empty' || (['hidden', 'clip'].includes(style['overflow-x']) && /^\d+(?:\.\d+)?px$/.test(String(style['block-size'])) && Number(String(style['block-size']).slice(0, -2)) <= 1);
   return { ...(style.$iconPaint !== undefined ? { iconPaint: style.$iconPaint } : {}), ...(hiddenVisually ? { hiddenVisually: true } : {}), caretColor: style['caret-color'], objectFit: style['object-fit'], scrollBehavior: style['scroll-behavior'], touchAction: style['touch-action'], color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
-    visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
+    visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontStyle: style['font-style'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
     isolation: style.isolation, transform: style.transform, scrollMargin: { top: style['scroll-margin-top'], bottom: style['scroll-margin-bottom'] }, scrollPadding: { top: style['scroll-padding-top'], bottom: style['scroll-padding-bottom'] }, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], outlineColor: style['outline-color'], outlineOffset: style['outline-offset'], clippedAway: style['clip-path'] === 'empty' || (style.clip === 'empty' && ['absolute', 'fixed'].includes(style.$fixed ? 'fixed' : style.position)), borderColors: { top: style['border-top-color'], right: style['border-right-color'], bottom: style['border-bottom-color'], left: style['border-left-color'] }, boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
     animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] , direction: style['animation-direction'] } };
 }
@@ -311,7 +311,7 @@ export function circleReach(region, dx, dy, r) {
   return { yes, maybe };
 }
 
-export function judgeAccessibility({ geometry, waived = [], root, domain }, { keyframeFrames = new Map(), contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0, viewportBlock = null, scrollPaddingDeclared = false, forcedColorsHandled = false, smoothReduced = false, defaultColors = null }) {
+export function judgeAccessibility({ geometry, waived = [], root, domain }, { keyframeFrames = new Map(), contrast = 'AA', targetLevel = 'AA', targetSize = targetLevel === 'AAA' ? 44 : 24, ranges, block, viewportMin, hostInset = 0, hostBlockInset = 0, viewportBlock = null, scrollPaddingDeclared = false, forcedColorsHandled = false, smoothReduced = false, defaultColors = null, scrollZero = false }) {
   uaColors = defaultColors;
   const findings = [], warnings = [], unknowns = [], notes = [], exempted = [];
   // Generated boxes (::before/::after) paint and receive the pointer (for their element), but carry no DOM semantics.
@@ -772,6 +772,7 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   // text-start-obscured: an opaque later-painted box over the point where
   // its text starts (ltr, text-align start/left: the first glyph sits at the content box's left edge, in the middle
   // of the first line) hides its first characters, whatever the text's width (a badge or overlay laid on a heading).
+  const scrollersOf = target => placed.filter(row => row.overflow === 'scroll' && isAncestor(row.path, target.path) && row.path !== root?.path && !row.box.documentRoot);
   for (const target of placed.filter(row => row.box.text && visible(row) && !hiddenFrom(row.path) && !row.box.pseudo && row.content && ['start', 'left'].includes(String(row.textAlign)) && row.direction !== 'rtl' && /^\d+(?:\.\d+)?px$/.test(String(row.lineHeight)))) {
     const own = layer(target), half = Number(String(target.lineHeight).slice(0, -2)) / 2;
     const x = sum(target.origin.inline, scalar(target.content.left)), y = sum(sum(target.origin.block, scalar(target.content.top)), scalar(q(String(half))));
@@ -783,9 +784,52 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
       // The cover holds [x, x + 2] × [y − 1, y + 1].
       region = atMost(region, cover.origin.inline, x); region = atMost(region, sum(x, scalar(2)), right(cover));
       region = atMost(region, cover.origin.block, diff(y, scalar(1))); region = atMost(region, sum(y, scalar(1)), bottom(cover));
+      // At scroll offset 0 a text start inside a scroll container is seen only within that container's box.
+      if (scrollZero) for (const s of scrollersOf(target)) { region = atMost(region, s.origin.inline, x); region = atMost(region, sum(x, scalar(2)), right(s)); region = atMost(region, s.origin.block, diff(y, scalar(1))); region = atMost(region, sum(y, scalar(1)), bottom(s)); }
       if (region) {
         report(findings, 'E_A11Y_TEXT_START_OBSCURED', 'error', `the start of ${target.box.label}'s text is hidden behind ${cover.box.label} (it covers where the first line begins); move ${cover.box.label} off the text or give the text room (padding) beside it`, target, region, { rule: 'text-start-obscured', cover: cover.path });
         break;
+      }
+    }
+  }
+
+  // text-line-obscured: an opaque box over the part of a text's first line that its glyphs are sure to reach. On one
+  // line the text is at least its shaped advance long (Chromium renders it within [advance, bound]); wrapped, greedy
+  // breaking fills the first line to more than the content width less its longest word and a space (bounded by 0.5em).
+  // A cover that overlaps that stretch of the first line by at least 1px on both axes hides glyphs (a close button laid
+  // over the end of a notice's first line). Only measured text (a font contract), left-aligned ltr, px line-height.
+  {
+    const onePx = q(1);
+    for (const target of placed.filter(row => row.box.text && visible(row) && !hiddenFrom(row.path) && !row.box.pseudo && row.content && row.box.contract?.textMetrics?.kind && ['start', 'left'].includes(String(row.textAlign)) && row.direction !== 'rtl' && /^\d+(?:\.\d+)?px$/.test(String(row.lineHeight)))) {
+      if (findings.some(f => ['E_A11Y_TEXT_START_OBSCURED', 'E_A11Y_TEXT_OBSCURED'].includes(f.code) && f.path === target.path)) continue;
+      const metrics = target.box.contract.textMetrics, lineHeight = q(String(target.lineHeight).slice(0, -2)), fontSize = px(target.paint.fontSize);
+      const advance = metrics.kind === 'domain' ? null : metrics.width;
+      if (advance === undefined || advance === null || fontSize === undefined) continue;
+      const x = sum(target.origin.inline, scalar(target.content.left)), y = sum(target.origin.block, scalar(target.content.top));
+      const oneLine = target.box.contract.maxInlineSize !== undefined ? q(String(target.box.contract.maxInlineSize)) : null;
+      const word = metrics.minContent !== undefined ? q(String(Math.ceil(metrics.minContent * 1e6) / 1e6)) : null;
+      for (const cover of placed) {
+        if (related(cover.path, target.path) || !visible(cover) || !cover.painted || !opaque(cover)) continue;
+        if (!paintsAbove(cover, layer(cover), target, layer(target))) continue;
+        let base = intersect(target.region, cover.region);
+        // The first line band [y, y + lineHeight] and the cover overlap by at least 1px.
+        base = atMost(base, sum(cover.origin.block, scalar(onePx)), sum(y, scalar(lineHeight))); base = atMost(base, sum(y, scalar(onePx)), bottom(cover));
+        base = atMost(base, sum(x, scalar(onePx)), right(cover));
+        if (!base) continue;
+        const pieces = [];
+        // One line (the content holds the whole text): the glyphs reach x + advance.
+        const single = oneLine === null ? null : atMost(base, scalar(oneLine), target.content.inline);
+        // (rounded down to 6 decimals: a shorter reach is the conservative side)
+        if (single) pieces.push(atMost(single, sum(cover.origin.inline, scalar(onePx)), sum(x, scalar(q(String(Math.floor(advance * 1e6) / 1e6))))));
+        // Wrapped (narrower than one line): the first line reaches past x + content − longest word − 0.5em.
+        if (oneLine !== null && word !== null) {
+          const wrapped = atMost(base, sum(target.content.inline, scalar(onePx)), scalar(oneLine));
+          if (wrapped) pieces.push(atMost(wrapped, sum(sum(cover.origin.inline, scalar(onePx)), sum(scalar(word), scalar(div(q(String(fontSize)), q(2))))), sum(x, target.content.inline)));
+        }
+        let region = pieces.find(Boolean);
+        // At scroll offset 0, only the part of the first line inside its scroll containers' boxes is seen.
+        if (region && scrollZero) for (const sc of scrollersOf(target)) { region = atMost(region, sc.origin.inline, right(cover)); region = atMost(region, cover.origin.inline, right(sc)); region = atMost(region, sc.origin.block, sum(y, scalar(lineHeight))); region = atMost(region, y, bottom(sc)); }
+        if (region) { report(findings, 'E_A11Y_TEXT_LINE_OBSCURED', 'error', `${target.box.label}'s first line runs under ${cover.box.label} where its text is sure to reach: the words under it are hidden. Give the text room beside ${cover.box.label} (padding on that side)`, target, region, { rule: 'text-start-obscured', cover: cover.path }); break; }
       }
     }
   }
@@ -1920,6 +1964,34 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     for (const region of none) report(warnings, 'W_A11Y_NO_MAIN', 'warning', 'no main landmark renders here', whole(root), region, { rule: 'page-main' });
   }
 
+  // color-only-state (SC 1.4.1): among three or more sibling text boxes of one tag, exactly one is set apart from all the
+  // others only by its text or background color (same size, weight and decoration), and its text color contrasts with
+  // theirs by less than 3:1 (G183's threshold): the difference (the current step, the selected tab) is not seen by
+  // people who do not perceive the hue. aria-current and other states help screen readers, not this.
+  {
+    const groups = new Map();
+    for (const row of placed.filter(row => row.box.text && visible(row) && !hiddenFrom(row.path) && !row.box.pseudo)) {
+      const parent = row.path.slice(0, row.path.lastIndexOf('/')), key = `${parent}\u0000${row.box.tag}`;
+      if (!groups.has(key)) groups.set(key, new Map());
+      groups.get(key).set(row.path, row);
+    }
+    for (const members of groups.values()) {
+      const rows = [...members.values()];
+      if (rows.length < 3) continue;
+      const look = row => JSON.stringify([row.paint.fontSize, row.paint.fontWeight, row.paint.decoration, row.paint.fontStyle ?? null]);
+      const hue = row => JSON.stringify([row.paint.color, row.paint.backgroundColor]);
+      if (new Set(rows.map(look)).size !== 1) continue;
+      const counts = new Map(); for (const row of rows) counts.set(hue(row), (counts.get(hue(row)) ?? 0) + 1);
+      if (counts.size !== 2) continue;
+      const odd = rows.filter(row => counts.get(hue(row)) === 1);
+      if (odd.length !== 1 || rows.length - 1 < 2) continue;
+      const one = odd[0], other = rows.find(row => row !== one);
+      const a = parseColor(String(one.paint.color)), b = parseColor(String(other.paint.color));
+      if (!a || !b) continue;
+      if (contrastRatio(a, b) >= 3) continue;
+      report(warnings, 'W_A11Y_COLOR_ONLY_STATE', 'warning', `${one.box.label} is set apart from its ${rows.length - 1} siblings only by its color (contrast ${contrastRatio(a, b).toFixed(2)}:1 with theirs, below 3:1): people who do not perceive the hue cannot tell it apart. Add another cue (weight, an underline, an icon or a border)`, one, one.region, { rule: 'color-only-state' });
+    }
+  }
   return { findings: dedupe(findings), warnings: dedupe(warnings), unknowns: dedupe(unknowns), exempted: dedupe(exempted), notes };
 }
 

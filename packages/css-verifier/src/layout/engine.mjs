@@ -409,7 +409,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
       if (options.reportTextFonts && !state && box.text && !box.pseudo && !(box.inline ?? []).length && !box.anonymous) {
         const hint = name => box.attributes && Object.hasOwn(box.attributes, name) ? box.attributes[name] : undefined;
-        const facts = { classes: box.classes, text: box.textContent ?? '', ...(hint('data-text-one-line') !== undefined ? { oneLine: true } : {}), ...(hint('data-text-max-length') !== undefined ? { maxLength: hint('data-text-max-length') } : {}), ...(hint('data-text-chars') !== undefined ? { characters: hint('data-text-chars') } : {}), family: style['font-family'], size: style['font-size'], lineHeight: style['line-height'], weight: style['font-weight'], style: style['font-style'], whiteSpace: style['white-space'], overflowWrap: style['overflow-wrap'], letterSpacing: style['letter-spacing'], lang: style.$lang };
+        const facts = { classes: box.classes, text: box.textContent ?? '', ...(hint('data-text-one-line') !== undefined ? { oneLine: true } : {}), ...(hint('data-text-max-length') !== undefined ? { maxLength: hint('data-text-max-length') } : {}), ...(hint('data-text-chars') !== undefined ? { characters: hint('data-text-chars') } : {}), family: style['font-family'], size: style['font-size'], lineHeight: style['line-height'], weight: style['font-weight'], style: style['font-style'], whiteSpace: style['white-space'], overflowWrap: style['overflow-wrap'], letterSpacing: style['letter-spacing'], lang: style.$lang, textOverflow: style['text-overflow'], overflowX: style['overflow-x'], label: box.label };
         const seen = textFonts.get(box.path);
         textFonts.set(box.path, seen && seen !== 'varied' && JSON.stringify(seen) !== JSON.stringify(facts) ? 'varied' : seen === 'varied' ? 'varied' : facts);
       }
@@ -1640,7 +1640,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // overflow: clip never scrolls, so positions inside it stay exact; hidden/auto/scroll may be scrolled.
     // (The document root's overflow is the viewport's: its scrolling is the page scroll, already modeled; at scroll 0
     // positions inside it are exact.)
-    if(!block || parents.some(p=>p.clipped || p.subgrid) || (!available.root && ['overflow-x','overflow-y'].some(key=>!['visible','clip'].includes(style[key]))) ||
+    // scroll-zero (an internal re-analysis): positions inside scroll containers at their initial scroll offset 0, exact
+    // there; only the cover findings at that offset are taken from it.
+    const scrollZero = preferences.includes('scroll-zero');
+    if(!block || parents.some(p=>(p.clipped && !scrollZero) || p.subgrid) || (!scrollZero && !available.root && ['overflow-x','overflow-y'].some(key=>!['visible','clip'].includes(style[key]))) ||
       ['grid-template-columns','grid-template-rows'].some(key=>style[key]==='subgrid')) return null;
     if(style.position!=='absolute') {
       // Cross-axis alignment of a flex item that is not stretched.
@@ -2941,7 +2944,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     integrityWarnings = judged.warnings; integrityExempted = judged.exempted;
   }
   if (options.accessibility && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant && !diagnostics.some(d => d.severity === 'unknown')) {
-    const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { defaultColors: options.defaultColors && !preferences.includes('prefers-color-scheme:dark') && !rules.some(rule => rule.declarations.some(d => d.property === 'color-scheme' && /dark/.test(String(d.value)))) ? { canvas: '#ffffff', canvastext: '#000000' } : null, forcedColorsHandled: rules.some(rule => rule.preferences?.some(p => p.feature === 'forced-colors')), smoothReduced: rules.some(rule => rule.declarations.some(d => d.property === 'scroll-behavior') && (rule.preferences?.some(p => p.feature === 'prefers-reduced-motion'))), keyframeFrames, hostInset: options.hostInset ?? 0, hostBlockInset: options.hostBlockInset ?? 0, viewportBlock: block && options.viewport.height ? height : null, scrollPaddingDeclared: rules.some(rule => rule.declarations.some(d => /^scroll-padding-(?:top|bottom)$/.test(d.property))), viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), ranges, block });
+    const judged = judgeAccessibility({ geometry, waived, root, domain: initial }, { scrollZero: preferences.includes('scroll-zero'), defaultColors: options.defaultColors && !preferences.includes('prefers-color-scheme:dark') && !rules.some(rule => rule.declarations.some(d => d.property === 'color-scheme' && /dark/.test(String(d.value)))) ? { canvas: '#ffffff', canvastext: '#000000' } : null, forcedColorsHandled: rules.some(rule => rule.preferences?.some(p => p.feature === 'forced-colors')), smoothReduced: rules.some(rule => rule.declarations.some(d => d.property === 'scroll-behavior') && (rule.preferences?.some(p => p.feature === 'prefers-reduced-motion'))), keyframeFrames, hostInset: options.hostInset ?? 0, hostBlockInset: options.hostBlockInset ?? 0, viewportBlock: block && options.viewport.height ? height : null, scrollPaddingDeclared: rules.some(rule => rule.declarations.some(d => /^scroll-padding-(?:top|bottom)$/.test(d.property))), viewportMin: options.viewport.min, contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), ranges, block });
     diagnostics.push(...judged.findings, ...judged.unknowns);
     // Dark color scheme: when the CSS has prefers-color-scheme: dark rules, the contrast rules run
     // again with them (paint only, so the geometry is the same). System colors stay the light ones:
@@ -2956,6 +2959,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (light) light.alsoUnder = [...(light.alsoUnder ?? []), 'prefers-color-scheme: dark'];
         else diagnostics.push({ ...d, preference: 'prefers-color-scheme: dark', message: `${d.message} (prefers-color-scheme: dark)` });
       }
+    }
+    // Text inside a scroll container under a box painted over it (U_A11Y_SCROLLED_COVER): laid out again at scroll offset
+    // 0, the page's initial view, where positions inside are exact. A text start or first line hidden there is an error
+    // at the initial scroll position; the other offsets stay Unknown.
+    const scrolledCovers = diagnostics.filter(d => d.code === 'U_A11Y_SCROLLED_COVER');
+    if (pristine && scrolledCovers.length) {
+      const zero = analyzeBoxTree(pristine, { ...options, integrity: undefined }, scrollbarProfile, budget, inlineSheets, [], ['scroll-zero']);
+      for (const d of zero.diagnostics.filter(d => ['E_A11Y_TEXT_START_OBSCURED', 'E_A11Y_TEXT_LINE_OBSCURED'].includes(d.code)))
+        if (scrolledCovers.some(u => d.path.startsWith(`${u.path}/`) && u.cover === d.cover) && !diagnostics.some(x => x.code === d.code && x.path === d.path && JSON.stringify([x.range, x.heightRange, x.regionConstraints]) === JSON.stringify([d.range, d.heightRange, d.regionConstraints])))
+          diagnostics.push({ ...d, scrollOffset: 0, message: `${d.message} (at the initial scroll position of ${scrolledCovers.find(u => d.path.startsWith(`${u.path}/`)).box}; other scroll offsets are not checked)` });
     }
     // Focus rules that change layout: each focusable box they can reach is laid out again focused, and the geometric
     // focus findings for that box come from that layout instead of the unfocused one.
@@ -3004,7 +3017,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   else if (options.accessibility && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant
     && !rules.some(rule => rule.declarations.some(d => d.property === 'content' || (d.property === 'display' && String(d.value) === 'none') || (d.property === 'visibility' && /hidden|collapse/.test(String(d.value))) || (d.property === 'content-visibility' && String(d.value) === 'hidden')))) {
     const speaks = box => box.text || box.inline?.length || (box.textContent ?? '').trim() || (box.tag === 'img' && (box.alt ?? '').trim()) || box.alt === undefined && box.tag === 'img' || (box.tag === 'svg' && box.named) || (box.children ?? []).some(speaks) || (box.inline ?? []).some(speaks);
-    const walk = (box, hidden) => {
+    // label elements by for= (a field is labelled by a wrapping label or label[for=id] whose text is present).
+    const labelsFor = new Map(); (function collect(box) { if (box.tag === 'label' && box.labelFor) labelsFor.set(box.labelFor, [...(labelsFor.get(box.labelFor) ?? []), box]); for (const child of [...(box.children ?? []), ...(box.inline ?? [])]) collect(child); })(root);
+    const labelSpeaks = (label, field) => label.text || (label.textContent ?? '').trim() || [...(label.children ?? []), ...(label.inline ?? [])].some(child => child !== field && speaks(child));
+    const fieldOf = box => ['select', 'textarea'].includes(box.tag) || (box.tag === 'input' && !['hidden', 'submit', 'reset', 'button', 'image'].includes(box.inputType));
+    const widget = new Set(['button', 'link', 'checkbox', 'radio', 'switch', 'tab', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'option', 'slider', 'spinbutton', 'textbox', 'searchbox', 'combobox', 'treeitem', 'gridcell']);
+    const owners = { option: ['listbox'], treeitem: ['tree'], gridcell: ['grid', 'treegrid'], menuitem: ['menu', 'menubar'], menuitemcheckbox: ['menu', 'menubar'], menuitemradio: ['menu', 'menubar'] };
+    const roleOfBox = box => box.role && box.role !== 'dynamic' ? box.role.split(/\s+/)[0] : undefined;
+    const walk = (box, hidden, wrappingLabel = null, ancestorsRoles = []) => {
       // UA-hidden: a popover (closed until shown), a dialog that is not open, and a closed details' content.
       const gone = hidden || box.ariaHidden || box.hiddenAttr || box.inert || box.popover || (box.tag === 'dialog' && box.dialogOpen !== true) || box.tag === 'template';
       const control = !box.pseudo && (box.tag === 'button' || (box.tag === 'a' && box.focusable !== false && box.href !== undefined));
@@ -3015,7 +3035,20 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (control && !gone && !box.named && !box.labelledBy && !speaks(box))
         diagnostics.push({ code: 'E_A11Y_NAME', severity: 'error', box: box.label, path: box.path, source: box.source, rule: 'accessible-name', ...ranges(initial),
           message: `${box.label} has no accessible name: no text, no image text and no aria-label, aria-labelledby or title (checked from the markup; the layout was not analysed)` });
-      for (const child of [...(box.children ?? []), ...(box.inline ?? [])]) walk(child, gone || (box.tag === 'details' && box.detailsOpen !== true && child.tag !== 'summary'));
+      // form-label: a field with no aria name and no label with text (label[for] or a wrapping label).
+      if (!box.pseudo && !gone && fieldOf(box) && box.named !== 'dynamic' && box.inputType !== 'dynamic' && !labelsFor.has('dynamic')) {
+        const labelled = box.named === true || (wrappingLabel && labelSpeaks(wrappingLabel, box)) || (box.id && (labelsFor.get(box.id) ?? []).some(l => labelSpeaks(l, box)));
+        if (!labelled && !box.labelledBy) diagnostics.push(box.placeholder
+          ? { code: 'W_A11Y_PLACEHOLDER_LABEL', severity: 'warning', box: box.label, path: box.path, source: box.source, rule: 'form-label', ...ranges(initial), message: `${box.label} is named only by its placeholder, which disappears on input (checked from the markup; the layout was not analysed)` }
+          : { code: 'E_A11Y_LABEL', severity: 'error', box: box.label, path: box.path, source: box.source, rule: 'form-label', ...ranges(initial), message: `${box.label} has no label: add a visible <label>, aria-label, aria-labelledby or title (checked from the markup; the layout was not analysed)` });
+      }
+      // interactive-role-focusable: a widget role on an element that cannot take focus (items of a composite widget get it
+      // from their owner).
+      const role = roleOfBox(box);
+      if (!box.pseudo && !gone && role && widget.has(role) && !(owners[role] ?? []).some(o => ancestorsRoles.includes(o))
+        && !(box.focusable === true || box.tabIndex >= 0 || ['button', 'input', 'select', 'textarea'].includes(box.tag) || (box.tag === 'a' && box.href !== undefined && box.focusable !== false)))
+        diagnostics.push({ code: 'E_A11Y_ROLE_FOCUS', severity: 'error', box: box.label, path: box.path, source: box.source, rule: 'interactive-role-focusable', ...ranges(initial), message: `${box.label} has role ${role} but cannot take focus; add tabindex="0" (checked from the markup; the layout was not analysed)` });
+      for (const child of [...(box.children ?? []), ...(box.inline ?? [])]) walk(child, gone || (box.tag === 'details' && box.detailsOpen !== true && child.tag !== 'summary'), box.tag === 'label' ? box : wrappingLabel, role ? [...ancestorsRoles, role] : ancestorsRoles);
     };
     walk(root, false);
   }

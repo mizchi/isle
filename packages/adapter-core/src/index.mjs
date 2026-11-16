@@ -120,6 +120,7 @@ export function analyzeStates(component, allOptions = {}) {
 function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { pageCSS = '', page: wrap = page, name = 'Component', assumeText, textMetrics, fonts = {}, textResize, ...options } = {}) {
   // unmeasured: text boxes (markers the analysis laid out as text) left at the assumed size; null until fonts were reported.
   let assumedTexts = 0, measuredTexts = 0, unmeasured = null;
+  const unbounded = new Map();
   const results = states.map(state => {
     let html = state.html, boxes = options.boxes;
     if (assumeText) {
@@ -138,6 +139,11 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { p
       for (let pass = 0; pass < 6; pass++) try {
         const first = analyzeHTML(wrap(html), { name, ...options, boxes, css: pageCSS + css, reportTextFonts: true });
         // The markers that became text boxes (a marked inline run laid out as a grid or flex container is not one).
+        // Dynamic text ('…', the adapters' rendering of {expression}) kept on one line (nowrap or data-text-one-line) with no
+        // length bound (data-text-max-length) and no truncation (ellipsis): a long value runs past its box.
+        for (const facts of first.textFonts ?? []) if (facts && facts !== 'varied' && !facts.placeholder && String(facts.text).includes('…') && facts.maxLength === undefined
+          && (['nowrap', 'pre'].includes(facts.whiteSpace) || facts.oneLine) && !(facts.textOverflow === 'ellipsis' && ['hidden', 'clip'].includes(facts.overflowX)))
+          unbounded.set(facts.path, { code: 'W_TEXT_DYNAMIC_UNBOUNDED', box: facts.label, path: facts.path, severity: 'warning', message: `${facts.label} shows dynamic text on one line (white-space: ${facts.whiteSpace}${facts.oneLine ? ', data-text-one-line' : ''}) with no length bound: a long value runs past the box, and its width is not checked. Bound it (data-text-max-length), truncate it (overflow: hidden; text-overflow: ellipsis) or let it wrap`, states: [state.choices], html: state.html });
         var textLeaves = new Set((first.textFonts ?? []).filter(facts => !facts.placeholder).flatMap(facts => (facts.classes ?? []).filter(c => /^__text\d+$/.test(c))));
         const measured = {};
         for (const facts of first.textFonts ?? []) {
@@ -176,6 +182,7 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { p
     const entry = grouped.get(key);
     if (!entry.states.includes(r.choices)) entry.states.push(r.choices);
   }
+  for (const u of unbounded.values()) if (!grouped.has(`${u.code}\u0000${u.box}`)) grouped.set(`${u.code}\u0000${u.box}`, u);
   const out = { status, states: results, unknowns, coverage: { states: states.length, assumptions }, findings: [...grouped.values()] };
   if (options.selectors) {
     // A selector is unused only when it is unused in every state; a row's count is its largest over the states.

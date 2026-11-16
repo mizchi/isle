@@ -17,6 +17,9 @@ export const recommended = {
   E_A11Y_IMAGE_ALT: ['error', 'add an alt attribute: the image\'s text equivalent, or alt="" when it is decorative'],
   E_A11Y_ROLE_FOCUS: ['error', 'make the element focusable (tabindex="0") or use the native element (button, input type="checkbox")'],
   W_A11Y_PLACEHOLDER_LABEL: ['warning', 'give the field a visible label (label for=, or aria-labelledby): the placeholder disappears as soon as the user types'],
+  E_A11Y_TEXT_LINE_OBSCURED: ['error', 'give the text room beside the covering box (padding on that side, or a grid column for the button)'],
+  W_TEXT_DYNAMIC_UNBOUNDED: ['warning', 'bound the text (data-text-max-length), truncate it (overflow: hidden; text-overflow: ellipsis) or let it wrap'],
+  W_A11Y_COLOR_ONLY_STATE: ['warning', 'add a cue besides color (font weight, an underline, an icon or a border), or make the two colors contrast 3:1'],
   E_A11Y_FOCUS_OFFSCREEN: ['error', 'take the off-screen element out of the focus order while it is hidden (visibility: hidden, display: none or inert), or bring it into view when it is focused'],
   E_LAYOUT_IMAGE_UNRESERVED: ['error', 'add width and height attributes (or aspect-ratio) so the image reserves its box'],
   E_LAYOUT_IMAGE_RATIO: ['error', 'make the reserved ratio match the file'],
@@ -162,6 +165,9 @@ export function lint(result, { file = '<component>', source = '', profile = 'rec
   const seen = new Set();
   for (const s of result.states) for (const d of s.report.diagnostics.filter(d => d.severity === 'unknown')) {
     const key = `${d.code} ${d.box}`; if (seen.has(key)) continue; seen.add(key);
+    // An exception inside the analysis is the checker's failure, not a property of the component: a warning, so a
+    // regression in the checker cannot hide among the not-checked lines.
+    if (d.code === 'U_ADAPTER_ANALYSIS') { out.push({ file, severity: 'warning', code: 'W_LINT_ANALYSIS_FAILED', message: `the checker failed on this state, so nothing in it was checked: ${readable(d.message).replace(/^the analysis of this state failed: /, '')}`, fix: 'report it with the component (a bug in the checker, not in the component)', states: 'some states' }); continue; }
     out.push({ file, line: lineOf(source, /\.([\w-]+)/.exec(cleanLabel(d.box))?.[1]), severity: 'info', code: d.code, message: `not checked: ${readable(d.message)}` });
   }
   for (const a of result.coverage?.assumptions ?? []) out.push({ file, severity: 'info', code: 'ASSUMPTION', message: a });

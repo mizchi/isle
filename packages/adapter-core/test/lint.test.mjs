@@ -99,7 +99,7 @@ test('a state whose analysis throws is Unknown, not a crash', async () => {
   const {analyzeStates} = await import('../src/index.mjs');
   const result = analyzeStates({states: [{html: '<div class="a"></div>', choices: {}}], css: ''}, {pageCSS, viewport, boxes: {'.missing': {minInlineSize: 0}}});
   assert.equal(result.status, 'unknown');
-  assert.ok(lint(result, {file: 'X.svelte'}).some(m => m.code === 'U_ADAPTER_ANALYSIS' && m.severity === 'info'));
+  assert.ok(lint(result, {file: 'X.svelte'}).some(m => m.code === 'W_LINT_ANALYSIS_FAILED' && m.severity === 'warning'));
 });
 
 test('lint messages: decimal px, no internal markers, and one finding per root cause', () => {
@@ -144,4 +144,13 @@ test('css-lint assumes the UA default colors (stated), and --default-colors none
   const on = out([]), off = out(['--default-colors', 'none']);
   assert.ok(on.some(m => m.code === 'ASSUMPTION' && /user-agent default colors/.test(m.message)));
   assert.ok(!off.some(m => m.code === 'ASSUMPTION' && /user-agent default colors/.test(m.message)));
+});
+
+test('lint: an analysis that failed with an internal error is a warning that names it as the checker\'s failure, not a quiet "not checked"', () => {
+  const result = {states: [{choices: {}, report: {status: 'unknown', diagnostics: [{code: 'U_ADAPTER_ANALYSIS', severity: 'unknown', message: 'the analysis of this state failed: Layout numbers require at most twelve integer and six decimal digits'}]}}], unknowns: [], coverage: {assumptions: []}, findings: []};
+  const [m] = lint(result, {file: 'X.jsx'}).filter(m => /ANALYSIS/.test(m.code));
+  assert.equal(m.severity, 'warning');
+  assert.equal(m.code, 'W_LINT_ANALYSIS_FAILED');
+  assert.match(m.message, /the checker failed/);
+  assert.match(m.fix, /report/);
 });

@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "A recipe card: photo, title, and cook time with a servings count.", "planted": "the meta row is a nowrap flex row of two fixed 160px items: wider than phones", "expect": ["E_LAYOUT_TRACKS"]}

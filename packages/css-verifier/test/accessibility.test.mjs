@@ -18,7 +18,7 @@ test('accessibility rules are opt-in and listed in the report', () => {
   assert.equal(analyzeLayout(tree, {name: 'Page', css: reset + css, viewport: domain}).accessibility, undefined);
   const report = run(tree, css);
   assert.equal(report.status, 'verified', JSON.stringify(report.diagnostics));
-  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'page-clipped', 'image-fallback-contrast', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'label-pointer', 'bar-covered', 'bar-transparent', 'autofocus']);
+  assert.deepEqual(report.accessibility.rules, ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope', 'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body', 'color-only-state', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'page-clipped', 'image-fallback-contrast', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'label-pointer', 'bar-covered', 'bar-transparent', 'autofocus']);
 });
 
 // accessible-name: a link (or button) needs text that renders, or a name attribute.
@@ -2061,4 +2061,73 @@ test('interactive-role-focusable: items owned by a composite widget (option in a
   assert.ok(run('<div class="s" role="switch" aria-checked="false" aria-label="Wi-Fi"></div>').diagnostics.some(d => d.code === 'E_A11Y_ROLE_FOCUS'));
   // An option outside any listbox is not owned: still reported.
   assert.ok(run('<div class="o" role="option" aria-selected="false">One</div>').diagnostics.some(d => d.code === 'E_A11Y_ROLE_FOCUS'));
+});
+
+test('text-line-obscured: a box over the part of the first line the glyphs must reach (greedy breaking) hides text; beyond that it is not reported', async () => {
+  const {loadTextMetrics} = await import('../src/text-node.mjs');
+  const metrics = await loadTextMetrics({fonts: {Roboto: {file: new URL('../text-metrics/fixtures/roboto-variable.ttf', import.meta.url).pathname}}});
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
+  const contract = metrics.resolveBoxes({'.t': {text: {font, content: 'Your settings were saved to your account'}, wrap: 'normal'}})['.t'];
+  const html = '<html lang="en"><body><main class="m"><div class="b"><p class="t">Your settings were saved to your account</p><button class="c" type="button" aria-label="Close"></button></div></main></body></html>';
+  const css = extra => `*{margin:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.b{position:relative;display:grid;grid-template-columns:minmax(0,1fr);padding:12px;background:#e8f0fe}.t{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;color:#111}.c{position:absolute;top:8px;right:8px;width:32px;height:32px;padding:0;border:0;background:#1a73e8}${extra}`;
+  const run = extra => analyzeHTML(html, {name: 'P', css: css(extra), viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, boxes: {'.t': contract}});
+  const r = run('');
+  const found = r.diagnostics.filter(d => d.code === 'E_A11Y_TEXT_LINE_OBSCURED');
+  assert.ok(found.length, JSON.stringify(r.diagnostics.map(d => d.code)));
+  // Where the one line is too short to reach the button (wide viewports), nothing is reported.
+  assert.ok(found.every(d => d.range.max <= 400), JSON.stringify(found.map(d => d.range)));
+  assert.equal(found[0].range.min, 320);
+  // Room beside the button (padding-right 48px): nothing.
+  assert.ok(!run('.b{padding-right:48px}').diagnostics.some(d => d.code === 'E_A11Y_TEXT_LINE_OBSCURED'));
+});
+
+test('text-line-obscured accepts measured advances with more than six decimals (rounded down, the conservative side)', async () => {
+  const {loadTextMetrics} = await import('../src/text-node.mjs');
+  const metrics = await loadTextMetrics({fonts: {Roboto: {file: new URL('../text-metrics/fixtures/roboto-variable.ttf', import.meta.url).pathname}}});
+  const font = {family: 'Roboto', size: 14, lineHeight: 20, weight: 400};
+  const contract = metrics.resolveBoxes({'.t': {text: {font, content: 'Continue to payment'}, wrap: 'nowrap'}})['.t'];
+  assert.ok(!/^\d+(?:\.\d{1,6})?$/.test(String(contract.textMetrics.width)), 'the advance has more than six decimals');
+  const r = analyzeHTML('<html lang="en"><body><main class="m"><p class="t">Continue to payment</p></main></body></html>', {name: 'P', css: '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.t{font-family:Roboto;font-size:14px;line-height:20px;font-weight:400;color:#111;white-space:nowrap}', viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, boxes: {'.t': contract}});
+  assert.notEqual(r.status, 'unknown', JSON.stringify(r.diagnostics.map(d => d.message)));
+});
+
+test('form-label and interactive-role-focusable from the markup alone when the layout is Unknown', () => {
+  // An img without a reserved height keeps the layout Unknown.
+  const html = inner => `<html lang="en"><body><main class="m"><img class="i" src="/a.jpg" alt="">${inner}</main></body></html>`;
+  const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block;width:100%}';
+  const run = inner => analyzeHTML(html(inner), {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
+  const codes = inner => [...run(inner).diagnostics, ...(run(inner).accessibility?.warnings ?? [])].map(d => d.code);
+  assert.ok(codes('<input type="email">').includes('E_A11Y_LABEL'));
+  assert.ok(codes('<input type="email" placeholder="Email">').includes('W_A11Y_PLACEHOLDER_LABEL'));
+  for (const ok of ['<label for="e">Email</label><input id="e" type="email">', '<label>Email <input type="email"></label>', '<input type="email" aria-label="Email">', '<input type="hidden">', '<input type="submit" value="Go">'])
+    assert.ok(!codes(ok).some(c => ['E_A11Y_LABEL', 'W_A11Y_PLACEHOLDER_LABEL'].includes(c)), ok);
+  assert.ok(codes('<div role="switch" aria-checked="false" aria-label="Wi-Fi"></div>').includes('E_A11Y_ROLE_FOCUS'));
+  assert.ok(!codes('<div role="switch" aria-checked="false" aria-label="Wi-Fi" tabindex="0"></div>').includes('E_A11Y_ROLE_FOCUS'));
+  assert.ok(!codes('<ul role="listbox" aria-label="O"><li role="option" aria-selected="false">One</li></ul>').includes('E_A11Y_ROLE_FOCUS'));
+});
+
+test('a cover over text inside a scroll container: found at the initial scroll position (scroll 0), still Unknown for the other offsets', () => {
+  const html = '<html lang="en"><body><main class="m"><section class="c"><div class="track"><div class="s"><p class="t">Trail shoes</p></div></div><button class="prev" type="button" aria-label="Previous"></button></section></main></body></html>';
+  const css = extra => `*{margin:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.c{position:relative;display:grid;grid-template-columns:minmax(0,1fr)}.track{display:flex;overflow-x:auto}.s{flex:none;width:300px;display:grid;grid-template-columns:minmax(0,1fr);padding:16px}.t{font-size:16px;line-height:24px;color:#000}.prev{position:absolute;top:16px;left:0;width:24px;height:24px;padding:0;border:0;background:#333}${extra}`;
+  const opts = {name: 'P', viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 24}}};
+  const over = analyzeHTML(html, {...opts, css: css('')});
+  const found = over.diagnostics.find(d => d.code === 'E_A11Y_TEXT_START_OBSCURED' && d.box === '.t');
+  assert.ok(found, JSON.stringify(over.diagnostics.map(d => d.code)));
+  assert.match(found.message, /initial scroll position/);
+  assert.ok(over.diagnostics.some(d => d.code === 'U_A11Y_SCROLLED_COVER'), 'other scroll offsets stay Unknown');
+  // A button that does not reach the text start (it sits 4px left of it): no finding.
+  assert.ok(!analyzeHTML(html, {...opts, css: css('.prev{width:12px}')}).diagnostics.some(d => d.code === 'E_A11Y_TEXT_START_OBSCURED'));
+});
+
+test('color-only-state: one sibling set apart from the others only by a low-contrast change of color (WCAG 1.4.1) is a warning', () => {
+  const html = '<html lang="en"><body><main class="m"><ol class="l"><li class="s">Shipping</li><li class="s cur" aria-current="step">Payment</li><li class="s">Review</li></ol></main></body></html>';
+  const css = extra => `*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.l{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:0;list-style:none}.s{display:block;font-size:16px;line-height:24px;color:#616161}.cur{color:#1a73e8}${extra}`;
+  const boxes = {'.s': {minInlineSize: 0, intrinsicBlockSize: 24}};
+  const run = extra => analyzeHTML(html, {name: 'P', css: css(extra), viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, boxes});
+  const has = r => (r.accessibility?.warnings ?? []).some(w => w.code === 'W_A11Y_COLOR_ONLY_STATE' && w.box === '.s.cur');
+  assert.ok(has(run('')), JSON.stringify(run('').accessibility?.warnings?.map(w => w.code)));
+  // Another cue (weight, underline) or a 3:1 contrast between the two colors: no warning.
+  assert.ok(!has(run('.cur{font-weight:700}')));
+  assert.ok(!has(run('.cur{text-decoration:underline}')));
+  assert.ok(!has(run('.s{color:#9e9e9e}.s.cur{color:#000}')));
 });

@@ -1,10 +1,11 @@
 {
   "run": "run-2",
-  "cases": 48,
+  "cases": 52,
   "breaks": 0,
   "caught": 0,
   "missed": 0,
   "silentMisses": 0,
+  "analysisFailures": [],
   "unconfirmedErrors": 0,
   "environment": 14,
   "clean": [
@@ -22,6 +23,7 @@
     "compare-table",
     "dark-banner",
     "date-field",
+    "dismiss-banner",
     "drawer",
     "error-summary",
     "field-error",
@@ -35,6 +37,7 @@
     "modal",
     "news-cards",
     "pagination",
+    "price-plans",
     "price-slider",
     "price-table",
     "pricing-grid",
@@ -43,6 +46,7 @@
     "profile-edit",
     "profile-ok",
     "rating",
+    "recipe-card",
     "rtl-card",
     "search-highlight",
     "search-placeholder",
@@ -52,6 +56,7 @@
     "sticky-header",
     "switch",
     "tabs",
+    "timeline",
     "toast",
     "tooltip",
     "video-bar",
@@ -61,11 +66,11 @@
   "backlog": [
     {
       "reason": "ASSUMPTION: the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul",
-      "count": 48
+      "count": 52
     },
     {
       "reason": "ASSUMPTION: rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked",
-      "count": 48
+      "count": 52
     },
     {
       "reason": "U_A11Y_ARIA_VALUE: .X: a dynamic aria-pressed may be invalid",
@@ -112,6 +117,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -148,6 +154,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .sx-kpve2h [dark@320 dark@375 dark@768 dark@1280]"
@@ -190,6 +197,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -226,6 +234,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -262,6 +271,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -298,6 +308,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -334,6 +345,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .qty [dark@320 dark@375 dark@768 dark@1280]"
@@ -372,6 +384,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -403,6 +416,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -441,6 +455,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -483,6 +498,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -519,6 +535,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -555,6 +572,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -591,6 +609,48 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "1 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "dismiss-banner",
+      "file": "dismiss-banner.jsx",
+      "framework": "stylex",
+      "intent": "A dismissible notice with a close button at its right edge.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_A11Y_NAME",
+          "found": false
+        },
+        {
+          "code": "E_A11Y_TEXT_LINE_OBSCURED",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -627,6 +687,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -663,6 +724,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -699,6 +761,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -735,6 +798,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -771,6 +835,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -811,6 +876,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .heading [dark@320 dark@375 dark@768 dark@1280]",
@@ -851,6 +917,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -886,6 +953,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -922,6 +990,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -958,6 +1027,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .sx-e3mnb2 [dark@320 dark@375 dark@768 dark@1280]"
@@ -996,6 +1066,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1036,6 +1107,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1077,6 +1149,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1099,6 +1172,43 @@
       ]
     },
     {
+      "id": "price-plans",
+      "file": "price-plans.jsx",
+      "framework": "linaria",
+      "intent": "Two plan columns showing monthly and yearly prices.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_LAYOUT_CONTENT",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "price-slider",
       "file": "price-slider.jsx",
       "framework": "linaria",
@@ -1113,6 +1223,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1149,6 +1260,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1185,6 +1297,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .lx-name [dark@320 dark@375 dark@768 dark@1280]",
@@ -1224,6 +1337,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1281,6 +1395,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .title [dark@320 dark@375 dark@768 dark@1280]",
@@ -1320,6 +1435,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1351,6 +1467,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .name [dark@320 dark@375 dark@768 dark@1280]",
@@ -1394,6 +1511,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1415,6 +1533,43 @@
       ]
     },
     {
+      "id": "recipe-card",
+      "file": "recipe-card.svelte",
+      "framework": "svelte",
+      "intent": "A recipe card: photo, title, and cook time with a servings count.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_LAYOUT_TRACKS",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "3 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "rtl-card",
       "file": "rtl-card.jsx",
       "framework": "linaria",
@@ -1429,6 +1584,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1465,6 +1621,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1501,6 +1658,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .label [dark@320 dark@375 dark@768 dark@1280]"
@@ -1539,6 +1697,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1575,6 +1734,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1606,11 +1766,16 @@
         {
           "code": "E_LAYOUT_TRACKS",
           "found": false
+        },
+        {
+          "code": "W_A11Y_COLOR_ONLY_STATE",
+          "found": false
         }
       ],
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1651,6 +1816,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .text [dark@320 dark@375 dark@768 dark@1280]"
@@ -1689,6 +1855,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1725,6 +1892,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1747,6 +1915,43 @@
       ]
     },
     {
+      "id": "timeline",
+      "file": "timeline.vue",
+      "framework": "vue",
+      "intent": "A delivery timeline: a dot and a status line per step.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_A11Y_CONTRAST",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "toast",
       "file": "toast.jsx",
       "framework": "stylex",
@@ -1761,6 +1966,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1797,6 +2003,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1837,6 +2044,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -1873,6 +2081,7 @@
       "caught": [],
       "missed": [],
       "silentMissed": [],
+      "crashed": false,
       "unconfirmed": [],
       "environment": [],
       "notChecked": [

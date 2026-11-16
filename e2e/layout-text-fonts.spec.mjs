@@ -772,3 +772,46 @@ test('justify-self: end on a text grid item: its fit-content box ends at the are
     }
   }
 });
+
+test('text-line-obscured holds only where Chromium has glyphs of the first line under the cover', async ({page}) => {
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
+  const texts = ['Your settings were saved to your account', 'Saved', 'A much longer notice that wraps over several lines on a phone screen'];
+  let reported = 0;
+  for (const content of texts) for (const extra of ['', '.c{right:60px}', '.c{top:30px}', '.b{padding-right:48px}', '.c{width:12px}']) {
+    const html = `<div class="b"><p class="t">${content}</p><button class="c" type="button" aria-label="Close"></button></div>`;
+    const css = `*{margin:0;box-sizing:border-box}html,body{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.b{position:relative;display:grid;grid-template-columns:minmax(0,1fr);padding:12px;background:#e8f0fe}.t{font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400;color:#111}.c{position:absolute;top:8px;right:8px;width:32px;height:32px;padding:0;border:0;background:#1a73e8}${extra}`;
+    const boxes = metrics.resolveBoxes({'.t': {text: {content, font}, wrap: 'normal'}});
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 900, height: {min: 480, max: 900}}, accessibility: true, boxes});
+    const found = report.diagnostics.filter(d => d.code === 'E_A11Y_TEXT_LINE_OBSCURED');
+    for (let width = 320; width <= 900; width += 23) {
+      const holds = found.some(d => (d.range.minInclusive === false ? width > d.range.min : width >= d.range.min) && (d.range.maxInclusive === false ? width < d.range.max : width <= d.range.max));
+      if (!holds) continue;
+      reported++;
+      await page.setViewportSize({width, height: 600});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+      await page.evaluate(() => document.fonts.ready);
+      const hits = await page.evaluate(() => { const t = document.querySelector('.t').firstChild, c = document.querySelector('.c').getBoundingClientRect(); let n = 0; for (let i = 0; i < t.length; i++) { const r = document.createRange(); r.setStart(t, i); r.setEnd(t, i + 1); const g = r.getBoundingClientRect(); if (g.width && g.right > c.left && g.left < c.right && g.bottom > c.top && g.top < c.bottom) n++; } return n; });
+      expect(hits, `${JSON.stringify(content)} ${extra} at ${width}`).toBeGreaterThan(0);
+    }
+  }
+  expect(reported).toBeGreaterThan(3);
+});
+
+test('dynamic-unbounded: with a long value in place of the dynamic text, Chromium overflows the box exactly where the warning holds', async ({page}) => {
+  const {analyzeStates} = await import('../packages/adapter-core/src/index.mjs');
+  const fonts = {Roboto: {file: new URL('roboto-variable.ttf', fixtures).pathname}};
+  const long = 'Bartholomew Montgomery-Fitzwilliam the Third of Somewhere Very Far';
+  for (const [attrs, extra] of [['', ''], ['data-text-max-length="12"', ''], ['', '.name{overflow:hidden;text-overflow:ellipsis}'], ['', '.name{white-space:normal;overflow-wrap:anywhere}'], ['data-text-one-line', '.name{white-space:normal}']]) {
+    const css = `.c{display:grid;grid-template-columns:200px}.name{display:block;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;color:#000;white-space:nowrap}${extra}`;
+    const result = analyzeStates({states: [{html: `<div class="c"><span class="name" ${attrs}>…</span></div>`, choices: {}}], css}, {pageCSS: '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}', viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, assumeText: true, textMetrics: metrics, fonts});
+    const warned = result.findings.some(f => f.code === 'W_TEXT_DYNAMIC_UNBOUNDED');
+    await page.setViewportSize({width: 400, height: 400});
+    // A bounded value is rendered within its bound (12 characters). data-text-one-line states an expectation the CSS
+    // does not enforce (rendered as the CSS says, it wraps): the warning there is about the unchecked expectation.
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${face}*{box-sizing:border-box;margin:0}${css}</style></head><body><div class="c"><span class="name">${attrs.includes('max-length') ? long.slice(0, 12) : long}</span></div></body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const runsPast = await page.evaluate(() => { const e = document.querySelector('.name'), s = getComputedStyle(e); const r = document.createRange(); r.selectNodeContents(e); const visible = !['hidden', 'clip'].includes(s.overflowX); return visible && r.getBoundingClientRect().right > e.getBoundingClientRect().right + 0.5; });
+    if (attrs === 'data-text-one-line') { expect(warned, 'one-line expectation without a bound').toBe(true); continue; }
+    expect(warned, `${attrs} ${extra}`).toBe(runsPast);
+  }
+});
