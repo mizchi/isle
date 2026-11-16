@@ -1,6 +1,6 @@
 {
   "run": "run-1",
-  "cases": 57,
+  "cases": 58,
   "breaks": 3,
   "caught": 3,
   "missed": 0,
@@ -55,6 +55,7 @@
     "sort-header",
     "status-badge",
     "steps",
+    "sticky-dropdown",
     "sticky-header",
     "switch",
     "tabs",
@@ -69,11 +70,11 @@
   "backlog": [
     {
       "reason": "ASSUMPTION: the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul",
-      "count": 57
+      "count": 58
     },
     {
       "reason": "ASSUMPTION: rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked",
-      "count": 57
+      "count": 58
     },
     {
       "reason": "U_A11Y_ARIA_VALUE: .X: a dynamic aria-pressed may be invalid",
@@ -1970,6 +1971,47 @@
       "warnings": 0,
       "assumptions": [
         "3 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "sticky-dropdown",
+      "file": "sticky-dropdown.svelte",
+      "framework": "svelte",
+      "intent": "A sticky header with an account dropdown that should open over the page.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_A11Y_OCCLUDED",
+          "found": false
+        },
+        {
+          "code": "E_A11Y_TEXT_START_OBSCURED",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "4 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
