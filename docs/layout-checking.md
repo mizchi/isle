@@ -319,7 +319,7 @@ inset がどちらも auto の absolute の箱は、静的位置に置かれる�
 
 flex の行の item で、`flex-basis` が auto(か content)で幅が auto、`min-width` が auto、スクロールコンテナでないものは、同じ寄与の計算で、max-content の幅を flex の基準の大きさ、min-content の幅を自動の最小とする(Flexbox §9.2、§4.5)。中身のない item は padding と border の幅になる。中身の幅が分からない場合(契約のないテキストなど)は Unknown のまま。
 
-`flex-basis` が % の item は、縮まない(`flex-shrink: 0`)なら、伸びるもの(`flex: 1 0 30%`)も含めて、容器の内容幅の割合(viewport の一次式)を基準の大きさにする。margin と content-box の edges も足す。折り返す行(`flex-wrap: wrap`)では、行の分け方もその一次式で決まるので、幅のしきい値で分かれる(4 つの `flex: 1 0 30%` と 16px の gap で、内容幅 320px 以上なら 1 行に 3 つ)。縮む % の item は、自動の最小サイズが要るので Unknown のまま。Chromium と矩形を比べた(`e2e/layout-flex.spec.mjs`)。
+`flex-basis` が % の item は、縮まない(`flex-shrink: 0`)なら、伸びるもの(`flex: 1 0 30%`)も含めて、容器の内容幅の割合(viewport の一次式)を基準の大きさにする。margin と content-box の edges も足す。折り返す行(`flex-wrap: wrap`)では、行の分け方もその一次式で決まるので、幅のしきい値で分かれる(4 つの `flex: 1 0 30%` と 16px の gap で、内容幅 320px 以上なら 1 行に 3 つ)。縮む % の item(`flex: 1 1 30%`)は、明示した `min-width`(0 か px)まで縮む。縮み方の重み(shrink × 内側の基準の大きさ)は、縮む item の内側の大きさがどれも同じ内容幅の割合(padding・border・margin なし)のときだけ一定なので、そのときだけ解く。padding のある % の item や、一緒に縮む px の item が混ざると重みが幅で変わるので Unknown。`min-width: auto` の % の item も、自動の最小サイズが要るので Unknown のまま。Chromium と矩形を比べた(`e2e/layout-flex.spec.mjs`)。
 
 `aspect-ratio` を持ち、高さが px で幅が auto の grid の item(と block flow の子)は、伸ばされない。`justify-self: normal` はこの item では start として働き、幅は比から決まる(Grid §6.2。box-sizing の箱に比を当てる。測った)。`justify-self: stretch` と column の flex の item は伸びる。高さが % の場合は Unknown のまま(Chromium の循環する % の解決はモデル化していない)。
 

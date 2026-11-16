@@ -101,8 +101,9 @@ export function flexItem(style, { empty = false, axis = 'inline', contentSizes }
   // constant sizes here. (A full-width slide: flex: 0 0 100% in a scrolling row.)
   // A percentage basis on an item that does not shrink (flex: 0 0 P%, or growing: 1 0 P%) on a row: its base is P% of
   // the container's content width, an affine size the engine supplies (percentBasis); its minimum is checked there
-  // (it never goes below the base). A shrinking one would need its automatic minimum: Unknown.
-  else if (/^\d+(?:\.\d+)?%$/.test(String(basis)) && axis === 'inline' && cmp(shrink, q(0)) === 0 && style[n.size] === 'auto' && style['max-inline-size'] === 'none') {
+  // (it never goes below the base). A shrinking one (flex: 1 1 P%) needs an explicit min-width (0 or px) to shrink to;
+  // with min-width auto its automatic minimum comes from its content: Unknown.
+  else if (/^\d+(?:\.\d+)?%$/.test(String(basis)) && axis === 'inline' && (cmp(shrink, q(0)) === 0 || style[n.min] !== 'auto') && style[n.size] === 'auto' && style['max-inline-size'] === 'none') {
     const item = { grow, shrink, edges: own, autoStart, autoEnd, automaticBelowBase: false, base: q(0), percentBasis: div(q(String(basis).slice(0, -1)), q(100)), contentBox };
     if (style[n.min] !== 'auto') item.minimum = outer(px(style[n.min]), own, contentBox);
     else if (!automatic) item.minimum = own;

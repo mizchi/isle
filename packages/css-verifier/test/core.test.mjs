@@ -144,3 +144,11 @@ test('a fixed box trapped by an ancestor is also a warning (W_LAYOUT_FIXED_TRAPP
   assert.equal(w.ancestor, '.bar');
   assert.match(w.message, /backdrop-filter: blur\(8px\)/);
 });
+
+test('shrinking percentage flex bases: shares of one width are modeled; padding or a shrinking px item beside them is Unknown', () => {
+  const run = css => analyzeHTML('<div class="n"><div class="b"></div><div class="b"></div><div class="c"></div></div>', {name: 'P', css: `*{box-sizing:border-box;margin:0}.n{display:flex;column-gap:8px}.b{flex:1 1 50%;min-width:0;height:10px}.c{flex:0 0 120px;height:10px}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}}).status;
+  assert.equal(run(''), 'verified');
+  assert.equal(run('.b{padding:0 6px}'), 'unknown'); // inner = 50% − 12px: weights vary with the width
+  assert.equal(run('.c{flex:0 1 120px}'), 'unknown'); // a px item shrinks with them
+  assert.equal(run('.b{min-width:auto}'), 'unknown'); // the automatic minimum needs the content
+});
