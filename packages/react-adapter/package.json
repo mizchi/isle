@@ -4,8 +4,27 @@
   "private": true,
   "type": "module",
   "description": "React (JSX) adapter for @mizchi/css-verifier with StyleX and Linaria style resolution: JSX branches as states.",
-  "exports": {".": {"import": "./src/index.mjs"}},
-  "dependencies": {"@mizchi/css-verifier-adapter-core": "workspace:*", "@babel/parser": "7.29.12", "postcss": "8.5.32"},
-  "devDependencies": {"react": "19.1.10", "react-dom": "19.1.10", "@stylexjs/stylex": "0.19.1", "@stylexjs/babel-plugin": "0.19.1", "esbuild": "0.28.2"},
-  "scripts": {"test": "node --test test/*.test.mjs"}
+  "exports": {
+    ".": {
+      "import": "./src/index.mjs"
+    }
+  },
+  "dependencies": {
+    "@babel/parser": "7.29.12",
+    "@mizchi/css-verifier-adapter-core": "workspace:*",
+    "postcss": "8.5.32"
+  },
+  "devDependencies": {
+    "@linaria/core": "8.2.0",
+    "@linaria/react": "8.2.0",
+    "@stylexjs/babel-plugin": "0.19.1",
+    "@stylexjs/stylex": "0.19.1",
+    "@wyw-in-js/transform": "2.4.0",
+    "esbuild": "0.28.2",
+    "react": "19.1.10",
+    "react-dom": "19.1.10"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  }
 }

@@ -1,6 +1,5 @@
 // The real thing, for fidelity checks: StyleX's own compiler (atomic classes and CSS), esbuild's JSX transform,
-// and react-dom/server's markup. Linaria's css`` / styled`` are replaced the way its build does (a class per
-// template, the template as that class's rule, nesting kept for the browser's native CSS nesting).
+// and react-dom/server's markup. Linaria is compiled by its own build (wyw-in-js).
 import {createRequire} from 'node:module';
 import {mkdtempSync, writeFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -20,18 +19,21 @@ export function compileStylex(source, filename = 'Component.jsx') {
   return {code: out.code, css: plugin.processStylexRules(out.metadata.stylex, false)};
 }
 
-export function compileLinaria(source) {
-  let css = '';
-  const code = source.replace(/import[^;]*@linaria\/[^;]*;\n?/g, '').replace(/^/, "const cx = (...a) => a.filter(Boolean).join(' ');\n")
-    .replace(/const (\w+) = css`([^`]*)`;/g, (m, name, body) => { css += `.lx-${name}{${body}}\n`; return `const ${name} = 'lx-${name}';`; })
-    .replace(/const (\w+) = styled\.(\w+)`([^`]*)`;/g, (m, name, tag, body) => { css += `.lx-${name}{${body}}\n`; return `const ${name} = (props) => React.createElement('${tag}', {...props, className: ['lx-${name}', props.className].filter(Boolean).join(' ')});`; });
-  return {code: `import React from 'react';\n${code}`, css};
+// Linaria's own build (wyw-in-js): it evaluates the templates' interpolations from the module, writes each class's
+// CSS and replaces css`` with the class name and styled`` with @linaria/react's runtime component.
+export async function compileLinaria(source, filename = 'Component.jsx') {
+  const {transform: wyw, TransformCacheCollection} = await import('@wyw-in-js/transform');
+  const file = join(dir, filename);
+  writeFileSync(file, source);
+  const asyncResolve = async (what, importer) => require.resolve(what, {paths: [importer.replace(/[\\/][^\\/]*$/, ''), fileURLToPath(new URL('.', import.meta.url))]});
+  const result = await wyw({options: {filename: file, root: fileURLToPath(new URL('..', import.meta.url)), pluginOptions: {babelOptions: {plugins: [require.resolve('@babel/plugin-syntax-jsx', {paths: [require.resolve('@wyw-in-js/transform')]})]}}}, cache: new TransformCacheCollection()}, source, asyncResolve);
+  return {code: result.code, css: result.cssText};
 }
 
 export async function render(code, props) {
   const {code: js} = await transform(code, {loader: 'jsx', jsx: 'automatic', format: 'esm'});
   const file = join(dir, `c${n++}.mjs`);
-  writeFileSync(file, js.replace(/from ['"]@stylexjs\/stylex['"]/, `from '${pathToFileURL(require.resolve('@stylexjs/stylex')).href}'`).replace(/from ['"]react(\/jsx-runtime)?['"]/g, (m, sub) => `from '${pathToFileURL(require.resolve(`react${sub ?? ''}`)).href}'`));
+  writeFileSync(file, js.replace(/from ['"](@linaria\/(?:core|react))['"]/g, (m, name) => `from '${pathToFileURL(require.resolve(name)).href}'`).replace(/from ['"]@stylexjs\/stylex['"]/, `from '${pathToFileURL(require.resolve('@stylexjs/stylex')).href}'`).replace(/from ['"]react(\/jsx-runtime)?['"]/g, (m, sub) => `from '${pathToFileURL(require.resolve(`react${sub ?? ''}`)).href}'`));
   const Component = (await import(pathToFileURL(file).href)).default;
   return renderToStaticMarkup(createElement(Component, props));
 }

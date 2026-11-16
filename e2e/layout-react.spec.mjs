@@ -14,7 +14,7 @@ const n = t => { const [a, b = '1'] = String(t ?? '0').split('/'); return Number
 
 for (const [file, compile] of [['StylexCard.jsx', compileStylex], ['LinariaCard.jsx', compileLinaria]]) {
   test(`${file}: every state's boxes (position and size) agree with Chromium on the real styles`, async ({page}) => {
-    const source = fixture(file), {code, css} = compile(source);
+    const source = fixture(file), {code, css} = await compile(source);
     const report = analyzeReact(source, {pageCSS, viewport});
     let compared = 0;
     for (const width of [360, 700]) {
@@ -33,3 +33,32 @@ for (const [file, compile] of [['StylexCard.jsx', compileStylex], ['LinariaCard.
     expect(compared).toBeGreaterThan(20);
   });
 }
+
+test('LinariaSettings.jsx (interpolated constants and class references): the findings per state agree with the real Linaria build in Chromium', async ({page}) => {
+  test.setTimeout(300_000);
+  const source = fixture('LinariaSettings.jsx'), {code, css} = await compileLinaria(source);
+  const css18 = pageCSS + 'body{font-size:18px}';
+  const report = analyzeReact(source, {pageCSS: css18, viewport, accessibility: true, integrity: true, eachCounts: [2], scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], boxes: {'.lx-title': {minInlineSize: 40, intrinsicBlockSize: 24}}});
+  const holds = (code, box, choices) => report.findings.some(f => f.code === code && f.box === box && f.states.includes(choices));
+  await page.setViewportSize({width: 400, height: 300});
+  let checked = 0;
+  for (const state of report.states) {
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css18}${css}.tall{height:2000px}</style></head><body>${await render(code, propsOf(state.choices))}<div class="tall"></div></body></html>`);
+    // The hidden checkbox: Tab from the start never reaches it.
+    const order = [];
+    for (let i = 0; i < 3; i++) { await page.keyboard.press('Tab'); order.push(await page.evaluate(() => document.activeElement?.tagName.toLowerCase() + ':' + (document.activeElement?.getAttribute('aria-label') ?? document.activeElement?.type ?? ''))); }
+    const reachesBox = order.some(o => o === 'input:checkbox');
+    expect(holds('E_A11Y_CONTROL_HIDDEN', '.lx-box.lx-hidden', state.choices), `${JSON.stringify(state.choices)} tab ${order}`).toBe(!reachesBox);
+    // The buttons keep the UA font size against the 18px page.
+    const [button, page18] = await page.evaluate(() => [getComputedStyle(document.querySelector('[aria-label="Reset"]')).fontSize, getComputedStyle(document.querySelector('main')).fontSize]);
+    expect(holds('W_LAYOUT_CONTROL_FONT', '.lx-reset', state.choices)).toBe(button !== page18);
+    // The interpolated width: 96px with or without the inert grid-column.
+    expect(await page.evaluate(() => document.querySelector('[aria-label="Save"]').getBoundingClientRect().width)).toBe(96);
+    // The sticky table head inside overflow-x: auto scrolls away with the page.
+    const top = await page.evaluate(async () => { scrollTo(0, 300); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); return document.querySelector('main > div:last-child > div').getBoundingClientRect().top; });
+    expect(holds('W_LAYOUT_STICKY_SCROLLER', '.lx-thead', state.choices)).toBe(top < 0);
+    checked++;
+  }
+  expect(checked).toBe(8);
+});
+

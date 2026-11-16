@@ -80,20 +80,47 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
   const choice = (node, value) => { const { key, negate } = conditionKey(text(node)); return choose(key, value !== negate); };
 
   // Module-level styles: stylex.create objects, Linaria css`` classes and styled components.
-  const stylex = new Map(), linaria = new Map(), styled = new Map(), cssText = [];
+  const stylex = new Map(), linaria = new Map(), styled = new Map(), constants = new Map(), cssText = [];
   for (const stmt of ast.program.body) {
     const decls = stmt.type === 'VariableDeclaration' ? stmt.declarations : stmt.type === 'ExportNamedDeclaration' && stmt.declaration?.type === 'VariableDeclaration' ? stmt.declaration.declarations : [];
     for (const d of decls) {
       const init = d.init, name = d.id?.name;
       if (!init || !name) continue;
+      // A module-level constant (a string, number or object of them) that Linaria templates may interpolate.
+      if (stmt.kind === 'const' || stmt.declaration?.kind === 'const') { const value = literal(init); if (value !== undefined && value !== null) constants.set(name, value); }
       if (init.type === 'CallExpression' && text(init.callee) === 'stylex.create') {
         const value = literal(init.arguments[0]);
         if (value === undefined) { unknown('U_STYLEX_DYNAMIC', `stylex.create for ${name} is not a static literal`); continue; }
         stylex.set(name, value);
       } else if (init.type === 'TaggedTemplateExpression' && (text(init.tag) === 'css' || /^styled\.\w+$/.test(text(init.tag)) || (init.tag.type === 'CallExpression' && text(init.tag.callee) === 'styled'))) {
-        if (init.quasi.expressions.length) { unknown('U_LINARIA_INTERPOLATION', `${name}: interpolations in a Linaria template are not evaluated`); continue; }
+        // Interpolations Linaria evaluates at build time from the module: constants (strings, numbers, object
+        // members), a css`` class (its bare name, as Linaria inserts it) and a styled component (.its-class). Others
+        // (functions of props, imports) are Unknown.
+        const evaluate = node => {
+          if (node.type === 'Identifier') {
+            if (constants.has(node.name) && ['string', 'number'].includes(typeof constants.get(node.name))) return String(constants.get(node.name));
+            if (linaria.has(node.name)) return linaria.get(node.name);
+            if (styled.has(node.name)) return `.${styled.get(node.name).className}`;
+            return undefined;
+          }
+          if (node.type === 'MemberExpression') {
+            const path = [];
+            let n = node;
+            while (n.type === 'MemberExpression') { const key = !n.computed ? n.property.name : n.property.type === 'StringLiteral' || n.property.type === 'NumericLiteral' ? n.property.value : undefined; if (key === undefined) return undefined; path.unshift(key); n = n.object; }
+            if (n.type !== 'Identifier' || !constants.has(n.name)) return undefined;
+            let value = constants.get(n.name);
+            for (const key of path) { if (value === null || typeof value !== 'object' || !Object.hasOwn(value, key)) return undefined; value = value[key]; }
+            return ['string', 'number'].includes(typeof value) ? String(value) : undefined;
+          }
+          const value = literal(node);
+          return ['string', 'number'].includes(typeof value) ? String(value) : undefined;
+        };
+        const parts = init.quasi.expressions.map(evaluate);
+        const failed = init.quasi.expressions.find((e, i) => parts[i] === undefined);
+        if (failed) { unknown('U_LINARIA_INTERPOLATION', `${name}: the interpolation \${${text(failed)}} in a Linaria template is not a module constant or class`); continue; }
+        const body = init.quasi.quasis.map((q, i) => q.value.cooked + (parts[i] ?? '')).join('');
         const className = `lx-${name}`;
-        cssText.push(linariaRules(className, init.quasi.quasis[0].value.cooked));
+        cssText.push(linariaRules(className, body));
         if (text(init.tag) === 'css') linaria.set(name, className);
         else styled.set(name, { tag: init.tag.type === 'MemberExpression' ? init.tag.property.name : literal(init.tag.arguments[0]), className });
       }

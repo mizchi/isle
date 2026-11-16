@@ -39,10 +39,12 @@ test('Linaria: css`` and styled classes, cx() conditions and nesting; markup equ
   assert.deepEqual(unknowns, []);
   assert.match(css, /\.lx-panel\.active\{background:#eef\}/);
   assert.match(css, /@media \(min-width: 600px\)\{\.lx-panel\{height:80px\}\}/);
-  const {code} = compileLinaria(source);
+  const {code} = await compileLinaria(source);
   // Attribute order and class order do not change what the CSS matches.
   const canon = html => html.replace(/<(\w+)((?:\s+[\w-]+(?:="[^"]*")?)*)\s*>/g, (m, tag, attrs) => `<${tag}${[...attrs.matchAll(/\s+([\w-]+)(?:="([^"]*)")?/g)].map(([, k, v]) => k === 'class' ? ` class="${v.split(' ').sort().join(' ')}"` : ` ${k}${v === undefined ? '' : `="${v}"`}`).sort().join('')}>`);
-  for (const s of states) assert.equal(canon(await render(code, propsOf(s.choices))), canon(s.html), JSON.stringify(s.choices));
+  // Linaria's build hashes class names (ours are lx-name): generated classes compare as '#', literal ones as themselves.
+  const generated = html => html.replace(/class="([^"]*)"/g, (m, list) => `class="${list.split(' ').map(c => /^lx-/.test(c) || /^[a-z][a-z0-9]{6,8}$/.test(c) && c !== 'active' ? '#' : c).join(' ')}"`);
+  for (const s of states) assert.equal(canon(generated(await render(code, propsOf(s.choices)))), canon(generated(s.html)), JSON.stringify(s.choices));
   const report = analyzeReact(source, {pageCSS, viewport, selectors: true});
   assert.deepEqual(report.states.filter(s => s.report.status === 'violated').map(s => s.choices.big), report.states.filter(s => s.report.status === 'violated').map(() => true));
 });
@@ -68,4 +70,17 @@ test('SVG props: camelCase presentation props become the attributes react-dom re
   assert.deepEqual(unknowns, []);
   const canon = html => html.replace(/<(\w+)((?:\s+[\w:-]+(?:="[^"]*")?)*)\s*\/?>/g, (m, tag, attrs) => `<${tag}${[...attrs.matchAll(/\s+([\w:-]+)(?:="([^"]*)")?/g)].map(([, k, v]) => ` ${k}${v === undefined ? '' : `="${v}"`}`).sort().join('')}>`).replace(/<\/path>/g, '');
   for (const s of states) assert.equal(canon(await render(source, propsOf(s.choices))), canon(s.html), JSON.stringify(s.choices));
+});
+
+test('Linaria interpolations: module constants, object members and class references are evaluated like its build', async () => {
+  const source = fixture('LinariaSettings.jsx'), {states, unknowns, css} = expandReact(source);
+  assert.deepEqual(unknowns, []);
+  assert.match(css, /\.lx-page\{[^}]*row-gap:8px;background:#fff;color:#111\}/);
+  assert.match(css, /\.lx-Save\{[^}]*width:96px;height:40px;background:#246\}/);
+  assert.match(css, /\.lx-wrap > \.lx-row\{color:#111\}/);
+  // The real build gives the same declarations.
+  const real = await compileLinaria(source);
+  for (const decl of ['row-gap:8px', 'width:96px', 'background:#246', 'color:#111']) assert.ok(real.css.includes(decl), decl);
+  // A function of props, or an imported value, is not evaluated: Unknown.
+  assert.ok(expandReact("import { css } from '@linaria/core';\nimport { size } from './tokens';\nconst a = css`width: ${size};`;\nexport default function A() { return <div className={a} />; }").unknowns.some(u => u.code === 'U_LINARIA_INTERPOLATION'));
 });

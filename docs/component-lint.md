@@ -54,6 +54,10 @@ error が 1 件でもあれば終了コードは 1 です。
 <span class="name" data-text-one-line data-text-max-length="20">{user.name}</span>
 ```
 
+## Linaria
+
+`css`` ` と `styled.tag`` ` のテンプレートの補間は、Linaria のビルド(wyw-in-js)と同じように、モジュールの中で静的に決まるものを評価する。モジュールの `const` の文字列・数値、`const` のオブジェクトのメンバー(`${theme.colors.accent}`)、ほかの `css`` ` のクラス(クラス名そのもの。セレクタでは `.${row}` と書く)、styled のコンポーネント(`.クラス`)。props の関数や import した値は Unknown にする。`react-adapter/fixtures/LinariaSettings.jsx` は、Svelte の `Settings.svelte` と同じ検査(隠れたチェックボックス、コントロールのフォント、効かない grid-column、スクロールコンテナの中の sticky)を、実際の Linaria のビルドと react-dom/server の描画で Chromium と照合する(`e2e/layout-react.spec.mjs`)。
+
 ## 状態とソース行
 
 - 状態はテンプレートの分岐で決まります。Svelte の `{#if}` / `class:`、Vue の `v-if` / `v-show` / `:class`、JSX の `&&` / 三項演算子 / `cx()` / `stylex.props()` が分岐になります。同じ要素が複数のクラスの組み合わせで出す検出は 1 件にまとめ、状態の表示（`[compact=false]` など）にはすべての状態に共通する条件だけを出します。
