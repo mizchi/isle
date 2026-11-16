@@ -154,3 +154,16 @@ test('lint: an analysis that failed with an internal error is a warning that nam
   assert.match(m.message, /the checker failed/);
   assert.match(m.fix, /report/);
 });
+
+test('lint: WAI-ARIA conformance errors no rendering can confirm are a separate "spec" tier of warnings', () => {
+  const f = (code, message) => ({code, path: 'C/0/0', box: '.sw', severity: 'error', message, states: [{}], html: '<div class="sw"></div>'});
+  const result = {states: [{choices: {}, report: {diagnostics: []}}], unknowns: [], coverage: {assumptions: []}, findings: [f('E_A11Y_ROLE_ATTR', '.sw has role switch without aria-checked'), f('E_A11Y_ARIA_VALUE', '.sw has aria-checked="yes", not a valid value')]};
+  const out = lint(result, {file: 'S.jsx'});
+  for (const code of ['E_A11Y_ROLE_ATTR', 'E_A11Y_ARIA_VALUE']) {
+    const m = out.find(m => m.code === code);
+    assert.equal(m.severity, 'warning', code);
+    assert.equal(m.tier, 'spec');
+    assert.match(m.message, /^spec:/);
+    assert.ok(m.fix);
+  }
+});

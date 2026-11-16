@@ -94,3 +94,15 @@ export default function C() { return <main {...stylex.props(s.a)} />; }`;
   const r = analyzeReact(src, {pageCSS: '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}', viewport: {min: 320, max: 800}});
   assert.ok(!r.states.some(s => s.report.diagnostics.some(d => d.code === 'E_CSS_SHORTHAND_CONFLICT')));
 });
+
+test('Linaria: a template literal joining classes with spaces is their class list; a class glued to text stays Unknown', () => {
+  const source = `import { css } from '@linaria/core';
+const bar = css\`height: 4px;\`;
+const on = css\`background: red;\`;
+export default function M({active}) { return <div><span className={\`\${bar} \${active ? on : ''} wide\`}></span><span className={\`btn-\${bar}\`}></span></div>; }`;
+  const {states, unknowns} = expandReact(source);
+  assert.equal(states.length, 2);
+  const lists = states.map(s => /<span class="([^"]*)"/.exec(s.html)[1].split(' ').length).sort();
+  assert.deepEqual(lists, [2, 3]);
+  assert.deepEqual(unknowns.map(u => u.code), ['U_REACT_DYNAMIC_CLASS']);
+});

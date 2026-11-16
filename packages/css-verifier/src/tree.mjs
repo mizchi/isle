@@ -135,7 +135,7 @@ export function normalizeTree(tree,name) {
       box.children=input.runs.map(run=>typeof run==='number' ? box.children[run] : {tag:'#anonymous',classes:[],anonymous:true,text:true,textContent:run,children:[],path:`${path}/t${k}`,label:`${box.label}::text(${k++})`,owner:box.owner});
       box.anonymousRuns=k; box.text=false;
     }
-    if(box.text && box.children.length) unknown('U_LAYOUT_STRUCTURE','Wrap text in an explicit leaf instead of creating anonymous grid items');
+    if(box.text && box.children.length) unknown('U_LAYOUT_STRUCTURE',`${box.label} mixes text with child elements: wrap the text in its own element (a span) so it is not an anonymous box (anonymous flex, grid and block boxes beside elements are not modeled)`);
     return box;
   }
   const root=visit(tree,undefined,0,0);

@@ -1,0 +1,1 @@
+{"framework": "vue", "intent": "A notification list: avatar, one-line title and a timestamp per row.", "planted": "the title track is 1fr (its minimum is the nowrap title's width), so a long title widens the row past the viewport instead of truncating", "expect": ["E_LAYOUT_TRACKS"]}

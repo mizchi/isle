@@ -686,7 +686,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // (A grid's justify-items other than normal/stretch is Unknown for its items, checked with the item's alignment.)
     const stretchedField = (textField || rangeLike) && available.gridItem && !available.blockFlowChild && style['inline-size'] === 'auto'
       && ['auto', 'normal', 'stretch'].includes(String(style['justify-self'] ?? 'auto'));
-    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'svg', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || (style['inline-size']==='auto' && !stretchedField) || (block && style['block-size']==='auto' && !(['img', 'video', 'iframe', 'svg'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
+    // A replaced element or field in a flex row with a px flex-basis and a non-auto min-width: the flex algorithm
+    // sizes its main axis from those alone (its intrinsic width is neither its base size nor its automatic minimum).
+    const flexSized = (textField || rangeLike) && available.flexItem?.main === 'inline' && available.inline && /^\d+(?:\.\d+)?px$/.test(String(style['flex-basis']))
+      && /^\d+(?:\.\d+)?px$|^0$/.test(String(style['min-inline-size']));
+    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'svg', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || (style['inline-size']==='auto' && !stretchedField && !flexSized) || (block && style['block-size']==='auto' && !(['img', 'video', 'iframe', 'svg'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
     // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
     // A closed popover that author CSS displays keeps the UA [popover] { position: fixed; inset: 0; margin: auto }:

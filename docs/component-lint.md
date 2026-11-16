@@ -39,6 +39,7 @@ error が 1 件でもあれば終了コードは 1 です。
 - **error**：ブラウザーで実際に壊れるもの。はみ出し（`E_LAYOUT_ITEM_SIZE`、`E_LAYOUT_PAGE_OVERFLOW`、`E_LAYOUT_TRACKS`、`E_LAYOUT_CONTENT`）、画像の領域未確保、名前のないコントロール、コントラスト不足、覆われたコントロール、小さすぎるターゲット、フォーカス表示の消失。
 - **warning**：バグの可能性が高いもの。効かない宣言、inset のない sticky、`100vw` とスクロールバー、固定 line-height、固定高さのテキスト、RTL での物理方向、セレクタとテンプレートの不一致など。
 - **info**：検査しなかったもの（Unknown）と、置いた仮定。Unknown を合格として扱うことはありません。
+- spec 層: WAI-ARIA / HTML の仕様違反のうち、マークアップだけで決まり描画には現れないもの(role の必須属性の欠落、不正な ARIA 属性・値、存在しない id への参照、id の重複、role の親子関係、入れ子の操作要素、ul/dl の子、th の scope など。一覧は `specRules`)。描画からは確かめられないので、recommended の error とは分けて warning にし、`tier: 'spec'` を付ける。メッセージは「spec:」で始まる。
 - recommended に含まれないルールの検出も、info として残す(「outside the recommended rules」)。解析が中に入らなかった箱(grid でも flex でもない container の `E_LAYOUT_CONTAINER`)は、「not checked」として、その箱と中身が検査されていないことを示す。検出が黙って消えることはない。
 - ページ全体についてのルール(h1、main ランドマーク、スキップリンク、ランドマーク外のテキスト)は、コンポーネントには当てはまらないので出さない(API の `page: true` で出す)。
 
@@ -61,6 +62,8 @@ error が 1 件でもあれば終了コードは 1 です。
 ## Linaria
 
 `css`` ` と `styled.tag`` ` のテンプレートの補間は、Linaria のビルド(wyw-in-js)と同じように、モジュールの中で静的に決まるものを評価する。モジュールの `const` の文字列・数値、`const` のオブジェクトのメンバー(`${theme.colors.accent}`)、ほかの `css`` ` のクラス(クラス名そのもの。セレクタでは `.${row}` と書く)、styled のコンポーネント(`.クラス`)。props の関数や import した値は Unknown にする。`react-adapter/fixtures/LinariaSettings.jsx` は、Svelte の `Settings.svelte` と同じ検査(隠れたチェックボックス、コントロールのフォント、効かない grid-column、スクロールコンテナの中の sticky)を、実際の Linaria のビルドと react-dom/server の描画で Chromium と照合する(`e2e/layout-react.spec.mjs`)。
+
+className のテンプレートリテラルは、補間が空白で区切られていれば(`` `${bar} ${active ? on : ''} wide` ``)、それぞれのクラスの並びとして展開する。`` `btn-${size}` `` のように文字とつながった補間はクラス名を作るので Unknown にする。
 
 ## 状態とソース行
 
@@ -88,7 +91,7 @@ error が 1 件でもあれば終了コードは 1 です。
 - 中身がテキストだけの、1 列(`minmax(0, 1fr)`)の grid の container は、block のテキストの葉として扱う(Chromium で照合した)。
 - grid item の justify-self(と grid の justify-items)の start、center、end。px の幅の item と、幅が auto のテキストの葉(fit-content の幅)を、area の空きの割合だけずらす。Chromium と同じく、はみ出す場合もずらす(unsafe)。
 - `rem` の margin、padding、幅、gap(既定のフォントサイズの仮定のもとで px に直す)。
-- 既定の appearance のテキスト入力欄(text 系の input と textarea)。padding と border を 4 辺とも指定していれば、`appearance: none` でなくても同じ箱になる(測った)。UA の `display: inline-block`、`box-sizing: content-box`(search は border-box)、最小寸法 0 もモデル化した。
+- 既定の appearance のテキスト入力欄(text 系の input と textarea)。padding と border を 4 辺とも指定していれば、`appearance: none` でなくても同じ箱になる(測った)。UA の `display: inline-block`、`box-sizing: content-box`(search は border-box)、最小寸法 0 もモデル化した。 幅が auto でも、grid の項目として伸ばされるもの、flex の行の項目で `flex-basis` が px かつ `min-width` が auto でないもの(`flex: 1 1 120px; min-width: 0`)は、固有の幅を使わないので検査する(Chromium と照合した)。
 - grid item の block 軸の自己整列(`align-items` / `align-self` の start、center、end と、その flex-*/self-* の別名)。item は自分の高さを保ち、area の空きのその割合だけずれる(Chromium と照合した)。baseline は Unknown。
 - h1–h6 と th のテキストは、UA の `font-weight: bold`(700)として測る。strong/b は親に対する `bolder` なので、author が太さを書くまで Unknown。
 - 子が 1 つの block container(`<li><a>…</a></li>`)は、子が `display: inline` のときだけテキストの葉として扱う。`nav > a { display: block }` の a は block の子になる。

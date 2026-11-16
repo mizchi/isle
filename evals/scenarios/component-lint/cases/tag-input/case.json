@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "A tag input: removable tag chips followed by a text entry.", "planted": "the remove buttons are empty (no text, no aria-label) and the entry is named only by its placeholder", "expect": ["E_A11Y_NAME", "W_A11Y_PLACEHOLDER_LABEL"]}

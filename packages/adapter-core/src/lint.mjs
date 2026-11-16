@@ -97,6 +97,32 @@ const nodeAt = (html, path) => {
 };
 const lineAt = (html, path) => { const line = nodeAt(html, path)?.attrs?.find(a => a.name === 'data-src-line')?.value; return line ? Number(line) : undefined; };
 // A fix that depends on the element: a table's columns are sized by its cells, not by grid tracks.
+// The spec tier: WAI-ARIA / HTML conformance errors in the markup alone. No rendering shows them (Chromium draws a
+// switch without aria-checked like any other), so no browser oracle confirms them: they are warnings tagged
+// tier: 'spec', separate from the recommended rules' errors, and their message says so.
+export const specRules = {
+  E_A11Y_ROLE: 'use a WAI-ARIA role (or remove the role attribute)',
+  E_A11Y_ROLE_ATTR: 'add the attribute the role requires (a switch needs aria-checked, a slider aria-valuenow)',
+  E_A11Y_ARIA_ATTR: 'fix the attribute name (it is not an ARIA attribute)',
+  E_A11Y_ARIA_VALUE: 'use one of the attribute\'s allowed values',
+  E_A11Y_REFERENCE: 'point the reference at an id that exists in the document',
+  E_A11Y_DUPLICATE_ID: 'give each element a unique id',
+  E_A11Y_ROLE_CHILDREN: 'put only the children the role allows inside it (a list holds listitems)',
+  E_A11Y_ROLE_PARENT: 'put the element inside the parent its role requires',
+  E_A11Y_NESTED_INTERACTIVE: 'do not nest a control inside another (move it out of the link or button)',
+  E_A11Y_PRESENTATION_CONFLICT: 'drop role="presentation"/"none" from a focusable element or one with global ARIA attributes',
+  E_A11Y_LIST: 'put only li (and script/template) directly inside ul/ol',
+  E_A11Y_DL: 'put only dt/dd groups (or div wrapping them) directly inside dl',
+  E_A11Y_SCOPE: 'use scope only on th, with row, col, rowgroup or colgroup',
+  E_A11Y_EMPTY_TH: 'give the header cell text (or make it a td)',
+  E_A11Y_TABLE_HEADERS_REF: 'point headers at th ids in the same table',
+  E_A11Y_LABEL_FOR: 'point the label\'s for at a labelable element\'s id',
+  E_A11Y_AUTOCOMPLETE: 'use a valid autocomplete token for the field',
+  E_A11Y_LANG_VALID: 'use a valid BCP 47 language tag',
+  E_A11Y_INPUT_BUTTON_NAME: 'give the input button a value (its visible text and name)',
+  E_A11Y_INPUT_IMAGE_ALT: 'give the image input an alt',
+  E_A11Y_HIDDEN_FOCUSABLE: 'make the focusable element inside aria-hidden unfocusable (tabindex="-1", inert) or unhide it',
+};
 // A flex row's items are not tracks.
 const fixFor = (code, fix, html, path, layout) => code !== 'E_LAYOUT_TRACKS' ? fix
   : nodeAt(html, path)?.tagName === 'table' ? 'let the cells wrap (no white-space: nowrap, shorter headers), or scroll the table inside a wrapper with overflow-x: auto'
@@ -144,6 +170,12 @@ export function lint(result, { file = '<component>', source = '', profile = 'rec
   const refusals = new Set(['E_LAYOUT_CONTAINER']);
   for (const f of merged.values()) {
     if (f.severity === 'unknown' || (!page && pageRules.has(f.code))) continue;
+    if (rules && !rules[f.code] && specRules[f.code] && f.severity === 'error') {
+      const box = cleanLabel(f.box), firstClass = /\.([\w-]+)/.exec(box)?.[1];
+      out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity: 'warning', tier: 'spec', code: f.code,
+        message: `spec: ${readable(f.message)} (a markup conformance error; the rendering does not show it)`, fix: specRules[f.code], states: describe(f.states, total) });
+      continue;
+    }
     if (rules && !rules[f.code]) {
       // Outside the rule set: still listed (as info), so nothing found disappears from the output.
       const box = cleanLabel(f.box), firstClass = /\.([\w-]+)/.exec(box)?.[1];

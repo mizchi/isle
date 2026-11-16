@@ -9,6 +9,8 @@
 - テキストの先頭が別の箱に覆われていること(スクロールの先頭と末尾で確かめる)
 - placeholder の切れ
 
+`overflow: hidden` と `text-overflow: ellipsis` で省略したテキストは、作者が意図した省略として崩れに数えません。
+
 ```bash
 just component-lint-eval
 ```
@@ -16,6 +18,8 @@ just component-lint-eval
 ```bash
 node tools/eval-component-lint.mjs --attempt run-1
 ```
+
+一部の例だけを試すときは `--only id,id --out <file>` を付けます。
 
 - `cases/<id>/before.*`: 崩れを仕込んだコンポーネント。`case.json` には、作者の意図、仕込んだ崩れ、期待するコードを書きます。
 - `attempts/<run>/<id>.*`: lint の警告と `fix:` に従って直した版。新しく試すときは、新しい run として残します(前の run は書き換えません)。

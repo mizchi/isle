@@ -31,7 +31,7 @@ const adapters = {
 };
 
 const browser = await chromium.launch();
-const cases = readdirSync(join(scenario, 'cases')).sort();
+const cases = readdirSync(join(scenario, 'cases')).sort().filter(id => !opt.only || opt.only.split(',').includes(id));
 const rows = [];
 for (const id of cases) {
   const meta = JSON.parse(readFileSync(join(scenario, 'cases', id, 'case.json'), 'utf8'));
@@ -62,22 +62,24 @@ for (const id of cases) {
         // Visually hidden on purpose (sr-only: a clip-path or clip, or a box of at most 1px hiding its overflow, on it or an ancestor): read, not seen.
         const srOnly = e => { for (let n = e; n && n !== document.body; n = n.parentElement) { const cs = getComputedStyle(n), r = n.getBoundingClientRect(); if ((cs.clipPath && cs.clipPath !== 'none') || (cs.clip && cs.clip !== 'auto') || (cs.overflow !== 'visible' && (r.width <= 1 || r.height <= 1))) return true; } return false; };
         if (document.documentElement.scrollWidth > innerWidth + 1) out.push(['page-overflow', 'html']);
+        // Truncated on purpose (overflow hidden/clip with text-overflow: ellipsis): the cut is the author's intent, not a break.
+        const truncates = e => { const cs = getComputedStyle(e); return cs.textOverflow === 'ellipsis' && ['hidden', 'clip'].includes(cs.overflowX); };
         const texts = [...document.querySelectorAll('body *')].filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && e.getClientRects().length && e.checkVisibility({visibilityProperty: true}) && !srOnly(e));
         for (const e of texts) if (getComputedStyle(e).display !== 'inline') {
           // Sub-pixel: the text's line boxes (a Range) against the content box, not the integer scrollWidth.
           const cs0 = getComputedStyle(e), b0 = e.getBoundingClientRect(), rg = document.createRange(); rg.selectNodeContents(e);
           const right = Math.max(...[...rg.getClientRects()].map(r => r.right)), left = Math.min(...[...rg.getClientRects()].map(r => r.left));
           const innerRight = b0.right - parseFloat(cs0.paddingRight) - parseFloat(cs0.borderRightWidth), innerLeft = b0.left + parseFloat(cs0.paddingLeft) + parseFloat(cs0.borderLeftWidth);
-          if (e.scrollWidth > e.clientWidth + 1 || right > innerRight + 0.1 || left < innerLeft - 0.1) out.push(['text-overflow', label(e)]);
+          if (!truncates(e) && (e.scrollWidth > e.clientWidth + 1 || right > innerRight + 0.1 || left < innerLeft - 0.1)) out.push(['text-overflow', label(e)]);
           // The text's lines taller than its box (a fixed height): clipped or spilling over what follows.
           const r = document.createRange(); r.selectNodeContents(e); const lines = r.getBoundingClientRect(), box = e.getBoundingClientRect(), cs = getComputedStyle(e);
           if (lines.height > box.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - parseFloat(cs.borderTopWidth) - parseFloat(cs.borderBottomWidth) + 1) out.push(['text-overflow-block', label(e)]);
         }
         // Any glyph of the text under another element (the centre of each character, hit-tested).
-        const covered = () => { for (const e of texts) for (const t of [...e.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim())) { let hidden = false; for (let i = 0; i < t.length && !hidden; i++) { if (!/\S/.test(t.textContent[i])) continue; const r = document.createRange(); r.setStart(t, i); r.setEnd(t, i + 1); const b = r.getClientRects()[0]; if (!b || !b.width || b.bottom < 0 || b.top > innerHeight || b.right < 0 || b.left > innerWidth) continue; for (const px of [b.left + 1, (b.left + b.right) / 2]) { const hit = document.elementFromPoint(px, (b.top + b.bottom) / 2); if (hit && !e.contains(hit) && !hit.contains(e)) hidden = true; } } if (hidden) out.push(['text-covered', label(e)]); } };
+        const covered = () => { for (const e of texts) for (const t of [...e.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim())) { let hidden = false; for (let i = 0; i < t.length && !hidden; i++) { if (!/\S/.test(t.textContent[i])) continue; const r = document.createRange(); r.setStart(t, i); r.setEnd(t, i + 1); const b = r.getClientRects()[0]; const own = e.getBoundingClientRect(); if (!b || !b.width || (truncates(e) && (b.right > own.right || b.left < own.left)) || b.bottom < 0 || b.top > innerHeight || b.right < 0 || b.left > innerWidth) continue; for (const px of [b.left + 1, (b.left + b.right) / 2]) { const hit = document.elementFromPoint(px, (b.top + b.bottom) / 2); if (hit && !e.contains(hit) && !hit.contains(e)) hidden = true; } } if (hidden) out.push(['text-covered', label(e)]); } };
         covered(); scrollTo(0, document.documentElement.scrollHeight); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); covered(); scrollTo(0, 0);
         // Content clipped by a box that hides its overflow (a fixed height with overflow: hidden).
-        for (const e of document.querySelectorAll('body *')) { if (/^(IMG|INPUT|TEXTAREA|SELECT|VIDEO|IFRAME|PICTURE)$/.test(e.tagName) || srOnly(e)) continue; const cs = getComputedStyle(e), cuts = v => ['hidden', 'clip'].includes(v); if ((cuts(cs.overflowY) && e.scrollHeight > e.clientHeight + 1) || (cuts(cs.overflowX) && e.scrollWidth > e.clientWidth + 1)) out.push(['clipped', label(e)]); }
+        for (const e of document.querySelectorAll('body *')) { if (/^(IMG|INPUT|TEXTAREA|SELECT|VIDEO|IFRAME|PICTURE)$/.test(e.tagName) || srOnly(e)) continue; const cs = getComputedStyle(e), cuts = v => ['hidden', 'clip'].includes(v); if ((cuts(cs.overflowY) && e.scrollHeight > e.clientHeight + 1) || (cuts(cs.overflowX) && !truncates(e) && e.scrollWidth > e.clientWidth + 1)) out.push(['clipped', label(e)]); }
         // Text outside the viewport sideways that the page cannot scroll to (inside a fixed box, or left of 0).
         const pageScrolls = document.documentElement.scrollWidth > innerWidth + 1;
         const inScroller = e => { for (let n = e.parentElement; n && n !== document.body; n = n.parentElement) if (['auto', 'scroll'].includes(getComputedStyle(n).overflowX)) return true; return false; };

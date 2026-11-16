@@ -1,0 +1,1 @@
+{"framework": "linaria", "intent": "A password field with a strength meter and a hint.", "planted": "the strength hint is light red (#f28b82) on white, well under 4.5:1", "expect": ["E_A11Y_CONTRAST"]}

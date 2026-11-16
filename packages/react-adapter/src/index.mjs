@@ -180,6 +180,15 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
     if (node.type === 'StringLiteral') return [{ classes: node.value.split(/\s+/).filter(Boolean), choices: {} }];
     if (node.type === 'TemplateLiteral' && !node.expressions.length) return [{ classes: node.quasis[0].value.cooked.split(/\s+/).filter(Boolean), choices: {} }];
     if (node.type === 'Identifier' && linaria.has(node.name)) return [{ classes: [linaria.get(node.name)], choices: {} }];
+    // `${a} ${b} literal`: each expression a whole class list, separated from its neighbours by whitespace (an
+    // expression glued to text, as in `btn-${size}`, builds a class name: not a class list).
+    if (node.type === 'TemplateLiteral') {
+      const q = node.quasis.map(x => x.value.cooked);
+      if (q.every((t, i) => (i === 0 || t === '' && i === q.length - 1 || /^\s/.test(t)) && (i === q.length - 1 || i === 0 && t === '' || /\s$/.test(t)))) {
+        const parts = [{ classes: q.join(' ').split(/\s+/).filter(Boolean), choices: {} }, ...node.expressions.map(e => classVariants(e))];
+        return parts.slice(1).reduce((acc, ps) => acc.flatMap(l => ps.map(r => { const choices = merge(l.choices, r.choices); return choices && { classes: [...l.classes, ...r.classes], choices }; }).filter(Boolean)), [parts[0]]);
+      }
+    }
     if (node.type === 'NullLiteral' || (node.type === 'BooleanLiteral' && !node.value) || (node.type === 'Identifier' && node.name === 'undefined')) return [{ classes: [], choices: {} }];
     if (node.type === 'LogicalExpression' && node.operator === '&&') return [...classVariants(node.right).map(v => ({ ...v, choices: merge(v.choices, choice(node.left, true)) })), { classes: [], choices: choice(node.left, false) }].filter(v => v.choices);
     if (node.type === 'ConditionalExpression') return [...classVariants(node.consequent).map(v => ({ ...v, choices: merge(v.choices, choice(node.test, true)) })), ...classVariants(node.alternate).map(v => ({ ...v, choices: merge(v.choices, choice(node.test, false)) }))].filter(v => v.choices);
