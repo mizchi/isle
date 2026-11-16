@@ -1,6 +1,6 @@
 {
   "run": "run-3",
-  "cases": 52,
+  "cases": 55,
   "breaks": 0,
   "caught": 0,
   "missed": 0,
@@ -36,7 +36,9 @@
     "media-card",
     "modal",
     "news-cards",
+    "notification-list",
     "pagination",
+    "password-strength",
     "price-plans",
     "price-slider",
     "price-table",
@@ -56,6 +58,7 @@
     "sticky-header",
     "switch",
     "tabs",
+    "tag-input",
     "timeline",
     "toast",
     "tooltip",
@@ -66,11 +69,11 @@
   "backlog": [
     {
       "reason": "ASSUMPTION: the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul",
-      "count": 52
+      "count": 55
     },
     {
       "reason": "ASSUMPTION: rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked",
-      "count": 52
+      "count": 55
     },
     {
       "reason": "U_A11Y_ARIA_VALUE: .X: a dynamic aria-pressed may be invalid",
@@ -90,6 +93,10 @@
     },
     {
       "reason": "ASSUMPTION: 1 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked",
+      "count": 1
+    },
+    {
+      "reason": "U_A11Y_TARGET_SIZE: .X is under Npx and its position is not proved, so the spacing exception cannot be checked",
       "count": 1
     }
   ],
@@ -281,7 +288,7 @@
         }
       ],
       "errors": 0,
-      "warnings": 0,
+      "warnings": 1,
       "assumptions": [
         "14 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
@@ -470,7 +477,7 @@
         }
       ],
       "errors": 0,
-      "warnings": 0,
+      "warnings": 1,
       "assumptions": [
         "dynamic attribute aria-expanded on <input> is rendered with a non-empty placeholder value",
         "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
@@ -1127,6 +1134,43 @@
       ]
     },
     {
+      "id": "notification-list",
+      "file": "notification-list.vue",
+      "framework": "vue",
+      "intent": "A notification list: avatar, one-line title and a timestamp per row.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_LAYOUT_TRACKS",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "4 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "pagination",
       "file": "pagination.vue",
       "framework": "vue",
@@ -1158,6 +1202,43 @@
       "warnings": 0,
       "assumptions": [
         "4 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "password-strength",
+      "file": "password-strength.jsx",
+      "framework": "linaria",
+      "intent": "A password field with a strength meter and a hint.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_A11Y_CONTRAST",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
@@ -1740,7 +1821,7 @@
         }
       ],
       "errors": 0,
-      "warnings": 1,
+      "warnings": 2,
       "assumptions": [
         "3 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
@@ -1901,6 +1982,52 @@
       "warnings": 0,
       "assumptions": [
         "4 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "tag-input",
+      "file": "tag-input.svelte",
+      "framework": "svelte",
+      "intent": "A tag input: removable tag chips followed by a text entry.",
+      "status": "unknown",
+      "expected": [
+        {
+          "code": "E_A11Y_NAME",
+          "found": false
+        },
+        {
+          "code": "W_A11Y_PLACEHOLDER_LABEL",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "U_A11Y_TARGET_SIZE",
+          "reason": ".X is under Npx and its position is not proved, so the spacing exception cannot be checked",
+          "line": 2
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "3 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
