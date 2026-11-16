@@ -742,6 +742,46 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
 
   function flex(region, available, definitions, gap, bases, stretchAuto) {
+    // Content-sized columns (Grid §12.5–12.7): each starts at its base; the free space (with fr tracks at their
+    // minimum) is shared equally among them up to their growth limits (freezing each at its limit); fr tracks then
+    // take what is left, or, without fr tracks, auto tracks stretch into it equally.
+    if (definitions.some(t => t.content)) {
+      if (definitions.some(t => t.autoTable || t.auto)) throw new Error('Content-sized columns with automatic table or auto row tracks are not modeled');
+      const content = definitions.map((t, i) => t.content ? i : -1).filter(i => i >= 0);
+      const frBase = (t, i) => t.min !== undefined ? scalar(t.min) : t.autoMin ? bases[i] : scalar(0);
+      const fixedTotal = definitions.reduce((acc, t, i) => t.content ? sum(acc, scalar(t.content.base)) : t.weight ? sum(acc, frBase(t, i)) : sum(acc, bases[i]), scalar(gap));
+      const free0 = diff(available, fixedTotal);
+      const out = [];
+      const finish = (r, growth) => {
+        const values = definitions.map((t, i) => t.content ? sum(scalar(t.content.base), growth[i] ?? scalar(0)) : bases[i]);
+        if (definitions.some(t => t.weight)) {
+          // fr tracks share what is left (the content tracks now fixed at their sizes).
+          for (const piece of flex(r, available, definitions.map(t => t.content ? { fixed: true } : t), gap, values, false)) out.push({ ...piece, required: fixedTotal });
+          return;
+        }
+        const stretching = content.filter(i => definitions[i].content.stretch);
+        if (!stretching.length) { out.push({ region: r, values, required: fixedTotal }); return; }
+        const used = sum(scalar(gap), values.reduce((acc, v) => sum(acc, v), scalar(0)));
+        for (const piece of clamp(r, diff(available, used))) out.push({ region: piece.region, values: values.map((v, i) => stretching.includes(i) ? sum(v, times(piece.value, div(one, q(String(stretching.length))))) : v), required: fixedTotal });
+      };
+      const grow = (r, frozen, depth) => {
+        if (depth > content.length + 1) throw new Error('Content-sized column resolution did not converge');
+        const active = content.filter(i => !frozen.has(i));
+        const room = i => sub(definitions[i].content.limit, definitions[i].content.base);
+        if (!active.length) { finish(r, Object.fromEntries(content.map(i => [i, scalar(room(i))]))); return; }
+        const rest = [...frozen].reduce((acc, i) => diff(acc, scalar(room(i))), free0);
+        const share = times(rest, div(one, q(String(active.length))));
+        const smallest = active.reduce((m, i) => cmp(room(i), m) < 0 ? room(i) : m, room(active[0]));
+        const split = partition(r, diff(share, scalar(smallest)), '>=');
+        for (const x of split.yes) grow(x, new Set([...frozen, ...active.filter(i => cmp(room(i), smallest) === 0)]), depth + 1);
+        for (const x of split.no) finish(x, Object.fromEntries([...content.map(i => [i, frozen.has(i) ? scalar(room(i)) : share])]));
+      };
+      // No free space: every track at its base (the tracks overflow, or fit exactly).
+      const p = partition(region, free0, '>=');
+      for (const r of p.no) finish(r, {});
+      for (const r of p.yes) grow(r, new Set(), 0);
+      return out;
+    }
     // Automatic table columns (CSS 2 / Chromium auto table layout): below the summed minima every column keeps its
     // minimum (the table overflows); between minima and maxima each grows from its minimum by its share of
     // (max − min); above the maxima the width is shared in proportion to the maxima.
@@ -1987,12 +2027,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (!['grid', 'inline-grid'].includes(style.display) || style.$blockFlow) return style;
     const source = String(style['grid-template-columns']);
     // repeat(auto-fill | auto-fit, …) takes no bare fr (invalid there); subgrid has no own tracks.
-    if (/auto-fill|auto-fit|subgrid/.test(source) || !/fr\b/.test(source)) return style;
+    if (/auto-fill|auto-fit|subgrid/.test(source) || !/fr\b|\bauto\b|min-content|max-content|fit-content/.test(source)) return style;
     const unknown = why => { throw Object.assign(new Error(`${box.label}: a bare fr column (minmax(auto, fr)) ${why}; its minimum is not known`), { code: 'U_LAYOUT_GRID_FR', box, region }); };
     let tokens; try { tokens = expandTracks(source); } catch { return style; }
     const frOf = token => { const m = token.match(/^(\d+(?:\.\d+)?)fr$/) ?? token.match(/^minmax\(\s*auto\s*,\s*(\d+(?:\.\d+)?)fr\s*\)$/); return m ? m[1] : null; };
     const bare = tokens.map(frOf);
-    if (!bare.some(Boolean)) return style;
+    const kindOf = token => token === 'auto' ? 'auto' : token === 'min-content' ? 'min' : token === 'max-content' ? 'max' : /^fit-content\(\s*\d+(?:\.\d+)?px\s*\)$/.test(token) ? 'fit' : null;
+    const kinds = tokens.map(kindOf);
+    if (!bare.some(Boolean) && !kinds.some(Boolean)) return style;
     const ancestors = [...parents, { box, style }];
     const single = (target, at, inherited) => { const list = styles(target, region, at, inherited, false, true); const keys = new Set(list.map(x => JSON.stringify(x.style))); if (keys.size !== 1) unknown(`has an item whose styles change across the viewport range (${target.label})`); return list[0].style; };
     const length = (value, what) => { if (value === 'ua') unknown(`has an item with UA ${what}`); if (['0', '0px'].includes(String(value))) return zero; if (!/^\d+(?:\.\d+)?px$/.test(String(value))) unknown(`has an item whose ${what} is ${value}`); return px(value); };
@@ -2001,17 +2043,33 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const borderBox = (st, value) => st['box-sizing'] === 'content-box' ? add(value, edges(st)) : value;
     const clampMax = (st, value) => { const m = st['max-inline-size']; if (m === 'none') return value; const v = borderBox(st, length(m, 'max-width')); return cmp(value, v) > 0 ? v : value; };
     const replaced = new Set(['img', 'svg', 'iframe', 'video', 'audio', 'canvas', 'input', 'select', 'textarea', 'button', 'embed', 'object']);
-    // The min-content width (border box) of a box, or Unknown.
-    const minContent = (target, st, at) => {
+    // The min-content (or max-content) width (border box) of a box, or Unknown.
+    const minContent = (target, st, at, max = false) => {
       if (replaced.has(target.tag)) unknown(`has a replaced or form element (${target.label}) without a px width`);
-      if (target.text || target.inline?.length) { if (target.contract?.minInlineSize === undefined) unknown(`has text without a min-content width (${target.label}; give it a minInlineSize contract)`); return add(q(String(target.contract.minInlineSize)), edges(st)); }
+      if (target.text || target.inline?.length) {
+        const key = max ? 'maxInlineSize' : 'minInlineSize';
+        if (target.contract?.[key] === undefined) unknown(`has text without a ${max ? 'max' : 'min'}-content width (${target.label}; give it a ${key} contract)`);
+        return add(q(String(target.contract[key])), edges(st));
+      }
       const kids = (target.children ?? []).filter(k => !k.pseudo);
       const inner = [...at, { box: target, style: st }];
       if (!kids.length && st.display !== 'grid') return edges(st);
       if (['block', 'list-item'].includes(st.display)) {
         let widest = zero;
-        for (const kid of kids) { const ks = single(kid, inner, st); if (ks.display === 'none' || ['absolute', 'fixed'].includes(ks.position)) continue; const c = intrinsic(kid, ks, inner); if (cmp(c, widest) > 0) widest = c; }
+        for (const kid of kids) { const ks = single(kid, inner, st); if (ks.display === 'none' || ['absolute', 'fixed'].includes(ks.position)) continue; const c = intrinsic(kid, ks, inner, max); if (cmp(c, widest) > 0) widest = c; }
         return add(widest, edges(st));
+      }
+      // A flex row: single-line, the sum of its items' contributions; wrapping, the widest (min-content) or the sum
+      // (max-content). Items sized by flex-basis are not modeled.
+      if (st.display === 'flex' && ['row', 'row-reverse'].includes(String(st['flex-direction']))) {
+        const gap = ['normal', '0', '0px'].includes(String(st['column-gap'])) ? zero : length(st['column-gap'], 'column-gap');
+        const items = kids.map(kid => [kid, single(kid, inner, st)]).filter(([, ks]) => ks.display !== 'none' && !['absolute', 'fixed'].includes(ks.position));
+        if (items.some(([, ks]) => !['auto', 'content'].includes(String(ks['flex-basis'])))) unknown(`has a flex item sized by flex-basis in ${target.label}`);
+        const contributions = items.map(([kid, ks]) => intrinsic(kid, ks, inner, max));
+        const wraps = st['flex-wrap'] !== 'nowrap';
+        const total = contributions.reduce(add, mul(gap, q(String(Math.max(0, contributions.length - 1)))));
+        const widest = contributions.reduce((m, c) => cmp(c, m) > 0 ? c : m, zero);
+        return add(wraps && !max ? widest : total, edges(st));
       }
       if (st.display === 'grid' && !st.$blockFlow) {
         const own = frAutoMinimums(target, st, region, at);
@@ -2020,16 +2078,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         let total = mul(gap, q(String(Math.max(0, list.length - 1))));
         for (const token of list) {
           if (/^\d+(?:\.\d+)?px$/.test(token)) total = add(total, px(token));
-          else { const m = token.match(/^minmax\(\s*(?:(\d+(?:\.\d+)?)px|0)\s*,\s*\d+(?:\.\d+)?fr\s*\)$/); if (!m) unknown(`has a nested grid column ${token} whose min-content width is not modeled`); if (m[1]) total = add(total, px(`${m[1]}px`)); }
+          else if (!max && (kids.length === 0 || true)) { const m = token.match(/^minmax\(\s*(?:(\d+(?:\.\d+)?)px|0)\s*,\s*\d+(?:\.\d+)?fr\s*\)$/); if (!m) unknown(`has a nested grid column ${token} whose min-content width is not modeled`); if (m[1]) total = add(total, px(`${m[1]}px`)); }
+          else if (max && !kids.length && /^minmax\(\s*0(?:px)?\s*,/.test(token)) continue;
+          else unknown(`has a nested grid column ${token} whose max-content width is not modeled`);
         }
         return add(total, edges(st));
       }
       unknown(`has an item (${target.label}, display: ${st.display}) whose min-content width is not modeled`);
     };
     // The min-content contribution of a block-level child: its px width or min-content width, clamped, plus margins.
-    const intrinsic = (target, st, at) => {
+    const intrinsic = (target, st, at, max = false) => {
       let size;
-      if (st['inline-size'] !== 'auto') size = borderBox(st, length(st['inline-size'], 'width')); else size = minContent(target, st, at);
+      if (st['inline-size'] !== 'auto') size = borderBox(st, length(st['inline-size'], 'width')); else size = minContent(target, st, at, max);
       size = clampMax(st, size);
       if (st['min-inline-size'] !== 'auto') { const m = borderBox(st, length(st['min-inline-size'], 'min-width')); if (cmp(m, size) > 0) size = m; }
       return add(size, margins(st));
@@ -2044,7 +2104,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (cmp(size, edges(st)) < 0) size = edges(st);
       return add(size, margins(st));
     };
-    const n = tokens.length, mins = tokens.map(() => zero);
+    const n = tokens.length, mins = tokens.map(() => zero), minContents = tokens.map(() => zero), maxContents = tokens.map(() => zero);
     let next = 0;
     for (const item of (box.children ?? []).filter(k => !k.pseudo && !k.anonymous)) {
       const st = single(item, ancestors, style);
@@ -2053,11 +2113,23 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       let column;
       if (st['grid-column'] === 'auto') { if (style['grid-auto-flow'] !== 'row') unknown('is not auto-placed by rows'); column = next % n; next++; }
       else { const m = String(st['grid-column']).match(/^(\d+)(?:\s*\/\s*span\s+1)?$/); if (!m || Number(m[1]) < 1 || Number(m[1]) > n || next) unknown(`has an item placed by grid-column: ${st['grid-column']}`); column = Number(m[1]) - 1; }
-      if (!bare[column]) continue;
-      const c = minimum(item, st);
-      if (cmp(c, mins[column]) > 0) mins[column] = c;
+      if (!bare[column] && !kinds[column]) continue;
+      if (bare[column] || ['auto', 'fit'].includes(kinds[column])) { const c = minimum(item, st); if (cmp(c, mins[column]) > 0) mins[column] = c; }
+      if (kinds[column] === 'min') { const c = intrinsic(item, st, ancestors); if (cmp(c, minContents[column]) > 0) minContents[column] = c; }
+      if (['max', 'auto', 'fit'].includes(kinds[column])) { const c = intrinsic(item, st, ancestors, true); if (cmp(c, maxContents[column]) > 0) maxContents[column] = c; }
     }
-    const rewritten = tokens.map((token, i) => !bare[i] ? token : cmp(mins[i], zero) > 0 ? `minmax(${number(mins[i])}px, ${bare[i]}fr)` : `minmax(0, ${bare[i]}fr)`).join(' ');
+    const stretch = ['normal', 'stretch'].includes(String(style['justify-content'] ?? 'normal'));
+    const rewritten = tokens.map((token, i) => {
+      if (bare[i]) return cmp(mins[i], zero) > 0 ? `minmax(${number(mins[i])}px, ${bare[i]}fr)` : `minmax(0, ${bare[i]}fr)`;
+      if (kinds[i] === 'min') return `${number(minContents[i])}px`;
+      if (kinds[i] === 'max') return `${number(maxContents[i])}px`;
+      if (kinds[i] === 'auto' || kinds[i] === 'fit') {
+        let limit = cmp(maxContents[i], mins[i]) > 0 ? maxContents[i] : mins[i];
+        if (kinds[i] === 'fit') { const cap = px(token.match(/\(\s*([^)]+?)\s*\)/)[1]); if (cmp(limit, cap) > 0) limit = cmp(cap, mins[i]) > 0 ? cap : mins[i]; }
+        return `-isle-content(${number(mins[i])},${number(limit)},${kinds[i] === 'auto' && stretch ? 1 : 0})`;
+      }
+      return token;
+    }).join(' ');
     return { ...style, 'grid-template-columns': rewritten };
   }
   function tablePlacement(box, style) {

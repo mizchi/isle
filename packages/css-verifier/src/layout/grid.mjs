@@ -23,6 +23,10 @@ export function tracks(value, automatic = false, tokensOnly = false) {
   if (tokensOnly) return expand(value);
   const result = expand(value).map(token => {
     if (automatic && token === 'auto') return { auto: true };
+    // A content-sized column (internal, from auto / fit-content(): the engine computes its items' contributions):
+    // base B, growth limit G, and whether it stretches into leftover space (auto with justify-content: normal).
+    const content = token.match(/^-isle-content\((\d+(?:\.\d+)?),(\d+(?:\.\d+)?),([01])\)$/);
+    if (content) return { content: { base: q(content[1]), limit: q(content[2]), stretch: content[3] === '1' } };
     // An automatic table column (internal): sized between its min- and max-content widths by the table's width.
     const column = token.match(/^-isle-auto-table\((\d+(?:\.\d+)?),(\d+(?:\.\d+)?)\)$/);
     if (column) return { autoTable: { min: q(column[1]), max: q(column[2]) } };
