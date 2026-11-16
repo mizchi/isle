@@ -1,7 +1,7 @@
 import { q, add, sub, mul, cmp, div, exact, number } from './linear.mjs';
 import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rectangle, clip, partition, projection, serialize } from './region.mjs';
 import { validateOptions } from './input.mjs';
-import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea } from './css.mjs';
+import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea, containsFixed } from './css.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
 import { compileSelector, PARENT, dynamicAttributeTests } from './selectors.mjs';
@@ -2443,7 +2443,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             const origin=resolvedOrigin(style,available,inline,bs.value ? sum(bs.value,blockEdges) : null,parents);
             const contentOrigin=offset(origin,edge(['left']),edge(['top']));
             // A transformed box is the containing block of its absolute descendants, like a positioned one.
-            const knownBlock = bs.value, own = { box, style, inline: contentInline, block: knownBlock, positioned:style.position!=='static' || style.transform !== 'none',
+            const knownBlock = bs.value, own = { box, style, inline: contentInline, block: knownBlock, positioned:style.position!=='static' || containsFixed(style),
               contentOrigin,paddingOrigin:offset(origin,scalar(px(style['border-left'])),scalar(px(style['border-top']))),
               subgrid:style['grid-template-columns']==='subgrid' || style['grid-template-rows']==='subgrid',
               clipped:!(box.documentRoot && available.root) && (!['visible','clip'].includes(style['overflow-x']) || !['visible','clip'].includes(style['overflow-y'])), clipScope: !(box.documentRoot && available.root) && (style['overflow-x'] === 'clip' || style['overflow-y'] === 'clip'),
@@ -2877,9 +2877,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                         if (item.style.$fixed) {
                           // An ancestor transform makes that ancestor the containing block of fixed descendants (CSS Transforms 1
                           // §2): the box is placed against it and scrolls with it instead of staying on the viewport.
-                          const trap = finalAncestors.findLast(ancestor => ancestor.style && ancestor.style.transform !== 'none' && ancestor.box);
-                          if (trap) throw Object.assign(new Error(`${item.box.label} is position: fixed, but its ancestor ${trap.box.label} has transform: ${trap.style.transform}, which makes it the containing block: ${item.box.label} is placed against ${trap.box.label} and scrolls with it, not with the viewport. Move it outside the transformed box (for example to the end of body), or drop the transform`), { code: 'U_LAYOUT_FIXED_CONTAINED', box: item.box, region: r, ancestor: trap.box.label, ancestorPath: trap.box.path, property: 'transform' });
-                          if (finalAncestors.some(ancestor=>ancestor.clipped || ancestor.subgrid || (ancestor.style && (ancestor.style.transform !== 'none' || ['overflow-x','overflow-y'].some(key=>ancestor.style[key] !== 'visible'))))) throw Object.assign(new Error(`${item.box.label} is position: fixed inside a transformed, clipped or scrolling ancestor`), { code: 'U_LAYOUT_CSS' });
+                          const trap = finalAncestors.findLast(ancestor => ancestor.style && containsFixed(ancestor.style) && ancestor.box);
+                          if (trap) throw Object.assign(new Error(`${item.box.label} is position: fixed, but its ancestor ${trap.box.label} has ${trap.style.transform !== 'none' ? `transform: ${trap.style.transform}` : trap.style['backdrop-filter'] !== 'none' ? `backdrop-filter: ${trap.style['backdrop-filter']}` : `will-change: ${trap.style['will-change']}`}, which makes it the containing block: ${item.box.label} is placed against ${trap.box.label} and scrolls with it, not with the viewport. Move it outside that box (for example to the end of body), or drop the property`), { code: 'U_LAYOUT_FIXED_CONTAINED', box: item.box, region: r, ancestor: trap.box.label, ancestorPath: trap.box.path, property: 'transform' });
+                          if (finalAncestors.some(ancestor=>ancestor.clipped || ancestor.subgrid || (ancestor.style && (containsFixed(ancestor.style) || ['overflow-x','overflow-y'].some(key=>ancestor.style[key] !== 'visible'))))) throw Object.assign(new Error(`${item.box.label} is position: fixed inside a transformed, clipped or scrolling ancestor`), { code: 'U_LAYOUT_CSS' });
                           const viewport = { inline: width, block: height, origin: { inline: scalar(0), block: scalar(0) } };
                           return solve(item.box,{inline:viewport.inline,block:viewport.block,containingBlock:{path:'viewport',...viewport}},r,finalAncestors,item.inherited ?? style,emit).map(result=>result.region);
                         }

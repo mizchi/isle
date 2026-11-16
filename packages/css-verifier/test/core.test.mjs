@@ -101,8 +101,23 @@ test('geometry-neutral properties are accepted; values that change breaking, sha
   // hyphens: auto acts only on text (a text-less box is verified; text: see hyphens.test.mjs).
   for (const decl of ['object-fit:cover', 'hyphens:auto', 'scroll-behavior:smooth', 'user-select:none', 'accent-color:#246', 'scroll-snap-type:x mandatory', '-webkit-font-smoothing:antialiased', 'overscroll-behavior-y:contain', 'word-break:normal', 'filter:none', 'contain:style', 'will-change:scroll-position', 'text-size-adjust:100%'])
     assert.equal(run(decl), 'verified', decl);
-  for (const decl of ['word-break:break-all', 'font-variant-numeric:tabular-nums', 'filter:blur(2px)', 'contain:paint', 'will-change:transform', 'content-visibility:hidden', 'resize:both', 'mix-blend-mode:multiply'])
+  // backdrop-filter: blur() and will-change move no box (they only make the element a containing block for fixed
+  // descendants, checked below).
+  for (const decl of ['backdrop-filter:blur(8px)', '-webkit-backdrop-filter:blur(8px)', 'will-change:transform', 'will-change:opacity, transform'])
+    assert.equal(run(decl), 'verified', decl);
+  for (const decl of ['word-break:break-all', 'font-variant-numeric:tabular-nums', 'filter:blur(2px)', 'contain:paint', 'backdrop-filter:saturate(2)', 'content-visibility:hidden', 'resize:both', 'mix-blend-mode:multiply'])
     assert.equal(run(decl), 'unknown', decl);
+});
+
+test('a backdrop filter or will-change: transform on an ancestor traps a position: fixed descendant (U_LAYOUT_FIXED_CONTAINED)', () => {
+  const run = decl => analyzeHTML('<div class="page"><header class="bar"><div class="toast"></div></header></div>', {name: 'P', css: `*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.bar{display:grid;grid-template-columns:minmax(0,1fr);height:48px;${decl}}.toast{position:fixed;bottom:0;left:0;width:200px;height:40px}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+  for (const decl of ['backdrop-filter:blur(8px)', 'will-change:transform', 'will-change:filter']) {
+    const r = run(decl);
+    assert.equal(r.status, 'unknown', decl);
+    assert.ok(r.diagnostics.some(d => d.code === 'U_LAYOUT_FIXED_CONTAINED' && /which makes it the containing block/.test(d.message)), `${decl}: ${JSON.stringify(r.diagnostics.map(d => d.code))}`);
+  }
+  // will-change: opacity makes no containing block: the toast stays on the viewport.
+  assert.equal(run('will-change:opacity').status, 'verified');
 });
 
 test('text-wrap-style: balance and pretty are Unknown only on wrapping text; white-space and text-wrap share the wrap mode', () => {
