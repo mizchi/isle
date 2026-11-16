@@ -1,0 +1,1 @@
+{"framework": "stylex", "intent": "Chat bubbles, the user's own aligned to the right.", "planted": "a long URL in a bubble with overflow-wrap normal: the word is wider than the bubble and sticks out on phones", "expect": ["E_LAYOUT_CONTENT"]}

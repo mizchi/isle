@@ -201,3 +201,15 @@ test('an absolute dropdown taller than its positioned parent hangs out of it wit
   assert.ok(!hang.diagnostics.some(d => d.code === 'E_LAYOUT_ITEM_SIZE'), JSON.stringify(hang.diagnostics.map(d => d.message)));
   assert.ok(page('fixed', 1000).diagnostics.some(d => d.code === 'E_LAYOUT_ITEM_SIZE'), 'a fixed box taller than the viewport cannot be scrolled to');
 });
+
+test('a one-column grid (minmax(0, 1fr)) holding only text lays the text out as its one stretched anonymous item, like a block text leaf', () => {
+  const run2 = (cls, contract) => analyzeHTML(`<html lang="en"><body><main class="p"><p class="${cls}">Hello there</p></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}.a{display:grid;grid-template-columns:minmax(0,1fr);padding:12px;max-width:260px}.b{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, boxes: {[`.${cls}`]: contract}});
+  const fits = run2('a', {minInlineSize: 100, intrinsicBlockSize: 24});
+  assert.equal(fits.status, 'verified', JSON.stringify(fits.diagnostics.map(d => d.message)));
+  assert.deepEqual(rects(fits, 500), [['.a', 0, 0, 260, 48]]);
+  // A word wider than the content box (260 − 24 = 236px) overflows, as in a block leaf.
+  assert.ok(run2('a', {minInlineSize: 300, intrinsicBlockSize: 24}).diagnostics.some(d => d.code === 'E_LAYOUT_CONTENT'));
+  // Item alignment other than stretch (the anonymous item shrinks to its text): still Unknown.
+  assert.equal(run2('b', {minInlineSize: 100, intrinsicBlockSize: 24}).status, 'unknown');
+});

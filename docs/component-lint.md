@@ -85,6 +85,8 @@ error が 1 件でもあれば終了コードは 1 です。
 - スクロールコンテナの中のテキストを、その外の不透明な箱が覆いうるときは `U_A11Y_SCROLLED_COVER`(検査していない)を出す。
 - `type="range"` のスライダー(Chromium で測った: content-box、UA の padding と border はなく margin が 2px、作者の大きさをそのまま使う、grid item で幅が auto なら伸びる)。
 - 位置指定された祖先(または初期の containing block)より背の高い absolute の箱(ドロップダウン)は、block 方向の大きさを error にしない。fixed でビューポートより高い箱は error。
+- 中身がテキストだけの、1 列(`minmax(0, 1fr)`)の grid の container は、block のテキストの葉として扱う(Chromium で照合した)。
+- grid item の justify-self(と grid の justify-items)の start、center、end。px の幅の item と、幅が auto のテキストの葉(fit-content の幅)を、area の空きの割合だけずらす。Chromium と同じく、はみ出す場合もずらす(unsafe)。
 - `rem` の margin、padding、幅、gap(既定のフォントサイズの仮定のもとで px に直す)。
 - 既定の appearance のテキスト入力欄(text 系の input と textarea)。padding と border を 4 辺とも指定していれば、`appearance: none` でなくても同じ箱になる(測った)。UA の `display: inline-block`、`box-sizing: content-box`(search は border-box)、最小寸法 0 もモデル化した。
 - grid item の block 軸の自己整列(`align-items` / `align-self` の start、center、end と、その flex-*/self-* の別名)。item は自分の高さを保ち、area の空きのその割合だけずれる(Chromium と照合した)。baseline は Unknown。

@@ -1,6 +1,6 @@
 {
   "run": "run-2",
-  "cases": 28,
+  "cases": 32,
   "breaks": 0,
   "caught": 0,
   "missed": 0,
@@ -13,8 +13,10 @@
     "breadcrumbs",
     "carousel",
     "cart-button",
+    "chat",
     "chips",
     "combobox",
+    "compare-table",
     "dark-banner",
     "date-field",
     "drawer",
@@ -29,9 +31,11 @@
     "pricing-grid",
     "product-card",
     "profile-ok",
+    "rating",
     "rtl-card",
     "search-placeholder",
     "sort-header",
+    "steps",
     "sticky-header",
     "tabs",
     "toast",
@@ -41,11 +45,11 @@
   "backlog": [
     {
       "reason": "ASSUMPTION: the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul",
-      "count": 28
+      "count": 32
     },
     {
       "reason": "ASSUMPTION: rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked",
-      "count": 28
+      "count": 32
     },
     {
       "reason": "ASSUMPTION: 1 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked",
@@ -263,6 +267,42 @@
       ]
     },
     {
+      "id": "chat",
+      "file": "chat.jsx",
+      "framework": "stylex",
+      "intent": "Chat bubbles, the user's own aligned to the right.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_LAYOUT_CONTENT",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "chips",
       "file": "chips.svelte",
       "framework": "svelte",
@@ -337,6 +377,42 @@
       "assumptions": [
         "dynamic attribute aria-expanded on <input> is rendered with a non-empty placeholder value",
         "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "compare-table",
+      "file": "compare-table.jsx",
+      "framework": "linaria",
+      "intent": "Product comparison table with a sticky first column.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_A11Y_CONTRAST",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "4 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
@@ -866,6 +942,45 @@
       ]
     },
     {
+      "id": "rating",
+      "file": "rating.vue",
+      "framework": "vue",
+      "intent": "Five star buttons to rate a product.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_A11Y_NAME",
+          "found": false
+        },
+        {
+          "code": "E_A11Y_TARGET_SIZE",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "rtl-card",
       "file": "rtl-card.jsx",
       "framework": "linaria",
@@ -968,6 +1083,42 @@
       ],
       "errors": 0,
       "warnings": 1,
+      "assumptions": [
+        "3 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "steps",
+      "file": "steps.svelte",
+      "framework": "svelte",
+      "intent": "Checkout steps shown as a row of labelled circles.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_LAYOUT_TRACKS",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
       "assumptions": [
         "3 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",

@@ -43,12 +43,13 @@ test('paint declarations that need another declaration: text-overflow, -webkit-l
   assert.deepEqual(inert(run(`${p}.c{height:10px;-webkit-line-clamp:none}`)), []);
 });
 
-test('justify-self / justify-items in flex do nothing; in grid they stay Unknown', () => {
+test('justify-self / justify-items in flex do nothing; in grid a px-wide item is aligned, an auto-width box (not a text leaf) stays Unknown', () => {
   assert.deepEqual(inert(run('.p{display:flex}.c{width:100px;height:10px;justify-self:end}')), [['.c', 'justify-self']]);
   assert.deepEqual(inert(run('.p{display:flex;justify-items:center}.c{width:100px;height:10px}')), [['.p', 'justify-items']]);
   assert.deepEqual(inert(run('.p{display:flex}.c{width:100px;height:10px;justify-self:auto}')), []);
-  assert.equal(run('.p{display:grid;grid-template-columns:minmax(0,1fr)}.c{width:100px;height:10px;justify-self:end}').status, 'unknown');
-  assert.equal(run('.p{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center}.c{width:100px;height:10px}').status, 'unknown');
+  assert.equal(run('.p{display:grid;grid-template-columns:minmax(0,1fr)}.c{width:100px;height:10px;justify-self:end}').status, 'verified');
+  assert.equal(run('.p{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center}.c{width:100px;height:10px}').status, 'verified');
+  assert.equal(run('.p{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:10px;justify-self:end}').status, 'unknown');
   assert.equal(run('.p{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:10px;justify-self:stretch}').status, 'verified');
   assert.equal(run('.p{display:flex}.c{width:100px;height:10px;justify-self:end}').status, 'verified');
 });

@@ -747,3 +747,28 @@ test('text resize (SC 1.4.4): with Chromium\'s default font size doubled, the te
     expect(reported, `${label} (${size}): overflows at 2× ${overflows}, at 1× ${atOne}`).toBe(overflows && !atOne);
   }
 });
+
+test('justify-self: end on a text grid item: its fit-content box ends at the area end and contains the rendered box', async ({page}) => {
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
+  const texts = ['See you at noon', 'https://example.com/reservations/confirmation'];
+  const html = `<main class="t"><p class="a">${texts[0]}</p><p class="b">${texts[1]}</p></main>`;
+  const css = `*{box-sizing:border-box;margin:0;padding:0}.t{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px;padding:16px;background:#fff;color:#000}.a,.b{justify-self:end;max-width:260px;padding:12px;font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400}.b{overflow-wrap:anywhere}`;
+  const boxes = metrics.resolveBoxes({'.a': {text: {content: texts[0], font}, wrap: 'normal'}, '.b': {text: {content: texts[1], font, overflowWrap: 'anywhere'}, wrap: 'anywhere'}});
+  const report = analyzeHTML(html, {name: 'Case', css, viewport: {min: 320, max: 900, height: {min: 400, max: 700}}, boxes});
+  expect(report.status, JSON.stringify(report.diagnostics)).toBe('verified');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  for (const width of [320, 400, 700]) {
+    await page.setViewportSize({width, height: 600});
+    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    for (const row of report.sizes.filter(row => row.rect && row.path !== 'Case' && row.range.min <= width && width <= row.range.max)) {
+      const at = a => value(a.constant) + width * value(a.coefficient) + 600 * value(a.heightCoefficient ?? '0');
+      const r = await page.evaluate(i => { const e = document.querySelector('body > *').children[i]; const b = e.getBoundingClientRect(); return {x: b.left, w: b.width}; }, Number(row.path.split('/')[1]));
+      const x = at(row.rect.inlineStart), w = at(row.rect.inlineSize);
+      expect(Math.abs((x + w) - (r.x + r.w)), `${row.box} right edge at ${width}`).toBeLessThanOrEqual(1 / 64 + 1e-9);
+      expect(x, `${row.box} left at ${width}`).toBeLessThanOrEqual(r.x + 1e-6);
+      expect(x + w - r.x - r.w).toBeLessThanOrEqual(1e-6);
+      expect(r.x - x, `${row.box} model box at most a few 1/64 px wider at ${width}`).toBeLessThanOrEqual(0.25);
+    }
+  }
+});
