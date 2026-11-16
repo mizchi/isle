@@ -66,6 +66,15 @@ function compileCompound(source, depth = 0) {
       parts.push({ kind: 'attribute', name: attribute[1].toLowerCase(), ...(attribute[2] ? { operator: attribute[2], value: attribute[3] ?? attribute[4] ?? attribute[5], insensitive: /i/i.test(attribute[6] ?? '') } : {}) });
       specificity[1]++; rest = rest.slice(attribute[0].length); continue;
     }
+    // Structural pseudo-classes over the element siblings (class specificity).
+    const structural = rest.match(/^:(first-child|last-child|only-child|first-of-type|last-of-type|only-of-type|empty)(?![\w-(])/i);
+    if (structural) { parts.push({ kind: 'structural', name: structural[1].toLowerCase() }); specificity[1]++; rest = rest.slice(structural[0].length); continue; }
+    const nth = rest.match(/^:(nth-child|nth-last-child|nth-of-type|nth-last-of-type)\(\s*([^()]*?)\s*\)/i);
+    if (nth) {
+      const formula = parseNth(nth[2]);
+      if (!formula) throw new Error(`Unsupported selector: ${source}`);
+      parts.push({ kind: 'structural', name: nth[1].toLowerCase(), ...formula }); specificity[1]++; rest = rest.slice(nth[0].length); continue;
+    }
     // :not(list): matches when no argument does; its specificity is its most specific argument's. States and
     // pseudo-elements inside it are not modeled.
     const not = rest.match(/^:not\(/i);
@@ -124,8 +133,40 @@ export function compoundMatches(selector, box) {
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
     part.kind === 'root' ? box.documentRoot === true : part.kind === 'path' ? box.path === part.value :
-    part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
+    part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'structural' ? structuralMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
     part.choices.some(choice => matches(choice, box)));
+}
+// An+B: odd, even, An+B, B (no "of S").
+function parseNth(text) {
+  const t = text.replace(/\s+/g, '').toLowerCase();
+  if (t === 'odd') return { a: 2, b: 1 };
+  if (t === 'even') return { a: 2, b: 0 };
+  let m = t.match(/^([+-]?\d*)n([+-]\d+)?$/);
+  if (m) return { a: m[1] === '' || m[1] === '+' ? 1 : m[1] === '-' ? -1 : Number(m[1]), b: Number(m[2] ?? 0) };
+  m = t.match(/^[+-]?\d+$/);
+  return m ? { a: 0, b: Number(t) } : null;
+}
+const nthHolds = ({ a, b }, index) => a === 0 ? index === b : (index - b) / a >= 0 && Number.isInteger((index - b) / a);
+/** The element siblings of a box (with it), or null when its parent is not in the tree (a component root). */
+function siblingsOf(box) {
+  const parent = box[PARENT];
+  if (!parent) return box.documentRoot ? [box] : null;
+  const list = (parent.children ?? []).some(c => c === box || c.path === box.path) ? parent.children : (parent.inline ?? []);
+  return list.filter(child => !child.anonymous && !child.pseudo);
+}
+function structuralMatches(part, box) {
+  if (part.name === 'empty') return !box.text && !box.whitespace && !(box.children ?? []).some(c => !c.pseudo) && !(box.inline ?? []).length;
+  const all = siblingsOf(box);
+  if (!all) return false; // reported by unknownMatches
+  const list = /of-type/.test(part.name) ? all.filter(s => s.tag === box.tag) : all;
+  const at = list.findIndex(s => s === box || s.path === box.path), from = at + 1, fromEnd = list.length - at;
+  switch (part.name) {
+    case 'first-child': case 'first-of-type': return from === 1;
+    case 'last-child': case 'last-of-type': return fromEnd === 1;
+    case 'only-child': case 'only-of-type': return list.length === 1;
+    case 'nth-child': case 'nth-of-type': return nthHolds(part, from);
+    default: return nthHolds(part, fromEnd);
+  }
 }
 // An adapter renders a dynamic attribute value as this placeholder: a value test against it is not known.
 const DYNAMIC_VALUE = 'dynamic';
@@ -151,16 +192,22 @@ function attributeMatches(part, box) {
 /** The value tests of a selector (any compound, :is/:where/:not arguments) on an attribute that is dynamic on this
  * box, where the compound's other parts match it: whether the rule applies is not known. */
 export function dynamicAttributeTests(selector, box) {
-  const dynamic = part => part.kind === 'attribute' && part.operator && Object.hasOwn(box.attributes ?? {}, part.name) && [undefined, DYNAMIC_VALUE].includes(box.attributes[part.name]);
-  const compounds = sel => [sel, ...(sel.chain ?? []).map(link => link.compound)];
+  const root = !box[PARENT] && !box.documentRoot;
+  const attributeTest = part => part.kind === 'attribute' && part.operator && Object.hasOwn(box.attributes ?? {}, part.name) && [undefined, DYNAMIC_VALUE].includes(box.attributes[part.name]);
+  // A component root's position among its siblings: tested only where the root is the subject of a selector without
+  // combinators (with a combinator, the root matches only through elements outside the tree anyway).
+  const structuralTest = (part, subjectOnly) => part.kind === 'structural' && part.name !== 'empty' && root && subjectOnly;
   const out = [];
-  const visit = sel => {
-    for (const compound of compounds(sel)) {
-      for (const part of compound.parts) if (part.choices) part.choices.forEach(visit);
-      const tests = compound.parts.filter(dynamic);
-      if (tests.length && compound.parts.filter(part => !dynamic(part) && !part.choices).every(part => compoundMatches({ parts: [part] }, box))) out.push(...tests);
-    }
+  const visit = (sel, subjectOnly) => {
+    const compounds = [sel, ...(sel.chain ?? []).map(link => link.compound)];
+    compounds.forEach((compound, k) => {
+      const alone = subjectOnly && k === 0 && !sel.chain?.length;
+      for (const part of compound.parts) if (part.choices) part.choices.forEach(choice => visit(choice, alone));
+      const unknown = part => attributeTest(part) || structuralTest(part, alone);
+      const tests = compound.parts.filter(unknown);
+      if (tests.length && compound.parts.filter(part => !unknown(part) && !part.choices && part.kind !== 'structural').every(part => compoundMatches({ parts: [part] }, box))) out.push(...tests);
+    });
   };
-  visit(selector);
+  visit(selector, true);
   return out;
 }

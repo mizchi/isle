@@ -254,9 +254,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   });
   // A selector testing the value of an attribute that is dynamic on an element (an adapter's placeholder): whether
   // the rule applies there is not known.
-  for (const box of boxes) if (box.attributes) for (const rule of rules) for (const selector of rule.selectors ?? []) {
+  // Likewise a structural pseudo-class on the root of a component: its siblings in the page are not known.
+  for (const box of boxes) if (box.attributes || !box[PARENT]) for (const rule of rules) for (const selector of rule.selectors ?? []) {
     const tests = dynamicAttributeTests(selector, box);
-    if (tests.length && !diagnostics.some(d => d.code === 'U_LAYOUT_ATTRIBUTE' && d.path === box.path)) unknown('U_LAYOUT_ATTRIBUTE', `${box.label}: ${selector.source} tests the value of ${tests.map(t => t.name).join(', ')}, which is dynamic here`, rule.line, box, rule.file);
+    const attributes = tests.filter(t => t.kind === 'attribute'), structural = tests.filter(t => t.kind === 'structural');
+    if (attributes.length && !diagnostics.some(d => d.code === 'U_LAYOUT_ATTRIBUTE' && d.path === box.path)) unknown('U_LAYOUT_ATTRIBUTE', `${box.label}: ${selector.source} tests the value of ${attributes.map(t => t.name).join(', ')}, which is dynamic here`, rule.line, box, rule.file);
+    if (structural.length && !diagnostics.some(d => d.code === 'U_LAYOUT_STRUCTURAL' && d.path === box.path)) unknown('U_LAYOUT_STRUCTURAL', `${box.label}: ${selector.source} tests its position among its siblings, which are outside the analyzed root`, rule.line, box, rule.file);
   }
   if (rules.some(rule => rule.stateLayout && !rule.hoverLayout) && !options.accessibility) unknown('U_LAYOUT_SELECTOR', 'A :focus rule changes the layout; the focused layout is modeled for the accessibility checks only');
   if (rules.some(rule => rule.stateGeometry) && !options.accessibility && !options.integrity) unknown('U_LAYOUT_SELECTOR', 'A state rule moves a box (focus insets or a transform); that is modeled for the accessibility and integrity checks only');
