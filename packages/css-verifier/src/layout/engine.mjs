@@ -3,7 +3,7 @@ import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rect
 import { validateOptions } from './input.mjs';
 import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea } from './css.mjs';
 import { parseCondition } from './conditions.mjs';
-import { tracks, tracks as gridTracks, place, parseAreas } from './grid.mjs';
+import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
 import { compileSelector, PARENT, dynamicAttributeTests } from './selectors.mjs';
 import { selectorUsage } from './selector-usage.mjs';
 import { viewportFont, zoomShortfall } from './zoom-font.mjs';
@@ -1979,6 +1979,86 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     return parent.box.tag === 'table' && next?.tableCaption ? { ...paint, backgroundColor: 'transparent', backgroundImage: 'none' } : paint;
   }
   // Cells fill their column (and span colspan columns); a caption is a full-width first or last row.
+  // A bare Nfr column is minmax(auto, Nfr): its minimum is the largest minimum contribution of its single-span items
+  // (Grid §6.6). Where every one is a known constant C the column is rewritten to minmax(Cpx, Nfr) (minmax(0, Nfr)
+  // for 0), which the fr sizing (with its freezing loop) handles; otherwise Unknown.
+  function frAutoMinimums(box, style, region, parents) {
+    if (!['grid', 'inline-grid'].includes(style.display) || style.$blockFlow) return style;
+    const source = String(style['grid-template-columns']);
+    // repeat(auto-fill | auto-fit, …) takes no bare fr (invalid there); subgrid has no own tracks.
+    if (/auto-fill|auto-fit|subgrid/.test(source) || !/fr\b/.test(source)) return style;
+    const unknown = why => { throw Object.assign(new Error(`${box.label}: a bare fr column (minmax(auto, fr)) ${why}; its minimum is not known`), { code: 'U_LAYOUT_GRID_FR', box, region }); };
+    let tokens; try { tokens = expandTracks(source); } catch { return style; }
+    const frOf = token => { const m = token.match(/^(\d+(?:\.\d+)?)fr$/) ?? token.match(/^minmax\(\s*auto\s*,\s*(\d+(?:\.\d+)?)fr\s*\)$/); return m ? m[1] : null; };
+    const bare = tokens.map(frOf);
+    if (!bare.some(Boolean)) return style;
+    const ancestors = [...parents, { box, style }];
+    const single = (target, at, inherited) => { const list = styles(target, region, at, inherited, false, true); const keys = new Set(list.map(x => JSON.stringify(x.style))); if (keys.size !== 1) unknown(`has an item whose styles change across the viewport range (${target.label})`); return list[0].style; };
+    const length = (value, what) => { if (value === 'ua') unknown(`has an item with UA ${what}`); if (['0', '0px'].includes(String(value))) return zero; if (!/^\d+(?:\.\d+)?px$/.test(String(value))) unknown(`has an item whose ${what} is ${value}`); return px(value); };
+    const edges = st => ['left', 'right'].map(side => add(length(st[`padding-${side}`], 'padding'), length(st[`border-${side}`], 'border'))).reduce(add, zero);
+    const margins = st => ['left', 'right'].map(side => st[`margin-${side}`] === 'auto' ? zero : length(st[`margin-${side}`], 'margin')).reduce(add, zero);
+    const borderBox = (st, value) => st['box-sizing'] === 'content-box' ? add(value, edges(st)) : value;
+    const clampMax = (st, value) => { const m = st['max-inline-size']; if (m === 'none') return value; const v = borderBox(st, length(m, 'max-width')); return cmp(value, v) > 0 ? v : value; };
+    const replaced = new Set(['img', 'svg', 'iframe', 'video', 'audio', 'canvas', 'input', 'select', 'textarea', 'button', 'embed', 'object']);
+    // The min-content width (border box) of a box, or Unknown.
+    const minContent = (target, st, at) => {
+      if (replaced.has(target.tag)) unknown(`has a replaced or form element (${target.label}) without a px width`);
+      if (target.text || target.inline?.length) { if (target.contract?.minInlineSize === undefined) unknown(`has text without a min-content width (${target.label}; give it a minInlineSize contract)`); return add(q(String(target.contract.minInlineSize)), edges(st)); }
+      const kids = (target.children ?? []).filter(k => !k.pseudo);
+      const inner = [...at, { box: target, style: st }];
+      if (!kids.length && st.display !== 'grid') return edges(st);
+      if (['block', 'list-item'].includes(st.display)) {
+        let widest = zero;
+        for (const kid of kids) { const ks = single(kid, inner, st); if (ks.display === 'none' || ['absolute', 'fixed'].includes(ks.position)) continue; const c = intrinsic(kid, ks, inner); if (cmp(c, widest) > 0) widest = c; }
+        return add(widest, edges(st));
+      }
+      if (st.display === 'grid' && !st.$blockFlow) {
+        const own = frAutoMinimums(target, st, region, at);
+        const gap = ['normal', '0', '0px'].includes(String(own['column-gap'])) ? zero : length(own['column-gap'], 'column-gap');
+        const list = expandTracks(String(own['grid-template-columns']));
+        let total = mul(gap, q(String(Math.max(0, list.length - 1))));
+        for (const token of list) {
+          if (/^\d+(?:\.\d+)?px$/.test(token)) total = add(total, px(token));
+          else { const m = token.match(/^minmax\(\s*(?:(\d+(?:\.\d+)?)px|0)\s*,\s*\d+(?:\.\d+)?fr\s*\)$/); if (!m) unknown(`has a nested grid column ${token} whose min-content width is not modeled`); if (m[1]) total = add(total, px(`${m[1]}px`)); }
+        }
+        return add(total, edges(st));
+      }
+      unknown(`has an item (${target.label}, display: ${st.display}) whose min-content width is not modeled`);
+    };
+    // The min-content contribution of a block-level child: its px width or min-content width, clamped, plus margins.
+    const intrinsic = (target, st, at) => {
+      let size;
+      if (st['inline-size'] !== 'auto') size = borderBox(st, length(st['inline-size'], 'width')); else size = minContent(target, st, at);
+      size = clampMax(st, size);
+      if (st['min-inline-size'] !== 'auto') { const m = borderBox(st, length(st['min-inline-size'], 'min-width')); if (cmp(m, size) > 0) size = m; }
+      return add(size, margins(st));
+    };
+    // A grid item's minimum contribution (Grid §6.6).
+    const minimum = (item, st) => {
+      let size;
+      if (st['min-inline-size'] !== 'auto') size = borderBox(st, length(st['min-inline-size'], 'min-width'));
+      else if (['hidden', 'auto', 'scroll'].includes(String(st['overflow-x']))) size = zero;
+      else if (st['inline-size'] !== 'auto') size = clampMax(st, borderBox(st, length(st['inline-size'], 'width')));
+      else size = clampMax(st, minContent(item, st, ancestors));
+      if (cmp(size, edges(st)) < 0) size = edges(st);
+      return add(size, margins(st));
+    };
+    const n = tokens.length, mins = tokens.map(() => zero);
+    let next = 0;
+    for (const item of (box.children ?? []).filter(k => !k.pseudo && !k.anonymous)) {
+      const st = single(item, ancestors, style);
+      if (st.display === 'none' || ['absolute', 'fixed'].includes(st.position)) continue;
+      if (st['grid-row'] !== 'auto' || (st['grid-auto-flow'] ?? 'row') !== 'row' && style['grid-auto-flow'] !== 'row') unknown('has an item placed by grid-row');
+      let column;
+      if (st['grid-column'] === 'auto') { if (style['grid-auto-flow'] !== 'row') unknown('is not auto-placed by rows'); column = next % n; next++; }
+      else { const m = String(st['grid-column']).match(/^(\d+)(?:\s*\/\s*span\s+1)?$/); if (!m || Number(m[1]) < 1 || Number(m[1]) > n || next) unknown(`has an item placed by grid-column: ${st['grid-column']}`); column = Number(m[1]) - 1; }
+      if (!bare[column]) continue;
+      const c = minimum(item, st);
+      if (cmp(c, mins[column]) > 0) mins[column] = c;
+    }
+    const rewritten = tokens.map((token, i) => !bare[i] ? token : cmp(mins[i], zero) > 0 ? `minmax(${number(mins[i])}px, ${bare[i]}fr)` : `minmax(0, ${bare[i]}fr)`).join(' ');
+    return { ...style, 'grid-template-columns': rewritten };
+  }
   function tablePlacement(box, style) {
     if (box.tableCell && !box.tableFlow && style.display === 'table-cell' && box.tableBaselineShift) style = { ...style, 'padding-top': `${number(add(px(style['padding-top']), box.tableBaselineShift))}px`, 'vertical-align': 'top' };
     if (box.tableFlow && style.display === 'table-cell') style = { ...style, display: 'grid', 'grid-template-columns': 'minmax(0, 1fr)', 'grid-template-rows': 'none', 'grid-auto-rows': 'auto', ...(box.tableBaselineShift ? { 'padding-top': `${number(add(px(style['padding-top']), box.tableBaselineShift))}px` } : {}), 'align-content': box.tableBaselineTop || box.tableBaselineShift ? 'start' : { middle: 'center', bottom: 'end' }[style['vertical-align']] ?? 'start', 'row-gap': '0', 'column-gap': '0', 'grid-auto-flow': 'row', $fromCell: true };
@@ -2066,6 +2146,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (!['grid', 'flex'].includes(style.display) && style.display !== 'none') { const generatedText = generatedElsewhere(box, state.region, [...parents, { box, style }], style); if (generatedText) box.generated = generatedText; }
         // A cell's width seeds its column (the cell fills the column); its height stretches to the row.
         style = tablePlacement(box, style);
+        style = frAutoMinimums(box, style, state.region, parents);
         // min-block-size on a grid or flex container (auto height, not stretched by its parent): Grid §12.7.1 and
         // Flexbox §9.4 size the tracks or the line again against the container at its minimum, so where the natural
         // height falls short it lays out as if its height were the minimum (rows, fr rows and the flex line stretch).

@@ -2,7 +2,9 @@ import postcss from 'postcss';
 import { q, cmp } from './linear.mjs';
 import { px } from './css.mjs';
 
-export function tracks(value, automatic = false) {
+/** The track tokens of a track list with integer repeat() expanded (at most 64). */
+export function expandTracks(value) { return tracks(value, false, true); }
+export function tracks(value, automatic = false, tokensOnly = false) {
   const expand=(text,depth=0)=>{
     if(depth>8) throw new Error('Grid repeat nesting limit exceeded');
     const values=[];
@@ -18,6 +20,7 @@ export function tracks(value, automatic = false) {
     }
     return values;
   };
+  if (tokensOnly) return expand(value);
   const result = expand(value).map(token => {
     if (automatic && token === 'auto') return { auto: true };
     // An automatic table column (internal): sized between its min- and max-content widths by the table's width.

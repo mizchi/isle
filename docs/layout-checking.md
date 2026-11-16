@@ -307,6 +307,8 @@ inset がどちらも auto の absolute の箱は、静的位置に置かれる�
 
 `minmax(Lpx, Nfr)` は、空き幅の取り分が L 未満のトラックを L で固定し、残りを分け直す(css-grid-1 §12.7.1 の fr の大きさの求め方)。各回は「取り分 ≥ L」による領域の分割になる。全てのトラックが L に固定され、さらに幅が足りない領域は `E_LAYOUT_TRACKS` になる。`minmax(min(Lpx, 100%), Nfr)` では、container の幅が L 未満の所で最小幅が container の幅になり、はみ出さない。
 
+列の素の `Nfr`(と `minmax(auto, Nfr)`)は `minmax(auto, Nfr)` であり、その最小は、列に入る item の最小寄与の最大値になる(Grid §6.6)。最小寄与は、`min-width` があればその値、スクロールコンテナなら 0、px の `width` があればその値、なければ min-content の幅で、どれも `max-width` で抑え、左右の margin を足し、padding と border を下回らない。min-content の幅は、テキストの葉では契約の `minInlineSize`、空の箱では padding と border、block flow では子の寄与の最大値(子の px 幅か min-content、min/max で抑え margin を足す)、grid では px と `minmax(L, fr)`(L)と入れ子の素の fr の列の和に gap を足したものとする。どの item の最小寄与も定数になる場合だけ、その列を `minmax(Cpx, Nfr)` に書き換え、上の固定の繰り返しで解く。それ以外(% の幅、テキストに契約がない、置換要素、flex の中身、複数の列にまたがる item、`grid-row` で置いた item、ビューポートで変わるスタイル)は `U_LAYOUT_GRID_FR`(Unknown)にする。行の素の fr はまだ扱わない。Chromium の照合(`e2e/layout-flex.spec.mjs`)では、幅の指定、`max-width`、子の幅、`min-width: 0`、入れ子の grid、margin、padding、border を含めて矩形が一致することを確かめる。
+
 `repeat(auto-fill, T)`(T は `Lpx` か上記の minmax)は、最小幅で並ぶ数だけトラックを作る(1 本以上)。本数は、container の幅に対する閾値 `n·L + (n−1)·gap` で領域を分けて決める。`auto-fit` は、item の入らないトラックとその gap をつぶす。そのため、すべての子が自動配置で 1 マスの item で、どの状態でも描画される場合に限り、auto-fill の本数を item 数で頭打ちにしたものとして扱う(Chromium で測った)。それ以外の場合は Unknown にする。
 
 Chromium の照合は 2 つある。`e2e/layout-flex.spec.mjs` は、本数が変わる閾値の前後の幅で矩形が一致することを確かめる。`e2e/layout-fuzz-visibility.spec.mjs` の minmax 版では、これらのトラックを混ぜた入れ子の grid を生成し、item が Chromium の解決したトラックに収まるかどうかの判定が一致することを確かめる(auto-fill は 60 seed で 7,796 件、auto-fit を加えた版は 30 seed で 3,166 件の判定)。
