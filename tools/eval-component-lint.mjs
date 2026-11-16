@@ -76,7 +76,7 @@ for (const id of cases) {
           if (lines.height > box.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - parseFloat(cs.borderTopWidth) - parseFloat(cs.borderBottomWidth) + 1) out.push(['text-overflow-block', label(e)]);
         }
         // Any glyph of the text under another element (the centre of each character, hit-tested).
-        const covered = () => { for (const e of texts) for (const t of [...e.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim())) { let hidden = false; for (let i = 0; i < t.length && !hidden; i++) { if (!/\S/.test(t.textContent[i])) continue; const r = document.createRange(); r.setStart(t, i); r.setEnd(t, i + 1); const b = r.getClientRects()[0]; const own = e.getBoundingClientRect(); if (!b || !b.width || (truncates(e) && (b.right > own.right || b.left < own.left)) || b.bottom < 0 || b.top > innerHeight || b.right < 0 || b.left > innerWidth) continue; for (const px of [b.left + 1, (b.left + b.right) / 2]) { const hit = document.elementFromPoint(px, (b.top + b.bottom) / 2); if (hit && !e.contains(hit) && !hit.contains(e)) hidden = true; } } if (hidden) out.push(['text-covered', label(e)]); } };
+        const covered = () => { for (const e of texts) for (const t of [...e.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim())) { let hidden = false; for (let i = 0; i < t.length && !hidden; i++) { if (!/\S/.test(t.textContent[i])) continue; const r = document.createRange(); r.setStart(t, i); r.setEnd(t, i + 1); const b = r.getClientRects()[0]; const own = e.getBoundingClientRect(); if (!b || !b.width || (truncates(e) && (b.right > own.right || b.left < own.left)) || b.bottom < 0 || b.top > innerHeight || b.right < 0 || b.left > innerWidth) continue; for (const px of [b.left + 1, (b.left + b.right) / 2]) { const hit = document.elementFromPoint(px, (b.top + b.bottom) / 2); if (hit && !e.contains(hit) && !hit.contains(e)) hidden = hit; } } if (hidden) out.push(['text-covered', label(e), label(hidden)]); } };
         covered(); scrollTo(0, document.documentElement.scrollHeight); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); covered(); scrollTo(0, 0);
         // Content clipped by a box that hides its overflow (a fixed height with overflow: hidden).
         for (const e of document.querySelectorAll('body *')) { if (/^(IMG|INPUT|TEXTAREA|SELECT|VIDEO|IFRAME|PICTURE)$/.test(e.tagName) || srOnly(e)) continue; const cs = getComputedStyle(e), cuts = v => ['hidden', 'clip'].includes(v); if ((cuts(cs.overflowY) && e.scrollHeight > e.clientHeight + 1) || (cuts(cs.overflowX) && !truncates(e) && e.scrollWidth > e.clientWidth + 1)) out.push(['clipped', label(e)]); }
@@ -111,14 +111,16 @@ for (const id of cases) {
         for (const i of document.querySelectorAll('input[placeholder]')) { const s = getComputedStyle(i), c = document.createElement('canvas').getContext('2d'); c.font = `${s.fontWeight} ${s.fontSize} ${s.fontFamily}`; if (c.measureText(i.placeholder).width > i.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight) + 1) out.push(['placeholder-clipped', label(i)]); }
         return out;
       });
-      for (const [kind, box] of found) { const key = `${kind} ${box}`; if (!breaks.has(key)) breaks.set(key, {kind, box, at: []}); const b = breaks.get(key); const where = `${scale}@${width}`; if (!b.at.includes(where)) b.at.push(where); }
+      for (const [kind, box, by] of found) { const key = `${kind} ${box}`; if (!breaks.has(key)) breaks.set(key, {kind, box, at: [], ...(by ? {by} : {})}); const b = breaks.get(key); const where = `${scale}@${width}`; if (!b.at.includes(where)) b.at.push(where); }
     }
   }
   await page.close();
-  // A break is caught when lint reports an error or warning on that box (or on the page for page overflow).
+  // A break is caught when lint reports an error or warning on that box (or on the page for page overflow), or, for
+  // covered text, on the box covering it.
   const reported = messages.filter(m => ['error', 'warning'].includes(m.severity));
   const boxOf = m => (m.message.match(/^(?:the start of )?([.#][\w.-]+|[a-z]+@[\w/]+)/) ?? [])[1] ?? '';
-  const matches = (b, m) => b.kind === 'page-overflow' || b.kind === 'offscreen' && /E_LAYOUT_TRACKS|PAGE_OVERFLOW|PAGE_CLIPPED/.test(m.code) ? /PAGE_OVERFLOW|REFLOW|PAGE_CLIPPED|E_LAYOUT_TRACKS/.test(m.code) || (/TEXT_RESIZE/.test(m.code) && /viewport|page/.test(m.message)) : boxOf(m) && (b.box === boxOf(m) || b.box.split('.').filter(Boolean).every(c => boxOf(m).includes(c)) || boxOf(m).split('.').filter(Boolean).every(c => b.box.includes(c)));
+  const sameBox = (box, m) => boxOf(m) && (box === boxOf(m) || box.split('.').filter(Boolean).every(c => boxOf(m).includes(c)) || boxOf(m).split('.').filter(Boolean).every(c => box.includes(c)));
+  const matches = (b, m) => (b.by && sameBox(b.by, m)) || (b.kind === 'page-overflow' || b.kind === 'offscreen' && /E_LAYOUT_TRACKS|PAGE_OVERFLOW|PAGE_CLIPPED/.test(m.code) ? /PAGE_OVERFLOW|REFLOW|PAGE_CLIPPED|E_LAYOUT_TRACKS/.test(m.code) || (/TEXT_RESIZE/.test(m.code) && /viewport|page/.test(m.message)) : boxOf(m) && (b.box === boxOf(m) || b.box.split('.').filter(Boolean).every(c => boxOf(m).includes(c)) || boxOf(m).split('.').filter(Boolean).every(c => b.box.includes(c))));
   const environment = [...breaks.values()].filter(b => b.kind.startsWith('env-')).map(b => `${b.kind} ${b.box} [${b.at.join(' ')}]`);
   for (const [key, b] of breaks) if (b.kind.startsWith('env-')) breaks.delete(key);
   const caught = [], missed = [];

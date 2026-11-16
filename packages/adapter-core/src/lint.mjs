@@ -12,6 +12,7 @@ export const recommended = {
   // Component scope: a component's selectors and the parent-child relations they rely on stay inside it.
   E_SCOPE_OUTSIDE: ['error', 'keep the relation inside the component (a class or prop on its own root), or pass the context in as a custom property'],
   E_SCOPE_REACHES: ['error', 'style the child component\'s elements in that component (a class or variant prop it exposes); name this component\'s own class here'],
+  W_LAYOUT_FIXED_TRAPPED: ['warning', 'render the fixed box outside the transformed / backdrop-filtered box (a portal to the end of body), or drop that property'],
   E_SCOPE_CONTRACT: ['error', 'declare data-noshift inside the child component, or wrap it in an element of this component and mark that'],
   // Layout shift: an element the component marks data-noshift moves or resizes between its states.
   E_LAYOUT_NOSHIFT: ['error', 'reserve the space the changing content needs (a fixed track or min-height), overlay it (position: absolute), or limit the contract to the states it should hold in (data-noshift-on)'],

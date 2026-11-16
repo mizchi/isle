@@ -1,0 +1,1 @@
+{"framework": "vue", "intent": "A sticky, translucent header with a toast meant to sit at the top of the viewport.", "planted": "the header's backdrop-filter makes it the toast's containing block: the fixed toast is placed against the header and covers its title (W_LAYOUT_FIXED_TRAPPED, and the placement stays Unknown)", "expect": ["W_LAYOUT_FIXED_TRAPPED"]}

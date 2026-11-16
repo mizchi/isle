@@ -136,3 +136,11 @@ test('text-wrap-style: balance and pretty are Unknown only on wrapping text; whi
   assert.equal(wraps('.t{white-space:pre;text-wrap:wrap}'), true); // pre-wrap
   assert.equal(run('.t{white-space:pre-line;text-wrap-mode:nowrap}'), 'unknown'); // no white-space keyword for it
 });
+
+test('a fixed box trapped by an ancestor is also a warning (W_LAYOUT_FIXED_TRAPPED), naming the ancestor', () => {
+  const r = analyzeHTML('<div class="page"><header class="bar"><div class="toast"></div></header></div>', {name: 'P', css: '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.bar{display:grid;grid-template-columns:minmax(0,1fr);height:48px;backdrop-filter:blur(8px)}.toast{position:fixed;bottom:0;left:0;width:200px;height:40px}', viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true});
+  const w = (r.layoutWarnings ?? []).find(w => w.code === 'W_LAYOUT_FIXED_TRAPPED');
+  assert.ok(w, JSON.stringify(r.layoutWarnings));
+  assert.equal(w.ancestor, '.bar');
+  assert.match(w.message, /backdrop-filter: blur\(8px\)/);
+});
