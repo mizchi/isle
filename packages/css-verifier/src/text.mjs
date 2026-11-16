@@ -442,7 +442,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
       if (!contract?.text) { out[selector] = contract; continue; }
       const {text, ...rest} = contract;
       if (rest.minInlineSize !== undefined || rest.intrinsicBlockSize !== undefined || rest.minBlockSize !== undefined) fail(`${selector}: a text contract derives its own sizes`);
-      if (rest.wrap !== undefined && !['nowrap', 'normal', 'anywhere'].includes(rest.wrap)) fail(`${selector}: wrap must be nowrap, normal or anywhere`);
+      if (rest.wrap !== undefined && !['nowrap', 'normal', 'anywhere', 'one-line'].includes(rest.wrap)) fail(`${selector}: wrap must be nowrap, normal, anywhere or one-line`);
       const {font} = text;
       if (font.letterSpacing !== undefined && (typeof font.letterSpacing !== 'number' || !Number.isFinite(font.letterSpacing) || Math.abs(font.letterSpacing) > 100)) fail(`${selector}: letterSpacing must be a px number`);
       if (font.letterSpacing && text.content === undefined) fail(`${selector}: letter-spacing is measured for fixed content; a character domain is not`);
@@ -471,7 +471,8 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         width = domain.bounds.at(-1);
         metrics = {kind: 'domain', ...domain};
       }
-      out[selector] = {...rest, minInlineSize: width, intrinsicBlockSize: font.lineHeight, wrap: 'nowrap', font: fontContract,
+      // one-line: the text is expected to fit on one line whatever white-space allows (measured as unwrapped).
+      out[selector] = {...rest, minInlineSize: width, intrinsicBlockSize: font.lineHeight, wrap: rest.wrap === 'one-line' ? 'one-line' : 'nowrap', font: fontContract,
         textMetrics: {...metrics, ...(text.lang !== undefined ? {lang: text.lang} : {}), font: provenance(font), allowance: metrics.kind === 'domain' ? domainAllowance : layoutAllowance.rule}};
     }
     return out;

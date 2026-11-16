@@ -79,7 +79,7 @@ export function validateOptions(options) {
           }
         } else finiteSize(contract.intrinsicBlockSize, 'intrinsicBlockSize');
       }
-      if (contract.wrap !== undefined && !['normal', 'anywhere', 'nowrap'].includes(contract.wrap)) throw new Error('Invalid wrap contract');
+      if (contract.wrap !== undefined && !['normal', 'anywhere', 'nowrap', 'one-line'].includes(contract.wrap)) throw new Error('Invalid wrap contract');
       if (contract.font !== undefined) validateFontContract(contract.font);
       if (contract.textMetrics !== undefined) {
         validateTextMetrics(contract.textMetrics);

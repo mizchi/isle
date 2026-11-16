@@ -397,7 +397,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // reportTextFonts: the computed font of each text leaf (for a caller that measures it with a font file and
       // analyses again with a font contract); 'varied' where it differs across the domain.
       if (options.reportTextFonts && !state && box.text && !box.pseudo && !(box.inline ?? []).length && !box.anonymous) {
-        const facts = { classes: box.classes, text: box.textContent ?? '', family: style['font-family'], size: style['font-size'], lineHeight: style['line-height'], weight: style['font-weight'], style: style['font-style'], whiteSpace: style['white-space'], overflowWrap: style['overflow-wrap'], letterSpacing: style['letter-spacing'], lang: style.$lang };
+        const hint = name => box.attributes && Object.hasOwn(box.attributes, name) ? box.attributes[name] : undefined;
+        const facts = { classes: box.classes, text: box.textContent ?? '', ...(hint('data-text-one-line') !== undefined ? { oneLine: true } : {}), ...(hint('data-text-max-length') !== undefined ? { maxLength: hint('data-text-max-length') } : {}), ...(hint('data-text-chars') !== undefined ? { characters: hint('data-text-chars') } : {}), family: style['font-family'], size: style['font-size'], lineHeight: style['line-height'], weight: style['font-weight'], style: style['font-style'], whiteSpace: style['white-space'], overflowWrap: style['overflow-wrap'], letterSpacing: style['letter-spacing'], lang: style.$lang };
         const seen = textFonts.get(box.path);
         textFonts.set(box.path, seen && seen !== 'varied' && JSON.stringify(seen) !== JSON.stringify(facts) ? 'varied' : seen === 'varied' ? 'varied' : facts);
       }
@@ -1159,7 +1160,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function inlineBounds(child, leaf, leafStyle, leafRow, region) {
     const metrics = leaf.contract?.textMetrics;
     if (!leafRow?.origin || !metrics?.inline || !['start', 'left'].includes(leafStyle['text-align']) || leafStyle.direction !== 'ltr') return null;
-    if (!(metrics.kind === 'content' && leaf.contract.wrap === 'nowrap') && metrics.kind !== 'lines') return null;
+    if (!(metrics.kind === 'content' && ['nowrap', 'one-line'].includes(leaf.contract.wrap)) && metrics.kind !== 'lines') return null;
     const entry = Object.entries(metrics.inline).find(([selector]) => matches(compileSelector(selector), child));
     if (!entry) return null;
     const x = sum(leafRow.origin.inline, scalar(leafRow.content.left));
@@ -1323,7 +1324,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // optional (never swapped in late) the text's lines can change and move what follows (a layout shift).
       // The text changes its box when the box takes its height from it (line-height normal follows the font's metrics;
       // wrapping text can change its line count) or its width (a flex item without a px width).
-      const singleLine = ['nowrap', 'pre'].includes(style['white-space']) || box.contract?.wrap === 'nowrap';
+      const singleLine = ['nowrap', 'pre'].includes(style['white-space']) || ['nowrap', 'one-line'].includes(box.contract?.wrap);
       const heightFromFont = style['block-size'] === 'auto' && (!/^\d+(?:\.\d+)?px$/.test(style['line-height']) || !singleLine);
       const widthFromFont = parents.at(-1)?.style?.display === 'flex' && !/^\d+(?:\.\d+)?px$/.test(style['inline-size']) && !/^\d+(?:\.\d+)?px$/.test(style['flex-basis']) && style['flex-grow'] === '0';
       if ((box.text || box.inline?.length) && (heightFromFont || widthFromFont) && !layoutWarnings.some(w => w.path === box.path)) {
@@ -2084,7 +2085,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // A measured text contract carries its max-content width as textMetrics.width (or, unwrapped, its one width).
         // (The measured width is rounded up to six decimals, the precision of layout numbers.)
         const up = v => v === undefined ? undefined : Math.ceil(Number(v) * 1e6 - 1e-9) / 1e6;
-        const value = up(!max ? target.contract?.minInlineSize : target.contract?.maxInlineSize ?? target.contract?.textMetrics?.width ?? (target.contract?.wrap === 'nowrap' && target.contract?.font ? target.contract.minInlineSize : undefined));
+        const value = up(!max ? target.contract?.minInlineSize : target.contract?.maxInlineSize ?? target.contract?.textMetrics?.width ?? (['nowrap', 'one-line'].includes(target.contract?.wrap) && target.contract?.font ? target.contract.minInlineSize : undefined));
         if (value === undefined) unknown(`has text without a ${max ? 'max' : 'min'}-content width (${target.label}; give it a ${key} contract)`);
         return add(q(String(value)), edges(st));
       }

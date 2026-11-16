@@ -43,6 +43,16 @@ error が 1 件でもあれば終了コードは 1 です。
 
 `--profile all` にすると、エンジンの全診断を出します。
 
+## テキストの期待を書く属性(`--font` と組み合わせる)
+
+- `data-text-one-line`: その要素のテキストは 1 行に収まるはず(CSS が折り返しを許していても)。収まらない幅で `E_LAYOUT_CONTENT` を出す。
+- `data-text-max-length="12"`: 動的なテキスト(`{name}` など、adapter は「…」として描画する)の最大文字数。その長さ以下のどの文字列でも収まるかを、最悪の幅で検査する。文字集合は `data-text-chars="…"` で指定する(既定は印字可能な ASCII)。折り返し位置は決まらないので、`white-space: nowrap` か `data-text-one-line` が要る(なければ仮定のまま)。
+- 属性のない動的なテキストは測らない(実際の文字列が分からないため)。
+
+```svelte
+<span class="name" data-text-one-line data-text-max-length="20">{user.name}</span>
+```
+
 ## 状態とソース行
 
 - 状態はテンプレートの分岐で決まります。Svelte の `{#if}` / `class:`、Vue の `v-if` / `v-show` / `:class`、JSX の `&&` / 三項演算子 / `cx()` / `stylex.props()` が分岐になります。同じ要素が複数のクラスの組み合わせで出す検出は 1 件にまとめ、状態の表示（`[compact=false]` など）にはすべての状態に共通する条件だけを出します。

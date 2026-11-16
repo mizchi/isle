@@ -66,21 +66,28 @@ function markText(html, start = 0) {
  * @param {{states: {html: string, choices: object}[], css: string, unknowns?: {code, message}[], assumptions?: string[]}} component
  * @param {object} options css-verifier options plus pageCSS (CSS of the page around the component) and page(html).
  */
+const printableASCII = Array.from({ length: 95 }, (_, i) => String.fromCharCode(32 + i)).join('');
 // A text leaf's computed font (reportTextFonts) as a text contract measured with the given font files, or null when
 // the font is not one of them or is not measurable (a non-px size, line-height: normal, letter-spacing).
 function measuredContract(facts, textMetrics, fonts) {
   // Dynamic text ({expression}, {{ … }}) is rendered as the placeholder '…': its real string is not known, so it is
   // never measured (a literal '…' in the template stays assumed too).
-  if (!facts || facts.varied || !facts.text || facts.text.includes('…')) return null;
+  // A maximum length (data-text-max-length, with data-text-chars or printable ASCII) measures every string of that
+  // many characters instead: dynamic text can be checked that way.
+  const domain = facts && !facts.varied && /^\d+$/.test(String(facts.maxLength ?? '')) ? { characters: facts.characters ?? printableASCII, maxLength: Number(facts.maxLength) } : null;
+  if (!facts || facts.varied || (!domain && (!facts.text || facts.text.includes('…')))) return null;
   const family = Object.keys(fonts).find(name => name.toLowerCase() === String(facts.family).replace(/["']/g, '').split(',')[0].trim().toLowerCase());
   const px = v => /^\d+(?:\.\d+)?px$/.test(String(v)) ? Number(String(v).slice(0, -2)) : undefined;
   const size = px(facts.size);
   const lineHeight = px(facts.lineHeight) ?? (/^\d+(?:\.\d+)?$/.test(String(facts.lineHeight)) && size ? Number(facts.lineHeight) * size : undefined);
   const weight = facts.weight === 'normal' ? 400 : facts.weight === 'bold' ? 700 : /^\d+$/.test(String(facts.weight)) ? Number(facts.weight) : undefined;
   if (!family || !size || !lineHeight || !weight || facts.style !== 'normal' || facts.letterSpacing !== 'normal') return null;
-  const wrap = ['nowrap', 'pre'].includes(facts.whiteSpace) ? 'nowrap' : ['normal', 'pre-line', 'pre-wrap'].includes(facts.whiteSpace) ? (facts.overflowWrap === 'anywhere' ? 'anywhere' : 'normal') : null;
+  // data-text-one-line: expected to fit on one line whatever white-space allows. A length domain has no fixed line
+  // breaks, so it needs one line (nowrap CSS or the attribute).
+  const nowrap = ['nowrap', 'pre'].includes(facts.whiteSpace);
+  const wrap = nowrap ? 'nowrap' : facts.oneLine ? 'one-line' : domain ? null : ['normal', 'pre-line', 'pre-wrap'].includes(facts.whiteSpace) ? (facts.overflowWrap === 'anywhere' ? 'anywhere' : 'normal') : null;
   if (!wrap) return null;
-  const contract = { text: { font: { family, size, lineHeight, weight }, content: facts.text, ...(facts.lang ? { lang: facts.lang } : {}), ...(wrap === 'normal' && facts.overflowWrap !== 'normal' ? { overflowWrap: facts.overflowWrap } : {}) }, wrap };
+  const contract = { text: { font: { family, size, lineHeight, weight }, ...(domain ?? { content: facts.text }), ...(facts.lang ? { lang: facts.lang } : {}), ...(wrap === 'normal' && facts.overflowWrap !== 'normal' ? { overflowWrap: facts.overflowWrap } : {}) }, wrap };
   try { return textMetrics.resolveBoxes({ x: contract }).x; } catch { return null; }
 }
 

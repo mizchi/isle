@@ -5,6 +5,7 @@
 import {test, expect} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 import {loadTextMetrics} from '../packages/css-verifier/src/text-node.mjs';
+import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
 import {scriptRuns, breakOpportunities} from '../packages/css-verifier/src/text.mjs';
 import {compile, requireIR} from '../lib/compiler.mjs';
 import {prepareProgram} from '../lib/codegen.mjs';
@@ -683,6 +684,23 @@ test('lint with a font file: a measured auto column of text is as wide as Chromi
       const v = a => Number(String(a.coefficient).split('/').reduce((p, c) => p / c)) * width + Number(String(a.constant).split('/').reduce((p, c) => p / c));
       // The derived width is a sound bound on the shaped advance (layoutAllowance): within a pixel of Chromium.
       expect(Math.abs(v(row.rect.inlineSize) - rendered), `${label} at ${width}px: static ${v(row.rect.inlineSize)} vs ${rendered}`).toBeLessThan(1.01);
+    }
+  }
+});
+
+test('one-line text: the static violation fires exactly at the widths where Chromium wraps the text', async ({page}) => {
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
+  for (const label of ['Save all changes', 'Notification preferences']) {
+    const css = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr)}.b{display:block;padding:0 8px;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400}';
+    const report = analyzeHTML(`<html lang="en"><body><div class="p"><p class="b">${label}</p></div></body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, boxes: metrics.resolveBoxes({'.b': {text: {font, content: label}, wrap: 'one-line'}})});
+    for (const width of [320, 400, 480, 560, 640, 720, 800]) {
+      await page.setViewportSize({width, height: 700});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${css}</style></head><body><div class="p"><p class="b">${label}</p></div></body></html>`);
+      await page.evaluate(() => document.fonts.ready);
+      const wraps = await page.evaluate(() => document.querySelector('.b').getBoundingClientRect().height > 24.5);
+      expect(report.status, label).not.toBe('unknown');
+      const violated = report.diagnostics.some(d => d.code === 'E_LAYOUT_CONTENT' && d.range.min <= width && width <= d.range.max && (d.range.maxInclusive !== false || width < d.range.max) && (d.range.minInclusive !== false || width > d.range.min));
+      expect(violated, `${label} at ${width}px`).toBe(wraps);
     }
   }
 });

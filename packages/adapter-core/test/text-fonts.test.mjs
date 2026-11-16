@@ -25,3 +25,18 @@ test('an auto column of text is Unknown with assumed text, checked with the font
   const dynamic = [{html: '<div class="row"><span class="label">Hello …</span><span class="value">Example</span></div>', choices: {}}];
   assert.equal(analyzeStates({states: dynamic, css}, {pageCSS, viewport, assumeText: true, textMetrics, fonts}).status, 'unknown');
 });
+
+test('data-text-max-length measures dynamic text by its longest string; data-text-one-line expects one line', async () => {
+  const textMetrics = await loadTextMetrics({fonts});
+  const card = (attrs, label = 'Hello …', width = '120px') => analyzeStates({states: [{html: `<div class="c"><span class="name" ${attrs}>${label}</span></div>`, choices: {}}], css: `.c{display:grid;grid-template-columns:${width}}.name{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;color:#000}`}, {pageCSS, viewport, assumeText: true, textMetrics, fonts});
+  const codes = r => [...new Set(r.findings.map(f => f.code))];
+  // Up to 8 characters of a-z fit in 120px on one line; up to 30 do not.
+  assert.equal(card('data-text-max-length="8" data-text-chars="abcdefghijklmnopqrstuvwxyz" data-text-one-line').status, 'verified');
+  assert.ok(codes(card('data-text-max-length="30" data-text-chars="abcdefghijklmnopqrstuvwxyz" data-text-one-line')).includes('E_LAYOUT_CONTENT'));
+  // A length without one-line (the CSS lets it wrap) has no known line breaks: left to the assumption.
+  const wrapping = card('data-text-max-length="8"');
+  assert.ok(!wrapping.coverage.assumptions.some(a => /measured with the given font files/.test(a)) && wrapping.coverage.assumptions.some(a => /sized by assumption/.test(a)));
+  // A fixed label expected on one line.
+  assert.ok(codes(card('data-text-one-line', 'Notification preferences')).includes('E_LAYOUT_CONTENT'));
+  assert.equal(card('data-text-one-line', 'Notify', '120px').status, 'verified');
+});

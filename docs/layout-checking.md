@@ -469,6 +469,8 @@ E_LAYOUT_ITEM_SIZE: .cell requires 40px but receives 53/2px on inline axis at vi
 
 導出した幅は`minInlineSize`、1行の高さは`intrinsicBlockSize`、`wrap: "nowrap"`になり、既存の検査が全てのviewportで照合する。
 
+`wrap: "one-line"` は「CSS は折り返しを許す(`white-space: normal`)が、1 行に収まるはず」という期待を書く。折り返さない幅で測り、箱がそれより狭い幅では折り返してしまうので `E_LAYOUT_CONTENT` を出す。`wrap: "nowrap"` と違って、CSS に `nowrap` を要求しない(`E_LAYOUT_WRAP` を出さない)。固定文字列(`content`)にも、文字集合と最大文字数(`characters`・`maxLength`)にも使える。Chromium の照合(`e2e/layout-text-fonts.spec.mjs`)では、違反の出る幅が、Chromium でテキストが 2 行以上に折り返す幅とちょうど一致することを確かめる。
+
 **生成テキストの計測(`withGeneratedText`)**: `::before`/`::after` の `content` の文字列は、葉の text と同じ行に並ぶ。`metrics.withGeneratedText(options => analyzeHTML(html, options), options)` を使うと、次の 2 段階で解析する。
 1. 1回目の解析で、各葉の生成テキスト(`generatedText`:path、契約の selector、before/after、文字列)を報告する。
 2. 固定の `content` を持つ text 契約で、その契約の葉がどれも同じ生成テキストを持つなら、`before + content + after` を計測して、もう一度解析する。
