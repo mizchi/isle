@@ -790,6 +790,22 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     }
   }
 
+  // Text inside a scroll container has no position here (it depends on the scroll offset), so the cover rules above do
+  // not see it. Where an opaque box outside the scroll container paints over part of it, whether that text is covered
+  // is not checked: Unknown, never a silent pass (a carousel's arrow buttons over its scrolling slides).
+  const sliver = div(q(1), q(64));
+  for (const s of placed.filter(row => row.overflow === 'scroll' && row.path !== root?.path && !row.box.documentRoot)) {
+    if (!geometry.some(row => isAncestor(s.path, row.path) && row.box.text && visible(row) && !hiddenFrom(row.path) && !row.origin)) continue;
+    for (const cover of placed) {
+      if (related(cover.path, s.path) || !visible(cover) || !cover.painted || !opaque(cover)) continue;
+      if (!paintsAbove(cover, layer(cover), s, layer(s))) continue;
+      let region = intersect(s.region, cover.region);
+      region = atMost(region, sum(s.origin.inline, scalar(sliver)), right(cover)); region = atMost(region, sum(cover.origin.inline, scalar(sliver)), right(s));
+      region = atMost(region, sum(s.origin.block, scalar(sliver)), bottom(cover)); region = atMost(region, sum(cover.origin.block, scalar(sliver)), bottom(s));
+      if (region) { report(unknowns, 'U_A11Y_SCROLLED_COVER', 'unknown', `${cover.box.label} paints over part of ${s.box.label}, a scroll container: whether it covers the text inside is not checked (positions there depend on the scroll offset). Keep controls outside the scrolling area, or give the content room beside them`, s, region, { rule: 'text-start-obscured', cover: cover.path }); break; }
+    }
+  }
+
   // focus-scrolled-under (SC 2.4.11): Chromium scrolls a keyboard-focused element only when it is not already inside
   // the scrollport shrunk by the viewport's scroll-padding (its box grown by its scroll-margin; measured). So if some
   // scroll position puts the element inside that area but entirely behind a position: fixed bar, Tab lands on it there

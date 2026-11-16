@@ -2030,3 +2030,14 @@ test('accessible-name from the markup alone when the layout is Unknown: an empty
   for (const extra of ['.b::before{content:"Sort"}', '@media (width < 500px){.b{display:none}}', '.c{visibility:hidden}'])
     assert.ok(!run('<button class="b" type="button"></button>', extra).diagnostics.some(d => d.code === 'E_A11Y_NAME'), extra);
 });
+
+test('text inside a scroll container under an opaque box outside it: not checked (Unknown), never a silent pass', () => {
+  const html = '<html lang="en"><body><main class="m"><section class="c"><div class="track"><div class="s"><p class="t">Trail shoes</p></div></div><button class="prev" type="button" aria-label="Previous"></button></section></main></body></html>';
+  const css = extra => `*{margin:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.c{position:relative;display:grid;grid-template-columns:minmax(0,1fr)}.track{display:flex;overflow-x:auto}.s{flex:none;width:300px;display:grid;grid-template-columns:minmax(0,1fr);padding:16px}.t{font-size:16px;line-height:24px;color:#000}.prev{position:absolute;top:16px;left:0;width:44px;height:44px;padding:0;border:0;background:#333}${extra}`;
+  const opts = {name: 'P', viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 24}}};
+  const over = analyzeHTML(html, {...opts, css: css('')});
+  assert.ok(over.diagnostics.some(d => d.code === 'U_A11Y_SCROLLED_COVER' && d.box === '.track'), JSON.stringify(over.diagnostics.map(d => d.code)));
+  // The button beside the scroll container (not over it): nothing to report.
+  const beside = analyzeHTML(html, {...opts, css: css('.c{padding-left:44px}')});
+  assert.ok(!beside.diagnostics.some(d => d.code === 'U_A11Y_SCROLLED_COVER'), JSON.stringify(beside.diagnostics.map(d => d.code)));
+});

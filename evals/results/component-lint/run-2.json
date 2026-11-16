@@ -4,6 +4,7 @@
   "breaks": 0,
   "caught": 0,
   "missed": 0,
+  "silentMisses": 0,
   "unconfirmedErrors": 0,
   "environment": 14,
   "clean": [
@@ -70,6 +71,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -105,6 +107,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .sx-kpve2h [dark@320 dark@375 dark@768 dark@1280]"
@@ -146,6 +149,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -186,6 +190,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -221,6 +226,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .qty [dark@320 dark@375 dark@768 dark@1280]"
@@ -253,6 +259,7 @@
       "expected": [],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -295,6 +302,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -330,6 +338,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -365,6 +374,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -405,6 +415,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -440,6 +451,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .heading [dark@320 dark@375 dark@768 dark@1280]",
@@ -479,6 +491,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .sx-e3mnb2 [dark@320 dark@375 dark@768 dark@1280]"
@@ -516,6 +529,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -551,6 +565,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -586,6 +601,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -621,6 +637,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .lx-name [dark@320 dark@375 dark@768 dark@1280]",
@@ -659,6 +676,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .title [dark@320 dark@375 dark@768 dark@1280]",
@@ -692,6 +710,7 @@
       "expected": [],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .name [dark@320 dark@375 dark@768 dark@1280]",
@@ -730,6 +749,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -765,6 +785,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .label [dark@320 dark@375 dark@768 dark@1280]"
@@ -802,6 +823,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -841,6 +863,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .text [dark@320 dark@375 dark@768 dark@1280]"
@@ -878,6 +901,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -913,6 +937,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [

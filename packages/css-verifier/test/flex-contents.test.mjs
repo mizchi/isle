@@ -40,13 +40,19 @@ test('fixed items overflow instead of shrinking when the line is too short', () 
   assert.equal(tracks.range.maxExact, '240');
 });
 
+test('flex: 1 (a 0% basis) with min-width: auto: the automatic minimum is the content\'s min-content width (CSS Flexbox §4.5)', () => {
+  const report = run(card(base + '.name { flex: 1; min-width: auto; }\n'), {viewport: {min: 188, max: 600}});
+  status(report, 'verified');
+  // 100px of min-content in 188 − 32 − 48 − 8 = 100px: it just fits at 188, and overflows below.
+  assert.ok(run(card(base + '.name { flex: 1; min-width: auto; }\n'), {viewport: {min: 150, max: 600}}).diagnostics.some(d => /^E_LAYOUT/.test(d.code)));
+});
+
 test('flex outside the modeled subset is Unknown', () => {
   for (const [extra, reason] of [
     ['.row { flex-wrap: wrap-reverse; }', /wrap-reverse/],
     ['.row { flex-direction: row-reverse; }', /flex-direction/],
     ['.row { justify-content: safe center; }', /justify-content/],
     ['.name { min-width: auto; }', /automatic minimum/],
-    ['.name { flex: 1; min-width: auto; }', /automatic minimum/],
     ['.name { flex: 1 1 0; width: 50px; min-width: auto; }', /flex-basis and width and an automatic minimum/],
     ['.name { align-self: baseline; }', /baseline/],
     ['.name { margin-left: -4px; }', /Negative margins|pixel length/],

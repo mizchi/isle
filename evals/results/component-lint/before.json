@@ -4,6 +4,7 @@
   "breaks": 32,
   "caught": 31,
   "missed": 1,
+  "silentMisses": 0,
   "unconfirmedErrors": 0,
   "environment": 14,
   "clean": [
@@ -30,11 +31,7 @@
       "count": 1
     },
     {
-      "reason": "U_LAYOUT_FLEX: flex-basis 100% (a share of the container, which varies with the viewport) is outside the subset; give a px basis, or lay the items out as a grid (grid-template",
-      "count": 1
-    },
-    {
-      "reason": "ASSUMPTION: 2 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked",
+      "reason": "U_A11Y_SCROLLED_COVER: .X paints over part of .X, a scroll container: whether it covers the text inside is not checked (positions there depend on the scroll offset). Keep controls out",
       "count": 1
     },
     {
@@ -72,6 +69,7 @@
         "low-contrast .sx-d6qeum [1x@320 1x@375 1x@768 1x@1280 1x@439 2x@320 2x@375 2x@768 2x@1280 2x@439 dark@320 dark@375 dark@768 dark@1280 dark@439]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -109,6 +107,7 @@
         "text-covered .sx-1sx4bt3 [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .sx-1sx4bt3 [dark@320 dark@375 dark@768 dark@1280]"
@@ -152,6 +151,7 @@
         "page-overflow html [1x@320 1x@375 1x@382 2x@320 2x@375 2x@382 dark@320 dark@375 dark@382]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -194,17 +194,14 @@
       "missed": [
         "text-covered .name [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
       ],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
         {
-          "code": "U_LAYOUT_FLEX",
-          "reason": "flex-basis 100% (a share of the container, which varies with the viewport) is outside the subset; give a px basis, or lay the items out as a grid (grid-template",
-          "line": 3
-        },
-        {
-          "code": "ASSUMPTION",
-          "reason": "2 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked"
+          "code": "U_A11Y_SCROLLED_COVER",
+          "reason": ".X paints over part of .X, a scroll container: whether it covers the text inside is not checked (positions there depend on the scroll offset). Keep controls out",
+          "line": 2
         },
         {
           "code": "ASSUMPTION",
@@ -218,7 +215,7 @@
       "errors": 0,
       "warnings": 0,
       "assumptions": [
-        "2 text box(es) sized by assumption (one line, no minimum width): text overflow is not checked",
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
@@ -242,6 +239,7 @@
         "clipped .add [2x@320 2x@375 2x@768 2x@1280 2x@800]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .qty [dark@320 dark@375 dark@768 dark@1280 dark@800]"
@@ -274,6 +272,7 @@
       "expected": [],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -322,6 +321,7 @@
         "low-contrast .lx-text [dark@320 dark@375 dark@768 dark@1280]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -359,6 +359,7 @@
         "page-overflow html [1x@320 1x@375 1x@362 2x@320 2x@375 2x@362 dark@320 dark@375 dark@362]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -397,6 +398,7 @@
         "offscreen .link [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -441,6 +443,7 @@
         "low-contrast .error [1x@320 1x@375 1x@768 1x@1280 1x@356 2x@320 2x@375 2x@768 2x@1280 2x@356 dark@320 dark@375 dark@768 dark@1280 dark@356]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -480,6 +483,7 @@
         "text-covered .copy [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .heading [dark@320 dark@375 dark@768 dark@1280]",
@@ -521,6 +525,7 @@
         "page-overflow html [1x@320 1x@375 1x@768 1x@612 2x@320 2x@375 2x@768 2x@612 dark@320 dark@375 dark@768 dark@612]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .sx-e3mnb2 [dark@320 dark@375 dark@768 dark@1280 dark@612]"
@@ -561,6 +566,7 @@
         "offscreen .btn.danger [1x@320 1x@375 1x@400 2x@320 2x@375 2x@400 dark@320 dark@375 dark@400]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -599,6 +605,7 @@
         "clipped .page.next [1x@320 1x@375 1x@768 1x@1280 1x@800 2x@320 2x@375 2x@768 2x@1280 2x@800 dark@320 dark@375 dark@768 dark@1280 dark@800]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -636,6 +643,7 @@
         "page-overflow html [1x@320 1x@375 1x@360 2x@320 2x@375 2x@360 dark@320 dark@375 dark@360]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -673,6 +681,7 @@
         "page-overflow html [1x@320 1x@375 1x@552 2x@320 2x@375 2x@552 dark@320 dark@375 dark@552]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .lx-name [dark@320 dark@375 dark@768 dark@1280 dark@552]",
@@ -714,6 +723,7 @@
         "text-overflow .title [1x@320 1x@375 1x@404 2x@320 2x@375 2x@404 dark@320 dark@375 dark@404]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .title [dark@320 dark@375 dark@768 dark@1280 dark@404]",
@@ -747,6 +757,7 @@
       "expected": [],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .name [dark@320 dark@375 dark@768 dark@1280]",
@@ -785,6 +796,7 @@
       ],
       "caught": [],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -822,6 +834,7 @@
         "placeholder-clipped .input [1x@320 1x@375 1x@768 1x@1280 1x@800 2x@320 2x@375 2x@768 2x@1280 2x@800 dark@320 dark@375 dark@768 dark@1280 dark@800]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .label [dark@320 dark@375 dark@768 dark@1280 dark@800]"
@@ -861,6 +874,7 @@
         "no-name .lx-sort [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -906,6 +920,7 @@
         "clipped .top [1x@320 1x@375 1x@384 2x@320 2x@375 2x@384 dark@320 dark@375 dark@384]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [
         "env-dark-canvas-contrast .text [dark@320 dark@375 dark@768 dark@1280 dark@384]"
@@ -945,6 +960,7 @@
         "page-overflow html [1x@320 1x@375 1x@394 2x@320 2x@375 2x@394 dark@320 dark@375 dark@394]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
@@ -982,6 +998,7 @@
         "text-covered .sx-argayg [1x@320 1x@375 1x@768 1x@1280 2x@320 2x@375 2x@768 2x@1280 dark@320 dark@375 dark@768 dark@1280]"
       ],
       "missed": [],
+      "silentMissed": [],
       "unconfirmed": [],
       "environment": [],
       "notChecked": [

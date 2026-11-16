@@ -21,7 +21,7 @@ node tools/eval-component-lint.mjs --attempt run-1
 - `attempts/<run>/<id>.*`: lint の警告と `fix:` に従って直した版。新しく試すときは、新しい run として残します(前の run は書き換えません)。
 - `evals/results/component-lint/<run>.json`: 集計です。
   - `caught`: Chromium で崩れ、lint もその箱(またはページ)を報告したもの。
-  - `missed`: Chromium で崩れたのに、lint が報告しなかったもの。
+  - `missed`: Chromium で崩れたのに、lint が報告しなかったもの。そのうち `silentMissed` は、その例の lint の結果が Unknown(検査できなかったものを info で示す)でもなかったもので、これが黙って通った見逃しです。
   - `unconfirmed`: lint の error のうち、その箱でも反例の幅でも、Chromium で崩れが見えないもの。
   - `backlog`: 検査できなかった理由(Unknown と仮定)の件数。
 

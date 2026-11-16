@@ -1028,9 +1028,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const margins = { left: m('left'), right: m('right'), top: m('top'), bottom: m('bottom') };
           // A row item sized by its content (flex-basis auto or content, auto width): its max- and min-content widths
           // are its flex base size and automatic minimum.
-          const contentSized = main === 'inline' && ['auto', 'content'].includes(String(child.style['flex-basis'])) && child.style['inline-size'] === 'auto'
+          const contentSized = main === 'inline' && (['auto', 'content'].includes(String(child.style['flex-basis'])) || /%$/.test(String(child.style['flex-basis']))) && child.style['inline-size'] === 'auto'
             && ['auto', '0', '0px'].includes(String(child.style['min-inline-size'])) && ['visible', 'clip'].includes(child.style['overflow-x']) && !['inline-size', 'size'].includes(child.style['container-type']);
-          const contentSizes = contentSized ? frAutoMinimums(child.box, child.style, state.region, [...parents, { box, style }], true) : null;
+          const contentSizes = contentSized ? frAutoMinimums(child.box, child.style, state.region, [...parents, { box, style }], /%$/.test(String(child.style['flex-basis'])) ? 'min' : true) : null;
           let item = flexItem(child.style, { empty: !child.box.text && !child.box.children.length, axis: main, ...(contentSizes ? { contentSizes } : {}) });
           const marginMain = main === 'inline' ? add(margins.left, margins.right) : add(margins.top, margins.bottom);
           if (cmp(add(add(margins.left, margins.right), add(margins.top, margins.bottom)), zero) !== 0) {
@@ -1049,8 +1049,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         flexItem: { main }, ...(main === 'block' ? { flexBlockMinimum: true } : {}),
         ...(entry.align !== 'stretch' ? (main === 'inline' ? { alignBlock: entry.align } : { alignInline: entry.align }) : {}) });
       if (main === 'inline') {
-        const items = model.map(entry => constantItem(entry.item));
-        const hypothetical = items.map(item => maximumConstant(item.base, item.minimum)).map(v => v.b);
+        // A percentage basis (a frozen item): its size is that share of the content width (plus its edges in
+        // content-box), affine in the viewport. Where its minimum would exceed that, the browser would use the
+        // minimum instead: Unknown there. Line breaking needs constant sizes, so wrapping containers stay Unknown.
+        const items = model.map(entry => {
+          const item = constantItem(entry.item);
+          if (entry.item.percentBasis === undefined) return item;
+          if (wrap) throw flexUnknown('A percentage flex-basis in a wrapping flex container is outside the subset (line breaks need constant sizes)');
+          const base = sum(times(contentInline, entry.item.percentBasis), scalar(entry.item.contentBox ? entry.item.edges : zero));
+          if (clip(state.region, diff(item.minimum, base), true)) throw flexUnknown(`${entry.child.box.label}: its minimum width can exceed its flex-basis ${entry.child.style['flex-basis']} here, which is not modeled`);
+          return { ...item, base, minimum: base, maximum: null };
+        });
+        const hypothetical = wrap ? items.map(item => maximumConstant(item.base, item.minimum)).map(v => v.b) : items.map(item => item.base);
         const sets = wrap ? breakLines(state.region, contentInline, hypothetical, mainGap) : [{ region: state.region, lines: model.length ? [model.map((_, i) => i)] : [] }];
         for (const set of sets) {
           let combos = [{ region: set.region, lines: [] }];
@@ -2186,6 +2196,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (cmp(size, edges(st)) < 0) size = edges(st);
       return add(size, margins(st));
     };
+    // probe 'min': only the min-content width is needed (a percentage flex-basis sets the base; the minimum caps it).
+    if (probe === 'min') return { min: clampMax(style, minContent(box, style, parents)) };
     if (probe) return { min: clampMax(style, minContent(box, style, parents)), max: clampMax(style, minContent(box, style, parents, true)) };
     const n = tokens.length, mins = tokens.map(() => zero), minContents = tokens.map(() => zero), maxContents = tokens.map(() => zero);
     let next = 0;
