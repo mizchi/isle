@@ -2249,6 +2249,47 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     // sibling's top margin becomes max(previous bottom, its top) − previous bottom. Collapsing through the
                     // container (no padding or border on that side) or through an empty child is not modeled.
                     const mv = (child, side) => /^\d+(?:\.\d+)?px$/.test(String(child.style[`margin-${side}`])) ? px(child.style[`margin-${side}`]) : zero;
+                    // A plain block child (not a formatting root, no padding or border on that side) lets its first
+                    // (last) child's top (bottom) margin collapse through it: its own margin becomes the larger of the
+                    // two, and it lays that grandchild out without it (collapsedTop / collapsedBottom). The grandchild's
+                    // style must be the same across this region.
+                    const zeroEdge = (st, side) => cmp(add(px(st[`padding-${side}`] === 'ua' ? '0' : st[`padding-${side}`]), px(st[`border-${side}`] === 'ua' ? '0' : st[`border-${side}`])), zero) === 0;
+                    const plainBlock = st => st.display === 'block' && !['hidden', 'auto', 'scroll'].includes(String(st['overflow-x'])) && !['hidden', 'auto', 'scroll'].includes(String(st['overflow-y'])) && st.position === 'static';
+                    flow.forEach((child, k) => {
+                      if (!plainBlock(child.style) || child.box.text || !(child.box.children ?? []).length) return;
+                      const childAncestors = [...ancestors, { box: child.box, style: child.style, inline: null, block: null, type: child.style['container-type'], names: [] }];
+                      const flowOf = () => {
+                        const out = [];
+                        for (const g of child.box.children) {
+                          let pieces;
+                          try { pieces = styles(g, children.region, childAncestors, child.style, false); } catch { return null; }
+                          const keys = new Set(pieces.map(p => JSON.stringify([p.style.display, p.style.position, p.style['margin-top'], p.style['margin-bottom']])));
+                          if (keys.size !== 1) return null;
+                          const st = pieces[0].style;
+                          if (st.display !== 'none' && st.position !== 'absolute') out.push(st);
+                        }
+                        return out;
+                      };
+                      const updates = {};
+                      const grand = flowOf();
+                      if (!grand || grand.some(st => /inline|contents|table/.test(String(st.display)))) return;
+                      const gm = (st, side) => /^\d+(?:\.\d+)?px$/.test(String(st[`margin-${side}`])) ? px(st[`margin-${side}`]) : zero;
+                      if (grand.length && cmp(gm(grand[0], 'top'), zero) > 0 && zeroEdge(child.style, 'top')) {
+                        const top = cmp(gm(grand[0], 'top'), mv(child, 'top')) > 0 ? gm(grand[0], 'top') : mv(child, 'top');
+                        updates['margin-top'] = cmp(top, zero) === 0 ? '0' : `${number(top)}px`; updates.$collapsedTop = true;
+                      }
+                      if (grand.length && cmp(gm(grand.at(-1), 'bottom'), zero) > 0 && zeroEdge(child.style, 'bottom') && child.style['block-size'] === 'auto') {
+                        const bottom = cmp(gm(grand.at(-1), 'bottom'), mv(child, 'bottom')) > 0 ? gm(grand.at(-1), 'bottom') : mv(child, 'bottom');
+                        updates['margin-bottom'] = cmp(bottom, zero) === 0 ? '0' : `${number(bottom)}px`; updates.$collapsedBottom = true;
+                      }
+                      if (!Object.keys(updates).length) return;
+                      const index = children.children.indexOf(child);
+                      children.children[index] = { ...child, style: { ...child.style, ...updates } };
+                      flow[k] = children.children[index];
+                    });
+                    // This container's own first/last child margins already moved out by its parent.
+                    if (available.collapsedTop && flow.length) { const index = children.children.indexOf(flow[0]); children.children[index] = { ...flow[0], style: { ...flow[0].style, 'margin-top': '0' } }; flow[0] = children.children[index]; }
+                    if (available.collapsedBottom && flow.length) { const index = children.children.indexOf(flow.at(-1)); children.children[index] = { ...flow.at(-1), style: { ...flow.at(-1).style, 'margin-bottom': '0' } }; flow[flow.length - 1] = children.children[index]; }
                     if (flow.some(child => cmp(add(mv(child, 'top'), mv(child, 'bottom')), zero) > 0)) {
                       const edge = side => cmp(add(px(style[`padding-${side}`] === 'ua' ? '0' : style[`padding-${side}`]), px(style[`border-${side}`] === 'ua' ? '0' : style[`border-${side}`])), zero) > 0;
                       const unknownCollapse = why => { throw Object.assign(new Error(`${box.label}: ${why}; that margin collapsing is not modeled`), { code: 'U_LAYOUT_CSS', box, region: children.region }); };
@@ -2327,7 +2368,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   const childColumns = item => trackSlice(cs.values, columnGap, box, item.start, item.span);
                   if (!block) {
                     let endings = [children.region];
-                    for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: itemInline(item), percentInline: areaInline(item), tracks: { inline: childColumns(item) }, gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true } : {}), autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') }, fitInline: (box.contract?.overflow ?? 'fit') === 'fit' }, r, ancestors, item.inherited ?? style, emit).map(result => result.region)));
+                    for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: itemInline(item), percentInline: areaInline(item), tracks: { inline: childColumns(item) }, gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true, ...(item.style.$collapsedTop ? { collapsedTop: true } : {}), ...(item.style.$collapsedBottom ? { collapsedBottom: true } : {}) } : {}), autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') }, fitInline: (box.contract?.overflow ?? 'fit') === 'fit' }, r, ancestors, item.inherited ?? style, emit).map(result => result.region)));
                     for (const r of endings) results.push(finish(box, style, r, inline, contentInline, null, null, available, parents, emit));
                     continue;
                   }
@@ -2345,7 +2386,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   }
                   let measurements = [{ region: children.region, bases: rows.map(row => row.definite ?? scalar(row.fixed ?? row.edges ?? zero)) }];
                   for (const item of placed.filter(item => rows[item.row].auto || (!knownBlock && rows[item.row].weight))) {
-                    measurements = bounded(measurements.flatMap(m => solve(item.box, { inline: itemInline(item), percentInline: areaInline(item), tracks: { inline: childColumns(item) }, gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true } : {}), autoMargins: autoMargins(item) }, m.region, ancestors, item.inherited ?? style, false).flatMap(measured => maximum(measured.region, m.bases[item.row], sum(measured.block, scalar(marginBlock(item)))).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))));
+                    measurements = bounded(measurements.flatMap(m => solve(item.box, { inline: itemInline(item), percentInline: areaInline(item), tracks: { inline: childColumns(item) }, gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true, ...(item.style.$collapsedTop ? { collapsedTop: true } : {}), ...(item.style.$collapsedBottom ? { collapsedBottom: true } : {}) } : {}), autoMargins: autoMargins(item) }, m.region, ancestors, item.inherited ?? style, false).flatMap(measured => maximum(measured.region, m.bases[item.row], sum(measured.block, scalar(marginBlock(item)))).map(mx => ({ region: mx.region, bases: m.bases.map((v, i) => i === item.row ? mx.value : v) })))));
                   }
                   for (const m of measurements) {
                     let fractions = [{ region: m.region, value: scalar(0) }];
@@ -2376,7 +2417,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       let endings = [rs.region];
                       // align-content center/end (unstretched rows in a known height): the rows move by part of the free space.
                       const blockLead = knownBlock && ['center', 'end'].includes(style['align-content']) ? times(diff(knownBlock, rs.required), style['align-content'] === 'center' ? div(one, q(2)) : one) : scalar(zero);
-                      for (const item of placed) endings = bounded(endings.flatMap(r0 => autoOffsets(item, r0)).flatMap(({ region: r, offset: autoLead }) => solve(item.box, { inline: itemInline(item), block: diff(trackArea(rs.values, rowGap, item.row, item.rowSpan), scalar(marginBlock(item))), percentInline: areaInline(item), percentBlock: trackArea(rs.values, rowGap, item.row, item.rowSpan), gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true } : {}), autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') },
+                      for (const item of placed) endings = bounded(endings.flatMap(r0 => autoOffsets(item, r0)).flatMap(({ region: r, offset: autoLead }) => solve(item.box, { inline: itemInline(item), block: diff(trackArea(rs.values, rowGap, item.row, item.rowSpan), scalar(marginBlock(item))), percentInline: areaInline(item), percentBlock: trackArea(rs.values, rowGap, item.row, item.rowSpan), gridItem: true, ...(style.$blockFlow ? { blockFlowChild: true, ...(item.style.$collapsedTop ? { collapsedTop: true } : {}), ...(item.style.$collapsedBottom ? { collapsedBottom: true } : {}) } : {}), autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') },
                         origin:cs.shift ? offset(contentOrigin,sum(sum(sum(sum(trackStart(cs.values,columnGap,item.start),cs.shift.lead),times(cs.shift.extra,q(item.start))),scalar(marginOf(item, 'left'))),autoLead),sum(sum(trackStart(rs.values,rowGap,item.row),blockLead),scalar(marginOf(item, 'top')))) : null,
                         tracks: { inline: childColumns(item), block: trackSlice(rs.values, rowGap, box, item.row, item.rowSpan) },
                         fitInline: (box.contract?.overflow ?? 'fit') === 'fit', fitBlock: (box.contract?.overflowBlock ?? 'fit') === 'fit' }, r, finalAncestors, item.inherited ?? style, emit).map(result => result.region)));
