@@ -1621,6 +1621,16 @@ test('contents-focus: where the static rule reports, Tab never lands on the elem
   }
 });
 
+// The accessible name Chromium's accessibility tree gives the element (CDP), not Playwright's own computation.
+const axName = async (page, selector) => {
+  const client = await page.context().newCDPSession(page);
+  const {root} = await client.send('DOM.getDocument');
+  const {nodeId} = await client.send('DOM.querySelector', {nodeId: root.nodeId, selector});
+  const {nodes} = await client.send('Accessibility.getPartialAXTree', {nodeId, fetchRelatives: false});
+  await client.detach();
+  return nodes[0]?.name?.value ?? '';
+};
+
 test('inline svg names: a link named only by its svg has a name in Chromium exactly where the static rule finds one', async ({page}) => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff}.t{height:10px}.l{display:grid;grid-template-columns:24px}svg{display:block}`;
@@ -1630,9 +1640,8 @@ test('inline svg names: a link named only by its svg has a name in Chromium exac
     expect(report.status, svg).not.toBe('unknown');
     const unnamed = report.diagnostics.some(d => d.code === 'E_A11Y_NAME' && d.box === '.l');
     await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
-    const snapshot = await page.locator('main').ariaSnapshot();
-    const name = /link "([^"]*)"/.exec(snapshot)?.[1] ?? '';
-    expect(unnamed, `${svg}: Chromium names the link "${name}" (${snapshot.replace(/\n/g, ' ')})`).toBe(name === '');
+    const name = await axName(page, '.l');
+    expect(unnamed, `${svg}: Chromium names the link "${name}"`).toBe(name === '');
   }
 });
 
@@ -1659,7 +1668,7 @@ test('icon buttons (grid containers): the button has a name in Chromium exactly 
     expect(report.status, `${svg} ${report.diagnostics.map(d => d.message).join(' | ')}`).not.toBe('unknown');
     const unnamed = report.diagnostics.some(d => d.code === 'E_A11Y_NAME' && d.box === '.b');
     await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
-    const name = /button "([^"]*)"/.exec(await page.locator('main').ariaSnapshot())?.[1] ?? '';
+    const name = await axName(page, '.b');
     expect(unnamed, `${svg}: Chromium names the button "${name}"`).toBe(name === '');
   }
 });
@@ -1716,7 +1725,7 @@ test('sr-only text names an icon link: Chromium names the link exactly where E_A
     expect(report.status, report.diagnostics.map(d => d.message).join(' | ')).not.toBe('unknown');
     const unnamed = report.diagnostics.some(d => d.code === 'E_A11Y_NAME');
     await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
-    const name = /link "([^"]*)"/.exec(await page.locator('main').ariaSnapshot())?.[1] ?? '';
+    const name = await axName(page, '.l');
     expect(unnamed, `${inner || 'no text'}: Chromium names the link "${name}"`).toBe(name === '');
   }
 });
@@ -1764,7 +1773,7 @@ test('summary: Tab reaches it, and Chromium gives it a name exactly where E_A11Y
     await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
     await page.keyboard.press('Tab');
     expect(await page.evaluate(() => document.activeElement.tagName)).toBe('SUMMARY');
-    const name = await page.evaluate(() => document.activeElement.getAttribute('aria-label') ?? document.activeElement.textContent.trim());
+    const name = await axName(page, '.s');
     expect(unnamed, `${summary}: Chromium name "${name}"`).toBe(name === '');
   }
 });
@@ -1778,6 +1787,6 @@ test('a link that is the only child of a paragraph: Tab reaches it and Chromium 
   await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
   await page.keyboard.press('Tab');
   expect(await page.evaluate(() => document.activeElement.className)).toBe('l');
-  expect(/link "Pricing"/.test(await page.locator('main').ariaSnapshot())).toBe(true);
+  expect(await axName(page, '.l')).toBe('Pricing');
   expect(await page.evaluate(() => document.querySelector('.t').getBoundingClientRect().height)).toBe(24);
 });
