@@ -1935,3 +1935,14 @@ test('fixed-covers-part: text that runs under a full-height fixed sidebar is cut
   // A sidebar that stops short of the viewport's height can be scrolled past: not reported.
   assert.deepEqual(hits('.side { block-size: 300px; }'), []);
 });
+
+test('fixed-covers-part: the top of the page under a fixed header, the end under a fixed footer', () => {
+  const tree = page([{tag: 'header', classes: ['h']}, {tag: 'p', classes: ['t1'], text: true}, {tag: 'div', classes: ['tall']}, {tag: 'p', classes: ['t2'], text: true}, {tag: 'footer', classes: ['f']}]);
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; grid-auto-rows: auto; }\n.h, .f { position: fixed; left: 0; inline-size: 100%; block-size: 50px; background: #333; }\n.h { top: 0; }\n.f { bottom: 0; }\n.t1, .t2 { display: block; block-size: 80px; line-height: 24px; }\n.tall { block-size: 1500px; }\n${extra}`);
+  const boxes = {'.t1': {minInlineSize: 0, intrinsicBlockSize: 80}, '.t2': {minInlineSize: 0, intrinsicBlockSize: 80}};
+  const hits = extra => [...new Set(find(run(tree, css(extra), {boxes}), 'E_A11Y_FIXED_HIDES_PART').map(d => d.box))].sort();
+  assert.deepEqual(hits(''), ['.t1', '.t2']);
+  assert.deepEqual(hits('.page { padding: 50px 0; }'), []);
+  // A sticky header is in flow at scroll 0: nothing is hidden.
+  assert.deepEqual(hits('.h { position: sticky; }\n.f { display: none; }'), []);
+});

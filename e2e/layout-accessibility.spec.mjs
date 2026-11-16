@@ -170,6 +170,9 @@ const cases = [
   {name: 'fixed-sidebar-cuts-footer', html: '<div class="page"><nav class="side" aria-label="Side"></nav><div class="main"><p class="body">Body</p></div><div class="foot"><a class="l1" href="/a">About us</a><a class="l2" href="/b">Help</a></div><div class="tall"></div></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.side{position:fixed;left:0;top:0;inline-size:200px;block-size:100%;background:#eee;z-index:1}.main{display:grid;grid-template-columns:minmax(0,1fr);margin-left:200px}.body,.l1,.l2{display:block;line-height:24px;color:#000}.foot{display:grid;grid-template-columns:300px minmax(0,1fr)}.tall{block-size:1500px}`,
     boxes: {'.body': {minInlineSize: 0, intrinsicBlockSize: 24}, '.l1': {minInlineSize: 0, intrinsicBlockSize: 24}, '.l2': {minInlineSize: 0, intrinsicBlockSize: 24}}, skip: ['focus-scrolled-under', 'text-contrast', 'text-spacing', 'target-size', 'link-in-text-block']},
+  {name: 'fixed-header-cuts-top', html: '<div class="page"><header class="h"></header><p class="t1">Top</p><div class="tall"></div><p class="t2">End</p><footer class="f"></footer></div>',
+    css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.h,.f{position:fixed;left:0;inline-size:100%;block-size:50px;background:#333}.h{top:0}.f{bottom:0}.t1,.t2{display:block;block-size:80px;line-height:24px;color:#000}.tall{block-size:1500px}`,
+    boxes: {'.t1': {minInlineSize: 0, intrinsicBlockSize: 80}, '.t2': {minInlineSize: 0, intrinsicBlockSize: 80}}, skip: ['focus-scrolled-under', 'text-contrast', 'text-spacing']},
   {name: 'fixed-bars-meet', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b" aria-label="A"></button><div class="gap"></div><div class="f"></div></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h,.f{position:fixed;left:0;inline-size:100%;block-size:400px;background:#333}.h{top:0}.f{bottom:0}.gap{block-size:600px}.b{${button}inline-size:100px;block-size:40px}`, skip: ['focus-scrolled-under']},
   {name: 'sticky-header-focus', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><button class="b3" aria-label="C"></button><div class="tall"></div></div>',
@@ -810,8 +813,8 @@ async function runtime(page, sample) {
     return [...out];
   }, elements.map(e => e.path));
   for (const path of hidden) found.get('fixed-hides-content').add(path);
-  // Cut off for good by a fixed bar: at every scroll offset where it is on screen, a fixed bar spans its visible height
-  // and covers part (not all) of its width.
+  // Cut off for good by a fixed bar: partly seen at some scroll offset, but at none entirely on screen and clear of
+  // every fixed bar (entirely hidden ones are fixed-hides-content).
   const cut = await page.evaluate(paths => {
     const at = path => { let n = document.body.firstElementChild; for (const i of path.split('/').slice(1).map(Number)) n = n.children[i]; return n; };
     const bars = [...document.querySelectorAll('*')].filter(n => getComputedStyle(n).position === 'fixed' && getComputedStyle(n).backgroundColor !== 'rgba(0, 0, 0, 0)');
@@ -821,15 +824,17 @@ async function runtime(page, sample) {
       const node = at(path);
       const speaks = [...node.childNodes].some(c => c.nodeType === 3 && c.textContent.trim()) || node.tabIndex >= 0;
       if (!speaks || bars.some(bar => bar.contains(node)) || !node.getClientRects().length) continue;
-      let always = true, shown = false;
-      for (let s = 0; s <= max && always; s += 4) {
+      let whole = false, part = false;
+      for (let s = 0; s <= max && !whole; s += 2) {
         scrollTo(0, s);
-        const r = node.getBoundingClientRect(), top = Math.max(r.top, 0), bottom = Math.min(r.bottom, innerHeight);
-        if (bottom <= top) continue;
-        shown = true;
-        always = bars.some(bar => { const b = bar.getBoundingClientRect(); return b.top <= top && b.bottom >= bottom && b.left < r.right - 0.5 && b.right > r.left + 0.5 && !(b.left <= r.left && b.right >= r.right); });
+        const r = node.getBoundingClientRect(), rects = bars.map(bar => bar.getBoundingClientRect());
+        const overlaps = rects.filter(b => b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top);
+        if (r.top >= 0 && r.bottom <= innerHeight && !overlaps.length) whole = true;
+        // Some point of it on screen and outside every bar.
+        for (let y = Math.max(r.top, 0) + 0.5; y < Math.min(r.bottom, innerHeight) && !part; y += 4) for (let x = Math.max(r.left, 0) + 0.5; x < Math.min(r.right, innerWidth) && !part; x += 4)
+          if (!rects.some(b => x >= b.left && x < b.right && y >= b.top && y < b.bottom)) part = true;
       }
-      if (shown && always) out.push(path);
+      if (part && !whole) out.push(path);
     }
     scrollTo(0, 0);
     return out;

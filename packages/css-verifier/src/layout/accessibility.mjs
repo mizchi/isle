@@ -910,6 +910,28 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
           hidden.push(piece);
         }
       }
+      // A bar on the top edge that covers the top of the content at scroll 0 (a fixed header with no matching page
+      // padding): scrolling only moves the content further up under it, so that slice is never seen. Likewise a bar
+      // on the bottom edge and the end of the content at the largest scroll position.
+      for (const bar of fixedBars) {
+        if (related(bar.path, target.path) || !paintsAbove(bar, layer(bar), target, own)) continue;
+        let across = intersect(target.region, bar.region);
+        across = atMost(across, bar.origin.inline, target.origin.inline); across = atMost(across, right(target), right(bar));
+        if (!across) continue;
+        // Top edge, scroll 0: the content starts above the bar's bottom (by ≥ 1px) and ends below it.
+        let top = atMost(across, bar.origin.block, scalar(0));
+        top = atMost(top, sum(target.origin.block, scalar(1)), bottom(bar)); top = below(top, bottom(bar), bottom(target));
+        // Bottom edge, at the largest scroll s (0 when the page is no taller than the viewport): in viewport
+        // coordinates the content ends below the bar's top and starts above it.
+        let edge = atMost(across, viewportBlock, bottom(bar));
+        const at = (region, shift) => { region = atMost(region, sum(bar.origin.block, scalar(1)), diff(bottom(target), shift)); return below(region, diff(target.origin.block, shift), bar.origin.block); };
+        const short = at(atMost(edge, bottom(rootRow), viewportBlock), scalar(0));
+        const tall = at(atMost(edge, viewportBlock, bottom(rootRow)), diff(bottom(rootRow), viewportBlock));
+        for (const [region, side] of [[top, 'top'], [short, 'bottom'], [tall, 'bottom']]) for (const piece of region ? hidden.reduce((rest, done) => rest.flatMap(r => subtract(r, done)), [region]) : []) {
+          report(findings, 'E_A11Y_FIXED_HIDES_PART', 'error', `${target.box.label} runs under the fixed ${bar.box.label} at the viewport's ${side} edge: its ${side} part is hidden at every scroll position. Pad the page by the bar's height`, target, piece, { rule: 'fixed-covers-part', cover: bar.path });
+          hidden.push(piece);
+        }
+      }
       // A bar on the top edge and one on the bottom edge that meet cover the whole viewport (short viewports: a phone
       // held sideways): wherever the content scrolls, it is behind one of them.
       for (const upper of fixedBars) for (const lower of fixedBars) {
