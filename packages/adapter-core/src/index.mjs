@@ -48,7 +48,11 @@ function markText(html, start = 0) {
     const ownText = (node.childNodes ?? []).some(c => c.nodeName === '#text' && c.value.trim());
     const folds = node.tagName && ownText && (node.childNodes ?? []).filter(c => c.tagName).every(phrasing);
     if (!folds) for (const child of node.childNodes ?? []) walk(child);
-    if (node.tagName && ownText) {
+    // An element without text of its own whose children are two or more phrasing elements with text is, in block
+    // flow, one text leaf of them (the engine folds it): it gets the text box too (harmless where it is not folded).
+    const elements = (node.childNodes ?? []).filter(c => c.tagName), hasText = c => (c.childNodes ?? []).some(k => (k.nodeName === '#text' && k.value.trim()) || (k.tagName && hasText(k)));
+    const inlineRun = node.tagName && !ownText && elements.length >= 2 && elements.every(c => phrasing(c) && c.tagName !== 'img') && elements.some(hasText);
+    if (node.tagName && (ownText || inlineRun)) {
       const id = `__text${n++}`, cls = node.attrs.find(a => a.name === 'class');
       if (cls) cls.value = `${cls.value} ${id}`.trim(); else node.attrs.push({ name: 'class', value: id });
     }

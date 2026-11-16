@@ -1802,3 +1802,16 @@ test('a field whose label is hidden: E_A11Y_LABEL holds exactly where Chromiumâ€
     expect(unlabelled, `${css || 'visible'}: Chromium name "${await axName(page, '.f')}"`).toBe((await axName(page, '.f')) === '');
   }
 });
+
+test('a paragraph of a link and a span: Tab reaches the link and Chromiumâ€™s tree names it as the static analysis does', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const css = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.p{${g};background:#fff;color:#000}.h{height:10px}.t{display:block;font:16px/24px sans-serif}.l{color:#000}`;
+  const html = '<main class="p"><h1 class="h" aria-label="T"></h1><p class="t"><a class="l" href="/me">Alex</a> <span class="d">today</span></p></main>';
+  const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true, boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 24}, '.l': {minInlineSize: 0, intrinsicBlockSize: 24}, '.d': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+  expect(report.status, report.diagnostics.map(d => d.message).join(' | ')).toBe('verified');
+  await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+  await page.keyboard.press('Tab');
+  expect(await page.evaluate(() => document.activeElement.className)).toBe('l');
+  expect(await axName(page, '.l')).toBe('Alex');
+  expect(await page.evaluate(() => document.querySelector('.t').getBoundingClientRect().height)).toBe(24);
+});

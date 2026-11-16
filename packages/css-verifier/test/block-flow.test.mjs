@@ -94,3 +94,9 @@ test('a block whose only child is an inline link with text is a text leaf (the l
   assert.equal(r.sizes.find(s => s.box === '.n' && s.rect).rect.blockStart.constant, '34');
   assert.ok(!r.diagnostics.some(d => d.code === 'E_A11Y_NAME'));
 });
+
+test('a block of several inline elements with its own contract is one text leaf', () => {
+  const r = analyzeHTML(`<html lang="en"><body><main class="p"><h1 class="h" aria-label="T"></h1><p class="t"><a class="l" href="/me">Alex</a> <span class="d">today</span></p><div class="n"></div></main></body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g};background:#fff;color:#000}.h{height:10px}.t{display:block;line-height:24px}.l{color:#000}.n{height:5px}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true, boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 24}, '.l': {minInlineSize: 0, intrinsicBlockSize: 24}, '.d': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.equal(r.sizes.find(s => s.box === '.n' && s.rect).rect.blockStart.constant, '34');
+});

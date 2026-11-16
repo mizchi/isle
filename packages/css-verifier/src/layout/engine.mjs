@@ -2003,10 +2003,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // A block container whose only child is one inline phrasing element with text (<p><a>Read more</a></p>,
         // <li><a>Item</a></li>) is a text leaf with that element as its inline content: it takes the element's
         // text contract. In a grid or flex container the element would be an item instead (not folded).
-        if (style.display === 'block' && !box.text && !box.inline?.length && box.children.length === 1 && !box.pseudo) {
-          const only = box.children[0];
-          if (phrasingTags.has(only.tag) && only.tag !== 'img' && (only.text || only.inline?.length) && !(only.children ?? []).length && only.contract && !box.contract)
-            box = { ...box, text: true, inline: [only], children: [], contract: only.contract, $foldedInline: true };
+        if (style.display === 'block' && !box.text && !box.inline?.length && box.children.length && !box.pseudo) {
+          const kids = box.children, textual = k => k.text || k.inline?.length;
+          const allInline = kids.every(k => phrasingTags.has(k.tag) && k.tag !== 'img' && !(k.children ?? []).length);
+          // One element: it brings its text contract. Several: the container's own contract sizes the line(s).
+          if (allInline && kids.length === 1 && textual(kids[0]) && kids[0].contract && !box.contract)
+            box = { ...box, text: true, inline: kids, children: [], contract: kids[0].contract, $foldedInline: true };
+          else if (allInline && kids.length > 1 && kids.some(textual) && box.contract)
+            box = { ...box, text: true, inline: kids, children: [], $foldedInline: true };
         }
         const inertMain = available.flexItem && style.position !== 'absolute' ? inertMainSize(style, box, available.flexItem.main) : null;
         if (inertMain) style = { ...style, [inertMain]: 'auto', $inertMain: { property: inertMain, value: style[inertMain] } };
