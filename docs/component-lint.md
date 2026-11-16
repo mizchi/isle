@@ -40,6 +40,7 @@ error が 1 件でもあれば終了コードは 1 です。
 - **warning**：バグの可能性が高いもの。効かない宣言、inset のない sticky、`100vw` とスクロールバー、固定 line-height、固定高さのテキスト、RTL での物理方向、セレクタとテンプレートの不一致など。
 - **info**：検査しなかったもの（Unknown）と、置いた仮定。Unknown を合格として扱うことはありません。
 - spec 層: WAI-ARIA / HTML の仕様違反のうち、マークアップだけで決まり描画には現れないもの(role の必須属性の欠落、不正な ARIA 属性・値、存在しない id への参照、id の重複、role の親子関係、入れ子の操作要素、ul/dl の子、th の scope など。一覧は `specRules`)。描画からは確かめられないので、recommended の error とは分けて warning にし、`tier: 'spec'` を付ける。メッセージは「spec:」で始まる。
+- CSS の誤り(同じルールの略記と longhand の衝突 `E_CSS_SHORTHAND_CONFLICT`)は error にする。これがあると状態のレイアウトを解析しないので、その状態は「not checked」(`U_LAYOUT_NOT_ANALYZED`)として示す。
 - recommended に含まれないルールの検出も、info として残す(「outside the recommended rules」)。解析が中に入らなかった箱(grid でも flex でもない container の `E_LAYOUT_CONTAINER`)は、「not checked」として、その箱と中身が検査されていないことを示す。検出が黙って消えることはない。
 - ページ全体についてのルール(h1、main ランドマーク、スキップリンク、ランドマーク外のテキスト)は、コンポーネントには当てはまらないので出さない(API の `page: true` で出す)。
 
@@ -52,6 +53,7 @@ error が 1 件でもあれば終了コードは 1 です。
 - `data-text-one-line`: その要素のテキストは 1 行に収まるはず(CSS が折り返しを許していても)。収まらない幅で `E_LAYOUT_CONTENT` を出す。
 - `data-text-max-length="12"`: 動的なテキスト(`{name}` など、adapter は「…」として描画する)の最大文字数。その長さ以下のどの文字列でも収まるかを、最悪の幅で検査する。文字集合は `data-text-chars="…"` で指定する(既定は印字可能な ASCII)。折り返し位置は決まらないので、`white-space: nowrap` か `data-text-one-line` が要る(なければ仮定のまま)。
 - props の型が文字列・数値リテラルの union なら(`status: 'Active' | 'Pending review'`)、その props のテキストは型の値のどれかである。adapter は値ごとに状態を作り、そのテキストを測る。`{#if status === 'Active'}` のような比較は、選んだ値と矛盾しない状態だけを残す。React は props の引数の型(型リテラル、ローカルの type / interface)、Svelte は `let { … }: Props = $props()`、Vue は `defineProps<Props>()`(`<script setup lang="ts">`)を読む。省略可能な props(`status?:`)は渡されないことがあるので、これまでどおり測らない。既定値は実際の値と違いうるので使わない。
+- 既定値のある props(`let { label = 'Save changes' } = $props()`、`({ label = '…' })`、Vue の `withDefaults` と `default`)は、呼び出し側が渡さないときに既定値を描くので、既定値の状態を 1 つ加えて測る(ほかの値の状態は、これまでどおり「…」)。
 - 属性のない動的なテキストは測らない(実際の文字列が分からないため)。
 - `--font` を渡すと、既定のフォントサイズを 2 倍(32px)にした状態も解析する(SC 1.4.4 のテキストの 200% 拡大)。rem・em・%・キーワードのフォントサイズはそれに従って大きくなり、測り直される。1 倍では起きず 2 倍でだけ起きるはみ出しや切り取りを `E_A11Y_TEXT_RESIZE` として出す(`--text-resize off` で外す)。Chromium の照合では、CDP で既定のフォントサイズを 32px にしたときにはみ出す場合とちょうど一致した。
 - テキスト入力欄の `placeholder` も、入力欄のフォントで測る。入力欄の内容の箱より広い幅では、末尾が切れて見えないので `W_A11Y_PLACEHOLDER_CLIPPED`(警告)を出す(Chromium の描画と照合した)。

@@ -41,6 +41,10 @@ export function expandSvelte(source, { maxStates = 64, eachCounts = [0, 1, 2], s
   const propsDecl = script.flatMap(stmt => stmt.type === 'VariableDeclaration' ? stmt.declarations : []).find(d => d.init?.type === 'CallExpression' && d.init.callee.name === '$props' && d.id.type === 'ObjectPattern');
   const plainProps = new Set((propsDecl?.id.properties ?? []).filter(p => p.type === 'Property' && p.key.type === 'Identifier' && (p.value.type === 'Identifier' && p.value.name === p.key.name)).map(p => p.key.name));
   const literalProps = literalUnionProps(propsMembers(propsDecl?.id.typeAnnotation?.typeAnnotation, script), name => plainProps.has(name));
+  // A prop with a literal default (let { label = 'Save changes' } = $props()): when the caller leaves it out, its text is
+  // that default — a state of its own, measured, beside the placeholder for any other value.
+  const defaultProps = new Map((propsDecl?.id.properties ?? []).filter(p => p.type === 'Property' && p.key.type === 'Identifier' && p.value.type === 'AssignmentPattern' && p.value.left.type === 'Identifier' && p.value.left.name === p.key.name && p.value.right.type === 'Literal' && ['string', 'number'].includes(typeof p.value.right.value) && !literalProps.has(p.key.name)).map(p => [p.key.name, p.value.right.value]));
+  if (defaultProps.size) assumptions.add(`props with a literal default (${[...defaultProps.keys()].join(', ')}) are checked with that default and with placeholder text for any other value`);
   if (literalProps.size) assumptions.add(`text of props typed as literal unions (${[...literalProps.keys()].join(', ')}) is each of their values`);
 
   // Each render function returns variants: [{ html, choices }] where choices maps condition keys to values; a
@@ -116,7 +120,8 @@ export function expandSvelte(source, { maxStates = 64, eachCounts = [0, 1, 2], s
     switch (node.type) {
       case 'Text': return [{ html: escapeText(node.data), choices: {} }];
       case 'Comment': return [{ html: '', choices: {} }];
-      case 'ExpressionTag': if (node.expression.type === 'Identifier' && literalProps.has(node.expression.name)) return literalProps.get(node.expression.name).map(value => ({ html: escapeText(String(value)), choices: { [node.expression.name]: value } }));
+      case 'ExpressionTag': if (node.expression.type === 'Identifier' && defaultProps.has(node.expression.name)) { const name = node.expression.name; return [{ html: escapeText(String(defaultProps.get(name))), choices: { [`${name} given`]: false } }, { html: '…', choices: { [`${name} given`]: true } }]; }
+        if (node.expression.type === 'Identifier' && literalProps.has(node.expression.name)) return literalProps.get(node.expression.name).map(value => ({ html: escapeText(String(value)), choices: { [node.expression.name]: value } }));
         assumptions.add('{expression} text is rendered as placeholder text; its size comes from the box contracts'); return [{ html: '…', choices: {} }];
       case 'RegularElement': {
         const own = attributes(node), inner = voidTags.has(node.name) ? [{ html: '', choices: {} }] : renderNodes(node.fragment.nodes, context);

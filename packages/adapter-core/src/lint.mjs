@@ -14,6 +14,8 @@ export const recommended = {
   E_SCOPE_REACHES: ['error', 'style the child component\'s elements in that component (a class or variant prop it exposes); name this component\'s own class here'],
   E_LAYOUT_ABSOLUTE_CLIPPED: ['error', 'move overflow: hidden off the menu\'s containing block (onto an inner wrapper), render the menu outside it (a portal), or keep it inside'],
   W_LAYOUT_FIXED_TRAPPED: ['warning', 'render the fixed box outside the transformed / backdrop-filtered box (a portal to the end of body), or drop that property'],
+  // A CSS authoring error the analysis rejects (a shorthand and another declaration writing one longhand in one rule).
+  E_CSS_SHORTHAND_CONFLICT: ['error', 'put the shorthand and the longhand in separate rules (the later rule wins), or write only longhands (font: inherit, then font-size in another rule)'],
   E_SCOPE_CONTRACT: ['error', 'declare data-noshift inside the child component, or wrap it in an element of this component and mark that'],
   // Layout shift: an element the component marks data-noshift moves or resizes between its states.
   E_LAYOUT_NOSHIFT: ['error', 'reserve the space the changing content needs (a fixed track or min-height), overlay it (position: absolute), or limit the contract to the states it should hold in (data-noshift-on)'],
@@ -211,6 +213,9 @@ export function lint(result, { file = '<component>', source = '', profile = 'rec
     if (d.code === 'U_ADAPTER_ANALYSIS') { out.push({ file, severity: 'warning', code: 'W_LINT_ANALYSIS_FAILED', message: `the checker failed on this state, so nothing in it was checked: ${readable(d.message).replace(/^the analysis of this state failed: /, '')}`, fix: 'report it with the component (a bug in the checker, not in the component)', states: 'some states' }); continue; }
     out.push({ file, line: lineOf(source, /\.([\w-]+)/.exec(cleanLabel(d.box))?.[1]), severity: 'info', code: d.code, message: `not checked: ${readable(d.message)}` });
   }
+  // States whose CSS errors stopped the layout analysis (no box was laid out): everything else in them is not checked.
+  const blocked = result.states.filter(s => (s.report.diagnostics ?? []).some(d => /^E_CSS_/.test(d.code)) && !(s.report.sizes ?? []).length);
+  if (blocked.length) out.push({ file, severity: 'info', code: 'U_LAYOUT_NOT_ANALYZED', message: `not checked: the layout of ${blocked.length === total ? 'every state' : `${blocked.length} of ${total} states`} was not analyzed, because the CSS errors above stop the analysis; fix them and lint again` });
   for (const a of result.coverage?.assumptions ?? []) out.push({ file, severity: 'info', code: 'ASSUMPTION', message: a });
   return out.sort((a, b) => ({ error: 0, warning: 1, info: 2 })[a.severity] - ({ error: 0, warning: 1, info: 2 })[b.severity] || (a.line ?? 1e9) - (b.line ?? 1e9));
 }

@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "A save bar; the button label is a prop with a default.", "planted": "the default label 'Save all changes' (the prop left out) does not fit the 104px button column on one line: it spills out", "expect": ["E_LAYOUT_CONTENT"]}

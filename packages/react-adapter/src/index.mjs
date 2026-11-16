@@ -78,7 +78,7 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
   const empty = [{ html: '', choices: {} }];
   // Props typed as a union of string or number literals (status: 'Active' | 'Pending review'): their text is one of
   // those values, a state each (the choice is the prop's value).
-  let literalProps = new Map(), propsName = null;
+  let literalProps = new Map(), propsName = null; const defaultProps = new Map();
   const text = node => source.slice(node.start, node.end);
   const choice = (node, value) => { const { key, negate } = conditionKey(text(node)); return choose(key, value !== negate); };
 
@@ -281,6 +281,7 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
     }
     // {children} / {props.children}: what the caller passes, assumed to be text but marked as the caller's content.
     const literalName = node.type === 'Identifier' ? node.name : node.type === 'MemberExpression' && !node.computed && propsName && node.object.type === 'Identifier' && node.object.name === propsName ? node.property.name : null;
+    if (node.type === 'Identifier' && defaultProps.has(node.name)) return [{ html: escapeText(String(defaultProps.get(node.name))), choices: choose(`${node.name} given`, false) }, { html: '…', choices: choose(`${node.name} given`, true) }];
     if (literalName && literalProps.has(literalName)) return literalProps.get(literalName).map(value => ({ html: escapeText(String(value)), choices: choose(literalName, value) }));
     if (['Identifier', 'MemberExpression', 'TemplateLiteral', 'CallExpression', 'OptionalMemberExpression'].includes(node.type)) { assumptions.add('{expression} text is placeholder text; its size comes from the box contracts'); return [{ html: /^(?:props\.)?children$/.test(text(node)) ? `…${boundary('children')}` : '…', choices: {} }]; }
     unknown('U_REACT_EXPRESSION', `the JSX child {${text(node)}} is not modeled`);
@@ -312,6 +313,9 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
   const local = param?.type === 'ObjectPattern' ? new Set(param.properties.filter(p => p.type === 'ObjectProperty' && p.key.type === 'Identifier' && p.value.type === 'Identifier' && p.key.name === p.value.name).map(p => p.key.name)) : null;
   if (param?.type === 'Identifier') propsName = param.name;
   literalProps = literalUnionProps(propsMembers(param?.typeAnnotation?.typeAnnotation, ast.program.body), name => Boolean(propsName) || Boolean(local?.has(name)));
+  // A prop with a literal default ({ label = 'Save changes' }): its default is a state of its own (the prop left out).
+  for (const p of param?.type === 'ObjectPattern' ? param.properties : []) if (p.type === 'ObjectProperty' && p.key.type === 'Identifier' && p.value.type === 'AssignmentPattern' && p.value.left.type === 'Identifier' && p.value.left.name === p.key.name && ['StringLiteral', 'NumericLiteral'].includes(p.value.right.type) && !literalProps.has(p.key.name)) defaultProps.set(p.key.name, p.value.right.value);
+  if (defaultProps.size) assumptions.add(`props with a literal default (${[...defaultProps.keys()].join(', ')}) are checked with that default and with placeholder text for any other value`);
   if (literalProps.size) assumptions.add(`text of props typed as literal unions (${[...literalProps.keys()].join(', ')}) is each of their values`);
   const body = target.fn.body.type === 'BlockStatement' ? target.fn.body.body.filter(s => s.type === 'ReturnStatement').at(-1)?.argument : target.fn.body;
   if (target.fn.body.type === 'BlockStatement' && target.fn.body.body.filter(s => s.type === 'ReturnStatement').length > 1) unknown('U_REACT_EARLY_RETURN', 'the component returns early; only its last return is modeled');

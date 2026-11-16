@@ -137,3 +137,8 @@ export default function Seg({ range }) { return <div><button role="radio" aria-c
   assert.ok(htmls.some(h => /<input disabled/.test(h)) && htmls.some(h => /<input>|<input\/>|<input \/>/.test(h)), htmls.join('\n'));
   assert.ok(htmls.every(h => !h.includes('"dynamic"')));
 });
+
+test('a prop with a literal default ({ label = "…" }): the default is a state of its own', () => {
+  const {states} = expandReact(`export default function B({ label = 'Save changes' }) { return <button type="button">{label}</button>; }`);
+  assert.deepEqual(states.map(s => s.html).sort(), ['<button type="button">Save changes</button>', '<button type="button">…</button>']);
+});

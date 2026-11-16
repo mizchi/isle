@@ -84,3 +84,12 @@ test('props typed as literal unions: each value is a state, and the markup equal
   for (const state of states) assert.equal(normalize(state.html), normalize((await renderSSR(source, state.choices)).html), JSON.stringify(state.choices));
   assert.ok(assumptions.some(a => /literal unions \(status\)/.test(a)));
 });
+
+test('a prop with a literal default: the default (prop left out) is a measured state, beside any other value', async () => {
+  const source = `<script>let { label = 'Save changes' } = $props();</script>\n<button class="b" type="button">{label}</button>\n<style>.b { display: block; }</style>`;
+  const {states, assumptions} = expandSvelte(source);
+  assert.deepEqual(states.map(s => s.html).sort(), ['<button class="b" type="button">Save changes</button>', '<button class="b" type="button">…</button>']);
+  const omitted = states.find(s => s.choices['label given'] === false);
+  assert.equal(normalize(omitted.html), normalize((await renderSSR(source, {})).html));
+  assert.ok(assumptions.some(a => /literal default \(label\)/.test(a)));
+});

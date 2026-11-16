@@ -26,16 +26,28 @@ export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2], sour
   for (const style of descriptor.styles) if (style.module) unknown('U_VUE_CSS_MODULE', '<style module> class names come from $style at run time');
   const css = descriptor.styles.filter(s => !s.module).map(s => unscopeVueCSS(s.content)).join('\n');
   // Props typed as literal unions (defineProps<{ status: 'Active' | 'Pending' }>()): their text is each value.
+  // Props with a literal default (withDefaults(defineProps<…>(), { label: 'Save' }), or defineProps({ label: { default:
+  // 'Save' } })): the default (the prop left out) is a state of its own, beside placeholder text for any other value.
   let literalProps = new Map();
-  if (descriptor.scriptSetup?.lang === 'ts') {
+  const defaultProps = new Map();
+  if (descriptor.scriptSetup) {
     try {
       const body = parseScript(descriptor.scriptSetup.content, { sourceType: 'module', plugins: ['typescript'] }).program.body;
-      let call = null;
-      const find = node => { if (!node || typeof node !== 'object' || call) return; if (node.type === 'CallExpression' && node.callee.name === 'defineProps' && node.typeParameters) { call = node; return; } for (const v of Object.values(node)) if (v && typeof v === 'object') Array.isArray(v) ? v.forEach(find) : find(v); };
+      let call = null, defaults = null;
+      const find = node => { if (!node || typeof node !== 'object') return; if (node.type === 'CallExpression' && node.callee.name === 'withDefaults' && node.arguments[1]?.type === 'ObjectExpression') defaults = node.arguments[1]; if (node.type === 'CallExpression' && node.callee.name === 'defineProps' && !call) call = node; for (const v of Object.values(node)) if (v && typeof v === 'object') Array.isArray(v) ? v.forEach(find) : find(v); };
       body.forEach(find);
-      literalProps = literalUnionProps(propsMembers(call?.typeParameters.params[0], body));
+      if (call?.typeParameters) literalProps = literalUnionProps(propsMembers(call.typeParameters.params[0], body));
+      const literal = v => v && ['StringLiteral', 'NumericLiteral'].includes(v.type) ? v.value : undefined;
+      const keyOf = p => p.key?.type === 'Identifier' ? p.key.name : p.key?.value;
+      for (const p of defaults?.properties ?? []) if (p.type === 'ObjectProperty' && literal(p.value) !== undefined) defaultProps.set(keyOf(p), literal(p.value));
+      if (call?.arguments[0]?.type === 'ObjectExpression') for (const p of call.arguments[0].properties) {
+        const d = p.type === 'ObjectProperty' && p.value.type === 'ObjectExpression' ? p.value.properties.find(q => q.type === 'ObjectProperty' && keyOf(q) === 'default') : null;
+        if (d && literal(d.value) !== undefined) defaultProps.set(keyOf(p), literal(d.value));
+      }
+      for (const k of literalProps.keys()) defaultProps.delete(k);
     } catch { /* not parsed: the props stay placeholder text */ }
     if (literalProps.size) assumptions.add(`text of props typed as literal unions (${[...literalProps.keys()].join(', ')}) is each of their values`);
+    if (defaultProps.size) assumptions.add(`props with a literal default (${[...defaultProps.keys()].join(', ')}) are checked with that default and with placeholder text for any other value`);
   }
   const limit = { maxStates, onLimit: max => unknown('U_VUE_STATES', `more than ${max} template states; raise maxStates or split the component`) };
   const empty = [{ html: '', choices: {} }];
@@ -141,6 +153,7 @@ export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2], sour
     for (let i = 0; i < list.length; i++) {
       const n = list[i];
       if (n.type === TEXT) { lists.push([{ html: escapeText(n.content), choices: {} }]); continue; }
+      if (n.type === INTERPOLATION && defaultProps.has(n.content.content.trim().replace(/^props\./, ''))) { const name = n.content.content.trim().replace(/^props\./, ''); lists.push([{ html: escapeText(String(defaultProps.get(name))), choices: choose(`${name} given`, false) }, { html: '…', choices: choose(`${name} given`, true) }]); continue; }
       if (n.type === INTERPOLATION && literalProps.has(n.content.content.trim().replace(/^props\./, ''))) { const name = n.content.content.trim().replace(/^props\./, ''); lists.push(literalProps.get(name).map(value => ({ html: escapeText(String(value)), choices: choose(name, value) }))); continue; }
       if (n.type === INTERPOLATION) { assumptions.add('{{ interpolation }} text is placeholder text; its size comes from the box contracts'); lists.push([{ html: '…', choices: {} }]); continue; }
       if (n.type !== ELEMENT) continue;

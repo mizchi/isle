@@ -227,3 +227,11 @@ test('noshift (Vue, React): the same contract, and the same error on a child com
   const react = analyzeReact(`import { css } from '@linaria/core';\nconst page = css\`${g}\`;\nconst banner = css\`height: 48px;\`;\nconst content = css\`height: 100px;\`;\nexport default function P({ open }) { return <div className={page}>{open && <div className={banner}></div>}<main className={content} data-noshift="content"></main></div>; }`, scopeOptions);
   assert.deepEqual(react.findings.filter(f => f.code === 'E_LAYOUT_NOSHIFT').length, 1);
 });
+
+test('lint: CSS errors that stop the layout analysis are errors, and the states they stop are listed as not checked', () => {
+  const g = 'display: grid; grid-template-columns: minmax(0, 1fr);';
+  const r = analyzeSvelte(`<div class="bar"><button class="save" type="button">Save</button></div>\n<style>.bar { ${g} } .save { display: block; height: 36px; font: inherit; font-size: 14px; }</style>`, scopeOptions);
+  const out = lint(r, {file: 'S.svelte'});
+  assert.equal(out.find(m => m.code === 'E_CSS_SHORTHAND_CONFLICT')?.severity, 'error');
+  assert.match(out.find(m => m.code === 'U_LAYOUT_NOT_ANALYZED')?.message ?? '', /not checked: the layout of every state was not analyzed/);
+});

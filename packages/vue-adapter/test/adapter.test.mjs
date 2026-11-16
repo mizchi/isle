@@ -72,3 +72,12 @@ defineProps<Props>();
   for (const state of states) assert.equal(normalize(state.html), normalize(await ssr(source, state.choices)), JSON.stringify(state.choices));
   assert.ok(assumptions.some(a => /literal unions \(status\)/.test(a)));
 });
+
+test('props with a literal default (withDefaults, or a runtime default): the default is a state, equal to Vue SSR without the prop', async () => {
+  for (const script of [`<script setup lang="ts">\nwithDefaults(defineProps<{ label?: string }>(), { label: 'Save changes' });\n</script>`, `<script setup>\ndefineProps({ label: { type: String, default: 'Save changes' } });\n</script>`]) {
+    const source = `<template><button class="b" type="button">{{ label }}</button></template>\n${script}\n<style scoped>.b { display: block; }</style>`;
+    const {states} = expandVue(source);
+    assert.deepEqual(states.map(s => s.html).sort(), ['<button class="b" type="button">Save changes</button>', '<button class="b" type="button">…</button>']);
+    assert.equal(normalize(states.find(s => s.choices['label given'] === false).html), normalize(await ssr(source, {label: 'Save changes'})));
+  }
+});
