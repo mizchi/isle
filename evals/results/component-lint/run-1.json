@@ -1,6 +1,6 @@
 {
   "run": "run-1",
-  "cases": 55,
+  "cases": 56,
   "breaks": 3,
   "caught": 3,
   "missed": 0,
@@ -52,6 +52,7 @@
     "search-placeholder",
     "sidebar-toggle",
     "sort-header",
+    "status-badge",
     "steps",
     "sticky-header",
     "switch",
@@ -67,11 +68,11 @@
   "backlog": [
     {
       "reason": "ASSUMPTION: the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul",
-      "count": 55
+      "count": 56
     },
     {
       "reason": "ASSUMPTION: rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked",
-      "count": 55
+      "count": 56
     },
     {
       "reason": "U_A11Y_ARIA_VALUE: .X: a dynamic aria-pressed may be invalid",
@@ -1852,6 +1853,44 @@
       "warnings": 2,
       "assumptions": [
         "3 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "status-badge",
+      "file": "status-badge.svelte",
+      "framework": "svelte",
+      "intent": "A job row with a status badge; status is typed as 'Active' | 'Paused' | 'Pending review'.",
+      "status": "verified",
+      "expected": [
+        {
+          "code": "E_LAYOUT_CONTENT",
+          "found": false
+        }
+      ],
+      "caught": [],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 0,
+      "warnings": 0,
+      "assumptions": [
+        "text of props typed as literal unions (status) is each of their values",
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
