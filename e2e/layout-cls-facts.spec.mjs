@@ -442,7 +442,7 @@ test('block flow does not shrink scroll-container children: the static overflow 
 test('list markers at the viewport edge: where W_LAYOUT_MARKER_HIDDEN warns, Chromium paints none of the marker', async ({page}) => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   await page.setViewportSize({width: 400, height: 200});
-  for (const css of ['ul{padding:0}', 'ul{padding:0 0 0 24px}', '.w{padding-left:16px}ul{padding:0}', 'ol{padding:0}']) {
+  for (const css of ['ul{padding:0}', 'ul{padding:0 0 0 24px}', '.w{padding-left:16px}ul{padding:0}', 'ol{padding:0}', '.w{overflow-x:clip;margin-left:30px}ul{padding:0}', '.w{overflow-x:clip;margin-left:30px;padding-left:24px}ul{padding:0}']) {
     const tag = css.startsWith('ol') ? 'ol' : 'ul';
     const all = `*{box-sizing:border-box;margin:0}html,body{${g};background:#fff}body{margin:0}.w{${g}}li{height:20px;color:#f00;font-size:20px}${css}`;
     const html = `<div class="w"><${tag} class="l"><li class="a"></li><li class="b"></li></${tag}></div>`;

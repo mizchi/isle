@@ -68,6 +68,9 @@ test('W_LAYOUT_MARKER_HIDDEN: outside markers of a list at the viewport edge are
   assert.deepEqual(list('ul{padding:0}'), ['.a', '.b']);
   // Under a clipping ancestor positions are not tracked: not reported.
   assert.deepEqual(list('.w{overflow:hidden;margin-left:30px}ul{padding:0}'), []);
+  // overflow-x: clip never scrolls: positions are exact, and its edge hides the marker.
+  assert.deepEqual(list('.w{overflow-x:clip;margin-left:30px}ul{padding:0}'), ['.a', '.b']);
+  assert.deepEqual(list('.w{overflow-x:clip;margin-left:30px;padding-left:24px}ul{padding:0}'), []);
   assert.deepEqual(list('.w{padding-left:16px}ul{padding:0}'), []);
   assert.deepEqual(list('ul{padding:0 0 0 24px}'), []);
   assert.deepEqual(list('ul{padding:0;list-style:none}'), []);

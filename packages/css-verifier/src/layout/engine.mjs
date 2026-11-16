@@ -2692,8 +2692,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (layoutWarnings.some(w => w.code === 'W_LAYOUT_MARKER_HIDDEN' && w.path === row.path)) continue;
     // (Under a clipping ancestor a row keeps its position as clipOrigin.)
     const at = r => r.origin ?? r.clipOrigin;
-    const clipper = null;
-    const hidden = clip(row.region, diff(scalar(0), at(row).inline));
+    // An overflow-x: clip ancestor (it never scrolls, so positions under it are exact) cuts the marker at its padding
+    // edge; hidden/auto/scroll ancestors may be scrolled and are not judged.
+    const ancestors = geometry.filter(other => other.path !== row.path && row.path.startsWith(other.path + '/') && other.overflow !== 'visible' && intersect(other.region, row.region));
+    if (ancestors.some(other => !other.clipAxes?.inline)) continue;
+    const clipper = ancestors.sort((a, b) => b.path.length - a.path.length)[0];
+    if (clipper && !at(clipper)) continue;
+    const edge = clipper ? sum(at(clipper).inline, scalar(clipper.borders?.left ?? zero)) : scalar(0);
+    const hidden = clip(clipper ? intersect(row.region, clipper.region) : row.region, diff(edge, at(row).inline));
     if (!hidden) continue;
     const p = sample(hidden);
     layoutWarnings.push({ code: 'W_LAYOUT_MARKER_HIDDEN', severity: 'warning', box: row.box.label, path: row.path, marker: row.outsideMarker, ...(clipper ? { clippedBy: clipper.box.label } : {}),
