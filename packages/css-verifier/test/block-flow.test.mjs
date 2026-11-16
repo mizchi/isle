@@ -100,9 +100,20 @@ test('a child\'s first and last margins collapse through a plain block parent (t
   assert.deepEqual(['.s', '.a', '.n'].map(b => at(box('padding-top:1px'), b)), ['10', '23', '44']);
   // A fixed height stops the bottom collapse.
   assert.deepEqual(['.s', '.n'].map(b => at(box('height:20px'), b)), ['16', '38']);
-  // Two levels deep: the margin collapses through two parents, which is not modeled.
-  const deep = analyzeHTML('<html lang="en"><body><div class="o"><section class="s"><div class="t"><div class="a"></div></div></section></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.o,.s,.t{display:block}.a{height:10px;margin-top:12px}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
-  assert.equal(deep.status, 'unknown');
+});
+
+test('margins collapse through several plain block levels (Chromium positions)', () => {
+  const deep = css => analyzeHTML('<html lang="en"><body><div class="o"><div class="m"></div><section class="s"><div class="t"><div class="a"></div></div></section><div class="n"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.o,.s,.t{display:block}.n{height:5px}.m{height:4px}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  for (const [css, expected] of [
+    ['.a{height:10px;margin-top:12px}', ['16', '16', '16', '26']],
+    ['.a{height:10px;margin-top:12px;margin-bottom:7px}.t{margin-bottom:3px}', ['16', '16', '16', '33']],
+    ['.s{margin-top:20px}.a{height:10px;margin-top:12px}', ['24', '24', '24', '34']],
+    ['.t{padding-top:1px}.a{height:10px;margin-top:12px}', ['4', '4', '17', '27']],
+  ]) {
+    const r = deep(css);
+    assert.equal(r.status, 'verified', `${css} ${JSON.stringify(r.diagnostics.map(d => d.message))}`);
+    assert.deepEqual(['.s', '.t', '.a', '.n'].map(b => r.sizes.find(x => x.box === b).rect.blockStart.constant), expected, css);
+  }
 });
 
 test('a block whose only child is an inline link with text is a text leaf (the link is its inline content)', () => {

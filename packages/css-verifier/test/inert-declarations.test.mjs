@@ -87,3 +87,11 @@ test('offsets on a static box, z-index outside a stacking context, gap and flex 
   assert.deepEqual(inert(run('.p{display:block}.c{height:10px;vertical-align:middle}')), [['.c', 'vertical-align']]);
   assert.match(run('.p{display:block}.c{height:10px;flex:1}').layoutWarnings.find(w => w.code === 'W_LAYOUT_DECLARATION_INERT').message, /display: block/);
 });
+
+test('flex and grid container properties on a block container do nothing', () => {
+  assert.deepEqual(inert(run('.p{display:block;justify-content:center;align-items:center}.c{height:10px}')), [['.p', 'justify-content align-items']]);
+  assert.deepEqual(inert(run('.p{display:block;flex-direction:column;grid-template-columns:1fr 1fr}.c{height:10px}')), [['.p', 'flex-direction grid-template-columns']]);
+  // Initial values, align-content and justify-items (they apply to block containers) are not reported.
+  assert.deepEqual(inert(run('.p{display:block;justify-content:normal;align-content:center;height:50px}.c{height:10px}')), []);
+  assert.match(run('.p{display:block;align-items:center}.c{height:10px}').layoutWarnings.find(w => w.code === 'W_LAYOUT_DECLARATION_INERT').message, /align-items: center has no effect \(it is display: block/);
+});

@@ -740,7 +740,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
     }
     // Flex containers and items validate their alignment in the flex model.
-    if (block && ((style.display !== 'flex' && !['normal', 'stretch'].includes(style['align-items'])) || (!available.flexItem && !available.blockFlowChild && !['auto', 'normal', 'stretch'].includes(style['align-self'])) || (style.display !== 'flex' && !['normal', 'stretch', 'start', ...(style.display === 'grid' ? ['center', 'end'] : []), ...(style.display === 'block' && !box.text && !box.inline?.length ? ['center', 'end', 'flex-end', 'flex-start', 'space-between', 'space-around', 'space-evenly'] : [])].includes(style['align-content'])))) throw new Error('Only stretch items and normal/stretch/start (grid: center/end) content alignment are supported');
+    // (align-items does nothing on a block container: reported as inert, not Unknown.)
+    if (block && ((style.display !== 'flex' && !['block', 'list-item'].includes(style.display) && !['normal', 'stretch'].includes(style['align-items'])) || (!available.flexItem && !available.blockFlowChild && !['auto', 'normal', 'stretch'].includes(style['align-self'])) || (style.display !== 'flex' && !['normal', 'stretch', 'start', ...(style.display === 'grid' ? ['center', 'end'] : []), ...(style.display === 'block' && !box.text && !box.inline?.length ? ['center', 'end', 'flex-end', 'flex-start', 'space-between', 'space-around', 'space-evenly'] : [])].includes(style['align-content'])))) throw new Error('Only stretch items and normal/stretch/start (grid: center/end) content alignment are supported');
     return true;
   }
 
@@ -1370,7 +1371,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (inFlow && parentDisplay === 'flex') for (const key of ['grid-column', 'grid-row']) if (written(key)) reasons.push([key, `its parent ${parents.at(-1).box.label} is display: flex, not grid`]);
         if (inFlow && parentDisplay === 'grid') for (const key of ['flex-grow', 'flex-shrink', 'flex-basis']) if (written(key)) reasons.push([key, `its parent ${parents.at(-1).box.label} is display: grid, not flex`]);
         if (style.display === 'flex') for (const key of ['grid-template-columns', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow']) if (written(key)) reasons.push([key, 'it is display: flex, not grid']);
-        if (style.display === 'grid') for (const key of ['flex-direction', 'flex-wrap']) if (written(key)) reasons.push([key, 'it is display: grid, not flex']);
+        if (style.display === 'grid' && !style.$blockFlow) for (const key of ['flex-direction', 'flex-wrap']) if (written(key)) reasons.push([key, 'it is display: grid, not flex']);
+        // Flex and grid container properties on a block container (display: flex forgotten, or overridden): they do
+        // nothing (align-content and justify-items do apply to block containers, measured; they are not reported).
+        const blockInitial = { 'justify-content': ['normal'], 'align-items': ['normal', 'stretch'], 'flex-direction': ['row'], 'flex-wrap': ['nowrap'], 'grid-template-columns': ['none'], 'grid-template-rows': ['none'], 'grid-auto-flow': ['row'], 'grid-template-areas': ['none'] };
+        if ((style.$blockFlow || ['block', 'list-item'].includes(style.display)) && !box.pseudo) for (const [key, initials] of Object.entries(blockInitial)) {
+          const specified = String(style.$sources?.[key]?.specified ?? '').trim();
+          if (style.$sources?.[key] && specified && !initials.includes(specified)) reasons.push([key, 'it is display: block, not flex or grid']);
+        }
         // aspect-ratio sizes an auto dimension; with both sizes set there is none to size.
         if (style.$sources?.['aspect-ratio'] && style['aspect-ratio'] !== 'auto' && ['inline-size', 'block-size'].every(key => style.$sources?.[key] && style[key] !== 'auto')) reasons.push(['aspect-ratio', 'both its width and height are set']);
         // vertical-align applies to inline boxes and table cells; a grid or flex item (blockified) ignores it.
@@ -1411,7 +1419,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (set('line-clamp', 'none') && style.$lineClamp === undefined && !['-webkit-box', '-webkit-inline-box'].includes(style.display)) reasons.push(['line-clamp', `it is display: ${style.display}, not -webkit-box`]);
         if (reasons.length) layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: reasons.map(r => r[0]),
           css: reasons.map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
-          message: `${box.label}: ${reasons.map(([key, why]) => `${key}: ${style.$inertMain?.property === key ? style.$inertMain.value : style.$blockFlow && /gap$/.test(key) ? style.$sources[key].specified : style[key]} has no effect (${why})`).join('; ')}`, ...ranges(region) });
+          message: `${box.label}: ${reasons.map(([key, why]) => `${key}: ${style.$inertMain?.property === key ? style.$inertMain.value : (style.$blockFlow && /gap$/.test(key)) || (reasons.find(r => r[0] === key)?.[1] === 'it is display: block, not flex or grid') ? style.$sources[key].specified : style[key]} has no effect (${why})`).join('; ')}`, ...ranges(region) });
       }
       geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, ...(style.$listItem && style['list-style-type'] !== 'none' && style['list-style-position'] !== 'inside' && style.direction !== 'rtl' ? { outsideMarker: style['list-style-type'] } : {}), ...(style.display === 'grid' && /^(?:\s*(?:repeat\(\s*\d+\s*,\s*\d+(?:\.\d+)?px\s*\)|\d+(?:\.\d+)?px))+\s*$/.test(String(style['grid-template-columns'])) ? { fixedTracks: style['grid-template-columns'] } : {}), ...((box.text || box.inline?.length) && !box.pseudo && ['normal', 'pre-wrap', 'pre-line'].includes(style['white-space']) && style['overflow-wrap'] === 'normal' ? { wrapsByWords: true } : {}), ...(style.$widthFromAttribute ? { widthFromAttribute: style.$widthFromAttribute } : {}), ...(/\dvw\b|\bvw\)/.test(String(style.$sources?.['inline-size']?.specified ?? '')) ? { vwInline: style.$sources['inline-size'].specified } : {}), ...(/^100%$/.test(String(style.$sources?.['inline-size']?.specified ?? '').trim()) && ['left', 'right'].some(side => /^\d+(?:\.\d+)?px$/.test(String(style[`margin-${side}`])) && cmp(px(style[`margin-${side}`]), zero) > 0) ? { fullWidthMargins: ['left', 'right'].map(side => `margin-${side}`).filter(key => /^\d+(?:\.\d+)?px$/.test(String(style[key])) && cmp(px(style[key]), zero) > 0).map(key => `${key}: ${style[key]}`) } : {}), ...(style['box-sizing'] === 'content-box' && /^100%$/.test(String(style.$sources?.['inline-size']?.specified ?? '').trim()) && ['left', 'right'].some(side => cmp(px(style[`padding-${side}`] === 'ua' ? '0' : style[`padding-${side}`]), zero) > 0 || cmp(px(style[`border-${side}`] === 'ua' ? '0' : style[`border-${side}`]), zero) > 0) ? { contentBoxFull: ['left', 'right'].flatMap(side => [`padding-${side}`, `border-${side}`]).filter(key => style[key] && !['0', '0px', 'ua'].includes(String(style[key]))) } : {}), ...(style.$imageRatio ? { imageRatio: style.$imageRatio } : {}), clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
@@ -2511,29 +2519,47 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     flow.forEach((child, k) => {
                       if (!plainBlock(child.style) || child.box.text || !(child.box.children ?? []).length) return;
                       const childAncestors = [...ancestors, { box: child.box, style: child.style, inline: null, block: null, type: child.style['container-type'], names: [] }];
-                      const flowOf = () => {
+                      // The in-flow children of a box ({ box, style }), or null when one's style varies here.
+                      const flowOf = (owner, ownerStyle, at) => {
                         const out = [];
-                        for (const g of child.box.children) {
+                        for (const g of owner.children ?? []) {
                           let pieces;
-                          try { pieces = styles(g, children.region, childAncestors, child.style, false); } catch { return null; }
-                          const keys = new Set(pieces.map(p => JSON.stringify([p.style.display, p.style.position, p.style['margin-top'], p.style['margin-bottom']])));
+                          try { pieces = styles(g, children.region, at, ownerStyle, false); } catch { return null; }
+                          const keys = new Set(pieces.map(p => JSON.stringify([p.style.display, p.style.position, p.style['margin-top'], p.style['margin-bottom'], p.style['padding-top'], p.style['padding-bottom'], p.style['border-top'], p.style['border-bottom'], p.style['block-size'], p.style['overflow-x'], p.style['overflow-y']])));
                           if (keys.size !== 1) return null;
                           const st = pieces[0].style;
-                          if (st.display !== 'none' && st.position !== 'absolute') out.push(st);
+                          if (st.display !== 'none' && st.position !== 'absolute') out.push({ box: g, style: st });
                         }
                         return out;
                       };
-                      const updates = {};
-                      const grand = flowOf();
-                      if (!grand || grand.some(st => /inline|contents|table/.test(String(st.display)))) return;
                       const gm = (st, side) => /^\d+(?:\.\d+)?px$/.test(String(st[`margin-${side}`])) ? px(st[`margin-${side}`]) : zero;
-                      if (grand.length && cmp(gm(grand[0], 'top'), zero) > 0 && zeroEdge(child.style, 'top')) {
-                        const top = cmp(gm(grand[0], 'top'), mv(child, 'top')) > 0 ? gm(grand[0], 'top') : mv(child, 'top');
-                        updates['margin-top'] = cmp(top, zero) === 0 ? '0' : `${number(top)}px`; updates.$collapsedTop = true;
-                      }
-                      if (grand.length && cmp(gm(grand.at(-1), 'bottom'), zero) > 0 && zeroEdge(child.style, 'bottom') && child.style['block-size'] === 'auto') {
-                        const bottom = cmp(gm(grand.at(-1), 'bottom'), mv(child, 'bottom')) > 0 ? gm(grand.at(-1), 'bottom') : mv(child, 'bottom');
-                        updates['margin-bottom'] = cmp(bottom, zero) === 0 ? '0' : `${number(bottom)}px`; updates.$collapsedBottom = true;
+                      // The margin that collapses out of a box on one side: its own and, through every plain block with
+                      // no padding or border there (and an auto height, for the bottom), its first (last) child's
+                      // (measured: several levels deep). null when that is not known.
+                      const outward = (owner, st, at, side, depth) => {
+                        const own = gm(st, side);
+                        if (depth > 16 || !plainBlock(st) || owner.text || !(owner.children ?? []).length || !zeroEdge(st, side) || (side === 'bottom' && st['block-size'] !== 'auto')) return own;
+                        const inner = [...at, { box: owner, style: st, inline: null, block: null, type: st['container-type'], names: [] }];
+                        const kids = flowOf(owner, st, inner);
+                        if (!kids) return null;
+                        if (!kids.length || kids.some(k => /inline|contents|table/.test(String(k.style.display)))) return own;
+                        const edge = side === 'top' ? kids[0] : kids.at(-1);
+                        const theirs = outward(edge.box, edge.style, inner, side, depth + 1);
+                        if (theirs === null) return null;
+                        return cmp(theirs, own) > 0 ? theirs : own;
+                      };
+                      const updates = {};
+                      const grand = flowOf(child.box, child.style, childAncestors);
+                      if (!grand || grand.some(g => /inline|contents|table/.test(String(g.style.display)))) return;
+                      const childOf = [...childAncestors];
+                      for (const side of ['top', 'bottom']) {
+                        if (!grand.length || !zeroEdge(child.style, side) || (side === 'bottom' && child.style['block-size'] !== 'auto')) continue;
+                        const edge = side === 'top' ? grand[0] : grand.at(-1);
+                        const theirs = outward(edge.box, edge.style, childOf, side, 1);
+                        if (theirs === null) return;
+                        if (cmp(theirs, zero) <= 0) continue;
+                        const total = cmp(theirs, mv(child, side)) > 0 ? theirs : mv(child, side);
+                        updates[`margin-${side}`] = cmp(total, zero) === 0 ? '0' : `${number(total)}px`; updates[side === 'top' ? '$collapsedTop' : '$collapsedBottom'] = true;
                       }
                       if (!Object.keys(updates).length) return;
                       const index = children.children.indexOf(child);
