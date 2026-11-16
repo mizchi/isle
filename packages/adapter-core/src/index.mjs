@@ -214,6 +214,13 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope
           const marker = (facts.classes ?? []).find(c => /^__text\d+$/.test(c));
           const contract = marker && !options.boxes?.[`.${marker}`] ? measuredContract(facts, textMetrics, fonts) : null;
           if (contract) measured[`.${marker}`] = contract;
+          // Not measurable (no font file for its family, or the UA control font): still one assumed line, but of its own
+          // computed line height when that is known, not the default.
+          else if (marker && !options.boxes?.[`.${marker}`]) {
+            const size = /^(\d+(?:\.\d+)?)px$/.exec(String(facts.size))?.[1], lh = String(facts.lineHeight ?? '');
+            const line = /^\d+(?:\.\d+)?px$/.test(lh) ? Number(lh.slice(0, -2)) : /^\d+(?:\.\d+)?$/.test(lh) && size ? Number(lh) * Number(size) : null;
+            if (line && Number.isFinite(line) && boxes[`.${marker}`]?.intrinsicBlockSize !== Math.round(line * 64) / 64) measured[`.${marker}`] = { minInlineSize: 0, intrinsicBlockSize: Math.round(line * 64) / 64 };
+          }
         }
         const fresh = Object.keys(measured).filter(key => JSON.stringify(boxes[key]) !== JSON.stringify(measured[key]));
         boxes = { ...boxes, ...measured };

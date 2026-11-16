@@ -33,3 +33,12 @@ test('a form control keeps the UA font size, not the page font size it seems to 
   assert.deepEqual(warned('body{font-size:18px}.b{font-size:1em}'), []);
   assert.deepEqual(warned(''), []); // no page font size: both are the default
 });
+
+test('a form control does not inherit the page font family either (W_LAYOUT_CONTROL_FONT names the family)', () => {
+  const warned = css => (analyzeHTML('<html lang="en"><body><main class="page"><button class="b" aria-label="Go"></button></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body,.page{${g}}.b{appearance:none;display:block;padding:0;border:0;min-width:0;min-height:0;height:40px;font-size:16px}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}}).layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_CONTROL_FONT').map(w => w.message);
+  const [message] = warned('html{font-family:Roboto}');
+  assert.match(message, /font-family: html@P sets roboto, but the control keeps the UA Arial/i);
+  assert.doesNotMatch(message, /font-size/); // the control sets its own size
+  assert.deepEqual(warned('html{font-family:Roboto}.b{font:inherit}'), []);
+  assert.deepEqual(warned(''), []);
+});

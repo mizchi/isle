@@ -116,6 +116,7 @@ adapter は、子のコンポーネントなどの境界を、状態のマーク
 - 中身がテキストだけの、1 列(`minmax(0, 1fr)`)の grid の container は、block のテキストの葉として扱う(Chromium で照合した)。
 - grid item の justify-self(と grid の justify-items)の start、center、end。px の幅の item と、幅が auto のテキストの葉(fit-content の幅)を、area の空きの割合だけずらす。Chromium と同じく、はみ出す場合もずらす(unsafe)。
 - `rem` の margin、padding、幅、gap(既定のフォントサイズの仮定のもとで px に直す)。
+- フォームの部品(button、input、select、textarea)は、ページの font-size だけでなく font-family・font-weight・line-height・letter-spacing も継承しない(Chromium では Arial、textarea は monospace)。祖先が font-family か font-size を指定しているのに部品が UA のフォントのままなら `W_LAYOUT_CONTROL_FONT` を出す。部品の中のテキストは、`font: inherit` を付けるまで測らない(1 行と仮定し、高さには計算した line-height を使う)。
 - 既定の appearance のテキスト入力欄(text 系の input と textarea)。padding と border を 4 辺とも指定していれば、`appearance: none` でなくても同じ箱になる(測った)。UA の `display: inline-block`、`box-sizing: content-box`(search は border-box)、最小寸法 0 もモデル化した。 幅が auto でも、grid の項目として伸ばされるもの、flex の行の項目で `flex-basis` が px かつ `min-width` が auto でないもの(`flex: 1 1 120px; min-width: 0`)は、固有の幅を使わないので検査する(Chromium と照合した)。
 - grid item の block 軸の自己整列(`align-items` / `align-self` の start、center、end と、その flex-*/self-* の別名)。item は自分の高さを保ち、area の空きのその割合だけずれる(Chromium と照合した)。baseline は Unknown。
 - h1–h6 と th のテキストは、UA の `font-weight: bold`(700)として測る。strong/b は親に対する `bolder` なので、author が太さを書くまで Unknown。

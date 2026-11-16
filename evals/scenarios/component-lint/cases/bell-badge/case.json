@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "A header bell button with an unread-count badge in its corner.", "planted": "the badge is a fixed 18px wide but shows '99+', which is wider: the text spills out of the badge", "expect": ["E_LAYOUT_CONTENT"]}

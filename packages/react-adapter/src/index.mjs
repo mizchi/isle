@@ -240,6 +240,14 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
         attrLists.push([true, false].map(v => ({ html: ` ${attrName(key)}="${escapeAttr(String((v ? value.consequent : value.alternate).value))}"`, choices: choice(value.test, v) })));
         continue;
       }
+      // A boolean expression (a comparison or a negation): an aria-/data- attribute renders "true" or "false", a boolean
+      // HTML attribute is present or absent; each value is a state on the condition (shared with classes on it).
+      const booleanValued = (value.type === 'BinaryExpression' && ['===', '!==', '==', '!=', '<', '>', '<=', '>='].includes(value.operator)) || (value.type === 'UnaryExpression' && value.operator === '!');
+      const booleanAttrs = ['disabled', 'checked', 'hidden', 'required', 'readOnly', 'open', 'inert', 'selected', 'multiple', 'autoFocus'];
+      if (booleanValued && (/^(?:aria|data)-/.test(key) || booleanAttrs.includes(key))) {
+        attrLists.push([true, false].map(v => ({ html: /^(?:aria|data)-/.test(key) ? ` ${attrName(key)}="${v}"` : v ? ` ${attrName(key)}` : '', choices: choice(value, v) })));
+        continue;
+      }
       assumptions.add(`dynamic attribute ${key} on <${tag}> is rendered with a non-empty placeholder value`);
       statics.push(` ${attrName(key)}="dynamic"`);
     }

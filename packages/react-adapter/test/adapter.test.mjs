@@ -123,3 +123,17 @@ export default function Badge({ status, note }: Props) {
   // props.status reads the same.
   assert.equal(expandReact(`interface P { size: 1 | 2 }\nexport default function C(props: P) { return <p>{props.size}</p>; }`).states.map(s => s.html).sort().join(), '<p>1</p>,<p>2</p>');
 });
+
+test('a boolean expression as an aria-/boolean attribute is a state on its condition, shared with classes on it', () => {
+  const source = `import { css } from '@linaria/core';
+const on = css\`color: blue;\`;
+export default function Seg({ range }) { return <div><button role="radio" aria-checked={range === 'day'} className={range === 'day' ? on : ''}>Day</button><input disabled={!range} /></div>; }`;
+  const {states, unknowns} = expandReact(source);
+  assert.deepEqual(unknowns, []);
+  const htmls = states.map(s => s.html);
+  // The checked state and its class go together; the false state has neither.
+  assert.ok(htmls.some(h => /aria-checked="true" class="[^"]+"/.test(h) || /class="[^"]+"[^>]*aria-checked="true"/.test(h)), htmls.join('\n'));
+  assert.ok(htmls.every(h => !/aria-checked="false"[^>]*class="[^"]+"/.test(h) && !/class="[^"]+"[^>]*aria-checked="false"/.test(h)), htmls.join('\n'));
+  assert.ok(htmls.some(h => /<input disabled/.test(h)) && htmls.some(h => /<input>|<input\/>|<input \/>/.test(h)), htmls.join('\n'));
+  assert.ok(htmls.every(h => !h.includes('"dynamic"')));
+});

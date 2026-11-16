@@ -1,0 +1,1 @@
+{"framework": "stylex", "intent": "A segmented control with three equal 96px options.", "planted": "the third label 'Last 30 days' is nowrap and wider than its 96px track: it spills out of its segment", "expect": ["E_LAYOUT_CONTENT"]}
