@@ -27,6 +27,7 @@ error が 1 件でもあれば終了コードは 1 です。
 | `--profile recommended\|all` | `recommended` | ルールセット |
 | `--each-counts 0,2` | `0,2` | `{#each}` / `v-for` / `.map()` の要素数 |
 | `--no-assume-text` | 仮定あり | テキストを 1 行 24px と仮定せず、Unknown のままにする |
+| `--default-font-size 16` | `16` | ブラウザーの既定のフォントサイズ(px)。html が px のフォントサイズを指定しないとき、`rem`(と html の `%`/`em`/`medium`)をこの値で解決する。仮定として info に出す。`none` で解決せず Unknown にする |
 | `--format text\|json` | `text` | 出力形式 |
 
 ## ルールセット
@@ -57,6 +58,8 @@ error が 1 件でもあれば終了コードは 1 です。
 - `<picture>` の source、`srcset`/`sizes`、`iframe`。
 - grid item と flex の行の item の px margin。幅を指定した grid item の `margin: 0 auto`。
 - block の子だけを持つ `display: block` の container(block flow)と、`max-width` + `margin: 0 auto` のラッパー。
+- 既定の appearance のボタン(`button` と type が button / submit / reset の `input`)。UA の padding(1px 6px)、border(2px)、`display: inline-block`、`box-sizing: border-box` と、色(ライトでは #efefef の上に黒、ダークでは #6b6b6b の上に白。author が `color` / `background-color` を書かない限り親から継がない)をモデル化した。`appearance: none` と同じ箱になる(測った)。
+- `rem` の margin、padding、幅、gap(既定のフォントサイズの仮定のもとで px に直す)。
 - 既定の appearance のテキスト入力欄(text 系の input と textarea)。padding と border を 4 辺とも指定していれば、`appearance: none` でなくても同じ箱になる(測った)。UA の `display: inline-block`、`box-sizing: content-box`(search は border-box)、最小寸法 0 もモデル化した。
 - sr-only(視覚的に隠したテキスト)。名前には入るが、収まるかどうか、切り取り、コントラストは判定しない。
 

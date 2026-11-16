@@ -83,6 +83,7 @@ export function analyzeStates({ states, css, unknowns = [], assumptions = [] }, 
     return { choices: state.choices, html: state.html, report };
   });
   if (assumedTexts) assumptions = [...assumptions, `${assumedTexts} text box(es) sized by assumption (one line, no minimum width): text overflow is not checked`];
+  if (options.defaultFontSize) assumptions = [...assumptions, `rem (and a root font-size in %, em or medium) resolved at a ${options.defaultFontSize}px browser default font size; other user settings are not checked`];
   const statuses = results.map(r => r.report.status);
   // Verified only when every state is verified and the adapter itself met nothing unknown.
   const status = statuses.includes('violated') ? 'violated' : unknowns.length || statuses.includes('unknown') || !results.length ? 'unknown' : 'verified';

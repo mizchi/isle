@@ -48,6 +48,8 @@ test('grid and flex containers: where the content is shorter, laid out at the mi
     ['.s{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;min-height:200px;padding:10px}.h{height:20px}', 600, [[0, 200], [10, 20], [30, 160], [190, 0]]],
     ['.s{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);min-height:100px;padding:10px;box-sizing:content-box}.h{height:20px}', 600, [[0, 120], [10, 20], [30, 80], [110, 0]]],
     ['.s{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;min-height:50px}.h{height:20px}.m{height:30px}.f{height:10px}', 600, [[0, 60], [0, 20], [20, 30], [50, 10]]],
+    ['.s{display:flex;flex-direction:column;min-height:200px}.h{height:20px}.m{flex:1}.f{height:10px}', 600, [[0, 200], [0, 20], [20, 170], [190, 10]]],
+    ['.s{display:flex;min-height:100px}.h,.m,.f{width:30px}', 600, [[0, 100], [0, 100], [0, 100], [0, 100]]],
   ];
   for (const [css, vh, expected] of cases) {
     const r = lay(css);

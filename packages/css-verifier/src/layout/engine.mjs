@@ -647,7 +647,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // its padding and border on every side (measured): only its UA paint differs.
     const textField = box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', undefined].includes(box.inputType));
     const authoredEdges = ['left', 'right', 'top', 'bottom'].every(side => style.$sources?.[`padding-${side}`] && style.$sources?.[`border-${side}`]);
-    if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag) && ((style.appearance!=='none' && !(textField && authoredEdges)) || (style.display!=='block' && !(box.tag === 'button' && ['grid', 'flex'].includes(style.display) && (box.children ?? []).length)))) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);
+    // A button's box is the same with its default appearance (measured: sizes, padding, border, grid content); its
+    // UA padding, border, colors and display are modeled.
+    const buttonLike = box.tag === 'button' || (box.tag === 'input' && ['button', 'submit', 'reset'].includes(box.inputType));
+    if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag) && ((style.appearance!=='none' && !(textField && authoredEdges) && !buttonLike) || (style.display!=='block' && !(box.tag === 'button' && ['grid', 'flex'].includes(style.display) && (box.children ?? []).length)))) throw new Error(`Checked ${box.tag === 'button' ? 'buttons' : 'form controls'} require appearance:none, display:block and explicit box-sizing/min-size/padding/border resets`);
     // A fieldset's rendered legend sits in its border: modeled only when the fieldset generates no box.
     // Replaced elements and text fields have intrinsic sizes the model does not compute.
     // Layout shifts from images (Layout Instability, measured): an img without a reserved height gets one when it
@@ -1077,7 +1080,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         let lines;
         if (knownBlock) lines = resolveFlexLine(m.region, knownBlock, m.items, gaps(mainGap, m.items.length));
         else {
-          if (m.items.some(item => cmp(item.grow, zero) > 0)) throw flexUnknown('Flexible items in a column with an indefinite height grow from their content; give the container a definite height');
+          // (Measuring the natural height for min-height only: the container is then sized to its content, which
+          // is the sum of the items' content heights whatever they grow by; the layout itself is done at the minimum.)
+          if (m.items.some(item => cmp(item.grow, zero) > 0) && !(available.$minNatural && !emit)) throw flexUnknown('Flexible items in a column with an indefinite height grow from their content; give the container a definite height');
           const values = m.items.map(item => item.content ? item.base : maximumConstant(item.base, item.minimum));
           lines = [{ region: m.region, values, free: scalar(0) }];
         }
@@ -2214,6 +2219,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const inertMain = available.flexItem && style.position !== 'absolute' ? inertMainSize(style, box, available.flexItem.main) : null;
         if (inertMain) style = { ...style, [inertMain]: 'auto', $inertMain: { property: inertMain, value: style[inertMain] } };
         if (box.tag === 'html' && !parents.length && /^\d+(?:\.\d{1,6})?px$/.test(style['font-size'])) { rootFontSize = px(style['font-size']); unitContext.rootFontSize = rootFontSize; setRootFontSize(rootFontSize); }
+        // defaultFontSize (the user's default font size, an assumption the caller states): the root's medium, %, em
+        // or rem font-size resolves against it, so rem lengths do too.
+        else if (box.tag === 'html' && !parents.length && options.defaultFontSize) {
+          const fs = String(style['font-size']), base = q(String(options.defaultFontSize));
+          const m = fs.match(/^(\d+(?:\.\d{1,6})?)(%|em|rem)$/);
+          const size = ['medium', 'ua-default', 'initial', 'unset', 'revert'].includes(fs) ? base : m ? mul(base, m[2] === '%' ? div(q(m[1]), q('100')) : q(m[1])) : null;
+          if (size) { rootFontSize = size; unitContext.rootFontSize = size; setRootFontSize(size); }
+        }
         // A fixed table is laid out as its equivalent grid (rows and sections as contents, cells as blocks).
         if (box.tag === 'table' && style.display === 'table') style = tableAsGrid(box, style, state.region, parents, emit, available);
         if (!['grid', 'flex'].includes(style.display) && style.display !== 'none') { const generatedText = generatedElsewhere(box, state.region, [...parents, { box, style }], style); if (generatedText) box.generated = generatedText; }
@@ -2519,7 +2532,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       // A container that establishes a formatting context (a grid or flex item, overflow hidden/auto/
                       // scroll, absolute) keeps its children's margins inside it (measured): nothing collapses through.
                       const parentStyle = parents.at(-1)?.style;
-                      const formattingRoot = (parentStyle && ['grid', 'flex', 'inline-grid', 'inline-flex'].includes(parentStyle.display) && !parentStyle.$blockFlow) || ['hidden', 'auto', 'scroll'].includes(String(style['overflow-x'])) || ['hidden', 'auto', 'scroll'].includes(String(style['overflow-y'])) || style.position === 'absolute';
+                      // (The root element always establishes one.)
+                      const formattingRoot = (!parents.length && box.documentRoot) || (parentStyle && ['grid', 'flex', 'inline-grid', 'inline-flex'].includes(parentStyle.display) && !parentStyle.$blockFlow) || ['hidden', 'auto', 'scroll'].includes(String(style['overflow-x'])) || ['hidden', 'auto', 'scroll'].includes(String(style['overflow-y'])) || style.position === 'absolute';
                       if (flow.length && cmp(mv(flow[0], 'top'), zero) > 0 && !edge('top') && !formattingRoot) unknownCollapse(`the top margin of ${flow[0].box.label} collapses through its container (no padding or border on top)`);
                       if (flow.length && cmp(mv(flow.at(-1), 'bottom'), zero) > 0 && !edge('bottom') && style['block-size'] === 'auto' && !formattingRoot) unknownCollapse(`the bottom margin of ${flow.at(-1).box.label} collapses through its container (no padding or border below, auto height)`);
                       for (const child of flow) if (cmp(add(mv(child, 'top'), mv(child, 'bottom')), zero) > 0 && !(child.box.children ?? []).length && !child.box.text && child.style['block-size'] === 'auto' && !['top', 'bottom'].some(side => cmp(px(child.style[`padding-${side}`] === 'ua' ? '0' : child.style[`padding-${side}`]), zero) > 0))

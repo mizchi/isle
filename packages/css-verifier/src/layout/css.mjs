@@ -1,12 +1,13 @@
 import postcss from 'postcss';
 import {findCSSWriteConflicts,cssWriteConflictMessage} from '../css-writes.mjs';
-import { q, cmp, add, mul, exact } from './linear.mjs';
+import { q, cmp, add, mul, exact, number } from './linear.mjs';
 import { parseCondition, preferenceValues } from './conditions.mjs';
 import {customName,variableValue,variableEnvironment,substituteDeclaration} from './variables.mjs';
 
 import { compileSelector, matches, greaterRank } from './selectors.mjs';
 export { matches, simpleSelector } from './selectors.mjs';
 const pointSize = /^(?:\d+(?:\.\d{1,6})?px|0)$/;
+const remLengths = ['top', 'right', 'bottom', 'left'].flatMap(side => [`margin-${side}`, `padding-${side}`, side]).concat(['inline-size', 'block-size', 'min-inline-size', 'max-inline-size', 'min-block-size', 'max-block-size', 'row-gap', 'column-gap', 'flex-basis']);
 // rem resolves against the analysed html root's px font-size once the engine has seen it (setRootFontSize).
 let rootFontSize = null;
 export function setRootFontSize(size) { rootFontSize = size; }
@@ -164,7 +165,8 @@ function expand(property, value) {
     if (!parts.length || parts.length > maximum) throw new Error(`${property} requires 1..${maximum} values`);
     // Zero, or auto (only flex items may use it on their main axis; checked by the engine).
     // Zero, auto, or a non-negative px length (grid items take px margins; checked by the engine).
-    const margin = v => { if (v === 'auto') return 'auto'; const n = px(v); if (cmp(n, q(0)) === 0) return '0'; if (cmp(n, q(0)) < 0) throw new Error('Negative margins are not modeled'); if (!/^\d+(?:\.\d+)?px$/.test(v)) throw new Error('Only px, zero or auto margins are supported'); return v; };
+    // A non-negative rem margin stays rem until computeStyle resolves it against the root font size.
+    const margin = v => { if (v === 'auto') return 'auto'; if (/^\d+(?:\.\d{1,6})?rem$/.test(v)) return /^0+(?:\.0+)?rem$/.test(v) ? '0' : v; const n = px(v); if (cmp(n, q(0)) === 0) return '0'; if (cmp(n, q(0)) < 0) throw new Error('Negative margins are not modeled'); if (!/^\d+(?:\.\d+)?px$/.test(v)) throw new Error('Only px, zero or auto margins are supported'); return v; };
     const values = property === 'margin' ? [parts[0], parts[1] ?? parts[0], parts[2] ?? parts[0], parts[3] ?? parts[1] ?? parts[0]] : sides.length === 2 ? [parts[0], parts[1] ?? parts[0]] : [parts[0]];
     return sides.map((side, i) => [`margin-${side}`, margin(values[i])]);
   }
@@ -590,6 +592,13 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     if (box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', undefined].includes(box.inputType))) {
       values.display = 'inline-block'; values['box-sizing'] = box.inputType === 'search' ? 'border-box' : 'content-box'; values['min-inline-size'] = '0'; values['min-block-size'] = '0';
     }
+    // Buttons: Chromium's UA box is padding 1px 6px, a 2px border, inline-block, border-box, no min size (measured,
+    // with or without appearance: none).
+    if (box.tag === 'button' || (box.tag === 'input' && ['button', 'submit', 'reset'].includes(box.inputType))) {
+      values['padding-top'] = values['padding-bottom'] = '1px'; values['padding-left'] = values['padding-right'] = '6px';
+      for (const side of ['left', 'right', 'top', 'bottom']) values[`border-${side}`] = '2px';
+      values.display = 'inline-block'; values['box-sizing'] = 'border-box'; values['min-inline-size'] = '0'; values['min-block-size'] = '0';
+    }
     // Controls do not inherit the page's font size: the UA's control font is the default size − 2.67px (13.33px
     // at a 16px default; measured in Chromium), until the author sets it (font: inherit, font-size).
     values['font-size']='ua';
@@ -690,6 +699,12 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   values.$scheme = used;
   for (const property of ['color', 'background-color']) if (sources[property] && ['canvas', 'canvastext'].includes(String(values[property]).toLowerCase()))
     values[property] = { light: { canvas: '#ffffff', canvastext: '#000000' }, dark: { canvas: '#121212', canvastext: '#ffffff' } }[used][String(values[property]).toLowerCase()];
+  // Buttons: the UA's button { color: ButtonText; background-color: ButtonFace } (not inherited; with or without
+  // appearance), in the used scheme: light #000 on #efefef, dark #fff on #6b6b6b (Chromium, measured).
+  if (!box.pseudo && (box.tag === 'button' || (box.tag === 'input' && ['button', 'submit', 'reset'].includes(box.inputType)))) {
+    if (!sources.color) values.color = used === 'dark' ? '#ffffff' : '#000000';
+    if (!sources['background-color']) values['background-color'] = used === 'dark' ? '#6b6b6b' : '#efefef';
+  }
   // position: fixed is laid out as absolute against the viewport; the engine admits it for the accessibility and
   // integrity checks only (at scroll position 0) and keeps every other proof Unknown.
   if (values.position === 'fixed') { values.position = 'absolute'; values.$fixed = true; }
@@ -704,6 +719,14 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   const em = /^(-?\d+(?:\.\d{1,6})?)em$/.exec(String(values['letter-spacing'] ?? ''));
   if (em) values['letter-spacing'] = /^\d+(?:\.\d{1,6})?px$/.test(values['font-size']) ? `${+(Number(em[1]) * Number(values['font-size'].slice(0, -2))).toFixed(6)}px` : 'em-unresolved';
   if (values.position === 'sticky') { values.position = 'relative'; values.$sticky = true; }
+  // rem box lengths compute to px once the root font size is known (setRootFontSize), so every px-only check sees
+  // them as px; a value with more than 6 decimals stays rem (Unknown where it is used).
+  if (rootFontSize) for (const key of remLengths) {
+    const m = /^(\d+(?:\.\d{1,6})?)rem$/.exec(String(values[key] ?? ''));
+    if (!m) continue;
+    const v = mul(q(m[1]), rootFontSize), text = number(v);
+    if (/^\d+(?:\.\d{1,6})?$/.test(text)) values[key] = text === '0' ? '0' : `${text}px`;
+  }
   // A list's UA padding-inline-start is 40px (Chromium's UA sheet): on the left in ltr, on the right in rtl.
   if (['ul', 'ol'].includes(box.tag) && values['padding-left'] === 'ua') {
     values['padding-left'] = values.direction === 'rtl' ? '0' : '40px';

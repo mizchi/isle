@@ -33,6 +33,8 @@ more than `maxStates` states is Unknown.
 - Page-level rules (h1, main landmark, skip link, landmarks) are left out for a component; `page: true` keeps them.
 - `assumeText` sizes text without a font contract as one 24px line with no minimum width, and says so as an
   assumption. Inline svg content and phrasing elements inside text are not separate text boxes.
+- `defaultFontSize` (px) resolves `rem` against an assumed browser default font size when the page does not set a
+  px root size; it is listed as an assumption. The CLI passes 16.
 - A state whose analysis throws is Unknown (`U_ADAPTER_ANALYSIS`), never a crash.
 
 The CLI is `tools/css-lint.mjs` ([docs/component-lint.md](../../docs/component-lint.md)).

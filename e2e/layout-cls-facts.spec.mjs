@@ -588,6 +588,21 @@ test('closed dialog: the static warning fires exactly where Chromium renders the
   }
 });
 
+test('buttons paint ButtonText on ButtonFace unless the author sets colors: the static contrast verdict agrees with Chromium', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const lum = c => { const [r, gg, b] = c.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map(v => v / 255).map(v => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * r + 0.7152 * gg + 0.0722 * b; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  for (const own of ['', 'color:#c00', 'background:transparent', 'color-scheme:dark', 'background:#246;color:#fff']) {
+    const css = `*{box-sizing:border-box;margin:0}html,body,.p{${g}}.p{color:#fff;background:#123}.h{line-height:20px}.b{display:block;height:30px;line-height:20px;${own}}`;
+    const html = '<main class="p"><h1 class="h">T</h1><button class="b" type="button">Go</button></main>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, accessibility: true, boxes: {'.b': {minInlineSize: 0, intrinsicBlockSize: 20}, '.h': {minInlineSize: 0, intrinsicBlockSize: 20}}});
+    const failing = report.diagnostics.some(d => d.code === 'E_A11Y_CONTRAST' && d.box === '.b');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const [color, background] = await page.evaluate(() => { const b = document.querySelector('.b'), cs = getComputedStyle(b); const bg = cs.backgroundColor === 'rgba(0, 0, 0, 0)' ? getComputedStyle(b.parentElement).backgroundColor : cs.backgroundColor; return [cs.color, bg]; });
+    expect(failing, `${own}: ${color} on ${background}`).toBe(ratio(color, background) < 4.5);
+  }
+});
+
 test('inert z-index: a static block-level box in block flow does not stack above a positioned sibling; a grid item does', async ({page}) => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   for (const [parent, warn] of [['display:block', true], [g, false]]) {

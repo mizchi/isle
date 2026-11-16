@@ -17,3 +17,14 @@ test('an absolute font-size on html or body ignores the user default font size',
   // Only the root and body: a px size on a component is not a page-wide override.
   assert.deepEqual(warned(run('.page{font-size:14px}')), []);
 });
+
+test('defaultFontSize: rem resolves against the user default when html does not set a px size', () => {
+  const lay = (css, defaultFontSize) => analyzeHTML('<html lang="en"><body><main class="page"><div class="b"></div></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.page{${g}}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, ...(defaultFontSize ? {defaultFontSize} : {})});
+  const h = r => r.sizes.find(s => s.box === '.b').blockSize.constant;
+  assert.equal(lay('.b{height:2rem}').status, 'unknown');
+  assert.equal(h(lay('.b{height:2rem}', 16)), '32');
+  assert.equal(h(lay('html{font-size:62.5%}.b{height:2rem}', 16)), '20');
+  assert.equal(h(lay('html{font-size:1.25em}.b{height:2rem}', 16)), '40');
+  // A px root wins over the default.
+  assert.equal(h(lay('html{font-size:20px}.b{height:2rem}', 16)), '40');
+});
