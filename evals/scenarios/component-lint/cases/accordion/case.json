@@ -1,0 +1,1 @@
+{"framework": "stylex", "intent": "FAQ accordion with an open panel.", "planted": "the panel answer text is light grey (#aaa) on white, and the panel has a fixed 48px height that clips the answer", "expect": ["E_A11Y_CONTRAST", "E_LAYOUT_CONTENT"]}

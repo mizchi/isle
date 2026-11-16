@@ -107,6 +107,15 @@
   - そこで、マークアップだけで名前を判定するようにしました。対象は、テキストも、画像のテキストも、名前の属性もないボタンとリンクです。どの CSS rule もそれを隠せない(display: none、visibility、content-visibility)、生成テキストも付けられない(content)、祖先が accessibility tree から外していない、という場合だけ出します。
   - Chromium の accessibility tree の名前と、7 通りの書き方で一致しました。before の見逃しは 1 件(カルーセル、パーセントの flex-basis の Unknown のせい)になりました。
 
+## 5 回目のループ: 24 例
+
+パンくずリスト(Svelte)、ページネーション(Vue)、アコーディオン(StyleX)、日付の入力(Linaria)を加えました。
+
+- パンくずリスト(nowrap の flex の行のはみ出し)、アコーディオン(コントラスト不足と、固定の高さで切れる回答)は、最初から検出できました。
+- ページネーションには、仕込むつもりのなかった崩れがありました。幅 60px で nowrap と `overflow: hidden` の「Next page」は、63.19px 要るので末尾が切れます。lint が先に見つけたので、case.json を実態に合わせました。
+- **止まっていた書き方**: `type="date"` の入力欄が Unknown でした。Chromium で測ると、date、time、datetime-local、month、week は、テキストの入力欄とまったく同じ箱でした(content-box で、作者の幅と高さに従い、中身より小さくもなる)。そのため、テキストの入力欄として扱うようにしました。color は border-box なので、外したままです。
+- 修正版は、4 例とも fix の文言どおりに 1 回で直りました(flex-wrap、幅の固定を外す、色と高さ、1 列に積む)。
+
 ## 次の課題(backlog)
 
 - (解決済み) canvas の色が分からないときのコントラストの Unknown は、既定の色の仮定(light の preference)で検査できるようになりました。dark の preference での canvas は、Chromium が #121212 にするので、まだ Unknown です。
@@ -115,5 +124,5 @@
 - inline-block の行レイアウトはモデル外です(chips の before)。
 - パーセントの flex-basis(カルーセルの `flex: 0 0 100%`)。flex の item の大きさを、ビューポートについて affine に持つ必要があります。
 - (解決済み) 名前の検査は、レイアウトが Unknown でも、マークアップだけで判定できる場合は出します。コントラストや覆いのように配置が要る検査は、Unknown のままです。
-- 次に加える例: パンくずリスト、ページネーション、アコーディオン、日付の入力。
+- 次に加える例: 検索の候補(combobox)、ツールチップ、ファイルのアップロード、価格の比較のスライダー。
 - RTL の例では、物理方向の指定の警告は出ますが、Chromium では崩れが見えません(アイコンとテキストが反対側に離れるだけ)。警告の意図(読む方向に合わない配置)を、どう実測するかは未定です。

@@ -1,0 +1,1 @@
+{"framework": "vue", "intent": "Page number buttons under a list.", "planted": "the Next page button is a fixed 60px with nowrap and overflow hidden: its label is cut off", "expect": ["E_LAYOUT_CONTENT"]}

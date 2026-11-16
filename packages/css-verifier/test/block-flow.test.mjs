@@ -186,3 +186,10 @@ test('an automatic table column whose cells each hold one px-wide block is as wi
   const cells = r.sizes.filter(s => s.box === '.c' && s.rect).slice(0, 2).map(s => Number(s.rect.inlineSize.constant));
   assert.deepEqual(cells, [40, 106]);
 });
+
+test('a date input takes the text field box: content-box with its author width, height, padding and border', () => {
+  const r = analyzeHTML(`<html lang="en"><body><main class="p"><section class="box"><input class="a" type="date" aria-label="Date"></section></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}.box{display:block;padding:7px}.a{display:block;box-sizing:content-box;width:200px;height:40px;padding:0 8px;border:1px solid #767676}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.deepEqual(rects(r, 500), [['.a', 7, 7, 218, 42]]);
+});

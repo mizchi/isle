@@ -664,7 +664,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // its children out exactly as a div with the same CSS.
     // A text field (text-like input or textarea) keeps the same box with its default appearance once the author sets
     // its padding and border on every side (measured): only its UA paint differs.
-    const textField = box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', undefined].includes(box.inputType));
+    const textField = box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', 'date', 'time', 'datetime-local', 'month', 'week', undefined].includes(box.inputType));
     const authoredEdges = ['left', 'right', 'top', 'bottom'].every(side => style.$sources?.[`padding-${side}`] && style.$sources?.[`border-${side}`]);
     // A button's box is the same with its default appearance (measured: sizes, padding, border, grid content); its
     // UA padding, border, colors and display are modeled.

@@ -596,7 +596,9 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     for(const side of ['left','right','top','bottom']) {values[`padding-${side}`]='ua';values[`border-${side}`]='ua';}
     for(const key of ['display','box-sizing','min-inline-size','min-block-size']) values[key]='ua';
     // Text fields: Chromium's UA values are known (measured): inline-block, content-box (search: border-box), no min size.
-    if (box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', undefined].includes(box.inputType))) {
+    // Date and time fields (date, time, datetime-local, month, week) take the same box as a text field: content-box,
+    // their author size even below their content (measured in Chromium: 218×42 for 200×40 + 8px padding + 1px border).
+    if (box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', 'date', 'time', 'datetime-local', 'month', 'week', undefined].includes(box.inputType))) {
       values.display = 'inline-block'; values['box-sizing'] = box.inputType === 'search' ? 'border-box' : 'content-box'; values['min-inline-size'] = '0'; values['min-block-size'] = '0';
     }
     // Buttons: Chromium's UA box is padding 1px 6px, a 2px border, inline-block, border-box, no min size (measured,

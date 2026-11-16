@@ -1,0 +1,1 @@
+{"framework": "linaria", "intent": "A date field with its label beside it.", "planted": "the label is a fixed 160px nowrap column next to a 200px date input: the row overflows phones", "expect": ["E_LAYOUT_TRACKS"]}
