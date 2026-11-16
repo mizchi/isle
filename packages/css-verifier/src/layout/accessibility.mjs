@@ -23,6 +23,7 @@
 //   focus-area       → E_A11Y_FOCUS_AREA        a visible focusable box with a zero-size border box
 //   pointer-disabled → E_A11Y_POINTER_DISABLED  a visible button/link that pointer-events: none makes unclickable
 //   small-text       → W_A11Y_SMALL_TEXT        rendered text below 12px
+//   visual-presentation → W_A11Y_LINE_LENGTH   (AAA) wrapping text with lines longer than 80 characters (SC 1.4.8)
 //   image-alt        → E_A11Y_IMAGE_ALT         a rendered img without alt (alt="" marks it decorative)
 //   form-label       → E_A11Y_LABEL             a field with no label, aria name or title (W_A11Y_PLACEHOLDER_LABEL: placeholder only)
 //   label-for        → E_A11Y_LABEL_FOR         label[for] names no labelable element
@@ -953,6 +954,15 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
       const contractLine = row.box.contract?.font?.lineHeight;
       const ratio = m ? (m[2] === 'px' ? Number(m[1]) / size : m[2] === '%' ? Number(m[1]) / 100 : Number(m[1])) : value === 'normal' && contractLine ? contractLine / size : null;
       if (ratio === null) { normalSkipped = true; continue; }
+      // Line length (SC 1.4.8: no more than 80 characters): measured text longer than that, in a box wider than 80 of its
+      // average characters (its measured width over its length), has lines longer than 80 characters there (one long
+      // line or wrapped ones).
+      const measured = row.box.contract?.textMetrics;
+      if (['content', 'lines'].includes(measured?.kind) && typeof measured.text === 'string' && [...measured.text].length > 80 && measured.width > 0) {
+        const chars = [...measured.text].length, average = measured.width / chars;
+        const long = below(row.region, scalar(Math.round(80 * average * 64) / 64), row.inline);
+        if (long && !warnings.some(w => w.code === 'W_A11Y_LINE_LENGTH' && w.path === row.path)) report(warnings, 'W_A11Y_LINE_LENGTH', 'warning', `${row.box.label} has lines longer than 80 characters (its box is wider than 80 × its average character width, ${Math.round(80 * average)}px) (SC 1.4.8)`, row, long, { rule: 'visual-presentation' });
+      }
       const wraps = below(row.region, scalar(ratio * size), row.block);
       if (!wraps) continue;
       if (row.textAlign === 'justify') report(warnings, 'W_A11Y_JUSTIFIED', 'warning', `${row.box.label} is justified text that wraps (SC 1.4.8)`, row, wraps, { rule: 'visual-presentation' });

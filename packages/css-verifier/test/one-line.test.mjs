@@ -38,3 +38,15 @@ test('a control does not inherit the page font (family, weight, line-height, spa
   const reset = report('.b{font-family:inherit;line-height:inherit;font-weight:inherit}');
   assert.equal(reset.status, 'verified', JSON.stringify(reset.diagnostics.map(d => d.message)));
 });
+
+test('line length (SC 1.4.8, AAA): measured text has lines over 80 characters where its box is wide (W_A11Y_LINE_LENGTH)', async () => {
+  const m = await loadTextMetrics({fonts: {Roboto: {file}}});
+  const content = 'Static checks find layout breaks before the page ships, and they explain each one with the width where it happens.';
+  const run = css => (analyzeHTML(`<html lang="en"><body><main class="p"><p class="t">${content}</p></main></body></html>`, m.resolveOptions({name: 'P', css: `*{box-sizing:border-box;margin:0}html,body,.p{${g}}html{background:#fff}.t{font-family:Roboto;font-size:16px;line-height:24px;color:#111}${css}`, viewport: {min: 320, max: 1280, height: {min: 600, max: 900}}, accessibility: {contrast: 'AAA'}, boxes: {'.t': {text: {font: {...font, lineHeight: 24}, content}, wrap: 'normal'}}})).accessibility?.warnings ?? []).filter(w => w.code === 'W_A11Y_LINE_LENGTH');
+  const wide = run('');
+  assert.equal(wide.length, 1);
+  // 80 average Roboto characters at 16px are about 560px: wider than that, its lines (one, or wrapped) are longer than
+  // 80 characters (Chromium: 114 characters on one line at 1280px, 97 + 17 at 700px, 65 + 49 at 500px).
+  assert.match(wide[0].message, /lines longer than 80 characters/);
+  assert.deepEqual(run('.t{max-width:400px}'), []);
+});
