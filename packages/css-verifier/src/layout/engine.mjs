@@ -652,6 +652,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
     // A closed popover that author CSS displays keeps the UA [popover] { position: fixed; inset: 0; margin: auto }:
     // it renders as a fixed, centred box over the page, which is not modeled.
+    // A closed dialog that author CSS displays: it renders as the UA's position: absolute box over the page.
+    if (box.tag === 'dialog' && box.dialogOpen === false && style.display !== 'none') {
+      if (!layoutWarnings.some(w => w.code === 'W_LAYOUT_DIALOG_CLOSED_SHOWN' && w.path === box.path))
+        layoutWarnings.push({ code: 'W_LAYOUT_DIALOG_CLOSED_SHOWN', severity: 'warning', box: box.label, path: box.path,
+          ...(style.$sources?.display ? { css: [{ property: 'display', file: style.$sources.display.file, line: style.$sources.display.line, selector: style.$sources.display.selector }] } : {}),
+          message: `${box.label} is a closed dialog, but display: ${style.display} overrides the UA dialog:not([open]) { display: none }, so it shows over the page while closed. Put the display on dialog[open] (or .x[open])`, ...ranges(region) });
+      throw Object.assign(new Error(`${box.label} is a closed dialog that renders (author display overrides dialog:not([open]) { display: none }); its UA position: absolute is not modeled`), { code: 'U_LAYOUT_DIALOG', box });
+    }
     if (box.popover === true && style.display !== 'none') throw Object.assign(new Error(`${box.label} is a closed popover that renders (author display overrides [popover]:not(:popover-open) { display: none }); its UA position: fixed is not modeled`), { code: 'U_LAYOUT_POPOVER' });
     if (style.$sticky && (!options.accessibility && !options.integrity || !['0', '0px'].includes(style.top) || ['bottom', 'left', 'right'].some(key => style[key] !== 'auto') || !block || !options.viewport.height || (options.hostBlockInset ?? 0) !== 0))
       throw Object.assign(new Error(`${box.label} is position: sticky; only top: 0 under the page scroll (no scrolling or clipping ancestor) is modeled, for the accessibility and integrity checks`), { code: 'U_LAYOUT_CSS' });

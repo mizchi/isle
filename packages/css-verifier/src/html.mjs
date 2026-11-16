@@ -37,7 +37,7 @@ export function htmlBoxTree(html) {
     const attrs=Object.fromEntries(node.attrs.map(a=>[a.name,a.value]));
     for(const attr of node.attrs) {
       // An img's or source's size and selection attributes are modeled (width/height hints and aspect-ratio).
-      if(node.tagName==='details' && attr.name==='open') continue;
+      if(['details','dialog'].includes(node.tagName) && attr.name==='open') continue;
       if(node.tagName==='svg' && !attr.namespace && /^(?:width|height|viewbox|xmlns|version|fill|stroke|stroke-width|stroke-linecap|stroke-linejoin|stroke-miterlimit|stroke-dasharray|fill-rule|clip-rule|fill-opacity|stroke-opacity|opacity|preserveaspectratio|focusable)$/i.test(attr.name)) continue;
       if(node.tagName==='svg' && attr.namespace==='http://www.w3.org/2000/xmlns/') continue;
       if(!attr.namespace && ((['img','source'].includes(node.tagName) && /^(?:width|height|srcset|sizes|media|loading|decoding)$/.test(attr.name)) || (node.tagName==='video' && /^(?:width|height|preload)$/.test(attr.name)) || (node.tagName==='iframe' && /^(?:width|height)$/.test(attr.name)))) continue;

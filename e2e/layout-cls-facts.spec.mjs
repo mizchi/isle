@@ -574,6 +574,20 @@ test('content-visibility: auto: the static warning fires exactly where Chromium 
   }
 });
 
+test('closed dialog: the static warning fires exactly where Chromium renders the closed dialog', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const html = '<main class="p"><dialog class="d"><div class="k"></div></dialog><div class="n"></div></main>';
+  for (const css of ['', '.d{display:flex}', 'dialog{display:grid}', '.d{display:block}', '.d{visibility:visible;padding:20px}', '.p .d{display:grid}']) {
+    const full = `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}.n{height:10px}.k{height:40px}${css}`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: full, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    const warn = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DIALOG_CLOSED_SHOWN');
+    if (!warn) expect(report.status, css).toBe('verified');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${full}</style></head><body>${html}</body></html>`);
+    const rendered = await page.evaluate(() => { const r = document.querySelector('.d').getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+    expect(rendered, css).toBe(warn);
+  }
+});
+
 test('inert z-index: a static block-level box in block flow does not stack above a positioned sibling; a grid item does', async ({page}) => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   for (const [parent, warn] of [['display:block', true], [g, false]]) {
