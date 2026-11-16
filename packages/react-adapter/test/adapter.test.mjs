@@ -106,3 +106,20 @@ export default function M({active}) { return <div><span className={\`\${bar} \${
   assert.deepEqual(lists, [2, 3]);
   assert.deepEqual(unknowns.map(u => u.code), ['U_REACT_DYNAMIC_CLASS']);
 });
+
+test('props typed as literal unions: their text is each value, and comparisons of them agree with the value', () => {
+  const source = `type Props = { status: 'Active' | 'Pending review'; note?: 'x' | 'y' };
+export default function Badge({ status, note }: Props) {
+  return <div><span className="label">{status}</span>{status === 'Active' && <i className="dot"></i>}<b>{note}</b></div>;
+}`;
+  const {states, assumptions} = expandReact(source);
+  const htmls = states.map(s => s.html).sort();
+  assert.equal(states.length, 2);
+  assert.ok(htmls.some(h => h.includes('>Pending review<') && !h.includes('dot')), htmls.join('\n'));
+  assert.ok(htmls.some(h => h.includes('>Active<') && h.includes('dot')), htmls.join('\n'));
+  // An optional prop may be absent: still placeholder text.
+  assert.ok(htmls.every(h => h.includes('<b>…</b>')));
+  assert.ok(assumptions.some(a => /literal unions \(status\)/.test(a)));
+  // props.status reads the same.
+  assert.equal(expandReact(`interface P { size: 1 | 2 }\nexport default function C(props: P) { return <p>{props.size}</p>; }`).states.map(s => s.html).sort().join(), '<p>1</p>,<p>2</p>');
+});

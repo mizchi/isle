@@ -47,6 +47,38 @@ export const scopeEscapes = (css, kinds) => selectorsOf(css).flatMap(selector =>
 // A boundary marker in a state's markup: content another component (or the caller) renders here.
 export const boundary = (kind, name, contract) => `<!--isle-boundary:${kind}${name ? ` ${String(name).replace(/[^\w.$-]/g, '')}` : ''}${contract ? ` contract=${contract}` : ''}-->`;
 
+// Props typed as a union of string or number literals ('Active' | 'Pending review'; Babel and ESTree literal nodes):
+// name → values, from a props type's members (a type literal, or a local alias / interface). Optional props are left
+// out (an absent prop renders nothing). `declared(name)` says whether the component reads the prop by that name.
+const literalValue = t => t?.type === 'TSLiteralType' && (['StringLiteral', 'NumericLiteral'].includes(t.literal.type) || (t.literal.type === 'Literal' && ['string', 'number'].includes(typeof t.literal.value))) ? [t.literal.value] : null;
+export function literalUnionProps(members, declared = () => true) {
+  const out = new Map();
+  for (const m of members ?? []) {
+    if (m.type !== 'TSPropertySignature' || m.key?.type !== 'Identifier' || m.optional || !declared(m.key.name)) continue;
+    const type = m.typeAnnotation?.typeAnnotation;
+    const values = literalValue(type) ?? (type?.type === 'TSUnionType' && type.types.every(literalValue) ? type.types.flatMap(literalValue) : null);
+    if (values) out.set(m.key.name, values);
+  }
+  return out;
+}
+// Type members of a props annotation: an inline type literal or a reference to an alias / interface in `body`.
+export function propsMembers(annotation, body) {
+  if (annotation?.type === 'TSTypeLiteral') return annotation.members;
+  if (annotation?.type !== 'TSTypeReference' || annotation.typeName.type !== 'Identifier') return null;
+  for (const stmt of body ?? []) {
+    const decl = stmt.type === 'ExportNamedDeclaration' ? stmt.declaration : stmt;
+    if (decl?.type === 'TSTypeAliasDeclaration' && decl.id.name === annotation.typeName.name && decl.typeAnnotation.type === 'TSTypeLiteral') return decl.typeAnnotation.members;
+    if (decl?.type === 'TSInterfaceDeclaration' && decl.id.name === annotation.typeName.name) return decl.body.body;
+  }
+  return null;
+}
+// A state's comparisons of literal props (status === 'Active', props.status !== 'x') agree with their chosen values.
+export const literalChoicesAgree = (choices, literalProps) => Object.entries(choices).every(([key, held]) => {
+  const m = /^(?:props\.)?(\w+)\s*(===?|!==?)\s*(['"])(.*)\3$/.exec(key);
+  if (!m || !literalProps.has(m[1]) || !(m[1] in choices)) return true;
+  return ((String(choices[m[1]]) === m[4]) === m[2].startsWith('=')) === held;
+});
+
 export function conditionKey(text) {
   let key = String(text).trim(), negate = false;
   while (key.startsWith('!') && !key.startsWith('!=')) { negate = !negate; key = key.slice(1).trim(); }

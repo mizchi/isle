@@ -59,3 +59,16 @@ test('what the template does not say statically is Unknown', () => {
   assert.deepEqual(unknowns, []);
   assert.deepEqual(states.map(s => s.html).sort(), ['<main class="a c" dir="ltr"></main>', '<main class="a c" dir="rtl"></main>', '<main class="b c" dir="ltr"></main>', '<main class="b c" dir="rtl"></main>']);
 });
+
+test('props typed as literal unions (defineProps<…>()): each value is a state, and the markup equals Vue SSR for it', async () => {
+  const source = `<template><div class="badge"><span class="label">{{ status }}</span><i v-if="status === 'Active'" class="dot"></i></div></template>
+<script setup lang="ts">
+type Props = { status: 'Active' | 'Pending review' };
+defineProps<Props>();
+</script>
+<style scoped>.badge { display: block; }</style>`;
+  const {states, assumptions} = expandVue(source);
+  assert.equal(states.length, 2, JSON.stringify(states));
+  for (const state of states) assert.equal(normalize(state.html), normalize(await ssr(source, state.choices)), JSON.stringify(state.choices));
+  assert.ok(assumptions.some(a => /literal unions \(status\)/.test(a)));
+});

@@ -13,7 +13,7 @@
 // spreads other than stylex.props, and more states than maxStates.
 import { parse } from '@babel/parser';
 import postcss from 'postcss';
-import { product, merge, choose, conditionKey, analyzeStates, scopeEscapes, boundary } from '@mizchi/css-verifier-adapter-core';
+import { product, merge, choose, conditionKey, analyzeStates, scopeEscapes, boundary, literalUnionProps, propsMembers, literalChoicesAgree } from '@mizchi/css-verifier-adapter-core';
 
 const escapeText = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const escapeAttr = s => escapeText(s).replace(/"/g, '&quot;');
@@ -76,6 +76,9 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
   const unknown = (code, message) => { if (!unknowns.some(u => u.message === message)) unknowns.push({ code, message }); };
   const limit = { maxStates, onLimit: max => unknown('U_REACT_STATES', `more than ${max} component states; raise maxStates or split the component`) };
   const empty = [{ html: '', choices: {} }];
+  // Props typed as a union of string or number literals (status: 'Active' | 'Pending review'): their text is one of
+  // those values, a state each (the choice is the prop's value).
+  let literalProps = new Map(), propsName = null;
   const text = node => source.slice(node.start, node.end);
   const choice = (node, value) => { const { key, negate } = conditionKey(text(node)); return choose(key, value !== negate); };
 
@@ -269,6 +272,8 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
       return eachCounts.flatMap(n => item.map(v => ({ html: v.html.repeat(n), choices: merge(v.choices, choose(key, n)) }))).filter(v => v.choices);
     }
     // {children} / {props.children}: what the caller passes, assumed to be text but marked as the caller's content.
+    const literalName = node.type === 'Identifier' ? node.name : node.type === 'MemberExpression' && !node.computed && propsName && node.object.type === 'Identifier' && node.object.name === propsName ? node.property.name : null;
+    if (literalName && literalProps.has(literalName)) return literalProps.get(literalName).map(value => ({ html: escapeText(String(value)), choices: choose(literalName, value) }));
     if (['Identifier', 'MemberExpression', 'TemplateLiteral', 'CallExpression', 'OptionalMemberExpression'].includes(node.type)) { assumptions.add('{expression} text is placeholder text; its size comes from the box contracts'); return [{ html: /^(?:props\.)?children$/.test(text(node)) ? `…${boundary('children')}` : '…', choices: {} }]; }
     unknown('U_REACT_EXPRESSION', `the JSX child {${text(node)}} is not modeled`);
     return empty;
@@ -293,9 +298,18 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
   let target = component ? functions.find(f => f.name === component) : functions.find(f => f.name === 'default');
   if (target?.ref) target = functions.find(f => f.name === target.ref);
   if (!target) { unknown('U_REACT_COMPONENT_NOT_FOUND', `no component ${component ?? 'default export'} in the module`); return { states: [], css: '', unknowns, assumptions: [] }; }
+  // The props' type: an inline type literal or a local type alias / interface.
+  const param = target.fn.params?.[0];
+  // Destructured without renaming ({ status }) or read as props.status.
+  const local = param?.type === 'ObjectPattern' ? new Set(param.properties.filter(p => p.type === 'ObjectProperty' && p.key.type === 'Identifier' && p.value.type === 'Identifier' && p.key.name === p.value.name).map(p => p.key.name)) : null;
+  if (param?.type === 'Identifier') propsName = param.name;
+  literalProps = literalUnionProps(propsMembers(param?.typeAnnotation?.typeAnnotation, ast.program.body), name => Boolean(propsName) || Boolean(local?.has(name)));
+  if (literalProps.size) assumptions.add(`text of props typed as literal unions (${[...literalProps.keys()].join(', ')}) is each of their values`);
   const body = target.fn.body.type === 'BlockStatement' ? target.fn.body.body.filter(s => s.type === 'ReturnStatement').at(-1)?.argument : target.fn.body;
   if (target.fn.body.type === 'BlockStatement' && target.fn.body.body.filter(s => s.type === 'ReturnStatement').length > 1) unknown('U_REACT_EARLY_RETURN', 'the component returns early; only its last return is modeled');
-  const states = body ? expression(body.type === 'ParenthesizedExpression' ? body.expression : body).map(v => ({ html: v.html.trim(), choices: v.choices })) : [];
+  // A comparison of a literal prop (status === 'Active', status !== 'Active') agrees with the prop's chosen value.
+  const consistent = choices => literalChoicesAgree(choices, literalProps);
+  const states = body ? expression(body.type === 'ParenthesizedExpression' ? body.expression : body).filter(v => consistent(v.choices)).map(v => ({ html: v.html.trim(), choices: v.choices })) : [];
   // Linaria's css is global: a class is unique to the component, but a nested selector's other compounds are not
   // pinned (E_SCOPE_REACHES); :global(…) reaches past the component (E_SCOPE_ESCAPE) and is unwrapped for the analysis.
   const linariaCSS = cssText.join('\n');

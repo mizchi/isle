@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {compile} from 'svelte/compiler';
 import {expandSvelte, analyzeSvelte} from '../src/index.mjs';
+import {renderSSR, normalize} from './ssr.mjs';
 
 const fixture = name => readFileSync(new URL(`../fixtures/${name}`, import.meta.url), 'utf8');
 const pageCSS = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}';
@@ -69,4 +70,17 @@ test('each expanded state is the markup Svelte server-renders for those props', 
     const {html} = await renderSSR(source, props);
     assert.equal(normalize(html), normalize(state.html), JSON.stringify(props));
   }
+});
+
+test('props typed as literal unions: each value is a state, and the markup equals Svelte SSR for it', async () => {
+  const source = `<script lang="ts">
+  type Props = { status: 'Active' | 'Pending review'; note?: 'x' };
+  let { status, note }: Props = $props();
+</script>
+<div class="badge"><span class="label">{status}</span>{#if status === 'Active'}<i class="dot"></i>{/if}</div>
+<style>.badge { display: block; }</style>`;
+  const {states, assumptions} = expandSvelte(source);
+  assert.equal(states.length, 2, JSON.stringify(states));
+  for (const state of states) assert.equal(normalize(state.html), normalize((await renderSSR(source, state.choices)).html), JSON.stringify(state.choices));
+  assert.ok(assumptions.some(a => /literal unions \(status\)/.test(a)));
 });

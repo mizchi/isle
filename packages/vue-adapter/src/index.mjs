@@ -7,8 +7,8 @@
 // not a literal shape, <style module>, and more states than maxStates. Scoped styles are unscoped (:deep(x),
 // :slotted(x) and :global(x) become x): analysed alone, a component's scoped selectors match its own elements.
 import { parse } from 'vue/compiler-sfc';
-import { parseExpression } from '@babel/parser';
-import { product, merge, choose, conditionKey, analyzeStates, scopeEscapes, boundary } from '@mizchi/css-verifier-adapter-core';
+import { parseExpression, parse as parseScript } from '@babel/parser';
+import { product, merge, choose, conditionKey, analyzeStates, scopeEscapes, boundary, literalUnionProps, propsMembers, literalChoicesAgree } from '@mizchi/css-verifier-adapter-core';
 
 const ELEMENT = 1, TEXT = 2, COMMENT = 3, INTERPOLATION = 5, ATTRIBUTE = 6, DIRECTIVE = 7;
 const COMPONENT = 1, SLOT = 2, TEMPLATE = 3;
@@ -25,6 +25,18 @@ export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2], sour
   if (errors.length) unknown('U_VUE_PARSE', `the SFC does not parse: ${errors[0].message ?? errors[0]}`);
   for (const style of descriptor.styles) if (style.module) unknown('U_VUE_CSS_MODULE', '<style module> class names come from $style at run time');
   const css = descriptor.styles.filter(s => !s.module).map(s => unscopeVueCSS(s.content)).join('\n');
+  // Props typed as literal unions (defineProps<{ status: 'Active' | 'Pending' }>()): their text is each value.
+  let literalProps = new Map();
+  if (descriptor.scriptSetup?.lang === 'ts') {
+    try {
+      const body = parseScript(descriptor.scriptSetup.content, { sourceType: 'module', plugins: ['typescript'] }).program.body;
+      let call = null;
+      const find = node => { if (!node || typeof node !== 'object' || call) return; if (node.type === 'CallExpression' && node.callee.name === 'defineProps' && node.typeParameters) { call = node; return; } for (const v of Object.values(node)) if (v && typeof v === 'object') Array.isArray(v) ? v.forEach(find) : find(v); };
+      body.forEach(find);
+      literalProps = literalUnionProps(propsMembers(call?.typeParameters.params[0], body));
+    } catch { /* not parsed: the props stay placeholder text */ }
+    if (literalProps.size) assumptions.add(`text of props typed as literal unions (${[...literalProps.keys()].join(', ')}) is each of their values`);
+  }
   const limit = { maxStates, onLimit: max => unknown('U_VUE_STATES', `more than ${max} template states; raise maxStates or split the component`) };
   const empty = [{ html: '', choices: {} }];
   const exprChoice = (text, value) => { const { key, negate } = conditionKey(text); return choose(key, value !== negate); };
@@ -129,6 +141,7 @@ export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2], sour
     for (let i = 0; i < list.length; i++) {
       const n = list[i];
       if (n.type === TEXT) { lists.push([{ html: escapeText(n.content), choices: {} }]); continue; }
+      if (n.type === INTERPOLATION && literalProps.has(n.content.content.trim().replace(/^props\./, ''))) { const name = n.content.content.trim().replace(/^props\./, ''); lists.push(literalProps.get(name).map(value => ({ html: escapeText(String(value)), choices: choose(name, value) }))); continue; }
       if (n.type === INTERPOLATION) { assumptions.add('{{ interpolation }} text is placeholder text; its size comes from the box contracts'); lists.push([{ html: '…', choices: {} }]); continue; }
       if (n.type !== ELEMENT) continue;
       const directive = name => n.props.find(p => p.type === DIRECTIVE && p.name === name);
@@ -155,7 +168,7 @@ export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2], sour
     return product(lists, limit);
   }
 
-  const states = descriptor.template ? children(descriptor.template.ast.children).map(v => ({ html: v.html.trim(), choices: v.choices })) : [];
+  const states = descriptor.template ? children(descriptor.template.ast.children).filter(v => literalChoicesAgree(v.choices, literalProps)).map(v => ({ html: v.html.trim(), choices: v.choices })) : [];
   if (!descriptor.template) unknown('U_VUE_TEMPLATE', 'the SFC has no <template>');
   // <style scoped> hashes the styled element of each selector, not its ancestors; :deep, :slotted and :global reach past
   // the component (E_SCOPE_ESCAPE). A plain <style> is global CSS: its selectors are not pinned to this component.
