@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "A sticky header with an account dropdown that should open over the page.", "planted": "the sticky header is a stacking context (z-index auto): the menu's z-index 100 cannot escape it, so the later main with z-index 1 paints over the menu", "expect": ["E_A11Y_OCCLUDED", "E_A11Y_TEXT_START_OBSCURED"]}
