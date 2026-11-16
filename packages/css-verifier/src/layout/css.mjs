@@ -769,7 +769,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   // letter-spacing in em computes to px against the element's own font-size (then inherits as px).
   const em = /^(-?\d+(?:\.\d{1,6})?)em$/.exec(String(values['letter-spacing'] ?? ''));
   if (em) values['letter-spacing'] = /^\d+(?:\.\d{1,6})?px$/.test(values['font-size']) ? `${+(Number(em[1]) * Number(values['font-size'].slice(0, -2))).toFixed(6)}px` : 'em-unresolved';
-  if (values.position === 'sticky') { values.position = 'relative'; values.$sticky = true; }
+  // $stacks: sticky makes a stacking context whatever its insets (measured in Chromium), even where it never sticks.
+  if (values.position === 'sticky') { values.position = 'relative'; values.$sticky = true; values.$stacks = true; }
   // rem box lengths compute to px once the root font size is known (setRootFontSize), so every px-only check sees
   // them as px; a value with more than 6 decimals stays rem (Unknown where it is used).
   if (rootFontSize) for (const key of remLengths) {
