@@ -235,3 +235,11 @@ test('lint: CSS errors that stop the layout analysis are errors, and the states 
   assert.equal(out.find(m => m.code === 'E_CSS_SHORTHAND_CONFLICT')?.severity, 'error');
   assert.match(out.find(m => m.code === 'U_LAYOUT_NOT_ANALYZED')?.message ?? '', /not checked: the layout of every state was not analyzed/);
 });
+
+test('text beside a button in a flex row is an anonymous item (an unstyled span); a selector that could match that span keeps it Unknown', () => {
+  const src = css => `<div class="tag">design<button class="x" type="button" aria-label="Remove"></button></div>\n<style>.tag { display: flex; column-gap: 4px; } .x { display: block; width: 16px; height: 16px; padding: 0; border: 0; } ${css}</style>`;
+  const structure = r => r.states.some(s => s.report.diagnostics.some(d => d.code === 'U_LAYOUT_STRUCTURE'));
+  assert.equal(structure(analyzeSvelte(src(''), scopeOptions)), false);
+  for (const css of ['.tag > span { padding: 4px; }', '.tag > * { margin: 0; }', '.x + .x { margin: 0; }', '.tag :first-child { margin: 0; }'])
+    assert.equal(structure(analyzeSvelte(src(css), scopeOptions)), true, css);
+});

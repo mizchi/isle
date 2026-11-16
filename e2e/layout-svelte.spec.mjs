@@ -98,3 +98,44 @@ test('data-noshift: E_LAYOUT_NOSHIFT exactly when Chromium moves the marked elem
     expect(flagged, name).toBe(moved);
   }
 });
+
+// Text beside a button in a flex row is an anonymous flex item: modeled as an unstyled span (measured with the font),
+// it places the button where Chromium does.
+test('anonymous flex items of text: the elements beside them are where Chromium puts them', async ({page}) => {
+  const {loadTextMetrics} = await import('../packages/css-verifier/src/text-node.mjs');
+  const {readFileSync: read} = await import('node:fs');
+  const fontFile = new URL('../packages/css-verifier/text-metrics/fixtures/roboto-variable.ttf', import.meta.url);
+  const textMetrics = await loadTextMetrics({fonts: {Roboto: {file: fontFile.pathname}}});
+  const face = `@font-face{font-family:Roboto;src:url(data:font/ttf;base64,${read(fontFile).toString('base64')})}`;
+  const page0 = '*{box-sizing:border-box;margin:0}html{font-family:Roboto}html,body{display:grid;grid-template-columns:minmax(0,1fr)}body{margin:0}';
+  const source = `<div class="field"><span class="tag">design<button class="remove" type="button" aria-label="Remove"></button></span><span class="tag">front end<button class="remove" type="button" aria-label="Remove"></button></span></div>
+<style>
+  .field { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; background: #fff; }
+  .tag { display: flex; align-items: center; column-gap: 4px; padding: 4px 8px; font-size: 14px; line-height: 20px; background: #eee; }
+  .remove { display: block; width: 16px; height: 16px; padding: 0; border: 0; background: #555; }
+</style>`;
+  const report = analyzeSvelte(source, {pageCSS: page0, viewport, assumeText: true, textMetrics, fonts: {Roboto: {}}});
+  expect(report.unknowns, JSON.stringify(report.unknowns)).toEqual([]);
+  const state = report.states[0];
+  expect(state.report.status, JSON.stringify(state.report.diagnostics.map(d => d.message))).toBe('verified');
+  const {html, css} = await renderSSR(source, {});
+  let compared = 0;
+  for (const width of [320, 480, 800]) {
+    await page.setViewportSize({width, height: 700});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${page0}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const browser = await page.evaluate(() => [...document.querySelectorAll('.remove, .tag')].map(e => { const r = e.getBoundingClientRect(); return [e.className.split(' ')[0], r.left, r.width]; }));
+    const rows = state.report.sizes.filter(r => r.rect && /^\.(remove|tag)/.test(r.box) && width >= r.range.min && width <= r.range.max);
+    const at = a => Number(a.coefficient.split('/').reduce((x, y) => x / y)) * width + Number(String(a.constant).split('/').reduce((x, y) => x / y));
+    const model = rows.map(r => [r.box.slice(1).split('.')[0], at(r.rect.inlineStart), at(r.rect.inlineSize)]);
+    for (const [name, left, w] of browser) {
+      // Measured text widths are upper bounds (ceiled to 1/64 px plus a script-run allowance, see textBound): each text
+      // run before an element may move it by up to that much.
+      const slack = 4 / 64 + 1e-6, match = model.find(m => m[0] === name && Math.abs(m[1] - left) <= slack);
+      expect(match, `${name} at ${left} (${width}px): model ${JSON.stringify(model)}`).toBeTruthy();
+      expect(Math.abs(match[2] - w)).toBeLessThanOrEqual(slack);
+      compared++;
+    }
+  }
+  expect(compared).toBe(12);
+});

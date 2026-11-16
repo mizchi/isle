@@ -91,6 +91,32 @@ const page = html => `<html lang="en"><body>${html}</body></html>`;
 // Text without a size contract makes the layout Unknown. assumeText gives every element with direct text a contract
 // of one line (lineHeight px, default 24) and no minimum width — an assumption the lint output states: text overflow
 // is then not checked, and heights hold only for one-line text. Elements are marked with a class no CSS matches.
+// Text beside child elements that are not phrasing (a button, a div): in a flex or grid container each run of it is
+// an anonymous item, which lays out like an unstyled span there (blockified, the parent's inherited text styles,
+// flex: 0 1 auto, min-width: auto). Each run is wrapped in a marked span so it is measured as a text box; elsewhere
+// (block flow) the result is Unknown either way. Skipped when a selector could match the added span (*, span, a
+// structural pseudo-class, a sibling combinator): then the wrapper would change what the CSS selects.
+const wrapsSafely = css => !selectorsOf(css).some(sel => /(?:^|[\s,>(])\*|(?:^|[\s,>(])span\b|:(?:first|last|nth|only)-|:empty|:has\(|[+~]/.test(sel));
+function wrapTextRuns(html) {
+  const fragment = parseFragment(html);
+  let n = 0;
+  const walk = node => {
+    const kids = node.childNodes ?? [];
+    const texts = kids.filter(c => c.nodeName === '#text' && c.value.trim()), elements = kids.filter(c => c.tagName);
+    if (node.tagName && texts.length && elements.some(c => !phrasingTags.has(c.tagName))) {
+      node.childNodes = kids.map(c => {
+        if (!(c.nodeName === '#text' && c.value.trim())) return c;
+        const span = parseFragment(`<span class="__anon${n++}"></span>`).childNodes[0];
+        span.childNodes = [{ ...c, value: c.value.trim(), parentNode: span }]; span.parentNode = node;
+        return span;
+      }).filter(c => !(c.nodeName === '#text' && !c.value.trim()));
+    }
+    for (const child of node.childNodes ?? []) if (child.tagName !== 'svg') walk(child);
+  };
+  for (const child of fragment.childNodes) walk(child);
+  return { html: serialize(fragment), count: n };
+}
+
 function markText(html, start = 0) {
   const fragment = parseFragment(html);
   let n = start;
@@ -182,6 +208,7 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope
   const scopeOption = scope ? { mode: scope.mode, ...(scope.ancestors ? { ancestors: scope.ancestors } : {}), ...(scope.owned ? { owned: scope.owned } : {}), firstLine: pageCSS.split('\n').length + 1 } : null;
   const results = states.map(state => {
     let html = state.html, boxes = options.boxes;
+    if (wrapsSafely(css)) html = wrapTextRuns(html).html;
     if (assumeText) {
       const marked = markText(html);
       html = marked.html; assumedTexts = Math.max(assumedTexts, marked.count);
