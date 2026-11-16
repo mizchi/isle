@@ -13,7 +13,7 @@
 // spreads other than stylex.props, and more states than maxStates.
 import { parse } from '@babel/parser';
 import postcss from 'postcss';
-import { product, merge, choose, conditionKey, analyzeStates } from '@mizchi/css-verifier-adapter-core';
+import { product, merge, choose, conditionKey, analyzeStates, scopeEscapes, boundary } from '@mizchi/css-verifier-adapter-core';
 
 const escapeText = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const escapeAttr = s => escapeText(s).replace(/"/g, '&quot;');
@@ -210,7 +210,7 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
     let tag = name.type === 'JSXIdentifier' ? name.name : text(name), baseClasses = [];
     if (styled.has(tag)) { baseClasses = [styled.get(tag).className]; tag = styled.get(tag).tag; }
     else if (tag === 'Fragment' || tag === 'React.Fragment') return children(node.children);
-    else if (/^[A-Z]/.test(tag) || tag.includes('.')) { unknown('U_REACT_COMPONENT', `child component <${tag}>: its markup is analysed with that component, not here`); return empty; }
+    else if (/^[A-Z]/.test(tag) || tag.includes('.')) { unknown('U_REACT_COMPONENT', `child component <${tag}>: its markup is analysed with that component, not here`); return [{ html: boundary('component', tag), choices: {} }]; }
     let classLists = [{ classes: [], choices: {} }], refLists = null;
     const statics = [], attrLists = [];
     for (const a of node.openingElement.attributes) {
@@ -268,7 +268,8 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
       const item = expression(body);
       return eachCounts.flatMap(n => item.map(v => ({ html: v.html.repeat(n), choices: merge(v.choices, choose(key, n)) }))).filter(v => v.choices);
     }
-    if (['Identifier', 'MemberExpression', 'TemplateLiteral', 'CallExpression', 'OptionalMemberExpression'].includes(node.type)) { assumptions.add('{expression} text is placeholder text; its size comes from the box contracts'); return [{ html: '…', choices: {} }]; }
+    // {children} / {props.children}: what the caller passes, assumed to be text but marked as the caller's content.
+    if (['Identifier', 'MemberExpression', 'TemplateLiteral', 'CallExpression', 'OptionalMemberExpression'].includes(node.type)) { assumptions.add('{expression} text is placeholder text; its size comes from the box contracts'); return [{ html: /^(?:props\.)?children$/.test(text(node)) ? `…${boundary('children')}` : '…', choices: {} }]; }
     unknown('U_REACT_EXPRESSION', `the JSX child {${text(node)}} is not modeled`);
     return empty;
   }
@@ -295,7 +296,12 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
   const body = target.fn.body.type === 'BlockStatement' ? target.fn.body.body.filter(s => s.type === 'ReturnStatement').at(-1)?.argument : target.fn.body;
   if (target.fn.body.type === 'BlockStatement' && target.fn.body.body.filter(s => s.type === 'ReturnStatement').length > 1) unknown('U_REACT_EARLY_RETURN', 'the component returns early; only its last return is modeled');
   const states = body ? expression(body.type === 'ParenthesizedExpression' ? body.expression : body).map(v => ({ html: v.html.trim(), choices: v.choices })) : [];
-  return { states, css: [...cssText, ...stylexRules.values()].join('\n'), unknowns, assumptions: [...assumptions] };
+  // Linaria's css is global: a class is unique to the component, but a nested selector's other compounds are not
+  // pinned (E_SCOPE_REACHES); :global(…) reaches past the component (E_SCOPE_ESCAPE) and is unwrapped for the analysis.
+  const linariaCSS = cssText.join('\n');
+  const owned = [...linaria.values(), ...[...styled.values()].map(v => v.className)];
+  const scope = owned.length ? { mode: 'global', owned, escapes: scopeEscapes(linariaCSS, ['global']) } : undefined;
+  return { states, css: [linariaCSS.replace(/:global\(([^()]*)\)/g, '$1'), ...stylexRules.values()].join('\n'), unknowns, assumptions: [...assumptions], ...(scope ? { scope } : {}) };
 }
 
 /**
@@ -306,5 +312,6 @@ export function expandReact(source, { component, maxStates = 64, eachCounts = [0
  */
 export function analyzeReact(source, { component, maxStates, eachCounts, sourceLines, css = '', ...options } = {}) {
   const expanded = expandReact(source, { component, maxStates, eachCounts, sourceLines });
-  return analyzeStates({ ...expanded, css: css + expanded.css }, options);
+  // An external stylesheet is the page's, not the component's: with a component scope it goes before the component CSS.
+  return expanded.scope && css ? analyzeStates(expanded, { ...options, pageCSS: `${options.pageCSS ?? ''}\n${css}` }) : analyzeStates({ ...expanded, css: css + expanded.css }, options);
 }

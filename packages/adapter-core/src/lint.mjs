@@ -9,6 +9,10 @@ export const recommended = {
   E_LAYOUT_TRACKS: ['error', 'use flexible tracks (minmax(0, 1fr)) or fewer columns at this width'],
   E_LAYOUT_CONTENT: ['error', 'let the content wrap (overflow-wrap: anywhere) or give the box more room'],
   E_LAYOUT_PAGE_OVERFLOW: ['error', 'keep the box inside the viewport width'],
+  // Component scope: a component's selectors and the parent-child relations they rely on stay inside it.
+  E_SCOPE_OUTSIDE: ['error', 'keep the relation inside the component (a class or prop on its own root), or pass the context in as a custom property'],
+  E_SCOPE_REACHES: ['error', 'style the child component\'s elements in that component (a class or variant prop it exposes); name this component\'s own class here'],
+  E_SCOPE_ESCAPE: ['error', 'drop :global/:deep/:slotted: style each element in the component that renders it'],
   E_A11Y_FIXED_HIDES: ['error', 'offset the content by the fixed bar\'s size (padding or margin), as the rest of the page is'],
   E_A11Y_TEXT_RESIZE: ['error', 'let the box grow with its text (no fixed height, min-width: 0, wrapping) so it holds at 200% text size'],
   E_A11Y_PAGE_CLIPPED: ['error', 'let the content fit the viewport (min-width: 0, max-width: 100%, wrapping) instead of hiding the overflow'],

@@ -8,7 +8,7 @@
 // :slotted(x) and :global(x) become x): analysed alone, a component's scoped selectors match its own elements.
 import { parse } from 'vue/compiler-sfc';
 import { parseExpression } from '@babel/parser';
-import { product, merge, choose, conditionKey, analyzeStates } from '@mizchi/css-verifier-adapter-core';
+import { product, merge, choose, conditionKey, analyzeStates, scopeEscapes, boundary } from '@mizchi/css-verifier-adapter-core';
 
 const ELEMENT = 1, TEXT = 2, COMMENT = 3, INTERPOLATION = 5, ATTRIBUTE = 6, DIRECTIVE = 7;
 const COMPONENT = 1, SLOT = 2, TEMPLATE = 3;
@@ -72,17 +72,17 @@ export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2], sour
   }
 
   function element(node) {
-    if (node.tagType === COMPONENT) { unknown('U_VUE_COMPONENT', `child component <${node.tag}>: its markup is analysed with that component, not here`); return empty; }
-    if (node.tagType === SLOT) { unknown('U_VUE_SLOT', '<slot> content comes from the parent'); return empty; }
+    if (node.tagType === COMPONENT) { unknown('U_VUE_COMPONENT', `child component <${node.tag}>: its markup is analysed with that component, not here`); return [{ html: boundary('component', node.tag), choices: {} }]; }
+    if (node.tagType === SLOT) { unknown('U_VUE_SLOT', '<slot> content comes from the parent'); return [{ html: boundary('slot'), choices: {} }]; }
     if (node.tag === 'component') { unknown('U_VUE_DYNAMIC_COMPONENT', '<component :is> has a dynamic tag'); return empty; }
     const statics = [], classes = [];
     let classLists = [{ classes: [], choices: {} }], show = null;
-    const attrLists = [];
+    const attrLists = []; let rawHTML = false;
     for (const p of node.props) {
       if (p.type === ATTRIBUTE) { if (p.name === 'class') classes.push(...(p.value?.content ?? '').split(/\s+/).filter(Boolean)); else statics.push(p.value ? ` ${p.name}="${escapeAttr(p.value.content)}"` : ` ${p.name}`); continue; }
       if (p.type !== DIRECTIVE || ['if', 'else-if', 'else', 'for', 'on', 'model', 'once', 'memo', 'cloak', 'pre'].includes(p.name)) continue;
       if (p.name === 'show') { show = p.exp.content; continue; }
-      if (p.name === 'html') { unknown('U_VUE_HTML', 'v-html inserts markup that is not known statically'); continue; }
+      if (p.name === 'html') { unknown('U_VUE_HTML', 'v-html inserts markup that is not known statically'); rawHTML = true; continue; }
       if (p.name === 'text') { assumptions.add('v-text content is placeholder text; its size comes from the box contracts'); continue; }
       if (p.name !== 'bind' || !p.arg?.content) { unknown('U_VUE_DIRECTIVE', `v-${p.name} on <${node.tag}> is not modeled`); continue; }
       const attr = p.arg.content, expr = p.exp?.content ?? attr;
@@ -107,7 +107,7 @@ export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2], sour
       }
     }
     if (node.tag === 'template' || node.tagType === TEMPLATE) return children(node.children);
-    const inner = voidTags.has(node.tag) ? empty : children(node.children);
+    const inner = voidTags.has(node.tag) ? empty : rawHTML ? [{ html: boundary('html'), choices: {} }] : children(node.children);
     const out = [];
     for (const o of own) for (const i of inner) { const choices = merge(o.choices, i.choices); if (choices) out.push({ html: `${o.open}${voidTags.has(node.tag) ? '' : `${i.html}</${node.tag}>`}`, choices }); }
     return out;
@@ -157,7 +157,11 @@ export function expandVue(source, { maxStates = 64, eachCounts = [0, 1, 2], sour
 
   const states = descriptor.template ? children(descriptor.template.ast.children).map(v => ({ html: v.html.trim(), choices: v.choices })) : [];
   if (!descriptor.template) unknown('U_VUE_TEMPLATE', 'the SFC has no <template>');
-  return { states, css, unknowns, assumptions: [...assumptions] };
+  // <style scoped> hashes the styled element of each selector, not its ancestors; :deep, :slotted and :global reach past
+  // the component (E_SCOPE_ESCAPE). A plain <style> is global CSS: its selectors are not pinned to this component.
+  const sheets = descriptor.styles.filter(s => !s.module);
+  const scope = { mode: sheets.every(s => s.scoped) ? 'scoped' : 'global', owned: [], escapes: sheets.flatMap(s => scopeEscapes(s.content, ['deep', 'slotted', 'global'])) };
+  return { states, css, unknowns, assumptions: [...assumptions], scope };
 }
 
 /** Analyse every template state of a Vue SFC (options: css-verifier options, pageCSS, page, maxStates, eachCounts). */

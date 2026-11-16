@@ -24,6 +24,28 @@ export function product(lists, { maxStates = 64, onLimit = () => {} } = {}) {
 }
 
 /** The condition key of an expression's source text: a leading ! is a negation of the same condition. */
+// The selectors of a stylesheet (rule preludes, also inside @media/@supports/@layer), comments and strings skipped.
+export function selectorsOf(css) {
+  const out = [], text = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  let start = 0, depth = 0, quote = null, inDecl = [];
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quote) { if (c === '\\') i++; else if (c === quote) quote = null; continue; }
+    if (c === '"' || c === "'") { quote = c; continue; }
+    if (c === '{') { const prelude = text.slice(start, i).trim(); inDecl[depth] = !prelude.startsWith('@'); if (prelude && !prelude.startsWith('@')) out.push(prelude.split(';').pop().trim()); depth++; start = i + 1; }
+    else if (c === '}') { depth = Math.max(0, depth - 1); start = i + 1; }
+    else if (c === ';') start = i + 1;
+  }
+  return out.filter(Boolean);
+}
+// Scope escapes in a component stylesheet: the pseudo-classes (global, deep, slotted) that reach past its own elements.
+export const scopeEscapes = (css, kinds) => selectorsOf(css).flatMap(selector => {
+  const found = kinds.filter(kind => new RegExp(`:${kind}(?:\\(|\\s|$)`).test(selector));
+  return found.length ? [{ selector, kind: found.map(k => `:${k}`).join(', ') }] : [];
+});
+// A boundary marker in a state's markup: content another component (or the caller) renders here.
+export const boundary = (kind, name) => `<!--isle-boundary:${kind}${name ? ` ${String(name).replace(/[^\w.$-]/g, '')}` : ''}-->`;
+
 export function conditionKey(text) {
   let key = String(text).trim(), negate = false;
   while (key.startsWith('!') && !key.startsWith('!=')) { negate = !negate; key = key.slice(1).trim(); }
@@ -117,10 +139,14 @@ export function analyzeStates(component, allOptions = {}) {
   return result;
 }
 
-function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { pageCSS = '', page: wrap = page, name = 'Component', assumeText, textMetrics, fonts = {}, textResize, ...options } = {}) {
+function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope }, { pageCSS = '', page: wrap = page, name = 'Component', assumeText, textMetrics, fonts = {}, textResize, ...options } = {}) {
   // unmeasured: text boxes (markers the analysis laid out as text) left at the assumed size; null until fonts were reported.
   let assumedTexts = 0, measuredTexts = 0, unmeasured = null;
   const unbounded = new Map();
+  // Component scope: the component's own CSS starts on its own line after the page CSS, so the scope check can tell
+  // the component's selectors from the page's.
+  const allCSS = scope ? `${pageCSS}\n${css}` : pageCSS + css;
+  const scopeOption = scope ? { mode: scope.mode, ...(scope.ancestors ? { ancestors: scope.ancestors } : {}), ...(scope.owned ? { owned: scope.owned } : {}), firstLine: pageCSS.split('\n').length + 1 } : null;
   const results = states.map(state => {
     let html = state.html, boxes = options.boxes;
     if (assumeText) {
@@ -137,7 +163,7 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { p
       // (A pass can stop at the first text it cannot size, before the next is styled: passes repeat while they find
       // new texts to measure.)
       for (let pass = 0; pass < 6; pass++) try {
-        const first = analyzeHTML(wrap(html), { name, ...options, boxes, css: pageCSS + css, reportTextFonts: true });
+        const first = analyzeHTML(wrap(html), { name, ...options, boxes, css: allCSS, reportTextFonts: true });
         // The markers that became text boxes (a marked inline run laid out as a grid or flex container is not one).
         // Dynamic text ('…', the adapters' rendering of {expression}) kept on one line (nowrap or data-text-one-line) with no
         // length bound (data-text-max-length) and no truncation (ellipsis): a long value runs past its box.
@@ -162,7 +188,7 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { p
         if (!fresh.length) { unmeasured = Math.max(unmeasured ?? 0, [...textLeaves].filter(m => !boxes[`.${m}`]?.font).length); break; }
       } catch { break; /* the final analysis below reports the failure */ }
     }
-    try { report = analyzeHTML(wrap(html), { name, ...options, ...(boxes ? { boxes } : {}), css: pageCSS + css }); }
+    try { report = analyzeHTML(wrap(html), { name, ...options, ...(boxes ? { boxes } : {}), css: allCSS, ...(scopeOption ? { scope: scopeOption } : {}) }); }
     catch (error) { report = { status: 'unknown', diagnostics: [{ code: 'U_ADAPTER_ANALYSIS', severity: 'unknown', message: `the analysis of this state failed: ${error.message}` }], sizes: [] }; }
     return { choices: state.choices, html: state.html, report };
   });
@@ -183,6 +209,21 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { p
     if (!entry.states.includes(r.choices)) entry.states.push(r.choices);
   }
   for (const u of unbounded.values()) if (!grouped.has(`${u.code}\u0000${u.box}`)) grouped.set(`${u.code}\u0000${u.box}`, u);
+  // Component scope findings. E_SCOPE_OUTSIDE holds when no state closes the relation (a class a state toggles may);
+  // E_SCOPE_REACHES when any state renders another component's content where the selector reaches. The escapes
+  // (:global, :deep, :slotted) the adapter found are E_SCOPE_ESCAPE.
+  if (scope) {
+    const per = results.map(r => (r.report.selectors?.warnings ?? []).filter(w => /^E_SCOPE_/.test(w.code)));
+    const keyOf = w => `${w.code}\u0000${w.selector}\u0000${w.line}`;
+    const seen = new Map();
+    results.forEach((r, i) => { for (const w of per[i]) { if (!seen.has(keyOf(w))) seen.set(keyOf(w), { w, states: [], html: r.html }); seen.get(keyOf(w)).states.push(r.choices); } });
+    for (const { w, states: held, html } of seen.values()) {
+      if (w.code === 'E_SCOPE_OUTSIDE' && held.length < results.length) continue;
+      grouped.set(`${w.code}\u0000${w.selector}`, { code: w.code, box: w.selector, severity: 'error', message: w.message, rule: 'component-scope', states: held, html, selector: w.selector });
+    }
+    for (const e of scope.escapes ?? []) grouped.set(`E_SCOPE_ESCAPE\u0000${e.selector}`, { code: 'E_SCOPE_ESCAPE', box: e.selector, severity: 'error', rule: 'component-scope', selector: e.selector, states: results.map(r => r.choices),
+      message: `${e.selector} uses ${e.kind}, which reaches outside the component's own elements (the page, a parent or a child component): style those elements in the component that renders them, and pass context in as a custom property or a prop` });
+  }
   const out = { status, states: results, unknowns, coverage: { states: states.length, assumptions }, findings: [...grouped.values()] };
   if (options.selectors) {
     // A selector is unused only when it is unused in every state; a row's count is its largest over the states.
@@ -191,7 +232,7 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [] }, { p
     const keyOf = w => `${w.selector}\u0000${w.line}`;
     const everywhere = results.map(r => new Set(r.report.selectors?.warnings.map(keyOf) ?? []));
     const best = new Map();
-    for (const w of results.flatMap(r => r.report.selectors?.warnings ?? [])) if (!best.has(keyOf(w)) || (w.code === 'W_CSS_SELECTOR_RELATION' && best.get(keyOf(w)).code !== w.code)) best.set(keyOf(w), w);
+    for (const w of results.flatMap(r => r.report.selectors?.warnings ?? []).filter(w => !/^E_SCOPE_/.test(w.code))) if (!best.has(keyOf(w)) || (w.code === 'W_CSS_SELECTOR_RELATION' && best.get(keyOf(w)).code !== w.code)) best.set(keyOf(w), w);
     const warnings = [...best.values()].filter(w => everywhere.every(set => set.has(keyOf(w))));
     const rows = (results[0]?.report.selectors?.rows ?? []).map(row => ({ ...row, matched: Math.max(...results.map(r => r.report.selectors?.rows.find(x => x.selector === row.selector && x.line === row.line)?.matched ?? 0)) }));
     out.selectors = { rows, warnings };

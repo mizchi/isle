@@ -167,3 +167,37 @@ test('lint: WAI-ARIA conformance errors no rendering can confirm are a separate 
     assert.ok(m.fix);
   }
 });
+
+// Component scope: selectors and the parent-child relations they rely on are closed in the component.
+import {analyzeSvelte} from '../../svelte-adapter/src/index.mjs';
+const scopeOptions = {viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, pageCSS: '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}', assumeText: true};
+const scopeCodes = result => result.findings.filter(f => /^E_SCOPE_/.test(f.code)).map(f => [f.code, f.box]).sort();
+
+test('scope (Svelte): :global reaches past the component; an ancestor outside it is scoped too (unused, not a leak)', () => {
+  const g = 'display: grid; grid-template-columns: minmax(0, 1fr);';
+  const svelte = css => analyzeSvelte(`<script>let { open = false } = $props();</script>\n<div class="card" class:open><ul class="list"><Item /></ul></div>\n<style>.card, .list { ${g} } ${css}</style>`, scopeOptions);
+  assert.deepEqual(scopeCodes(svelte('.list :global(li) { padding: 4px; }')), [['E_SCOPE_ESCAPE', '.list :global(li)']]);
+  assert.deepEqual(scopeCodes(svelte('.theme-dark .card { padding: 4px; }')), []);
+  assert.deepEqual(scopeCodes(svelte(':global(.theme-dark) .card { padding: 4px; }')), [['E_SCOPE_ESCAPE', ':global(.theme-dark) .card']]);
+  // A class one state sets on the component's own element closes the relation.
+  assert.deepEqual(scopeCodes(svelte('.open .list { padding: 4px; }')), []);
+});
+
+test('scope (Vue): :deep/:slotted escape; a plain <style> is global, so a selector can reach a child component', () => {
+  const g = 'display: grid; grid-template-columns: minmax(0, 1fr);';
+  const vue = (css, attrs = 'scoped') => analyzeVue(`<template><ul class="list"><Item /></ul></template>\n<style ${attrs}>.list { ${g} } ${css}</style>`, scopeOptions);
+  assert.deepEqual(scopeCodes(vue(':deep(li) { padding: 4px; }')), [['E_SCOPE_ESCAPE', ':deep(li)']]);
+  assert.deepEqual(scopeCodes(vue('.list > li { padding: 4px; }')), []);
+  // Vue scopes only the styled element: an ancestor the component does not render comes from the page.
+  assert.deepEqual(scopeCodes(vue('.theme-dark .list { padding: 4px; }')), [['E_SCOPE_OUTSIDE', '.theme-dark .list']]);
+  assert.deepEqual(scopeCodes(vue('.list > li { padding: 4px; }', '')), [['E_SCOPE_REACHES', '.list > li']]);
+});
+
+test('scope (Linaria): a nested selector may not style the li another component renders; its own li is fine', () => {
+  const linaria = body => analyzeReact(`import { css } from '@linaria/core';\nconst list = css\`display: grid; grid-template-columns: minmax(0, 1fr); padding: 0; & > li { padding: 4px; }\`;\nexport default function L() { return ${body}; }`, scopeOptions);
+  assert.deepEqual(scopeCodes(linaria('<ul className={list}><Item /></ul>')).map(([c]) => c), ['E_SCOPE_REACHES']);
+  assert.deepEqual(scopeCodes(linaria('<ul className={list}><li>a</li></ul>')), []);
+  assert.deepEqual(scopeCodes(linaria('<ul className={list}>{children}</ul>')).map(([c]) => c), ['E_SCOPE_REACHES']);
+  const out = lint(linaria('<ul className={list}><Item /></ul>'), {file: 'L.jsx'});
+  assert.equal(out.find(m => m.code === 'E_SCOPE_REACHES')?.severity, 'error');
+});

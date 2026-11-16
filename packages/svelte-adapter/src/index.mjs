@@ -13,7 +13,7 @@
 // Unknown (never verified): child components, {@html}, {@render}, <slot>, dynamic class={…} that is not a literal
 // conditional, style: directives and style={…}, <svelte:element>, and more states than `maxStates`.
 import { parse } from 'svelte/compiler';
-import { analyzeStates } from '@mizchi/css-verifier-adapter-core';
+import { analyzeStates, scopeEscapes, boundary } from '@mizchi/css-verifier-adapter-core';
 
 const escapeText = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const escapeAttr = s => escapeText(s).replace(/"/g, '&quot;');
@@ -142,10 +142,10 @@ export function expandSvelte(source, { maxStates = 64, eachCounts = [0, 1, 2], s
           .flatMap(([phase, f]) => renderNodes(f.nodes, context).map(v => ({ html: v.html, choices: merge(v.choices, choose(key, phase)) }))).filter(v => v.choices);
       }
       case 'ConstTag': case 'DebugTag': case 'SnippetBlock': case 'SvelteHead': case 'SvelteWindow': case 'SvelteDocument': case 'SvelteBody': case 'SvelteOptions': return [{ html: '', choices: {} }];
-      case 'HtmlTag': unknown('U_SVELTE_HTML', '{@html …} inserts markup that is not known statically'); return [{ html: '', choices: {} }];
-      case 'RenderTag': unknown('U_SVELTE_RENDER', '{@render …} inserts a snippet from the caller; its markup is not known here'); return [{ html: '', choices: {} }];
-      case 'SlotElement': unknown('U_SVELTE_SLOT', '<slot> content comes from the caller'); return [{ html: '', choices: {} }];
-      case 'Component': case 'SvelteComponent': case 'SvelteSelf': unknown('U_SVELTE_COMPONENT', `child component <${node.name}>: its markup is analysed with that component, not here`); return [{ html: '', choices: {} }];
+      case 'HtmlTag': unknown('U_SVELTE_HTML', '{@html …} inserts markup that is not known statically'); return [{ html: boundary('html'), choices: {} }];
+      case 'RenderTag': unknown('U_SVELTE_RENDER', '{@render …} inserts a snippet from the caller; its markup is not known here'); return [{ html: boundary('children'), choices: {} }];
+      case 'SlotElement': unknown('U_SVELTE_SLOT', '<slot> content comes from the caller'); return [{ html: boundary('slot'), choices: {} }];
+      case 'Component': case 'SvelteComponent': case 'SvelteSelf': unknown('U_SVELTE_COMPONENT', `child component <${node.name}>: its markup is analysed with that component, not here`); return [{ html: boundary('component', node.name), choices: {} }];
       case 'SvelteElement': unknown('U_SVELTE_ELEMENT', '<svelte:element> has a dynamic tag'); return [{ html: '', choices: {} }];
       default: unknown('U_SVELTE_NODE', `unsupported template node ${node.type}`); return [{ html: '', choices: {} }];
     }
@@ -168,5 +168,7 @@ export const unscopeCSS = css => css.replace(/:global\(([^()]*)\)/g, '$1');
  */
 export function analyzeSvelte(source, { maxStates, eachCounts, sourceLines, ...options } = {}) {
   const { states, css, unknowns, assumptions } = expandSvelte(source, { maxStates, eachCounts, sourceLines });
-  return analyzeStates({ states, css: unscopeCSS(css), unknowns, assumptions }, options);
+  // Svelte scopes every compound of a selector to the component (an ancestor outside it never matches: an unused
+  // selector, which the Svelte compiler and W_CSS_SELECTOR_* report); :global(…) reaches past it (E_SCOPE_ESCAPE).
+  return analyzeStates({ states, css: unscopeCSS(css), unknowns, assumptions, scope: { mode: 'scoped', ancestors: 'scoped', escapes: scopeEscapes(css, ['global']) } }, options);
 }

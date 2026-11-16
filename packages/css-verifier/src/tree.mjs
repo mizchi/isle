@@ -83,7 +83,7 @@ export function accessibilityFacts(tag, attributes) {
 export const phrasingTags = new Set(['a', 'span', 'strong', 'em', 'b', 'i', 'small', 'img', 'output']);
 const phrasing = box => phrasingTags.has(box.tag) && (box.children ?? []).every(phrasing) && !(box.inline ?? []).length;
 
-const fields=new Set(['autofocus','metaViewport','tag','id','lang','named','ariaHidden','focusable','references','labelledBy','tabIndex','equivalent','essential','alt','inputType','labelFor','placeholder','role','inputName','headers','ariaLabel','href','textContent','aria','nameSource','value','autocomplete','scope','controls','autoplay','muted','trackKind','accessKey','ismap','colSpan','rowSpan','hiddenAttr','inert','popover','inlineStyle','dirAttr','runs','target','buttonType','nativeStates','imageSize','svgSize','detailsOpen','dialogOpen','attributes','classes','children','text','whitespace','path','source','owner','documentRoot','layoutContracts','targets','targetIdentity']);
+const fields=new Set(['boundaries','autofocus','metaViewport','tag','id','lang','named','ariaHidden','focusable','references','labelledBy','tabIndex','equivalent','essential','alt','inputType','labelFor','placeholder','role','inputName','headers','ariaLabel','href','textContent','aria','nameSource','value','autocomplete','scope','controls','autoplay','muted','trackKind','accessKey','ismap','colSpan','rowSpan','hiddenAttr','inert','popover','inlineStyle','dirAttr','runs','target','buttonType','nativeStates','imageSize','svgSize','detailsOpen','dialogOpen','attributes','classes','children','text','whitespace','path','source','owner','documentRoot','layoutContracts','targets','targetIdentity']);
 const object=value=>value!==null && typeof value==='object' && !Array.isArray(value);
 
 /** Clone the supplied model: analysis must never attach facts to caller state. */
@@ -111,6 +111,7 @@ export function normalizeTree(tree,name) {
     if(input.children!==undefined && !Array.isArray(input.children)) throw new TypeError('Invalid box children');
     if(input.source!==undefined && (!object(input.source) || !Number.isSafeInteger(input.source.start) || !Number.isSafeInteger(input.source.end) || input.source.start<0 || input.source.end<input.source.start)) throw new TypeError('Invalid box source span');
     if(input.layoutContracts!==undefined && !Array.isArray(input.layoutContracts)) throw new TypeError('Invalid layout declarations');
+    if(input.boundaries!==undefined && (!Array.isArray(input.boundaries) || input.boundaries.length>256 || input.boundaries.some(b=>!object(b) || !['component','slot','children','html'].includes(b.kind) || (b.name!==undefined && (typeof b.name!=='string' || b.name.length>256))))) throw new TypeError('Invalid box boundaries');
     validateTargetMetadata(input);
     const path=input.path ?? (parent ? `${parent}/${index}` : name);
     if(!path || paths.has(path) || (parent && !path.startsWith(parent+'/'))) throw new TypeError('Box paths must be unique and nested below their parent');
@@ -121,7 +122,8 @@ export function normalizeTree(tree,name) {
       ...(input.whitespace ? {whitespace:true} : {}),
       ...(input.targets?.length ? {targets:[...input.targets]} : {}),...(input.targetIdentity ? {targetIdentity:input.targetIdentity} : {}),
       documentRoot:input.documentRoot ?? (!parent && input.tag==='html'),
-      ...(input.layoutContracts ? {layoutContracts:structuredClone(input.layoutContracts)} : {})};
+      ...(input.layoutContracts ? {layoutContracts:structuredClone(input.layoutContracts)} : {}),
+      ...(input.boundaries ? {boundaries:input.boundaries.map(b=>({...b}))} : {})};
     box.label=box.id ? `#${box.id}` : box.classes.length ? box.classes.map(c=>`.${c}`).join('') : `${box.tag}@${path}`;
     const unknown=(code,message)=>diagnostics.push({code,severity:'unknown',message,box:box.label,path,source:box.source});
     if(!boxTags.has(box.tag)) unknown('U_LAYOUT_ELEMENT',`Native or foreign element needs a size adapter: ${box.tag}`);
