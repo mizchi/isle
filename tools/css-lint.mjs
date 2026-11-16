@@ -18,14 +18,18 @@ const args = process.argv.slice(2), files = [], opt = {viewport: '320-1280', hei
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (a === '--no-assume-text') opt.assumeText = false;
+  else if (a === '--font') { const [family, ...file] = String(args[++i]).split('='); (opt.fonts ??= {})[family] = {file: file.join('=')}; }
   else if (a.startsWith('--')) opt[a.slice(2).replace(/-(\w)/g, (m, c) => c.toUpperCase())] = args[++i];
   else files.push(a);
 }
-if (!files.length) { console.error('usage: css-lint [--viewport 320-1280] [--page-css file] [--css file] [--profile recommended|all] [--format text|json] <files>'); process.exit(2); }
+if (!files.length) { console.error('usage: css-lint [--viewport 320-1280] [--font Family=file.ttf] [--page-css file] [--css file] [--profile recommended|all] [--format text|json] <files>'); process.exit(2); }
 const range = text => { const [min, max] = String(text).split('-').map(Number); return {min, max: max ?? min}; };
 // The default page around a component: block flow (html and body are display: block), border-box, no UA margins.
 const pageCSS = opt.pageCss ? readFileSync(opt.pageCss, 'utf8') : '*{box-sizing:border-box;margin:0}';
 const options = {...(opt.defaultFontSize !== 'none' ? {defaultFontSize: Number(opt.defaultFontSize)} : {}), sourceLines: true, eachCounts: (opt.eachCounts ?? '0,2').split(',').map(Number), pageCSS, viewport: {...range(opt.viewport), height: range(opt.height)}, accessibility: true, integrity: true, selectors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], ...(opt.assumeText ? {assumeText: true} : {})};
+
+// --font Family=file.ttf: the component's texts in that family are measured from the font file (widths, line breaks).
+if (opt.fonts) { const {loadTextMetrics} = await import('../packages/css-verifier/src/text-node.mjs'); options.textMetrics = await loadTextMetrics({fonts: opt.fonts}); options.fonts = opt.fonts; }
 
 const adapters = {
   '.svelte': async () => (await import('../packages/svelte-adapter/src/index.mjs')).analyzeSvelte,

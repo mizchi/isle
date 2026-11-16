@@ -35,6 +35,9 @@ more than `maxStates` states is Unknown.
   assumption. Inline svg content and phrasing elements inside text are not separate text boxes.
 - `defaultFontSize` (px) resolves `rem` against an assumed browser default font size when the page does not set a
   px root size; it is listed as an assumption. The CLI passes 16.
+- `textMetrics` (from `loadTextMetrics`) with `fonts`: assumed texts whose computed font is one of those families
+  are measured instead (a first pass reports each text's font, `reportTextFonts`; a second analyses with the derived
+  contracts). The CLI's `--font Family=file.ttf` sets them.
 - A state whose analysis throws is Unknown (`U_ADAPTER_ANALYSIS`), never a crash.
 
 The CLI is `tools/css-lint.mjs` ([docs/component-lint.md](../../docs/component-lint.md)).

@@ -209,7 +209,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // The untransformed re-layout (CSS transforms removed): the layout boxes, which is what a layout shift compares.
   const untransformed = preferences.includes('untransformed');
   let sawTransform = false;
-  const layoutWarnings = [], generatedTexts = [];
+  const layoutWarnings = [], generatedTexts = [], textFonts = new Map();
   const animated = []; // boxes with a running animation whose keyframes lay out: {box, region, name}
   const domain = validateOptions(options), block = options.block ?? Boolean(options.viewport.height);
   const component = options.name ?? 'Document';
@@ -394,6 +394,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       let style;
       try {style=computeStyle(relevant,box,active,inherited,{spend,state});}
       catch(error) {error.box ??= box;throw error;}
+      // reportTextFonts: the computed font of each text leaf (for a caller that measures it with a font file and
+      // analyses again with a font contract); 'varied' where it differs across the domain.
+      if (options.reportTextFonts && !state && box.text && !box.pseudo && !(box.inline ?? []).length && !box.anonymous) {
+        const facts = { classes: box.classes, text: box.textContent ?? '', family: style['font-family'], size: style['font-size'], lineHeight: style['line-height'], weight: style['font-weight'], style: style['font-style'], whiteSpace: style['white-space'], overflowWrap: style['overflow-wrap'], letterSpacing: style['letter-spacing'], lang: style.$lang };
+        const seen = textFonts.get(box.path);
+        textFonts.set(box.path, seen && seen !== 'varied' && JSON.stringify(seen) !== JSON.stringify(facts) ? 'varied' : seen === 'varied' ? 'varied' : facts);
+      }
       if (gridItem && inherited && ['inline', 'inline-block'].includes(style.display)) style = { ...style, display: 'block', $inlineLevel: true };
       // content-visibility: auto: on screen the box lays out as usual; offscreen it is size-contained. Admitted where
       // its width does not come from its content (block flow, or grid columns that are not content-sized), so that
@@ -2074,8 +2081,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (replaced.has(target.tag)) unknown(`has a replaced or form element (${target.label}) without a px width`);
       if (target.text || target.inline?.length) {
         const key = max ? 'maxInlineSize' : 'minInlineSize';
-        if (target.contract?.[key] === undefined) unknown(`has text without a ${max ? 'max' : 'min'}-content width (${target.label}; give it a ${key} contract)`);
-        return add(q(String(target.contract[key])), edges(st));
+        // A measured text contract carries its max-content width as textMetrics.width (or, unwrapped, its one width).
+        const value = !max ? target.contract?.minInlineSize : target.contract?.maxInlineSize ?? target.contract?.textMetrics?.width ?? (target.contract?.wrap === 'nowrap' && target.contract?.font ? target.contract.minInlineSize : undefined);
+        if (value === undefined) unknown(`has text without a ${max ? 'max' : 'min'}-content width (${target.label}; give it a ${key} contract)`);
+        return add(q(String(value)), edges(st));
       }
       const kids = (target.children ?? []).filter(k => !k.pseudo);
       const inner = [...at, { box: target, style: st }];
@@ -3255,7 +3264,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     ...(boxes.some(box=>box.layoutContracts?.length) ? {layoutBindings:boxes.flatMap(box=>(box.layoutContracts ?? []).map(declaration=>({path:box.path,declaration})))} : {}),
     ...(geometry.some(row => row.bounds) ? { inlineBounds: geometry.filter(row => row.bounds).flatMap(row => row.bounds.map(piece => ({ box: row.box.label, path: row.path, ...ranges(piece.region), ...(block ? { regionConstraints: serialize(piece.region).constraints } : {}),
       ...Object.fromEntries(['outer', 'inner'].map(key => [key, piece[key] ? { inlineStart: affine(piece[key].origin.inline), blockStart: affine(piece[key].origin.block), inlineSize: affine(piece[key].inline), blockSize: affine(piece[key].block) } : null])) }))) } : {}),
-    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}), ...(layoutWarnings.length ? { layoutWarnings } : {}), ...(options.selectors && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant ? { selectors: selectorUsage(rules, boxes) } : {}), ...(generatedTexts.length ? { generatedText: generatedTexts } : {}),
+    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}), ...(layoutWarnings.length ? { layoutWarnings } : {}), ...(options.reportTextFonts ? { textFonts: [...textFonts].map(([path, facts]) => facts === 'varied' ? { path, varied: true } : { path, ...facts }) } : {}), ...(options.selectors && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant ? { selectors: selectorUsage(rules, boxes) } : {}), ...(generatedTexts.length ? { generatedText: generatedTexts } : {}),
     ...(options.accessibility ? { accessibility: { rules: accessibilityRules.filter(accessibilityProfiles[options.accessibility.profile ?? 'all']), profile: options.accessibility.profile ?? 'all', contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), warnings: accessibilityWarnings, exempted: accessibilityExempted, notes: accessibilityNotes } } : {}),
     ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', warnings: integrityWarnings, exempted: integrityExempted } } : {}) };
 }

@@ -5,7 +5,7 @@ export const boxTags = new Set('dialog details summary svg html body button div 
 // Form controls and images have UA intrinsic sizes and padding: checked only with resets and explicit sizes.
 export const controlTags = new Set(['button', 'input', 'select', 'textarea']), replacedTags = new Set(['img', 'input', 'select', 'textarea']);
 const ancestorTags=new Set([...boxTags].filter(tag=>!['button', 'img', 'input', 'select', 'textarea'].includes(tag)));
-const supportedOptions = new Set(['defaultFontSize', 'name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility', 'selectors', 'images', 'devicePixelRatios', '$devicePixelRatio', '$animationFrame', '$slideVariant', 'safeArea']);
+const supportedOptions = new Set(['reportTextFonts', 'defaultFontSize', 'name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility', 'selectors', 'images', 'devicePixelRatios', '$devicePixelRatio', '$animationFrame', '$slideVariant', 'safeArea']);
 const supportedContract = new Set(['minInlineSize', 'maxInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock', 'font', 'textMetrics', 'textRuns']);
 function finiteSize(value, name) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1_000_000) throw new Error(`Invalid layout ${name}`);

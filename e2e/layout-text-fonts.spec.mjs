@@ -664,3 +664,25 @@ test('letter-spacing (px, or em made px at its element) is measured like Chromiu
   expect(run('').status).toBe('verified'); // 0.05em × 20px (the page) = 1px, inherited
   expect(run('.t{letter-spacing:0.05em}').status).toBe('unknown'); // 0.8px at 16px: not the measured 1px
 });
+
+test('lint with a font file: a measured auto column of text is as wide as Chromium renders it, and the verdict agrees', async ({page}) => {
+  const {analyzeStates} = await import('../packages/adapter-core/src/index.mjs');
+  const fonts = {Roboto: {file: new URL('roboto-variable.ttf', fixtures).pathname}};
+  const css = '.row{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:8px}.label,.value{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;color:#000}';
+  const pageCSS = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}span{display:block}';
+  for (const label of ['Account name', 'Notification preferences for this device']) {
+    const html = `<div class="row"><span class="label">${label}</span><span class="value">Example</span></div>`;
+    const result = analyzeStates({states: [{html, choices: {}}], css}, {pageCSS, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}, assumeText: true, textMetrics: metrics, fonts});
+    expect(result.status, label).not.toBe('unknown');
+    for (const width of [320, 600]) {
+      await page.setViewportSize({width, height: 700});
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${pageCSS}${css}</style></head><body>${html}</body></html>`);
+      await page.evaluate(() => document.fonts.ready);
+      const rendered = await page.evaluate(() => document.querySelector('.label').getBoundingClientRect().width);
+      const row = result.states[0].report.sizes.find(s => /^\.label/.test(s.box) && s.rect && s.range.min <= width && width <= s.range.max);
+      const v = a => Number(String(a.coefficient).split('/').reduce((p, c) => p / c)) * width + Number(String(a.constant).split('/').reduce((p, c) => p / c));
+      // The derived width is a sound bound on the shaped advance (layoutAllowance): within a pixel of Chromium.
+      expect(Math.abs(v(row.rect.inlineSize) - rendered), `${label} at ${width}px: static ${v(row.rect.inlineSize)} vs ${rendered}`).toBeLessThan(1.01);
+    }
+  }
+});

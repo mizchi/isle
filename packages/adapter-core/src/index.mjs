@@ -66,8 +66,24 @@ function markText(html, start = 0) {
  * @param {{states: {html: string, choices: object}[], css: string, unknowns?: {code, message}[], assumptions?: string[]}} component
  * @param {object} options css-verifier options plus pageCSS (CSS of the page around the component) and page(html).
  */
-export function analyzeStates({ states, css, unknowns = [], assumptions = [] }, { pageCSS = '', page: wrap = page, name = 'Component', assumeText, ...options } = {}) {
-  let assumedTexts = 0;
+// A text leaf's computed font (reportTextFonts) as a text contract measured with the given font files, or null when
+// the font is not one of them or is not measurable (a non-px size, line-height: normal, letter-spacing).
+function measuredContract(facts, textMetrics, fonts) {
+  if (!facts || facts.varied || !facts.text) return null;
+  const family = Object.keys(fonts).find(name => name.toLowerCase() === String(facts.family).replace(/["']/g, '').split(',')[0].trim().toLowerCase());
+  const px = v => /^\d+(?:\.\d+)?px$/.test(String(v)) ? Number(String(v).slice(0, -2)) : undefined;
+  const size = px(facts.size);
+  const lineHeight = px(facts.lineHeight) ?? (/^\d+(?:\.\d+)?$/.test(String(facts.lineHeight)) && size ? Number(facts.lineHeight) * size : undefined);
+  const weight = facts.weight === 'normal' ? 400 : facts.weight === 'bold' ? 700 : /^\d+$/.test(String(facts.weight)) ? Number(facts.weight) : undefined;
+  if (!family || !size || !lineHeight || !weight || facts.style !== 'normal' || facts.letterSpacing !== 'normal') return null;
+  const wrap = ['nowrap', 'pre'].includes(facts.whiteSpace) ? 'nowrap' : ['normal', 'pre-line', 'pre-wrap'].includes(facts.whiteSpace) ? (facts.overflowWrap === 'anywhere' ? 'anywhere' : 'normal') : null;
+  if (!wrap) return null;
+  const contract = { text: { font: { family, size, lineHeight, weight }, content: facts.text, ...(facts.lang ? { lang: facts.lang } : {}), ...(wrap === 'normal' && facts.overflowWrap !== 'normal' ? { overflowWrap: facts.overflowWrap } : {}) }, wrap };
+  try { return textMetrics.resolveBoxes({ x: contract }).x; } catch { return null; }
+}
+
+export function analyzeStates({ states, css, unknowns = [], assumptions = [] }, { pageCSS = '', page: wrap = page, name = 'Component', assumeText, textMetrics, fonts = {}, ...options } = {}) {
+  let assumedTexts = 0, measuredTexts = 0;
   const results = states.map(state => {
     let html = state.html, boxes = options.boxes;
     if (assumeText) {
@@ -78,11 +94,26 @@ export function analyzeStates({ states, css, unknowns = [], assumptions = [] }, 
     }
     // An analysis that throws (an input the core rejects outright) is that state's Unknown, never a crash of the run.
     let report;
+    // With font files (textMetrics), the assumed texts whose computed font is one of them are measured instead: a
+    // first pass reports each text's font, a second analyses with the measured contracts.
+    if (assumeText && textMetrics && boxes) {
+      try {
+        const first = analyzeHTML(wrap(html), { name, ...options, boxes, css: pageCSS + css, reportTextFonts: true });
+        const measured = {};
+        for (const facts of first.textFonts ?? []) {
+          const marker = (facts.classes ?? []).find(c => /^__text\d+$/.test(c));
+          const contract = marker && !options.boxes?.[`.${marker}`] ? measuredContract(facts, textMetrics, fonts) : null;
+          if (contract) measured[`.${marker}`] = contract;
+        }
+        if (Object.keys(measured).length) { boxes = { ...boxes, ...measured }; measuredTexts = Math.max(measuredTexts, Object.keys(measured).length); }
+      } catch { /* the second pass below reports the failure */ }
+    }
     try { report = analyzeHTML(wrap(html), { name, ...options, ...(boxes ? { boxes } : {}), css: pageCSS + css }); }
     catch (error) { report = { status: 'unknown', diagnostics: [{ code: 'U_ADAPTER_ANALYSIS', severity: 'unknown', message: `the analysis of this state failed: ${error.message}` }], sizes: [] }; }
     return { choices: state.choices, html: state.html, report };
   });
-  if (assumedTexts) assumptions = [...assumptions, `${assumedTexts} text box(es) sized by assumption (one line, no minimum width): text overflow is not checked`];
+  if (measuredTexts) assumptions = [...assumptions, `${measuredTexts} text box(es) measured with the given font files (${Object.keys(fonts).join(', ')}): their widths and line breaks are derived, not assumed`];
+  if (assumedTexts - measuredTexts > 0) assumptions = [...assumptions, `${assumedTexts - measuredTexts} text box(es) sized by assumption (one line, no minimum width): text overflow is not checked`];
   if (options.defaultFontSize) assumptions = [...assumptions, `rem (and a root font-size in %, em or medium) resolved at a ${options.defaultFontSize}px browser default font size; other user settings are not checked`];
   const statuses = results.map(r => r.report.status);
   // Verified only when every state is verified and the adapter itself met nothing unknown.

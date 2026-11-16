@@ -27,6 +27,7 @@ error が 1 件でもあれば終了コードは 1 です。
 | `--profile recommended\|all` | `recommended` | ルールセット |
 | `--each-counts 0,2` | `0,2` | `{#each}` / `v-for` / `.map()` の要素数 |
 | `--no-assume-text` | 仮定あり | テキストを 1 行 24px と仮定せず、Unknown のままにする |
+| `--font Family=file.ttf` | なし | 繰り返し指定できる。CSS の計算後のフォントがこの family になるテキストは、仮定の大きさの代わりに、フォントファイルから幅と改行を測る(`auto` の列や、中身で大きさの決まる flex の item を判定できるようになる)。測れないもの(px でない font-size、`line-height: normal`、letter-spacing、斜体)は仮定のまま。測った数は info に出す |
 | `--default-font-size 16` | `16` | ブラウザーの既定のフォントサイズ(px)。html が px のフォントサイズを指定しないとき、`rem`(と html の `%`/`em`/`medium`)をこの値で解決する。仮定として info に出す。`none` で解決せず Unknown にする |
 | `--format text\|json` | `text` | 出力形式 |
 
@@ -68,7 +69,7 @@ error が 1 件でもあれば終了コードは 1 です。
 ## 保証の範囲
 
 - 検査は adapter が展開した状態だけです。状態が `maxStates` を超える場合、他のコンポーネント、動的な class や style は Unknown として info に出ます。
-- テキストの寸法は仮定です（`--no-assume-text` で外せます）。フォントの寸法を契約として与えれば、仮定を使わずに検査できます。
+- テキストの寸法は仮定です（`--no-assume-text` で外せます）。`--font` でフォントファイルを渡すと、その family のテキストは測った寸法になります(Chromium で同じフォントを描いた幅との差は 1px 未満)。フォントの寸法を契約として与えれば、仮定を使わずに検査できます。
 - スクロールバーは overlay 幅 0 を前提にしています。classic スクロールバーを前提にした検査は、API の `scrollbars` オプションで指定します。
 
 ## API
