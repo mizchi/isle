@@ -71,10 +71,29 @@
 
 修正版(run-1 に追加)は、warning と fix の文言どおりに直しました(nowrap を外す、`top: 0` を足して高さの固定を外す、`auto-fill` にする、dark の色を指定する)。4 例とも、1 回で error と warning が 0 になり、Chromium でも崩れはありません。
 
+## 3 回目のループ: 16 例
+
+フォームの検証メッセージ(Svelte)、モーダル(Vue)、タブ(StyleX)、RTL のカード(Linaria)を加えました。
+
+| 段階 | 崩れ | 検出 | 見逃し | 確認できない error |
+|---|---|---|---|---|
+| 4 例を加えた直後 | 19 | 19 | 0 | 1 |
+| 評価器: 横スクロールできない画面外のテキスト | 21 | 21 | 0 | 0 |
+
+- **止まっていた書き方**:
+  - grid の中で幅が auto のテキスト入力欄が Unknown でした。Chromium で測ると、grid item では列の幅まで伸び(368px の列で 368px)、block flow では固有の幅(195px)のままでした。grid item の場合だけ div と同じように伸ばすモデルにしました。block flow は Unknown のままです。
+  - StyleX の `borderWidth: 0` が出す `border-width: 0` も Unknown でした。0 の `border-width` は border-style によらず枠線なしなので、扱うようにしました。0 でない値は border-style しだいなので Unknown です。
+- **直した版で見つかった誤報と、表現できない書き方**:
+  - タブの行は、fix に従って `overflow-x: auto` にしても、`E_LAYOUT_TRACKS` が出たままでした。コアは、スクロールの意図を契約(`overflow: 'scroll'`)で宣言させる設計です。そこで、CSS の overflow auto/scroll をその意図とみなすオプション `scrollIntent: 'css'` を足し、コンポーネントの lint だけが使うようにしました(コアの既定は変えていません)。`overflow: hidden` で中身が切れる場合は、今までどおり報告します。
+  - モーダルは、fix に従って `minmax(0, 480px)` にしたところで、その track が Unknown になりました。`minmax(Apx, Bpx)` は、base が A、growth limit が B の track です。fr の track より先に空きを受け取り、B を超えては伸びません(Chromium の矩形で確かめた)。そのとおりモデル化しました。
+- **fix の文言**: flex の行のはみ出しに grid の文言が出ていました。今は「item を縮める(flex-shrink: 1、min-width: 0)、折り返す(flex-wrap)、行をスクロールさせる」と出ます。
+- **評価器**: モーダルは `position: fixed` の中ではみ出すので、ページは横にスクロールせず、ダイアログの両端は手の届かない画面外にありました。これを測るようにしました。スクロールコンテナの中の画面外と、`overflow: auto` のスクロールは、崩れに数えません。
+
 ## 次の課題(backlog)
 
 - (解決済み) canvas の色が分からないときのコントラストの Unknown は、既定の色の仮定(light の preference)で検査できるようになりました。dark の preference での canvas は、Chromium が #121212 にするので、まだ Unknown です。
 - 位置指定された箱で、自分の不透明な背景を持たないものは、後ろの箱が祖先ではないので、コントラストが Unknown のままです(固定サイドバーの例)。
 - `{expression}` のテキストは、`data-text-max-length` がないと寸法が仮定のままです。adapter がテンプレートの型(props の文字列の長さ)を読めれば、属性なしで済みます。
 - inline-block の行レイアウトはモデル外です(chips の before)。
-- 次に加える例: フォームの検証メッセージ、モーダル、タブ、カルーセル、RTL。
+- 次に加える例: カルーセル、ナビゲーションのドロワー、通知のトースト、データの表のソート見出し。
+- RTL の例では、物理方向の指定の警告は出ますが、Chromium では崩れが見えません(アイコンとテキストが反対側に離れるだけ)。警告の意図(読む方向に合わない配置)を、どう実測するかは未定です。

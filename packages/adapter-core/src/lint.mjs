@@ -90,8 +90,10 @@ const nodeAt = (html, path) => {
 };
 const lineAt = (html, path) => { const line = nodeAt(html, path)?.attrs?.find(a => a.name === 'data-src-line')?.value; return line ? Number(line) : undefined; };
 // A fix that depends on the element: a table's columns are sized by its cells, not by grid tracks.
-const fixFor = (code, fix, html, path) => code === 'E_LAYOUT_TRACKS' && nodeAt(html, path)?.tagName === 'table'
-  ? 'let the cells wrap (no white-space: nowrap, shorter headers), or scroll the table inside a wrapper with overflow-x: auto' : fix;
+// A flex row's items are not tracks.
+const fixFor = (code, fix, html, path, layout) => code !== 'E_LAYOUT_TRACKS' ? fix
+  : nodeAt(html, path)?.tagName === 'table' ? 'let the cells wrap (no white-space: nowrap, shorter headers), or scroll the table inside a wrapper with overflow-x: auto'
+  : layout === 'flex' ? 'let the items shrink (flex-shrink: 1 with min-width: 0 and a flexible width), wrap them (flex-wrap: wrap), or scroll the row (overflow-x: auto)' : fix;
 // The source line of a box or selector: the first line that mentions its first class, or the selector text.
 const lineOf = (source, needle) => {
   if (!needle) return undefined;
@@ -144,7 +146,7 @@ export function lint(result, { file = '<component>', source = '', profile = 'rec
     }
     const [severity, fix] = rules?.[f.code] ?? [f.severity === 'error' ? 'error' : 'warning'];
     const box = cleanLabel(f.box), firstClass = /\.([\w-]+)/.exec(box)?.[1];
-    out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity, code: f.code, message: readable(f.message), ...(fix ? { fix: fixFor(f.code, fix, f.html, f.path) } : {}), states: describe(f.states, total) });
+    out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity, code: f.code, message: readable(f.message), ...(fix ? { fix: fixFor(f.code, fix, f.html, f.path, f.layout) } : {}), states: describe(f.states, total) });
   }
   for (const w of result.selectors?.warnings ?? []) {
     if (rules && !rules[w.code]) continue;

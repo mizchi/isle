@@ -86,6 +86,10 @@ error が 1 件でもあれば終了コードは 1 です。
 - 子が 1 つの block container(`<li><a>…</a></li>`)は、子が `display: inline` のときだけテキストの葉として扱う。`nav > a { display: block }` の a は block の子になる。
 - `border-collapse: collapse` の表。表、行グループ、行、セルのどこにも枠線がなく、表に padding もないとき、`border-spacing: 0` の分離モデルと同じ箱になる(Chromium と照合した)。枠線があれば Unknown。
 - フォントファイルで測ったテキストは max-content の幅も持つ。表の自動の列幅と、中身で大きさの決まる flex item が解ける。
+- grid item のテキスト入力欄は、幅が auto でも列の幅まで伸びる(Chromium で測った)。block flow の auto の幅は固有の幅なので Unknown。
+- `minmax(Apx, Bpx)` の track(`minmax(0, 480px)` の最大幅の列など)。fr の track より先に B まで伸びる。
+- `border-width: 0`(StyleX の `borderWidth: 0`)。0 でない値は border-style しだいなので Unknown。
+- overflow が auto/scroll の container は、その軸で中身をスクロールさせる意図とみなす(コアのオプション `scrollIntent: 'css'`。lint が渡す)。hidden/clip で切れる中身は報告する。
 - sr-only(視覚的に隠したテキスト)。名前には入るが、収まるかどうか、切り取り、コントラストは判定しない。
 
 `svelte-adapter/fixtures/Catalog.svelte` と `vue-adapter/fixtures/Article.vue` は、これらを組み合わせた例である。

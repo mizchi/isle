@@ -180,6 +180,13 @@ function expand(property, value) {
     if (!/^(?:black|white|red|green|blue|transparent|currentcolor|#[\da-f]{3}|#[\da-f]{4}|#[\da-f]{6}|#[\da-f]{8})$/.test(p[2])) throw new Error('Use a supported literal border color');
     px(p[0]); return sides.flatMap(side => [[`border-${side}`, p[0]], [`border-${side}-color`, p[2]]]);
   }
+  // border-width (and a side's width) of zero: no border whatever border-style is (a common reset, StyleX's
+  // borderWidth: 0). A non-zero width depends on border-style (none makes it 0): use the border shorthand.
+  if (property === 'border-width' || /^border-(?:top|right|bottom|left)-width$/.test(property)) {
+    const p = postcss.list.space(value), sides = property === 'border-width' ? ['top', 'right', 'bottom', 'left'] : [property.split('-')[1]];
+    if (!p.length || p.length > (sides.length === 4 ? 4 : 1) || !p.every(v => /^0(?:\.0+)?(?:px)?$/.test(v))) throw new Error(`Unsupported ${property}: ${value} (a non-zero width depends on border-style; use the border shorthand)`);
+    return sides.map(side => [`border-${side}`, '0']);
+  }
   if (property === 'border-color') {
     const p = postcss.list.space(value);
     if (!p.length || p.length > 4 || (wide.has(value) && p.length !== 1)) throw new Error(`Unsupported border-color: ${value}`);

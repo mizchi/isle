@@ -149,3 +149,32 @@ test('grid align-items center / align-self end: items keep their height and move
   assert.equal(analyzeHTML(`<html lang="en"><body><main class="p"><section class="g"><div class="a"></div></section></main></body></html>`,
     {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}.g{display:grid;grid-template-columns:minmax(0,1fr);align-items:baseline}.a{height:20px}`, viewport: {min: 320, max: 800}}).status, 'unknown');
 });
+
+test('border-width: 0 (a reset, StyleX borderWidth: 0) is no border; a non-zero width without the shorthand is Unknown', () => {
+  const r = run('<div class="a"></div>', '.a{height:20px;border-width:0;padding:0 4px}');
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.deepEqual(rects(r, 500), [['.a', 7, 7, 486, 20]]);
+  assert.equal(run('<div class="a"></div>', '.a{height:20px;border-top-width:0px}').status, 'verified');
+  assert.equal(run('<div class="a"></div>', '.a{height:20px;border-width:2px}').status, 'unknown');
+});
+
+test('a text field with an auto width stretches in a grid column, not in block flow', () => {
+  const field = (container) => analyzeHTML(`<html lang="en"><body><main class="p"><section class="${container}"><input class="a" type="email" aria-label="Email"></section></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}.grid{${g};padding:7px}.flow{display:block;padding:7px}.a{height:40px;padding:0 8px;border:1px solid #767676}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  const grid = field('grid');
+  assert.equal(grid.status, 'verified', JSON.stringify(grid.diagnostics.map(d => d.message)));
+  assert.deepEqual(rects(grid, 500), [['.a', 7, 7, 486, 40]]);
+  // In block flow an auto-width input keeps its intrinsic width (195px in Chromium), which is not modeled.
+  assert.equal(field('flow').status, 'unknown');
+});
+
+test('minmax(0, 480px) grows to its limit and shrinks with the container; minmax(Apx, Bpx) never goes below A', () => {
+  const grid = cols => analyzeHTML(`<html lang="en"><body><main class="p"><section class="box"><div class="a"></div><div class="b"></div></section></main></body></html>`,
+    {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.p{${g}}.box{display:grid;grid-template-columns:${cols};padding:7px}.a,.b{height:10px}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  const r = grid('minmax(0, 300px) minmax(0, 1fr)');
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  // 486px of content: the first track reaches 300px, the fr track takes the remaining 186px.
+  assert.deepEqual(rects(r, 500), [['.a', 7, 7, 300, 10], ['.b', 307, 7, 186, 10]]);
+  // 400px each at least: overflows below 814px.
+  assert.ok(grid('minmax(400px, 500px) minmax(400px, 500px)').diagnostics.some(d => d.code === 'E_LAYOUT_TRACKS'));
+});

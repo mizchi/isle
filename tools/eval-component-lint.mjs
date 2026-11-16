@@ -40,7 +40,7 @@ for (const id of cases) {
   if (!name) { rows.push({id, skipped: 'no file'}); continue; }
   const file = join(dir, name), source = readFileSync(file, 'utf8'), adapter = adapters[extname(file)];
   // Lint as the CLI does with --font.
-  const options = {defaultFontSize: 16, defaultColors: true, sourceLines: true, eachCounts: [0, 2], pageCSS, viewport: {min: 320, max: 1280, height: {min: 480, max: 900}}, accessibility: true, integrity: true, selectors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], assumeText: true, textMetrics, fonts, textResize: true};
+  const options = {defaultFontSize: 16, defaultColors: true, scrollIntent: 'css', sourceLines: true, eachCounts: [0, 2], pageCSS, viewport: {min: 320, max: 1280, height: {min: 480, max: 900}}, accessibility: true, integrity: true, selectors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], assumeText: true, textMetrics, fonts, textResize: true};
   const result = adapter.analyze(source, options);
   const messages = lint(result, {file: name, source});
   // Chromium: every state the adapter expands, at each width, at 1× and 2× default font size.
@@ -74,7 +74,11 @@ for (const id of cases) {
         const covered = () => { for (const e of texts) { const t = [...e.childNodes].find(n => n.nodeType === 3 && n.textContent.trim()); const r = document.createRange(); const i = t.textContent.search(/\S/); r.setStart(t, i); r.setEnd(t, i + 1); const b = r.getClientRects()[0]; if (!b || b.bottom < 0 || b.top > innerHeight) continue; const hit = document.elementFromPoint(b.left + 1, (b.top + b.bottom) / 2); if (hit && !e.contains(hit) && !hit.contains(e)) out.push(['text-covered', label(e)]); } };
         covered(); scrollTo(0, document.documentElement.scrollHeight); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); covered(); scrollTo(0, 0);
         // Content clipped by a box that hides its overflow (a fixed height with overflow: hidden).
-        for (const e of document.querySelectorAll('body *')) { if (/^(IMG|INPUT|TEXTAREA|SELECT|VIDEO|IFRAME|PICTURE)$/.test(e.tagName)) continue; const cs = getComputedStyle(e); if ((cs.overflowY !== 'visible' && e.scrollHeight > e.clientHeight + 1) || (cs.overflowX !== 'visible' && e.scrollWidth > e.clientWidth + 1)) out.push(['clipped', label(e)]); }
+        for (const e of document.querySelectorAll('body *')) { if (/^(IMG|INPUT|TEXTAREA|SELECT|VIDEO|IFRAME|PICTURE)$/.test(e.tagName)) continue; const cs = getComputedStyle(e), cuts = v => ['hidden', 'clip'].includes(v); if ((cuts(cs.overflowY) && e.scrollHeight > e.clientHeight + 1) || (cuts(cs.overflowX) && e.scrollWidth > e.clientWidth + 1)) out.push(['clipped', label(e)]); }
+        // Text outside the viewport sideways that the page cannot scroll to (inside a fixed box, or left of 0).
+        const pageScrolls = document.documentElement.scrollWidth > innerWidth + 1;
+        const inScroller = e => { for (let n = e.parentElement; n && n !== document.body; n = n.parentElement) if (['auto', 'scroll'].includes(getComputedStyle(n).overflowX)) return true; return false; };
+        for (const e of texts) { if (inScroller(e)) continue; const r = e.getBoundingClientRect(); if (r.left < -0.5 || (!pageScrolls && r.right > innerWidth + 0.5)) out.push(['offscreen', label(e)]); }
         // Text contrast against the nearest opaque background (WCAG 1.4.3: 4.5:1, 3:1 for large text).
         const rgb = v => (v.match(/[\d.]+/g) ?? []).map(Number), lum = ([r, g, b]) => [r, g, b].map(c => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }).reduce((a, c, i) => a + c * [0.2126, 0.7152, 0.0722][i], 0);
         for (const e of texts) {
@@ -99,7 +103,7 @@ for (const id of cases) {
   // A break is caught when lint reports an error or warning on that box (or on the page for page overflow).
   const reported = messages.filter(m => ['error', 'warning'].includes(m.severity));
   const boxOf = m => (m.message.match(/^(?:the start of )?([.#][\w.-]+|[a-z]+@[\w/]+)/) ?? [])[1] ?? '';
-  const matches = (b, m) => b.kind === 'page-overflow' ? /PAGE_OVERFLOW|REFLOW|PAGE_CLIPPED|E_LAYOUT_TRACKS/.test(m.code) || (/TEXT_RESIZE/.test(m.code) && /viewport|page/.test(m.message)) : boxOf(m) && (b.box === boxOf(m) || b.box.split('.').filter(Boolean).every(c => boxOf(m).includes(c)) || boxOf(m).split('.').filter(Boolean).every(c => b.box.includes(c)));
+  const matches = (b, m) => b.kind === 'page-overflow' || b.kind === 'offscreen' && /E_LAYOUT_TRACKS|PAGE_OVERFLOW|PAGE_CLIPPED/.test(m.code) ? /PAGE_OVERFLOW|REFLOW|PAGE_CLIPPED|E_LAYOUT_TRACKS/.test(m.code) || (/TEXT_RESIZE/.test(m.code) && /viewport|page/.test(m.message)) : boxOf(m) && (b.box === boxOf(m) || b.box.split('.').filter(Boolean).every(c => boxOf(m).includes(c)) || boxOf(m).split('.').filter(Boolean).every(c => b.box.includes(c)));
   const environment = [...breaks.values()].filter(b => b.kind.startsWith('env-')).map(b => `${b.kind} ${b.box} [${b.at.join(' ')}]`);
   for (const [key, b] of breaks) if (b.kind.startsWith('env-')) breaks.delete(key);
   const caught = [], missed = [];

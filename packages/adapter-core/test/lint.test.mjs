@@ -133,6 +133,8 @@ test('lint fix: a table whose columns overflow is told to wrap its cells or scro
   const [table, grid] = lint(result, {file: 'T.svelte'}).filter(m => m.code === 'E_LAYOUT_TRACKS');
   assert.match(table.fix, /overflow-x: auto/);
   assert.match(grid.fix, /minmax\(0, 1fr\)/);
+  const flex = lint({...result, findings: [{...result.findings[1], layout: 'flex'}]}, {file: 'T.svelte'}).find(m => m.code === 'E_LAYOUT_TRACKS');
+  assert.match(flex.fix, /flex-wrap: wrap/);
 });
 
 test('css-lint assumes the UA default colors (stated), and --default-colors none keeps them Unknown', () => {

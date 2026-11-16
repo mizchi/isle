@@ -5,7 +5,7 @@ export const boxTags = new Set('dialog details summary svg html body button div 
 // Form controls and images have UA intrinsic sizes and padding: checked only with resets and explicit sizes.
 export const controlTags = new Set(['button', 'input', 'select', 'textarea']), replacedTags = new Set(['img', 'input', 'select', 'textarea']);
 const ancestorTags=new Set([...boxTags].filter(tag=>!['button', 'img', 'input', 'select', 'textarea'].includes(tag)));
-const supportedOptions = new Set(['reportTextFonts', 'defaultFontSize', 'defaultColors', 'name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility', 'selectors', 'images', 'devicePixelRatios', '$devicePixelRatio', '$animationFrame', '$slideVariant', 'safeArea']);
+const supportedOptions = new Set(['reportTextFonts', 'defaultFontSize', 'defaultColors', 'scrollIntent', 'name', 'css', 'cssFile', 'reset', 'ancestors', 'viewport', 'hostInset', 'hostBlockInset', 'block', 'boxes', 'scrollbars', 'integrity', 'accessibility', 'selectors', 'images', 'devicePixelRatios', '$devicePixelRatio', '$animationFrame', '$slideVariant', 'safeArea']);
 const supportedContract = new Set(['placeholderInlineSize', 'minInlineSize', 'maxInlineSize', 'minBlockSize', 'intrinsicBlockSize', 'wrap', 'overflow', 'overflowBlock', 'font', 'textMetrics', 'textRuns']);
 function finiteSize(value, name) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1_000_000) throw new Error(`Invalid layout ${name}`);
@@ -14,6 +14,7 @@ function finiteSize(value, name) {
 export function validateOptions(options) {
   if (!options || Object.keys(options).some(key => !supportedOptions.has(key))) throw new Error('Invalid layout options');
   if (typeof options.css !== 'string' || options.css.length > 1_000_000) throw new Error('Invalid layout CSS input');
+  if (options.scrollIntent !== undefined && options.scrollIntent !== 'css') throw new Error("Invalid layout options: scrollIntent must be 'css'");
   if (options.defaultColors !== undefined && typeof options.defaultColors !== 'boolean') throw new Error('Invalid layout options: defaultColors must be a boolean');
   if (options.defaultFontSize !== undefined && !(typeof options.defaultFontSize === 'number' && options.defaultFontSize > 0 && options.defaultFontSize <= 200)) throw new Error('Invalid layout options: defaultFontSize must be a positive px number');
   // devicePixelRatios: the device resolutions (dppx) the page is checked under; resolution media queries and

@@ -40,6 +40,14 @@ export function tracks(value, automatic = false, tokensOnly = false) {
       if (cmp(weight, q(0)) <= 0) throw new Error('Grid fr weight must be positive');
       return { weight, min: q(floored[1] ?? floored[2]), ...(floored[2] ? { minCap: true } : {}) };
     }
+    // minmax(Apx, Bpx) with A ≤ B: base A, growth limit B, grown by the free space (Grid §12.6, maximize tracks) before
+    // fr tracks take the rest; it does not stretch past B. The same track as a content column with fixed bounds.
+    const bounded = token.match(/^minmax\(\s*(\d+(?:\.\d+)?)(?:px)?\s*,\s*(\d+(?:\.\d+)?)px\s*\)$/);
+    if (bounded && (bounded[1] === '0' || /px\s*,/.test(token))) {
+      const base = q(bounded[1]), limit = q(bounded[2]);
+      if (cmp(base, limit) > 0) return { fixed: base };
+      return { content: { base, limit, stretch: false } };
+    }
     // A bare Nfr row (minmax(auto, Nfr)): its minimum is its items' measured minimum contribution (rows only; the
     // engine rewrites bare fr columns before they get here).
     const bareFr = automatic && (token.match(/^(\d+(?:\.\d+)?)fr$/) ?? token.match(/^minmax\(\s*auto\s*,\s*(\d+(?:\.\d+)?)fr\s*\)$/));

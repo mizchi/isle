@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "Email field with an error message under it.", "planted": "the error message is red #f66 on white (low contrast) and the message box has a fixed 20px height its two-line text overflows on phones", "expect": ["E_A11Y_CONTRAST"]}

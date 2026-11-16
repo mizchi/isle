@@ -283,6 +283,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const failed = clip(region, diff(required, available), true);
     if (failed) diagnostics.push({ code: 'U_LAYOUT_TABLE', severity: 'unknown', message: `${box.label}: the content is taller than the cell here; a table row grows with its content`, box: box.label, path: box.path, source: box.source, axis: 'block', ...ranges(failed) });
   }
+  // scrollIntent: 'css' (an option; the component lint sets it): a container that scrolls on an axis (overflow auto or
+  // scroll) states that its content may be scrolled to, as an overflow: 'scroll' contract does, so its tracks or items
+  // going past its content box on that axis are not reported (hidden or clip, which cut the content off, still are).
+  // By default the intent must be a contract (ADR: overflow policy), and CSS alone does not waive the obligation.
+  const scrolls = (style, axis) => options.scrollIntent === 'css' && ['auto', 'scroll'].includes(String(style[`overflow-${axis}`]));
   function obligation(available, required, box, region, code, axis, enabled = true, explain, annotate) {
     checks.push({ box: box.label, path: box.path, code, axis, ...ranges(region), available: affine(available), required: affine(required), enforced: enabled });
     if (!enabled) {
@@ -673,7 +678,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (['img', 'video'].includes(box.tag) && style.$imageRatioMismatch && emit) issue('E_LAYOUT_IMAGE_RATIO', `${box.label} reserves the ratio ${style.$imageRatioMismatch.reserved} but ${style.$imageRatioMismatch.src} is ${style.$imageRatioMismatch.natural.width}×${style.$imageRatioMismatch.natural.height}: its height changes when it loads`, box, region);
     if (box.tag === 'img' && !box.pseudo && style['block-size'] === 'auto' && !ratioOf(style) && block) throw Object.assign(new Error(`${box.label} has no reserved height (no height, aspect-ratio or width/height attributes) and its file's size is not known; it shifts the layout when it loads`), { code: 'U_LAYOUT_IMAGE' });
     // An img may leave its block-size auto when an aspect-ratio (CSS or its width/height attributes) gives it.
-    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'svg', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || style['inline-size']==='auto' || (block && style['block-size']==='auto' && !(['img', 'video', 'iframe', 'svg'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
+    // A text field that is a grid item (not block flow) with an auto width and justify-self normal/stretch is
+    // stretched to its area like a block (measured in Chromium: 368px in a 368px column; in block flow it keeps its
+    // intrinsic width instead, which is not modeled). Its intrinsic minimum stays Unknown where a track probes it.
+    // (A grid's justify-items other than normal/stretch is Unknown for its items, checked with the item's alignment.)
+    const stretchedField = textField && available.gridItem && !available.blockFlowChild && style['inline-size'] === 'auto'
+      && ['auto', 'normal', 'stretch'].includes(String(style['justify-self'] ?? 'auto'));
+    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'svg', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || (style['inline-size']==='auto' && !stretchedField) || (block && style['block-size']==='auto' && !(['img', 'video', 'iframe', 'svg'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
     // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
     // A closed popover that author CSS displays keeps the UA [popover] { position: fixed; inset: 0; margin: auto }:
@@ -1048,7 +1059,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               .map(m => ({ region: m.region, lines: [...c.lines, { indices, values: r.values, starts: m.starts }] })))));
           for (const combo of combos) {
             // The last item's end margin may stick out (it hides nothing; measured for grid and flex items).
-            for (const line of combo.lines) if (emit) obligation(contentInline, diff(sum(total(line.values), scalar(gaps(mainGap, line.indices.length))), scalar(line.indices.length ? model[line.indices.at(-1)].margins.right : zero)), box, combo.region, 'E_LAYOUT_TRACKS', 'inline', fitInline, explainTracks('inline'));
+            for (const line of combo.lines) if (emit) obligation(contentInline, diff(sum(total(line.values), scalar(gaps(mainGap, line.indices.length))), scalar(line.indices.length ? model[line.indices.at(-1)].margins.right : zero)), box, combo.region, 'E_LAYOUT_TRACKS', 'inline', fitInline && !scrolls(style, 'x'), explainTracks('inline'), () => ({ layout: 'flex' }));
             if (!block) {
               let endings = [combo.region];
               for (const line of combo.lines) line.indices.forEach((i, k) => { endings = bounded(endings.flatMap(r => solve(model[i].child.box, itemAvailable(model[i], { inline: line.values[k], fitInline }), r, ancestors, inheritedOf(model[i]), emit).map(result => result.region))); });
@@ -1068,7 +1079,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               if (wrap && knownBlock && ['normal', 'stretch'].includes(style['align-content'])) stretched = clamp(m.region, diff(knownBlock, used)).map(({ region: r, value: extra }) => ({ region: r, sizes: m.sizes.map(v => sum(v, times(extra, div(one, q(combo.lines.length))))) }));
               for (const st of stretched) {
                 const contentBlock = knownBlock ?? used, blockSize = sum(contentBlock, blockEdges);
-                if (emit && knownBlock) obligation(knownBlock, used, box, st.region, 'E_LAYOUT_TRACKS', 'block', fitBlock, explainTracks('block'));
+                if (emit && knownBlock) obligation(knownBlock, used, box, st.region, 'E_LAYOUT_TRACKS', 'block', fitBlock && !scrolls(style, 'y'), explainTracks('block'), () => ({ layout: 'flex' }));
                 let endings = [st.region], lineStart = scalar(0);
                 combo.lines.forEach((line, l) => {
                   const top = lineStart;
@@ -1113,7 +1124,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const used = sum(total(line.values), scalar(gaps(mainGap, line.values.length)));
           const contentBlock = knownBlock ?? used, blockSize = sum(contentBlock, blockEdges);
           // The last item's bottom margin may stick out (it hides nothing).
-          if (emit && knownBlock) obligation(knownBlock, diff(used, scalar(model.length ? model.at(-1).margins.bottom : zero)), box, placed.region, 'E_LAYOUT_TRACKS', 'block', fitBlock, explainTracks('block'));
+          if (emit && knownBlock) obligation(knownBlock, diff(used, scalar(model.length ? model.at(-1).margins.bottom : zero)), box, placed.region, 'E_LAYOUT_TRACKS', 'block', fitBlock && !scrolls(style, 'y'), explainTracks('block'), () => ({ layout: 'flex' }));
           let endings = [placed.region];
           model.forEach((entry, i) => {
             const origin = placed.starts ? offset(contentOrigin, scalar(0), placed.starts[i]) : null;
@@ -2544,7 +2555,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   ...split.no.map(region => ({ ...cs, region, shift: d.negative === 'start' ? { lead: scalar(0), extra: scalar(0) } : null }))];
               });
               for (const cs of justified) {
-                if (emit) obligation(contentInline, cs.required, box, cs.region, 'E_LAYOUT_TRACKS', 'inline', (box.contract?.overflow ?? 'fit') === 'fit', () => explanation(sizeChain([...parents, { box, style }], 'inline', { hostInset: options.hostInset }), trackProperties('inline').map(property => fact(box, style, property))));
+                if (emit) obligation(contentInline, cs.required, box, cs.region, 'E_LAYOUT_TRACKS', 'inline', (box.contract?.overflow ?? 'fit') === 'fit' && !scrolls(style, 'x'), () => explanation(sizeChain([...parents, { box, style }], 'inline', { hostInset: options.hostInset }), trackProperties('inline').map(property => fact(box, style, property))));
                 const childStates = collect(cs.region);
                 for (const children of childStates) {
                   if (!block && children.children.some(child=>child.style.position==='absolute')) throw new Error('Absolute boxes require both-axis analysis');
@@ -2769,7 +2780,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                         if (over) diagnostics.push({ code: 'U_LAYOUT_GRID_SHRINK', severity: 'unknown', box: box.label, path: box.path, source: box.source, items: shrinking.map(item => item.box.label),
                           message: `${box.label}'s auto rows need more than its height here, and ${shrinking.map(item => item.box.label).join(', ')} ${shrinking.length > 1 ? 'are scroll containers' : 'is a scroll container'} (overflow not visible), whose minimum size is 0: the browser shrinks those rows below their content, which is not modeled`, ...ranges(over) });
                       }
-                      if (emit) obligation(contentBlock, rs.required, box, rs.region, 'E_LAYOUT_TRACKS', 'block', (box.contract?.overflowBlock ?? 'fit') === 'fit', () => explanation(sizeChain([...parents, { box, style }], 'block', { hostInset: options.hostBlockInset }), trackProperties('block').map(property => fact(box, style, property))));
+                      if (emit) obligation(contentBlock, rs.required, box, rs.region, 'E_LAYOUT_TRACKS', 'block', (box.contract?.overflowBlock ?? 'fit') === 'fit' && !scrolls(style, 'y'), () => explanation(sizeChain([...parents, { box, style }], 'block', { hostInset: options.hostBlockInset }), trackProperties('block').map(property => fact(box, style, property))));
                       let endings = [rs.region];
                       // align-content center/end (unstretched rows in a known height): the rows move by part of the free space.
                       const blockLead = knownBlock && ['center', 'end'].includes(style['align-content']) ? times(diff(knownBlock, rs.required), style['align-content'] === 'center' ? div(one, q(2)) : one) : scalar(zero);

@@ -236,6 +236,9 @@ test('flex line overflow follows the container overflow policy', () => {
   status(line(css.replace('overflow-x: auto', 'overflow-x: visible'), children, {boxes: {'.row': {overflow: 'scroll'}}, scrollbars}), 'verified');
   const policy = line(css.replace('overflow-x: auto; overflow-y: hidden;', ''), children, {boxes: {'.row': {overflow: 'scroll'}}, scrollbars});
   assert.ok(policy.diagnostics.some(d => d.code === 'E_LAYOUT_OVERFLOW_POLICY'));
+  // scrollIntent: 'css' takes overflow-x: auto as the scroll intent; overflow-x: hidden still cuts the items off.
+  status(line(css, children, {scrollbars, scrollIntent: 'css'}), 'verified');
+  status(line(css.replace('overflow-x: auto; overflow-y: hidden;', 'overflow: hidden;'), children, {scrollbars, scrollIntent: 'css'}), 'violated');
 });
 
 // ---- justify-content, auto margins, cross alignment, wrapping -------------
