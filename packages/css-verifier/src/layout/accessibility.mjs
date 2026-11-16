@@ -103,13 +103,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'label-pointer', 'bar-covered', 'bar-transparent', 'autofocus'];
+  'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'fixed-covers-part', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'label-pointer', 'bar-covered', 'bar-transparent', 'autofocus'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['bar-transparent', 'bar-covered', 'live-hidden', 'select-indicator', 'hidden-control', 'focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['bar-transparent', 'bar-covered', 'live-hidden', 'select-indicator', 'hidden-control', 'focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'fixed-covers-part', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -883,6 +883,30 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
         region = atMost(region, bar.origin.inline, target.origin.inline); region = atMost(region, right(target), right(bar));
         for (const piece of region ? hidden.reduce((rest, done) => rest.flatMap(r => subtract(r, done)), [region]) : []) {
           report(findings, 'E_A11Y_FIXED_HIDES', 'error', `${target.box.label} stays entirely behind the fixed ${bar.box.label}, which spans the viewport's height at its left edge; offset the page by the bar's width`, target, piece, { rule: 'fixed-hides-content', cover: bar.path });
+          hidden.push(piece);
+        }
+      }
+      // fixed-covers-part: a full-height bar on the left edge that covers part of a text or control's width (content
+      // that runs under a fixed sidebar: a footer without the page's left offset) hides that part at every scroll
+      // position, so the text is cut off for good. A full-height bar on the right edge does the same (entirely or in
+      // part) where the page does not scroll sideways (scrolling right would move content out from under it).
+      const viewportInline = domainWidth;
+      for (const bar of fixedBars) {
+        if (related(bar.path, target.path) || !paintsAbove(bar, layer(bar), target, own)) continue;
+        let tall = intersect(target.region, bar.region);
+        tall = atMost(tall, bar.origin.block, scalar(0)); tall = atMost(tall, viewportBlock, bottom(bar));
+        if (!tall) continue;
+        // Left edge: the bar starts at the viewport's left; the target starts left of the bar's right edge (by ≥ 1px)
+        // and ends past it (entirely under it is fixed-hides-content).
+        let left = atMost(tall, bar.origin.inline, scalar(0));
+        left = atMost(left, sum(target.origin.inline, scalar(1)), right(bar)); left = below(left, right(bar), right(target));
+        // Right edge: the bar ends at the viewport's right and the page is no wider than the viewport.
+        let rightEdge = atMost(tall, viewportInline, right(bar)); rightEdge = atMost(rightEdge, right(rootRow), viewportInline);
+        rightEdge = atMost(rightEdge, sum(bar.origin.inline, scalar(1)), right(target));
+        const whole = atMost(rightEdge, bar.origin.inline, target.origin.inline), part = below(rightEdge, target.origin.inline, bar.origin.inline);
+        for (const [region, entirely] of [[left, false], [whole, true], [part, false]]) for (const piece of region ? hidden.reduce((rest, done) => rest.flatMap(r => subtract(r, done)), [region]) : []) {
+          if (entirely) report(findings, 'E_A11Y_FIXED_HIDES', 'error', `${target.box.label} stays entirely behind the fixed ${bar.box.label}, which spans the viewport's height at its right edge; offset the page by the bar's width`, target, piece, { rule: 'fixed-hides-content', cover: bar.path });
+          else report(findings, 'E_A11Y_FIXED_HIDES_PART', 'error', `${target.box.label} runs under the fixed ${bar.box.label}, which spans the viewport's height at its ${region === left ? 'left' : 'right'} edge: the part under it is hidden at every scroll position (the text is cut off). Offset this content by the bar's width, as the rest of the page is`, target, piece, { rule: 'fixed-covers-part', cover: bar.path });
           hidden.push(piece);
         }
       }

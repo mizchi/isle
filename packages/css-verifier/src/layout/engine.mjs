@@ -1416,6 +1416,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (['flex', 'inline-flex'].includes(style.display) && style['flex-wrap'] === 'nowrap' && set('align-content', 'normal')) reasons.push(['align-content', 'it is a single-line flex container (flex-wrap: nowrap), so there are no lines to distribute (use align-items)']);
         // object-fit sizes the content of a replaced element (img, video, canvas, …); other boxes have none.
         if (set('object-fit', 'fill') && !['img', 'video', 'canvas', 'iframe', 'embed', 'object', 'svg', 'input'].includes(box.tag)) reasons.push(['object-fit', `a <${box.tag}> is not a replaced element (put it on the img or video)`]);
+        // An img sized on one axis by its own ratio (aspect-ratio auto, or auto w/h from its attributes: the loaded
+        // file's ratio wins) with no min/max size on that axis has the image's shape: object-fit has nothing to fit.
+        const ownRatio = /^auto(?:\s|$)/.test(String(style['aspect-ratio'] ?? 'auto'));
+        const follows = axis => style[`${axis}-size`] === 'auto' && ['auto', '0', '0px'].includes(String(style[`min-${axis}-size`])) && style[`max-${axis}-size`] === 'none';
+        if (set('object-fit', 'fill') && box.tag === 'img' && ownRatio && (follows('block') || follows('inline'))) reasons.push(['object-fit', `its ${follows('block') ? 'height' : 'width'} follows the image's own ratio, so the image already fills its box exactly (object-fit needs a box of another shape: a fixed width and height, or aspect-ratio)`]);
         if (set('line-clamp', 'none') && style.$lineClamp === undefined && !['-webkit-box', '-webkit-inline-box'].includes(style.display)) reasons.push(['line-clamp', `it is display: ${style.display}, not -webkit-box`]);
         if (reasons.length) layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: reasons.map(r => r[0]),
           css: reasons.map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),

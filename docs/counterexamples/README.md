@@ -802,6 +802,26 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background
 
 </details>
 
+## A footer that runs under a fixed sidebar
+
+`E_A11Y_FIXED_HIDES_PART` — viewport 672 × 690px
+
+> .l1 runs under the fixed .side, which spans the viewport's height at its left edge: the part under it is hidden at every scroll position (the text is cut off). Offset this content by the bar's width, as the rest of the page is
+
+![fixed-covers-part](fixed-covers-part-before.png) ![fixed-covers-part](fixed-covers-part-after.png)
+
+<details><summary>HTML / CSS</summary>
+
+```html
+<main class="page"><nav class="side" aria-label="Menu"></nav><div class="main"><div class="hero"></div></div><footer class="foot"><a class="l1" href="/values">What we care about, and why</a><a class="l2" href="/services">Our services</a><a class="l3" href="/help">Getting help</a></footer></main>
+```
+
+```css
+body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#111}.side{position:fixed;left:0;top:0;width:200px;height:100%;background:#f4f1ee;box-shadow:1px 0 0 #ddd;z-index:1}.main{display:grid;grid-template-columns:minmax(0,1fr);margin-left:200px;padding:24px}.hero{height:900px;background:repeating-linear-gradient(#fff 0 40px,#f3f6f6 40px 80px)}.foot{display:grid;grid-template-columns:260px minmax(0,1fr) minmax(0,1fr);column-gap:24px;padding:24px 0;box-shadow:0 -1px 0 #ccc}.l1,.l2,.l3{display:block;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap;color:#111}
+```
+
+</details>
+
 ## An #id jump that lands under a fixed header
 
 `W_A11Y_FRAGMENT_UNDER_BAR` — viewport 672 × 690px
@@ -3072,7 +3092,7 @@ body{padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.c{height:
 
 `W_LAYOUT_FULL_WIDTH_MARGIN` — viewport 320 × 480px
 
-> .panel is width: 100% with margin-left: 100% is its whole area, so the margin pushes it out. Drop width: 100% (a grid or flex item stretches to the area less its margins) or use calc(100% - the margins)
+> .panel has width: 100% and margin-left: 24px; the 100% is the whole area, so the margin pushes the box out of it. Drop width: 100% (a grid or flex item stretches to the area less its margins) or use calc(100% - the margins)
 
 ![full-width-margin](full-width-margin-violation.png)
 

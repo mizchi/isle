@@ -9,6 +9,8 @@ export const recommended = {
   E_LAYOUT_TRACKS: ['error', 'use flexible tracks (minmax(0, 1fr)) or fewer columns at this width'],
   E_LAYOUT_CONTENT: ['error', 'let the content wrap (overflow-wrap: anywhere) or give the box more room'],
   E_LAYOUT_PAGE_OVERFLOW: ['error', 'keep the box inside the viewport width'],
+  E_A11Y_FIXED_HIDES: ['error', 'offset the content by the fixed bar\'s size (padding or margin), as the rest of the page is'],
+  E_A11Y_FIXED_HIDES_PART: ['error', 'offset this content by the fixed sidebar\'s width (padding or margin), as the rest of the page is'],
   E_LAYOUT_IMAGE_UNRESERVED: ['error', 'add width and height attributes (or aspect-ratio) so the image reserves its box'],
   E_LAYOUT_IMAGE_RATIO: ['error', 'make the reserved ratio match the file'],
   W_LAYOUT_DECLARATION_INERT: ['warning', 'remove it, or change the parent display it needs'],

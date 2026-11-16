@@ -603,6 +603,20 @@ test('buttons paint ButtonText on ButtonFace unless the author sets colors: the 
   }
 });
 
+test('object-fit on an img sized by its own ratio: the static warning fires exactly where Chromium paints the same pixels without it', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  // A 200×100 image of four colored, off-center quadrants (a crop moves their boundaries), with width/height attributes of another ratio (the file's ratio wins).
+  const src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="70" height="30" fill="#c00"/><rect x="70" width="130" height="30" fill="#06c"/><rect y="30" width="70" height="70" fill="#0a0"/><rect x="70" y="30" width="130" height="70" fill="#fc0"/></svg>');
+  for (const own of ['width:100%;height:auto', 'width:100%;height:120px', 'width:100%;height:auto;max-height:60px', 'width:100%;height:auto;aspect-ratio:1', 'width:240px;height:auto']) {
+    const css = `*{box-sizing:border-box;margin:0}html,body,.p{${g}}.p{background:#fff}.i{display:block;max-width:300px;${own}}`;
+    const html = `<main class="p"><img class="i" src="${src}" width="200" height="100" alt=""></main>`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `${css}.i{object-fit:cover}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    const warn = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('object-fit'));
+    const shot = async fit => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css}${fit ? '.i{object-fit:cover}' : ''}</style></head><body>${html}</body></html>`); await page.evaluate(() => document.querySelector('.i').decode()); await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))); return (await page.screenshot({clip: {x: 0, y: 0, width: 320, height: 320}})).toString('base64'); };
+    expect((await shot(true)) === (await shot(false)), `${own}: same pixels without object-fit`).toBe(warn);
+  }
+});
+
 test('inert z-index: a static block-level box in block flow does not stack above a positioned sibling; a grid item does', async ({page}) => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   for (const [parent, warn] of [['display:block', true], [g, false]]) {

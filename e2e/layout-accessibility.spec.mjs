@@ -167,6 +167,9 @@ const cases = [
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h{position:sticky;top:0;block-size:60px;background:#333}.l1,.l2{display:block;block-size:30px}.gap{block-size:1000px}.t1,.t2{display:block;block-size:40px}.t2{scroll-margin-top:70px}.tall{block-size:1500px}`, skip: ['empty-heading', 'focus-scrolled-under']},
   {name: 'fixed-sidebar-hides', html: '<div class="page"><nav class="side" aria-label="Side"></nav><div class="gap"></div><div class="row"><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button></div><div class="tall"></div></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.side{position:fixed;left:0;top:0;inline-size:200px;block-size:100%;background:#333}.gap{block-size:1000px}.tall{block-size:1500px}.row{display:grid;grid-template-columns:100px 100px;column-gap:150px;grid-template-rows:40px}.b1,.b2{${button}}`, skip: ['focus-scrolled-under']},
+  {name: 'fixed-sidebar-cuts-footer', html: '<div class="page"><nav class="side" aria-label="Side"></nav><div class="main"><p class="body">Body</p></div><div class="foot"><a class="l1" href="/a">About us</a><a class="l2" href="/b">Help</a></div><div class="tall"></div></div>',
+    css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.side{position:fixed;left:0;top:0;inline-size:200px;block-size:100%;background:#eee;z-index:1}.main{display:grid;grid-template-columns:minmax(0,1fr);margin-left:200px}.body,.l1,.l2{display:block;line-height:24px;color:#000}.foot{display:grid;grid-template-columns:300px minmax(0,1fr)}.tall{block-size:1500px}`,
+    boxes: {'.body': {minInlineSize: 0, intrinsicBlockSize: 24}, '.l1': {minInlineSize: 0, intrinsicBlockSize: 24}, '.l2': {minInlineSize: 0, intrinsicBlockSize: 24}}, skip: ['focus-scrolled-under', 'text-contrast', 'text-spacing', 'target-size', 'link-in-text-block']},
   {name: 'fixed-bars-meet', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b" aria-label="A"></button><div class="gap"></div><div class="f"></div></div>',
     css: `.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.h,.f{position:fixed;left:0;inline-size:100%;block-size:400px;background:#333}.h{top:0}.f{bottom:0}.gap{block-size:600px}.b{${button}inline-size:100px;block-size:40px}`, skip: ['focus-scrolled-under']},
   {name: 'sticky-header-focus', html: '<div class="page"><div class="h"></div><div class="gap"></div><button class="b1" aria-label="A"></button><button class="b2" aria-label="B"></button><button class="b3" aria-label="C"></button><div class="tall"></div></div>',
@@ -186,7 +189,7 @@ const cases = [
   {name: 'clickable-lists-and-markup', html: '<div class="page"><div class="card"></div><button class="b" aria-label="Go"></button><ul class="l"><li class="i"></li></ul><ul class="l2" role="list"><li class="i"></li></ul><dl class="d"><dt class="dt"></dt><p class="p"></p></dl><marquee class="m"></marquee><a class="k1" href="#1" accesskey="s" aria-label="One"></a><a class="k2" href="#2" accesskey="s" aria-label="Two"></a><img class="im" src="data:," alt="Map" ismap></div>',
     css: `.page{display:grid;grid-template-columns:200px;grid-auto-rows:24px;background:#fff}.card{display:block;cursor:pointer}.b{${button}cursor:pointer;inline-size:24px;block-size:24px}.l,.l2,.d{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:24px;list-style:none}.i,.dt,.p{display:block}.m{display:block;inline-size:200px;block-size:24px}.k1,.k2{display:block}.im{display:block;inline-size:24px;block-size:24px}`},
 ];
-const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance'];
+const rules = ['accessible-name', 'text-contrast', 'occluded-target', 'target-overlap', 'visual-order', 'hidden-focusable', 'empty-heading', 'heading-order', 'nested-interactive', 'duplicate-id', 'aria-reference', 'positive-tabindex', 'multiple-main', 'scrollable-region-focusable', 'reflow', 'focus-obscured', 'focus-area', 'pointer-disabled', 'small-text', 'target-size', 'image-alt', 'form-label', 'label-for', 'list-structure', 'radio-group', 'landmark-name', 'role-valid', 'interactive-role-focusable', 'link-in-text-block', 'table-headers', 'td-headers', 'fieldset-name', 'label-in-name', 'link-purpose', 'link-text', 'role-parent', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'input-button-name', 'autocomplete', 'scope', 'p-as-heading', 'orientation', 'focus-visible', 'state-contrast', 'text-spacing', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only', 'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'fragment-target', 'input-image-alt', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'fixed-covers-part', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance'];
 const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
 // Exact membership when the finding carries its region constraints (slack = a·width + b·height + c ≥ 0, or > 0).
 const holds = (row, width) => row.range && (row.range.minInclusive === false ? width > row.range.min : width >= row.range.min) && (row.range.maxInclusive === false ? width < row.range.max : width <= row.range.max)
@@ -807,6 +810,31 @@ async function runtime(page, sample) {
     return [...out];
   }, elements.map(e => e.path));
   for (const path of hidden) found.get('fixed-hides-content').add(path);
+  // Cut off for good by a fixed bar: at every scroll offset where it is on screen, a fixed bar spans its visible height
+  // and covers part (not all) of its width.
+  const cut = await page.evaluate(paths => {
+    const at = path => { let n = document.body.firstElementChild; for (const i of path.split('/').slice(1).map(Number)) n = n.children[i]; return n; };
+    const bars = [...document.querySelectorAll('*')].filter(n => getComputedStyle(n).position === 'fixed' && getComputedStyle(n).backgroundColor !== 'rgba(0, 0, 0, 0)');
+    if (!bars.length || document.documentElement.scrollWidth > innerWidth) return [];
+    const max = document.documentElement.scrollHeight - innerHeight, out = [];
+    for (const path of paths) {
+      const node = at(path);
+      const speaks = [...node.childNodes].some(c => c.nodeType === 3 && c.textContent.trim()) || node.tabIndex >= 0;
+      if (!speaks || bars.some(bar => bar.contains(node)) || !node.getClientRects().length) continue;
+      let always = true, shown = false;
+      for (let s = 0; s <= max && always; s += 4) {
+        scrollTo(0, s);
+        const r = node.getBoundingClientRect(), top = Math.max(r.top, 0), bottom = Math.min(r.bottom, innerHeight);
+        if (bottom <= top) continue;
+        shown = true;
+        always = bars.some(bar => { const b = bar.getBoundingClientRect(); return b.top <= top && b.bottom >= bottom && b.left < r.right - 0.5 && b.right > r.left + 0.5 && !(b.left <= r.left && b.right >= r.right); });
+      }
+      if (shown && always) out.push(path);
+    }
+    scrollTo(0, 0);
+    return out;
+  }, elements.map(e => e.path));
+  for (const path of cut) found.get('fixed-covers-part').add(path);
   // Text under an opaque box: all five sample points of a text element hit one opaque element outside it.
   const buried = await page.evaluate(() => {
     const pathOf = node => { const path = []; for (let n = node; n !== document.body.firstElementChild; n = n.parentElement) path.unshift([...n.parentElement.children].indexOf(n)); return ['Page', ...path].join('/'); };
