@@ -764,13 +764,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (style['min-inline-size'] !== 'auto') px(style['min-inline-size']);
       // A column flex item's minimum is resolved by the flex line (its track is never smaller).
       // min-block-size raises a leaf's content height, an explicit or stretched height, and a block-flow container
-      // whose content stays at the top. Grid and flex containers (it stretches their rows or line) and flex items
-      // are not modeled.
+      // whose content stays at the top, and a leaf item of a flex row (its line's cross size takes the raised height).
+      // Grid and flex containers (it stretches their rows or line) and other flex items are not modeled.
       } else if (!['auto', '0', '0px'].includes(style['min-block-size']) && !available.flexBlockMinimum) {
         const leaf = !(box.children ?? []).length && !['grid', 'inline-grid', 'flex', 'inline-flex', 'table'].includes(style.display);
         const blockFlow = ['block', 'list-item'].includes(style.display) && ['normal', 'start', 'flex-start'].includes(String(style['align-content']));
         const stretched = available.block && available.alignBlock === undefined && !available.root;
-        if (!available.$minNatural && !available.$minRaised && !(stretched && !available.flexItem && !['table'].includes(style.display)) && (available.flexItem || !(leaf || blockFlow || (style['block-size'] !== 'auto' && !['flex', 'inline-flex', 'table'].includes(style.display))))) throw new Error('CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)');
+        if (!available.$minNatural && !available.$minRaised && !(stretched && !available.flexItem && !['table'].includes(style.display)) && ((available.flexItem && !(available.flexItem.main === 'inline' && leaf)) || !(leaf || blockFlow || (style['block-size'] !== 'auto' && !['flex', 'inline-flex', 'table'].includes(style.display))))) throw new Error('CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)');
       }
     }
     // Flex containers and items validate their alignment in the flex model.

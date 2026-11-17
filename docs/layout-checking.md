@@ -321,6 +321,8 @@ flex の行の item で、`flex-basis` が auto(か content)で幅が auto、`mi
 
 flex の行の item の主軸の負の px margin(`margin-right: -12px` で重ねたアバターなど)は、item の外側の大きさをその分だけ小さくして解く(Chromium と矩形を比べた)。交差軸や grid の item の負の margin は Unknown のまま。
 
+flex の行の item で中に子のない箱(ボタンなど)の `min-height` は、その item の内容の高さを引き上げ、行の交差方向の大きさもそれに従う(`align-items` が stretch でも center でも。Chromium と矩形を比べた)。中に子のある flex item の `min-height` は Unknown のまま。
+
 `flex-basis` が px で `min-width: auto` の item(`flex: 0 0 120px` のボタンなど)も、自動の最小サイズは中身の min-content になる(css-flexbox §4.5)。折り返さないラベルのボタンは、基準より広い中身の幅まで広がる(Chromium で測った)。button の UA の `min-width` も、div と同じ auto(以前は 0 としていたが誤り)。
 
 `flex-basis` が % の item は、縮まない(`flex-shrink: 0`)なら、伸びるもの(`flex: 1 0 30%`)も含めて、容器の内容幅の割合(viewport の一次式)を基準の大きさにする。margin と content-box の edges も足す。折り返す行(`flex-wrap: wrap`)では、行の分け方もその一次式で決まるので、幅のしきい値で分かれる(4 つの `flex: 1 0 30%` と 16px の gap で、内容幅 320px 以上なら 1 行に 3 つ)。縮む % の item(`flex: 1 1 30%`)は、明示した `min-width`(0 か px)まで縮む。縮み方の重み(shrink × 内側の基準の大きさ)は、縮む item の内側の大きさがどれも同じ内容幅の割合(padding・border・margin なし)のときだけ一定なので、そのときだけ解く。padding のある % の item や、一緒に縮む px の item が混ざると重みが幅で変わるので Unknown。`min-width: auto` の % の item は、中身の min-content を自動の最小サイズとして縮む(`minmax(0, 1fr)` の grid なら 0 なので、中身より小さく縮む。Chromium で測った)。最小サイズが % の基準を超える幅では、仮の大きさが最小サイズになる(css-flexbox §9.7)ので、幅の範囲をそこで分ける。縮むときはその item を最小サイズで固定し、伸びるときは基準から伸ばして最小サイズで切り詰める(Chromium と矩形を比べた)。Chromium と矩形を比べた(`e2e/layout-flex.spec.mjs`)。

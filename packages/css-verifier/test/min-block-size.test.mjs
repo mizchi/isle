@@ -32,9 +32,11 @@ test('block flow: the container is raised, its children stay at the top', () => 
   assert.deepEqual(['.a', '.k', '.n'].map(b => r.sizes.find(s => s.box === b)).map(s => [s.rect.blockStart.constant, s.blockSize.constant]), [['0', '40'], ['0', '10'], ['40', '5']]);
 });
 
-test('grid and flex containers and flex items stay Unknown', () => {
+test('grid containers and flex items with children stay Unknown; a leaf item of a flex row is raised', () => {
   assert.equal(run('.a{display:grid;grid-template-columns:minmax(0,1fr);min-height:40px}.a::before{content:"";display:block;height:10px}').status, 'unknown');
-  assert.equal(run('.p{display:flex}.a{width:10px;min-height:40px}.n{width:10px}').status, 'unknown');
+  // A leaf item of a flex row: its line's cross size takes the raised height (Chromium agrees, e2e/layout-flex).
+  assert.equal(run('.p{display:flex}.a{width:10px;min-height:40px}.n{width:10px}').status, 'verified');
+  assert.equal(run('.p{display:flex}.a{width:10px;min-height:40px;display:grid;grid-template-columns:minmax(0,1fr)}.a::before{content:"";display:block;height:10px}.n{width:10px}').status, 'unknown');
 });
 
 test('grid and flex containers: where the content is shorter, laid out at the minimum (rows and the line stretch)', () => {

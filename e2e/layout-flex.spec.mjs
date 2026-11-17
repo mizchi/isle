@@ -269,6 +269,8 @@ const cases = [
     css: '.n{display:flex;column-gap:8px}.b{flex:1 1 50%;display:grid;grid-template-columns:1fr}.t{inline-size:150px;block-size:10px}', expected: 'violated', widths: [300, 308, 320]},
   {name: 'a growing percentage basis whose minimum exceeds its share grows from the share', html: '<main class="n"><div class="b"></div><div class="c"></div></main>',
     css: '.n{display:flex;column-gap:8px}.b{flex:1 1 20%;min-width:120px;block-size:10px}.c{flex:0 0 40px;block-size:10px}'},
+  {name: 'min-height on leaf items of a flex row: the line takes the raised height (stretch and center)', html: '<main class="g"><div class="r"><div class="a"></div><div class="b"></div></div><div class="c"><div class="a"></div><div class="b"></div></div></main>',
+    css: '.g{display:grid;grid-template-columns:minmax(0,1fr);row-gap:4px}.r,.c{display:flex;column-gap:8px}.c{align-items:center}.a{flex:0 0 80px;min-height:36px}.b{flex:1 1 0;min-width:0;block-size:20px}'},
   {name: 'text input sized by a px flex-basis and min-width 0', html: '<main class="f"><div class="t"></div><input class="i" type="text"></main>',
     css: '.f{display:flex;column-gap:8px;padding:8px;align-items:center}.t{flex:0 0 60px;block-size:20px}.i{display:block;flex:1 1 120px;min-width:0;height:32px;padding:0 4px;border:1px solid #777;font-size:16px}'},
 ];
