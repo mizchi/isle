@@ -625,3 +625,7 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 - min-height まで上げた grid や flex の container が、grid の area で寄せられている(`align-self: center` など)場合、中身の高さのまま寄せていた(間違った成功)。上げた高さで寄せる。
 
 - 寄せられる(stretch されない)flex row の item の min-height(以前は Unknown): item の高さは中身の高さを min-height まで上げたもの。行の中での位置は、行の高さとその高さから決める。
+
+- flex の main 軸で、空きが負のときの `justify-content: center` / `end` / `flex-end`(以前は Unknown): Chromium と同じく、同じ割合で寄せ、中身は始まりの側にもはみ出す(unsafe)。`space-around` / `space-evenly` は Unknown のまま。
+- flex item の割合の高さは、container の確定した高さに対して解く(margin を引いた残りに対してではない。`height: 50%; margin-top: 10px` は 100px の row で 50px)。以前は 45px にしていた(間違った成功)。
+- grid の中の absolute な箱で、top と bottom が auto の場合、grid の `align-items`(または自分の `align-self`)が static position を動かす(80px の grid で `align-items: flex-end` なら 20px の箱は 60px)。モデルにないので Unknown にした(以前は 0 に置いていた)。

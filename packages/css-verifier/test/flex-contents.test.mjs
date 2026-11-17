@@ -270,12 +270,12 @@ test('justify-content distributes positive free space without changing sizes', (
   }
 });
 
-test('negative free space keeps positions only where the fallback is flex-start', () => {
+test('negative free space: space-between falls back to flex-start, center overflows both ways (unsafe, measured)', () => {
   const base = '.row { display: flex; block-size: 40px; }\n.a, .b { flex: none; width: 150px; }\n';
   const between = strip(base + '.row { justify-content: space-between; }\n', empty(['a', 'b']));
   assert.ok(rect(between, '.b', 250), 'space-between falls back to flex-start');
   const center = strip(base + '.row { justify-content: center; }\n', empty(['a', 'b']));
-  assert.equal(rect(center, '.b', 250), undefined, 'unsafe centering of an overflowing line is not modeled');
+  assert.ok(rect(center, '.b', 250), 'unsafe centering of an overflowing line is modeled (e2e/layout-differential.spec.mjs)');
   assert.ok(rect(center, '.b', 400));
 });
 
@@ -367,4 +367,14 @@ test('min-height in a flex row of indefinite height raises its line; an aligned 
   const centered = run('<main class="p"><div class="a"><div class="k"></div></div></main>', '.p{display:grid;grid-template-columns:minmax(0,1fr);width:300px}.a{display:flex;align-self:center;min-height:50px}.k{height:30px;width:10px}');
   assert.equal(centered.status, 'verified', JSON.stringify(centered.diagnostics));
   assert.deepEqual([rect(centered, '.a').blockStart.constant, rect(centered, '.a').blockSize.constant], ['0', '50']);
+});
+
+test('negative free space: justify-content center and end overflow both ways (unsafe), and a percentage height resolves against the container', async () => {
+  const {analyzeHTML: analyze} = await import('../src/html.mjs');
+  const run = css => analyze('<html lang="en"><body><main class="p"><div class="a"></div><div class="b"></div></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:flex;gap:10px;width:300px;height:100px}.a,.b{height:20px;width:50px}${css}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const rect = (r, box) => r.sizes.find(s => s.box === box && s.rect).rect;
+  // 350 + 10 + 50 = 410 in 300: free −110, centered from −55.
+  assert.equal(rect(run('.a,.b{flex:none}.a{width:350px}.p{justify-content:center}'), '.a').inlineStart.constant, '-55');
+  assert.equal(rect(run('.a,.b{flex:none}.a{width:350px}.p{justify-content:flex-end}'), '.a').inlineStart.constant, '-110');
+  assert.equal(rect(run('.a{height:50%;margin-top:10px}'), '.a').blockSize.constant, '50');
 });

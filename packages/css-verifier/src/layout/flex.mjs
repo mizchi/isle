@@ -41,8 +41,10 @@ export function distribution(value, main, count = 1) {
     case 'normal': case 'stretch': case 'flex-start': case 'start': return { lead: q(0), extra: q(0), negative: 'start' };
     case 'left': if (main !== 'inline') unknown('justify-content: left applies to rows'); return { lead: q(0), extra: q(0), negative: 'start' };
     case 'right': if (main !== 'inline') unknown('justify-content: right applies to rows'); return { lead: q(1), extra: q(0), negative: 'unknown' };
-    case 'flex-end': case 'end': return { lead: q(1), extra: q(0), negative: 'unknown' };
-    case 'center': return { lead: div(q(1), q(2)), extra: q(0), negative: 'unknown' };
+    // Negative free space: center and end align unsafely, by the same share (measured: a 240px column in 200px starts
+    // at -20 centered, -40 at the end), so overflowing content goes before the start edge.
+    case 'flex-end': case 'end': return { lead: q(1), extra: q(0), negative: 'same' };
+    case 'center': return { lead: div(q(1), q(2)), extra: q(0), negative: 'same' };
     // A single item or negative free space falls back to flex-start (§8.2).
     case 'space-between': return count > 1 ? { lead: q(0), extra: div(q(1), q(count - 1)), negative: 'start' } : { lead: q(0), extra: q(0), negative: 'start' };
     case 'space-around': return { lead: div(q(1), q(2 * count)), extra: div(q(1), n), negative: 'unknown' };

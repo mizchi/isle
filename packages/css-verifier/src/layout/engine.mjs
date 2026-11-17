@@ -454,6 +454,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const none = side => style[side] === undefined || style[side] === 'auto';
           const inlineStart = style.direction === 'rtl' ? 'right' : 'left';
           if (none('left') && none('right')) style = { ...style, [inlineStart]: '0px', $staticPosition: true };
+          // That edge is where the box sits only when it is not aligned: its align-self, or the grid's align-items, moves
+          // the static position (measured: align-items: flex-end on an 80px grid puts a 20px absolute child at 60).
+          const aligned = value => !['auto', 'normal', 'stretch', 'start', 'flex-start', 'self-start'].includes(String(value ?? 'auto'));
+          const blockAlign = String(style['align-self'] ?? 'auto') === 'auto' ? parentStyle['align-items'] : style['align-self'];
+          if (none('top') && none('bottom') && aligned(blockAlign)) throw Object.assign(new Error(`${box.label}: an absolute box with auto top and bottom aligned by ${String(style['align-self'] ?? 'auto') === 'auto' ? `its grid's align-items: ${blockAlign}` : `align-self: ${blockAlign}`} has a static position that is not modeled`), { code: 'U_LAYOUT_CSS', box });
           if (none('top') && none('bottom')) style = { ...style, top: '0px', $staticPosition: true };
         }
       }
@@ -1036,7 +1041,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const split = partition(region, free, '>='), out = [];
     for (const r of split.yes) out.push({ region: r, starts: autos ? place(none, none, times(free, div(one, q(autos)))) : place(times(free, d.lead), times(free, d.extra), none) });
     // Negative free space: auto margins are zero and justify falls back or is not modeled.
-    for (const r of split.no) out.push({ region: r, starts: d.negative === 'start' ? place(none, none, none) : null });
+    for (const r of split.no) out.push({ region: r, starts: d.negative === 'start' || (autos && d.negative === 'same') ? place(none, none, none) : d.negative === 'same' ? place(times(free, d.lead), none, none) : null });
     return out;
   }
   function layoutFlex({ box, style, region, inline, contentInline, knownBlock, blockEdges, available, parents, ancestors, contentOrigin, collect, emit }) {
@@ -1078,6 +1083,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const itemAvailable = (entry, extra) => ({ ...extra,
         ...(entry.margins ? { ...(extra.inline ? { inline: diff(extra.inline, scalar(add(entry.margins.left, entry.margins.right))) } : {}), ...(extra.block ? { block: diff(extra.block, scalar(add(entry.margins.top, entry.margins.bottom))) } : {}),
           ...(extra.origin ? { origin: { inline: sum(extra.origin.inline, scalar(entry.margins.left)), block: sum(extra.origin.block, scalar(entry.margins.top)) } } : {}), marginEnd: { inline: entry.margins.right, block: entry.margins.bottom } } : {}),
+        // A percentage height resolves against the container's definite height, not the area left after the item's
+        // margins (measured: height: 50% with margin-top: 10px in a 100px row is 50px).
+        ...(knownBlock ? { percentBlock: knownBlock } : {}),
         flexItem: { main }, ...(main === 'block' ? { flexBlockMinimum: true } : {}),
         ...(entry.align !== 'stretch' ? (main === 'inline' ? { alignBlock: entry.align } : { alignInline: entry.align }) : {}) });
       if (main === 'inline') {
@@ -1567,6 +1575,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
       geometry.push({ box, path: box.path, region, origin: underClip ? null : ownOrigin, ...(style.$listItem && style['list-style-type'] !== 'none' && style['list-style-position'] !== 'inside' && style.direction !== 'rtl' ? { outsideMarker: style['list-style-type'] } : {}), ...(style.display === 'grid' && /^(?:\s*(?:repeat\(\s*\d+\s*,\s*\d+(?:\.\d+)?px\s*\)|\d+(?:\.\d+)?px))+\s*$/.test(String(style['grid-template-columns'])) ? { fixedTracks: style['grid-template-columns'] } : {}), ...((box.text || box.inline?.length) && !box.pseudo && ['normal', 'pre-wrap', 'pre-line'].includes(style['white-space']) && style['overflow-wrap'] === 'normal' ? { wrapsByWords: true } : {}), ...(style.$widthFromAttribute ? { widthFromAttribute: style.$widthFromAttribute } : {}), ...(/\dvw\b|\bvw\)/.test(String(style.$sources?.['inline-size']?.specified ?? '')) ? { vwInline: style.$sources['inline-size'].specified } : {}), ...(/^100%$/.test(String(style.$sources?.['inline-size']?.specified ?? '').trim()) && ['left', 'right'].some(side => /^\d+(?:\.\d+)?px$/.test(String(style[`margin-${side}`])) && cmp(px(style[`margin-${side}`]), zero) > 0) ? { fullWidthMargins: ['left', 'right'].map(side => `margin-${side}`).filter(key => /^\d+(?:\.\d+)?px$/.test(String(style[key])) && cmp(px(style[key]), zero) > 0).map(key => `${key}: ${style[key]}`) } : {}), ...(style['box-sizing'] === 'content-box' && /^100%$/.test(String(style.$sources?.['inline-size']?.specified ?? '').trim()) && ['left', 'right'].some(side => cmp(px(style[`padding-${side}`] === 'ua' ? '0' : style[`padding-${side}`]), zero) > 0 || cmp(px(style[`border-${side}`] === 'ua' ? '0' : style[`border-${side}`]), zero) > 0) ? { contentBoxFull: ['left', 'right'].flatMap(side => [`padding-${side}`, `border-${side}`]).filter(key => style[key] && !['0', '0px', 'ua'].includes(String(style[key]))) } : {}), ...(style.$imageRatio ? { imageRatio: style.$imageRatio } : {}), clipOrigin: ownOrigin, ...(style.position === 'absolute' ? { containingPath: available.containingBlock?.path } : {}), ...(style.$fixed ? { fixed: true } : {}), ...(style.$uaControl ? { uaControl: true } : {}), ...(style.$sticky ? { sticky: { parent: parents.at(-1)?.box.path ?? null } } : {}), inline: painted.inline, block: painted.block, position: style.position,
         borders: Object.fromEntries(['left','right','top','bottom'].map(side => [side, px(style[`border-${side}`])])),
+        // Content aligned towards the end (center, end): overflowing content may lie before the start edge.
+        ...(['justify-content', 'align-content', 'align-items'].some(key => /^(?:center|end|flex-end|unsafe\b)/.test(String(style[key] ?? ''))) ? { alignsContent: true } : {}),
         ...(/^(?:0|\d+(?:\.\d+)?px)$/.test(String(style['padding-bottom'])) ? { paddingBlockEnd: px(String(style['padding-bottom']) === '0' ? '0px' : style['padding-bottom']) } : {}),
         ...(/^(?:0|\d+(?:\.\d+)?px)$/.test(String(style['padding-right'])) ? { paddingInlineEnd: px(String(style['padding-right']) === '0' ? '0px' : style['padding-right']) } : {}),
         // overflow: clip clips without scrolling (hidden still scrolls a focused descendant into view).
@@ -3152,8 +3162,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // 0, the page's initial view, where positions inside are exact. A text start or first line hidden there is an error
     // at the initial scroll position; the other offsets stay Unknown.
     const scrolledCovers = diagnostics.filter(d => d.code === 'U_A11Y_SCROLLED_COVER');
-    if (pristine && scrolledCovers.length) {
+    const alignedScroller = geometry.some(row => row.overflow === 'scroll' && row.alignsContent && !row.box.documentRoot);
+    if (pristine && (scrolledCovers.length || alignedScroller)) {
       const zero = analyzeBoxTree(pristine, { ...options, integrity: undefined }, scrollbarProfile, budget, inlineSheets, [], ['scroll-zero']);
+      // Content before a scroll container's start edge (any scroll offset: it never scrolls there).
+      for (const d of zero.diagnostics.filter(d => d.code === 'E_A11Y_SCROLL_START_UNREACHABLE'))
+        if (!diagnostics.some(x => x.code === d.code && x.path === d.path && x.edge === d.edge && JSON.stringify([x.range, x.heightRange]) === JSON.stringify([d.range, d.heightRange]))) diagnostics.push(d);
       // The scroll range from offset 0: the end of a scroller's content covered at every offset.
       for (const d of zero.diagnostics.filter(d => d.code === 'E_A11Y_SCROLL_END_COVERED'))
         if (scrolledCovers.some(u => d.path.startsWith(`${u.path}/`) && u.cover === d.cover) && !diagnostics.some(x => x.code === d.code && x.path === d.path && JSON.stringify([x.range, x.heightRange]) === JSON.stringify([d.range, d.heightRange]))) diagnostics.push(d);
