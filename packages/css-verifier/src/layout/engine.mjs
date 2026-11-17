@@ -251,7 +251,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframeFrames, fontFaces } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframeFrames, fontFaces, transitionNotes = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -284,6 +284,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         message: `@media (max-width: ${number(b.value)}px) and @media (min-width: ${number(a.value)}px) leave the widths between them matched by neither (a zoomed page or a fractional device pixel ratio can make the viewport ${(number(b.value) + number(a.value)) / 2}px wide): there ${selector} gets neither rule's ${property}. Use max-width: ${number(a.value) - 0.02}px, or a range query (width < ${number(a.value)}px)` });
     }
   }
+  for (const note of transitionNotes) layoutWarnings.push({ code: 'W_CSS_TRANSITION_DISPLAY', severity: 'warning', selector: note.selector, css: [{ property: 'transition', file: note.file, line: note.line, selector: note.selector }],
+    message: `${note.selector} transitions display, which does not animate without transition-behavior: allow-discrete: the box appears or disappears at once (a fade-out ends cut off). Add transition-behavior: allow-discrete (and @starting-style for the fade in), or transition opacity and visibility instead` });
   if (rules.some(rule => rule.stateLayout && !rule.hoverLayout) && !options.accessibility) unknown('U_LAYOUT_SELECTOR', 'A :focus rule changes the layout; the focused layout is modeled for the accessibility checks only');
   if (rules.some(rule => rule.stateGeometry) && !options.accessibility && !options.integrity) unknown('U_LAYOUT_SELECTOR', 'A state rule moves a box (focus insets or a transform); that is modeled for the accessibility and integrity checks only');
   // style attributes: each element's declarations as a rule that matches only it, element-attached in the cascade.

@@ -442,7 +442,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [];
+  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -531,6 +531,13 @@ export function parseLayoutCSS(sheets, diagnostic) {
       if (!stateGeometry && !checkedMark && !stateLayout && selectors.some(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `State selector rules may only change paint (color, background, outline, box-shadow, text-decoration); ${node.selector} changes layout`, node.source.start.line); continue; }
       const declarations = [];
       const authored=node.nodes.filter(declaration=>declaration.type==='decl');
+      // transition of display: display is discrete and does not transition without transition-behavior: allow-discrete
+      // (CSS Transitions 2; measured: display: none applies at once). Paint timing only, reported as a warning.
+      {
+        const named = authored.filter(d => /^(?:transition|transition-property)$/i.test(d.prop) && /(?:^|[\s,])display(?:[\s,]|$)/i.test(d.value));
+        const discrete = authored.some(d => /^transition-behavior$/i.test(d.prop) && /allow-discrete/i.test(d.value)) || named.some(d => /allow-discrete/i.test(d.value));
+        if (named.length && !discrete) transitionNotes.push({ file: filename, line: named[0].source.start.line, selector: node.selector });
+      }
       const conflicts=findCSSWriteConflicts(authored.map(declaration=>declaration.prop));
       for(const conflict of conflicts) {
         const location=index=>({file:filename,line:authored[index].source.start.line,column:authored[index].source.start.column});
@@ -565,7 +572,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
   }
   // An animation-name without @keyframes runs no animation.
   for (const rule of rules) for (const declaration of rule.declarations) if (declaration.property === 'animation-name' && !wide.has(declaration.value) && declaration.value !== 'none' && !keyframes.has(declaration.value)) declaration.value = 'none';
-  return { rules, layers, keyframeFrames, fontFaces };
+  return { rules, layers, keyframeFrames, fontFaces, transitionNotes };
 }
 
 // The UA default family and the user's default font size are not author

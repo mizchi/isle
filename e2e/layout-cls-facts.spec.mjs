@@ -1087,3 +1087,16 @@ test('inert sizes on a display: inline span: Chromium paints the line the same w
     expect((await shot(true)) === (await shot(false)), `${decl}: same pixels without it`).toBe(true);
   }
 });
+
+test('transition of display: Chromium hides the box at once without allow-discrete, exactly where the static check warns', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [decl, warn] of [['transition:opacity 1s,display 1s', true], ['transition:opacity 1s,display 1s allow-discrete', false], ['transition-property:opacity,display;transition-duration:1s;transition-behavior:allow-discrete', false]]) {
+    const css = `*{margin:0}html,body{${g}}.m{height:20px;background:#c00;${decl}}.m.off{display:none;opacity:0}`;
+    const report = analyzeHTML('<html lang="en"><body><div class="m"></div></body></html>', {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_CSS_TRANSITION_DISPLAY'), decl).toBe(warn);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body><div class="m"></div></body></html>`);
+    const shownDuring = await page.evaluate(async () => { const m = document.querySelector('.m'); m.getBoundingClientRect(); m.classList.add('off'); await new Promise(r => setTimeout(r, 100)); return getComputedStyle(m).display !== 'none'; });
+    // Without allow-discrete the box is gone at once: the transition the author wrote does nothing.
+    expect(!shownDuring, `${decl}: hidden at once in Chromium`).toBe(warn);
+  }
+});

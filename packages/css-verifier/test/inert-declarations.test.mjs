@@ -241,3 +241,11 @@ test('float on a grid or flex item is reported as inert too (the checked layout 
   assert.ok(run('.p{display:block}').diagnostics.some(x => x.code === 'E_LAYOUT_FLOAT'));
   assert.deepEqual(inert(run('.p{display:block}')), []);
 });
+
+test('a transition of display without allow-discrete is warned', () => {
+  const run = c => (analyzeHTML('<html lang="en"><body><div class="m"></div></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.m{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).map(w => w.code);
+  assert.deepEqual(run('.m{transition:opacity .3s,display .3s}'), ['W_CSS_TRANSITION_DISPLAY']);
+  assert.deepEqual(run('.m{transition:opacity .3s,display .3s allow-discrete}'), []);
+  assert.deepEqual(run('.m{transition-property:opacity,display;transition-behavior:allow-discrete}'), []);
+  assert.deepEqual(run('.m{transition:opacity .3s}'), []);
+});
