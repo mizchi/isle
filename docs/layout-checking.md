@@ -609,3 +609,8 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 - 折り返す flex の行分けが、max-width で縮める前の大きさを使っていた(180px の item に `max-width: 20px` を付けても次の行に送っていた)。行分けは、max で縮め、min で広げた後の仮の大きさを使う。
 - block の container の `justify-items`(normal と stretch 以外)を無視していた。Chromium は子を寄せ、幅が auto の子を中身の幅に縮める(`justify-items: start` でも空の子は幅 0)。モデルにないので Unknown にした。
 - grid の `align-content: center` / `end` の空きを、fr の行を 0 と数えて計算していた。fr の行が空きを取るので、行は動かない。空きは解いた後の行の大きさから計算する。
+
+宣言を 2 つ重ねた照合(レイアウトごとに、決まった乱数で選んだ 120 組)で、さらに 2 つの間違った成功を直した。
+
+- auto の margin で寄せる箱の位置を、min-width / max-width で変わる前の幅から計算していた(`width: 300px; min-width: 350px; margin-left: auto` の箱を 50px 左にずらしていた)。px の幅と px の上下限(border-box)なら、上下限で決まった幅から計算する。それ以外は Unknown にする。
+- aspect-ratio で高さが決まる箱を、container が高さを決める場合(縦の flex で伸びる item、`align-self: stretch` を明示した grid item)にも比で計算していた。Chromium では container の大きさが勝つ。モデルにないので Unknown にした。

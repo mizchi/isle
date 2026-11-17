@@ -45,3 +45,26 @@ for (const [ln, [html, lcss]] of Object.entries(layouts)) test(`${ln}: every ver
   expect(checked).toBeGreaterThan(30);
   expect(mismatches).toEqual([]);
 });
+
+// Pairs of declarations (a fixed pseudo-random sample, the same on every run): interactions single declarations miss.
+const pick = seed => { let s = seed; return n => { s = (s * 1103515245 + 12345) % 2147483648; return s % n; }; };
+for (const [ln, [html, lcss]] of Object.entries(layouts)) test(`${ln}: every verified pair of declarations lays the boxes out as Chromium does`, async ({page}) => {
+  test.setTimeout(240000);
+  await page.setViewportSize({width: 400, height: 300});
+  const rand = pick(ln.length * 7919 + 17), mismatches = [];
+  for (let k = 0; k < 120; k++) {
+    const d = decls[rand(decls.length)] + decls[rand(decls.length)];
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}${lcss}${d}`;
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    if (r.status !== 'verified') continue;
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    for (const sel of ['.p', '.a', '.b']) {
+      const row = r.sizes.find(s => s.box.startsWith(sel) && s.rect);
+      if (!row) continue;
+      const m = [row.rect.inlineStart, row.rect.blockStart, row.rect.inlineSize, row.rect.blockSize].map(val);
+      const br = await page.evaluate(s => { const e = document.querySelector(s); if (!e || getComputedStyle(e).display === 'none') return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }, sel);
+      if (br && m.some((v, i) => !Number.isNaN(v) && Math.abs(v - br[i]) > 0.02)) mismatches.push(`${d} ${sel}: model ${m}, Chromium ${br}`);
+    }
+  }
+  expect(mismatches).toEqual([]);
+});

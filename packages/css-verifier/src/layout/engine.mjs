@@ -2541,6 +2541,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             // inline size, on the box named by box-sizing (the content box by default).
             else if (ratioOf(style) && (['img', 'video'].includes(box.tag) || (!(box.children ?? []).length && !box.text && !box.inline?.length))) {
               const r = ratioOf(style);
+              // Where the container sets the block size, it wins over the ratio (measured: a growing column flex item,
+              // and a grid item with an explicit align-self: stretch, take the container's size); that is not modeled.
+              const parentStyle = parents.at(-1)?.style;
+              const explicitStretch = String(style['align-self']) === 'stretch' || (['auto', 'normal'].includes(String(style['align-self'] ?? 'auto')) && String(parentStyle?.['align-items']) === 'stretch');
+              const growing = available.flexItem?.main === 'block' && cmp(q(String(style['flex-grow'] ?? '0')), zero) > 0;
+              if (growing || (explicitStretch && available.gridItem)) throw Object.assign(new Error(`${box.label}: aspect-ratio with an auto height where its container ${growing ? 'grows it (flex-grow in a column)' : 'stretches it (align-self: stretch)'} is not modeled`), { code: 'U_LAYOUT_CSS', box });
               fixedBlock = style['box-sizing'] === 'border-box' ? times(inline, r) : sum(times(contentInline, r), cssBlockEdges);
             }
             else if (!available.root && available.block && available.alignBlock === undefined) fixedBlock = available.block;
@@ -2919,7 +2925,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                       return [...split.yes.map(r => ({ region: r, offset: times(free, share) })), ...split.no.map(r => ({ region: r, offset: scalar(0) }))];
                     }
                     const w = String(item.style['inline-size']), area = itemInline(item);
-                    const outer = w.endsWith('%') ? times(areaInline(item), div(q(w.slice(0, -1)), q(100))) : scalar(px(w));
+                    let outer = w.endsWith('%') ? times(areaInline(item), div(q(w.slice(0, -1)), q(100))) : scalar(px(w));
+                    // The used width is the width clamped by max-width, then min-width (measured: width: 300px with
+                    // min-width: 350px and margin-left: auto ends at the right edge 350px wide). px bounds on a px width only.
+                    const minW = String(item.style['min-inline-size'] ?? 'auto'), maxW = String(item.style['max-inline-size'] ?? 'none');
+                    if (!['auto', '0', '0px'].includes(minW) || maxW !== 'none') {
+                      if (w.endsWith('%') || ![minW, maxW].every(v => ['auto', '0', '0px', 'none'].includes(v) || /^\d+(?:\.\d+)?px$/.test(v)) || item.style['box-sizing'] === 'content-box') throw Object.assign(new Error(`${item.box.label}: auto margins with a min-width or max-width are modeled for a px width and px bounds (border-box) only`), { code: 'U_LAYOUT_CSS', box: item.box });
+                      let used = px(w);
+                      if (/px$/.test(maxW) && cmp(px(maxW), used) < 0) used = px(maxW);
+                      if (/px$/.test(minW) && cmp(px(minW), used) > 0) used = px(minW);
+                      outer = scalar(used);
+                    }
                     const extra = item.style['box-sizing'] === 'content-box' ? ['left', 'right'].flatMap(side => [item.style[`padding-${side}`], item.style[`border-${side}`]]).filter(v => v && !['0', 'ua'].includes(String(v))).reduce((acc, v) => add(acc, px(v)), zero) : zero;
                     const free = diff(area, sum(outer, scalar(extra)));
                     const share = item.style['margin-left'] === 'auto' ? (item.style['margin-right'] === 'auto' ? div(one, q(2)) : one) : zero;
