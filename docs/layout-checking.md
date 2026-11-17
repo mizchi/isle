@@ -614,3 +614,9 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 
 - auto の margin で寄せる箱の位置を、min-width / max-width で変わる前の幅から計算していた(`width: 300px; min-width: 350px; margin-left: auto` の箱を 50px 左にずらしていた)。px の幅と px の上下限(border-box)なら、上下限で決まった幅から計算する。それ以外は Unknown にする。
 - aspect-ratio で高さが決まる箱を、container が高さを決める場合(縦の flex で伸びる item、`align-self: stretch` を明示した grid item)にも比で計算していた。Chromium では container の大きさが勝つ。モデルにないので Unknown にした。
+
+入れ子のレイアウト(flex の中の grid、grid の中の flex、3 段)を照合に加え、次を直した。
+
+- 中身のある箱の aspect-ratio は、比の高さになる場合と中身の高さになる場合がある(grid item は 30px の中身で 30px、中身が 38px の flex container は比の 20px)。モデルは中身の高さにしていたので、Unknown にした。
+- 縦の flex で中身の高さで決まる item に px の min-height がある場合(以前は Unknown): 基準は中身の高さ、最小は min-height(中身より小さくてもよい)の普通の item として解く。
+- 高さが px の 1 行の flex row で stretch される item の min-height(以前は Unknown): 高さは行の高さと min-height の大きい方。行の高さが決まらない場合は Unknown のまま。

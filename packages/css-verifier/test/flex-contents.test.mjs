@@ -336,3 +336,18 @@ test('grid justify-content moves fixed tracks; overflowing tracks publish no pos
   const between = strip(css.replace('center', 'space-between'), empty(['a', 'b']));
   assert.equal(at(rect(between, '.b', 500).inlineStart, 500), 400);
 });
+
+// min-height on flex items that hold a grid (measured in Chromium, e2e/layout-differential.spec.mjs).
+test('a content-sized column item with a px min-height is at least that tall; a stretched row item takes the larger of its line and its minimum', async () => {
+  const {analyzeHTML: analyze} = await import('../src/html.mjs');
+  const run = (html, css) => analyze(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${css}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const size = (r, box) => r.sizes.find(s => s.box === box && s.rect).rect.blockSize.constant;
+  const column = run('<main class="p"><div class="a"><div class="k"></div><div class="k"></div></div><div class="b"></div></main>', '.p{display:flex;flex-direction:column;height:240px;width:300px}.a{display:grid;grid-template-columns:1fr 1fr;gap:6px;min-height:80px}.k{height:30px}.b{height:20px}');
+  assert.equal(column.status, 'verified', JSON.stringify(column.diagnostics));
+  assert.equal(size(column, '.a'), '80');
+  const row = css => run('<main class="p"><div class="a"><div class="k"></div></div><div class="b"></div></main>', `.p{display:flex;gap:10px;width:300px;height:120px}.a{display:grid;grid-template-columns:minmax(0,1fr);flex:1;min-height:60px}.k{height:30px}.b{width:60px;height:20px}${css}`);
+  assert.equal(size(row(''), '.a'), '120');
+  assert.equal(size(row('.a{min-height:150px}'), '.a'), '150');
+  // An indefinite row height: the line's cross size depends on the items' minimums, which is not modeled.
+  assert.equal(row('.p{height:auto}').status, 'unknown');
+});

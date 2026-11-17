@@ -610,7 +610,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (box.text) throw new Error('Automatic text height needs an intrinsicBlockSize contract');
     return [{ region, value: scalar(0) }];
   }
-  function validate(style, box, region, emit, available = {}) {
+  function validate(style, box, region, emit, available = {}, parentStyle = null) {
     if (style.display === 'none') return false;
     if(box.whitespace && !['normal','nowrap'].includes(style['white-space'])) throw new Error('Preserved whitespace needs explicit text geometry from the input adapter');
     // A px height on text whose font-size follows the user's default font size: a larger default makes the text
@@ -777,7 +777,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const leaf = !(box.children ?? []).length && !['grid', 'inline-grid', 'flex', 'inline-flex', 'table'].includes(style.display);
         const blockFlow = ['block', 'list-item'].includes(style.display) && ['normal', 'start', 'flex-start'].includes(String(style['align-content']));
         const stretched = available.block && available.alignBlock === undefined && !available.root;
-        if (!available.$minNatural && !available.$minRaised && !(stretched && !available.flexItem && !['table'].includes(style.display)) && ((available.flexItem && !(available.flexItem.main === 'inline' && (leaf || blockFlow))) || !(leaf || blockFlow || (style['block-size'] !== 'auto' && !['flex', 'inline-flex', 'table'].includes(style.display))))) throw new Error('CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)');
+        // A stretched item of a single-line flex row whose height is a px length: the line's cross size is that height
+        // (whatever the items' minimums), and the item's height is the larger of it and its minimum, as for a grid item.
+        const parentFlex = parentStyle;
+        const fixedLine = available.flexItem?.main === 'inline' && !!parentFlex && String(parentFlex['flex-wrap']) === 'nowrap' && /^\d+(?:\.\d+)?px$/.test(String(parentFlex['block-size']))
+          && ['auto', '0', '0px'].includes(String(parentFlex['min-block-size'])) && String(parentFlex['max-block-size']) === 'none';
+        if (!available.$minNatural && !available.$minRaised && !(stretched && (!available.flexItem || fixedLine) && !['table'].includes(style.display)) && ((available.flexItem && !(available.flexItem.main === 'inline' && (leaf || blockFlow))) || !(leaf || blockFlow || (style['block-size'] !== 'auto' && !['flex', 'inline-flex', 'table'].includes(style.display))))) throw new Error('CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)');
       }
     }
     // Flex containers and items validate their alignment in the flex model.
@@ -1162,7 +1167,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       model.forEach((entry, i) => {
         if (entry.item.base !== 'content') return;
         measured = bounded(measured.flatMap(m => solve(entry.child.box, itemAvailable(entry, { inline: contentInline }), m.region, ancestors, inheritedOf(entry), false)
-          .map(result => { const outer = sum(result.block, scalar(entry.item.marginMain ?? zero)); return { region: result.region, items: m.items.map((v, j) => j === i ? { ...entry.item, base: outer, minimum: outer, content: true } : v) }; })));
+          .map(result => { const outer = sum(result.block, scalar(entry.item.marginMain ?? zero));
+            // With an explicit minimum the item is an ordinary one from its measured base (it may shrink below its
+            // content down to that minimum, and its hypothetical size is at least it).
+            const item = entry.item.contentMinimum !== undefined ? { ...entry.item, base: outer, minimum: scalar(add(entry.item.contentMinimum, entry.item.marginMain ?? zero)), contentMinimum: undefined } : { ...entry.item, base: outer, minimum: outer, content: true };
+            return { region: result.region, items: m.items.map((v, j) => j === i ? item : v) }; })));
       });
       for (const m of measured) {
         let lines;
@@ -2489,7 +2498,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           }
           continue;
         }
-        if (!validate(style, box, state.region, emit, available)) continue;
+        if (!validate(style, box, state.region, emit, available, parents.at(-1)?.style ?? null)) continue;
         // A fieldset's first legend is rendered in its block-start border (HTML §15.3.13): it is not a
         // layout child, and the fieldset's effective border-top is max(border-top, legend height).
         const rendered = renderedLegend(box, style, state.region, parents);
@@ -2549,6 +2558,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               if (growing || (explicitStretch && available.gridItem)) throw Object.assign(new Error(`${box.label}: aspect-ratio with an auto height where its container ${growing ? 'grows it (flex-grow in a column)' : 'stretches it (align-self: stretch)'} is not modeled`), { code: 'U_LAYOUT_CSS', box });
               fixedBlock = style['box-sizing'] === 'border-box' ? times(inline, r) : sum(times(contentInline, r), cssBlockEdges);
             }
+            // aspect-ratio on a box with content: the ratio sets the height, raised to the content's by the automatic
+            // minimum in some layouts and not in others (measured: a grid item with a 30px child is 30px, a flex container
+            // whose content is 38px follows the ratio's 20px); that is not modeled.
+            else if (ratioOf(style) && ((box.children ?? []).length || box.text || box.inline?.length)) throw Object.assign(new Error(`${box.label}: aspect-ratio on a box with content (its height is the ratio's or its content's) is not modeled; give it a height, or put the ratio on an empty box`), { code: 'U_LAYOUT_CSS', box });
             else if (!available.root && available.block && available.alignBlock === undefined) fixedBlock = available.block;
             else if (style['container-type'] === 'size') fixedBlock = blockEdges;
             if (style['block-size'] !== 'auto' && style['box-sizing'] === 'content-box') fixedBlock = sum(fixedBlock, cssBlockEdges);

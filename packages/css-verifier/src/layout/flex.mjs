@@ -119,7 +119,10 @@ export function flexItem(style, { empty = false, axis = 'inline', contentSizes }
   const item = { grow, shrink, edges: own, autoStart, autoEnd, automaticBelowBase: false };
   if (base === 'content') {
     // The block content size is both the flex base size and the automatic minimum.
-    if (style[n.min] !== 'auto') unknown(`A content-sized item with an explicit ${n.minLabel} is outside the subset`);
+    // An explicit px min-height replaces the automatic minimum (the content size, §4.5): the base is still the content
+    // size, and the item may shrink below it down to that minimum (contentMinimum; the engine measures the base).
+    if (style[n.min] !== 'auto' && !['0', '0px'].includes(String(style[n.min])) && !/^\d+(?:\.\d+)?px$/.test(String(style[n.min]))) unknown(`A content-sized item with ${n.minLabel} ${style[n.min]} is outside the subset (a px minimum only)`);
+    if (style[n.min] !== 'auto') return { ...item, base: 'content', minimum: 'content', contentMinimum: outer(px(String(style[n.min]) === '0' ? '0px' : style[n.min]), own, contentBox) };
     return { ...item, base: 'content', minimum: 'content' };
   }
   item.base = outer(base, own, contentBox);
