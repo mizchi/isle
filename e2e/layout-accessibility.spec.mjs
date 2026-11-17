@@ -8,6 +8,9 @@ import {spawnSync} from 'node:child_process';
 import {mkdirSync, writeFileSync} from 'node:fs';
 import {analyzeHTML, htmlBoxTree} from '../packages/css-verifier/src/html.mjs';
 import {normalizeTree} from '../packages/css-verifier/src/tree.mjs';
+// The Chrome DevTools Protocol exists in Chromium only: elsewhere the test is skipped where it needs it.
+const chromiumOnly = page => { test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)'); return page.context().newCDPSession(page); };
+
 
 const results = new URL('../evals/results/layout-accessibility/', import.meta.url);
 const widths = [1280, 768, 375], height = 800;
@@ -207,7 +210,7 @@ async function runtime(page, sample) {
   // setContent keeps the previous document's scroll and focus; every oracle measures at scroll 0, unfocused.
   await page.evaluate(() => { document.activeElement?.blur(); scrollTo(0, 0); });
   const level = sample.accessibility?.targetLevel ?? 'AA', size = level === 'AAA' ? 44 : 24;
-  const client = await page.context().newCDPSession(page);
+  const client = await chromiumOnly(page);
   const found = new Map(rules.map(rule => [rule, new Set()]));
   const elements = await page.evaluate(() => {
     const out = [], walk = (node, path) => { out.push({path, tag: node.tagName.toLowerCase()}); [...node.children].forEach((child, i) => walk(child, `${path}/${i}`)); };
@@ -1086,7 +1089,6 @@ for (const sample of cases) {
 // (the content stays exposed); the static rule warns because other user agents honor it.
 for (const hidden of [true, false]) {
   test(`aria-hidden-body (${hidden ? 'hidden' : 'shown'}): static agrees with Chromium's AX tree`, async ({page}) => {
-    test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
     const body = `<body class="page"${hidden ? ' aria-hidden="true"' : ''}><main class="m"><button class="b" aria-label="Go"></button></main></body>`;
     const css = `${reset}.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:40px;background:#fff}.m{display:grid;grid-template-columns:40px;grid-template-rows:40px}.b{${button}}`;
     const report = analyzeHTML(body, {name: 'Page', css, viewport: {min: 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true});
@@ -1095,7 +1097,7 @@ for (const hidden of [true, false]) {
     // The other rules keep the button exposed: it is named, so no name finding either way.
     expect(report.diagnostics.filter(d => d.code === 'E_A11Y_NAME')).toEqual([]);
     await page.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><style>${css}</style></head>${body}</html>`);
-    const client = await page.context().newCDPSession(page);
+    const client = await chromiumOnly(page);
     const {nodes} = await client.send('Accessibility.getFullAXTree');
     const exposed = nodes.some(n => !n.ignored && ['main', 'button'].includes(n.role?.value));
     expect(flagged).toBe(hidden);
@@ -1521,9 +1523,8 @@ test('select-indicator: where the static rule warns, Chromium draws nothing at t
 });
 
 test('live-hidden: the static warning holds exactly where Chromium leaves the live region out of the accessibility tree', async ({page}) => {
-  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const base = '*{box-sizing:border-box;margin:0}body{margin:0}.page{display:grid;grid-template-columns:200px;padding:8px;background:#fff;color:#000}.w{display:grid;grid-template-columns:minmax(0,1fr)}.m{display:block;height:20px}';
-  const cdp = await page.context().newCDPSession(page);
+  const cdp = await chromiumOnly(page);
   for (const [extra, wrapperHidden, warn] of [['', false, false], ['.m{display:none}', false, true], ['.m{visibility:hidden}', false, true], ['', true, true], ['.m{opacity:0}', false, false]]) {
     const css = base + extra, html = `<main class="page"><div class="w"${wrapperHidden ? ' aria-hidden="true"' : ''}><div class="m" role="status" aria-label="Saved"></div></div></main>`;
     const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, boxes: {'.m': {minInlineSize: 1, intrinsicBlockSize: 20}}});
@@ -1653,7 +1654,6 @@ test('stretched link: Chromium hits the link\'s ::after at the button exactly wh
 });
 
 test('contents-focus: where the static rule reports, Tab never lands on the element in Chromium', async ({page}) => {
-  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   const base = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.page{${g};background:#fff}.card{display:block;height:40px;background:#eee}`;
   const cases = [
@@ -1678,7 +1678,7 @@ test('contents-focus: where the static rule reports, Tab never lands on the elem
 
 // The accessible name Chromium's accessibility tree gives the element (CDP), not Playwright's own computation.
 const axName = async (page, selector) => {
-  const client = await page.context().newCDPSession(page);
+  const client = await chromiumOnly(page);
   const {root} = await client.send('DOM.getDocument');
   const {nodeId} = await client.send('DOM.querySelector', {nodeId: root.nodeId, selector});
   const {nodes} = await client.send('Accessibility.getPartialAXTree', {nodeId, fetchRelatives: false});
@@ -1968,14 +1968,13 @@ test('accessible-name from the markup alone (the layout Unknown): each button ha
 });
 
 test('image-alt from the markup alone (the layout Unknown): Chromium exposes an unnamed img exactly where the static check reports a missing alt', async ({page}) => {
-  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block;width:100%}';
   for (const img of ['<img class="i" src="data:,">', '<img class="i" src="data:," alt="">', '<img class="i" src="data:," alt="Shoe">', '<img class="i" src="data:," role="presentation">', '<img class="i" src="data:," aria-hidden="true">']) {
     const html = `<html lang="en"><body><main class="m">${img}</main></body></html>`;
     const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
     expect(report.diagnostics.some(d => d.severity === 'unknown'), img).toBe(true);
     await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
-    const client = await page.context().newCDPSession(page);
+    const client = await chromiumOnly(page);
     const {root} = await client.send('DOM.getDocument');
     const {nodeId} = await client.send('DOM.querySelector', {nodeId: root.nodeId, selector: '.i'});
     const {nodes} = await client.send('Accessibility.getPartialAXTree', {nodeId, fetchRelatives: false});
@@ -1987,13 +1986,12 @@ test('image-alt from the markup alone (the layout Unknown): Chromium exposes an 
 });
 
 test('placeholder-label: Chromium names the field from its placeholder exactly where the static check warns that the placeholder is its only name', async ({page}) => {
-  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.i{display:block;height:40px;padding:0 8px;border:1px solid #767676;font-size:16px;color:#000}.l{display:block;font-size:16px;line-height:24px;color:#000}';
   for (const field of ['<input class="i" type="email" placeholder="Email">', '<label class="l" for="e">Email</label><input class="i" id="e" type="email" placeholder="you@example.com">', '<input class="i" type="email" placeholder="Email" aria-label="Email address">', '<input class="i" type="email" placeholder="Email" title="Email">']) {
     const html = `<html lang="en"><body><main class="m">${field}</main></body></html>`;
     const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, ...(field.includes('class="l"') ? {boxes: {'.l': {minInlineSize: 0, intrinsicBlockSize: 24}}} : {})});
     await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
-    const client = await page.context().newCDPSession(page);
+    const client = await chromiumOnly(page);
     const {root} = await client.send('DOM.getDocument');
     const {nodeId} = await client.send('DOM.querySelector', {nodeId: root.nodeId, selector: '.i'});
     const {nodes} = await client.send('Accessibility.getPartialAXTree', {nodeId, fetchRelatives: false});
@@ -2006,14 +2004,13 @@ test('placeholder-label: Chromium names the field from its placeholder exactly w
 });
 
 test('form-label from the markup alone (the layout Unknown): an error exactly where Chromium gives the field no name, a placeholder warning exactly where its name comes from the placeholder', async ({page}) => {
-  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block;width:100%}';
   for (const field of ['<input class="f" type="email">', '<input class="f" type="email" placeholder="Email">', '<label for="e">Email</label><input class="f" id="e" type="email">', '<label>Email <input class="f" type="email"></label>', '<input class="f" type="email" aria-label="Email">', '<input class="f" type="email" title="Email">', '<label for="e"></label><input class="f" id="e" type="email">']) {
     const html = `<html lang="en"><body><main class="m"><img class="i" src="data:," alt="">${field}</main></body></html>`;
     const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true});
     expect(report.diagnostics.some(d => d.severity === 'unknown'), field).toBe(true);
     await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
-    const client = await page.context().newCDPSession(page);
+    const client = await chromiumOnly(page);
     const {root} = await client.send('DOM.getDocument');
     const {nodeId} = await client.send('DOM.querySelector', {nodeId: root.nodeId, selector: '.f'});
     const {nodes} = await client.send('Accessibility.getPartialAXTree', {nodeId, fetchRelatives: false});

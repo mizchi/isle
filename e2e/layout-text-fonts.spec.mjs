@@ -10,6 +10,9 @@ import {scriptRuns, breakOpportunities} from '../packages/css-verifier/src/text.
 import {compile, requireIR} from '../lib/compiler.mjs';
 import {prepareProgram} from '../lib/codegen.mjs';
 import {analyzeLayout} from '../lib/layout.mjs';
+// The Chrome DevTools Protocol exists in Chromium only: elsewhere the test is skipped where it needs it.
+const chromiumOnly = page => { test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)'); return page.context().newCDPSession(page); };
+
 
 const fixtures = new URL('../packages/css-verifier/text-metrics/fixtures/', import.meta.url);
 const files = {'Noto Sans JP': 'japanese-variable.ttf', Roboto: 'roboto-variable.ttf'};
@@ -727,11 +730,10 @@ test('placeholder clipped: the static warning fires exactly where Chromium\'s pl
 });
 
 test('text resize (SC 1.4.4): with Chromium\'s default font size doubled, the text overflows exactly where E_A11Y_TEXT_RESIZE is reported', async ({page}) => {
-  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const {analyzeStates} = await import('../packages/adapter-core/src/index.mjs');
   const fonts = {Roboto: {file: new URL('roboto-variable.ttf', fixtures).pathname}};
   const pageCSS = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}';
-  const cdp = await page.context().newCDPSession(page);
+  const cdp = await chromiumOnly(page);
   for (const [label, size] of [['Save changes', 'font-size:1rem;line-height:1.5'], ['OK', 'font-size:1rem;line-height:1.5'], ['Save changes', 'font-size:16px;line-height:24px'], ['Continue to payment', 'font-size:0.875rem;line-height:1.5']]) {
     const css = `.w{display:grid;grid-template-columns:200px}.b{display:block;width:100%;padding:0 8px;border:0;font-family:Roboto;${size};font-weight:400;color:#000;background:#eee;white-space:nowrap}`;
     const html = `<div class="w"><button class="b" type="button">${label}</button></div>`;

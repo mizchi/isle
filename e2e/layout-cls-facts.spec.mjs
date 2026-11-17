@@ -3,6 +3,9 @@
 // not checks of the static analysis.
 import {test, expect} from '@playwright/test';
 import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
+// The Chrome DevTools Protocol exists in Chromium only: elsewhere the test is skipped where it needs it.
+const chromiumOnly = page => { test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)'); return page.context().newCDPSession(page); };
+
 
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR42mNk+M9Qz0AEYBxVSAAAAP//AwAOfQkB4x7nNgAAAABJRU5ErkJggg==', 'base64'); // 2×1
 const square = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'); // 1×1
@@ -541,9 +544,8 @@ test('hyphens: auto without lang breaks exactly like manual in Chromium, where t
 });
 
 test('root font size: where the static check warns, text ignores the browser default font size setting', async ({page}) => {
-  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
-  const cdp = await page.context().newCDPSession(page);
+  const cdp = await chromiumOnly(page);
   await cdp.send('Page.enable');
   for (const [css, warn] of [['html{font-size:16px}', true], ['body{font-size:12pt}', true], ['html{font-size:100%}', false], ['html{font-size:62.5%}body{font-size:1.6rem}', false], ['', false]]) {
     const doc = '<html lang="en"><body><main class="page"><div class="b"></div></main></body></html>';
@@ -781,9 +783,8 @@ test('font-size under 200% zoom (half the CSS width at twice the pixel ratio): s
 });
 
 test('px line-height: with a 32px default font size the glyphs outgrow the line in Chromium exactly where the static check warns', async ({page}) => {
-  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
-  const cdp = await page.context().newCDPSession(page);
+  const cdp = await chromiumOnly(page);
   await cdp.send('Page.enable');
   await cdp.send('Page.setFontSizes', {fontSizes: {standard: 32}});
   for (const [css, warn] of [['.t{font-size:1rem;line-height:20px}', true], ['.t{line-height:20px}', true], ['.t{font-size:1rem;line-height:1.25}', false], ['.t{font-size:16px;line-height:20px}', false], ['html{font-size:16px}.t{font-size:1rem;line-height:20px}', false]]) {
@@ -798,9 +799,8 @@ test('px line-height: with a 32px default font size the glyphs outgrow the line 
 });
 
 test('px height on text: with a 32px default font size the text overflows its box in Chromium exactly where the static check warns', async ({page}) => {
-  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
-  const cdp = await page.context().newCDPSession(page);
+  const cdp = await chromiumOnly(page);
   await cdp.send('Page.enable');
   await cdp.send('Page.setFontSizes', {fontSizes: {standard: 32}});
   for (const [css, warn] of [['.t{height:24px;font-size:1rem}', true], ['.t{min-height:24px;font-size:1rem}', false], ['.t{height:24px;font-size:16px}', false], ['html{font-size:16px}.t{height:24px;font-size:1rem}', false]]) {
