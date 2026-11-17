@@ -640,3 +640,4 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 - display: inline の(置換要素でない)箱の `width`、`height`、min/max の大きさ、`margin-top` / `margin-bottom`、`aspect-ratio`: 行の中を流れる箱には効かない(Chromium で、付けても付けなくても画面が同じことを確かめた)。`W_LAYOUT_DECLARATION_INERT` で、大きさを付けるなら inline-block か block にするよう促す。
 - grid や flex の item の `float`: item は浮かないので何も起きない(Chromium で、付けても付けなくても箱の位置と大きさが同じことを確かめた)ので、`W_LAYOUT_DECLARATION_INERT` でもそう報告する。checked layout は float をどこでも禁じる方針なので、`E_LAYOUT_FLOAT` はこれまでどおり出す。
 - `W_CSS_TRANSITION_DISPLAY`: `transition`(または `transition-property`)に `display` を含み、`allow-discrete` がない。display は `transition-behavior: allow-discrete` がないと遷移しないので、箱はすぐ消える(フェードアウトが途中で切れる)。Chromium で、allow-discrete がなければ `display: none` がすぐ効き、あれば遷移の間は残ることを確かめた。
+- `W_LAYOUT_SCROLL_NEVER`: block の流れの中で、高さが auto で max-height もない箱の `overflow-y: auto` / `scroll`。箱は中身に合わせて伸びるので縦にはスクロールせず、ページのほうがスクロールする(Chromium で scrollHeight と clientHeight が等しいことを確かめた)。高さの決まった縦の flex や grid の中では縮んでスクロールするので出さない。

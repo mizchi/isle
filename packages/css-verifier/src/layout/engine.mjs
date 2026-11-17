@@ -1540,6 +1540,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // Paint declarations that only work together with another one: text-overflow marks inline overflow that is
         // clipped, -webkit-line-clamp clamps a -webkit-box. (z-index always applies here: every parent is grid or flex.)
         const set = (key, unset) => style.$sources?.[key] && String(style[key]) !== unset;
+        // overflow-y: auto/scroll on a box of block flow with an auto height and no max-height: the box grows with its
+        // content, so it never scrolls vertically (measured: scrollHeight equals clientHeight); the page scrolls
+        // instead. (In a column flex or grid with a definite height it is shrunk and does scroll: not reported.)
+        if (['block', 'list-item'].includes(String(parentDisplay)) && inFlow && ['auto', 'scroll'].includes(String(style['overflow-y'])) && style.$sources?.['overflow-y'] && String(style['block-size']) === 'auto' && String(style['max-block-size']) === 'none' && box.tag !== 'html' && box.tag !== 'body' && !layoutWarnings.some(w => w.code === 'W_LAYOUT_SCROLL_NEVER' && w.path === box.path))
+          layoutWarnings.push({ code: 'W_LAYOUT_SCROLL_NEVER', severity: 'warning', box: box.label, path: box.path, css: [{ property: 'overflow-y', file: style.$sources['overflow-y'].file, line: style.$sources['overflow-y'].line, selector: style.$sources['overflow-y'].selector }],
+            message: `${box.label} is overflow-y: ${style['overflow-y']} with an auto height and no max-height in block flow: it grows with its content, so it never scrolls (the page does instead). Give it a max-height (or a height)`, ...ranges(region) });
         // text-overflow marks the overflow of the box's own lines; a flex or grid container has none (its text is in its
         // items, anonymous ones included, whose text-overflow is the initial clip; measured: no ellipsis is drawn).
         if (set('text-overflow', 'clip') && ['flex', 'inline-flex', 'grid', 'inline-grid'].includes(String(style.display)) && !style.$blockFlow) reasons.push(['text-overflow', `it is display: ${style.display}, whose text is laid out in its items: put text-overflow (with overflow: hidden and white-space: nowrap) on the item that holds the text`]);

@@ -249,3 +249,10 @@ test('a transition of display without allow-discrete is warned', () => {
   assert.deepEqual(run('.m{transition-property:opacity,display;transition-behavior:allow-discrete}'), []);
   assert.deepEqual(run('.m{transition:opacity .3s}'), []);
 });
+
+test('overflow-y: auto on a block-flow box with an auto height and no max-height never scrolls', () => {
+  const run = c => (analyzeHTML('<html lang="en"><body><div class="p"><div class="l"><div class="i"></div><div class="i"></div></div></div></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.p{display:block}.i{height:80px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css'}).layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_SCROLL_NEVER').map(w => w.box);
+  assert.deepEqual(run('.l{overflow-y:auto}'), ['.l']);
+  assert.deepEqual(run('.l{overflow:auto}'), ['.l']);
+  assert.deepEqual(run('.l{overflow-y:auto}.p{display:flex;flex-direction:column;height:200px}'), []);
+});

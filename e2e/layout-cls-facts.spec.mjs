@@ -1100,3 +1100,17 @@ test('transition of display: Chromium hides the box at once without allow-discre
     expect(!shownDuring, `${decl}: hidden at once in Chromium`).toBe(warn);
   }
 });
+
+test('overflow-y: auto that never scrolls: a block-flow box with an auto height grows in Chromium exactly where the static check warns', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  await page.setViewportSize({width: 400, height: 300});
+  for (const c of ['.l{overflow-y:auto}', '.l{overflow:auto}', '.l{overflow-y:auto;max-height:100px}', '.l{overflow-y:auto}.p{display:flex;flex-direction:column;height:120px}']) {
+    const css = `*{margin:0}html,body{${g}}.p{display:block}.i{height:80px}${c}`;
+    const html = '<div class="p"><div class="l"><div class="i"></div><div class="i"></div></div></div>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css'});
+    const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_SCROLL_NEVER');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const scrolls = await page.evaluate(() => { const l = document.querySelector('.l'); return l.scrollHeight > l.clientHeight; });
+    expect(warned, `${c}: Chromium scrolls: ${scrolls}`).toBe(!scrolls);
+  }
+});
