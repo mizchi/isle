@@ -1114,3 +1114,19 @@ test('overflow-y: auto that never scrolls: a block-flow box with an auto height 
     expect(warned, `${c}: Chromium scrolls: ${scrolls}`).toBe(!scrolls);
   }
 });
+
+test('inert percentage height: against a block parent of auto height, Chromium lays the boxes out the same without it', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  await page.setViewportSize({width: 400, height: 300});
+  const html = '<main class="g"><div class="p"><div class="c"><div class="k"></div></div><div class="x"></div></div></main>';
+  for (const pct of ['height:100%', 'height:50%', 'min-height:100%']) {
+    const css = `*{margin:0}html,body{${g}}.g{display:block}.p{display:block}.k{height:30px}.x{height:10px}.c{background:#c00}`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `${css}.c{${pct}}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.box === '.c');
+    const rects = async withDecl => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css}${withDecl ? `.c{${pct}}` : ''}</style></head><body>${html}</body></html>`); return page.evaluate(() => JSON.stringify([...document.querySelectorAll('.p,.c,.x')].map(e => { const r = e.getBoundingClientRect(); return [r.y, r.height]; }))); };
+    const same = (await rects(true)) === (await rects(false));
+    // Where the static check warns, Chromium agrees it does nothing (min-height: 100% is not handled: no warning).
+    if (warned) expect(same, `${pct}: same layout without it`).toBe(true);
+    if (pct === 'height:100%') expect(warned).toBe(true);
+  }
+});

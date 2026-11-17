@@ -2517,6 +2517,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           else if (allInline && kids.length > 1 && kids.some(textual) && box.contract)
             box = { ...box, text: true, inline: kids, children: [], $foldedInline: true };
         }
+        // A percentage height against a parent whose height depends on its content (block flow in block flow, auto
+        // height) computes to auto (CSS 2.2 §10.5; measured: height: 100% changes nothing there).
+        {
+          const parent = parents.at(-1), grand = parents.at(-2);
+          const blockish = st => st && ['block', 'list-item'].includes(String(st.display)) && !st.$blockFlowGrid;
+          if (/^\d+(?:\.\d+)?%$/.test(String(style['block-size'])) && style.position === 'static' && parent && grand && blockish(parent.style) && blockish(grand.style) && String(parent.style['block-size']) === 'auto' && !['html', 'body'].includes(parent.box.tag) && !available.percentBlock && !box.pseudo) {
+            if (!layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('block-size')))
+              layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['block-size'], ...(style.$sources?.['block-size'] ? { css: [{ property: 'block-size', file: style.$sources['block-size'].file, line: style.$sources['block-size'].line, selector: style.$sources['block-size'].selector }] } : {}),
+                message: `${box.label}: block-size: ${style['block-size']} has no effect (its parent ${parent.box.label} has an auto height, which depends on its content, so a percentage height computes to auto). Give ${parent.box.label} a height, or make it a grid or flex container that stretches ${box.label}`, ...ranges(state.region) });
+            style = { ...style, 'block-size': 'auto' };
+          }
+        }
         const inertMain = available.flexItem && style.position !== 'absolute' ? inertMainSize(style, box, available.flexItem.main) : null;
         if (inertMain) style = { ...style, [inertMain]: 'auto', $inertMain: { property: inertMain, value: style[inertMain] } };
         // A flex item's main size is the one its container resolved (grown, shrunk or clamped by its min/max, §9.7) and

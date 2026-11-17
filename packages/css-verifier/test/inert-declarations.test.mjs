@@ -256,3 +256,11 @@ test('overflow-y: auto on a block-flow box with an auto height and no max-height
   assert.deepEqual(run('.l{overflow:auto}'), ['.l']);
   assert.deepEqual(run('.l{overflow-y:auto}.p{display:flex;flex-direction:column;height:200px}'), []);
 });
+
+test('a percentage height against a block parent of auto height computes to auto (it was Unknown)', () => {
+  const run = d => analyzeHTML('<html lang="en"><body><main class="m"><div class="p"><div class="c"><div class="k"></div></div></div></main></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.m{display:block}.k{height:30px}.c{height:100%}${d}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const r = run('.p{display:block}');
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics));
+  assert.deepEqual(inert(r), [['.c', 'block-size']]);
+  assert.equal(r.sizes.find(s => s.box === '.c' && s.rect).rect.blockSize.constant, '30');
+});
