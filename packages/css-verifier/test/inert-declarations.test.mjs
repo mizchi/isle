@@ -140,3 +140,12 @@ test('resize on a box whose overflow is visible does nothing; on a scroller the 
   assert.match(scroller.diagnostics.map(d => d.message).join(' '), /resize: vertical: the user can drag its size/);
   assert.notEqual(run('.p{display:block;resize:none}.c{height:10px}').status, 'unknown');
 });
+
+test('scroll-padding off a scroll container, and on body, does nothing (the viewport takes the root\'s)', () => {
+  const page = css => analyzeHTML('<html lang="en"><body><div class="c"></div></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.c{height:10px}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  assert.deepEqual(inert(page('body{scroll-padding-top:64px}')), [['body@P/0', 'scroll-padding-top']]);
+  assert.match(page('body{scroll-padding-top:64px}').layoutWarnings[0].message, /from html, not body/);
+  assert.deepEqual(inert(page('html{scroll-padding-top:64px}')), []);
+  assert.deepEqual(inert(run('.p{display:block;scroll-padding:8px}.c{height:10px}')), [['.p', 'scroll-padding-top scroll-padding-right scroll-padding-bottom scroll-padding-left']]);
+  assert.deepEqual(inert(run('.p{display:block;overflow-y:auto;scrollbar-width:none;height:15px;scroll-padding-top:8px}.c{height:10px}')), []);
+});

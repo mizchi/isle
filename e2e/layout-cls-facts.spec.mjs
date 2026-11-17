@@ -990,3 +990,17 @@ test('inert resize: dragging the corner resizes a box only where its overflow is
     expect(size === 100, `${overflow || 'overflow visible'}: width ${size}`).toBe(warn);
   }
 });
+
+test('inert scroll-padding: only html\'s (or a scroller\'s) moves where scrollIntoView lands; body\'s and a plain box\'s do not', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [where, warn] of [['html', false], ['body', true], ['.wrap', true]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body,.wrap{${g}}${where}{scroll-padding-top:100px}.gap{height:2000px}.t{height:50px}`;
+    const html = '<div class="wrap"><div class="gap"></div><div id="x" class="t"></div><div class="gap"></div></div>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('scroll-padding-top')), where).toBe(warn);
+    await page.setViewportSize({width: 400, height: 700});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const top = await page.evaluate(() => { const x = document.getElementById('x'); x.scrollIntoView(); return x.getBoundingClientRect().top; });
+    expect(top === 0, `${where}: the target lands at ${top}`).toBe(warn);
+  }
+});

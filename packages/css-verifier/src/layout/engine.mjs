@@ -1525,6 +1525,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           for (const key of ['overscroll-behavior-x', 'overscroll-behavior-y']) if (set(key, 'auto')) reasons.push([key, `it is not a scroll container (overflow ${style['overflow-x']} ${style['overflow-y']})`]);
           if (set('scroll-snap-type', 'none')) reasons.push(['scroll-snap-type', `it is not a scroll container (overflow ${style['overflow-x']} ${style['overflow-y']}); set overflow: auto on it, or put the snap type on the box that scrolls`]);
         }
+        // scroll-padding insets the snapport of a scroll container; the viewport takes the root's, not body's (measured:
+        // body { scroll-padding-top } does not move where scrollIntoView or a #fragment lands; html's does).
+        if (!scrolls && box.tag !== 'html') for (const side of ['top', 'right', 'bottom', 'left']) {
+          const key = `scroll-padding-${side}`;
+          if (style.$sources?.[key] && !['auto', '0', '0px'].includes(String(style[key]))) reasons.push([key, box.tag === 'body' ? 'the viewport takes its scroll-padding from html, not body; set it on html' : `it is not a scroll container (overflow ${style['overflow-x']} ${style['overflow-y']}); set it on the box that scrolls, or on html for the page`]);
+        }
         // scroll-snap-align snaps the box in its snap container, the nearest scrolling ancestor (the viewport, whose
         // snap type is the root's, when none scrolls): with scroll-snap-type none there it never snaps.
         if (set('scroll-snap-align', 'none')) {
