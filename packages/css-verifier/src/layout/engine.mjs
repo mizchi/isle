@@ -1312,6 +1312,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // auto margins of inline boxes compute to 0.
       for (const side of ['left', 'right']) for (const key of [`padding-${side}`, `border-${side}`, `margin-${side}`]) if (!['0', '0px', ...(key.startsWith('margin') ? ['auto'] : [])].includes(String(style[key]))) throw Object.assign(new Error(`${child.label} inside text has horizontal ${key}; inline box edges change the measured text`), { code: 'U_LAYOUT_INLINE' });
       if (leaf.contract?.textMetrics && fontKeys.some(key => style[key] !== leafStyle[key])) throw Object.assign(new Error(`${child.label} changes the font inside text measured as one run`), { code: 'U_LAYOUT_INLINE' });
+      // Sizes, vertical margins and aspect-ratio do not apply to a non-replaced inline box (CSS 2.2 §10.3.1, §10.6.1;
+      // measured: width, height, min/max-width, margin-top and aspect-ratio on a span change no pixel).
+      if (!['img', 'video', 'canvas', 'iframe', 'svg', 'input', 'button', 'select', 'textarea'].includes(child.tag) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === child.path)) {
+        const initial = { 'inline-size': ['auto'], 'block-size': ['auto'], 'min-inline-size': ['auto', '0', '0px'], 'min-block-size': ['auto', '0', '0px'], 'max-inline-size': ['none'], 'max-block-size': ['none'], 'margin-top': ['0', '0px', 'auto'], 'margin-bottom': ['0', '0px', 'auto'], 'aspect-ratio': ['auto'] };
+        const written = Object.keys(initial).filter(key => style.$sources?.[key] && !initial[key].includes(String(style[key])));
+        if (written.length) layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: child.label, path: child.path, properties: written,
+          css: written.map(key => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
+          message: `${child.label}: ${written.join(', ')} ${written.length === 1 ? 'has' : 'have'} no effect (it is display: inline, a box that flows in the line: sizes and vertical margins do not apply). Use display: inline-block (or block) to size it`, ...ranges(state.region) });
+      }
       const own = [...chain, paintFacts(style)];
       geometry.push({ box: child, path: child.path, region: state.region, origin: null, inline: null, block: null, position: 'static', inlineFlow: true,
         borders: { left: zero, right: zero, top: zero, bottom: zero }, overflow: 'visible', overflowValue: 'visible', painted: paints(style), paint: paintFacts(style), chain: own, parentText: leaf.path,

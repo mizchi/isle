@@ -1072,3 +1072,18 @@ test('inline-block whitespace gap and inline image baseline gap: Chromium shows 
     expect(warned, `${css || 'base'} ${html.slice(0, 40)}: Chromium ${measure} ${seen}`).toBe(seen);
   }
 });
+
+test('inert sizes on a display: inline span: Chromium paints the line the same without them, exactly where the static check warns', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  await page.setViewportSize({width: 400, height: 200});
+  for (const [decl, warn] of [['width:200px', true], ['height:60px', true], ['min-width:200px', true], ['margin-top:20px;margin-bottom:20px', true], ['aspect-ratio:1', true], ['color:#c00', false], ['display:inline-block;width:200px', false]]) {
+    const css = `*{margin:0}html,body{${g}}.t{font-size:16px;line-height:24px;width:300px}.s{background:#fc0}`;
+    const html = '<p class="t">Some <span class="s">marked</span> text in a line</p>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `${css}.s{${decl}}`, viewport: {min: 400, max: 400, height: {min: 200, max: 200}}, boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+    const warned = (report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.box === '.s');
+    expect(warned, decl).toBe(warn);
+    if (!warn) continue;
+    const shot = async withDecl => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css}${withDecl ? `.s{${decl}}` : ''}</style></head><body>${html}</body></html>`); return (await page.screenshot()).toString('base64'); };
+    expect((await shot(true)) === (await shot(false)), `${decl}: same pixels without it`).toBe(true);
+  }
+});

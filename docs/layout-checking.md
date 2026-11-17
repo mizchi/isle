@@ -637,3 +637,4 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
   どちらも Chromium で、隙間が出る場合と警告が一致することを確かめた(`e2e/layout-cls-facts.spec.mjs`)。
 - `W_CSS_MEDIA_GAP`: `max-width: M` と `min-width: m` で M < m ≤ M + 1(767px と 768px)の 2 つの規則が、同じ selector の同じ property を決めている。その間の幅にはどちらも当たらない。Media Queries 4 は幅を連続値として扱い、この隙間を注意している(range 構文 `width < 768px` には隙間がない)。ページの拡大縮小や小数の device pixel ratio で、CSS のビューポート幅が小数になりうる。ブラウザーでは測れていない(Chromium・Firefox・WebKit とも iframe のビューポート幅を整数に丸め、ここではブラウザーの拡大縮小を動かせなかった)。0.02px 以下の隙間(Bootstrap の 767.98px)はよく使われる回避策なので出さない。
 - flex や grid の container の `text-overflow`: 省略記号は箱自身の行に付くが、flex や grid の container の文字は item(無名の item も)の中にあるので、何も起きない(Chromium で、付けても付けなくても画面が同じことを確かめた)。`W_LAYOUT_DECLARATION_INERT` で、文字を持つ item に付けるよう促す。
+- display: inline の(置換要素でない)箱の `width`、`height`、min/max の大きさ、`margin-top` / `margin-bottom`、`aspect-ratio`: 行の中を流れる箱には効かない(Chromium で、付けても付けなくても画面が同じことを確かめた)。`W_LAYOUT_DECLARATION_INERT` で、大きさを付けるなら inline-block か block にするよう促す。

@@ -222,3 +222,10 @@ test('text-overflow on a flex or grid container does nothing (its text is in its
   assert.equal(inertTO(run('display:grid;grid-template-columns:minmax(0,1fr)')), true);
   assert.equal(inertTO(run('display:block')), false);
 });
+
+test('sizes and vertical margins on a display: inline span do nothing', () => {
+  const run = c => (analyzeHTML('<html lang="en"><body><p class="t">Some <span class="s">marked</span> text</p></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.t{font-size:16px;line-height:24px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 24}}}).layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_DECLARATION_INERT').map(w => w.properties.join(' '));
+  assert.deepEqual(run('.s{width:200px}'), ['inline-size']);
+  assert.deepEqual(run('.s{height:60px;margin-top:20px}'), ['block-size margin-top']);
+  assert.deepEqual(run('.s{color:red}'), []);
+});
