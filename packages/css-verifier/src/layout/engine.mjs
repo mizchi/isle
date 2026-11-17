@@ -784,7 +784,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           && ['auto', '0', '0px'].includes(String(parentFlex['min-block-size'])) && String(parentFlex['max-block-size']) === 'none';
         // (A flex row of indefinite height: the line is the tallest item's hypothetical size, each raised to its px
         // minimum, so a stretched item is never below its minimum; and its content is measured before the raise.)
-        const measuredLine = available.flexItem?.main === 'inline' && /^\d+(?:\.\d+)?px$/.test(String(style['min-block-size'])) && (available.$crossMeasure || stretched) && !!parentFlex && String(parentFlex['block-size']) === 'auto' && ['auto', '0', '0px'].includes(String(parentFlex['min-block-size'])) && String(parentFlex['max-block-size']) === 'none';
+        const measuredLine = available.flexItem?.main === 'inline' && /^\d+(?:\.\d+)?px$/.test(String(style['min-block-size'])) && (available.$crossMeasure || stretched || available.$minNatural || available.$minRaised) && !!parentFlex && String(parentFlex['block-size']) === 'auto' && ['auto', '0', '0px'].includes(String(parentFlex['min-block-size'])) && String(parentFlex['max-block-size']) === 'none';
         if (!measuredLine && !available.$minNatural && !available.$minRaised && !(stretched && (!available.flexItem || fixedLine) && !['table'].includes(style.display)) && ((available.flexItem && !(available.flexItem.main === 'inline' && (leaf || blockFlow))) || !(leaf || blockFlow || (style['block-size'] !== 'auto' && !['flex', 'inline-flex', 'table'].includes(style.display))))) throw new Error('CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)');
       }
     }
@@ -2490,7 +2490,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // Flexbox §9.4 size the tracks or the line again against the container at its minimum, so where the natural
         // height falls short it lays out as if its height were the minimum (rows, fr rows and the flex line stretch).
         if (block && ['grid', 'inline-grid', 'flex', 'inline-flex'].includes(style.display) && !['auto', '0', '0px'].includes(String(style['min-block-size'])) && style['block-size'] === 'auto'
-          && !available.$minNatural && !available.$minRaised && !available.root && !available.flexItem && !available.flexBlockMinimum && !(available.block && available.alignBlock === undefined)) {
+          // (Also an aligned item of a flex row: its cross size is its content raised to the minimum, like a grid item's.)
+          && !available.$minNatural && !available.$minRaised && !available.root && !(available.flexItem && !(available.flexItem.main === 'inline' && available.alignBlock !== undefined)) && !available.flexBlockMinimum && !(available.block && available.alignBlock === undefined)) {
           const edge = key => style[key] === 'ua' ? zero : px(style[key]);
           const edges = scalar(['padding-top', 'padding-bottom', 'border-top', 'border-bottom'].map(edge).reduce(add, zero));
           for (const natural of solve(box, { ...available, $minNatural: true }, state.region, parents, inherited, false)) {
@@ -2499,7 +2500,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               const minimum = style['box-sizing'] === 'content-box' ? sum(m.value, edges) : m.value;
               const split = partition(m.region, diff(natural.block, minimum), '>=');
               for (const r of split.yes) results.push(...solve(box, { ...available, $minNatural: true }, r, parents, inherited, emit));
-              for (const r of split.no) results.push(...solve(box, { ...available, block: minimum, $minRaised: true }, r, parents, inherited, emit));
+              // (An aligned item keeps its area's size as block, for its offset; its own height is the raised one.)
+              for (const r of split.no) results.push(...solve(box, available.alignBlock !== undefined ? { ...available, $raisedBlock: minimum, $minRaised: true } : { ...available, block: minimum, $minRaised: true }, r, parents, inherited, emit));
             }
           }
           continue;
@@ -2561,7 +2563,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               const parentStyle = parents.at(-1)?.style;
               const explicitStretch = String(style['align-self']) === 'stretch' || (['auto', 'normal'].includes(String(style['align-self'] ?? 'auto')) && String(parentStyle?.['align-items']) === 'stretch');
               const growing = available.flexItem?.main === 'block' && cmp(q(String(style['flex-grow'] ?? '0')), zero) > 0;
-              if (growing || (explicitStretch && available.gridItem)) throw Object.assign(new Error(`${box.label}: aspect-ratio with an auto height where its container ${growing ? 'grows it (flex-grow in a column)' : 'stretches it (align-self: stretch)'} is not modeled`), { code: 'U_LAYOUT_CSS', box });
+              // (A flex row stretches its items by default: align-items normal; measured: a ratio item is the line's height.)
+              const rowStretch = available.flexItem?.main === 'inline' && available.alignBlock === undefined;
+              if (growing || rowStretch || (explicitStretch && available.gridItem)) throw Object.assign(new Error(`${box.label}: aspect-ratio with an auto height where its container ${growing ? 'grows it (flex-grow in a column)' : 'stretches it (align-self: stretch, or a flex row\'s default)'} is not modeled`), { code: 'U_LAYOUT_CSS', box });
               fixedBlock = style['box-sizing'] === 'border-box' ? times(inline, r) : sum(times(contentInline, r), cssBlockEdges);
             }
             // aspect-ratio on a box with content: the ratio sets the height, raised to the content's by the automatic
@@ -2571,7 +2575,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             else if (!available.root && available.block && available.alignBlock === undefined) fixedBlock = available.block;
             // A container raised to its min-height keeps that height also when it is aligned (not stretched) in its area
             // (measured: align-self: center on a 38px flex container with min-height: 50px is 50px tall).
-            else if (available.$minRaised && available.block) fixedBlock = available.block;
+            else if (available.$minRaised && (available.$raisedBlock || available.block)) fixedBlock = available.$raisedBlock ?? available.block;
             else if (style['container-type'] === 'size') fixedBlock = blockEdges;
             if (style['block-size'] !== 'auto' && style['box-sizing'] === 'content-box') fixedBlock = sum(fixedBlock, cssBlockEdges);
           }

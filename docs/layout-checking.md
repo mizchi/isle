@@ -623,3 +623,5 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 
 - 高さが決まらない flex row の item の min-height(以前は Unknown): 行の高さは、各 item の中身の高さを px の min-height まで上げたものの最大。stretch される item はその行の高さになる。
 - min-height まで上げた grid や flex の container が、grid の area で寄せられている(`align-self: center` など)場合、中身の高さのまま寄せていた(間違った成功)。上げた高さで寄せる。
+
+- 寄せられる(stretch されない)flex row の item の min-height(以前は Unknown): item の高さは中身の高さを min-height まで上げたもの。行の中での位置は、行の高さとその高さから決める。

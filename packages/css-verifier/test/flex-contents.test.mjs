@@ -350,7 +350,10 @@ test('a content-sized column item with a px min-height is at least that tall; a 
   assert.equal(size(row('.a{min-height:150px}'), '.a'), '150');
   // An indefinite row height: the line is the tallest item raised to its minimum; an unstretched one stays Unknown.
   assert.equal(size(row('.p{height:auto}'), '.a'), '60');
-  assert.equal(row('.p{height:auto;align-items:start}').status, 'unknown');
+  // An aligned (not stretched) item is its content raised to its minimum, offset in the line.
+  assert.equal(size(row('.p{height:auto;align-items:start}'), '.a'), '60');
+  const centered = row('.p{height:auto;align-items:center}.b{height:90px}').sizes.find(s => s.box === '.a' && s.rect).rect;
+  assert.deepEqual([centered.blockStart.constant, centered.blockSize.constant], ['15', '60']);
 });
 
 test('min-height in a flex row of indefinite height raises its line; an aligned container keeps its raised height', async () => {
