@@ -323,5 +323,15 @@ test('grid-auto-flow: column over listed rows fills each column top to bottom', 
   const at = (c, box) => { const x = r(c).sizes.find(s => s.box === box && s.rect).rect; return [x.inlineStart.constant, x.blockStart.constant]; };
   assert.deepEqual(at('.p{grid-template-rows:20px 30px}', '.b'), ['0', '20']);
   assert.deepEqual(at('.p{grid-template-rows:20px 30px}', '.c'), ['100', '0']);
-  assert.equal(r('.p{grid-template-rows:20px 30px}.a{grid-column:2}').status, 'unknown');
+  // Placed items: one locked to a column goes first; the auto items fill around it (Grid §8.5, axes swapped).
+  assert.deepEqual(at('.p{grid-template-rows:20px 30px}.a{grid-column:2}', '.a'), ['100', '0']);
+  assert.deepEqual(at('.p{grid-template-rows:20px 30px}.a{grid-column:2}', '.c'), ['0', '20']);
+  assert.deepEqual(at('.p{grid-template-rows:20px 30px}.a{grid-row:span 2}', '.c'), ['100', '20']);
+  // A row given to an auto-column item moves the sparse cursor; dense searches from the start for each item.
+  assert.deepEqual(at('.p{grid-template-rows:20px 30px}.a{grid-row:2}', '.c'), ['100', '20']);
+  assert.deepEqual(at('.p{grid-template-rows:20px 30px;grid-auto-flow:column dense}.a{grid-row:2}', '.b'), ['0', '0']);
+  assert.deepEqual(at('.p{grid-template-rows:20px 30px;grid-auto-flow:column dense}.a{grid-row:2}', '.c'), ['100', '0']);
+  // Implicit columns (more items than cells) and rows past the listed ones stay Unknown.
+  assert.equal(r('.p{grid-template-rows:20px}.a{grid-row:span 2}').status, 'unknown');
+  assert.equal(r('.p{grid-template-rows:20px}').status, 'unknown');
 });

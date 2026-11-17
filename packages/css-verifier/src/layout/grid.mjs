@@ -106,14 +106,51 @@ function placement(value, axis, areas, lines) {
 export function place(children, columns, { rows, subgridColumns = false, areas, explicitRows, dense = false, columnFlow = false } = {}) {
   // Areas wider than the explicit columns create implicit columns, which are not modeled.
   if (areas && areas.columns > columns) throw Object.assign(new Error(`grid-template-areas has ${areas.columns} columns but grid-template-columns ${columns}: the extra columns are implicit`), { code: 'U_LAYOUT_CSS' });
-  // grid-auto-flow: column with the rows listed: auto items fill each column top to bottom, then the next column
-  // (Grid §8.5 with the axes swapped). Only one-cell auto items within the explicit columns are modeled.
+  // grid-auto-flow: column (or column dense) with the rows listed: Grid §8.5 with the axes swapped. Items with both
+  // lines first, then items locked to a column (each from that column's cursor), then the rest in column-major order
+  // (a row given to an auto-column item moves the cursor; dense restarts each search at the grid's start). Items
+  // that would need implicit columns, or rows past the listed ones, are not modeled.
   if (columnFlow) {
     if (!explicitRows) throw new Error('grid-auto-flow: column needs grid-template-rows to list the rows');
-    const flow = children.map(item => ({ ...item, column: placement(item.style['grid-column'], 'column', areas, columns + 1), line: placement(item.style['grid-row'], 'row', areas, explicitRows + 1) }));
-    if (flow.some(item => item.column.start !== undefined || item.line.start !== undefined || item.column.span !== 1 || item.line.span !== 1)) throw new Error('grid-auto-flow: column is modeled for auto-placed one-cell items only');
-    if (flow.length > explicitRows * columns) throw new Error(`grid-auto-flow: column places ${flow.length} items in ${explicitRows} × ${columns} cells: the rest make implicit columns`);
-    return flow.map((item, i) => ({ box: item.box, style: item.style, start: Math.floor(i / explicitRows), span: 1, row: i % explicitRows, rowSpan: 1 }));
+    const flow = children.map(item => ({ ...item, column: placement(item.style['grid-column'], 'column', areas, columns + 1), line: placement(item.style['grid-row'], 'row', areas, explicitRows + 1) }))
+      .toSorted((a, b) => { const step = x => x.line.start !== undefined && x.column.start !== undefined ? 0 : x.column.start !== undefined ? 1 : 2; return step(a) - step(b); });
+    const occupied = new Set(), placed = [], columnCursor = new Map();
+    const free = (row, rowSpan, start, span) => { for (let r = row; r < row + rowSpan; r++) for (let c = start; c < start + span; c++) if (occupied.has(`${r}:${c}`)) return false; return true; };
+    const implicit = () => { throw new Error('grid-auto-flow: column would make an implicit column or row here, which is not modeled'); };
+    let cc = 0, cr = 0;
+    for (const { box, style, column: { start: column, span }, line: { start: line, span: rowSpan } } of flow) {
+      if (!Number.isSafeInteger(span) || span < 1 || (column ?? 0) + span > columns) throw Object.assign(new Error('Child placement is outside the explicit columns'), { code: 'E_LAYOUT_PLACEMENT', box, axis: 'inline' });
+      if (!Number.isSafeInteger(rowSpan) || rowSpan < 1 || rowSpan > explicitRows || (line ?? 0) + rowSpan > explicitRows) implicit();
+      let row, start;
+      if (column !== undefined && line !== undefined) {
+        row = line; start = column;
+        if (!free(row, rowSpan, start, span)) throw Object.assign(new Error('Grid items overlap without an overlay contract'), { code: 'E_LAYOUT_OVERLAP', box });
+      } else if (column !== undefined) {
+        start = column; row = dense ? 0 : (columnCursor.get(column) ?? 0);
+        while (row + rowSpan <= explicitRows && !free(row, rowSpan, start, span)) row++;
+        if (row + rowSpan > explicitRows) implicit();
+        columnCursor.set(column, row + rowSpan);
+      } else {
+        if (dense) { cc = 0; cr = 0; }
+        if (line !== undefined) {
+          row = line; start = cc;
+          if (line < cr) start++;
+          while (start + span <= columns && !free(row, rowSpan, start, span)) start++;
+        } else {
+          row = cr; start = cc;
+          for (;;) {
+            if (row + rowSpan > explicitRows) { row = 0; start++; }
+            if (start + span > columns || free(row, rowSpan, start, span)) break;
+            row++;
+          }
+        }
+        if (start + span > columns) implicit();
+        cc = start; cr = row + rowSpan;
+      }
+      for (let r = row; r < row + rowSpan; r++) for (let c = start; c < start + span; c++) occupied.add(`${r}:${c}`);
+      placed.push({ box, style, start, span, row, rowSpan });
+    }
+    return placed;
   }
   const occupied = new Set(), result = [];
   let cursor = 0;

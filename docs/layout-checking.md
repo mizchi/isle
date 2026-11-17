@@ -648,5 +648,5 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 - `grid-column` の負の線番号(以前は Unknown): 明示した grid の終わりから数える(`-1` は最後の線なので、`1 / -1` はすべての列にまたがる)。列について解析し、差分照合で Chromium と一致することを確かめた。始まりと終わりが入れ替わる指定(`-1 / 1`)は Unknown のまま。
 - `grid-row` の負の線番号: `grid-template-rows` が行を並べている場合は、その終わりから数える(`1 / -1` は明示したすべての行)。行が明示されていない場合は Unknown のまま。差分照合で 3 つのブラウザーと一致することを確かめた。
 - 行だけを指定した grid item(`grid-row: 2` だけ。以前は Unknown): Grid §8.5 のとおり、行と列の両方が決まった item の次に、その行の中で重ならない最初の列(同じ段階で先に置いた item より後ろ)に置き、そのあと残りの item を自動で置く。その行の明示した列に入りきらない場合は、暗黙の列が足されるので Unknown。差分照合で 3 つのブラウザーと一致することを確かめた。
-- `grid-auto-flow: dense` / `row dense`(以前は Unknown): 自動で置く item ごとに grid の始まりから探し、入る最初の穴に置く(Grid §8.5 の dense)。差分照合で 3 つのブラウザーと一致することを確かめた。`column` 方向の自動配置は Unknown のまま。
-- `grid-auto-flow: column`(以前は Unknown): `grid-template-rows` が行を並べ、item がすべて自動で置かれる 1 マスの item で、明示した列に入りきる場合は、列ごとに上から下へ埋める。差分照合で 3 つのブラウザーと一致することを確かめた。それ以外(行が明示されていない、位置を指定した item がある、暗黙の列ができる)は Unknown のまま。
+- `grid-auto-flow: dense` / `row dense`(以前は Unknown): 自動で置く item ごとに grid の始まりから探し、入る最初の穴に置く(Grid §8.5 の dense)。差分照合で 3 つのブラウザーと一致することを確かめた。
+- `grid-auto-flow: column` / `column dense`(以前は Unknown): `grid-template-rows` が行を並べる場合、Grid §8.5 の軸を入れ替えて配置する。両方の線を指定した item、列だけ指定した item(その列の cursor から)、残りの item の順に置く。残りは列ごとに上から下へ埋める。行だけ指定した item は cursor の行を動かす。dense では item ごとに grid の始まりから探す。差分照合(固定幅の 2 列の layout)で 3 つのブラウザーと一致することを確かめた。行が明示されていない場合と、暗黙の列や明示した行の外の行ができる場合は Unknown のまま。
