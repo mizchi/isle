@@ -2217,3 +2217,27 @@ test('scroll-end-covered (within): Chromium keeps exactly the items the static c
   }
   expect(total).toBeGreaterThan(2);
 });
+
+test('behind-background: Chromium paints a negative z-index layer under an ancestor\'s background exactly where the static check reports it', async ({page}) => {
+  const html = '<html lang="en"><body><main class="p"><p class="t">Hello hello hello</p></main></body></html>';
+  const base = '*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.p{display:grid;grid-template-columns:minmax(0,1fr);background:#eee;padding:8px}.t{position:relative;z-index:-1;font-size:24px;line-height:32px;color:#f00}';
+  const seen = [];
+  for (const extra of ['', '.p{isolation:isolate}', '.p{position:relative;z-index:0}', '.p{background:transparent}', '.p{background:transparent}body{background:transparent}', '.t{z-index:1}']) {
+    const css = base + extra;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 300, max: 600}}, accessibility: true, boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 32}}});
+    const flagged = report.diagnostics.some(d => d.code === 'E_A11Y_BEHIND_BACKGROUND' && d.box === '.t');
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const r = await page.evaluate(() => { const b = document.querySelector('.t').getBoundingClientRect(); return {x: b.left, y: b.top, width: b.width, height: b.height}; });
+    const png = await page.screenshot({clip: r});
+    // Any strongly red pixel: the text is seen.
+    const {PNG} = await import('pngjs').catch(() => ({}));
+    let red;
+    if (PNG) { const img = PNG.sync.read(png); red = false; for (let i = 0; i < img.data.length; i += 4) if (img.data[i] > 200 && img.data[i + 1] < 80 && img.data[i + 2] < 80) { red = true; break; } }
+    else red = await page.evaluate(async b64 => { const im = new Image(); im.src = `data:image/png;base64,${b64}`; await im.decode(); const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0); const d = x.getImageData(0, 0, c.width, c.height).data; for (let i = 0; i < d.length; i += 4) if (d[i] > 200 && d[i + 1] < 80 && d[i + 2] < 80) return true; return false; }, png.toString('base64'));
+    expect(flagged, `${extra || 'base'}: red text visible in Chromium: ${red}`).toBe(!red);
+    seen.push(red);
+  }
+  expect(seen.some(Boolean)).toBe(true);
+  expect(seen.some(v => !v)).toBe(true);
+});
