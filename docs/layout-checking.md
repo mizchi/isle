@@ -620,3 +620,6 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 - 中身のある箱の aspect-ratio は、比の高さになる場合と中身の高さになる場合がある(grid item は 30px の中身で 30px、中身が 38px の flex container は比の 20px)。モデルは中身の高さにしていたので、Unknown にした。
 - 縦の flex で中身の高さで決まる item に px の min-height がある場合(以前は Unknown): 基準は中身の高さ、最小は min-height(中身より小さくてもよい)の普通の item として解く。
 - 高さが px の 1 行の flex row で stretch される item の min-height(以前は Unknown): 高さは行の高さと min-height の大きい方。行の高さが決まらない場合は Unknown のまま。
+
+- 高さが決まらない flex row の item の min-height(以前は Unknown): 行の高さは、各 item の中身の高さを px の min-height まで上げたものの最大。stretch される item はその行の高さになる。
+- min-height まで上げた grid や flex の container が、grid の area で寄せられている(`align-self: center` など)場合、中身の高さのまま寄せていた(間違った成功)。上げた高さで寄せる。

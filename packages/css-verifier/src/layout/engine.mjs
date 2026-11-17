@@ -782,7 +782,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const parentFlex = parentStyle;
         const fixedLine = available.flexItem?.main === 'inline' && !!parentFlex && String(parentFlex['flex-wrap']) === 'nowrap' && /^\d+(?:\.\d+)?px$/.test(String(parentFlex['block-size']))
           && ['auto', '0', '0px'].includes(String(parentFlex['min-block-size'])) && String(parentFlex['max-block-size']) === 'none';
-        if (!available.$minNatural && !available.$minRaised && !(stretched && (!available.flexItem || fixedLine) && !['table'].includes(style.display)) && ((available.flexItem && !(available.flexItem.main === 'inline' && (leaf || blockFlow))) || !(leaf || blockFlow || (style['block-size'] !== 'auto' && !['flex', 'inline-flex', 'table'].includes(style.display))))) throw new Error('CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)');
+        // (A flex row of indefinite height: the line is the tallest item's hypothetical size, each raised to its px
+        // minimum, so a stretched item is never below its minimum; and its content is measured before the raise.)
+        const measuredLine = available.flexItem?.main === 'inline' && /^\d+(?:\.\d+)?px$/.test(String(style['min-block-size'])) && (available.$crossMeasure || stretched) && !!parentFlex && String(parentFlex['block-size']) === 'auto' && ['auto', '0', '0px'].includes(String(parentFlex['min-block-size'])) && String(parentFlex['max-block-size']) === 'none';
+        if (!measuredLine && !available.$minNatural && !available.$minRaised && !(stretched && (!available.flexItem || fixedLine) && !['table'].includes(style.display)) && ((available.flexItem && !(available.flexItem.main === 'inline' && (leaf || blockFlow))) || !(leaf || blockFlow || (style['block-size'] !== 'auto' && !['flex', 'inline-flex', 'table'].includes(style.display))))) throw new Error('CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)');
       }
     }
     // Flex containers and items validate their alignment in the flex model.
@@ -1127,8 +1130,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             // Cross sizes of the lines: a definite single line is the container; otherwise the tallest item.
             let measured = [{ region: combo.region, sizes: combo.lines.map(() => scalar(0)) }];
             if (wrap || !knownBlock) combo.lines.forEach((line, l) => line.indices.forEach((i, k) => {
-              measured = bounded(measured.flatMap(m => solve(model[i].child.box, itemAvailable(model[i], { inline: line.values[k] }), m.region, ancestors, inheritedOf(model[i]), false)
-                .flatMap(result => maximum(result.region, m.sizes[l], sum(result.block, scalar(add(model[i].margins.top, model[i].margins.bottom)))).map(mx => ({ region: mx.region, sizes: m.sizes.map((v, j) => j === l ? mx.value : v) })))));
+              // An item's hypothetical cross size is its content height raised to its px min-height (§9.4): the line is the
+              // tallest of them, and the item is then stretched to the line (never below that minimum).
+              const ms = model[i].child.style, minCross = /^\d+(?:\.\d+)?px$/.test(String(ms['min-block-size'])) ? add(px(ms['min-block-size']), ms['box-sizing'] === 'content-box' ? ['top', 'bottom'].map(side => add(px(ms[`padding-${side}`]), px(ms[`border-${side}`]))).reduce(add, zero) : zero) : null;
+              measured = bounded(measured.flatMap(m => solve(model[i].child.box, itemAvailable(model[i], { inline: line.values[k], ...(minCross ? { $crossMeasure: true } : {}) }), m.region, ancestors, inheritedOf(model[i]), false)
+                .flatMap(result => (minCross ? maximum(result.region, result.block, scalar(minCross)) : [{ region: result.region, value: result.block }]).flatMap(h => maximum(h.region, m.sizes[l], sum(h.value, scalar(add(model[i].margins.top, model[i].margins.bottom)))).map(mx => ({ region: mx.region, sizes: m.sizes.map((v, j) => j === l ? mx.value : v) }))))));
             }));
             else measured = [{ region: combo.region, sizes: [knownBlock] }];
             for (const m of measured) {
@@ -2563,6 +2569,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             // whose content is 38px follows the ratio's 20px); that is not modeled.
             else if (ratioOf(style) && ((box.children ?? []).length || box.text || box.inline?.length)) throw Object.assign(new Error(`${box.label}: aspect-ratio on a box with content (its height is the ratio's or its content's) is not modeled; give it a height, or put the ratio on an empty box`), { code: 'U_LAYOUT_CSS', box });
             else if (!available.root && available.block && available.alignBlock === undefined) fixedBlock = available.block;
+            // A container raised to its min-height keeps that height also when it is aligned (not stretched) in its area
+            // (measured: align-self: center on a 38px flex container with min-height: 50px is 50px tall).
+            else if (available.$minRaised && available.block) fixedBlock = available.block;
             else if (style['container-type'] === 'size') fixedBlock = blockEdges;
             if (style['block-size'] !== 'auto' && style['box-sizing'] === 'content-box') fixedBlock = sum(fixedBlock, cssBlockEdges);
           }

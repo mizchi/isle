@@ -348,6 +348,20 @@ test('a content-sized column item with a px min-height is at least that tall; a 
   const row = css => run('<main class="p"><div class="a"><div class="k"></div></div><div class="b"></div></main>', `.p{display:flex;gap:10px;width:300px;height:120px}.a{display:grid;grid-template-columns:minmax(0,1fr);flex:1;min-height:60px}.k{height:30px}.b{width:60px;height:20px}${css}`);
   assert.equal(size(row(''), '.a'), '120');
   assert.equal(size(row('.a{min-height:150px}'), '.a'), '150');
-  // An indefinite row height: the line's cross size depends on the items' minimums, which is not modeled.
-  assert.equal(row('.p{height:auto}').status, 'unknown');
+  // An indefinite row height: the line is the tallest item raised to its minimum; an unstretched one stays Unknown.
+  assert.equal(size(row('.p{height:auto}'), '.a'), '60');
+  assert.equal(row('.p{height:auto;align-items:start}').status, 'unknown');
+});
+
+test('min-height in a flex row of indefinite height raises its line; an aligned container keeps its raised height', async () => {
+  const {analyzeHTML: analyze} = await import('../src/html.mjs');
+  const run = (html, css) => analyze(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${css}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const rect = (r, box) => r.sizes.find(s => s.box === box && s.rect).rect;
+  const row = css => run('<main class="p"><div class="a"><div class="k"></div></div><div class="b"></div></main>', `.p{display:flex;gap:10px;width:300px}.a{display:grid;grid-template-columns:minmax(0,1fr);flex:1;min-height:60px}.k{height:30px}.b{width:60px;height:20px}${css}`);
+  assert.equal(rect(row(''), '.p').blockSize.constant, '60');
+  assert.equal(rect(row('.b{height:90px}'), '.a').blockSize.constant, '90');
+  // A grid item that is a flex container, centered in its row, with a min-height above its content: it is that tall.
+  const centered = run('<main class="p"><div class="a"><div class="k"></div></div></main>', '.p{display:grid;grid-template-columns:minmax(0,1fr);width:300px}.a{display:flex;align-self:center;min-height:50px}.k{height:30px;width:10px}');
+  assert.equal(centered.status, 'verified', JSON.stringify(centered.diagnostics));
+  assert.deepEqual([rect(centered, '.a').blockStart.constant, rect(centered, '.a').blockSize.constant], ['0', '50']);
 });
