@@ -32,6 +32,12 @@ error が 1 件でもあれば終了コードは 1 です。
 | `--default-colors light\|none` | `light` | ページが dark の color-scheme を宣言しないとき、light の preference では UA の既定の色(白い canvas に黒い文字)を仮定し、color を指定しないテキストのコントラストを検査する(Chromium で測った)。仮定として info に出す。dark の preference では Chromium が canvas を #121212 にするので仮定しない。`none` で Unknown のままにする |
 | `--format text\|json` | `text` | 出力形式 |
 
+## ブラウザーごとの UA スタイル(`--ua`)
+
+フォームの部品の UA スタイル(ボタンや入力欄の padding・border・margin など)は、ブラウザーごとに違います([CSS ベースライン](css-baseline.md))。`--ua webkit` は、そのブラウザーの値から解析します。`--ua chromium,firefox,webkit` は、それぞれの値で解析して結果をまとめ、一部のブラウザーでだけ成り立つ指摘には「(in chromium, webkit; not in firefox)」のようにブラウザーを添えます。たとえば、幅 100px のボタンの「Publish now」は、Chromium と WebKit(padding 6px)でははみ出し、Firefox(4px)では収まります。各ブラウザーで描いた結果と一致することを確かめました(`e2e/layout-ua-profiles.spec.mjs`)。
+
+その差を打ち消す最小の reset は、`--suggest-reset chromium,firefox,webkit` で出せます。
+
 ## ルールセット
 
 `recommended` には、Chromium e2e または差分 fuzz harness で静的な判定とブラウザーの実測が一致すると確かめたルールだけを入れています。一覧と直し方は `packages/adapter-core/src/lint.mjs` の `recommended` にあります。

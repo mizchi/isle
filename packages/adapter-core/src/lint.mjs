@@ -156,6 +156,8 @@ const pageRules = new Set(['W_A11Y_PAGE_H1', 'W_A11Y_NO_MAIN', 'W_A11Y_MULTIPLE_
 const readable = message => message.replace(/\.__(?:text|ph)\d+/g, '').replace(/(\d+)\/(\d+)(?=px)/g, (m, a, b) => String(Math.round(Number(a) / Number(b) * 100) / 100));
 export function lint(result, { file = '<component>', source = '', profile = 'recommended', page = false } = {}) {
   const total = result.states.length, out = [];
+  // Checked with several UA profiles: a finding that holds in some browsers only says which.
+  const inBrowsers = f => result.browsers && f.browsers && f.browsers.length < result.browsers.length ? ` (in ${f.browsers.join(', ')}; not in ${result.browsers.filter(b => !f.browsers.includes(b)).join(', ')})` : '';
   const rules = profile === 'all' ? null : recommended;
   // One element under different class combinations (cx(a, cond && b)) is one finding: merge by code and element.
   const merged = new Map();
@@ -196,7 +198,7 @@ export function lint(result, { file = '<component>', source = '', profile = 'rec
     }
     const [severity, fix] = rules?.[f.code] ?? [f.severity === 'error' ? 'error' : 'warning'];
     const box = cleanLabel(f.box), firstClass = /\.([\w-]+)/.exec(box)?.[1];
-    out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity, code: f.code, message: readable(f.message), ...(fix ? { fix: fixFor(f.code, fix, f.html, f.path, f.layout) } : {}), states: describe(f.states, total) });
+    out.push({ file, line: lineAt(f.html, f.path) ?? lineOf(source, firstClass ? firstClass : box), severity, code: f.code, message: readable(f.message) + inBrowsers(f), ...(f.browsers && result.browsers ? { browsers: f.browsers } : {}), ...(fix ? { fix: fixFor(f.code, fix, f.html, f.path, f.layout) } : {}), states: describe(f.states, total) });
   }
   for (const w of result.selectors?.warnings ?? []) {
     if (rules && !rules[w.code]) continue;

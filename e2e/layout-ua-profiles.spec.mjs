@@ -59,3 +59,24 @@ for (const [name, html, css] of cases) {
     }
   });
 }
+
+// A label in a 100px button: its UA padding (Chromium and WebKit 6px, Firefox 4px) decides whether "Publish now"
+// (86.7px in Roboto 16px) fits. The verdict with this browser's profile agrees with this browser.
+test('a button label that fits one browser\'s padding only: the verdict with its profile agrees with the browser', async ({page}, testInfo) => {
+  const {readFileSync} = await import('node:fs');
+  const {loadTextMetrics} = await import('../packages/css-verifier/src/text-node.mjs');
+  const file = new URL('../packages/css-verifier/text-metrics/fixtures/roboto-variable.ttf', import.meta.url).pathname;
+  const metrics = await loadTextMetrics({fonts: {Roboto: {file}}});
+  const face = `@font-face{font-family:Roboto;src:url(data:font/ttf;base64,${readFileSync(file).toString('base64')})}`;
+  const ua = testInfo.project.name;
+  const html = '<main class="g"><button class="b" type="button">Publish now</button></main>';
+  const sheet = reset + '.g{display:grid;grid-template-columns:100px}.b{display:block;white-space:nowrap;font-family:Roboto;font-size:16px;line-height:24px}';
+  const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, metrics.resolveOptions({name: 'P', css: sheet, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, ua, boxes: {'.b': {text: {font: {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content: 'Publish now'}, wrap: 'nowrap'}}}));
+  const flagged = report.diagnostics.some(d => d.code === 'E_LAYOUT_CONTENT');
+  await page.setViewportSize({width: 400, height: 300});
+  await page.setContent(`<!doctype html><html lang="en"><head><style>${face}${sheet}</style></head><body>${html}</body></html>`);
+  await page.evaluate(() => document.fonts.ready);
+  const overflows = await page.evaluate(() => { const b = document.querySelector('.b'), r = document.createRange(); r.selectNodeContents(b); const t = r.getBoundingClientRect(), c = getComputedStyle(b), box = b.getBoundingClientRect(); return t.left < box.left + parseFloat(c.paddingLeft) + parseFloat(c.borderLeftWidth) - 0.01 || t.right > box.right - parseFloat(c.paddingRight) - parseFloat(c.borderRightWidth) + 0.01; });
+  expect(flagged, `${ua}: the label overflows in the browser: ${overflows}`).toBe(overflows);
+  expect(flagged).toBe(ua !== 'firefox');
+});

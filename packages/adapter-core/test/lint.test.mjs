@@ -254,3 +254,15 @@ test('a text the font file cannot measure (a character it lacks) is Unknown with
   assert.match(r.unknowns.find(u => u.code === 'U_TEXT_NOT_MEASURED')?.message ?? '', /\.n: Font Roboto lacks U\+00E9/);
   assert.equal(analyzeSvelte(src('Chloe is editing'), {...scopeOptions, textMetrics, fonts: {Roboto: {}}}).status, 'verified');
 });
+
+test('uas: a finding that holds in some browsers only says which (a button label that fits Firefox\'s 4px padding only)', async () => {
+  const {loadTextMetrics} = await import('../../css-verifier/src/text-node.mjs');
+  const file = fileURLToPath(new URL('../../css-verifier/text-metrics/fixtures/roboto-variable.ttf', import.meta.url));
+  const textMetrics = await loadTextMetrics({fonts: {Roboto: {file}}});
+  const source = `<div class="bar"><button class="b" type="button">Publish now</button></div>\n<style>.bar { display: grid; grid-template-columns: 100px; } .b { display: block; white-space: nowrap; font-family: Roboto; font-size: 16px; line-height: 24px; }</style>`;
+  const result = analyzeSvelte(source, {...scopeOptions, textMetrics, fonts: {Roboto: {}}, uas: ['chromium', 'firefox', 'webkit']});
+  const f = result.findings.find(f => f.code === 'E_LAYOUT_CONTENT');
+  assert.deepEqual(f?.browsers, ['chromium', 'webkit'], JSON.stringify(result.findings.map(f => [f.code, f.browsers])));
+  const m = lint(result, {file: 'B.svelte'}).find(m => m.code === 'E_LAYOUT_CONTENT');
+  assert.match(m.message, /\(in chromium, webkit; not in firefox\)$/);
+});

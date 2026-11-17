@@ -188,7 +188,30 @@ function measuredContract(facts, textMetrics, fonts, defaultFontSize) {
 // Overflow-like findings that text resizing can cause (SC 1.4.4 compares them at 1× and 2× the default font size).
 const resizeCodes = new Set(['E_LAYOUT_CONTENT', 'E_LAYOUT_ITEM_SIZE', 'E_LAYOUT_TRACKS', 'E_LAYOUT_PAGE_OVERFLOW', 'E_LAYOUT_PROTRUSION', 'E_A11Y_TEXT_OBSCURED', 'E_A11Y_TEXT_START_OBSCURED', 'W_LAYOUT_CLIPPED', 'W_LAYOUT_TRUNCATED']);
 
+// uas: ['chromium', 'firefox', 'webkit'] analyses the component with each browser's form-control UA profile (the ua
+// layout option) and merges the results: a finding lists the browsers it holds in (browsers), so what breaks in one
+// browser only is told apart from what breaks everywhere.
 export function analyzeStates(component, allOptions = {}) {
+  const { uas, ...rest } = allOptions;
+  if (!Array.isArray(uas) || !uas.length) return analyzeOneProfile(component, rest);
+  const results = uas.map(ua => ({ ua, result: analyzeOneProfile(component, { ...rest, ua }) }));
+  const base = results[0].result;
+  const keyOf = f => `${f.code}\u0000${f.path ?? f.box}`;
+  const merged = new Map();
+  for (const { ua, result } of results) for (const f of result.findings) {
+    if (!merged.has(keyOf(f))) merged.set(keyOf(f), { ...f, states: [...f.states], browsers: [] });
+    const m = merged.get(keyOf(f));
+    if (!m.browsers.includes(ua)) m.browsers.push(ua);
+  }
+  const unknowns = [];
+  for (const { ua, result } of results) for (const u of result.unknowns) if (!unknowns.some(x => x.message === u.message)) unknowns.push(uas.length > 1 && !results.every(r => r.result.unknowns.some(x => x.message === u.message)) ? { ...u, message: `${u.message} (with the ${ua} UA profile)` } : u);
+  const order = { violated: 2, unknown: 1, verified: 0 };
+  const status = results.map(r => r.result.status).reduce((a, b) => order[b] > order[a] ? b : a, 'verified');
+  return { ...base, status, unknowns, findings: [...merged.values()], browsers: uas,
+    coverage: { ...base.coverage, assumptions: [...base.coverage.assumptions, `form controls checked with the UA profiles of ${uas.join(', ')}`] } };
+}
+
+function analyzeOneProfile(component, allOptions = {}) {
   const result = analyzeStatesOnce(component, allOptions);
   // textResize (with defaultFontSize and measured fonts): the component analysed again with the default font size
   // doubled (rem, em, % and keyword font sizes follow it); what breaks only then is E_A11Y_TEXT_RESIZE.

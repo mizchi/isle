@@ -10,7 +10,8 @@
 //   --format text|json
 //   --default-colors light|none   assume the UA's black-on-white canvas (light preference, no dark color-scheme); none: Unknown
 //   --each-counts 0,2        item counts checked for {#each} / v-for / .map (default 0 and 2)
-//   --ua chromium|firefox|webkit   the browser whose form-control UA styles the controls start from (default: the
+//   --ua chromium|firefox|webkit   the browser whose form-control UA styles the controls start from; several
+//                            (--ua chromium,firefox,webkit) checks each and says which browsers a finding holds in (default: the
 //                            historical Chromium defaults, with fields' UA padding and border unknown)
 //   --suggest-reset chromium,firefox,webkit   print the smallest CSS reset that makes those browsers' form controls agree
 //                            (values kept from --ua, or chromium) and exit
@@ -37,7 +38,7 @@ if (opt.suggestReset) {
 const range = text => { const [min, max] = String(text).split('-').map(Number); return {min, max: max ?? min}; };
 // The default page around a component: block flow (html and body are display: block), border-box, no UA margins.
 const pageCSS = opt.pageCss ? readFileSync(opt.pageCss, 'utf8') : '*{box-sizing:border-box;margin:0}';
-const options = {...(opt.defaultFontSize !== 'none' ? {defaultFontSize: Number(opt.defaultFontSize)} : {}), ...(opt.defaultColors !== 'none' ? {defaultColors: true} : {}), scrollIntent: 'css', ...(opt.ua ? {ua: opt.ua} : {}), sourceLines: true, eachCounts: (opt.eachCounts ?? '0,2').split(',').map(Number), pageCSS, viewport: {...range(opt.viewport), height: range(opt.height)}, accessibility: true, integrity: true, selectors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], ...(opt.assumeText ? {assumeText: true} : {})};
+const options = {...(opt.defaultFontSize !== 'none' ? {defaultFontSize: Number(opt.defaultFontSize)} : {}), ...(opt.defaultColors !== 'none' ? {defaultColors: true} : {}), scrollIntent: 'css', ...(opt.ua ? (String(opt.ua).includes(',') ? {uas: String(opt.ua).split(',')} : {ua: opt.ua}) : {}), sourceLines: true, eachCounts: (opt.eachCounts ?? '0,2').split(',').map(Number), pageCSS, viewport: {...range(opt.viewport), height: range(opt.height)}, accessibility: true, integrity: true, selectors: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], ...(opt.assumeText ? {assumeText: true} : {})};
 
 // --font Family=file.ttf: the component's texts in that family are measured from the font file (widths, line breaks).
 if (opt.fonts) { const {loadTextMetrics} = await import('../packages/css-verifier/src/text-node.mjs'); options.textMetrics = await loadTextMetrics({fonts: opt.fonts}); options.fonts = opt.fonts; if (opt.textResize !== 'off') options.textResize = true; }
