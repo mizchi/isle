@@ -1878,6 +1878,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       });
     }
     for (const box of [...sections, ...rows]) box.tablePart = true;
+    // min/max sizes on a table cell have no defined effect (CSS 2.2 §17.5.2; measured: Chromium ignores td
+    // { min-height: 50px } and td { max-width: 50px }), and a table's min/max height is spread over its rows (measured:
+    // .t { min-height: 100px } makes 20px cells 100px). Neither is modeled.
+    const sizeBound = (st, keys) => keys.find(key => st.$sources?.[key] && !['auto', 'none', '0', '0px'].includes(String(st[key])));
+    const tableBound = sizeBound(style, ['min-block-size', 'max-block-size']);
+    if (tableBound) fail(`${table.label}: ${tableBound} on a table spreads over its rows, which is not modeled; size the cells instead`);
+    for (const row of rows) for (const rs of styles(row, region, parents, style, false, false)) for (const cell of row.children) for (const c of styles(cell, rs.region, parents, rs.style, false, false)) {
+      const key = sizeBound(c.style, ['min-block-size', 'max-block-size', 'min-inline-size', 'max-inline-size']);
+      if (key) fail(`${cell.label}: ${key} on a table cell has no defined effect (Chromium ignores it), which is not modeled; give the cell a block-size or inline-size`);
+    }
     // A row's or row group's height sets the rows' height (CSS 2.2 §17.5.3; measured: tr { height: 50px } makes 20px cells
     // a 50px row; its width does not change the columns, reported as inert below),
     // and its background paints under the cells; neither is modeled (rows lay out as display: contents).

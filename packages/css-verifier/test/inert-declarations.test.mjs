@@ -177,3 +177,14 @@ test('tables: a cell\'s margin and a row\'s padding do nothing; a row\'s height 
     assert.ok(r.diagnostics.some(d => d.code === 'U_LAYOUT_TABLE'), css);
   }
 });
+
+test('tables: min/max sizes on a cell, and a table min-height, are Unknown (Chromium ignores the first, spreads the second over the rows)', () => {
+  const table = css => analyzeHTML('<html lang="en"><body><table class="t"><tbody><tr><td class="c"></td><td class="c"></td></tr></tbody></table></body></html>', {name: 'P', css: `*{margin:0;padding:0}html,body{${g}}.t{table-layout:fixed;inline-size:200px;border-spacing:0}.c{inline-size:100px;block-size:20px}${css}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  for (const css of ['td{min-height:50px}', 'td{max-width:50px}', '.t{min-height:100px}']) {
+    const r = table(css);
+    assert.equal(r.status, 'unknown', css);
+    assert.ok(r.diagnostics.some(d => d.code === 'U_LAYOUT_TABLE'), `${css}: ${JSON.stringify(r.diagnostics)}`);
+  }
+  // A reset's min-width: 0 is the initial value: not Unknown.
+  assert.equal(table('td{min-width:0}').status, 'verified');
+});

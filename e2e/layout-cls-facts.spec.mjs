@@ -1033,3 +1033,16 @@ test('tables: a cell margin and a row padding change nothing in Chromium, and a 
     expect((await shot(base + css))[0] === plain[0], `${css}: same layout in Chromium`).toBe(inertExpected);
   }
 });
+
+test('tables: Chromium ignores min/max sizes on cells and spreads a table min-height over its rows; the analysis is Unknown for all three', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const html = '<table class="t"><tbody><tr><td class="c"></td><td class="c"></td></tr></tbody></table>';
+  const base = `*{margin:0;padding:0}html,body{${g}}.t{table-layout:fixed;inline-size:200px;border-spacing:0}.c{inline-size:100px;block-size:20px}`;
+  await page.setViewportSize({width: 400, height: 300});
+  const cell = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>${base}${css}</style></head><body>${html}</body></html>`); return page.evaluate(() => { const r = document.querySelector('.c').getBoundingClientRect(); return [r.width, r.height]; }); };
+  for (const [css, size] of [['td{min-height:50px}', [100, 20]], ['td{max-width:50px}', [100, 20]], ['.t{min-height:100px}', [100, 100]]]) {
+    expect(await cell(css), css).toEqual(size);
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    expect(report.status, css).toBe('unknown');
+  }
+});
