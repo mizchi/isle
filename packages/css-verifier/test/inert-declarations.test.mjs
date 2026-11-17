@@ -149,3 +149,10 @@ test('scroll-padding off a scroll container, and on body, does nothing (the view
   assert.deepEqual(inert(run('.p{display:block;scroll-padding:8px}.c{height:10px}')), [['.p', 'scroll-padding-top scroll-padding-right scroll-padding-bottom scroll-padding-left']]);
   assert.deepEqual(inert(run('.p{display:block;overflow-y:auto;scrollbar-width:none;height:15px;scroll-padding-top:8px}.c{height:10px}')), []);
 });
+
+test('a content string on an element (not a pseudo-element) does nothing', () => {
+  assert.deepEqual(inert(run('.p{display:block}.c{height:10px;content:"New"}')), [['.c', 'content']]);
+  assert.match(run('.p{display:block}.c{height:10px;content:"New"}').layoutWarnings[0].message, /content: "New" has no effect/);
+  assert.deepEqual(inert(run('.p{display:block}.c{height:10px;content:none}')), []);
+  assert.deepEqual(inert(run('.p{display:block}.c{height:10px}.c::before{content:"";position:absolute}')), []);
+});
