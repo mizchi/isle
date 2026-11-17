@@ -428,6 +428,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
       // A list item lays out as a block: its outside marker takes no part in the layout (measured). An inside marker
       // is an inline box in the first line, which is not modeled.
+      // resize lets the user drag the box's size, which the analysis does not know; it applies only to a box whose
+      // overflow is not visible (CSS UI 4 §6.1). Elsewhere it does nothing (W_LAYOUT_DECLARATION_INERT).
+      if (style.resize && style.resize !== 'none' && ['overflow-x', 'overflow-y'].some(key => !['visible', 'clip'].includes(String(style[key])))) throw Object.assign(new Error(`${box.label} is resize: ${style.resize}: the user can drag its size, which is not modeled`), { code: 'U_LAYOUT_CSS', box });
       if (style.display === 'list-item') {
         if (style['list-style-position'] === 'inside' && style['list-style-type'] !== 'none') throw Object.assign(new Error(`${box.label} has an inside list marker, which takes part in its first line; that is not modeled`), { code: 'U_LAYOUT_CSS', box });
         style = { ...style, display: 'block', $listItem: true };
@@ -1528,6 +1531,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const scroller = [...parents].reverse().find(p => p.box.tag === 'html' || ['overflow-x', 'overflow-y'].some(key => !['visible', 'clip'].includes(String(p.style[key]))));
           if (scroller && String(scroller.style['scroll-snap-type'] ?? 'none') === 'none') reasons.push(['scroll-snap-align', `its scroll container ${scroller.box.tag === 'html' ? '(the viewport)' : scroller.box.label} has no scroll-snap-type, so it never snaps; set scroll-snap-type on ${scroller.box.tag === 'html' ? 'html' : 'it'}`]);
         }
+        if (set('resize', 'none')) reasons.push(['resize', `its overflow is ${style['overflow-x']} ${style['overflow-y']}, and only a box whose overflow is not visible can be resized; set overflow: auto on it`]);
         if (set('line-clamp', 'none') && style.$lineClamp === undefined && !['-webkit-box', '-webkit-inline-box'].includes(style.display)) reasons.push(['line-clamp', `it is display: ${style.display}, not -webkit-box`]);
         if (reasons.length) layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: reasons.map(r => r[0]),
           css: reasons.map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),

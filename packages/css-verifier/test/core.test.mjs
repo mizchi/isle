@@ -105,8 +105,10 @@ test('geometry-neutral properties are accepted; values that change breaking, sha
   // descendants, checked below).
   for (const decl of ['backdrop-filter:blur(8px)', '-webkit-backdrop-filter:blur(8px)', 'will-change:transform', 'will-change:opacity, transform'])
     assert.equal(run(decl), 'verified', decl);
-  for (const decl of ['word-break:break-all', 'font-variant-numeric:tabular-nums', 'filter:blur(2px)', 'contain:paint', 'backdrop-filter:saturate(2)', 'content-visibility:hidden', 'resize:both', 'mix-blend-mode:multiply'])
+  for (const decl of ['word-break:break-all', 'font-variant-numeric:tabular-nums', 'filter:blur(2px)', 'contain:paint', 'backdrop-filter:saturate(2)', 'content-visibility:hidden', 'overflow:auto;scrollbar-width:none;resize:both', 'mix-blend-mode:multiply'])
     assert.equal(run(decl), 'unknown', decl);
+  // resize on a box whose overflow is visible does nothing (W_LAYOUT_DECLARATION_INERT; measured in Chromium).
+  assert.equal(run('resize:both'), 'verified');
 });
 
 test('a backdrop filter or will-change: transform on an ancestor traps a position: fixed descendant (U_LAYOUT_FIXED_CONTAINED)', () => {

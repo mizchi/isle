@@ -974,3 +974,19 @@ test('inert scroll-snap-align: in a scroller with no scroll-snap-type nothing sn
     expect(y === 70, `${type || 'no snap type'}: scrollTop ${y}`).toBe(warn);
   }
 });
+
+test('inert resize: dragging the corner resizes a box only where its overflow is not visible', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [overflow, warn] of [['', true], ['overflow:auto;scrollbar-width:none;', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.p{display:block;width:100px;height:100px;background:#ccc;resize:both;${overflow}}`;
+    const html = '<div class="p"></div>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 300, max: 300}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('resize')), overflow).toBe(warn);
+    expect(report.status === 'unknown', overflow).toBe(!warn);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    await page.mouse.move(97, 97); await page.mouse.down(); await page.mouse.move(150, 150, {steps: 5}); await page.mouse.up();
+    const size = await page.evaluate(() => document.querySelector('.p').getBoundingClientRect().width);
+    expect(size === 100, `${overflow || 'overflow visible'}: width ${size}`).toBe(warn);
+  }
+});
