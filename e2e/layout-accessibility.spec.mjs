@@ -2108,3 +2108,27 @@ test('scroll-end-covered: scrolled to the bottom, Chromium still hides the last 
   expect(seen.filter(Boolean).length).toBeGreaterThan(0);
   expect(seen.filter(v => !v).length).toBeGreaterThan(0);
 });
+
+test('scroll-end-covered (inline): scrolled to the end, Chromium still hides the carousel\'s last link under the arrow exactly where the static check reports it', async ({page}) => {
+  const html = '<html lang="en"><body><main class="m"><section class="w"><div class="track"><p class="s">Trail</p><p class="s">Road</p><p class="s">Hike</p><a class="more" href="/all">All</a></div><button class="next" type="button" aria-label="Next"></button></section></main></body></html>';
+  const base = '*{margin:0;padding:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.w{position:relative;display:grid;grid-template-columns:minmax(0,1fr);width:300px}.track{display:flex;overflow-x:auto;height:48px}.s{flex:none;width:120px;height:48px;font-size:16px;line-height:24px;color:#000}.more{flex:none;width:32px;height:48px;font-size:16px;line-height:24px;color:#000}.next{position:absolute;top:0;right:0;width:40px;height:48px;background:#333;border:0}';
+  const seen = [];
+  for (const extra of ['', '.track{padding-right:40px}', '.next{width:20px}', '.next{height:24px}', '.more{width:60px}']) {
+    const css = base + extra;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.s': {minInlineSize: 0, intrinsicBlockSize: 24}, '.more': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+    const flagged = report.diagnostics.some(d => d.code === 'E_A11Y_SCROLL_END_COVERED' && d.box === '.more');
+    await page.setViewportSize({width: 400, height: 600});
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const hidden = await page.evaluate(() => {
+      const track = document.querySelector('.track'); track.scrollLeft = track.scrollWidth;
+      const last = document.querySelector('.more'), r = last.getBoundingClientRect(), port = track.getBoundingClientRect();
+      const l = Math.max(r.left, port.left), rr = Math.min(r.right, port.right);
+      const xs = [l + 1, (l + rr) / 2, rr - 1], ys = [r.top + 1, (r.top + r.bottom) / 2, r.bottom - 1];
+      return xs.every(x => ys.every(y => { const hit = document.elementFromPoint(x, y); return hit && !last.contains(hit); }));
+    });
+    expect(flagged, `${extra || 'base'}: Chromium hides it scrolled to the end: ${hidden}`).toBe(hidden);
+    seen.push(hidden);
+  }
+  expect(seen.filter(Boolean).length).toBeGreaterThan(0);
+  expect(seen.filter(v => !v).length).toBeGreaterThan(0);
+});

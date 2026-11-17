@@ -861,27 +861,42 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   // scroller's padding) meets the bottom of the scrollport. A box at the end of the content that an opaque box outside
   // the scroller covers even there is covered at every offset: it can never be seen (a fixed action bar over the last
   // list item). (Content shorter than the scrollport does not scroll: covered at 0 is covered for good.)
-  if (scrollZero) for (const s of placed.filter(row => row.overflow === 'scroll' && row.path !== root?.path && !row.box.documentRoot && ['auto', 'scroll'].includes(String(row.overflowValue)) && row.paddingBlockEnd !== undefined)) {
+  // The same on the inline axis (a carousel whose last slide stays under its next-arrow scrolled to the end). On each
+  // axis the content must not overflow the other one (a scroll there would move the box out from under the cover).
+  const axes = {
+    block: { start: row => row.origin.block, size: row => row.block, end: bottom, pad: s => s.paddingBlockEnd, border: s => s.borders.bottom,
+      crossStart: row => row.origin.inline, crossEnd: right, crossPad: s => s.paddingInlineEnd, crossBorder: s => s.borders.right },
+    inline: { start: row => row.origin.inline, size: row => row.inline, end: right, pad: s => s.paddingInlineEnd, border: s => s.borders.right,
+      crossStart: row => row.origin.block, crossEnd: bottom, crossPad: s => s.paddingBlockEnd, crossBorder: s => s.borders.bottom },
+  };
+  if (scrollZero) for (const s of placed.filter(row => row.overflow === 'scroll' && row.path !== root?.path && !row.box.documentRoot && ['auto', 'scroll'].includes(String(row.overflowValue)) && row.paddingBlockEnd !== undefined && row.paddingInlineEnd !== undefined && row.direction !== 'rtl')) {
     const inside = placed.filter(row => isAncestor(s.path, row.path) && row.origin && visible(row) && !hiddenFrom(row.path) && row.position !== 'fixed');
-    const innerBottom = diff(bottom(s), scalar(s.borders.bottom));
-    for (const target of inside.filter(row => (row.box.text || focusable(row)) && !row.box.pseudo)) {
-      let base = target.region;
-      // The target is the content's end: no other box inside reaches lower.
-      for (const other of inside) if (other !== target && !isAncestor(other.path, target.path)) { base = atMost(base, bottom(other), bottom(target)); if (!base) break; }
-      if (!base) continue;
-      const end = sum(bottom(target), scalar(s.paddingBlockEnd));
-      for (const cover of placed) {
-        if (related(cover.path, s.path) || !visible(cover) || !cover.painted || !opaque(cover) || !cover.origin) continue;
-        if (!paintsAbove(cover, layer(cover), s, layer(s))) continue;
-        let region = atMost(atMost(base, cover.origin.inline, target.origin.inline), right(target), right(cover));
-        if (!region) continue;
-        // No overflow: the target stays where it is.
-        const still = atMost(atMost(atMost(region, end, innerBottom), cover.origin.block, target.origin.block), bottom(target), bottom(cover));
-        // Overflow: at the maximum offset the target ends at innerBottom − padding.
-        const lifted = diff(innerBottom, scalar(s.paddingBlockEnd));
-        const scrolled = atMost(atMost(atMost(region, innerBottom, end), cover.origin.block, diff(lifted, target.block)), lifted, bottom(cover));
-        for (const r of [still, scrolled].filter(Boolean))
-          report(findings, 'E_A11Y_SCROLL_END_COVERED', 'error', `${target.box.label} is at the end of ${s.box.label}'s scrolling content, and ${cover.box.label} covers it at every scroll offset, even scrolled to the bottom: it can never be seen. Give ${s.box.label} a padding-bottom (or scroll-padding) at least as tall as ${cover.box.label}`, target, r, { rule: 'scroll-end-covered', cover: cover.path, coverBox: cover.box.label, scroller: s.box.label });
+    for (const [axisName, a] of Object.entries(axes)) {
+      const innerEnd = diff(a.end(s), scalar(a.border(s))), crossInnerEnd = diff(a.crossEnd(s), scalar(a.crossBorder(s)));
+      for (const target of inside.filter(row => (row.box.text || focusable(row)) && !row.box.pseudo)) {
+        let base = target.region;
+        // The target is the content's end on this axis, and nothing overflows the other axis (it does not scroll).
+        for (const other of inside) {
+          if (other !== target && !isAncestor(other.path, target.path)) base = atMost(base, a.end(other), a.end(target));
+          if (base) base = atMost(base, sum(a.crossEnd(other), scalar(a.crossPad(s))), crossInnerEnd);
+          if (!base) break;
+        }
+        if (!base) continue;
+        const contentEnd = sum(a.end(target), scalar(a.pad(s)));
+        for (const cover of placed) {
+          if (related(cover.path, s.path) || !visible(cover) || !cover.painted || !opaque(cover) || !cover.origin) continue;
+          if (!paintsAbove(cover, layer(cover), s, layer(s))) continue;
+          // The cover spans the target on the other axis.
+          const region = atMost(atMost(base, a.crossStart(cover), a.crossStart(target)), a.crossEnd(target), a.crossEnd(cover));
+          if (!region) continue;
+          // No overflow: the target stays where it is.
+          const still = atMost(atMost(atMost(region, contentEnd, innerEnd), a.start(cover), a.start(target)), a.end(target), a.end(cover));
+          // Overflow: scrolled to the end, the target ends at innerEnd − padding.
+          const lifted = diff(innerEnd, scalar(a.pad(s)));
+          const scrolled = atMost(atMost(atMost(region, innerEnd, contentEnd), a.start(cover), diff(lifted, a.size(target))), lifted, a.end(cover));
+          for (const r of [still, scrolled].filter(Boolean))
+            report(findings, 'E_A11Y_SCROLL_END_COVERED', 'error', `${target.box.label} is at the ${axisName === 'block' ? 'bottom' : 'end'} of ${s.box.label}'s scrolling content, and ${cover.box.label} covers it at every scroll offset, even scrolled to the ${axisName === 'block' ? 'bottom' : 'end'}: it can never be seen. Give ${s.box.label} a ${axisName === 'block' ? 'padding-bottom' : 'padding-inline-end'} at least as ${axisName === 'block' ? 'tall' : 'wide'} as ${cover.box.label}`, target, r, { rule: 'scroll-end-covered', cover: cover.path, coverBox: cover.box.label, scroller: s.box.label, axis: axisName });
+        }
       }
     }
   }

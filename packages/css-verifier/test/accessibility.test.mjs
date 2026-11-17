@@ -2143,3 +2143,14 @@ test('scroll-end-covered: the last item of a scroll container stays under an act
   assert.deepEqual(covered('.bar{height:20px}'), []);
   assert.deepEqual(covered('.list{height:240px}'), ['.i.last']);
 });
+
+test('scroll-end-covered: not where the content also overflows the other axis (scrolling it moves the box out from under the cover)', async () => {
+  const {analyzeHTML} = await import('../src/html.mjs');
+  const html = '<html lang="en"><body><main class="m"><section class="w"><ul class="list"><li class="i">One</li><li class="i">Two</li><li class="i">Three</li><li class="i">Four</li><li class="i">Five</li><li class="i last">Last item</li></ul><div class="bar">Actions</div></section></main></body></html>';
+  const base = '*{margin:0;padding:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.w{position:relative;display:grid;grid-template-columns:minmax(0,1fr);width:300px}.list{display:grid;grid-template-columns:minmax(0,1fr);overflow:auto;height:200px;list-style:none}.i{height:40px;font-size:16px;line-height:24px;color:#000}.bar{position:absolute;left:0;right:0;bottom:0;height:48px;background:#333;color:#fff;font-size:16px;line-height:24px}';
+  const run = extra => analyzeHTML(html, {name: 'P', css: base + extra, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 24}, '.bar': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+  const covered = extra => run(extra).diagnostics.filter(d => d.code === 'E_A11Y_SCROLL_END_COVERED').map(d => d.box);
+  assert.deepEqual(covered(''), ['.i.last']);
+  // A wider item: the list scrolls sideways too, and the rule makes no claim there.
+  assert.deepEqual(covered('.i.last{width:500px}'), []);
+});
