@@ -4,7 +4,9 @@
 // models (automatic minimums, stacking contexts, containing blocks for fixed boxes). Each fact is one measurement on
 // one small page; the output lists every fact per browser and marks the ones the browsers disagree on.
 //
-//   node tools/css-baseline.mjs [--out evals/results/css-baseline] [--browsers chromium,firefox,webkit]
+//   node tools/css-baseline.mjs [--out evals/results/css-baseline] [--browsers chromium,firefox,webkit] [--reset reset.css]
+//
+// --reset applies a stylesheet before each page (a CSS reset): what still differs is what the reset leaves open.
 //
 // The engine's own value for a fact (what css-verifier assumes today) is given beside it where it has one.
 import {chromium, firefox, webkit} from 'playwright';
@@ -18,6 +20,7 @@ for (let i = 0; i < args.length; i += 2) opt[args[i].replace(/^--/, '')] = args[
 const out = join(root, opt.out ?? 'evals/results/css-baseline');
 const engines = {chromium, firefox, webkit};
 const browsers = (opt.browsers ?? 'chromium,firefox,webkit').split(',');
+const resetCSS = opt.reset ? readFileSync(opt.reset, 'utf8') : '';
 const font = readFileSync(join(root, 'packages/css-verifier/text-metrics/fixtures/roboto-variable.ttf')).toString('base64');
 const face = `@font-face{font-family:Roboto;src:url(data:font/ttf;base64,${font})}`;
 
@@ -61,6 +64,18 @@ const facts = [
   ['controls', 'textarea font', '<textarea></textarea>', style('textarea', ['font-family', 'font-size']), 'monospace | 13.33px'],
   ['controls', 'placeholder color', '<input placeholder="x">', `getComputedStyle(document.querySelector('input'), '::placeholder').color`, '(ua: darkgray)'],
   ['controls', 'fieldset padding, border and min-inline-size', '<fieldset><legend>x</legend></fieldset>', style('fieldset', ['padding-top', 'padding-left', 'border-top-width', 'min-inline-size', 'margin-left']), '(ua)'],
+  // Form-control boxes on every side (the values a UA profile carries)
+  ['profile', 'button padding (t r b l)', '<button>Go</button>', style('button', ['padding-top', 'padding-right', 'padding-bottom', 'padding-left']), '1px 6px 1px 6px'],
+  ['profile', 'button border (t r b l)', '<button>Go</button>', style('button', ['border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width']), '2px 2px 2px 2px'],
+  ['profile', 'text input padding (t r b l)', '<input type="text">', style('input', ['padding-top', 'padding-right', 'padding-bottom', 'padding-left']), '(ua)'],
+  ['profile', 'text input border (t r b l)', '<input type="text">', style('input', ['border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width']), '(ua)'],
+  ['profile', 'textarea padding and border (t r b l)', '<textarea></textarea>', style('textarea', ['padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'border-top-width', 'border-left-width']), '(ua)'],
+  ['profile', 'select padding and border (t r b l)', '<select><option>One</option></select>', style('select', ['padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'border-top-width', 'border-left-width']), '(ua)'],
+  ['profile', 'checkbox margin (t r b l)', '<input type="checkbox">', style('input', ['margin-top', 'margin-right', 'margin-bottom', 'margin-left']), '(ua)'],
+  ['profile', 'radio margin (t r b l)', '<input type="radio">', style('input', ['margin-top', 'margin-right', 'margin-bottom', 'margin-left']), '(ua)'],
+  ['profile', 'range margin (t r b l)', '<input type="range">', style('input', ['margin-top', 'margin-right', 'margin-bottom', 'margin-left']), '2px 2px 2px 2px'],
+  ['profile', 'control box-sizing (button, text, search, textarea, select)', '<button>a</button><input><input type="search"><textarea></textarea><select></select>', `[...document.querySelectorAll('button,input,textarea,select')].map(e => getComputedStyle(e).boxSizing).join(' | ')`, 'border-box | content-box | border-box | content-box | border-box'],
+  ['profile', 'button colors (background, text)', '<button>Go</button>', style('button', ['background-color', 'color']), 'ButtonFace | ButtonText'],
   // Elements
   ['elements', 'details and summary display', '<details><summary>x</summary>y</details>', `[getComputedStyle(document.querySelector('details')).display, getComputedStyle(document.querySelector('summary')).display].join(' | ')`, 'block | list-item'],
   ['elements', 'closed dialog display', '<dialog>x</dialog>', style('dialog', ['display']), 'none'],
@@ -85,7 +100,7 @@ for (const name of browsers) {
   const page = await browser.newPage({viewport: {width: 400, height: 600}});
   results[name] = {version: browser.version(), facts: {}};
   for (const [group, fact, html, expr] of facts) {
-    await page.setContent(`<!doctype html><html lang="en"><head></head><body>${html}</body></html>`);
+    await page.setContent(`<!doctype html><html lang="en"><head>${resetCSS ? `<style>${resetCSS}</style>` : ''}</head><body>${html}</body></html>`);
     try { results[name].facts[fact] = String(await page.evaluate(expr)); } catch (error) { results[name].facts[fact] = `error: ${error.message.split('\n')[0]}`; }
   }
   await browser.close();

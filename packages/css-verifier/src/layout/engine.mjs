@@ -1,7 +1,8 @@
 import { q, add, sub, mul, cmp, div, exact, number } from './linear.mjs';
 import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rectangle, clip, partition, projection, serialize } from './region.mjs';
 import { validateOptions } from './input.mjs';
-import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea, containsFixed } from './css.mjs';
+import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea, containsFixed, setUAProfile } from './css.mjs';
+import { resolveUAProfile } from './ua-profile.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
 import { compileSelector, PARENT, dynamicAttributeTests } from './selectors.mjs';
@@ -667,7 +668,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // A text field (text-like input or textarea) keeps the same box with its default appearance once the author sets
     // its padding and border on every side (measured): only its UA paint differs.
     const textField = box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', 'date', 'time', 'datetime-local', 'month', 'week', undefined].includes(box.inputType));
-    const authoredEdges = ['left', 'right', 'top', 'bottom'].every(side => style.$sources?.[`padding-${side}`] && style.$sources?.[`border-${side}`]);
+    // (Or known from the UA profile: the ua option makes a field's default padding and border known.)
+    const authoredEdges = ['left', 'right', 'top', 'bottom'].every(side => (style.$sources?.[`padding-${side}`] || (options.ua && style[`padding-${side}`] !== 'ua')) && (style.$sources?.[`border-${side}`] || (options.ua && style[`border-${side}`] !== 'ua')));
     // A button's box is the same with its default appearance (measured: sizes, padding, border, grid content); its
     // UA padding, border, colors and display are modeled.
     const buttonLike = box.tag === 'button' || (box.tag === 'input' && ['button', 'submit', 'reset'].includes(box.inputType));
@@ -2316,7 +2318,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // Safe-area insets: the declared ones under viewport-fit=cover (Unknown when not declared), else 0.
   const cover = /viewport-fit\s*=\s*cover/i.test(String(root.metaViewport ?? ''));
   setSafeArea(cover ? (options.safeArea ? { top: 0, right: 0, bottom: 0, left: 0, ...options.safeArea } : 'unknown') : null);
-  unitContext.rootFontSize = null; setRootFontSize(null); unitContext.heightKnown = Boolean(block && options.viewport.height);
+  unitContext.rootFontSize = null; setRootFontSize(null); setUAProfile(resolveUAProfile(options.ua)); unitContext.heightKnown = Boolean(block && options.viewport.height);
   // A flex item's main size that a non-auto flex-basis replaces, when no automatic minimum reads it (flex.mjs keeps
   // that case Unknown): the property, or null. The layout treats it as auto; finish() reports it as inert.
   function inertMainSize(style, box, main) {

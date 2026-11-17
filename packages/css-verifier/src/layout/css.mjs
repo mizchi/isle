@@ -11,6 +11,9 @@ const remLengths = ['top', 'right', 'bottom', 'left'].flatMap(side => [`margin-$
 // rem resolves against the analysed html root's px font-size once the engine has seen it (setRootFontSize).
 let rootFontSize = null;
 export function setRootFontSize(size) { rootFontSize = size; }
+// The form-control UA profile of the analysis (layout option ua), or null for the historical Chromium defaults.
+let uaProfile = null;
+export function setUAProfile(profile) { uaProfile = profile; }
 // Parse-time check of a px or rem length; rem resolves at layout time, against the html root (else Unknown).
 // env(safe-area-inset-*) (optionally with a px fallback, or as max(px, env(…))) resolves at layout time against the
 // declared safe area (setSafeArea; 0 without viewport-fit=cover, as browsers report).
@@ -618,7 +621,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   if (box.tag === 'legend') { values['padding-left'] = 'ua'; values['padding-right'] = 'ua'; }
   // Chromium's UA margin on checkboxes and radios (3px 3px 3px 4px; radio 3px 3px 0 5px, measured) applies whatever
   // their appearance: it stays 'ua' until the author sets the margin.
-  if (!box.pseudo && box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType)) for (const side of ['left', 'right', 'top', 'bottom']) values[`margin-${side}`] = 'ua';
+  // With a UA profile the margins are known (WebKit: 3px 2px on both).
+  if (!box.pseudo && box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType)) ['top', 'right', 'bottom', 'left'].forEach((side, i) => { values[`margin-${side}`] = uaProfile ? uaProfile[box.inputType].margin[i] : 'ua'; });
   // The control's UA box rules are not its ::before/::after's.
   if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag)) {
     for(const side of ['left','right','top','bottom']) {values[`padding-${side}`]='ua';values[`border-${side}`]='ua';}
@@ -628,19 +632,24 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     // their author size even below their content (measured in Chromium: 218×42 for 200×40 + 8px padding + 1px border).
     if (box.tag === 'textarea' || (box.tag === 'input' && ['text', 'email', 'search', 'password', 'tel', 'url', 'number', 'date', 'time', 'datetime-local', 'month', 'week', undefined].includes(box.inputType))) {
       values.display = 'inline-block'; values['box-sizing'] = box.inputType === 'search' ? 'border-box' : 'content-box'; values['min-inline-size'] = '0'; values['min-block-size'] = '0';
+      // With a UA profile (ua option) the field's padding and border are known.
+      const edges = uaProfile && (box.tag === 'textarea' ? uaProfile.textarea : uaProfile.textField);
+      if (edges) ['top', 'right', 'bottom', 'left'].forEach((side, i) => { values[`padding-${side}`] = edges.padding[i]; values[`border-${side}`] = edges.border[i]; });
     }
+    if (uaProfile && box.tag === 'select') ['top', 'right', 'bottom', 'left'].forEach((side, i) => { values[`padding-${side}`] = uaProfile.select.padding[i]; values[`border-${side}`] = uaProfile.select.border[i]; });
     // A range slider: Chromium's UA box is inline-block, content-box, no padding or border, a 2px margin on every side,
     // and it takes its author width and height whatever they are (measured: 160×24, 20×4; 296px wide in a 300px column
     // with the UA margin).
     if (box.tag === 'input' && box.inputType === 'range') {
       values.display = 'inline-block'; values['box-sizing'] = 'content-box'; values['min-inline-size'] = '0'; values['min-block-size'] = '0';
-      for (const side of ['left', 'right', 'top', 'bottom']) { values[`padding-${side}`] = '0'; values[`border-${side}`] = '0'; values[`margin-${side}`] = '2px'; }
+      ['top', 'right', 'bottom', 'left'].forEach((side, i) => { values[`padding-${side}`] = '0'; values[`border-${side}`] = '0'; values[`margin-${side}`] = uaProfile ? uaProfile.range.margin[i] : '2px'; });
     }
     // Buttons: Chromium's UA box is padding 1px 6px, a 2px border, inline-block, border-box (measured, with or without
     // appearance: none).
     if (box.tag === 'button' || (box.tag === 'input' && ['button', 'submit', 'reset'].includes(box.inputType))) {
-      values['padding-top'] = values['padding-bottom'] = '1px'; values['padding-left'] = values['padding-right'] = '6px';
-      for (const side of ['left', 'right', 'top', 'bottom']) values[`border-${side}`] = '2px';
+      // (Per browser with a UA profile: Firefox 1px 4px, WebKit 2px 6px 3px.)
+      const b = uaProfile?.button ?? { padding: ['1px', '6px', '1px', '6px'], border: ['2px', '2px', '2px', '2px'] };
+      ['top', 'right', 'bottom', 'left'].forEach((side, i) => { values[`padding-${side}`] = b.padding[i]; values[`border-${side}`] = b.border[i]; });
       // min-width stays auto (measured in Chromium: a flex item button grows to its min-content, like a div; in block
       // flow auto is 0).
       values.display = 'inline-block'; values['box-sizing'] = 'border-box'; values['min-inline-size'] = 'auto'; values['min-block-size'] = '0';
@@ -755,8 +764,10 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   // Buttons: the UA's button { color: ButtonText; background-color: ButtonFace } (not inherited; with or without
   // appearance), in the used scheme: light #000 on #efefef, dark #fff on #6b6b6b (Chromium, measured).
   if (!box.pseudo && (box.tag === 'button' || (box.tag === 'input' && ['button', 'submit', 'reset'].includes(box.inputType)))) {
-    if (!sources.color) values.color = used === 'dark' ? '#ffffff' : '#000000';
-    if (!sources['background-color']) values['background-color'] = used === 'dark' ? '#6b6b6b' : '#efefef';
+    // (Per browser with a UA profile; a profile without dark colors keeps the dark scheme's colors unknown.)
+    const b = uaProfile?.button ?? { background: '#efefef', color: '#000000', darkBackground: '#6b6b6b', darkColor: '#ffffff' };
+    if (!sources.color) values.color = used === 'dark' ? (b.darkColor ?? 'ua') : b.color;
+    if (!sources['background-color']) values['background-color'] = used === 'dark' ? (b.darkBackground ?? 'ua') : b.background;
   }
   // position: fixed is laid out as absolute against the viewport; the engine admits it for the accessibility and
   // integrity checks only (at scroll position 0) and keeps every other proof Unknown.
