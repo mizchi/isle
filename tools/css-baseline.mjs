@@ -11,13 +11,13 @@
 // The engine's own value for a fact (what css-verifier assumes today) is given beside it where it has one.
 import {chromium, firefox, webkit} from 'playwright';
 import {readFileSync, writeFileSync, mkdirSync} from 'node:fs';
-import {join} from 'node:path';
+import {join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const args = process.argv.slice(2), opt = {};
 for (let i = 0; i < args.length; i += 2) opt[args[i].replace(/^--/, '')] = args[i + 1];
-const out = join(root, opt.out ?? 'evals/results/css-baseline');
+const out = resolve(root, opt.out ?? 'evals/results/css-baseline');
 const engines = {chromium, firefox, webkit};
 const browsers = (opt.browsers ?? 'chromium,firefox,webkit').split(',');
 const resetCSS = opt.reset ? readFileSync(opt.reset, 'utf8') : '';

@@ -625,6 +625,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   if (!box.pseudo && box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType)) ['top', 'right', 'bottom', 'left'].forEach((side, i) => { values[`margin-${side}`] = uaProfile ? uaProfile[box.inputType].margin[i] : 'ua'; });
   // The control's UA box rules are not its ::before/::after's.
   if(!box.pseudo && ['button', 'input', 'select', 'textarea'].includes(box.tag)) {
+    values.$uaBorder = true;
     for(const side of ['left','right','top','bottom']) {values[`padding-${side}`]='ua';values[`border-${side}`]='ua';}
     for(const key of ['display','box-sizing','min-inline-size','min-block-size']) values[key]='ua';
     // Text fields: Chromium's UA values are known (measured): inline-block, content-box (search: border-box), no min size.
@@ -803,9 +804,12 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   for (const side of ['top', 'right', 'bottom', 'left']) {
     const bw = `$bw-${side}`, bs = `$bs-${side}`;
     if (!sources[bw] && !sources[bs]) { delete values[bw]; delete values[bs]; continue; }
-    const style = sources[bs] ? values[bs] : (values[`border-${side}`] === 'ua' ? 'ua' : 'none');
-    const width = sources[bw] ? values[bw] : (values[`border-${side}`] === 'ua' ? 'ua' : '3px');
-    values[`border-${side}`] = ['none', 'hidden'].includes(style) ? '0' : style === 'ua' ? (width === '0' ? '0' : 'ua') : width;
+    // A control's UA border has a style of its own (known widths from a UA profile included): an author width alone
+    // keeps that style and draws at the author width (a reset's border-width: 1px on a textarea).
+    const uaStyled = values[`border-${side}`] === 'ua' || (values.$uaBorder && !['0', '0px'].includes(String(values[`border-${side}`])));
+    const style = sources[bs] ? values[bs] : (uaStyled ? 'ua' : 'none');
+    const width = sources[bw] ? values[bw] : (uaStyled ? values[`border-${side}`] : '3px');
+    values[`border-${side}`] = ['none', 'hidden'].includes(style) ? '0' : String(width) === '0' ? '0' : width;
     const later = [sources[bw], sources[bs]].filter(Boolean).at(-1);
     sources[`border-${side}`] = later;
     delete values[bw]; delete values[bs];

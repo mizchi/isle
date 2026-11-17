@@ -39,3 +39,23 @@ test('without the ua option, a field\'s UA padding and border stay unknown (the 
   const report = analyzeHTML('<html lang="en"><body><main class="g"><input class="f" type="text"></main></body></html>', {name: 'P', css: reset + common + cases[0][2], viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
   expect(report.status).toBe('unknown');
 });
+
+// The suggested reset: with it applied, the target profile (chromium) describes every browser — the unstyled
+// controls land where the chromium model puts them, in Firefox and WebKit too.
+import {suggestReset} from '../packages/css-verifier/src/layout/ua-reset.mjs';
+const resetCSS = suggestReset().css;
+for (const [name, html, css] of cases) {
+  test(`${name}: with the suggested reset, the chromium profile places it in every browser`, async ({page}, testInfo) => {
+    const sheet = reset + resetCSS + common + css;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: sheet, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, ua: 'chromium'});
+    expect(report.status === 'unknown', JSON.stringify(report.diagnostics.map(d => d.message))).toBe(false);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${sheet}</style></head><body>${html}</body></html>`);
+    for (const sel of ['.f', '.after']) {
+      const browser = await page.evaluate(s => { const r = document.querySelector(s).getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }, sel);
+      const row = report.sizes.find(r => r.box.startsWith(sel) && r.rect);
+      const model = [row.rect.inlineStart, row.rect.blockStart, row.rect.inlineSize, row.rect.blockSize].map(value);
+      model.forEach((v, i) => expect(Math.abs(v - browser[i]), `${testInfo.project.name} ${name} ${sel} [x, y, w, h][${i}]: model ${v}, browser ${browser[i]}`).toBeLessThanOrEqual(1 / 64 + 1e-6));
+    }
+  });
+}
