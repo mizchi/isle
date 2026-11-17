@@ -597,3 +597,9 @@ CLI は verified のときだけ exit 0。入力エラー、コンパイルエ�
 今回は静的な純粋制約の判定であり、既存 veri の時相モデルを増やして寸法を離散化する方法は採らない。有理数の領域判定、独立した1次元・2次元の bounded arithmetic oracle、browser での反例再現を組み合わせる。判定器そのものの形式的な健全性証明は未着手。既存の MoonBit / veri 92ケースは別の検査として維持する。
 
 検証方法と結果は [両軸の評価記録](../evals/reports/layout-axes.md)、[初段の横幅検査](../evals/reports/layout.md)、記述・読解は [両軸の課題](../evals/scenarios/layout-axes/brief.md)。参考: [Grid](https://www.w3.org/TR/css-grid-2/)、[Box sizing](https://www.w3.org/TR/css-sizing-3/)、[Overflow](https://www.w3.org/TR/css-overflow-3/)、[Media Queries](https://www.w3.org/TR/mediaqueries-4/)、[Container queries](https://www.w3.org/TR/css-conditional-5/#container-queries)、[Size containment](https://www.w3.org/TR/css-contain-2/#containment-size)。
+
+## 宣言ごとの差分照合(`e2e/layout-differential.spec.mjs`)
+
+grid、flex、block、縦の flex の小さなレイアウトに、よく使う宣言(margin、min/max、padding、border、flex、整列、位置、割合、calc、折り返し、gap など 50 個)を 1 つずつ当て、解析が verified と言った場合は、すべての箱の位置と大きさが Chromium と一致することを確かめる。解析が Unknown や violated と言った場合は照合しない。verified なのに位置や大きさが違えば、間違った成功(健全性の不具合)になる。
+
+この照合で、幅を指定した flex item の `flex-grow`(`width: 50px; flex-grow: 2` の箱を 50px のままにしていた)と、縦の flex item の `min-height` が、モデルに反映されていないことが分かり、直した。flex item の主軸の大きさは、container が解いた大きさ(伸縮と min/max の後)を使う。

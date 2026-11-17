@@ -2442,6 +2442,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         }
         const inertMain = available.flexItem && style.position !== 'absolute' ? inertMainSize(style, box, available.flexItem.main) : null;
         if (inertMain) style = { ...style, [inertMain]: 'auto', $inertMain: { property: inertMain, value: style[inertMain] } };
+        // A flex item's main size is the one its container resolved (grown, shrunk or clamped by its min/max, §9.7) and
+        // passes down as the available size; its own width or height is only the base (measured: width: 50px with
+        // flex-grow: 2 is 240px wide in a 300px row).
+        else if (available.flexItem && style.position !== 'absolute') {
+          const size = available.flexItem.main === 'block' ? 'block-size' : 'inline-size';
+          const given = available[available.flexItem.main];
+          // Unchanged (the item neither grew nor shrank, nor was clamped): keep its own size, which other rules read.
+          const sides = available.flexItem.main === 'block' ? ['top', 'bottom'] : ['left', 'right'];
+          const own = /^\d+(?:\.\d+)?px$/.test(String(style[size])) ? add(px(style[size]), style['box-sizing'] === 'content-box' ? sides.map(side => add(px(style[`padding-${side}`]), px(style[`border-${side}`]))).reduce(add, zero) : zero) : null;
+          const same = own && given && cmp(given.x, zero) === 0 && cmp(given.y, zero) === 0 && cmp(evaluate(given, { x: zero, y: zero }), own) === 0;
+          if (style[size] !== 'auto' && given && !same) style = { ...style, [size]: 'auto', $flexMain: style[size] };
+        }
         if (box.tag === 'html' && !parents.length && /^\d+(?:\.\d{1,6})?px$/.test(style['font-size'])) { rootFontSize = px(style['font-size']); unitContext.rootFontSize = rootFontSize; setRootFontSize(rootFontSize); }
         // defaultFontSize (the user's default font size, an assumption the caller states): the root's medium, %, em
         // or rem font-size resolves against it, so rem lengths do too.
