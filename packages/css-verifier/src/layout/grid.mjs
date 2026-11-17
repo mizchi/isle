@@ -103,7 +103,7 @@ function placement(value, axis, areas, lines) {
   if (m[3] && span < 1) throw new Error(`grid-${axis}: ${value} ends at or before its start (the lines swap, which is not modeled)`);
   return { start, span };
 }
-export function place(children, columns, { rows, subgridColumns = false, areas, explicitRows } = {}) {
+export function place(children, columns, { rows, subgridColumns = false, areas, explicitRows, dense = false } = {}) {
   // Areas wider than the explicit columns create implicit columns, which are not modeled.
   if (areas && areas.columns > columns) throw Object.assign(new Error(`grid-template-areas has ${areas.columns} columns but grid-template-columns ${columns}: the extra columns are implicit`), { code: 'U_LAYOUT_CSS' });
   const occupied = new Set(), result = [];
@@ -119,6 +119,9 @@ export function place(children, columns, { rows, subgridColumns = false, areas, 
     const column = columnPlacement.start, span = columnPlacement.span, rowSpan = line.span;
     if (!Number.isSafeInteger(span) || span < 1 || (column ?? 0) + span > columns) violation(subgridColumns ? 'E_LAYOUT_SUBGRID_PLACEMENT' : 'E_LAYOUT_PLACEMENT', 'Child placement is outside the explicit columns', box, 'inline');
     if (!Number.isSafeInteger(rowSpan) || rowSpan < 1 || rowSpan > 2048 || (line.start ?? 0) + rowSpan > 2048) throw new Error('Use grid rows within 1..2048');
+    // dense (grid-auto-flow: row dense): each auto-placed item is searched for from the start of the grid, so it fills
+    // the first hole it fits (Grid §8.5 step 4, dense).
+    if (dense && line.start === undefined) cursor = 0;
     let row = line.start === undefined ? Math.floor(cursor / columns) : line.start;
     let start = column ?? (line.start !== undefined ? (rowCursor.get(line.start) ?? 0) : cursor % columns);
     if (line.start !== undefined && column === undefined) {
