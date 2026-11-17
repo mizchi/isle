@@ -58,9 +58,89 @@ e2e(Chromium で 390 件)のうち、Firefox で 34 件、WebKit で 43 件が C
 - body・p・ul・dd の余白、見出しと th の太さ、表の border-spacing、fieldset の余白、details と summary の display、閉じた dialog、svg の既定の大きさ(300 × 150)、Roboto 16px の line-height normal(19px)。
 - 今回の作業で Chromium で測って入れた挙動: sticky・backdrop-filter・will-change が重なりの文脈になること、backdrop-filter と will-change: transform が fixed の子孫を閉じ込めること(will-change: opacity は閉じ込めない)、`minmax(0, 1fr)` の grid の min-content が 0 であること、flex item のボタンの `min-width` が auto であること。
 
+## UA profile(初期条件)
+
+フォームの部品の UA スタイルは、レイアウトのオプション `ua` で選びます(`packages/css-verifier/src/layout/ua-profile.mjs`)。
+
+- `ua: 'chromium' | 'firefox' | 'webkit'`: 測った値の profile。ボタン・文字入力欄・textarea・select の padding と border、チェックボックスと radio の margin、range の margin、ボタンの色、コントロールのフォント。
+- `ua: { base: 'webkit', button: { padding: ['0px', '10px', '0px', '10px'] } }`: profile の一部を置き換えた初期条件(社内の基準のブラウザー、独自の UA の想定など)。
+- 省略したとき: これまでどおり。ボタンと range は Chromium の値、ほかの部品の UA の padding・border・margin は Unknown。
+
+`ua` を指定すると、作者が padding と border を書いていない入力欄も、その profile の値で解析できます。各ブラウザーで、何も指定していない部品(content-box の入力欄と textarea、ボタン、チェックボックスと radio の margin)の位置と大きさが、そのブラウザーの profile のモデルと一致することを確かめました(`e2e/layout-ua-profiles.spec.mjs`)。CLI では `css-lint --ua webkit`。
+
+## 最小の CSS Reset の提案
+
+`suggestReset({ browsers, target })`(`css-lint --suggest-reset chromium,firefox,webkit`)は、選んだブラウザーの profile のうち、値が違うものだけを打ち消す reset を返します。
+
+- 最近の reset の書き方に合わせる: `font: inherit`(Josh Comeau、Andy Bell の reset と同じ)、チェックボックスと radio の `margin: 0`、論理プロパティ(`padding-block` / `padding-inline`)、`:where()` で詳細度を足さない。
+- 値が同じものには規則を出さない。Chromium と Firefox だけなら、チェックボックスの margin と入力欄の padding の規則は出ない。
+- どれか 1 つの値に決めなければならないもの(padding、チェックボックスの大きさ)は、`target` の値に合わせる。既定は検査の基準の Chromium なので、reset を当てれば `ua: 'chromium'` の解析がどのブラウザーにも当てはまる。
+- デザインで決めるもの(ボタンの色、フォーカスの枠、ページのフォント、入力欄と range の既定の大きさ)は reset に入れず、注記として返す。
+
+3 つのブラウザーに対する提案:
+
+```css
+/* The smallest reset for chromium, firefox, webkit (values kept from chromium where one has to be picked). */
+
+/* the control font differs (chromium Arial 13.3333px, firefox sans-serif 13.3281px, webkit -webkit-standard 16px; textarea chromium monospace 13.3333px, firefox monospace 12px, webkit -webkit-standard 16px); inheriting the page font also lets its text be measured */
+:where(button, input, select, textarea) {
+  font: inherit;
+  letter-spacing: inherit;
+  word-spacing: inherit;
+}
+
+/* the UA margins differ (checkbox chromium 3px 3px 3px 4px, firefox 3px 3px 3px 4px, webkit 3px 2px; radio chromium 3px 3px 0px 5px, firefox 3px 3px 0px 5px, webkit 3px 2px) */
+/* the default size differs (chromium 13px, firefox 14px, webkit 12px) */
+:where(input[type="checkbox"], input[type="radio"]) {
+  margin: 0;
+  inline-size: 13px;
+  block-size: 13px;
+}
+
+/* the button padding differs (chromium 1px 6px, firefox 1px 4px, webkit 2px 6px 3px 6px) */
+:where(button, input[type="button"], input[type="submit"], input[type="reset"]) {
+  padding-block: 1px;
+  padding-inline: 6px;
+}
+
+/* the text field padding differs (chromium 1px 2px, firefox 1px 2px, webkit 1px) */
+:where(input:not([type]), input[type="text"], input[type="email"], input[type="search"], input[type="password"], input[type="tel"], input[type="url"], input[type="number"]) {
+  padding-block: 1px;
+  padding-inline: 2px;
+}
+
+/* the textarea border differs (chromium 1px, firefox 2px, webkit 1px) */
+:where(textarea) {
+  border-width: 1px;
+}
+
+/* the select padding differs (chromium 0px, firefox 1px 4px, webkit 0px) */
+/* the select border differs (chromium 1px, firefox 2px, webkit 1px) */
+:where(select) {
+  padding-block: 0px;
+  padding-inline: 0px;
+  border-width: 1px;
+}
+
+/* the placeholder color differs (chromium rgb(117, 117, 117), firefox rgba(0, 0, 0, 0.54), webkit rgb(169, 169, 169)) */
+::placeholder {
+  color: rgb(117, 117, 117);
+  opacity: 1;
+}
+
+/* Not in the reset (decide them in your design):
+ * - button colors differ (chromium #000000 on #efefef, firefox #000000 on rgb(233, 233, 237), webkit rgba(0, 0, 0, 0.8) on rgb(192, 192, 192)): set background-color and color on your buttons
+ * - the default font differs (Chromium "Times New Roman", Firefox serif, WebKit -webkit-standard): set font-family on html (the controls inherit it with this reset)
+ * - a field's default width (its size attribute) and a range's default size come from the font and the browser: give them an inline-size (and block-size)
+ * - the focus ring width differs (chromium 1px, firefox 1px, webkit 3px): give :focus-visible an outline of your own
+ */
+```
+
+確かめ方: この reset を当てて 3 つのブラウザーでベースラインを測り直すと(`node tools/css-baseline.mjs --reset reset.css`)、違う項目は 25 から 13 に減り、profile の値はボタンの色を除いてすべて揃いました。残った 13 項目は、ページの既定のフォント(名前の違いと、それによるボタンの幅)、見出しの大きさの丸め、入力欄と range の既定の大きさ、ボタンの色、フォーカスの枠で、どれも注記に挙げたものです。また、reset を当てた何も指定していない部品は、3 つのブラウザーとも `ua: 'chromium'` のモデルどおりの位置と大きさになりました(`e2e/layout-ua-profiles.spec.mjs`、33 件)。
+
 ## 検査をほかのブラウザーに広げるには
 
-1. **UA スタイルの値をブラウザーごとに持つ**: `css.mjs` の UA の規則(ボタン・入力欄・select・textarea・チェックボックス・radio・range)を、測った値の表から選べるようにする。今の値は Chromium の列にあたる。
+1. (対応済み)**UA スタイルの値をブラウザーごとに持つ**: `ua` オプションの profile。
 2. **既定の色をブラウザーごとに持つ**: canvas と canvastext(dark の preference)、ButtonFace / ButtonText。
 3. **表と改行は Unknown にする**: 表のアルゴリズムと改行の規則はブラウザーごとに違い、仕様が決めていない部分がある。対象のブラウザーで照合できるまでは、そのブラウザーでは Unknown にする(成功にしない)。
 4. **丸め**: WebKit の 1/64px への丸めは、許容誤差の側で扱えるか確かめる。
