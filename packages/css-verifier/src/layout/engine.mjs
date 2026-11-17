@@ -1547,6 +1547,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const autoSides = ['margin-left', 'margin-right'].filter(key => style.$sources?.[key] && String(style[key]) === 'auto');
           for (const key of autoSides) reasons.push([key, 'its width is auto, so it fills its container and the auto margins are 0 (give it a width or max-width to center it)']);
         }
+        // justify-content on a flex row with an item that grows without a cap: the item takes all the free space, so
+        // there is none to distribute (measured: the same layout without it). Reported on the container.
+        {
+          const ps = parents.at(-1)?.style, pbox = parents.at(-1)?.box;
+          if (inFlow && ps && ['flex', 'inline-flex'].includes(String(ps.display)) && !String(ps['flex-direction'] ?? 'row').startsWith('column') && String(ps['flex-wrap']) === 'nowrap'
+            && ps.$sources?.['justify-content'] && !['normal', 'flex-start', 'start', 'left', 'stretch'].includes(String(ps['justify-content']))
+            && cmp(q(String(style['flex-grow'] ?? '0')), zero) > 0 && String(style['max-inline-size']) === 'none'
+            && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === pbox.path && w.properties.includes('justify-content')))
+            layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: pbox.label, path: pbox.path, properties: ['justify-content'],
+              css: [{ property: 'justify-content', file: ps.$sources['justify-content'].file, line: ps.$sources['justify-content'].line, selector: ps.$sources['justify-content'].selector }],
+              message: `${pbox.label}: justify-content: ${ps['justify-content']} has no effect (${box.label} grows with flex-grow: ${style['flex-grow']} and takes all the free space, so there is none to distribute)`, ...ranges(region) });
+        }
         // justify-content (align-content) on a grid with an fr column (row, in a definite height): the fr track takes all
         // the free space, so there is none to distribute (measured: the same layout without it).
         if (style.display === 'grid' && !style.$blockFlow) {

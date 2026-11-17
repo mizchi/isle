@@ -276,3 +276,9 @@ test('justify-content and align-content on a grid with an fr track have no free 
   assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:100px 100px;justify-content:center}.c{height:10px}')), []);
   assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:20px 1fr;height:100px;align-content:center}.c{height:10px}')), [['.p', 'align-content']]);
 });
+
+test('justify-content on a flex row with an item that grows without a cap does nothing', () => {
+  assert.deepEqual(inert(run('.p{display:flex;justify-content:space-between}.c{width:50px;height:10px;flex:1 1 auto}')), [['.p', 'justify-content']]);
+  assert.deepEqual(inert(run('.p{display:flex;justify-content:space-between}.c{width:50px;height:10px;flex-grow:1;max-width:100px}')), []);
+  assert.deepEqual(inert(run('.p{display:flex;justify-content:space-between}.c{width:50px;height:10px}')), []);
+});

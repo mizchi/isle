@@ -644,3 +644,4 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 - 高さが auto の block の親の中の、割合の高さ(`height: 100%` など。以前は Unknown): 親の高さが中身で決まるので、割合の高さは auto になる(CSS 2.2 §10.5。Chromium で、付けても付けなくても配置が同じことを確かめた)。`W_LAYOUT_DECLARATION_INERT` として報告し、auto として解析する。親が grid や flex の item として stretch される場合は高さが決まるので、ここでは扱わない(Unknown のまま)。
 - 幅が auto で max-width もない block の左右の auto margin(`margin: 0 auto` など): 箱は横いっぱいに広がるので margin は 0 になり、中央に寄らない(Chromium で、付けても付けなくても配置が同じことを確かめた)。`W_LAYOUT_DECLARATION_INERT` で、width か max-width を付けるよう促す。画像やフォームの部品は自分の幅を持つので中央に寄る(出さない)。
 - fr の列を持つ grid の `justify-content`、高さが px で fr の行を持つ grid の `align-content`(start と stretch 以外): fr の track が空きを全部取るので、配る空きがない(Chromium で、付けても付けなくても配置が同じことを確かめた)。`W_LAYOUT_DECLARATION_INERT` で報告する。
+- 折り返さない横並びの flex で、上限なく伸びる item(`flex-grow` > 0、max-width なし)があるときの `justify-content`: その item が空きを全部取るので、配る空きがない(Chromium で確かめた)。container の `W_LAYOUT_DECLARATION_INERT` として報告する。
