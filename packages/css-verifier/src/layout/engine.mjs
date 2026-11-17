@@ -2366,6 +2366,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const empty = !(box.children ?? []).length && !box.text && !box.inline?.length;
     return style[`min-${size}`] !== 'auto' || scroller || empty ? size : null;
   }
+  // display: contents generates no box of its own (CSS Display §2.5): its sizes, padding, border, margin, background and
+  // overflow do nothing (measured in Chromium); its children are laid out in its place and inherit from it.
+  const contentsBoxKeys = ['inline-size', 'block-size', 'min-inline-size', 'min-block-size', 'max-inline-size', 'max-block-size',
+    ...['top', 'right', 'bottom', 'left'].flatMap(side => [`padding-${side}`, `margin-${side}`, `border-${side}`]), 'background-color', 'background-image', 'overflow-x', 'overflow-y', 'aspect-ratio'];
+  function contentsInert(box, style, region) {
+    if (box.pseudo || ['button', 'input', 'select', 'textarea', 'img', 'video', 'iframe', 'svg', 'canvas', 'legend'].includes(box.tag) || layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path)) return;
+    const written = contentsBoxKeys.filter(key => style.$sources?.[key] && !['0', '0px', 'auto', 'none', 'visible', 'transparent'].includes(String(style[key])));
+    if (!written.length) return;
+    layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: written,
+      css: written.map(key => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
+      message: `${box.label}: ${written.join(', ')} ${written.length === 1 ? 'has' : 'have'} no effect (it is display: contents, which generates no box of its own; its children are laid out in its place). Put them on a child, or use another display`, ...ranges(region) });
+  }
   function solve(box, available, region, parents = [], inherited, emit = true) {
     let results = [];
     if (emit) box.$starts = { geometry: geometry.length, sizes: sizes.length };
@@ -2585,6 +2597,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     if (c.style.display === 'none') return [{ region: c.region, children: s.children }];
                     if (c.style.display !== 'contents') return [{ region: c.region, children: [...s.children, { box: child, style: c.style, inherited: inheritedStyle }] }];
                     if (child.text || child.contract || child.targets?.length) throw new Error('display: contents with text, contracts or noshift targets needs anonymous or absent boxes');
+                    if (emit) contentsInert(child, c.style, c.region);
                     return [{ region: c.region, children: s.children, contents: c.style }];
                   })));
                   const nested = states.filter(state => state.contents);

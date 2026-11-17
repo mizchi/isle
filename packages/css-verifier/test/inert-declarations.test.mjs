@@ -156,3 +156,12 @@ test('a content string on an element (not a pseudo-element) does nothing', () =>
   assert.deepEqual(inert(run('.p{display:block}.c{height:10px;content:none}')), []);
   assert.deepEqual(inert(run('.p{display:block}.c{height:10px}.c::before{content:"";position:absolute}')), []);
 });
+
+test('box properties on a display: contents element do nothing', () => {
+  const nest = css => analyzeHTML('<html lang="en"><body><div class="p"><div class="w"><div class="c"></div></div></div></body></html>', {name: 'P', css: `*{margin:0}html,body,.p{${g}}.w{display:contents}.c{height:10px}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  assert.deepEqual(inert(nest('.w{width:100px;padding:8px;background:#c00}')), [['.w', 'inline-size padding-top padding-right padding-bottom padding-left background-color']]);
+  assert.match(nest('.w{margin:4px}').layoutWarnings[0].message, /display: contents, which generates no box/);
+  // Inherited properties still reach the children: not reported.
+  assert.deepEqual(inert(nest('.w{color:#c00;font-size:20px}')), []);
+  assert.equal(nest('.w{width:100px}').status, 'verified');
+});

@@ -1005,3 +1005,16 @@ test('inert scroll-padding: only html\'s (or a scroller\'s) moves where scrollIn
     expect(top === 0, `${where}: the target lands at ${top}`).toBe(warn);
   }
 });
+
+test('inert box properties on display: contents: Chromium lays out and paints the same without them', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const html = '<div class="p"><div class="w"><div class="c"></div><div class="c"></div></div></div>';
+  const base = `*{box-sizing:border-box;margin:0}html,body,.p{${g}}.w{display:contents}.c{height:20px;background:#00c}`;
+  const decl = '.w{width:100px;height:300px;padding:8px;margin:12px;border:4px solid #000;background:#c00}';
+  const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + decl, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
+  expect(report.status).toBe('verified');
+  expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.box === '.w')).toBe(true);
+  await page.setViewportSize({width: 400, height: 300});
+  const shot = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`); return [await page.evaluate(() => JSON.stringify([...document.querySelectorAll('.c')].map(e => e.getBoundingClientRect()))), (await page.screenshot()).toString('base64')]; };
+  expect(await shot(base + decl)).toEqual(await shot(base));
+});
