@@ -1521,7 +1521,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // Paint declarations that only work together with another one: text-overflow marks inline overflow that is
         // clipped, -webkit-line-clamp clamps a -webkit-box. (z-index always applies here: every parent is grid or flex.)
         const set = (key, unset) => style.$sources?.[key] && String(style[key]) !== unset;
-        if (set('text-overflow', 'clip') && !['hidden', 'clip', 'auto', 'scroll'].includes(String(style['overflow-x']))) reasons.push(['text-overflow', `its overflow-x is ${style['overflow-x']}, so nothing is clipped to mark`]);
+        // text-overflow marks the overflow of the box's own lines; a flex or grid container has none (its text is in its
+        // items, anonymous ones included, whose text-overflow is the initial clip; measured: no ellipsis is drawn).
+        if (set('text-overflow', 'clip') && ['flex', 'inline-flex', 'grid', 'inline-grid'].includes(String(style.display)) && !style.$blockFlow) reasons.push(['text-overflow', `it is display: ${style.display}, whose text is laid out in its items: put text-overflow (with overflow: hidden and white-space: nowrap) on the item that holds the text`]);
+        else if (set('text-overflow', 'clip') && !['hidden', 'clip', 'auto', 'scroll'].includes(String(style['overflow-x']))) reasons.push(['text-overflow', `its overflow-x is ${style['overflow-x']}, so nothing is clipped to mark`]);
         if (inFlow && ['flex', 'inline-flex'].includes(parentDisplay) && set('justify-self', 'auto')) reasons.push(['justify-self', `its parent ${parents.at(-1).box.label} is display: flex, which ignores justify-self (use margin-inline-start: auto, or justify-content on the parent)`]);
         if (['flex', 'inline-flex'].includes(style.display) && set('justify-items', 'normal')) reasons.push(['justify-items', 'it is display: flex, which ignores justify-items (use justify-content)']);
         if (style['content-visibility'] === 'auto' && String(style['contain-intrinsic-block-size']) === 'none' && style['block-size'] === 'auto' && !layoutWarnings.some(w => w.code === 'W_LAYOUT_CONTENT_VISIBILITY_SIZE' && w.path === box.path))
