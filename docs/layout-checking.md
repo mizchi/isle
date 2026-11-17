@@ -646,3 +646,4 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 - fr の列を持つ grid の `justify-content`、高さが px で fr の行を持つ grid の `align-content`(start と stretch 以外): fr の track が空きを全部取るので、配る空きがない(Chromium で、付けても付けなくても配置が同じことを確かめた)。`W_LAYOUT_DECLARATION_INERT` で報告する。
 - 折り返さない横並びの flex で、上限なく伸びる item(`flex-grow` > 0、max-width なし)があるときの `justify-content`: その item が空きを全部取るので、配る空きがない(Chromium で確かめた)。container の `W_LAYOUT_DECLARATION_INERT` として報告する。
 - `grid-column` の負の線番号(以前は Unknown): 明示した grid の終わりから数える(`-1` は最後の線なので、`1 / -1` はすべての列にまたがる)。列について解析し、差分照合で Chromium と一致することを確かめた。始まりと終わりが入れ替わる指定(`-1 / 1`)は Unknown のまま。
+- `grid-row` の負の線番号: `grid-template-rows` が行を並べている場合は、その終わりから数える(`1 / -1` は明示したすべての行)。行が明示されていない場合は Unknown のまま。差分照合で 3 つのブラウザーと一致することを確かめた。

@@ -290,3 +290,11 @@ test('negative grid-column lines count from the end of the explicit grid (1 / -1
   assert.deepEqual(a('.a{grid-column:-2}'), ['100', '100']);
   assert.equal(r('.a{grid-column:-1/1}').status, 'unknown');
 });
+
+test('negative grid-row lines count from the end of the explicit rows when grid-template-rows lists them', () => {
+  const r = c => analyzeHTML('<html lang="en"><body><main class="p"><div class="a"></div><div class="b"></div></main></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.p{display:grid;grid-template-columns:100px 100px;grid-template-rows:30px 40px;width:300px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const a = c => { const x = r(c).sizes.find(s => s.box === '.a' && s.rect).rect; return [x.blockStart.constant, x.blockSize.constant]; };
+  assert.deepEqual(a('.a{grid-row:-2;grid-column:1}'), ['30', '40']);
+  assert.deepEqual(a('.a{grid-row:1/-1;grid-column:1}'), ['0', '70']);
+  assert.equal(r('.p{grid-template-rows:none}.a{grid-row:1/-1;grid-column:1}').status, 'unknown');
+});

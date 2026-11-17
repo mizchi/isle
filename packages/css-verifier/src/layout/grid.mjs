@@ -95,7 +95,7 @@ function placement(value, axis, areas, lines) {
   const automatic = value.match(/^span\s+([1-9]\d*)$/);
   if (automatic) return { span: Number(automatic[1]) };
   // A negative line counts from the end of the explicit grid (-1 is its last line: 1 / -1 spans every explicit
-  // column), known here for columns (lines = columns + 1).
+  // column), known for columns (lines = columns + 1) and for rows where grid-template-rows lists them.
   const line = text => { const n = Number(text); if (n > 0) return n; if (n < 0 && lines) { const k = lines + 1 + n; if (k >= 1) return k; } return null; };
   const m = value.match(/^(-?[1-9]\d*)(?:\s*\/\s*(?:span\s+([1-9]\d*)|(-?[1-9]\d*)))?$/);
   if (!m || line(m[1]) === null || (m[3] && line(m[3]) === null)) throw new Error(`Use numeric grid-${axis}, start / end, or start / span N`);
@@ -103,13 +103,13 @@ function placement(value, axis, areas, lines) {
   if (m[3] && span < 1) throw new Error(`grid-${axis}: ${value} ends at or before its start (the lines swap, which is not modeled)`);
   return { start, span };
 }
-export function place(children, columns, { rows, subgridColumns = false, areas } = {}) {
+export function place(children, columns, { rows, subgridColumns = false, areas, explicitRows } = {}) {
   // Areas wider than the explicit columns create implicit columns, which are not modeled.
   if (areas && areas.columns > columns) throw Object.assign(new Error(`grid-template-areas has ${areas.columns} columns but grid-template-columns ${columns}: the extra columns are implicit`), { code: 'U_LAYOUT_CSS' });
   const occupied = new Set(), result = [];
   let cursor = 0;
   const violation = (code, message, box, axis) => { throw Object.assign(new Error(message), { code, box, axis }); };
-  const ordered = children.map(item => ({ ...item, column: placement(item.style['grid-column'], 'column', areas, columns + 1), line: placement(item.style['grid-row'], 'row', areas) }))
+  const ordered = children.map(item => ({ ...item, column: placement(item.style['grid-column'], 'column', areas, columns + 1), line: placement(item.style['grid-row'], 'row', areas, explicitRows ? explicitRows + 1 : undefined) }))
     .toSorted((a, b) => Number(a.line.start === undefined) - Number(b.line.start === undefined));
   for (const { box, style, column: columnPlacement, line } of ordered) {
     const column = columnPlacement.start, span = columnPlacement.span, rowSpan = line.span;
