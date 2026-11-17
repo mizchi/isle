@@ -115,11 +115,20 @@ test('order in block flow, table-layout off a table, list-style-type off a list,
   assert.deepEqual(inert(run('.p{display:block;list-style-type:square}.c{height:10px}')), []);
   assert.deepEqual(inert(run('.p{display:block}.c{height:10px;display:list-item;list-style-type:square}')), []);
   assert.deepEqual(inert(run('.p{display:block;overscroll-behavior:contain}.c{height:10px}')), [['.p', 'overscroll-behavior-x overscroll-behavior-y']]);
-  assert.deepEqual(inert(run('.p{display:block;overflow:auto;height:15px;overscroll-behavior:contain}.c{height:10px}')), []);
+  assert.deepEqual(inert(run('.p{display:block;overflow:auto;scrollbar-width:none;height:15px;overscroll-behavior:contain}.c{height:10px}')), []);
   assert.deepEqual(inert(run('.p{display:block;scroll-snap-type:y mandatory}.c{height:10px}')), [['.p', 'scroll-snap-type']]);
-  assert.deepEqual(inert(run('.p{display:block;overflow-y:auto;height:15px;scroll-snap-type:y mandatory}.c{height:10px}')), []);
+  assert.deepEqual(inert(run('.p{display:block;overflow-y:auto;scrollbar-width:none;height:15px;scroll-snap-type:y mandatory}.c{height:10px}')), []);
   // The root's apply to the viewport.
   assert.deepEqual(inert(analyzeHTML('<html lang="en"><body><div class="c"></div></body></html>', {name: 'P', css: `*{margin:0}html{scroll-snap-type:y proximity;overscroll-behavior:none}html,body{${g}}.c{height:10px}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}})), []);
   // A named grid area on a flex item: the message names the area as written.
   assert.match(run('.p{display:flex}.c{width:10px;height:10px;grid-area:a}').layoutWarnings.find(w => w.code === 'W_LAYOUT_DECLARATION_INERT').message, /grid-column: a has no effect/);
+});
+
+test('scroll-snap-align does nothing where its scroll container has no scroll-snap-type', () => {
+  assert.deepEqual(inert(run('.p{display:block;overflow-y:auto;scrollbar-width:none;height:15px}.c{height:10px;scroll-snap-align:start}')), [['.c', 'scroll-snap-align']]);
+  assert.deepEqual(inert(run('.p{display:block;overflow-y:auto;scrollbar-width:none;height:15px;scroll-snap-type:y mandatory}.c{height:10px;scroll-snap-align:start}')), []);
+  // No scrolling ancestor: the viewport is the snap container, with the root's snap type.
+  assert.deepEqual(inert(run('.p{display:block}.c{height:10px;scroll-snap-align:start}')), [['.c', 'scroll-snap-align']]);
+  assert.match(run('.p{display:block}.c{height:10px;scroll-snap-align:start}').layoutWarnings[0].message, /the viewport/);
+  assert.deepEqual(inert(analyzeHTML('<html lang="en"><body><div class="c"></div></body></html>', {name: 'P', css: `*{margin:0}html{scroll-snap-type:y mandatory}html,body{${g}}.c{height:10px;scroll-snap-align:start}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}})), []);
 });

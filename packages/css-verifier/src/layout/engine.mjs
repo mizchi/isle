@@ -1520,7 +1520,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const scrolls = ['overflow-x', 'overflow-y'].some(key => !['visible', 'clip'].includes(String(style[key])));
         if (!scrolls && !['html', 'body'].includes(box.tag)) {
           for (const key of ['overscroll-behavior-x', 'overscroll-behavior-y']) if (set(key, 'auto')) reasons.push([key, `it is not a scroll container (overflow ${style['overflow-x']} ${style['overflow-y']})`]);
-          if (set('scroll-snap-type', 'none')) reasons.push(['scroll-snap-type', `it is not a scroll container (overflow ${style['overflow-x']} ${style['overflow-y']}): set overflow: auto on it, or put the snap type on the box that scrolls`]);
+          if (set('scroll-snap-type', 'none')) reasons.push(['scroll-snap-type', `it is not a scroll container (overflow ${style['overflow-x']} ${style['overflow-y']}); set overflow: auto on it, or put the snap type on the box that scrolls`]);
+        }
+        // scroll-snap-align snaps the box in its snap container, the nearest scrolling ancestor (the viewport, whose
+        // snap type is the root's, when none scrolls): with scroll-snap-type none there it never snaps.
+        if (set('scroll-snap-align', 'none')) {
+          const scroller = [...parents].reverse().find(p => p.box.tag === 'html' || ['overflow-x', 'overflow-y'].some(key => !['visible', 'clip'].includes(String(p.style[key]))));
+          if (scroller && String(scroller.style['scroll-snap-type'] ?? 'none') === 'none') reasons.push(['scroll-snap-align', `its scroll container ${scroller.box.tag === 'html' ? '(the viewport)' : scroller.box.label} has no scroll-snap-type, so it never snaps; set scroll-snap-type on ${scroller.box.tag === 'html' ? 'html' : 'it'}`]);
         }
         if (set('line-clamp', 'none') && style.$lineClamp === undefined && !['-webkit-box', '-webkit-inline-box'].includes(style.display)) reasons.push(['line-clamp', `it is display: ${style.display}, not -webkit-box`]);
         if (reasons.length) layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: reasons.map(r => r[0]),

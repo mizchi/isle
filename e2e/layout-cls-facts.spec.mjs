@@ -959,3 +959,18 @@ test('inert scroll-snap-type: on a box that does not scroll nothing snaps; on th
     expect(y === 130, `${where}: scrollY ${y}`).toBe(warn);
   }
 });
+
+test('inert scroll-snap-align: in a scroller with no scroll-snap-type nothing snaps; with one it does', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [type, warn] of [['', true], ['scroll-snap-type:y mandatory;', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}.p{display:block;overflow-y:auto;scrollbar-width:none;height:200px;${type}}.c{height:200px;scroll-snap-align:start}`;
+    const html = '<div class="p"><div class="c"></div><div class="c"></div><div class="c"></div></div>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 300, max: 300}}});
+    expect(report.status, type).not.toBe('unknown');
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('scroll-snap-align')), type).toBe(warn);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const y = await page.evaluate(async () => { const p = document.querySelector('.p'); p.scrollTo({top: 70, behavior: 'instant'}); await new Promise(r => setTimeout(r, 300)); return p.scrollTop; });
+    expect(y === 70, `${type || 'no snap type'}: scrollTop ${y}`).toBe(warn);
+  }
+});
