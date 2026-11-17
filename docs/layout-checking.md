@@ -635,3 +635,4 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
   - `W_LAYOUT_INLINE_GAP`: 2 つ以上の inline-level の箱が、マークアップ上で空白を挟んで並ぶ。間に親のフォントの空白 1 文字分の隙間ができる(font-size: 0 や white-space で空白が消える場合は出さない)。直し方は display: flex と gap。
   - `W_LAYOUT_IMAGE_BASELINE_GAP`: block の中の inline の `<img>`(vertical-align: baseline)。文字の baseline に乗るので、親がディセンダーの分だけ画像より高くなり、下に数 px の隙間ができる。直し方は display: block か vertical-align: top。
   どちらも Chromium で、隙間が出る場合と警告が一致することを確かめた(`e2e/layout-cls-facts.spec.mjs`)。
+- `W_CSS_MEDIA_GAP`: `max-width: M` と `min-width: m` で M < m ≤ M + 1(767px と 768px)の 2 つの規則が、同じ selector の同じ property を決めている。その間の幅にはどちらも当たらない。Media Queries 4 は幅を連続値として扱い、この隙間を注意している(range 構文 `width < 768px` には隙間がない)。ページの拡大縮小や小数の device pixel ratio で、CSS のビューポート幅が小数になりうる。ブラウザーでは測れていない(Chromium・Firefox・WebKit とも iframe のビューポート幅を整数に丸め、ここではブラウザーの拡大縮小を動かせなかった)。0.02px 以下の隙間(Bootstrap の 767.98px)はよく使われる回避策なので出さない。

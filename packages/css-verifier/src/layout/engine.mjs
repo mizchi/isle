@@ -264,6 +264,26 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (attributes.length && !diagnostics.some(d => d.code === 'U_LAYOUT_ATTRIBUTE' && d.path === box.path)) unknown('U_LAYOUT_ATTRIBUTE', `${box.label}: ${selector.source} tests the value of ${attributes.map(t => t.name).join(', ')}, which is dynamic here`, rule.line, box, rule.file);
     if (structural.length && !diagnostics.some(d => d.code === 'U_LAYOUT_STRUCTURAL' && d.path === box.path)) unknown('U_LAYOUT_STRUCTURAL', `${box.label}: ${selector.source} tests its position among its siblings, which are outside the analyzed root`, rule.line, box, rule.file);
   }
+  // A media-query gap: max-width: M and min-width: m with M < m ≤ M + 1 (767px and 768px) leave the widths strictly
+  // between them matched by neither (Media Queries 4 treats width as continuous and warns of exactly this; its range
+  // syntax, width < 768px, has no gap). A zoomed page or a fractional device pixel ratio can make the CSS viewport
+  // width fractional. Not measured: Chromium, Firefox and WebKit round an iframe's viewport width to whole pixels, and
+  // browser zoom could not be driven here. Gaps of 0.02px or less (Bootstrap's 767.98px) are the common workaround and
+  // are not reported. Reported where the two rules set the same property on the same selector.
+  {
+    const widthAtoms = rule => rule.contexts.filter(c => c.kind === 'media').flatMap(c => c.groups?.length === 1 ? c.groups[0].filter(a => a.feature === 'width') : []);
+    const set = rule => new Set(rule.selectors.flatMap(sel => rule.declarations.map(d => `${sel.source}|${d.property}`)));
+    const below = rules.flatMap(rule => widthAtoms(rule).filter(a => a.relation === '<=').map(a => ({ rule, value: a.value })));
+    const above = rules.flatMap(rule => widthAtoms(rule).filter(a => a.relation === '>=').map(a => ({ rule, value: a.value })));
+    for (const b of below) for (const a of above) {
+      if (!(cmp(sub(a.value, b.value), div(q(1), q(50))) > 0 && cmp(sub(a.value, b.value), q(1)) <= 0)) continue;
+      const shared = [...set(b.rule)].filter(key => set(a.rule).has(key));
+      if (!shared.length || layoutWarnings.some(w => w.code === 'W_CSS_MEDIA_GAP' && w.max === number(b.value) && w.min === number(a.value))) continue;
+      const [selector, property] = shared[0].split('|');
+      layoutWarnings.push({ code: 'W_CSS_MEDIA_GAP', severity: 'warning', max: number(b.value), min: number(a.value), selector, property,
+        message: `@media (max-width: ${number(b.value)}px) and @media (min-width: ${number(a.value)}px) leave the widths between them matched by neither (a zoomed page or a fractional device pixel ratio can make the viewport ${(number(b.value) + number(a.value)) / 2}px wide): there ${selector} gets neither rule's ${property}. Use max-width: ${number(a.value) - 0.02}px, or a range query (width < ${number(a.value)}px)` });
+    }
+  }
   if (rules.some(rule => rule.stateLayout && !rule.hoverLayout) && !options.accessibility) unknown('U_LAYOUT_SELECTOR', 'A :focus rule changes the layout; the focused layout is modeled for the accessibility checks only');
   if (rules.some(rule => rule.stateGeometry) && !options.accessibility && !options.integrity) unknown('U_LAYOUT_SELECTOR', 'A state rule moves a box (focus insets or a transform); that is modeled for the accessibility and integrity checks only');
   // style attributes: each element's declarations as a rule that matches only it, element-attached in the cascade.
@@ -2955,9 +2975,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     if (String(st['inline-size']) !== 'auto' || !item.box.text || (item.box.children ?? []).length || c?.minInlineSize === undefined || c?.maxInlineSize === undefined) return null;
                     const maxW = String(st['max-inline-size']) === 'none' ? null : pxOf(st['max-inline-size']);
                     if (maxW === null && String(st['max-inline-size']) !== 'none') return null;
-                    const lo = add(q(String(c.minInlineSize)), edgesInline);
+                    let lo = add(q(String(c.minInlineSize)), edgesInline);
                     let hi = add(q(String(c.maxInlineSize)), edgesInline);
-                    if (maxW !== null) { const cap = st['box-sizing'] === 'content-box' ? add(maxW, edgesInline) : maxW; if (cmp(cap, hi) < 0) hi = cmp(cap, lo) < 0 ? lo : cap; }
+                    // max-width caps the fit-content width, its min-content end too (measured: a 260px max-width bubble
+                    // with a 339px URL at justify-self: end is 260px wide at the end of its area; the URL overflows it).
+                    if (maxW !== null) { const cap = st['box-sizing'] === 'content-box' ? add(maxW, edgesInline) : maxW; if (cmp(cap, hi) < 0) hi = cap; if (cmp(cap, lo) < 0) lo = cap; }
                     const out = [];
                     const wide = partition(region, diff(area, scalar(hi)), '>=');
                     for (const r of wide.yes) out.push(place(r, scalar(hi)));

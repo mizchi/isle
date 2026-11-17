@@ -198,3 +198,19 @@ test('inline-level boxes in block flow: whitespace gaps between inline-blocks an
   assert.deepEqual(codes(page('<div class="p"><img class="i" src="a.png" width="100" height="50" alt=""></div>', '')), ['W_LAYOUT_IMAGE_BASELINE_GAP']);
   assert.deepEqual(codes(page('<div class="p"><img class="i" src="a.png" width="100" height="50" alt=""></div>', '.i{vertical-align:top}')), []);
 });
+
+test('media-query gap: max-width 767px and min-width 768px on the same property leave fractional widths unmatched', () => {
+  const page = css => analyzeHTML('<html lang="en"><body><main class="a"><div class="b"></div></main></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.a{display:none}.b{height:20px}${css}`, viewport: {min: 320, max: 1280, height: {min: 300, max: 900}}});
+  const gaps = r => (r.layoutWarnings ?? []).filter(w => w.code === 'W_CSS_MEDIA_GAP').map(w => [w.max, w.min]);
+  assert.deepEqual(gaps(page('@media (max-width:767px){.a{display:grid;grid-template-columns:minmax(0,1fr)}} @media (min-width:768px){.a{display:flex}}')), [[767, 768]]);
+  // Bootstrap's 0.02px, a range query, or different properties: not reported.
+  assert.deepEqual(gaps(page('@media (max-width:767.98px){.a{display:grid;grid-template-columns:minmax(0,1fr)}} @media (min-width:768px){.a{display:flex}}')), []);
+  assert.deepEqual(gaps(page('@media (width < 768px){.a{display:grid;grid-template-columns:minmax(0,1fr)}} @media (min-width:768px){.a{display:flex}}')), []);
+  assert.deepEqual(gaps(page('@media (max-width:767px){.a{color:red}} @media (min-width:768px){.b{color:blue}}')), []);
+});
+
+test('justify-self: end on a text leaf with a max-width below its min-content: it is max-width wide at the end of its area (the text overflows it)', () => {
+  const r = analyzeHTML('<html lang="en"><body><main class="t"><p class="b">x</p></main></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body{${g}}.t{display:grid;grid-template-columns:minmax(0,1fr);width:300px}.b{justify-self:end;max-width:260px;padding:12px}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, boxes: {'.b': {minInlineSize: 339, maxInlineSize: 339, intrinsicBlockSize: 24}}});
+  const rect = r.sizes.find(s => s.box === '.b' && s.rect).rect;
+  assert.deepEqual([rect.inlineStart.constant, rect.inlineSize.constant], ['40', '260']);
+});
