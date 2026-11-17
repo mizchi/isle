@@ -603,3 +603,9 @@ CLI は verified のときだけ exit 0。入力エラー、コンパイルエ�
 grid、flex、block、縦の flex の小さなレイアウトに、よく使う宣言(margin、min/max、padding、border、flex、整列、位置、割合、calc、折り返し、gap など 50 個)を 1 つずつ当て、解析が verified と言った場合は、すべての箱の位置と大きさが Chromium と一致することを確かめる。解析が Unknown や violated と言った場合は照合しない。verified なのに位置や大きさが違えば、間違った成功(健全性の不具合)になる。
 
 この照合で、幅を指定した flex item の `flex-grow`(`width: 50px; flex-grow: 2` の箱を 50px のままにしていた)と、縦の flex item の `min-height` が、モデルに反映されていないことが分かり、直した。flex item の主軸の大きさは、container が解いた大きさ(伸縮と min/max の後)を使う。
+
+組み合わせを 10 のレイアウト(`repeat(auto-fill, minmax())`、fr の行、入れ子の grid、absolute、折り返す flex、割合の高さを追加)と約 100 の宣言に広げた照合で、さらに 3 つの間違った成功を直した。
+
+- 折り返す flex の行分けが、max-width で縮める前の大きさを使っていた(180px の item に `max-width: 20px` を付けても次の行に送っていた)。行分けは、max で縮め、min で広げた後の仮の大きさを使う。
+- block の container の `justify-items`(normal と stretch 以外)を無視していた。Chromium は子を寄せ、幅が auto の子を中身の幅に縮める(`justify-items: start` でも空の子は幅 0)。モデルにないので Unknown にした。
+- grid の `align-content: center` / `end` の空きを、fr の行を 0 と数えて計算していた。fr の行が空きを取るので、行は動かない。空きは解いた後の行の大きさから計算する。
