@@ -110,14 +110,28 @@ export function place(children, columns, { rows, subgridColumns = false, areas, 
   let cursor = 0;
   const violation = (code, message, box, axis) => { throw Object.assign(new Error(message), { code, box, axis }); };
   const ordered = children.map(item => ({ ...item, column: placement(item.style['grid-column'], 'column', areas, columns + 1), line: placement(item.style['grid-row'], 'row', areas, explicitRows ? explicitRows + 1 : undefined) }))
-    .toSorted((a, b) => Number(a.line.start === undefined) - Number(b.line.start === undefined));
+    // Grid §8.5: items with both lines definite first, then items locked to a row, then the rest (stable: document
+    // order within each step).
+    .toSorted((a, b) => { const step = x => x.line.start !== undefined && x.column.start !== undefined ? 0 : x.line.start !== undefined ? 1 : 2; return step(a) - step(b); });
+  // Step 2's per-row cursor: an item locked to a row starts past the items this step placed earlier in that row.
+  const rowCursor = new Map();
   for (const { box, style, column: columnPlacement, line } of ordered) {
     const column = columnPlacement.start, span = columnPlacement.span, rowSpan = line.span;
     if (!Number.isSafeInteger(span) || span < 1 || (column ?? 0) + span > columns) violation(subgridColumns ? 'E_LAYOUT_SUBGRID_PLACEMENT' : 'E_LAYOUT_PLACEMENT', 'Child placement is outside the explicit columns', box, 'inline');
     if (!Number.isSafeInteger(rowSpan) || rowSpan < 1 || rowSpan > 2048 || (line.start ?? 0) + rowSpan > 2048) throw new Error('Use grid rows within 1..2048');
-    if (line.start !== undefined && column === undefined) throw new Error('An explicit row requires an explicit column');
     let row = line.start === undefined ? Math.floor(cursor / columns) : line.start;
-    let start = column ?? cursor % columns;
+    let start = column ?? (line.start !== undefined ? (rowCursor.get(line.start) ?? 0) : cursor % columns);
+    if (line.start !== undefined && column === undefined) {
+      // The earliest column at or past the row's cursor where it fits; past the explicit columns Chromium adds an
+      // implicit column, which is not modeled.
+      const fits = () => { for (let r = row; r < row + rowSpan; r++) for (let c = start; c < start + span; c++) if (occupied.has(`${r}:${c}`)) return false; return true; };
+      while (start + span <= columns && !fits()) start++;
+      if (start + span > columns) throw new Error(`An item locked to grid row ${line.start + 1} does not fit in the explicit columns there (it would make an implicit column)`);
+      for (let r = row; r < row + rowSpan; r++) for (let c = start; c < start + span; c++) occupied.add(`${r}:${c}`);
+      rowCursor.set(line.start, start + span);
+      result.push({ box, style, start, span, row, rowSpan });
+      continue;
+    }
     if (start + span > columns) { start = 0; row++; }
     const busy = () => {
       for (let r = row; r < row + rowSpan; r++) for (let c = start; c < start + span; c++) if (occupied.has(`${r}:${c}`)) return true;

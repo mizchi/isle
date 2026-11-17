@@ -298,3 +298,13 @@ test('negative grid-row lines count from the end of the explicit rows when grid-
   assert.deepEqual(a('.a{grid-row:1/-1;grid-column:1}'), ['0', '70']);
   assert.equal(r('.p{grid-template-rows:none}.a{grid-row:1/-1;grid-column:1}').status, 'unknown');
 });
+
+test('an item locked to a grid row (grid-row only) is placed in that row before the auto items (Grid §8.5)', () => {
+  const r = c => analyzeHTML('<html lang="en"><body><main class="p"><div class="a"></div><div class="b"></div><div class="c"></div></main></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.p{display:grid;grid-template-columns:100px 100px;grid-auto-rows:20px;width:300px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const at = (c, box) => { const x = r(c).sizes.find(s => s.box === box && s.rect).rect; return [x.inlineStart.constant, x.blockStart.constant]; };
+  assert.deepEqual(at('.a{grid-row:2}', '.a'), ['0', '20']);
+  assert.deepEqual(at('.a{grid-row:2}', '.b'), ['0', '0']);
+  assert.deepEqual(at('.b{grid-row:1}', '.a'), ['100', '0']);
+  // More row-locked items than the row has columns: an implicit column, Unknown.
+  assert.equal(r('.a{grid-row:1}.b{grid-row:1}.c{grid-row:1}').status, 'unknown');
+});
