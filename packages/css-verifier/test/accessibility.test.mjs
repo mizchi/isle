@@ -2165,3 +2165,12 @@ test('scroll-start-unreachable: centered or end-aligned content that overflows a
   assert.deepEqual(unreachable(''), []);
   assert.deepEqual(unreachable('.list{justify-content:center;height:400px}'), []);
 });
+
+test('text-contrast inside a positioned scroll container: decided when nothing else paints over the container; Unknown with a painted box inside it', async () => {
+  const {analyzeHTML} = await import('../src/html.mjs');
+  const run = (color, badge = '') => analyzeHTML(`<html lang="en"><body><main class="m"><div class="list"><p class="i">One</p><p class="i">Two</p><p class="i">Three</p>${badge}</div></main></body></html>`, {name: 'P', css: `*{margin:0;padding:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.list{position:relative;display:grid;grid-template-columns:minmax(0,1fr);overflow-y:auto;height:100px}.i{height:40px;font-size:16px;line-height:24px;color:${color}}.badge{position:absolute;top:0;right:0;width:20px;height:20px;background:#c00}`, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+  const codes = r => [...new Set(r.diagnostics.filter(d => d.rule === 'text-contrast' || /CONTRAST/.test(d.code)).map(d => d.code))].sort();
+  assert.deepEqual(codes(run('#aaa')), ['E_A11Y_CONTRAST']);
+  assert.deepEqual(codes(run('#000')), []);
+  assert.deepEqual(codes(run('#000', '<span class="badge"></span>')), ['U_A11Y_CONTRAST']);
+});

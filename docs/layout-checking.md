@@ -630,3 +630,4 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 - flex item の割合の高さは、container の確定した高さに対して解く(margin を引いた残りに対してではない。`height: 50%; margin-top: 10px` は 100px の row で 50px)。以前は 45px にしていた(間違った成功)。
 - grid の中の absolute な箱で、top と bottom が auto の場合、grid の `align-items`(または自分の `align-self`)が static position を動かす(80px の grid で `align-items: flex-end` なら 20px の箱は 60px)。モデルにないので Unknown にした(以前は 0 に置いていた)。
 - スクロールコンテナが containing block の absolute な箱(以前は Unknown): スクロール位置 0 の padding box に対して置き、中身と一緒にスクロールする。大きさは決まるので解析する。位置は中身と同じく、スクロール位置 0 で解くときだけ持つ。末尾にはみ出しても切り取られず、スクロールできる範囲が広がるだけなので `E_LAYOUT_ABSOLUTE_CLIPPED` にはしない。差分照合(`absscroll`)で、大きさが Chromium と一致することを確かめた。照合は `scrollIntent: 'css'` で解き、スクロールコンテナの中の箱は大きさだけを比べる。
+- 位置を持つスクロールコンテナの中のテキストのコントラスト(以前は Unknown): テキストはスクロール位置で動くので位置を持たないが、そのスクロールコンテナで切り取られる。後ろに来うるのはスクロールコンテナに重なる箱だけなので、それがなければ祖先の背景で判定する。同じスクロールコンテナの中に塗られた箱がある場合は、位置が分からないので Unknown のまま。

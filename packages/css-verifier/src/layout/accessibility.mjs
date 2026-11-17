@@ -392,8 +392,14 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     // A positioned box above the opaque backdrop lets other boxes show through behind the text.
     const positionedAbove = text.chain.slice(result.opaqueAt + 1).some(layer => layer.position !== 'static');
     if (positionedAbove) {
-      const others = painted.filter(row => !related(row.path, text.path) && text.origin && text.block && overlap(text, row));
-      if (!text.origin || others.length) { report(unknowns, 'U_A11Y_CONTRAST', 'unknown', `${text.box.label} is positioned without an opaque background of its own; the boxes behind it are not its ancestors`, text, text.region, { rule: 'text-contrast' }); continue; }
+      // Text inside a scroll container has no position (it depends on the scroll offset), but it is clipped to that
+      // container: only boxes over the container can be behind it. A painted box inside the same container has no
+      // position either, so it may be.
+      const bound = text.origin ? null : placed.filter(row => row.overflow === 'scroll' && row.origin && row.block && isAncestor(row.path, text.path)).at(-1);
+      const others = text.origin
+        ? painted.filter(row => !related(row.path, text.path) && text.block && overlap(text, row))
+        : bound ? geometry.filter(row => row.painted && visible(row) && !related(row.path, text.path) && (row.origin ? overlap(bound, row) : isAncestor(bound.path, row.path))) : [];
+      if ((!text.origin && !bound) || others.length) { report(unknowns, 'U_A11Y_CONTRAST', 'unknown', `${text.box.label} is positioned without an opaque background of its own; the boxes behind it are not its ancestors`, text, text.region, { rule: 'text-contrast' }); continue; }
     }
     const ratio = contrastRatio(result.fg, result.bg), required = large(text.chain.at(-1)) ? big : normal;
     // Floating-point luminance: a ratio within numeric error of the threshold is not decided (ADR-0007).
