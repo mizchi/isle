@@ -3087,7 +3087,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                         // (E_LAYOUT_ABSOLUTE_CLIPPED). Any other clipping ancestor stays Unknown.
                         const clipping = finalAncestors.filter(ancestor => ancestor.clipped);
                         const ownClip = clipping.length === 1 && clipping[0] === finalAncestors.at(-1) && ['hidden', 'visible'].includes(clipping[0].style?.['overflow-x']) && ['hidden', 'visible'].includes(clipping[0].style?.['overflow-y']);
-                        if (!containing?.paddingBlock || containing.subgrid || (clipping.length && !ownClip)) throw new Error('Absolute boxes require an owned non-scrolling, unclipped containing block without subgrid placement');
+                        // A scroll container that is the containing block: the box is placed against its padding box at
+                        // scroll offset 0 and scrolls with the content (what reaches past the end extends the scrollable
+                        // area instead of being cut off). Its size is known; its position, like the content's, only at
+                        // offset 0 (scroll-zero), so it has none otherwise.
+                        const ownScroll = clipping.length === 1 && clipping[0] === finalAncestors.at(-1) && containing === clipping[0] && [clipping[0].style?.['overflow-x'], clipping[0].style?.['overflow-y']].every(v => ['auto', 'scroll', 'hidden', 'visible'].includes(String(v))) && !ownClip;
+                        if (!containing?.paddingBlock || containing.subgrid || (clipping.length && !ownClip && !ownScroll)) throw new Error('Absolute boxes require an owned non-scrolling, unclipped containing block without subgrid placement');
                         if (ownClip) containing.clips = { box: clipping[0].box.label, x: clipping[0].style['overflow-x'] === 'hidden', y: clipping[0].style['overflow-y'] === 'hidden' };
                         return solve(item.box,{inline:containing.paddingInline,block:containing.paddingBlock,
                           containingBlock:{path:containing.box.path,inline:containing.paddingInline,block:containing.paddingBlock,origin:containing.paddingOrigin,...(containing.clips ? { clips: containing.clips } : {})}},r,finalAncestors,item.inherited ?? style,emit).map(result=>result.region);
