@@ -1540,6 +1540,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // Paint declarations that only work together with another one: text-overflow marks inline overflow that is
         // clipped, -webkit-line-clamp clamps a -webkit-box. (z-index always applies here: every parent is grid or flex.)
         const set = (key, unset) => style.$sources?.[key] && String(style[key]) !== unset;
+        // Auto inline margins of a block-level box in block flow with an auto width and no max-width: the box fills its
+        // container, so the margins compute to 0 and nothing is centered (CSS 2.2 §10.3.3; measured: the same layout
+        // without them). Replaced boxes and form controls keep their own width and are centered: not reported.
+        if (inFlow && ['block', 'list-item'].includes(String(parentDisplay)) && String(style['inline-size']) === 'auto' && String(style['max-inline-size']) === 'none' && !['img', 'video', 'canvas', 'iframe', 'svg', 'input', 'button', 'select', 'textarea', 'table'].includes(box.tag) && ['block', 'list-item', 'grid', 'flex'].includes(String(style.display))) {
+          const autoSides = ['margin-left', 'margin-right'].filter(key => style.$sources?.[key] && String(style[key]) === 'auto');
+          for (const key of autoSides) reasons.push([key, 'its width is auto, so it fills its container and the auto margins are 0 (give it a width or max-width to center it)']);
+        }
         // overflow-y: auto/scroll on a box of block flow with an auto height and no max-height: the box grows with its
         // content, so it never scrolls vertically (measured: scrollHeight equals clientHeight); the page scrolls
         // instead. (In a column flex or grid with a definite height it is shrunk and does scroll: not reported.)

@@ -264,3 +264,9 @@ test('a percentage height against a block parent of auto height computes to auto
   assert.deepEqual(inert(r), [['.c', 'block-size']]);
   assert.equal(r.sizes.find(s => s.box === '.c' && s.rect).rect.blockSize.constant, '30');
 });
+
+test('auto inline margins on a block of auto width (no max-width) center nothing', () => {
+  assert.deepEqual(inert(run('.p{display:block}.c{height:10px;margin:0 auto}')), [['.c', 'margin-left margin-right']]);
+  assert.deepEqual(inert(run('.p{display:block}.c{height:10px;margin:0 auto;max-width:100px}')), []);
+  assert.deepEqual(inert(run('.p{display:block}.c{height:10px;margin:0 auto;width:100px}')), []);
+});
