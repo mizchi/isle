@@ -1,8 +1,8 @@
 {
   "run": "before",
-  "cases": 69,
-  "breaks": 95,
-  "caught": 95,
+  "cases": 72,
+  "breaks": 101,
+  "caught": 101,
   "missed": 0,
   "silentMisses": 0,
   "analysisFailures": [],
@@ -17,11 +17,11 @@
   "backlog": [
     {
       "reason": "ASSUMPTION: the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul",
-      "count": 69
+      "count": 72
     },
     {
       "reason": "ASSUMPTION: rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked",
-      "count": 69
+      "count": 72
     },
     {
       "reason": "U_A11Y_ARIA_VALUE: .X: a dynamic aria-pressed may be invalid",
@@ -280,6 +280,45 @@
       "assumptions": [
         "props with a literal default (count) are checked with that default and with placeholder text for any other value",
         "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "breadcrumb-trail",
+      "file": "before.svelte",
+      "framework": "svelte",
+      "intent": "A breadcrumb trail ending in the current page title.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_LAYOUT_TRACKS",
+          "found": true
+        }
+      ],
+      "caught": [
+        "page-overflow html [1x@320 2x@320 dark@320]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 1,
+      "warnings": 0,
+      "assumptions": [
+        "5 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
@@ -1426,6 +1465,46 @@
       ]
     },
     {
+      "id": "media-row",
+      "file": "before.jsx",
+      "framework": "stylex",
+      "intent": "A media row: a 16:9 thumbnail and a title.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_LAYOUT_CONTENT",
+          "found": true
+        }
+      ],
+      "caught": [
+        "page-overflow html [1x@320 1x@375 1x@393 2x@320 2x@375 2x@393 dark@320 dark@375 dark@393] via E_LAYOUT_CONTENT",
+        "text-overflow .sx-1tooct1 [1x@320 1x@375 1x@393 2x@320 2x@375 2x@393 dark@320 dark@375 dark@393]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 1,
+      "warnings": 0,
+      "assumptions": [
+        "1 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
       "id": "modal",
       "file": "before.vue",
       "framework": "vue",
@@ -1460,6 +1539,51 @@
       "warnings": 1,
       "assumptions": [
         "3 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
+        "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
+        "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
+        "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
+      ]
+    },
+    {
+      "id": "modal-actions",
+      "file": "before.vue",
+      "framework": "vue",
+      "intent": "A dialog footer with Cancel and a destructive primary action, each 120px.",
+      "status": "violated",
+      "expected": [
+        {
+          "code": "E_LAYOUT_TRACKS",
+          "found": true
+        },
+        {
+          "code": "E_A11Y_TEXT_RESIZE",
+          "found": true
+        }
+      ],
+      "caught": [
+        "text-overflow-block .secondary [2x@320 2x@375 2x@768 2x@1280 2x@390]",
+        "text-overflow-block .primary [2x@320 2x@375 2x@768 2x@1280 2x@390]",
+        "offscreen .secondary [2x@320 2x@375 2x@390]"
+      ],
+      "missed": [],
+      "silentMissed": [],
+      "crashed": false,
+      "unconfirmed": [],
+      "environment": [],
+      "notChecked": [
+        {
+          "code": "ASSUMPTION",
+          "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
+        },
+        {
+          "code": "ASSUMPTION",
+          "reason": "rem (and a root font-size in %, em or medium) resolved at a Npx browser default font size; other user settings are not checked"
+        }
+      ],
+      "errors": 3,
+      "warnings": 2,
+      "assumptions": [
+        "2 text box(es) measured with the given font files (Roboto): their widths and line breaks are derived, not assumed",
         "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own default colors and forced colors are not checked",
         "rem (and a root font-size in %, em or medium) resolved at a 16px browser default font size; other user settings are not checked",
         "text resized to 200% (a 32px default font size) analysed too (SC 1.4.4)"
