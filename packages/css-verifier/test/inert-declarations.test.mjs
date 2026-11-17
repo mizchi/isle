@@ -165,3 +165,15 @@ test('box properties on a display: contents element do nothing', () => {
   assert.deepEqual(inert(nest('.w{color:#c00;font-size:20px}')), []);
   assert.equal(nest('.w{width:100px}').status, 'verified');
 });
+
+test('tables: a cell\'s margin and a row\'s padding do nothing; a row\'s height or background is Unknown; table-layout on a table applies', () => {
+  const table = css => analyzeHTML('<html lang="en"><body><table class="t"><tbody><tr><td class="c"></td><td class="c"></td></tr></tbody></table></body></html>', {name: 'P', css: `*{margin:0;padding:0}html,body{${g}}.t{table-layout:fixed;inline-size:200px;border-spacing:0}.c{inline-size:100px;block-size:20px}${css}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  assert.deepEqual(inert(table('')), []);
+  assert.deepEqual(inert(table('td{margin:8px}')), [['.c', 'margin-top margin-right margin-bottom margin-left']]);
+  assert.match(table('tr{padding:8px}').layoutWarnings[0].message, /a table row or row group has no padding or margins/);
+  for (const css of ['tr{height:50px}', 'tbody{height:50px}', 'tr{background:#c00}']) {
+    const r = table(css);
+    assert.equal(r.status, 'unknown', css);
+    assert.ok(r.diagnostics.some(d => d.code === 'U_LAYOUT_TABLE'), css);
+  }
+});

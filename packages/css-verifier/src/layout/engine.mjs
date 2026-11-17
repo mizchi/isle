@@ -1514,7 +1514,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // order reorders grid and flex items; children in block flow keep the source order.
         if (inFlow && parentDisplay === 'block' && set('order', '0')) reasons.push(['order', `its parent ${parents.at(-1).box.label} is display: block, not grid or flex, so the boxes keep the source order`]);
         // table-layout chooses the column algorithm of a table box.
-        if (set('table-layout', 'auto') && !['table', 'inline-table'].includes(style.display)) reasons.push(['table-layout', `it is display: ${style.$blockFlow ? 'block' : style.display}, not table`]);
+        if (set('table-layout', 'auto') && box.tag !== 'table' && !['table', 'inline-table'].includes(style.display)) reasons.push(['table-layout', `it is display: ${style.$blockFlow ? 'block' : style.display}, not table`]);
         // list-style-type draws the marker of a list item; it is inherited, so on a list it styles the items. A box that
         // is not a list item and has no descendants has no marker to style.
         const ownSource = key => { const a = style.$sources?.[key], b = parents.at(-1)?.style.$sources?.[key]; return a && !(b && a.file === b.file && a.line === b.line && a.selector === b.selector); };
@@ -1528,6 +1528,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // content: a string on an element (not ::before or ::after) generates nothing (measured: Chromium shows the
         // element's own children, and an empty one stays 0px wide); only url() replaces an element, which is not modeled.
         if (!box.pseudo && style.$sources?.content && !['none', undefined].includes(style.content)) reasons.push(['content', 'a string in content is drawn only in ::before and ::after; on the element itself it shows nothing; put it on ::before or ::after']);
+        // A table cell has no margins (CSS 2.2 §17.5: they do not apply to table cells; measured).
+        if (box.tableCell) for (const side of ['top', 'right', 'bottom', 'left']) if (style.$sources?.[`margin-${side}`] && !['0', '0px', 'auto'].includes(String(style[`margin-${side}`]))) reasons.push([`margin-${side}`, 'it is a table cell, which has no margins; space cells with border-spacing on the table, or pad the cell']);
         // scroll-padding insets the snapport of a scroll container; the viewport takes the root's, not body's (measured:
         // body { scroll-padding-top } does not move where scrollIntoView or a #fragment lands; html's does).
         if (!scrolls && box.tag !== 'html') for (const side of ['top', 'right', 'bottom', 'left']) {
@@ -1876,6 +1878,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       });
     }
     for (const box of [...sections, ...rows]) box.tablePart = true;
+    // A row's or row group's height sets the rows' height (CSS 2.2 §17.5.3; measured: tr { height: 50px } makes 20px cells
+    // a 50px row; its width does not change the columns, reported as inert below),
+    // and its background paints under the cells; neither is modeled (rows lay out as display: contents).
+    for (const part of [...sections, ...rows]) for (const ps of styles(part, region, parents, style, false, false)) {
+      const sized = ['block-size', 'min-block-size', 'max-block-size'].find(key => ps.style.$sources?.[key] && !['auto', 'none', '0', '0px'].includes(String(ps.style[key])));
+      if (sized) fail(`${part.label}: ${sized} on a table ${rows.includes(part) ? 'row' : 'row group'} sets the rows' height, which is not modeled; size the cells instead`);
+      if (ps.style.$sources?.['background-color'] && !['transparent', 'rgba(0, 0, 0, 0)'].includes(String(ps.style['background-color'])) || (ps.style.$sources?.['background-image'] && ps.style['background-image'] !== 'none')) fail(`${part.label}: a table ${rows.includes(part) ? 'row' : 'row group'} background paints under its cells, which is not modeled; set the background on the cells`);
+    }
     for (const row of rows) for (const cell of row.children) cell.tableCell = true;
     // Cells stretch to their row: a fixed block-size must be shared by the row's cells (a grid item would not stretch).
     for (const row of rows) {
@@ -2376,7 +2386,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (!written.length) return;
     layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: written,
       css: written.map(key => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
-      message: `${box.label}: ${written.join(', ')} ${written.length === 1 ? 'has' : 'have'} no effect (it is display: contents, which generates no box of its own; its children are laid out in its place). Put them on a child, or use another display`, ...ranges(region) });
+      message: box.tablePart
+        ? `${box.label}: ${written.join(', ')} ${written.length === 1 ? 'has' : 'have'} no effect (a table row or row group has no padding or margins, and its width does not size the columns). Put them on its cells`
+        : `${box.label}: ${written.join(', ')} ${written.length === 1 ? 'has' : 'have'} no effect (it is display: contents, which generates no box of its own; its children are laid out in its place). Put them on a child, or use another display`, ...ranges(region) });
   }
   function solve(box, available, region, parents = [], inherited, emit = true) {
     let results = [];

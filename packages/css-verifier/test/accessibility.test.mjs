@@ -951,7 +951,7 @@ test('nested px rowspans grow shorter spans first; rows that start a rowspan tak
   const tableView = {min: 420, max: 1280, height: {min: 400, max: 900}};
   const rect = (report, cls) => report.sizes.find(r => r.box === `.${cls}` && r.rect).rect;
   const td = (cls, rowSpan) => ({tag: 'td', classes: [cls], ...(rowSpan ? {rowSpan} : {})});
-  const table = rows => ({tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['b'], children: rows.map(children => ({tag: 'tr', classes: ['r'], children}))}]});
+  const table = rows => ({tag: 'table', classes: ['t'], children: [{tag: 'tbody', classes: ['g'], children: rows.map(children => ({tag: 'tr', classes: ['r'], children}))}]});
   const css = '.t { table-layout: fixed; inline-size: 300px; border-spacing: 0; }\ntd { padding: 0; block-size: 10px; }\n.a { block-size: 120px; inline-size: 50px; }\n.b { block-size: 60px; inline-size: 50px; }';
   // b (two rows) first: 10, 10 → 30, 30; then a over 30, 30, 10 → 120.
   const nested = run(table([[td('a', 3), td('b', 2), td('c')], [td('c')], [td('x'), td('c')]]), css, {viewport: tableView});

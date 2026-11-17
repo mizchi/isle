@@ -1018,3 +1018,18 @@ test('inert box properties on display: contents: Chromium lays out and paints th
   const shot = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`); return [await page.evaluate(() => JSON.stringify([...document.querySelectorAll('.c')].map(e => e.getBoundingClientRect()))), (await page.screenshot()).toString('base64')]; };
   expect(await shot(base + decl)).toEqual(await shot(base));
 });
+
+test('tables: a cell margin and a row padding change nothing in Chromium, and a row height does (the analysis is Unknown there)', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const html = '<table class="t"><tbody><tr><td class="c"></td><td class="c"></td></tr></tbody></table>';
+  const base = `*{margin:0;padding:0}html,body{${g}}.t{table-layout:fixed;inline-size:200px;border-spacing:0}.c{inline-size:100px;block-size:20px;background:#00c}`;
+  await page.setViewportSize({width: 400, height: 300});
+  const shot = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`); return [await page.evaluate(() => JSON.stringify([...document.querySelectorAll('.c, .t')].map(e => e.getBoundingClientRect()))), (await page.screenshot()).toString('base64')]; };
+  const plain = await shot(base);
+  for (const [css, inertExpected] of [['td{margin:8px}', true], ['tr{padding:8px}', true], ['tbody{width:50px}', true], ['tr{width:50px}', true], ['tr{height:50px}', false]]) {
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT'), css).toBe(inertExpected);
+    expect(report.status === 'unknown', css).toBe(!inertExpected);
+    expect((await shot(base + css))[0] === plain[0], `${css}: same layout in Chromium`).toBe(inertExpected);
+  }
+});
