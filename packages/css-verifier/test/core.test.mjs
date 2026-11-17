@@ -150,7 +150,6 @@ test('shrinking percentage flex bases: shares of one width are modeled; padding 
   assert.equal(run(''), 'verified');
   assert.equal(run('.b{padding:0 6px}'), 'unknown'); // inner = 50% − 12px: weights vary with the width
   assert.equal(run('.c{flex:0 1 120px}'), 'unknown'); // a px item shrinks with them
-  assert.equal(run('.b{min-width:auto}'), 'unknown'); // the automatic minimum needs the content
 });
 
 test('a negative margin is modeled on a flex row item\'s main axis only; on a grid item it stays Unknown', () => {
@@ -158,4 +157,10 @@ test('a negative margin is modeled on a flex row item\'s main axis only; on a gr
   assert.equal(run('.p{display:flex}.a{flex:0 0 40px;margin-right:-12px}.b{flex:1 1 0;min-width:0}'), 'verified');
   assert.equal(run('.p{display:grid;grid-template-columns:40px minmax(0,1fr)}.b{margin-left:-12px}'), 'unknown');
   assert.equal(run('.p{display:flex}.a{flex:0 0 40px;margin-top:-4px}.b{flex:1 1 0;min-width:0}'), 'unknown'); // cross axis, with block checking
+});
+
+test('shrinking percentage flex bases with min-width auto: the content minimum applies; where it exceeds the share it is Unknown', () => {
+  const run = track => analyzeHTML('<main class="n"><div class="b"><div class="t"></div></div><div class="b"><div class="t"></div></div></main>', {name: 'P', css: `*{box-sizing:border-box;margin:0}.n{display:flex;column-gap:8px}.b{flex:1 1 50%;display:grid;grid-template-columns:${track}}.t{inline-size:150px;block-size:10px}`, viewport: {min: 200, max: 900, height: {min: 300, max: 600}}}).status;
+  assert.equal(run('minmax(0,1fr)'), 'violated'); // min-content 0: the items shrink below their content (as in Chromium)
+  assert.equal(run('1fr'), 'unknown'); // min-content 150px: above the 50% share at narrow widths, not modeled
 });
