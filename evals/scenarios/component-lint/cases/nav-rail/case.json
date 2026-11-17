@@ -1,0 +1,1 @@
+{"framework": "vue", "intent": "A narrow navigation rail: an icon and a label per link.", "planted": "the rail is 160px and the labels do not wrap: 'Notification settings' runs past the rail", "expect": ["E_LAYOUT_TRACKS"]}

@@ -91,7 +91,7 @@ const page = html => `<html lang="en"><body>${html}</body></html>`;
 // Text without a size contract makes the layout Unknown. assumeText gives every element with direct text a contract
 // of one line (lineHeight px, default 24) and no minimum width — an assumption the lint output states: text overflow
 // is then not checked, and heights hold only for one-line text. Elements are marked with a class no CSS matches.
-// Text beside child elements that are not phrasing (a button, a div): in a flex or grid container each run of it is
+// Text beside child elements (a button, a div, an icon span): in a flex or grid container each run of it is
 // an anonymous item, which lays out like an unstyled span there (blockified, the parent's inherited text styles,
 // flex: 0 1 auto, min-width: auto). Each run is wrapped in a marked span so it is measured as a text box; elsewhere
 // (block flow) the result is Unknown either way. Skipped when a selector could match the added span (*, span, a
@@ -103,7 +103,11 @@ function wrapTextRuns(html) {
   const walk = node => {
     const kids = node.childNodes ?? [];
     const texts = kids.filter(c => c.nodeName === '#text' && c.value.trim()), elements = kids.filter(c => c.tagName);
-    if (node.tagName && texts.length && elements.some(c => !phrasingTags.has(c.tagName))) {
+    // Also beside a phrasing child without text (an icon span: in a flex or grid container it is an item, and the text
+    // beside it an anonymous one). Runs whose phrasing children all have text (Posted <strong>today</strong>) stay one
+    // text leaf, as before.
+    const textOf = c => (c.childNodes ?? []).some(k => (k.nodeName === '#text' && k.value.trim()) || (k.tagName && textOf(k)));
+    if (node.tagName && texts.length && elements.some(c => !phrasingTags.has(c.tagName) || !textOf(c))) {
       node.childNodes = kids.map(c => {
         if (!(c.nodeName === '#text' && c.value.trim())) return c;
         const span = parseFragment(`<span class="__anon${n++}"></span>`).childNodes[0];

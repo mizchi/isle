@@ -95,9 +95,9 @@ adapter は、子のコンポーネントなどの境界を、状態のマーク
 
 ## 要素と並ぶテキスト(匿名の flex / grid item)
 
-flex や grid の容器で、テキストが button や div と並んでいる(`<span class="tag">design<button …></button></span>`)と、テキストの並びは匿名の item になる。匿名の item は、その位置にある無指定の span と同じに並ぶ(blockify され、親の文字の指定を継承し、`flex: 0 1 auto`、`min-width: auto`)。そこで解析では、テキストの並びを印を付けた span で包み、ほかのテキストと同じくフォントで測る。button などの位置が Chromium と一致することを確かめた(`e2e/layout-svelte.spec.mjs`。測った文字幅は上限なので、1/64px 単位の差が並ぶ数だけ積み重なりうる)。
+flex や grid の容器で、テキストが button や div、文字のない span(アイコン)と並んでいる(`<span class="tag">design<button …></button></span>`、`<a><span class="icon"></span>Inbox</a>`)と、テキストの並びは匿名の item になる。匿名の item は、その位置にある無指定の span と同じに並ぶ(blockify され、親の文字の指定を継承し、`flex: 0 1 auto`、`min-width: auto`)。そこで解析では、テキストの並びを印を付けた span で包み、ほかのテキストと同じくフォントで測る。button などの位置が Chromium と一致することを確かめた(`e2e/layout-svelte.spec.mjs`。測った文字幅は上限なので、1/64px 単位の差が並ぶ数だけ積み重なりうる)。
 
-包んだ span に当たりうるセレクタ(`*`、`span`、`:first-child` などの構造の擬似クラス、`+` / `~`)が CSS にあるときは包まない。そのときは、これまでどおり Unknown(`U_LAYOUT_STRUCTURE`)。block の流れの中のテキストと要素(インラインの組版)も Unknown のまま。
+包んだ span に当たりうるセレクタ(`*`、`span`、`:first-child` などの構造の擬似クラス、`+` / `~`)が CSS にあるときは包まない。そのときは、これまでどおり Unknown(`U_LAYOUT_STRUCTURE`)。block の流れの中のテキストと要素(インラインの組版)も Unknown のまま。子がどれも文字を持つ phrasing(`Posted <strong>today</strong>`)なら、これまでどおり 1 つのテキストとして測る。
 
 ## 状態とソース行
 
