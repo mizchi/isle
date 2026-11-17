@@ -2084,3 +2084,27 @@ test('an absolute menu inside an overflow: hidden card is cut off exactly when C
     expect(flagged, name).toBe(cut);
   }
 });
+
+test('scroll-end-covered: scrolled to the bottom, Chromium still hides the last item under the bar exactly where the static check reports it', async ({page}) => {
+  const html = '<html lang="en"><body><main class="m"><section class="w"><ul class="list"><li class="i">One</li><li class="i">Two</li><li class="i">Three</li><li class="i">Four</li><li class="i">Five</li><li class="i last">Last item</li></ul><div class="bar">Actions</div></section></main></body></html>';
+  const base = '*{margin:0;padding:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.w{position:relative;display:grid;grid-template-columns:minmax(0,1fr)}.list{display:grid;grid-template-columns:minmax(0,1fr);overflow-y:auto;height:200px;list-style:none}.i{height:40px;font-size:16px;line-height:24px;color:#000}.bar{position:absolute;left:0;right:0;bottom:0;height:48px;background:#333;color:#fff;font-size:16px;line-height:24px}';
+  const seen = [];
+  for (const extra of ['', '.list{padding-bottom:48px}', '.bar{height:20px}', '.list{height:400px}', '.list{height:240px}', '.bar{right:50%}']) {
+    const css = base + extra;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 24}, '.bar': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+    const flagged = report.diagnostics.some(d => d.code === 'E_A11Y_SCROLL_END_COVERED' && d.box === '.i.last');
+    await page.setViewportSize({width: 400, height: 600});
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const hidden = await page.evaluate(() => {
+      const list = document.querySelector('.list'); list.scrollTop = list.scrollHeight;
+      const last = document.querySelector('.last'), r = last.getBoundingClientRect(), port = list.getBoundingClientRect();
+      // Every point of the item inside the scrollport is under another box.
+      const xs = [r.left + 1, (r.left + r.right) / 2, r.right - 1], ys = [Math.max(r.top, port.top) + 1, (Math.max(r.top, port.top) + Math.min(r.bottom, port.bottom)) / 2, Math.min(r.bottom, port.bottom) - 1];
+      return xs.every(x => ys.every(y => { const hit = document.elementFromPoint(x, y); return hit && !last.contains(hit); }));
+    });
+    expect(flagged, `${extra || 'base'}: Chromium hides it scrolled to the bottom: ${hidden}`).toBe(hidden);
+    seen.push(hidden);
+  }
+  expect(seen.filter(Boolean).length).toBeGreaterThan(0);
+  expect(seen.filter(v => !v).length).toBeGreaterThan(0);
+});

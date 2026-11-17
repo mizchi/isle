@@ -78,6 +78,7 @@
 //   page-main        → W_A11Y_NO_MAIN           a page where no main landmark renders
 //   icon-font-name   → E_A11Y_ICON_NAME         a control named only by generated icon-font glyphs (Private Use Area)
 //   generated-name   → W_A11Y_GENERATED_NAME    a control named only by CSS generated content
+//   scroll-end-covered → E_A11Y_SCROLL_END_COVERED the end of a scroll container's content stays under a box painted over it at every scroll offset
 //   focus-clipped    → E_A11Y_FOCUS_CLIPPED     a focusable box entirely outside an overflow: clip ancestor (it cannot scroll into view)
 //   hidden-overridden → W_A11Y_HIDDEN_OVERRIDDEN an element with the hidden attribute that renders (author display overrides [hidden])
 //   state-mismatch   → W_A11Y_STATE_MISMATCH    aria-expanded (or a tab's aria-selected) disagrees with whether its aria-controls target renders
@@ -104,13 +105,13 @@ export const accessibilityRules = ['accessible-name', 'text-contrast', 'occluded
   'role-parent', 'role-children', 'role-attr', 'aria-attr', 'aria-value', 'presentation-conflict', 'empty-th', 'redundant-alt', 'title-only', 'input-button-name', 'autocomplete', 'scope',
   'html-lang', 'lang-valid', 'meta-viewport', 'touch-zoom', 'forced-colors', 'page-h1', 'region', 'bypass', 'landmark-top-level', 'duplicate-landmark', 'p-as-heading', 'orientation', 'focus-visible', 'text-spacing', 'state-contrast', 'frame-title', 'video-caption', 'autoplay-audio', 'hover-only',
   'clickable-look', 'list-style-semantics', 'motion', 'blink', 'definition-list', 'accesskeys', 'server-side-image-map', 'aria-hidden-body',
-  'color-only-state', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'page-clipped', 'image-fallback-contrast', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'label-pointer', 'bar-covered', 'bar-transparent', 'autofocus'];
+  'color-only-state', 'input-image-alt', 'fragment-target', 'page-main', 'icon-font-name', 'generated-name', 'focus-clipped', 'hidden-overridden', 'state-mismatch', 'focus-transparent', 'error-message', 'modal-background', 'new-window', 'form-submit', 'native-aria-conflict', 'focus-semantics', 'focus-offscreen', 'focus-scrolled-under', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'page-clipped', 'image-fallback-contrast', 'visual-presentation', 'focus-contrast', 'field-boundary', 'placeholder-contrast', 'checked-indicator', 'focus-clipped-away', 'fragment-under-bar', 'flash', 'text-obscured', 'focus-appearance', 'focus-ring-clipped', 'hidden-control', 'select-indicator', 'live-hidden', 'tabindex-removed', 'contents-focus', 'icon-contrast', 'caret-hidden', 'label-pointer', 'bar-covered', 'bar-transparent', 'autofocus', 'scroll-end-covered'];
 
 // Usefulness tiers (docs/accessibility-rule-evaluation.md). core: depends on the CSS result and is proved over the
 // viewport region and states; dom: decided by the DOM alone (lint overlaps); heuristic: a Technique or a guess that
 // legitimate designs can trip; legacy: rare or obsolete markup. profile 'core' keeps core and dom only.
 const tierLists = {
-  core: ['bar-transparent', 'bar-covered', 'live-hidden', 'select-indicator', 'hidden-control', 'focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'page-clipped', 'image-fallback-contrast', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
+  core: ['scroll-end-covered', 'bar-transparent', 'bar-covered', 'live-hidden', 'select-indicator', 'hidden-control', 'focus-ring-clipped', 'focus-appearance', 'text-obscured', 'flash', 'fragment-under-bar', 'focus-clipped-away', 'checked-indicator', 'placeholder-contrast', 'field-boundary', 'focus-contrast', 'visual-presentation', 'fixed-hides-content', 'fixed-covers-part', 'text-start-obscured', 'page-clipped', 'image-fallback-contrast', 'focus-scrolled-under', 'focus-offscreen', 'text-contrast', 'state-contrast', 'link-in-text-block', 'target-size', 'target-overlap', 'occluded-target', 'reflow', 'focus-obscured', 'focus-clipped', 'focus-transparent', 'focus-visible', 'focus-area', 'hidden-focusable', 'hover-only', 'pointer-disabled', 'scrollable-region-focusable', 'text-spacing', 'accessible-name', 'form-label', 'label-in-name', 'empty-heading', 'empty-th', 'icon-font-name', 'generated-name', 'hidden-overridden', 'state-mismatch', 'modal-background', 'fragment-target', 'orientation', 'multiple-main', 'heading-order'],
   heuristic: ['color-only-state', 'visual-order', 'p-as-heading', 'link-text', 'link-purpose', 'new-window', 'redundant-alt', 'title-only', 'form-submit', 'clickable-look', 'list-style-semantics', 'small-text', 'region', 'bypass', 'page-h1', 'page-main', 'landmark-name', 'landmark-top-level', 'duplicate-landmark', 'radio-group', 'fieldset-name', 'motion', 'autoplay-audio'],
   legacy: ['blink', 'server-side-image-map', 'accesskeys', 'aria-hidden-body'],
 };
@@ -852,6 +853,36 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
       region = atMost(region, sum(s.origin.inline, scalar(sliver)), right(cover)); region = atMost(region, sum(cover.origin.inline, scalar(sliver)), right(s));
       region = atMost(region, sum(s.origin.block, scalar(sliver)), bottom(cover)); region = atMost(region, sum(cover.origin.block, scalar(sliver)), bottom(s));
       if (region) { report(unknowns, 'U_A11Y_SCROLLED_COVER', 'unknown', `${cover.box.label} paints over part of ${s.box.label}, a scroll container: whether it covers the text inside is not checked (positions there depend on the scroll offset). Keep controls outside the scrolling area, or give the content room beside them`, s, region, { rule: 'text-start-obscured', cover: cover.path }); break; }
+    }
+  }
+
+  // scroll-end-covered: positions at scroll offset 0 (scrollZero) give the whole scroll range of a vertical scroller:
+  // scrolling by t moves its content up by t, up to the maximum, where the content's end (its last box's bottom plus the
+  // scroller's padding) meets the bottom of the scrollport. A box at the end of the content that an opaque box outside
+  // the scroller covers even there is covered at every offset: it can never be seen (a fixed action bar over the last
+  // list item). (Content shorter than the scrollport does not scroll: covered at 0 is covered for good.)
+  if (scrollZero) for (const s of placed.filter(row => row.overflow === 'scroll' && row.path !== root?.path && !row.box.documentRoot && ['auto', 'scroll'].includes(String(row.overflowValue)) && row.paddingBlockEnd !== undefined)) {
+    const inside = placed.filter(row => isAncestor(s.path, row.path) && row.origin && visible(row) && !hiddenFrom(row.path) && row.position !== 'fixed');
+    const innerBottom = diff(bottom(s), scalar(s.borders.bottom));
+    for (const target of inside.filter(row => (row.box.text || focusable(row)) && !row.box.pseudo)) {
+      let base = target.region;
+      // The target is the content's end: no other box inside reaches lower.
+      for (const other of inside) if (other !== target && !isAncestor(other.path, target.path)) { base = atMost(base, bottom(other), bottom(target)); if (!base) break; }
+      if (!base) continue;
+      const end = sum(bottom(target), scalar(s.paddingBlockEnd));
+      for (const cover of placed) {
+        if (related(cover.path, s.path) || !visible(cover) || !cover.painted || !opaque(cover) || !cover.origin) continue;
+        if (!paintsAbove(cover, layer(cover), s, layer(s))) continue;
+        let region = atMost(atMost(base, cover.origin.inline, target.origin.inline), right(target), right(cover));
+        if (!region) continue;
+        // No overflow: the target stays where it is.
+        const still = atMost(atMost(atMost(region, end, innerBottom), cover.origin.block, target.origin.block), bottom(target), bottom(cover));
+        // Overflow: at the maximum offset the target ends at innerBottom − padding.
+        const lifted = diff(innerBottom, scalar(s.paddingBlockEnd));
+        const scrolled = atMost(atMost(atMost(region, innerBottom, end), cover.origin.block, diff(lifted, target.block)), lifted, bottom(cover));
+        for (const r of [still, scrolled].filter(Boolean))
+          report(findings, 'E_A11Y_SCROLL_END_COVERED', 'error', `${target.box.label} is at the end of ${s.box.label}'s scrolling content, and ${cover.box.label} covers it at every scroll offset, even scrolled to the bottom: it can never be seen. Give ${s.box.label} a padding-bottom (or scroll-padding) at least as tall as ${cover.box.label}`, target, r, { rule: 'scroll-end-covered', cover: cover.path, coverBox: cover.box.label, scroller: s.box.label });
+      }
     }
   }
 
