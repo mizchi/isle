@@ -3,6 +3,9 @@
 // compared with Chromium. Browser rendering is not used to accept source.
 import {test, expect} from '@playwright/test';
 import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
+import {applyBrowserBaseline} from './support/browser-baseline.mjs';
+// Outside Chromium: skip tests whose oracle only Chromium has, expect failures where the browser's CSS baseline differs.
+test.beforeEach(({}, testInfo) => applyBrowserBaseline(testInfo));
 
 const reset = '*{box-sizing:border-box;margin:0;padding:0}';
 const cases = [

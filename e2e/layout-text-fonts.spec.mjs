@@ -10,6 +10,9 @@ import {scriptRuns, breakOpportunities} from '../packages/css-verifier/src/text.
 import {compile, requireIR} from '../lib/compiler.mjs';
 import {prepareProgram} from '../lib/codegen.mjs';
 import {analyzeLayout} from '../lib/layout.mjs';
+import {applyBrowserBaseline} from './support/browser-baseline.mjs';
+// Outside Chromium: skip tests whose oracle only Chromium has, expect failures where the browser's CSS baseline differs.
+test.beforeEach(({}, testInfo) => applyBrowserBaseline(testInfo));
 // The Chrome DevTools Protocol exists in Chromium only: elsewhere the test is skipped where it needs it.
 const chromiumOnly = page => { test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)'); return page.context().newCDPSession(page); };
 

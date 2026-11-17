@@ -8,7 +8,12 @@ import {spawnSync} from 'node:child_process';
 import {mkdirSync, writeFileSync} from 'node:fs';
 import {analyzeHTML, htmlBoxTree} from '../packages/css-verifier/src/html.mjs';
 import {normalizeTree} from '../packages/css-verifier/src/tree.mjs';
+import {applyBrowserBaseline} from './support/browser-baseline.mjs';
+// Outside Chromium: skip tests whose oracle only Chromium has, expect failures where the browser's CSS baseline differs.
+test.beforeEach(({}, testInfo) => applyBrowserBaseline(testInfo));
 // The Chrome DevTools Protocol exists in Chromium only: elsewhere the test is skipped where it needs it.
+// Measured widths as contracts: up to the 1/64 px the engine counts in (Firefox reports 1/60 px fractions).
+const up64 = v => Math.ceil(v * 64 - 1e-9) / 64;
 const chromiumOnly = page => { test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)'); return page.context().newCDPSession(page); };
 
 
@@ -1168,7 +1173,7 @@ test('automatic tables share width between min- and max-content like Chromium', 
   await page.setContent(`<!doctype html><html lang="en"><head><style>${css}.probe{display:inline-block;font-family:sans-serif;font-size:16px;line-height:20px}</style></head><body>${html}${cells.map((c, i) => `<div><span class="probe" id="mn${i}" style="width:min-content">${c}</span></div><div><span class="probe" id="mx${i}" style="width:max-content">${c}</span></div>`).join('')}</body></html>`);
   // The trusted contracts: each cell's min- and max-content width as Chromium measures it.
   const ranges = await page.evaluate(n => Array.from({length: n}, (_, i) => [document.getElementById(`mn${i}`).getBoundingClientRect().width, document.getElementById(`mx${i}`).getBoundingClientRect().width]), cells.length);
-  const boxes = Object.fromEntries(ranges.map(([min, max], i) => [`.c${i}`, {minInlineSize: min, maxInlineSize: max, overflowBlock: 'visible'}]));
+  const boxes = Object.fromEntries(ranges.map(([min, max], i) => [`.c${i}`, {minInlineSize: up64(min), maxInlineSize: up64(max), overflowBlock: 'visible'}]));
   const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280}, boxes});
   expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
   for (const width of [1280, 900, 600, 375]) {
@@ -1203,7 +1208,7 @@ test('an auto-width automatic table shrinks to its content like Chromium', async
   const html = `<table class="t"><tbody><tr>${cells.map((c, i) => `<td class="c${i}">${c}</td>`).join('')}</tr></tbody></table>`;
   await page.setContent(`<!doctype html><html lang="en"><head><style>.probe{display:inline-block;font-family:sans-serif;font-size:16px;line-height:20px}</style></head><body>${cells.map((c, i) => `<div><span class="probe" id="mn${i}" style="width:min-content">${c}</span></div><div><span class="probe" id="mx${i}" style="width:max-content">${c}</span></div>`).join('')}</body></html>`);
   const ranges = await page.evaluate(n => Array.from({length: n}, (_, i) => [document.getElementById(`mn${i}`).getBoundingClientRect().width, document.getElementById(`mx${i}`).getBoundingClientRect().width]), cells.length);
-  const boxes = Object.fromEntries(ranges.map(([min, max], i) => [`.c${i}`, {minInlineSize: min, maxInlineSize: max, overflowBlock: 'visible'}]));
+  const boxes = Object.fromEntries(ranges.map(([min, max], i) => [`.c${i}`, {minInlineSize: up64(min), maxInlineSize: up64(max), overflowBlock: 'visible'}]));
   const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 320, max: 1280}, boxes});
   expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
   for (const width of [1280, 400, 340]) {
@@ -1260,7 +1265,7 @@ test('automatic tables mixing px and content columns share width like Chromium',
     await page.setViewportSize({width: 1280, height: 800});
     await page.setContent(`<!doctype html><html lang="en"><head><style>.probe{display:inline-block;font-family:sans-serif;font-size:16px;line-height:20px}</style></head><body>${cells.map((c, i) => `<div><span class="probe" id="mn${i}" style="width:min-content">${c}</span></div><div><span class="probe" id="mx${i}" style="width:max-content">${c}</span></div>`).join('')}</body></html>`);
     const ranges = await page.evaluate(n => Array.from({length: n}, (_, i) => [document.getElementById(`mn${i}`).getBoundingClientRect().width, document.getElementById(`mx${i}`).getBoundingClientRect().width]), cells.length);
-    const boxes = Object.fromEntries(ranges.map(([min, max], i) => [`.c${i}`, {minInlineSize: min, maxInlineSize: max, overflowBlock: 'visible'}]));
+    const boxes = Object.fromEntries(ranges.map(([min, max], i) => [`.c${i}`, {minInlineSize: up64(min), maxInlineSize: up64(max), overflowBlock: 'visible'}]));
     const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 100, max: 1280}, boxes});
     expect(report.status === 'unknown', JSON.stringify(report.diagnostics)).toBe(false);
     for (const width of [1280, 600, 400, 300, 250, 200, 160, 120]) {

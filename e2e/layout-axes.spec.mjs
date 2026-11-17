@@ -3,6 +3,9 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { compile, requireIR } from '../lib/compiler.mjs';
 import { prepareProgram } from '../lib/codegen.mjs';
 import { analyzeLayout } from '../lib/layout.mjs';
+import {applyBrowserBaseline} from './support/browser-baseline.mjs';
+// Outside Chromium: skip tests whose oracle only Chromium has, expect failures where the browser's CSS baseline differs.
+test.beforeEach(({}, testInfo) => applyBrowserBaseline(testInfo));
 
 const output = 'evals/results/layout-axes';
 const ir = requireIR(compile(await readFile('evals/scenarios/layout-axes/fixture.isle', 'utf8')));

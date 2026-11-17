@@ -3,6 +3,9 @@
 // not checks of the static analysis.
 import {test, expect} from '@playwright/test';
 import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
+import {applyBrowserBaseline} from './support/browser-baseline.mjs';
+// Outside Chromium: skip tests whose oracle only Chromium has, expect failures where the browser's CSS baseline differs.
+test.beforeEach(({}, testInfo) => applyBrowserBaseline(testInfo));
 // The Chrome DevTools Protocol exists in Chromium only: elsewhere the test is skipped where it needs it.
 const chromiumOnly = page => { test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)'); return page.context().newCDPSession(page); };
 
