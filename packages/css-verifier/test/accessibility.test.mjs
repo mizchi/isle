@@ -2184,3 +2184,14 @@ test('scroll-end-covered (text start): a corner button over the start of the las
   assert.deepEqual(parts('.fab{left:auto;right:0}'), []);
   assert.deepEqual(parts('.list{padding-bottom:48px}'), []);
 });
+
+test('scroll-end-covered (within): items near the end stay under the bar when less content follows them than the bar covers', async () => {
+  const {analyzeHTML} = await import('../src/html.mjs');
+  const html = '<html lang="en"><body><main class="m"><section class="w"><ul class="list"><li class="i a1">One</li><li class="i a2">Two</li><li class="i a3">Three</li><li class="i a4">Four</li><li class="i a5">Five</li><li class="i a6">Last</li></ul><div class="bar">Actions</div></section></main></body></html>';
+  const base = '*{margin:0;padding:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.w{position:relative;display:grid;grid-template-columns:minmax(0,1fr)}.list{display:grid;grid-template-columns:minmax(0,1fr);overflow-y:auto;height:100px;list-style:none}.i{height:20px;font-size:16px;line-height:20px;color:#000}.bar{position:absolute;left:0;right:0;bottom:0;height:48px;background:#333;color:#fff;font-size:16px;line-height:24px}';
+  const covered = extra => [...new Set(analyzeHTML(html, {name: 'P', css: base + extra, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 20}, '.bar': {minInlineSize: 0, intrinsicBlockSize: 24}}}).diagnostics.filter(d => d.code === 'E_A11Y_SCROLL_END_COVERED' && d.part !== 'text-start').map(d => d.box.split('.').pop()))].sort();
+  // 120px of content in 100px: scrolled to the bottom the items sit at 0..100, the bar covers 52..100.
+  assert.deepEqual(covered(''), ['a5', 'a6']);
+  assert.deepEqual(covered('.bar{height:30px}'), ['a6']);
+  assert.deepEqual(covered('.list{padding-bottom:48px}'), []);
+});

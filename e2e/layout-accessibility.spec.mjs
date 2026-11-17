@@ -2192,3 +2192,28 @@ test('scroll-end-covered (text start): scrolled to the bottom, Chromium keeps th
   expect(seen.filter(Boolean).length).toBeGreaterThan(0);
   expect(seen.filter(v => !v).length).toBeGreaterThan(0);
 });
+
+test('scroll-end-covered (within): Chromium keeps exactly the items the static check reports under the bar, scrolled to the bottom', async ({page}) => {
+  const html = '<html lang="en"><body><main class="m"><section class="w"><ul class="list"><li class="i a1">One</li><li class="i a2">Two</li><li class="i a3">Three</li><li class="i a4">Four</li><li class="i a5">Five</li><li class="i a6">Last</li></ul><div class="bar">Actions</div></section></main></body></html>';
+  const base = '*{margin:0;padding:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.w{position:relative;display:grid;grid-template-columns:minmax(0,1fr)}.list{display:grid;grid-template-columns:minmax(0,1fr);overflow-y:auto;height:100px;list-style:none}.i{height:20px;font-size:16px;line-height:20px;color:#000}.bar{position:absolute;left:0;right:0;bottom:0;height:48px;background:#333;color:#fff;font-size:16px;line-height:24px}';
+  let total = 0;
+  for (const extra of ['', '.bar{height:30px}', '.bar{height:70px}', '.list{padding-bottom:20px}', '.list{height:200px}']) {
+    const css = base + extra;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 20}, '.bar': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+    const flagged = [...new Set(report.diagnostics.filter(d => d.code === 'E_A11Y_SCROLL_END_COVERED' && d.part !== 'text-start').map(d => d.box.split('.').pop()))].sort();
+    await page.setViewportSize({width: 400, height: 600});
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const hidden = await page.evaluate(() => {
+      const list = document.querySelector('.list'); list.scrollTop = list.scrollHeight;
+      const port = list.getBoundingClientRect();
+      return [...list.querySelectorAll('.i')].filter(e => {
+        const r = e.getBoundingClientRect(), top = Math.max(r.top, port.top), bottom = Math.min(r.bottom, port.bottom);
+        if (bottom <= top) return false;
+        return [r.left + 1, (r.left + r.right) / 2, r.right - 1].every(x => [top + 1, (top + bottom) / 2, bottom - 1].every(y => { const hit = document.elementFromPoint(x, y); return hit && !e.contains(hit); }));
+      }).map(e => e.classList[1]).sort();
+    });
+    expect(flagged, extra || 'base').toEqual(hidden);
+    total += hidden.length;
+  }
+  expect(total).toBeGreaterThan(2);
+});

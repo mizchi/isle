@@ -882,13 +882,34 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
       const innerEnd = diff(a.end(s), scalar(a.border(s))), crossInnerEnd = diff(a.crossEnd(s), scalar(a.crossBorder(s)));
       for (const target of inside.filter(row => (row.box.text || focusable(row)) && !row.box.pseudo)) {
         let base = target.region;
-        // The target is the content's end on this axis, and nothing overflows the other axis (it does not scroll).
+        // Nothing overflows the other axis (it does not scroll there).
+        let crossOk = target.region;
+        for (const other of inside) { crossOk = atMost(crossOk, sum(a.crossEnd(other), scalar(a.crossPad(s))), crossInnerEnd); if (!crossOk) break; }
+        if (!crossOk) continue;
+        // A box anywhere in the content (not only its end): scrolled to the end, the content moves by its end minus the
+        // scrollport's end, so a box whose start is at or past the cover's start at offset 0, with no more than the
+        // cover's extent of content after its start, stays under a cover that reaches the scrollport's end at every
+        // offset (and earlier offsets put it further in, or past the end).
+        const middle = cover => {
+          let r = atMost(atMost(atMost(crossOk, a.crossStart(cover), a.crossStart(target)), a.crossEnd(target), a.crossEnd(cover)), a.start(cover), a.start(target));
+          if (r) r = atMost(r, innerEnd, a.end(cover));
+          for (const other of inside) { if (!r) break; r = atMost(r, sum(a.end(other), scalar(a.pad(s))), sum(a.start(target), diff(innerEnd, a.start(cover)))); }
+          return r;
+        };
+        // The target is the content's end on this axis.
         for (const other of inside) {
+          if (!base) break;
           if (other !== target && !isAncestor(other.path, target.path)) base = atMost(base, a.end(other), a.end(target));
           if (base) base = atMost(base, sum(a.crossEnd(other), scalar(a.crossPad(s))), crossInnerEnd);
-          if (!base) break;
         }
-        if (!base) continue;
+        if (!base) {
+          for (const cover of placed) {
+            if (related(cover.path, s.path) || !visible(cover) || !cover.painted || !opaque(cover) || !cover.origin || !paintsAbove(cover, layer(cover), s, layer(s))) continue;
+            const r = middle(cover);
+            if (r) report(findings, 'E_A11Y_SCROLL_END_COVERED', 'error', `${target.box.label} is near the ${axisName === 'block' ? 'bottom' : 'end'} of ${s.box.label}'s scrolling content, and ${cover.box.label} covers it at every scroll offset, even scrolled to the ${axisName === 'block' ? 'bottom' : 'end'} (less content follows it than ${cover.box.label} covers): it can never be seen. Give ${s.box.label} a ${axisName === 'block' ? 'padding-bottom' : 'padding-inline-end'} at least as ${axisName === 'block' ? 'tall' : 'wide'} as ${cover.box.label}`, target, r, { rule: 'scroll-end-covered', cover: cover.path, coverBox: cover.box.label, scroller: s.box.label, axis: axisName, part: 'within' });
+          }
+          continue;
+        }
         const contentEnd = sum(a.end(target), scalar(a.pad(s)));
         for (const cover of placed) {
           if (related(cover.path, s.path) || !visible(cover) || !cover.painted || !opaque(cover) || !cover.origin) continue;
