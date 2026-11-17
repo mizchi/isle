@@ -727,6 +727,7 @@ test('placeholder clipped: the static warning fires exactly where Chromium\'s pl
 });
 
 test('text resize (SC 1.4.4): with Chromium\'s default font size doubled, the text overflows exactly where E_A11Y_TEXT_RESIZE is reported', async ({page}) => {
+  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const {analyzeStates} = await import('../packages/adapter-core/src/index.mjs');
   const fonts = {Roboto: {file: new URL('roboto-variable.ttf', fixtures).pathname}};
   const pageCSS = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}';

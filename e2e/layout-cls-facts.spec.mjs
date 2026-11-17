@@ -541,6 +541,7 @@ test('hyphens: auto without lang breaks exactly like manual in Chromium, where t
 });
 
 test('root font size: where the static check warns, text ignores the browser default font size setting', async ({page}) => {
+  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Page.enable');
@@ -780,6 +781,7 @@ test('font-size under 200% zoom (half the CSS width at twice the pixel ratio): s
 });
 
 test('px line-height: with a 32px default font size the glyphs outgrow the line in Chromium exactly where the static check warns', async ({page}) => {
+  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Page.enable');
@@ -796,6 +798,7 @@ test('px line-height: with a 32px default font size the glyphs outgrow the line 
 });
 
 test('px height on text: with a 32px default font size the text overflows its box in Chromium exactly where the static check warns', async ({page}) => {
+  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Page.enable');

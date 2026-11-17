@@ -1086,6 +1086,7 @@ for (const sample of cases) {
 // (the content stays exposed); the static rule warns because other user agents honor it.
 for (const hidden of [true, false]) {
   test(`aria-hidden-body (${hidden ? 'hidden' : 'shown'}): static agrees with Chromium's AX tree`, async ({page}) => {
+    test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
     const body = `<body class="page"${hidden ? ' aria-hidden="true"' : ''}><main class="m"><button class="b" aria-label="Go"></button></main></body>`;
     const css = `${reset}.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:40px;background:#fff}.m{display:grid;grid-template-columns:40px;grid-template-rows:40px}.b{${button}}`;
     const report = analyzeHTML(body, {name: 'Page', css, viewport: {min: 375, max: 1280, height: {min: 600, max: 1000}}, accessibility: true});
@@ -1520,6 +1521,7 @@ test('select-indicator: where the static rule warns, Chromium draws nothing at t
 });
 
 test('live-hidden: the static warning holds exactly where Chromium leaves the live region out of the accessibility tree', async ({page}) => {
+  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const base = '*{box-sizing:border-box;margin:0}body{margin:0}.page{display:grid;grid-template-columns:200px;padding:8px;background:#fff;color:#000}.w{display:grid;grid-template-columns:minmax(0,1fr)}.m{display:block;height:20px}';
   const cdp = await page.context().newCDPSession(page);
   for (const [extra, wrapperHidden, warn] of [['', false, false], ['.m{display:none}', false, true], ['.m{visibility:hidden}', false, true], ['', true, true], ['.m{opacity:0}', false, false]]) {
@@ -1651,6 +1653,7 @@ test('stretched link: Chromium hits the link\'s ::after at the button exactly wh
 });
 
 test('contents-focus: where the static rule reports, Tab never lands on the element in Chromium', async ({page}) => {
+  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   const base = `*{box-sizing:border-box;margin:0}html,body{${g}}body{margin:0}.page{${g};background:#fff}.card{display:block;height:40px;background:#eee}`;
   const cases = [
@@ -1965,6 +1968,7 @@ test('accessible-name from the markup alone (the layout Unknown): each button ha
 });
 
 test('image-alt from the markup alone (the layout Unknown): Chromium exposes an unnamed img exactly where the static check reports a missing alt', async ({page}) => {
+  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block;width:100%}';
   for (const img of ['<img class="i" src="data:,">', '<img class="i" src="data:," alt="">', '<img class="i" src="data:," alt="Shoe">', '<img class="i" src="data:," role="presentation">', '<img class="i" src="data:," aria-hidden="true">']) {
     const html = `<html lang="en"><body><main class="m">${img}</main></body></html>`;
@@ -1983,6 +1987,7 @@ test('image-alt from the markup alone (the layout Unknown): Chromium exposes an 
 });
 
 test('placeholder-label: Chromium names the field from its placeholder exactly where the static check warns that the placeholder is its only name', async ({page}) => {
+  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.i{display:block;height:40px;padding:0 8px;border:1px solid #767676;font-size:16px;color:#000}.l{display:block;font-size:16px;line-height:24px;color:#000}';
   for (const field of ['<input class="i" type="email" placeholder="Email">', '<label class="l" for="e">Email</label><input class="i" id="e" type="email" placeholder="you@example.com">', '<input class="i" type="email" placeholder="Email" aria-label="Email address">', '<input class="i" type="email" placeholder="Email" title="Email">']) {
     const html = `<html lang="en"><body><main class="m">${field}</main></body></html>`;
@@ -2001,6 +2006,7 @@ test('placeholder-label: Chromium names the field from its placeholder exactly w
 });
 
 test('form-label from the markup alone (the layout Unknown): an error exactly where Chromium gives the field no name, a placeholder warning exactly where its name comes from the placeholder', async ({page}) => {
+  test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)');
   const css = '*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block;width:100%}';
   for (const field of ['<input class="f" type="email">', '<input class="f" type="email" placeholder="Email">', '<label for="e">Email</label><input class="f" id="e" type="email">', '<label>Email <input class="f" type="email"></label>', '<input class="f" type="email" aria-label="Email">', '<input class="f" type="email" title="Email">', '<label for="e"></label><input class="f" id="e" type="email">']) {
     const html = `<html lang="en"><body><main class="m"><img class="i" src="data:," alt="">${field}</main></body></html>`;
