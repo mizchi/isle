@@ -103,9 +103,18 @@ function placement(value, axis, areas, lines) {
   if (m[3] && span < 1) throw new Error(`grid-${axis}: ${value} ends at or before its start (the lines swap, which is not modeled)`);
   return { start, span };
 }
-export function place(children, columns, { rows, subgridColumns = false, areas, explicitRows, dense = false } = {}) {
+export function place(children, columns, { rows, subgridColumns = false, areas, explicitRows, dense = false, columnFlow = false } = {}) {
   // Areas wider than the explicit columns create implicit columns, which are not modeled.
   if (areas && areas.columns > columns) throw Object.assign(new Error(`grid-template-areas has ${areas.columns} columns but grid-template-columns ${columns}: the extra columns are implicit`), { code: 'U_LAYOUT_CSS' });
+  // grid-auto-flow: column with the rows listed: auto items fill each column top to bottom, then the next column
+  // (Grid §8.5 with the axes swapped). Only one-cell auto items within the explicit columns are modeled.
+  if (columnFlow) {
+    if (!explicitRows) throw new Error('grid-auto-flow: column needs grid-template-rows to list the rows');
+    const flow = children.map(item => ({ ...item, column: placement(item.style['grid-column'], 'column', areas, columns + 1), line: placement(item.style['grid-row'], 'row', areas, explicitRows + 1) }));
+    if (flow.some(item => item.column.start !== undefined || item.line.start !== undefined || item.column.span !== 1 || item.line.span !== 1)) throw new Error('grid-auto-flow: column is modeled for auto-placed one-cell items only');
+    if (flow.length > explicitRows * columns) throw new Error(`grid-auto-flow: column places ${flow.length} items in ${explicitRows} × ${columns} cells: the rest make implicit columns`);
+    return flow.map((item, i) => ({ box: item.box, style: item.style, start: Math.floor(i / explicitRows), span: 1, row: i % explicitRows, rowSpan: 1 }));
+  }
   const occupied = new Set(), result = [];
   let cursor = 0;
   const violation = (code, message, box, axis) => { throw Object.assign(new Error(message), { code, box, axis }); };

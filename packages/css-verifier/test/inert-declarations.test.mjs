@@ -314,5 +314,14 @@ test('grid-auto-flow: dense fills the first hole an auto item fits (it was Unkno
   const c = f => { const x = r(f).sizes.find(s => s.box === '.c' && s.rect).rect; return [x.inlineStart.constant, x.blockStart.constant]; };
   assert.deepEqual(c('row'), ['0', '40']);
   assert.deepEqual(c('row dense'), ['0', '0']);
+  // Column flow over unlisted rows is Unknown.
   assert.equal(r('column').status, 'unknown');
+});
+
+test('grid-auto-flow: column over listed rows fills each column top to bottom', () => {
+  const r = c => analyzeHTML('<html lang="en"><body><main class="p"><div class="a"></div><div class="b"></div><div class="c"></div></main></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.p{display:grid;grid-template-columns:100px 100px;grid-auto-flow:column;width:300px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const at = (c, box) => { const x = r(c).sizes.find(s => s.box === box && s.rect).rect; return [x.inlineStart.constant, x.blockStart.constant]; };
+  assert.deepEqual(at('.p{grid-template-rows:20px 30px}', '.b'), ['0', '20']);
+  assert.deepEqual(at('.p{grid-template-rows:20px 30px}', '.c'), ['100', '0']);
+  assert.equal(r('.p{grid-template-rows:20px 30px}.a{grid-column:2}').status, 'unknown');
 });
