@@ -895,12 +895,23 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
           if (!paintsAbove(cover, layer(cover), s, layer(s))) continue;
           // The cover spans the target on the other axis.
           const region = atMost(atMost(base, a.crossStart(cover), a.crossStart(target)), a.crossEnd(target), a.crossEnd(cover));
-          if (!region) continue;
           // No overflow: the target stays where it is.
-          const still = atMost(atMost(atMost(region, contentEnd, innerEnd), a.start(cover), a.start(target)), a.end(target), a.end(cover));
+          const still = region && atMost(atMost(atMost(region, contentEnd, innerEnd), a.start(cover), a.start(target)), a.end(target), a.end(cover));
           // Overflow: scrolled to the end, the target ends at innerEnd − padding.
           const lifted = diff(innerEnd, scalar(a.pad(s)));
-          const scrolled = atMost(atMost(atMost(region, innerEnd, contentEnd), a.start(cover), diff(lifted, a.size(target))), lifted, a.end(cover));
+          const scrolled = region && atMost(atMost(atMost(region, innerEnd, contentEnd), a.start(cover), diff(lifted, a.size(target))), lifted, a.end(cover));
+          // Partly covered: the start of the first line of text (its first glyph) stays under a cover that reaches the
+          // end of the scrollport, at the end of the scroll range and so at every offset (earlier offsets put the text
+          // further into the cover or past the end): the text never shows its start. Block axis, ltr start-aligned text.
+          if (!still && !scrolled && axisName === 'block' && target.box.text && target.content && /^\d+(?:\.\d+)?px$/.test(String(target.lineHeight)) && ['start', 'left'].includes(String(target.textAlign)) && target.direction !== 'rtl') {
+            const half = scalar(div(q(String(target.lineHeight).slice(0, -2)), q(2))), x = sum(target.origin.inline, scalar(target.content.left));
+            const coversStart = r0 => atMost(atMost(atMost(r0, cover.origin.inline, x), sum(x, scalar(sliver)), right(cover)), innerEnd, a.end(cover));
+            const startAt = top => sum(sum(top, scalar(target.content.top)), half);
+            const stillStart = coversStart(atMost(atMost(base, contentEnd, innerEnd), cover.origin.block, startAt(target.origin.block)));
+            const scrolledStart = coversStart(atMost(atMost(base, innerEnd, contentEnd), cover.origin.block, startAt(diff(diff(innerEnd, scalar(a.pad(s))), target.block))));
+            for (const r of [stillStart, scrolledStart].filter(Boolean))
+              report(findings, 'E_A11Y_SCROLL_END_COVERED', 'error', `the start of ${target.box.label}'s text, at the bottom of ${s.box.label}'s scrolling content, stays under ${cover.box.label} at every scroll offset, even scrolled to the bottom: its first words can never be read. Give ${s.box.label} a padding-bottom at least as tall as ${cover.box.label}`, target, r, { rule: 'scroll-end-covered', cover: cover.path, coverBox: cover.box.label, scroller: s.box.label, axis: axisName, part: 'text-start' });
+          }
           for (const r of [still, scrolled].filter(Boolean))
             report(findings, 'E_A11Y_SCROLL_END_COVERED', 'error', `${target.box.label} is at the ${axisName === 'block' ? 'bottom' : 'end'} of ${s.box.label}'s scrolling content, and ${cover.box.label} covers it at every scroll offset, even scrolled to the ${axisName === 'block' ? 'bottom' : 'end'}: it can never be seen. Give ${s.box.label} a ${axisName === 'block' ? 'padding-bottom' : 'padding-inline-end'} at least as ${axisName === 'block' ? 'tall' : 'wide'} as ${cover.box.label}`, target, r, { rule: 'scroll-end-covered', cover: cover.path, coverBox: cover.box.label, scroller: s.box.label, axis: axisName });
         }

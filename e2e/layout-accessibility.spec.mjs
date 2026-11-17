@@ -2092,7 +2092,7 @@ test('scroll-end-covered: scrolled to the bottom, Chromium still hides the last 
   for (const extra of ['', '.list{padding-bottom:48px}', '.bar{height:20px}', '.list{height:400px}', '.list{height:240px}', '.bar{right:50%}']) {
     const css = base + extra;
     const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 24}, '.bar': {minInlineSize: 0, intrinsicBlockSize: 24}}});
-    const flagged = report.diagnostics.some(d => d.code === 'E_A11Y_SCROLL_END_COVERED' && d.box === '.i.last');
+    const flagged = report.diagnostics.some(d => d.code === 'E_A11Y_SCROLL_END_COVERED' && d.box === '.i.last' && d.part !== 'text-start');
     await page.setViewportSize({width: 400, height: 600});
     await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
     const hidden = await page.evaluate(() => {
@@ -2168,4 +2168,27 @@ test('scroll-start-unreachable (inline): a centered row that overflows its scrol
   }
   expect(seen.some(n => n > 0)).toBe(true);
   expect(seen.some(n => n === 0)).toBe(true);
+});
+
+test('scroll-end-covered (text start): scrolled to the bottom, Chromium keeps the start of the last item\'s text under a corner button exactly where the static check reports it', async ({page}) => {
+  const html = '<html lang="en"><body><main class="m"><section class="w"><ul class="list"><li class="i">One</li><li class="i">Two</li><li class="i">Three</li><li class="i">Four</li><li class="i">Five</li><li class="i last">Last item</li></ul><button class="fab" type="button" aria-label="Add"></button></section></main></body></html>';
+  const base = '*{margin:0;padding:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.w{position:relative;display:grid;grid-template-columns:minmax(0,1fr);width:300px}.list{display:grid;grid-template-columns:minmax(0,1fr);overflow-y:auto;height:200px;list-style:none}.i{height:40px;font-size:16px;line-height:24px;color:#000}.fab{position:absolute;left:0;bottom:0;width:48px;height:48px;background:#333;border:0}';
+  const seen = [];
+  for (const extra of ['', '.list{padding-bottom:48px}', '.fab{left:auto;right:0}', '.i{padding-left:60px}', '.fab{height:20px}']) {
+    const css = base + extra;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+    const flagged = report.diagnostics.some(d => d.code === 'E_A11Y_SCROLL_END_COVERED' && d.box === '.i.last');
+    await page.setViewportSize({width: 400, height: 600});
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const hidden = await page.evaluate(() => {
+      const list = document.querySelector('.list'); list.scrollTop = list.scrollHeight;
+      const last = document.querySelector('.last'), range = document.createRange(); range.setStart(last.firstChild, 0); range.setEnd(last.firstChild, 1);
+      const g = range.getClientRects()[0], hit = document.elementFromPoint(g.left + 1, (g.top + g.bottom) / 2);
+      return !hit || !last.contains(hit);
+    });
+    expect(flagged, `${extra || 'base'}: Chromium hides its first glyph scrolled to the bottom: ${hidden}`).toBe(hidden);
+    seen.push(hidden);
+  }
+  expect(seen.filter(Boolean).length).toBeGreaterThan(0);
+  expect(seen.filter(v => !v).length).toBeGreaterThan(0);
 });

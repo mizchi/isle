@@ -2174,3 +2174,13 @@ test('text-contrast inside a positioned scroll container: decided when nothing e
   assert.deepEqual(codes(run('#000')), []);
   assert.deepEqual(codes(run('#000', '<span class="badge"></span>')), ['U_A11Y_CONTRAST']);
 });
+
+test('scroll-end-covered (text start): a corner button over the start of the last item\'s text at every scroll offset', async () => {
+  const {analyzeHTML} = await import('../src/html.mjs');
+  const html = '<html lang="en"><body><main class="m"><section class="w"><ul class="list"><li class="i">One</li><li class="i">Two</li><li class="i">Three</li><li class="i">Four</li><li class="i">Five</li><li class="i last">Last item</li></ul><button class="fab" type="button" aria-label="Add"></button></section></main></body></html>';
+  const base = '*{margin:0;padding:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.w{position:relative;display:grid;grid-template-columns:minmax(0,1fr);width:300px}.list{display:grid;grid-template-columns:minmax(0,1fr);overflow-y:auto;height:200px;list-style:none}.i{height:40px;font-size:16px;line-height:24px;color:#000}.fab{position:absolute;left:0;bottom:0;width:48px;height:48px;background:#333;border:0}';
+  const parts = extra => analyzeHTML(html, {name: 'P', css: base + extra, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 24}}}).diagnostics.filter(d => d.code === 'E_A11Y_SCROLL_END_COVERED').map(d => `${d.box} ${d.part ?? 'all'}`);
+  assert.deepEqual(parts(''), ['.i.last text-start']);
+  assert.deepEqual(parts('.fab{left:auto;right:0}'), []);
+  assert.deepEqual(parts('.list{padding-bottom:48px}'), []);
+});
