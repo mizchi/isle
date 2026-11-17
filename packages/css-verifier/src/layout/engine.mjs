@@ -744,6 +744,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (style.$fixed && (!options.viewport.height || (options.hostInset ?? 0) !== 0 || (options.hostBlockInset ?? 0) !== 0)) throw Object.assign(new Error(`${box.label} is position: fixed; the viewport needs a height range and the component must start at the viewport origin`), { code: 'U_LAYOUT_CSS' });
     if (String(style.transform).startsWith('rotate-any(') && (!options.accessibility || options.integrity)) throw Object.assign(new Error(`transform ${style.transform}: an arbitrary rotation is modeled for the accessibility checks only (not integrity, whose overflow it changes)`), { code: 'U_LAYOUT_CSS' });
     if (style.transform !== 'none' && !options.accessibility && !options.integrity) throw Object.assign(new Error(`transform ${style.transform} moves the painted box; it is modeled for the accessibility and integrity checks only`), { code: 'U_LAYOUT_CSS' });
+    // float on a grid or flex item does nothing (CSS Flexbox §3, Grid §3: the item is blockified, float ignored;
+    // measured: the rectangles are the same without it): it is also reported as inert, which says why. The checked
+    // layout forbids float everywhere (E_LAYOUT_FLOAT, a policy), so that stays.
+    if (['left', 'right', 'inline-start', 'inline-end'].includes(style.float) && parentStyle && ['grid', 'inline-grid', 'flex', 'inline-flex'].includes(String(parentStyle.display)) && !parentStyle.$blockFlow) {
+      if (!layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('float')))
+        layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['float'], ...(style.$sources?.float ? { css: [{ property: 'float', file: style.$sources.float.file, line: style.$sources.float.line, selector: style.$sources.float.selector }] } : {}),
+          message: `${box.label}: float: ${style.float} has no effect (its parent is display: ${parentStyle.display}, whose items do not float). Use justify-self, margin-left: auto or order to move it`, ...ranges(region) });
+    }
     if (['left', 'right', 'inline-start', 'inline-end'].includes(style.float)) { issue('E_LAYOUT_FLOAT', 'float is forbidden in checked layout', box, region); return false; }
     if (style.float !== 'none') throw new Error('Unsupported float value');
     if (style.display === 'contents') throw new Error('display: contents on the analyzed root or with text needs its parent box and anonymous items');

@@ -229,3 +229,15 @@ test('sizes and vertical margins on a display: inline span do nothing', () => {
   assert.deepEqual(run('.s{height:60px;margin-top:20px}'), ['block-size margin-top']);
   assert.deepEqual(run('.s{color:red}'), []);
 });
+
+test('float on a grid or flex item is reported as inert too (the checked layout still forbids float)', () => {
+  const run = d => analyzeHTML('<html lang="en"><body><div class="p"><div class="c a"></div><div class="c b"></div></div></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.p{width:300px}.c{height:20px;width:50px}.a{float:right}${d}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  for (const d of ['.p{display:flex}', '.p{display:grid;grid-template-columns:1fr 1fr}']) {
+    const r = run(d);
+    // The checked layout's policy still forbids float; the inert warning says it does nothing here anyway.
+    assert.ok(r.diagnostics.some(x => x.code === 'E_LAYOUT_FLOAT'), d);
+    assert.deepEqual(inert(r), [['.c.a', 'float']]);
+  }
+  assert.ok(run('.p{display:block}').diagnostics.some(x => x.code === 'E_LAYOUT_FLOAT'));
+  assert.deepEqual(inert(run('.p{display:block}')), []);
+});
