@@ -640,7 +640,7 @@
         }
       ],
       "errors": 0,
-      "warnings": 0,
+      "warnings": 1,
       "assumptions": [
         "{#each} is checked at 0, 2 items, all items taking the same branch choices",
         "{expression} text is rendered as placeholder text; its size comes from the box contracts",

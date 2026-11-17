@@ -631,3 +631,7 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 - grid の中の absolute な箱で、top と bottom が auto の場合、grid の `align-items`(または自分の `align-self`)が static position を動かす(80px の grid で `align-items: flex-end` なら 20px の箱は 60px)。モデルにないので Unknown にした(以前は 0 に置いていた)。
 - スクロールコンテナが containing block の absolute な箱(以前は Unknown): スクロール位置 0 の padding box に対して置き、中身と一緒にスクロールする。大きさは決まるので解析する。位置は中身と同じく、スクロール位置 0 で解くときだけ持つ。末尾にはみ出しても切り取られず、スクロールできる範囲が広がるだけなので `E_LAYOUT_ABSOLUTE_CLIPPED` にはしない。差分照合(`absscroll`)で、大きさが Chromium と一致することを確かめた。照合は `scrollIntent: 'css'` で解き、スクロールコンテナの中の箱は大きさだけを比べる。
 - 位置を持つスクロールコンテナの中のテキストのコントラスト(以前は Unknown): テキストはスクロール位置で動くので位置を持たないが、そのスクロールコンテナで切り取られる。後ろに来うるのはスクロールコンテナに重なる箱だけなので、それがなければ祖先の背景で判定する。同じスクロールコンテナの中に塗られた箱がある場合は、位置が分からないので Unknown のまま。
+- inline の行レイアウトそのもの(inline-block や inline の画像を block の中に並べる)は、行の高さが親のフォントの寸法(strut)と baseline で決まるので Unknown のまま。ただし、配置を解かなくても DOM と computed style だけで分かる定番の不具合は警告する。
+  - `W_LAYOUT_INLINE_GAP`: 2 つ以上の inline-level の箱が、マークアップ上で空白を挟んで並ぶ。間に親のフォントの空白 1 文字分の隙間ができる(font-size: 0 や white-space で空白が消える場合は出さない)。直し方は display: flex と gap。
+  - `W_LAYOUT_IMAGE_BASELINE_GAP`: block の中の inline の `<img>`(vertical-align: baseline)。文字の baseline に乗るので、親がディセンダーの分だけ画像より高くなり、下に数 px の隙間ができる。直し方は display: block か vertical-align: top。
+  どちらも Chromium で、隙間が出る場合と警告が一致することを確かめた(`e2e/layout-cls-facts.spec.mjs`)。

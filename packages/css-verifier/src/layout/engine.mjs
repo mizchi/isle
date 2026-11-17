@@ -2779,6 +2779,19 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   if (!columns.length && children.children.some(child=>child.style.position!=='absolute')) throw new Error('In-flow Grid children require explicit supported columns');
                   if (style.$blockFlow) {
                     const flow = children.children.filter(child => child.style.position !== 'absolute');
+                    // Two classic inline-level bugs, seen from the DOM and the computed styles alone (the line layout
+                    // itself stays Unknown below): whitespace between inline-blocks in the source is a space between
+                    // them, and an inline image sits on the baseline with the descender's room under it (measured).
+                    const inlineKids = flow.filter(child => child.style.$inlineLevel);
+                    const fontless = ['0', '0px'].includes(String(style['font-size']));
+                    // (Recorded from any pass: the line layout throws before the emitting one.)
+                    if (inlineKids.length >= 2 && box.whitespace && !fontless && ['normal', 'nowrap', 'pre-line'].includes(String(style['white-space'])) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_INLINE_GAP' && w.path === box.path))
+                      layoutWarnings.push({ code: 'W_LAYOUT_INLINE_GAP', severity: 'warning', box: box.label, path: box.path, items: inlineKids.map(c => c.box.label),
+                        message: `${box.label} lays out ${inlineKids.map(c => c.box.label).join(', ')} as inline-level boxes, with whitespace between them in the markup: each gap is a space of ${box.label}'s font (about a quarter of its font-size), not a value you set. Use display: flex with gap on ${box.label} instead`, ...ranges(bs.region) });
+                    for (const img of inlineKids.filter(c => c.box.tag === 'img' && String(c.style['vertical-align'] ?? 'baseline') === 'baseline'))
+                      if (!fontless && !layoutWarnings.some(w => w.code === 'W_LAYOUT_IMAGE_BASELINE_GAP' && w.path === img.box.path))
+                        layoutWarnings.push({ code: 'W_LAYOUT_IMAGE_BASELINE_GAP', severity: 'warning', box: img.box.label, path: img.box.path, parent: box.label,
+                          message: `${img.box.label} is an inline image in ${box.label}: it sits on the text baseline, so ${box.label} is taller than the image by the font's descender (a few pixels of gap under it). Give ${img.box.label} display: block (or vertical-align: top)`, ...ranges(bs.region) });
                     for (const child of flow) if (child.style.$inlineLevel) throw Object.assign(new Error(`${child.box.label} is inline-level inside the block container ${box.label}: its line layout is not modeled (give it display: block, or make ${box.label} a grid or flex container)`), { code: 'U_LAYOUT_INLINE', box: child.box, region: children.region });
                     // Grid placement and self-alignment do nothing in block flow: laid out as auto, reported as inert.
                     // (justify-self is not inert: Chromium aligns block-level boxes by it — measured — which is not modeled.)

@@ -188,3 +188,13 @@ test('tables: min/max sizes on a cell, and a table min-height, are Unknown (Chro
   // A reset's min-width: 0 is the initial value: not Unknown.
   assert.equal(table('td{min-width:0}').status, 'verified');
 });
+
+test('inline-level boxes in block flow: whitespace gaps between inline-blocks and the baseline gap under an inline image are warned', () => {
+  const page = (html, css) => analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{${g}}.p{width:300px}${css}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const codes = r => (r.layoutWarnings ?? []).map(w => w.code);
+  assert.deepEqual(codes(page('<div class="p"><span class="c"></span> <span class="c"></span></div>', '.c{display:inline-block;width:50px;height:20px}')), ['W_LAYOUT_INLINE_GAP']);
+  assert.deepEqual(codes(page('<div class="p"><span class="c"></span><span class="c"></span></div>', '.c{display:inline-block;width:50px;height:20px}')), []);
+  assert.deepEqual(codes(page('<div class="p"><span class="c"></span> <span class="c"></span></div>', '.c{display:inline-block;width:50px;height:20px}.p{font-size:0}')), []);
+  assert.deepEqual(codes(page('<div class="p"><img class="i" src="a.png" width="100" height="50" alt=""></div>', '')), ['W_LAYOUT_IMAGE_BASELINE_GAP']);
+  assert.deepEqual(codes(page('<div class="p"><img class="i" src="a.png" width="100" height="50" alt=""></div>', '.i{vertical-align:top}')), []);
+});

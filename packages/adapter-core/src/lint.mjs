@@ -42,6 +42,8 @@ export const recommended = {
   W_LAYOUT_FOCUS_SHIFT: ['warning', 'draw focus with outline or box-shadow, or keep the size (change border-color, not border-width)'],
   W_LAYOUT_CONTAINER_COLLAPSE: ['warning', 'give the query container a width, flex: 1 or a flex-basis'],
   W_LAYOUT_STICKY_NO_INSET: ['warning', 'add top: 0 (or the edge it should stick to)'],
+  W_LAYOUT_INLINE_GAP: ['warning', 'lay the items out with display: flex and gap instead of inline-block'],
+  W_LAYOUT_IMAGE_BASELINE_GAP: ['warning', 'give the image display: block (or vertical-align: top)'],
   W_LAYOUT_STICKY_SCROLLER: ['warning', 'use overflow-x: clip on the ancestor, or move the sticky box out'],
   W_LAYOUT_STICKY_INERT: ['warning', 'make it a child of the scrolling content'],
   W_LAYOUT_ABSOLUTE_PAGE: ['warning', 'give the box it belongs to position: relative'],

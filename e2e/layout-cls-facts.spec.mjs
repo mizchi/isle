@@ -1046,3 +1046,27 @@ test('tables: Chromium ignores min/max sizes on cells and spreads a table min-he
     expect(report.status, css).toBe('unknown');
   }
 });
+
+test('inline-block whitespace gap and inline image baseline gap: Chromium shows them exactly where the static check warns', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  await page.setViewportSize({width: 400, height: 300});
+  for (const [html, css, code, measure] of [
+    ['<div class="p"><span class="c a"></span> <span class="c b"></span></div>', '.c{display:inline-block;width:50px;height:20px}', 'W_LAYOUT_INLINE_GAP', 'gap'],
+    ['<div class="p"><span class="c a"></span><span class="c b"></span></div>', '.c{display:inline-block;width:50px;height:20px}', 'W_LAYOUT_INLINE_GAP', 'gap'],
+    ['<div class="p"><span class="c a"></span>\n  <span class="c b"></span></div>', '.c{display:inline-block;width:50px;height:20px}.p{font-size:0}', 'W_LAYOUT_INLINE_GAP', 'gap'],
+    ['<div class="p"><img class="a" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" width="100" height="50" alt=""></div>', '', 'W_LAYOUT_IMAGE_BASELINE_GAP', 'under'],
+    ['<div class="p"><img class="a" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" width="100" height="50" alt=""></div>', '.a{vertical-align:top}', 'W_LAYOUT_IMAGE_BASELINE_GAP', 'under'],
+    ['<div class="p"><img class="a" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" width="100" height="50" alt=""></div>', '.a{display:block}', 'W_LAYOUT_IMAGE_BASELINE_GAP', 'under'],
+  ]) {
+    const sheet = `*{margin:0}html,body{${g}}.p{width:300px}${css}`;
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: sheet, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    const warned = (report.layoutWarnings ?? []).some(w => w.code === code);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${sheet}</style></head><body>${html}</body></html>`);
+    const seen = await page.evaluate(m => {
+      const a = document.querySelector('.a').getBoundingClientRect();
+      if (m === 'gap') return document.querySelector('.b').getBoundingClientRect().left - a.right > 0.5;
+      return document.querySelector('.p').getBoundingClientRect().bottom - a.bottom > 0.5;
+    }, measure);
+    expect(warned, `${css || 'base'} ${html.slice(0, 40)}: Chromium ${measure} ${seen}`).toBe(seen);
+  }
+});
