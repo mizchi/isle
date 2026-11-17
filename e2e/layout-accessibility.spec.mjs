@@ -2137,7 +2137,7 @@ test('scroll-start-unreachable: Chromium lays overflowing centered content befor
   const html = '<html lang="en"><body><main class="m"><div class="list"><p class="i first">First</p><p class="i">Two</p><p class="i">Three</p><p class="i">Four</p><p class="i">Five</p><p class="i">Last</p></div></main></body></html>';
   const base = '*{margin:0;padding:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.list{display:flex;flex-direction:column;overflow-y:auto;height:200px}.i{flex:none;height:40px;font-size:16px;line-height:24px;color:#000}';
   const seen = [];
-  for (const extra of ['.list{justify-content:center}', '.list{justify-content:flex-end}', '', '.list{justify-content:center;height:400px}', '.list{justify-content:center}.i{height:30px}']) {
+  for (const extra of ['.list{justify-content:center}', '.list{justify-content:flex-end}', '', '.list{justify-content:center;height:400px}', '.list{justify-content:center}.i{height:30px}', '.list{display:grid;grid-template-columns:minmax(0,1fr);align-content:center}', '.list{display:grid;grid-template-columns:minmax(0,1fr);align-content:end}', '.list{display:grid;grid-template-columns:minmax(0,1fr);align-content:safe center}']) {
     const css = base + extra;
     const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 24}}});
     const flagged = report.diagnostics.filter(d => d.code === 'E_A11Y_SCROLL_START_UNREACHABLE').map(d => d.box).sort();
@@ -2145,6 +2145,24 @@ test('scroll-start-unreachable: Chromium lays overflowing centered content befor
     await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
     // Scrolled to the top (as far back as it goes), which items still start above the scrollport?
     const before = await page.evaluate(() => { const l = document.querySelector('.list'); l.scrollTop = 0; const top = l.getBoundingClientRect().top; return [...l.querySelectorAll('.i')].filter(e => e.getBoundingClientRect().top < top - 0.01).map(e => e.className.split(' ').map(c => `.${c}`).join('')).sort(); });
+    expect(flagged, extra || 'base').toEqual(before);
+    seen.push(before.length);
+  }
+  expect(seen.some(n => n > 0)).toBe(true);
+  expect(seen.some(n => n === 0)).toBe(true);
+});
+
+test('scroll-start-unreachable (inline): a centered row that overflows its scroller starts left of it in Chromium exactly where the static check reports it', async ({page}) => {
+  const html = '<html lang="en"><body><main class="m"><div class="row"><p class="c first">One</p><p class="c">Two</p><p class="c">Three</p><p class="c">Four</p></div></main></body></html>';
+  const base = '*{margin:0;padding:0;box-sizing:border-box}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr);background:#fff}.row{display:flex;overflow-x:auto;width:300px;height:40px}.c{flex:none;width:100px;height:40px;font-size:16px;line-height:24px;color:#000}';
+  const seen = [];
+  for (const extra of ['.row{justify-content:center}', '.row{justify-content:flex-end}', '', '.row{justify-content:center;width:500px}', '.c{width:60px}.row{justify-content:center}']) {
+    const css = base + extra;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 600, max: 800, height: {min: 480, max: 900}}, accessibility: true, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}], scrollIntent: 'css', boxes: {'.c': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+    const flagged = [...new Set(report.diagnostics.filter(d => d.code === 'E_A11Y_SCROLL_START_UNREACHABLE').map(d => d.box))].sort();
+    await page.setViewportSize({width: 700, height: 600});
+    await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+    const before = await page.evaluate(() => { const l = document.querySelector('.row'); l.scrollLeft = 0; const left = l.getBoundingClientRect().left; return [...new Set([...l.querySelectorAll('.c')].filter(e => e.getBoundingClientRect().left < left - 0.01).map(e => e.className.split(' ').map(c => `.${c}`).join('')))].sort(); });
     expect(flagged, extra || 'base').toEqual(before);
     seen.push(before.length);
   }
