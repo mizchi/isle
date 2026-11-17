@@ -691,6 +691,9 @@ test('inert declarations: where the static check warns, Chromium lays the page o
     ['.p{display:block}', '.c{height:10px;width:50px}', 'flex-direction:column;flex-wrap:wrap', '.p', true],
     ['.p{display:block}', '.c{height:10px;width:50px}', 'grid-template-columns:1fr 1fr', '.p', true],
     ['.p{display:block;height:100px}', '.c{height:10px;width:50px}', 'align-content:center', '.p', false],
+    ['.p{display:block}', '.c{height:10px}', 'order:2', '.c', true],
+    ['.p{display:block}', '.c{height:10px}', 'table-layout:fixed', '.p', true],
+    ['.p{display:block}', '.c{height:10px}', 'list-style-type:square', '.c', true],
   ];
   const html = '<div class="p"><div class="c"></div><div class="c"></div></div>';
   for (const [parent, child, decl, target, warn] of cases) {
@@ -940,5 +943,19 @@ test('inert text-overflow and -webkit-line-clamp: where the static check warns, 
     await page.setViewportSize({width: 400, height: 600});
     const shot = async withDecl => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css}${withDecl ? `.c{${decl}}` : ''}</style></head><body><div class="p"><div class="c">${text}</div></div></body></html>`); return (await page.screenshot()).toString('base64'); };
     expect((await shot(true)) === (await shot(false)), `${base} ${decl}: same pixels without it`).toBe(warn);
+  }
+});
+
+test('inert scroll-snap-type: on a box that does not scroll nothing snaps; on the scrolling root it does', async ({page}) => {
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  for (const [where, warn] of [['.p', true], ['html', false]]) {
+    const css = `*{box-sizing:border-box;margin:0}html,body{${g}}${where}{scroll-snap-type:y mandatory}.c{height:400px;scroll-snap-align:start}`;
+    const html = '<div class="p"><div class="c"></div><div class="c"></div><div class="c"></div></div>';
+    const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 300, max: 300}}});
+    expect((report.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('scroll-snap-type')), where).toBe(warn);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const y = await page.evaluate(async () => { scrollTo({top: 130, behavior: 'instant'}); await new Promise(r => setTimeout(r, 300)); return scrollY; });
+    expect(y === 130, `${where}: scrollY ${y}`).toBe(warn);
   }
 });
