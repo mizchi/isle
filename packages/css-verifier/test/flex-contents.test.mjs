@@ -58,7 +58,7 @@ test('flex outside the modeled subset is Unknown', () => {
     // (An empty item with an auto width is its padding and border wide: modeled. Text without a max-content width is not.)
     ['.name { flex: none; min-width: 0; }', /content (?:size|width)/],
     ['.avatar { order: 1.5; }', /order/],
-    ['.name { flex: 1 1 30%; min-width: auto; }', /flex-basis/],
+    ['.name { flex: 1 1 30%; max-width: 200px; }', /flex-basis/],
   ]) {
     const report = run(card(base + extra + '\n'), {viewport: {min: 188, max: 600}});
     status(report, 'unknown');

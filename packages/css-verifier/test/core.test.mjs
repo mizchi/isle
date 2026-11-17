@@ -159,8 +159,8 @@ test('a negative margin is modeled on a flex row item\'s main axis only; on a gr
   assert.equal(run('.p{display:flex}.a{flex:0 0 40px;margin-top:-4px}.b{flex:1 1 0;min-width:0}'), 'unknown'); // cross axis, with block checking
 });
 
-test('shrinking percentage flex bases with min-width auto: the content minimum applies; where it exceeds the share it is Unknown', () => {
+test('shrinking percentage flex bases with min-width auto: the content minimum applies, also where it exceeds the share', () => {
   const run = track => analyzeHTML('<main class="n"><div class="b"><div class="t"></div></div><div class="b"><div class="t"></div></div></main>', {name: 'P', css: `*{box-sizing:border-box;margin:0}.n{display:flex;column-gap:8px}.b{flex:1 1 50%;display:grid;grid-template-columns:${track}}.t{inline-size:150px;block-size:10px}`, viewport: {min: 200, max: 900, height: {min: 300, max: 600}}}).status;
   assert.equal(run('minmax(0,1fr)'), 'violated'); // min-content 0: the items shrink below their content (as in Chromium)
-  assert.equal(run('1fr'), 'unknown'); // min-content 150px: above the 50% share at narrow widths, not modeled
+  assert.equal(run('1fr'), 'violated'); // min-content 150px: above the 50% share at narrow widths, where both items stay 150px and overflow
 });

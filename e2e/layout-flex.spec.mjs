@@ -264,6 +264,11 @@ const cases = [
   // A minmax(0, 1fr) grid's min-content width is 0: the items shrink below their 150px content (Chromium: 123px at 254px).
   {name: 'shrinking percentage bases over a minmax(0, 1fr) grid shrink below their content', html: '<main class="n"><div class="b"><div class="t"></div></div><div class="b"><div class="t"></div></div></main>',
     css: '.n{display:flex;column-gap:8px}.b{flex:1 1 50%;display:grid;grid-template-columns:minmax(0,1fr)}.t{inline-size:150px;block-size:10px}', expected: 'violated'},
+  // A 1fr grid's min-content is its content: below the width where 50% is under 150px the items stay at 150px.
+  {name: 'shrinking percentage bases whose content minimum exceeds the share at narrow widths', html: '<main class="n"><div class="b"><div class="t"></div></div><div class="b"><div class="t"></div></div></main>',
+    css: '.n{display:flex;column-gap:8px}.b{flex:1 1 50%;display:grid;grid-template-columns:1fr}.t{inline-size:150px;block-size:10px}', expected: 'violated', widths: [300, 308, 320]},
+  {name: 'a growing percentage basis whose minimum exceeds its share grows from the share', html: '<main class="n"><div class="b"></div><div class="c"></div></main>',
+    css: '.n{display:flex;column-gap:8px}.b{flex:1 1 20%;min-width:120px;block-size:10px}.c{flex:0 0 40px;block-size:10px}'},
   {name: 'text input sized by a px flex-basis and min-width 0', html: '<main class="f"><div class="t"></div><input class="i" type="text"></main>',
     css: '.f{display:flex;column-gap:8px;padding:8px;align-items:center}.t{flex:0 0 60px;block-size:20px}.i{display:block;flex:1 1 120px;min-width:0;height:32px;padding:0 4px;border:1px solid #777;font-size:16px}'},
 ];

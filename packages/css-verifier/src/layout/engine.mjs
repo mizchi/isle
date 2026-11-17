@@ -899,7 +899,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // The hypothetical main size: the base clamped by the maximum, then the minimum (min wins over max).
     const capped = item => item.maximum && constantLess(item.maximum, item.base) ? item.maximum : item.base;
     // (baseAtLeastMinimum: an affine base already checked to be at least the minimum, a percentage flex-basis.)
-    const hypothetical = items.map(item => (item.minimum === item.base || item.baseAtLeastMinimum) && !item.maximum ? item.base : maximumConstant(capped(item), item.minimum));
+    const hypothetical = items.map(item => item.baseBelowMinimum ? item.minimum : (item.minimum === item.base || item.baseAtLeastMinimum) && !item.maximum ? item.base : maximumConstant(capped(item), item.minimum));
     const sumHypothetical = sum(total(hypothetical), scalar(gap));
     const modes = partition(region, diff(available, sumHypothetical), '>');
     const results = [];
@@ -910,7 +910,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const factor = mode === 'grow' ? item.grow : item.shrink;
         // Content-sized items cannot shrink below their base (= their minimum). With
         // only minimum violations the result does not depend on the freezing order.
-        if (cmp(factor, zero) === 0 || (mode === 'shrink' && (item.content || (item.minimum !== item.base && !item.baseAtLeastMinimum && constantLess(item.base, item.minimum)))) || (mode === 'grow' && item.maximum && constantLess(item.maximum, item.base))) frozen.set(index, hypothetical[index]);
+        if (cmp(factor, zero) === 0 || (mode === 'shrink' && (item.content || item.baseBelowMinimum || (item.minimum !== item.base && !item.baseAtLeastMinimum && !item.baseBelowMinimum && constantLess(item.base, item.minimum)))) || (mode === 'grow' && item.maximum && constantLess(item.maximum, item.base))) frozen.set(index, hypothetical[index]);
       });
       let states = [{ region: start, frozen }];
       for (let round = 0; states.length && round <= items.length; round++) {
@@ -922,7 +922,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const factors = unfrozen.map(index => mode === 'grow' ? items[index].grow : items[index].shrink);
           const factorSum = factors.reduce(add, zero);
           // §9.7 step 4b scales by the initial free space when factors sum below 1; only the first round without freezing is modeled.
-          const mayFreeze = unfrozen.some(index => !items[index].content && constantLess(items[index].base, items[index].minimum));
+          const mayFreeze = unfrozen.some(index => !items[index].content && (items[index].baseBelowMinimum || (!items[index].baseAtLeastMinimum && constantLess(items[index].base, items[index].minimum))));
           const shrinks = mode === 'shrink' && unfrozen.some(index => cmp(items[index].shrink, zero) > 0 && (items[index].percentItem || cmp(items[index].innerBase, zero) > 0));
           if (unfrozen.length && cmp(factorSum, one) < 0 && (round > 0 || (mode === 'grow' && mayFreeze) || shrinks)) throw flexUnknown('Flex factors summing below 1 with freezing or shrinking are outside the subset');
           let targets;
@@ -1067,21 +1067,33 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // A percentage basis (a frozen item): its size is that share of the content width (plus its edges in
         // content-box), affine in the viewport. Where its minimum would exceed that, the browser would use the
         // minimum instead: Unknown there. In a wrapping container its size breaks lines at width thresholds.
-        const items = model.map(entry => {
+        // Where an item's minimum exceeds its share (P% of a narrow container), its hypothetical size is the minimum
+        // (§9.7): the region is split there. Below, the item starts at the minimum (shrink mode freezes it there; grow
+        // mode grows it from its base and clamps it to the minimum).
+        let parts = [{ region: state.region, below: new Set() }];
+        const percentBase = entry => sum(sum(times(contentInline, entry.item.percentBasis), scalar(entry.item.contentBox ? entry.item.edges : zero)), scalar(entry.item.marginMain ?? zero));
+        model.forEach((entry, index) => {
+          if (entry.item.percentBasis === undefined || cmp(entry.item.shrink, zero) === 0) return;
+          const minimum = scalar(constantItem(entry.item).minimum.b ?? entry.item.minimum);
+          parts = bounded(parts.flatMap(part => { const split = partition(part.region, diff(percentBase(entry), minimum), '>='); return [...split.yes.map(r => ({ region: r, below: part.below })), ...split.no.map(r => ({ region: r, below: new Set([...part.below, index]) }))]; }));
+        });
+        for (const part of parts) {
+        const items = model.map((entry, index) => {
           const item = constantItem(entry.item);
           if (entry.item.percentBasis === undefined) return item;
           // Its outer size: the share, its edges in content-box, and its main-axis margins.
-          const base = sum(sum(times(contentInline, entry.item.percentBasis), scalar(entry.item.contentBox ? entry.item.edges : zero)), scalar(entry.item.marginMain ?? zero));
-          if (clip(state.region, diff(item.minimum, base), true)) throw flexUnknown(`${entry.child.box.label}: its minimum width can exceed its flex-basis ${entry.child.style['flex-basis']} here, which is not modeled`);
+          const base = percentBase(entry);
+          if (cmp(entry.item.shrink, zero) === 0 && clip(part.region, diff(item.minimum, base), true)) throw flexUnknown(`${entry.child.box.label}: its minimum width can exceed its flex-basis ${entry.child.style['flex-basis']} here, which is not modeled`);
           // A non-shrinking item never goes below its base; a shrinking one down to its (explicit) minimum.
           // Its inner base size is P% of the content width when it has no constant part (no edges, margins or
           // content-box padding): shrinking is then weighted by the constant shrink × P (innerShare).
           const constantPart = add(entry.item.contentBox ? zero : mul(entry.item.edges, q(-1)), zero);
           const innerShare = cmp(constantPart, zero) === 0 && cmp(entry.item.marginMain ?? zero, zero) === 0 && (!entry.item.contentBox || cmp(entry.item.edges, zero) === 0) ? entry.item.percentBasis : null;
-          return { ...item, base, minimum: cmp(entry.item.shrink, zero) === 0 ? base : item.minimum, maximum: null, baseAtLeastMinimum: true, innerShare, percentItem: true };
+          const below = part.below.has(index);
+          return { ...item, base, minimum: cmp(entry.item.shrink, zero) === 0 ? base : item.minimum, maximum: null, baseAtLeastMinimum: !below, baseBelowMinimum: below, innerShare, percentItem: true };
         });
-        const hypothetical = wrap ? items.map((item, i) => model[i].item.percentBasis !== undefined ? item.base : maximumConstant(item.base, item.minimum).b) : items.map(item => item.base);
-        const sets = wrap ? breakLines(state.region, contentInline, hypothetical, mainGap) : [{ region: state.region, lines: model.length ? [model.map((_, i) => i)] : [] }];
+        const hypothetical = wrap ? items.map((item, i) => item.baseBelowMinimum ? item.minimum : model[i].item.percentBasis !== undefined ? item.base : maximumConstant(item.base, item.minimum).b) : items.map(item => item.base);
+        const sets = wrap ? breakLines(part.region, contentInline, hypothetical, mainGap) : [{ region: part.region, lines: model.length ? [model.map((_, i) => i)] : [] }];
         for (const set of sets) {
           let combos = [{ region: set.region, lines: [] }];
           for (const indices of set.lines) combos = bounded(combos.flatMap(c => resolveFlexLine(c.region, contentInline, indices.map(i => items[i]), gaps(mainGap, indices.length))
@@ -1123,6 +1135,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
               }
             }
           }
+        }
         }
         continue;
       }
