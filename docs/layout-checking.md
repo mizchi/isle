@@ -643,3 +643,4 @@ grid、flex、block、縦の flex の小さなレイアウトに、よく使う�
 - `W_LAYOUT_SCROLL_NEVER`: block の流れの中で、高さが auto で max-height もない箱の `overflow-y: auto` / `scroll`。箱は中身に合わせて伸びるので縦にはスクロールせず、ページのほうがスクロールする(Chromium で scrollHeight と clientHeight が等しいことを確かめた)。高さの決まった縦の flex や grid の中では縮んでスクロールするので出さない。
 - 高さが auto の block の親の中の、割合の高さ(`height: 100%` など。以前は Unknown): 親の高さが中身で決まるので、割合の高さは auto になる(CSS 2.2 §10.5。Chromium で、付けても付けなくても配置が同じことを確かめた)。`W_LAYOUT_DECLARATION_INERT` として報告し、auto として解析する。親が grid や flex の item として stretch される場合は高さが決まるので、ここでは扱わない(Unknown のまま)。
 - 幅が auto で max-width もない block の左右の auto margin(`margin: 0 auto` など): 箱は横いっぱいに広がるので margin は 0 になり、中央に寄らない(Chromium で、付けても付けなくても配置が同じことを確かめた)。`W_LAYOUT_DECLARATION_INERT` で、width か max-width を付けるよう促す。画像やフォームの部品は自分の幅を持つので中央に寄る(出さない)。
+- fr の列を持つ grid の `justify-content`、高さが px で fr の行を持つ grid の `align-content`(start と stretch 以外): fr の track が空きを全部取るので、配る空きがない(Chromium で、付けても付けなくても配置が同じことを確かめた)。`W_LAYOUT_DECLARATION_INERT` で報告する。

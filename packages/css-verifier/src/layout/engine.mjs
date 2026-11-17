@@ -1547,6 +1547,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const autoSides = ['margin-left', 'margin-right'].filter(key => style.$sources?.[key] && String(style[key]) === 'auto');
           for (const key of autoSides) reasons.push([key, 'its width is auto, so it fills its container and the auto margins are 0 (give it a width or max-width to center it)']);
         }
+        // justify-content (align-content) on a grid with an fr column (row, in a definite height): the fr track takes all
+        // the free space, so there is none to distribute (measured: the same layout without it).
+        if (style.display === 'grid' && !style.$blockFlow) {
+          const fr = v => /(?:^|[\s(,])\d*\.?\d+fr\b/.test(String(v ?? ''));
+          if (set('justify-content', 'normal') && !['start', 'flex-start', 'left', 'stretch'].includes(String(style['justify-content'])) && fr(style['grid-template-columns'])) reasons.push(['justify-content', 'an fr column takes all the free space, so there is none to distribute']);
+          if (set('align-content', 'normal') && !['start', 'flex-start', 'stretch'].includes(String(style['align-content'])) && fr(style['grid-template-rows']) && /^\d+(?:\.\d+)?px$/.test(String(style['block-size']))) reasons.push(['align-content', 'an fr row takes all the free space, so there is none to distribute']);
+        }
         // overflow-y: auto/scroll on a box of block flow with an auto height and no max-height: the box grows with its
         // content, so it never scrolls vertically (measured: scrollHeight equals clientHeight); the page scrolls
         // instead. (In a column flex or grid with a definite height it is shrunk and does scroll: not reported.)

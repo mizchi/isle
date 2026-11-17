@@ -270,3 +270,9 @@ test('auto inline margins on a block of auto width (no max-width) center nothing
   assert.deepEqual(inert(run('.p{display:block}.c{height:10px;margin:0 auto;max-width:100px}')), []);
   assert.deepEqual(inert(run('.p{display:block}.c{height:10px;margin:0 auto;width:100px}')), []);
 });
+
+test('justify-content and align-content on a grid with an fr track have no free space to distribute', () => {
+  assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:100px 1fr;justify-content:center}.c{height:10px}')), [['.p', 'justify-content']]);
+  assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:100px 100px;justify-content:center}.c{height:10px}')), []);
+  assert.deepEqual(inert(run('.p{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:20px 1fr;height:100px;align-content:center}.c{height:10px}')), [['.p', 'align-content']]);
+});
