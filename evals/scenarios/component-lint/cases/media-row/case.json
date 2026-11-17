@@ -1,0 +1,1 @@
+{"framework": "stylex", "intent": "A media row: a 16:9 thumbnail and a title.", "planted": "the title is nowrap in the 1fr column: on a phone the long title runs past the row", "expect": ["E_LAYOUT_CONTENT"]}

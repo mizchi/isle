@@ -52,7 +52,6 @@ test('flex outside the modeled subset is Unknown', () => {
     ['.row { flex-wrap: wrap-reverse; }', /wrap-reverse/],
     ['.row { flex-direction: row-reverse; }', /flex-direction/],
     ['.row { justify-content: safe center; }', /justify-content/],
-    ['.name { min-width: auto; }', /automatic minimum/],
     ['.name { flex: 1 1 0; width: 50px; min-width: auto; }', /flex-basis and width and an automatic minimum/],
     ['.name { align-self: baseline; }', /baseline/],
     // (An empty item with an auto width is its padding and border wide: modeled. Text without a max-content width is not.)
@@ -215,17 +214,16 @@ test('a column freezes flexible items at a positive min-height', () => {
   assert.deepEqual(at('.a', 800).blockSize, {coefficient: '0', constant: '0', heightCoefficient: '1/2'});
 });
 
-test('a scroll container item has a zero automatic minimum; clip does not', () => {
+test('a scroll container item has a zero automatic minimum; clip and visible use the content\'s min-content', () => {
   const base = '.row { display: flex; }\n.a { flex: 1 1 0; }\n';
   const children = [{tag: 'div', classes: ['a'], children: [{tag: 'p', classes: ['t'], text: true}]}];
   const run = extra => line(base + extra + '\n.a { display: grid; grid-template-columns: minmax(0, 1fr); }\n', children, {boxes: {'.t': {minInlineSize: 50}}});
   status(run('.a { overflow: hidden; }'), 'verified');
   status(run('.a { overflow: auto; }'), 'unknown'); // scrollbars need a declared platform profile
-  const clip = run('.a { overflow: clip; }');
-  status(clip, 'unknown');
-  assert.ok(clip.diagnostics.some(d => /automatic minimum/.test(d.message)));
-  const visible = run('');
-  status(visible, 'unknown');
+  // overflow: clip and visible keep the automatic minimum: the min-content width of the minmax(0, 1fr) grid, 0 (as
+  // Chromium measures it), so the item is modeled.
+  status(run('.a { overflow: clip; }'), 'verified');
+  status(run(''), 'verified');
 });
 
 test('flex line overflow follows the container overflow policy', () => {

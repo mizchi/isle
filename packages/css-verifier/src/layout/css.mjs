@@ -636,12 +636,14 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
       values.display = 'inline-block'; values['box-sizing'] = 'content-box'; values['min-inline-size'] = '0'; values['min-block-size'] = '0';
       for (const side of ['left', 'right', 'top', 'bottom']) { values[`padding-${side}`] = '0'; values[`border-${side}`] = '0'; values[`margin-${side}`] = '2px'; }
     }
-    // Buttons: Chromium's UA box is padding 1px 6px, a 2px border, inline-block, border-box, no min size (measured,
-    // with or without appearance: none).
+    // Buttons: Chromium's UA box is padding 1px 6px, a 2px border, inline-block, border-box (measured, with or without
+    // appearance: none).
     if (box.tag === 'button' || (box.tag === 'input' && ['button', 'submit', 'reset'].includes(box.inputType))) {
       values['padding-top'] = values['padding-bottom'] = '1px'; values['padding-left'] = values['padding-right'] = '6px';
       for (const side of ['left', 'right', 'top', 'bottom']) values[`border-${side}`] = '2px';
-      values.display = 'inline-block'; values['box-sizing'] = 'border-box'; values['min-inline-size'] = '0'; values['min-block-size'] = '0';
+      // min-width stays auto (measured in Chromium: a flex item button grows to its min-content, like a div; in block
+      // flow auto is 0).
+      values.display = 'inline-block'; values['box-sizing'] = 'border-box'; values['min-inline-size'] = 'auto'; values['min-block-size'] = '0';
     }
     // Controls do not inherit the page's font size: the UA's control font is the default size − 2.67px (13.33px
     // at a 16px default; measured in Chromium), until the author sets it (font: inherit, font-size).

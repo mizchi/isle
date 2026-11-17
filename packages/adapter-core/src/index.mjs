@@ -160,7 +160,7 @@ function markText(html, start = 0) {
 const printableASCII = Array.from({ length: 95 }, (_, i) => String.fromCharCode(32 + i)).join('');
 // A text leaf's computed font (reportTextFonts) as a text contract measured with the given font files, or null when
 // the font is not one of them or is not measurable (a non-px size, line-height: normal, letter-spacing).
-function measuredContract(facts, textMetrics, fonts) {
+function measuredContract(facts, textMetrics, fonts, defaultFontSize) {
   // Dynamic text ({expression}, {{ … }}) is rendered as the placeholder '…': its real string is not known, so it is
   // never measured (a literal '…' in the template stays assumed too).
   // A maximum length (data-text-max-length, with data-text-chars or printable ASCII) measures every string of that
@@ -169,7 +169,8 @@ function measuredContract(facts, textMetrics, fonts) {
   if (!facts || facts.varied || (!domain && (!facts.text || facts.text.includes('…')))) return null;
   const family = Object.keys(fonts).find(name => name.toLowerCase() === String(facts.family).replace(/["']/g, '').split(',')[0].trim().toLowerCase());
   const px = v => /^\d+(?:\.\d+)?px$/.test(String(v)) ? Number(String(v).slice(0, -2)) : undefined;
-  const size = px(facts.size);
+  // font-size: medium (the user's default, from html or font: inherit) is the default font size the analysis assumes.
+  const size = px(facts.size) ?? (facts.size === 'medium' && defaultFontSize ? defaultFontSize : undefined);
   const lineHeight = px(facts.lineHeight) ?? (/^\d+(?:\.\d+)?$/.test(String(facts.lineHeight)) && size ? Number(facts.lineHeight) * size : undefined);
   const weight = facts.weight === 'normal' ? 400 : facts.weight === 'bold' ? 700 : /^\d+$/.test(String(facts.weight)) ? Number(facts.weight) : undefined;
   if (!family || !size || !lineHeight || !weight || facts.style !== 'normal' || facts.letterSpacing !== 'normal') return null;
@@ -240,12 +241,12 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope
         const measured = {};
         for (const facts of first.textFonts ?? []) {
           if (facts.placeholder) {
-            const ph = (facts.classes ?? []).find(c => /^__ph\d+$/.test(c)), measured_ = ph ? measuredContract({ ...facts, placeholder: undefined }, textMetrics, fonts) : null;
+            const ph = (facts.classes ?? []).find(c => /^__ph\d+$/.test(c)), measured_ = ph ? measuredContract({ ...facts, placeholder: undefined }, textMetrics, fonts, options.defaultFontSize) : null;
             if (measured_?.minInlineSize !== undefined) measured[`.${ph}`] = { placeholderInlineSize: Math.ceil(Number(measured_.minInlineSize) * 1e6 - 1e-9) / 1e6 };
             continue;
           }
           const marker = (facts.classes ?? []).find(c => /^__text\d+$/.test(c));
-          let contract = marker && !options.boxes?.[`.${marker}`] ? measuredContract(facts, textMetrics, fonts) : null;
+          let contract = marker && !options.boxes?.[`.${marker}`] ? measuredContract(facts, textMetrics, fonts, options.defaultFontSize) : null;
           if (contract?.unmeasurable) { unmeasurable.set(facts.label.replace(/\.__(?:text|anon)\d+/g, ''), contract.unmeasurable); contract = null; }
           if (contract) measured[`.${marker}`] = contract;
           // Not measurable (no font file for its family, or the UA control font): still one assumed line, but of its own

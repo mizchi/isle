@@ -661,7 +661,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         message: `${box.label} has hyphens: auto but no language (no lang attribute on it, an ancestor or html): browsers do not hyphenate it, and long words overflow or break as with hyphens: manual. Set lang on the html element`, ...ranges(region) });
     }
     // Derived text metrics apply only to the exact font they were measured with.
-    if (box.contract?.font) { const reason = textFontMismatch(style, box.contract.font) ?? textLangMismatch(style.$lang, box.contract.textMetrics?.lang) ?? (box.contract.textMetrics?.kind === 'lines' ? textLinesMismatch(style, box.contract) : null); if (reason) throw Object.assign(new Error(reason), {code: 'U_LAYOUT_TEXT_FONT'}); }
+    if (box.contract?.font) { const reason = textFontMismatch(style, box.contract.font, options.defaultFontSize) ?? textLangMismatch(style.$lang, box.contract.textMetrics?.lang) ?? (box.contract.textMetrics?.kind === 'lines' ? textLinesMismatch(style, box.contract) : null); if (reason) throw Object.assign(new Error(reason), {code: 'U_LAYOUT_TEXT_FONT'}); }
     // A button with the reset may also be a grid or flex container (an icon and a label): measured in Chromium, it lays
     // its children out exactly as a div with the same CSS.
     // A text field (text-like input or textarea) keeps the same box with its default appearance once the author sets
@@ -1043,9 +1043,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const margins = { left: m('left'), right: m('right'), top: m('top'), bottom: m('bottom') };
           // A row item sized by its content (flex-basis auto or content, auto width): its max- and min-content widths
           // are its flex base size and automatic minimum.
-          const contentSized = main === 'inline' && (['auto', 'content'].includes(String(child.style['flex-basis'])) || /%$/.test(String(child.style['flex-basis']))) && child.style['inline-size'] === 'auto'
+          // (A px basis with min-width auto too: its automatic minimum is the min-content width, §4.5.)
+          const pxBasis = /^\d+(?:\.\d+)?px$/.test(String(child.style['flex-basis'])) && child.style['min-inline-size'] === 'auto';
+          const contentSized = main === 'inline' && (['auto', 'content'].includes(String(child.style['flex-basis'])) || /%$/.test(String(child.style['flex-basis'])) || pxBasis) && child.style['inline-size'] === 'auto'
             && ['auto', '0', '0px'].includes(String(child.style['min-inline-size'])) && ['visible', 'clip'].includes(child.style['overflow-x']) && !['inline-size', 'size'].includes(child.style['container-type']);
-          const contentSizes = contentSized ? frAutoMinimums(child.box, child.style, state.region, [...parents, { box, style }], /%$/.test(String(child.style['flex-basis'])) ? 'min' : true) : null;
+          const contentSizes = contentSized ? frAutoMinimums(child.box, child.style, state.region, [...parents, { box, style }], /%$/.test(String(child.style['flex-basis'])) || pxBasis ? 'min' : true) : null;
           let item = flexItem(child.style, { empty: !child.box.text && !child.box.children.length, axis: main, ...(contentSizes ? { contentSizes } : {}) });
           const marginMain = main === 'inline' ? add(margins.left, margins.right) : add(margins.top, margins.bottom);
           if (cmp(add(add(margins.left, margins.right), add(margins.top, margins.bottom)), zero) !== 0) {

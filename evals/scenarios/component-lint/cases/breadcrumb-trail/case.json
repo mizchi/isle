@@ -1,0 +1,1 @@
+{"framework": "svelte", "intent": "A breadcrumb trail ending in the current page title.", "planted": "every crumb is flex: 0 0 auto and nowrap: the long current title pushes the trail past a phone's width", "expect": ["E_LAYOUT_TRACKS"]}

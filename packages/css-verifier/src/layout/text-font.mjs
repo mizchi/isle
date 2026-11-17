@@ -62,14 +62,15 @@ const weightValue = value => value === 'normal' ? 400 : value === 'bold' ? 700 :
  * The computed font of `style` must equal the contract. Returns a reason when
  * the derived metrics cannot apply (the caller reports Unknown), else null.
  */
-export function textFontMismatch(style, font) {
+export function textFontMismatch(style, font, defaultFontSize) {
   for (const key of ['font-family', 'font-size', 'line-height', 'font-weight', 'font-style', 'font-stretch', 'font-variant']) {
     if (style[key] === fontShorthand) return 'The font shorthand is not modeled; use font-family/font-size/line-height/font-weight longhands';
   }
   if (style['font-family'] === 'ua-control') return 'a form control keeps the user-agent control font (Arial, or monospace in a textarea), not the page font; set font: inherit (or font-family) on it';
   if (style['font-family'] === 'ua-default') return 'font-family is the user-agent default; declare the measured family';
   if (family(style['font-family']) !== font.family.trim().toLowerCase()) return `font-family ${style['font-family']} differs from the measured family ${font.family}; fallback fonts are not modeled`;
-  const size = pxValue(style['font-size']);
+  // medium: the user's default font size, which the analysis assumes (defaultFontSize).
+  const size = pxValue(style['font-size']) ?? (style['font-size'] === 'medium' && defaultFontSize ? defaultFontSize : undefined);
   if (size === undefined) return `font-size ${style['font-size']} must be a px length`;
   if (size !== font.size) return `font-size ${style['font-size']} differs from the measured ${font.size}px`;
   const lineHeight = pxValue(style['line-height']) ?? (/^\d+(?:\.\d+)?$/.test(style['line-height']) ? Number(style['line-height']) * size : undefined);
