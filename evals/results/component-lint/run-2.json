@@ -113,10 +113,6 @@
       "count": 1
     },
     {
-      "reason": "U_LAYOUT_GEOMETRY: CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)",
-      "count": 1
-    },
-    {
       "reason": "U_TEXT_NOT_MEASURED: .X: Font Roboto lacks U+00B7; fallback fonts are not modeled; its text is only assumed to fit, so its overflow is not checked",
       "count": 1
     },
@@ -1497,7 +1493,7 @@
       "file": "modal-actions.vue",
       "framework": "vue",
       "intent": "A dialog footer with Cancel and a destructive primary action, each 120px.",
-      "status": "unknown",
+      "status": "verified",
       "expected": [
         {
           "code": "E_LAYOUT_TRACKS",
@@ -1515,11 +1511,6 @@
       "unconfirmed": [],
       "environment": [],
       "notChecked": [
-        {
-          "code": "U_LAYOUT_GEOMETRY",
-          "reason": "CSS min-block-size clamping is not modeled here (a grid or flex container, or a flex item)",
-          "line": 3
-        },
         {
           "code": "ASSUMPTION",
           "reason": "the user-agent default colors (canvastext black on a white canvas) under the light preference, where the page declares no dark color-scheme; a user's own defaul"
