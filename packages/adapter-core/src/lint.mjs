@@ -24,6 +24,7 @@ export const recommended = {
   E_A11Y_TEXT_RESIZE: ['error', 'let the box grow with its text (no fixed height, min-width: 0, wrapping) so it holds at 200% text size'],
   E_A11Y_PAGE_CLIPPED: ['error', 'let the content fit the viewport (min-width: 0, max-width: 100%, wrapping) instead of hiding the overflow'],
   E_A11Y_TEXT_START_OBSCURED: ['error', 'move the covering box off the text, or give the text room (padding) beside it'],
+  E_A11Y_PAGE_START_UNREACHABLE: ['error', 'center tall content safely (safe center, or margin: auto), or use min-height instead of height so the page can grow'],
   E_A11Y_BEHIND_BACKGROUND: ['error', 'give the ancestor isolation: isolate (or position: relative; z-index: 0), or drop the negative z-index'],
   E_A11Y_SCROLL_START_UNREACHABLE: ['error', 'align overflowing content safely (justify-content: safe center, or auto margins) so it never lands before the scroll container\'s start'],
   E_A11Y_SCROLL_END_COVERED: ['error', 'give the scroll container a padding-bottom at least as tall as the box over its end, so its last item scrolls clear of it'],

@@ -2241,3 +2241,24 @@ test('behind-background: Chromium paints a negative z-index layer under an ances
   expect(seen.some(Boolean)).toBe(true);
   expect(seen.some(v => !v)).toBe(true);
 });
+
+test('page-start-unreachable: Chromium lays centered tall content above the page\'s top, where it never scrolls, exactly where the static check reports it', async ({page}) => {
+  const html = '<html lang="en"><body><main class="card"><p class="t">Title</p><div class="b"></div></main></body></html>';
+  const base = '*{margin:0}html{background:#fff}body{height:100vh;display:flex;flex-direction:column;justify-content:center}.card{flex:none;display:grid;grid-template-columns:minmax(0,1fr)}.t{font-size:16px;line-height:24px;color:#000}';
+  const within = (r, v) => !r || ((r.minInclusive === false ? v > r.min : v >= r.min) && (r.maxInclusive === false ? v < r.max : v <= r.max));
+  let positives = 0, negatives = 0;
+  for (const extra of ['.b{height:800px}', '.b{height:100px}', '.b{height:400px}', '.b{height:400px}body{justify-content:flex-start}']) {
+    const css = base + extra;
+    const report = analyzeHTML(html, {name: 'P', css, viewport: {min: 320, max: 800, height: {min: 300, max: 700}}, accessibility: true, boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 24}}});
+    for (const [width, height] of [[400, 320], [400, 600], [700, 450]]) {
+      const flagged = report.diagnostics.some(d => d.code === 'E_A11Y_PAGE_START_UNREACHABLE' && d.box === '.t' && within(d.range, width) && within(d.heightRange, height));
+      await page.setViewportSize({width, height});
+      await page.setContent(`<!doctype html>${html.replace('<body>', `<head><style>${css}</style></head><body>`)}`);
+      const above = await page.evaluate(() => { scrollTo(0, 0); return document.querySelector('.t').getBoundingClientRect().top < -0.01; });
+      expect(flagged, `${extra} at ${width}x${height}: Chromium top above the page: ${above}`).toBe(above);
+      if (above) positives++; else negatives++;
+    }
+  }
+  expect(positives).toBeGreaterThan(0);
+  expect(negatives).toBeGreaterThan(0);
+});
