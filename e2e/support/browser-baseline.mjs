@@ -572,7 +572,7 @@ export const browserBaseline = [
 /** For test.beforeEach: skip or expect a failure where this browser differs from the Chromium baseline. */
 export function applyBrowserBaseline(testInfo) {
   const browser = testInfo.project.name;
-  if (browser === 'chromium') return;
+  if (browser === 'chromium' || process.env.BASELINE_OFF) return;
   const entry = browserBaseline.find(e => testInfo.title.startsWith(e.title) && testInfo.file.endsWith(e.file))?.[browser];
   if (!entry) return;
   if (entry.kind === 'oracle') testInfo.skip(true, `${browser}: ${entry.note}`);

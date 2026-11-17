@@ -142,7 +142,16 @@ e2e(Chromium で 390 件)のうち、Firefox で 34 件、WebKit で 43 件が C
 
 1. (対応済み)**UA スタイルの値をブラウザーごとに持つ**: `ua` オプションの profile。
 2. **既定の色をブラウザーごとに持つ**: canvas と canvastext(dark の preference)、ButtonFace / ButtonText。
-3. **表と改行は Unknown にする**: 表のアルゴリズムと改行の規則はブラウザーごとに違い、仕様が決めていない部分がある。対象のブラウザーで照合できるまでは、そのブラウザーでは Unknown にする(成功にしない)。
+3. (対応済み)**表と改行は Unknown にする**: `ua` の profile が Chromium 以外(`firefox`、`webkit`、それらを `base` にした上書き)のとき、次の解析は `U_LAYOUT_BROWSER` の Unknown になる(Chromium の判定を流用して成功にしない)。
+   - 表(`<table>`): rowspan の行の伸ばし方、自動レイアウトの列幅、WebKit の固定レイアウトの表の幅が違う。
+   - 折り返すテキスト(行のプロファイル): 改行の位置(UAX #14、日本語の約物)が違う。
+   - 行の中の inline 要素の位置(`textMetrics.inline`)。
+   - letter-spacing / word-spacing のあるテキスト、右から左に書くテキスト(`direction: rtl`、ヘブライ文字・アラビア文字)。
+   - 全角の約物を含むテキスト: Chromium は行末の閉じ括弧・句点を半角に詰める(text-spacing-trim)が、Firefox と WebKit は詰めない(「日本語のテキスト幅検査。」は Chromium で 191.6px 以内、Firefox 192px、WebKit 192.02px)。
+
+   1 行の左から右へ書くテキスト(字間の指定なし)は、どのブラウザーでも字形の幅の合計が同じなので、そのまま解析する(`e2e/layout-ua-profiles.spec.mjs` のボタンのラベル)。
 4. **丸め**: WebKit の 1/64px への丸めは、許容誤差の側で扱えるか確かめる。
+
+差の中身を見るときは `BASELINE_OFF=1` を付けて e2e を流すと、一覧の項目も普通のテストとして失敗を報告します。
 
 `e2e/support/browser-baseline.mjs` の項目は、差がある限り「失敗することを確かめるテスト」(`test.fail`)として流れます。ブラウザーの更新やエンジンの対応で差がなくなると、そのテストが失敗として報告されるので、一覧から外せます。

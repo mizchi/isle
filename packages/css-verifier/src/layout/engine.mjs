@@ -12,7 +12,7 @@ import { viewportFont, zoomShortfall } from './zoom-font.mjs';
 import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
 import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
-import {textFontMismatch, textLinesMismatch, textLangMismatch, fittingLength, fittingLines} from './text-font.mjs';
+import {textFontMismatch, textBrowserMismatch, textLinesMismatch, textLangMismatch, fittingLength, fittingLines} from './text-font.mjs';
 import {validateFlexContainer, flexItem, crossAlignment, distribution, flexUnknown} from './flex.mjs';
 import {judgeIntegrity, intersect } from './integrity.mjs';
 import {judgeAccessibility, accessibilityRules, accessibilityProfiles, ruleTier, paintFacts} from './accessibility.mjs';
@@ -32,6 +32,7 @@ const compare = (value, relation) => relation === '>=' ? value >= 0 : relation =
 // html root's px font-size), em (the element's px font-size), and calc() with + − × ÷ and min()/max()/clamp().
 // vmin/vmax and min()/max() split the region where their arguments cross; each piece is {region, value}.
 const unitContext = { rootFontSize: null, heightKnown: false };
+let uaEngine; // the engine of the ua option's profile (set per analysis, like the UA profile in css.mjs)
 function lengthPieces(value, parent, region, style) {
   const text = String(value).trim().toLowerCase();
   let i = 0;
@@ -662,7 +663,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         message: `${box.label} has hyphens: auto but no language (no lang attribute on it, an ancestor or html): browsers do not hyphenate it, and long words overflow or break as with hyphens: manual. Set lang on the html element`, ...ranges(region) });
     }
     // Derived text metrics apply only to the exact font they were measured with.
-    if (box.contract?.font) { const reason = textFontMismatch(style, box.contract.font, options.defaultFontSize) ?? textLangMismatch(style.$lang, box.contract.textMetrics?.lang) ?? (box.contract.textMetrics?.kind === 'lines' ? textLinesMismatch(style, box.contract) : null); if (reason) throw Object.assign(new Error(reason), {code: 'U_LAYOUT_TEXT_FONT'}); }
+    if (box.contract?.font) { const reason = textFontMismatch(style, box.contract.font, options.defaultFontSize) ?? textLangMismatch(style.$lang, box.contract.textMetrics?.lang) ?? (box.contract.textMetrics?.kind === 'lines' ? textLinesMismatch(style, box.contract) : null); if (reason) throw Object.assign(new Error(reason), {code: 'U_LAYOUT_TEXT_FONT'});
+      const browser = textBrowserMismatch(uaEngine, style, box.contract); if (browser) throw Object.assign(new Error(`${box.label}: ${browser}`), {code: 'U_LAYOUT_BROWSER'}); }
     // A button with the reset may also be a grid or flex container (an icon and a label): measured in Chromium, it lays
     // its children out exactly as a div with the same CSS.
     // A text field (text-like input or textarea) keeps the same box with its default appearance once the author sets
@@ -1733,6 +1735,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // border-spacing as gaps and as an inset inside the padding, rows as tall as their tallest cell.
   function tableAsGrid(table, style, region, parents, emit, available, probe) {
     const fail = message => { throw Object.assign(new Error(message), { code: 'U_LAYOUT_TABLE' }); };
+    // Table layout is modeled as Chromium lays tables out (measured); Firefox and WebKit share rowspan heights and
+    // automatic column widths differently, and WebKit sizes fixed tables differently (docs/css-baseline.md).
+    if (uaEngine && uaEngine !== 'chromium') throw Object.assign(new Error(`${table.label}: table layout is modeled as Chromium lays tables out; ${uaEngine} shares rowspan heights and column widths differently`), { code: 'U_LAYOUT_BROWSER' });
     // Automatic layout equals the fixed one (measured) when content cannot widen a column: every cell
     // is empty or its content's min-content bound fits its px column, no spans or caption, and
     // at most one (empty) auto column, which needs an explicit table width; an auto width is the sum.
@@ -2318,7 +2323,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // Safe-area insets: the declared ones under viewport-fit=cover (Unknown when not declared), else 0.
   const cover = /viewport-fit\s*=\s*cover/i.test(String(root.metaViewport ?? ''));
   setSafeArea(cover ? (options.safeArea ? { top: 0, right: 0, bottom: 0, left: 0, ...options.safeArea } : 'unknown') : null);
-  unitContext.rootFontSize = null; setRootFontSize(null); setUAProfile(resolveUAProfile(options.ua)); unitContext.heightKnown = Boolean(block && options.viewport.height);
+  unitContext.rootFontSize = null; setRootFontSize(null); setUAProfile(resolveUAProfile(options.ua)); uaEngine = resolveUAProfile(options.ua)?.engine; unitContext.heightKnown = Boolean(block && options.viewport.height);
   // A flex item's main size that a non-auto flex-basis replaces, when no automatic minimum reads it (flex.mjs keeps
   // that case Unknown): the property, or null. The layout treats it as auto; finish() reports it as inert.
   function inertMainSize(style, box, main) {

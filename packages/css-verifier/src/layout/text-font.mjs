@@ -91,6 +91,27 @@ export function textFontMismatch(style, font, defaultFontSize) {
 }
 
 /**
+ * Text measured for Chromium, laid out by another engine (the ua option): Firefox and WebKit break lines differently
+ * (UAX #14, CJK punctuation), keep a closing CJK punctuation mark full width at a line end where Chromium trims it
+ * (text-spacing-trim), and shape spacing and right-to-left text differently (measured with tools/css-baseline.mjs and the
+ * layout e2e in each browser). Returns a reason (the caller reports Unknown), or null where the shaped advance is the
+ * same in every browser (one line of left-to-right text without spacing).
+ */
+const rightToLeft = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/u;
+const cjkPunctuation = /[\u3000-\u303F\uFF01-\uFF0F\uFF1A-\uFF20\uFF3B-\uFF40\uFF5B-\uFF65\u30FB]/u;
+export function textBrowserMismatch(engine, style, contract) {
+  if (!engine || engine === 'chromium') return null;
+  const metrics = contract.textMetrics, text = metrics?.text ?? '';
+  const about = `text is modeled as Chromium lays it out; ${engine} differs`;
+  if (metrics?.kind === 'lines') return `${about} in line breaking (UAX #14, CJK punctuation), so the line count is not known for ${engine}`;
+  if (metrics?.inline) return `${about} in where inline elements fall on the line (inline bounds are measured in Chromium)`;
+  if ((contract.font?.letterSpacing ?? 0) !== 0 || (contract.font?.wordSpacing ?? 0) !== 0) return `${about} in letter and word spacing`;
+  if (style.direction === 'rtl' || rightToLeft.test(text)) return `${about} in shaping right-to-left text`;
+  if (cjkPunctuation.test(text)) return `${about} at CJK punctuation (Chromium trims a closing mark at a line end, text-spacing-trim)`;
+  return null;
+}
+
+/**
  * A line profile was measured for one white-space/overflow-wrap pair and must
  * be the box's block contract (line count × line height). Returns a reason.
  */

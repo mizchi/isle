@@ -62,10 +62,10 @@ export function resolveUAProfile(ua) {
   if (ua === undefined || ua === null) return null;
   if (typeof ua === 'string') {
     if (!uaProfiles[ua]) throw new Error(`Invalid layout options: ua must be one of ${Object.keys(uaProfiles).join(', ')} (or { base, ... })`);
-    return { name: ua, ...uaProfiles[ua] };
+    return { name: ua, engine: ua, ...uaProfiles[ua] };
   }
   if (typeof ua !== 'object') throw new Error('Invalid layout options: ua must be a browser name or { base, ... }');
   const { base = 'chromium', ...overrides } = ua;
   if (!uaProfiles[base]) throw new Error(`Invalid layout options: ua.base must be one of ${Object.keys(uaProfiles).join(', ')}`);
-  return { ...merge(uaProfiles[base], overrides), name: `${base} (with overrides)` };
+  return { ...merge(uaProfiles[base], overrides), name: `${base} (with overrides)`, engine: base };
 }
