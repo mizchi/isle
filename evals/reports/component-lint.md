@@ -263,7 +263,7 @@
 
 このほかに、ループの外で加えた解析と検査があります。
 
-- 解析: 要素と並ぶテキスト(匿名の flex / grid item)、% の flex-basis(折り返す行、伸びる item、縮む item、最小幅が割合を超える幅)、flex の行の中に子のない item(ボタンなど)の `min-height`(ダイアログのボタンの直した版が検査できるようになった)。
+- 解析: 要素と並ぶテキスト(匿名の flex / grid item)、% の flex-basis(折り返す行、伸びる item、縮む item、最小幅が割合を超える幅)、flex の行の item の `min-height`(中に子のない item と、中身が block の流れの item。ダイアログのボタンの直した版が検査できるようになった)。
 - 検査: コンポーネントのスコープ(`E_SCOPE_*`)、`data-noshift` の契約、仕様の層(`tier: spec`)、AAA の行の長さ。
 
 結果: 72 例で、修正前は 101 件中 101 件を検出しました。黙った見逃しは 0 件、確認できない error は 0 件、検査器の失敗は 0 件です。直した版は、run-2 と run-3 で 72 例とも崩れがありません。e2e(Chromium との照合)は 389 件すべて通過しています。
@@ -272,7 +272,7 @@
 
 - スクロール範囲全体での位置: スクロール量を変数として扱えば、カルーセルや横スクロールの表の Unknown を証明に変えられます。
 - inline の行レイアウト: block の流れの中で文字と inline-block が並ぶ組版(inline-block の chips、文中のアイコン)は、モデル外です。
-- 中に子のある flex item の `min-height`、スクロールする包含ブロックの中の absolute: Unknown のままです(中に子のない flex item の `min-height` は対応済み)。
+- grid や flex を中身に持つ flex item の `min-height`、スクロールする包含ブロックの中の absolute: Unknown のままです(中に子のない flex item と、中身が block の流れの flex item の `min-height` は対応済み)。
 - フォントファイルを渡していないテキスト: 1 行と仮定し、はみ出しは検査しません。
 - 位置指定された箱で、自分の不透明な背景を持たないものは、コントラストが Unknown のままです(固定サイドバーの例)。
 - dark の preference での canvas は、Chromium が #121212 にするので、まだ Unknown です。
