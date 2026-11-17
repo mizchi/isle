@@ -282,3 +282,11 @@ test('justify-content on a flex row with an item that grows without a cap does n
   assert.deepEqual(inert(run('.p{display:flex;justify-content:space-between}.c{width:50px;height:10px;flex-grow:1;max-width:100px}')), []);
   assert.deepEqual(inert(run('.p{display:flex;justify-content:space-between}.c{width:50px;height:10px}')), []);
 });
+
+test('negative grid-column lines count from the end of the explicit grid (1 / -1 spans every column)', () => {
+  const r = c => analyzeHTML('<html lang="en"><body><main class="p"><div class="a"></div><div class="b"></div></main></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.p{display:grid;grid-template-columns:100px 100px;width:300px}.a,.b{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const a = c => { const x = r(c).sizes.find(s => s.box === '.a' && s.rect).rect; return [x.inlineStart.constant, x.inlineSize.constant]; };
+  assert.deepEqual(a('.a{grid-column:1/-1}'), ['0', '200']);
+  assert.deepEqual(a('.a{grid-column:-2}'), ['100', '100']);
+  assert.equal(r('.a{grid-column:-1/1}').status, 'unknown');
+});

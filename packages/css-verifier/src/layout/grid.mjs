@@ -83,7 +83,7 @@ export function parseAreas(value) {
   return { areas, rows: grid.length, columns };
 }
 
-function placement(value, axis, areas) {
+function placement(value, axis, areas, lines) {
   if (value === 'auto') return { span: 1 };
   // A bare name in grid-row / grid-column is the named area's lines (name-start / name-end).
   if (/^-?[A-Za-z_][\w-]*$/.test(String(value)) && !/^span$/i.test(value)) value = `area:${value}`;
@@ -94,9 +94,13 @@ function placement(value, axis, areas) {
   }
   const automatic = value.match(/^span\s+([1-9]\d*)$/);
   if (automatic) return { span: Number(automatic[1]) };
-  const m = value.match(/^([1-9]\d*)(?:\s*\/\s*(?:span\s+([1-9]\d*)|([1-9]\d*)))?$/);
-  if (!m) throw new Error(`Use numeric grid-${axis}, start / end, or start / span N`);
-  const start = Number(m[1]) - 1, span = m[2] ? Number(m[2]) : m[3] ? Number(m[3]) - start - 1 : 1;
+  // A negative line counts from the end of the explicit grid (-1 is its last line: 1 / -1 spans every explicit
+  // column), known here for columns (lines = columns + 1).
+  const line = text => { const n = Number(text); if (n > 0) return n; if (n < 0 && lines) { const k = lines + 1 + n; if (k >= 1) return k; } return null; };
+  const m = value.match(/^(-?[1-9]\d*)(?:\s*\/\s*(?:span\s+([1-9]\d*)|(-?[1-9]\d*)))?$/);
+  if (!m || line(m[1]) === null || (m[3] && line(m[3]) === null)) throw new Error(`Use numeric grid-${axis}, start / end, or start / span N`);
+  const start = line(m[1]) - 1, span = m[2] ? Number(m[2]) : m[3] ? line(m[3]) - start - 1 : 1;
+  if (m[3] && span < 1) throw new Error(`grid-${axis}: ${value} ends at or before its start (the lines swap, which is not modeled)`);
   return { start, span };
 }
 export function place(children, columns, { rows, subgridColumns = false, areas } = {}) {
@@ -105,7 +109,7 @@ export function place(children, columns, { rows, subgridColumns = false, areas }
   const occupied = new Set(), result = [];
   let cursor = 0;
   const violation = (code, message, box, axis) => { throw Object.assign(new Error(message), { code, box, axis }); };
-  const ordered = children.map(item => ({ ...item, column: placement(item.style['grid-column'], 'column', areas), line: placement(item.style['grid-row'], 'row', areas) }))
+  const ordered = children.map(item => ({ ...item, column: placement(item.style['grid-column'], 'column', areas, columns + 1), line: placement(item.style['grid-row'], 'row', areas) }))
     .toSorted((a, b) => Number(a.line.start === undefined) - Number(b.line.start === undefined));
   for (const { box, style, column: columnPlacement, line } of ordered) {
     const column = columnPlacement.start, span = columnPlacement.span, rowSpan = line.span;
