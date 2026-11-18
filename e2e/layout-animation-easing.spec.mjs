@@ -100,3 +100,21 @@ test('a relative offset keyframe moves the box where the analysis says, and only
     expect([...reported].sort(), c).toEqual(moved.sort());
   }
 });
+
+// @starting-style with a layout value (checklist A1): .b moves while .a appears (sampled every frame for 350ms after
+// load) exactly where the analysis reports a shift of .b — a transition of the property animates it in; without one
+// the starting value is never drawn.
+test('a transitioned starting value moves what follows while the box appears, exactly where the analysis says', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  const html4 = '<div class="page"><div class="a"></div><div class="b"></div></div>';
+  const base4 = '*{box-sizing:border-box;margin:0}body,.page{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:40px}.b{height:40px}';
+  for (const c of ['.a{transition:height .25s}@starting-style{.a{height:0}}', '@starting-style{.a{height:0}}', '.a{transition:opacity .25s}@starting-style{.a{height:0}}', '.a{transition:height 0s}@starting-style{.a{height:0}}', '.a{transition:all .25s ease-out}@starting-style{.a{height:10px}}', '.a{transition:height .25s}@starting-style{.b{height:0}}']) {
+    const css = base4 + c;
+    const r = analyzeHTML(`<html lang="en"><body>${html4}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    expect(r.status, `${c}: ${JSON.stringify(r.diagnostics.map(d => d.message))}`).not.toBe('unknown');
+    const reported = r.diagnostics.some(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT' && d.box === '.b');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html4}</body></html>`, {waitUntil: 'commit'});
+    const moved = await page.evaluate(() => new Promise(done => { const seen = new Set(), start = performance.now(); const tick = () => { const b = document.querySelector('.b'); if (b) seen.add(Math.round(b.getBoundingClientRect().top * 64)); if (performance.now() - start < 350) requestAnimationFrame(tick); else done(seen.size > 1); }; tick(); }));
+    expect(reported, `${c}: moves in the browser: ${moved}`).toBe(moved);
+  }
+});

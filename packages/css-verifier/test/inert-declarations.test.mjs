@@ -399,7 +399,7 @@ test('@charset, @page and @view-transition do not change the screen layout: acce
   assert.equal(run('@page{.m{height:90px}}').status, 'verified');
 });
 
-test('@starting-style that only paints is accepted (the settled layout is the same); one that lays out is Unknown', () => {
+test('@starting-style that only paints is accepted (the settled layout is the same); one that lays out is checked as an animation', () => {
   const run = c => analyzeHTML('<html lang="en"><body><div class="m"></div><div class="n"></div></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.m,.n{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
   const base = JSON.stringify(run('').sizes);
   for (const c of ['@starting-style{.m{opacity:0}}', '.m{transition:opacity .3s,transform .3s}@starting-style{.m{opacity:0;transform:translateY(8px)}}']) {
@@ -407,8 +407,8 @@ test('@starting-style that only paints is accepted (the settled layout is the sa
     assert.equal(r.status, 'verified', `${c}: ${JSON.stringify(r.diagnostics.map(d => d.message))}`);
     assert.equal(JSON.stringify(r.sizes), base, c);
   }
-  // A starting height animates the box in: what follows it moves (a layout shift), which is not modeled.
-  assert.equal(run('.m{transition:height .3s}@starting-style{.m{height:0}}').status, 'unknown');
+  // A starting height that is transitioned animates the box in: what follows it moves, a layout shift (checklist A1).
+  assert.ok(run('.m{transition:height .3s}@starting-style{.m{height:0}}').diagnostics.some(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT' && d.box === '.n'));
 });
 
 test('@namespace with a prefix only affects selectors that use the prefix; a default namespace stays Unknown', () => {

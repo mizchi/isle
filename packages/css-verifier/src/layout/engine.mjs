@@ -1,7 +1,7 @@
 import { q, add, sub, mul, cmp, div, exact, number } from './linear.mjs';
 import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rectangle, clip, partition, projection, serialize } from './region.mjs';
 import { validateOptions } from './input.mjs';
-import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea, containsFixed, setUAProfile, setRegisteredProperties, animationsOf } from './css.mjs';
+import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea, containsFixed, setUAProfile, setRegisteredProperties, animationsOf, transitionsOf } from './css.mjs';
 import { resolveUAProfile } from './ua-profile.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
@@ -209,7 +209,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // A hovered re-layout (hover-at:<path>) still needs its own untransformed re-layout, so it keeps a pristine copy.
   const hovered = preferences.find(p => p.startsWith('hover-at:'))?.slice(9);
   const carouselIn = box => /^carousel$/i.test(String(box.aria?.['aria-roledescription'] ?? '').trim()) || (box.children ?? []).some(carouselIn);
-  const pristine = (options.accessibility || options.integrity || /:hover|@(?:-webkit-)?keyframes/i.test(String(options.css ?? '')) || inlineSheets.length || carouselIn(root)) && preferences.every(p => p.startsWith('hover-at:')) ? structuredClone(root) : null;
+  const pristine = (options.accessibility || options.integrity || /:hover|@(?:-webkit-)?keyframes|@starting-style/i.test(String(options.css ?? '')) || inlineSheets.length || carouselIn(root)) && preferences.every(p => p.startsWith('hover-at:')) ? structuredClone(root) : null;
   // The untransformed re-layout (CSS transforms removed): the layout boxes, which is what a layout shift compares.
   const untransformed = preferences.includes('untransformed');
   let sawTransform = false;
@@ -252,7 +252,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -1453,6 +1453,34 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         style = { ...style, $sticky: false };
       }
       if (style.$sticky && parents.some(p => (p.clipped || p.clipScope || scrolling(p)) && !xClipOnly(p))) throw Object.assign(new Error(`${box.label} is position: sticky inside a scrolling or clipping ancestor, which it would stick to`), { code: 'U_LAYOUT_CSS' });
+      // @starting-style (checklist A1): a starting value that lays out, of a property this box transitions, eases from it
+      // to the settled value when the box appears — a two-keyframe animation from the starting values (the settled
+      // values are the implicit 100%). Untransitioned starting values are never drawn.
+      if (startingRules.length && !box.pseudo) {
+        const won = new Map(), rankCmp = (a, b) => { for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] - b[i]; return 0; };
+        for (const rule of startingRules) {
+          if (rule.contexts?.length) continue; // conditional starting rules: not modeled here (Unknown below)
+          const hit = rule.selectors.filter(sel => matches(sel, box, new Set())).sort((a, b) => rankCmp(b.specificity, a.specificity))[0];
+          if (!hit) continue;
+          for (const d of rule.declarations) { const prior = won.get(d.property); const rank = [d.important ? 1 : 0, ...hit.specificity, rule.order]; if (!prior || rankCmp(rank, prior.rank) > 0) won.set(d.property, { ...d, rank, rule }); }
+        }
+        if (startingRules.some(rule => rule.contexts?.length && rule.selectors.some(sel => matches(sel, box, new Set())))) throw Object.assign(new Error(`${box.label} has a @starting-style rule inside a conditional rule, which is not modeled`), { code: 'U_LAYOUT_CSS' });
+        const transitions = transitionsOf(style), seconds = v => { const m = /^(-?(?:\d+(?:\.\d+)?|\.\d+))(m?s)$/.exec(String(v)); return m ? Number(m[1]) / (m[2] === 'ms' ? 1000 : 1) : 0; };
+        const covering = property => transitions.findLast(t => (t.property === 'all' || t.property === property || property.startsWith(`${t.property}-`)) );
+        const groups = new Map();
+        for (const [property, d] of won) {
+          const t = covering(property);
+          if (!t || !(seconds(t.duration) > 0)) continue;
+          const key = `${t.duration}|${t.easing}`;
+          if (!groups.has(key)) groups.set(key, { t, layout: [] });
+          groups.get(key).layout.push(`${property}:${d.value}`);
+        }
+        for (const { t, layout } of groups.values()) {
+          const name = `@starting-style of ${box.label} (${t.duration} ${t.easing})`;
+          keyframeFrames.set(name, [{ offset: 0, props: {}, layout: layout.join(';') }]);
+          animated.push({ box, region, name, position: style.position, duration: t.duration, count: '1', direction: 'normal', easing: t.easing, style });
+        }
+      }
       // Each animation of the list (animationsOf repeats the longhand lists to the names).
       for (const a of animationsOf(style)) if (a.playState !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(a.duration) && keyframeFrames.get(a.name)?.some(frame => frame.layout)) animated.push({ box, region, name: a.name, position: style.position, duration: a.duration, count: a.count, direction: a.direction, easing: a.easing, style });
       // A bar fixed to the bottom edge under viewport-fit=cover: its content must clear the bottom safe area (the home

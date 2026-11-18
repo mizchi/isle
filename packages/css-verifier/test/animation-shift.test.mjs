@@ -119,3 +119,21 @@ test('every animation of a list is checked, with the other longhand lists repeat
   // A name without @keyframes in the list runs nothing; the others still run.
   assert.equal(shifts(run('@keyframes grow{to{height:80px}}.a{animation:missing 1s,grow 1s}')).length, 1);
 });
+
+// @starting-style with a layout value (checklist A1): when the box first appears, a transition of that property runs
+// from the starting value to the settled one, like a two-keyframe animation; without a transition of it the starting
+// value is never drawn.
+test('a transitioned starting value is checked like an animation from it; an untransitioned one changes nothing', () => {
+  const [grow] = shifts(run('.a{transition:height .25s}@starting-style{.a{height:0}}'));
+  assert.deepEqual([grow?.box, grow?.field], ['.b', 'blockStart']);
+  assert.match(grow.message, /@starting-style/);
+  assert.equal(shifts(run('.a{transition:all .3s ease-out}@starting-style{.a{height:0}}')).length, 1);
+  assert.equal(shifts(run('.a{transition-property:height;transition-duration:.2s}@starting-style{.a{height:10px}}')).length, 1);
+  // Not transitioned (no transition, another property, or no duration): the box appears settled.
+  for (const c of ['@starting-style{.a{height:0}}', '.a{transition:opacity .3s}@starting-style{.a{height:0}}', '.a{transition:height 0s}@starting-style{.a{height:0}}']) {
+    const r = run(c);
+    assert.equal(r.status, 'verified', `${c}: ${JSON.stringify(r.diagnostics.map(d => d.message))}`);
+  }
+  // A starting rule for another element does not apply.
+  assert.equal(shifts(run('.a{transition:height .25s}@starting-style{.b{height:0}}')).length, 0);
+});
