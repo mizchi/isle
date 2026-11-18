@@ -581,17 +581,18 @@ test('inline bounds on the last line of justified text', async ({page}) => {
 
 // Edges of an inline box in wrapping text (checklist D3): the line layout counts them, so the paragraph's height (its
 // line count) and the link's bounds follow the browser at every width.
-test('inline box edges in wrapping text: line count and bounds', async ({page}) => {
+test('inline box edges and weights in wrapping text: line count and bounds', async ({page}) => {
   test.setTimeout(240_000);
   test.skip(test.info().project.name === 'firefox', 'Firefox rounds inline edges to 1/60px (ADR-0010)');
   const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
   const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the full installation guide before you start the upgrade of the cluster.', piece = 'installation guide';
-  for (const [extra, edges] of [['.u{padding:0 8px}', [0, 8, 8, 0]], ['.u{margin:0 6px;padding:0 3px}', [6, 3, 3, 6]]]) {
+  // (and another weight of the same font, measured as its own shaping run)
+  for (const [extra, edges, weight] of [['.u{padding:0 8px}', [0, 8, 8, 0]], ['.u{margin:0 6px;padding:0 3px}', [6, 3, 3, 6]], ['.u{font-weight:700}', null, 700], ['.u{font-weight:900}', null, 900]]) {
     const at0 = content.indexOf(piece);
     const html = `<div class="page"><p class="p">${content.slice(0, at0)}<a class="u" href="#x">${piece}</a>${content.slice(at0 + piece.length)}</p></div>`;
     const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:0 10px;background:#fff;color:#000}.p{font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400}.u{color:#000}${extra}`;
-    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': {text: piece, edges}}}, wrap: 'normal'}});
+    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': weight ? {text: piece, weight} : {text: piece, edges}}}, wrap: 'normal'}});
     const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 120, max: 900, height: {min: 600, max: 600}}, boxes});
     expect(report.status === 'unknown', `${extra}: ${JSON.stringify(report.diagnostics.map(d => d.message))}`).toBe(false);
     let placed = 0;

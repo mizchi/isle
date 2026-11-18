@@ -335,6 +335,8 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
 - **太さの違う inline の箱**(チェックリスト D3):`inline` に `{text, weight}` を与えると、その部分を別の run(同じ family・大きさの
   その太さ)として shaping し、行の幅を run の和(run ごとに切り上げと allowance)にし、各箱の端に前の run の誤差を積む。上下は同じ
   family なので元の font の content area。engine は CSS の違いが font-weight だけで、その値が契約と同じときだけ受け入れる。
+  折り返す文字列では、太さの run を script の run と同じく shaping の単位に分けて改行を求め(行数の profile・min-content・改行の位置)、
+  各行の部分の位置と行の幅はその行の run の和で出す。行が太さの run の途中で切れる行には矩形を出さない。
 - **文字の中の置換要素**(チェックリスト D3):img・svg・video・canvas・iframe・フォーム部品などは atomic inline の箱で、自分の幅だけ
   行を広げ、文字の ascent より高ければ行を高くする(24px の行に 40px の画像を置くと Chromium で 47px、Firefox・WebKit で 46.5px)。text の大きさの契約はそれを
   数えないので U_LAYOUT_INLINE(以前は文字だけの大きさで Verified:誤り)。一行の文字列では、text 契約の `inline` に

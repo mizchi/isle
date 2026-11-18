@@ -87,8 +87,11 @@ test('horizontal edges of inline boxes: measured with the contract, else Unknown
   const padWrap = metrics.resolveBoxes({'.p': {text: {content: 'Read the installation guide first.', font, inline: {'.u': {text: 'installation guide', edges: [0, 8, 8, 0]}}}, wrap: 'normal'}})['.p'];
   assert.equal(padWrap.minInlineSize, plainWrap.minInlineSize + 8);
   assert.equal(padWrap.maxInlineSize, plainWrap.maxInlineSize + 16);
-  // Weights and atomic boxes in wrapping text are not measured.
-  assert.throws(() => metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.u': {text: 'guide', weight: 700}}}, wrap: 'normal'}}), /one-line/);
+  // A weight in wrapping text: its own shaping run in the line layout (bold is wider).
+  const boldWrap = metrics.resolveBoxes({'.p': {text: {content: 'Read the installation guide first.', font, inline: {'.u': {text: 'installation guide', weight: 700}}}, wrap: 'normal'}})['.p'];
+  assert.ok(boldWrap.minInlineSize > plainWrap.minInlineSize && boldWrap.maxInlineSize > plainWrap.maxInlineSize);
+  // Atomic boxes in wrapping text are not measured.
+  assert.throws(() => metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.i': {atomic: [16, 16], at: 9}}}, wrap: 'normal'}}), /one-line/);
 });
 
 test('an inline box in another weight: measured as its own run, else Unknown', () => {
