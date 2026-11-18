@@ -228,6 +228,9 @@ test('sizes and vertical margins on a display: inline span do nothing', () => {
   assert.deepEqual(run('.s{width:200px}'), ['inline-size']);
   assert.deepEqual(run('.s{height:60px;margin-top:20px}'), ['block-size margin-top']);
   assert.deepEqual(run('.s{color:red}'), []);
+  // Transforms apply to block-level and atomic inline boxes only (CSS Transforms 1 §1, transformable element).
+  assert.deepEqual(run('.s{transform:translateY(-4px)}'), ['transform']);
+  assert.deepEqual(run('.s{transform:none}'), []);
 });
 
 test('float on a grid or flex item is reported as inert too (the checked layout still forbids float)', () => {
