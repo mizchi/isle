@@ -48,7 +48,8 @@
   flex の項目の `vw` の幅と `calc()`(px・%・vw・vh の和)の幅や basis も済み: `%` の basis と同じく、容器の内容の幅に対する
   viewport の式として解く(縮まないか、伸びるだけの場合。縮む項目どうしの重みが 1 つの幅の割合にならない場合は Unknown)。
   3 つのブラウザーで、2 つの viewport の幅で一致。grid の `%` の列・行と `%` の gap も、その軸の容器の大きさが 1 つの定数のとき
-  (px の幅、宣言した px の高さ)は px に書き換えて解く。flex の column の `%` の高さ、viewport で変わる容器の `%` のトラック、
+  (px の幅、宣言した px の高さ)は px に書き換えて解く。flex の column の項目の `%` の高さ・basis・min-height も、column の
+  宣言した高さが定数なら同じく解く。viewport で変わる容器の `%` のトラック、
   auto の高さの親の中の `%` の高さ(grid の項目として伸ばされる親を含む)、flex の項目の `min()`/`max()` の幅は残り。
 - [~] **D3. inline の中の行の配置**: 文字の行と inline の箱の位置。大きい。
   最初の一歩として、測った文字の中の inline の箱(`inlineBounds`)を `text-align: center`・`right`・`end` でも出す(以前は start と

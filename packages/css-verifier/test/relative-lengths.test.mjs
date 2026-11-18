@@ -54,3 +54,10 @@ test('percentage grid tracks and gaps against a constant container size (checkli
   assert.match(String(box('.p{display:grid;grid-template-columns:25% minmax(0,1fr)}')), /^unknown/);
   assert.equal(rows('.p{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:50% 20px}'), 'unknown');
 });
+
+test('percentage heights and bases in a column flex container of a declared height (checklist D2)', () => {
+  const col = c => { const r = analyzeHTML('<html lang="en"><body><div class="p"><div class="a"></div><div class="b"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}body{${g}}.p{display:flex;flex-direction:column}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}); return r.status === 'unknown' ? 'unknown' : r.sizes.filter(s => /^\.[ab]$/.test(s.box)).map(s => [s.rect.blockStart.constant, s.rect.blockSize.constant]); };
+  assert.deepEqual(col('.p{height:200px}.a{height:25%;flex:none}.b{flex:0 0 10%}'), [['0', '50'], ['50', '20']]);
+  // An auto-height column: the percentage is not a share of anything known; Unknown.
+  assert.equal(col('.a{height:25%;flex:none}.b{height:10px;flex:none}'), 'unknown');
+});

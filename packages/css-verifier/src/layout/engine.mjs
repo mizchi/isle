@@ -1100,8 +1100,24 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const mainGap = gapSize(style[main === 'inline' ? 'column-gap' : 'row-gap']), crossGap = gapSize(style[main === 'inline' ? 'row-gap' : 'column-gap']);
     const explainTracks = axis => () => explanation(sizeChain([...parents, { box, style }], axis, { hostInset: options.hostInset }), trackProperties(axis).map(property => fact(box, style, property)));
     const gaps = (gap, count) => mul(gap, q(Math.max(0, count - 1)));
+    // Checklist D2: in a column whose height is declared and one constant, the items' percentage heights and bases
+    // (and min/max heights) are shares of it: written as px before the items are modeled.
+    const columnBasis = main === 'block' && style['block-size'] !== 'auto' && knownBlock && cmp(knownBlock.x, zero) === 0 && cmp(knownBlock.y, zero) === 0 ? knownBlock.b : null;
+    const columnShares = child => {
+      if (!columnBasis) return child;
+      let st = child.style;
+      for (const key of ['block-size', 'flex-basis', 'min-block-size', 'max-block-size']) {
+        const m = /^(\d+(?:\.\d+)?)%$/.exec(String(st[key]));
+        if (!m) continue;
+        const v = mul(columnBasis, div(q(m[1]), q(100))), text = String(number(v));
+        if (!/^\d+(?:\.\d{1,6})?$/.test(text) || cmp(q(text), v) !== 0) continue;
+        st = { ...st, [key]: `${text}px` };
+      }
+      return st === child.style ? child : { ...child, style: st };
+    };
     for (const state of collect(region)) {
       if (state.children.some(child => child.style.position === 'absolute')) throw flexUnknown('Absolute children of a flex container use flex static positions');
+      if (columnBasis) state.children = state.children.map(columnShares);
       const model = state.children.map(child => {
         try {
           const align = crossAlignment(style['align-items'], child.style['align-self']);

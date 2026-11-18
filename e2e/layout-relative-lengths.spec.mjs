@@ -54,6 +54,9 @@ const heightCases = [
   // Percentage grid rows and row-gap in a grid of a declared height.
   '.p{height:200px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:50% minmax(0,1fr) 10%;row-gap:5%}.a,.b,.c{height:auto}',
   '.p{height:200px;max-height:160px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:25% 30px 25%}',
+  // Percentage heights and bases in a column flex container of a declared height.
+  '.p{height:200px;display:flex;flex-direction:column}.a{height:25%;flex:none}.b{flex:0 0 10%}.c{flex:1 0 5%}',
+  '.p{height:200px;display:flex;flex-direction:column;row-gap:6px}.a{flex:1 1 50%;min-height:0}.b{height:30%;flex:none}.c{flex:0 0 5%}',
 ];
 test('percentage heights in block flow against a declared height: every box is where the browser puts it', async ({page}) => {
   const at = (v, W, H) => frac(v.constant) + frac(v.coefficient) * W + frac(v.heightCoefficient ?? 0) * H;
