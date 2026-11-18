@@ -148,6 +148,9 @@
   フォーカスを記録していない要素は除く。3 つのブラウザーで、クリック・Tab・focus() のどれでもフォーカスされなかった。
 - [x] **F18. `pointer-events: none` の要素の `:hover`**(`W_CSS_STATE_UNREACHABLE`): 子のない要素ではポインターが当たらず、
   `:hover` は当たらない(子があれば、子の hover が親に伝わりうるので除く)。
+- [x] **F19. 当たらない `:checked`・`::placeholder`**(`W_CSS_STATE_UNREACHABLE`): `:checked` はチェックボックス・ラジオ・
+  option にしか当たらない(role="checkbox" の div でも)。`::placeholder` は placeholder 属性のある文字欄・textarea にしかない。
+  `:active` も `:hover` と同じく `pointer-events: none` の子のない要素には当たらない。
 - [x] **F10. 要素(擬似要素でない)の `content`**: 文字列は何もしない(既存の `W_LAYOUT_DECLARATION_INERT` が出していた)。
   `url()` は要素を画像で置き換えるので効く(3 つのブラウザーで測った)。
 ## 済み(このチェックリストを作る前に済んだもの)

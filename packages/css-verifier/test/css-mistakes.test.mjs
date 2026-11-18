@@ -148,3 +148,12 @@ test('F17, F18: a :focus rule on an element that cannot take focus, a :hover on 
   assert.equal(st('<div class="a"></div>', '.a{pointer-events:none}.a:hover{color:red}').length, 1);
   assert.equal(st('<div class="a"></div>', '.a:hover{color:red}').length, 0);
 });
+
+test('F19: :checked on an element that is never checked, ::placeholder on one that shows none', () => {
+  const st = (html, css) => codes(run(css, html), 'W_CSS_STATE_UNREACHABLE');
+  assert.equal(st('<div class="a"></div>', '.a:checked{color:red}').length, 1);
+  assert.equal(st('<input class="a" type="checkbox" aria-label="x">', '.a:checked{color:red}').length, 0);
+  assert.equal(st('<input class="a" type="text" aria-label="x">', '.a::placeholder{color:red}').length, 1);
+  assert.equal(st('<input class="a" type="text" placeholder="Name" aria-label="x">', '.a::placeholder{color:red}').length, 0);
+  assert.equal(st('<div class="a"></div>', '.a::placeholder{color:red}').length, 1);
+});

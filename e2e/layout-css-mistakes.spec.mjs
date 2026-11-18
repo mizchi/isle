@@ -168,3 +168,22 @@ test('F17, F18: state rules that never apply: focus on an element that cannot ta
     expect(await page.evaluate(() => getComputedStyle(document.querySelector('.a')).color === 'rgb(255, 0, 0)'), css).toBe(!never);
   }
 });
+
+test('F19: :checked only on checkable elements, ::placeholder only where a placeholder shows', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  for (const [html, never] of [['<div class="a" role="checkbox" tabindex="0">x</div>', true], ['<input class="a" type="checkbox" aria-label="x">', false]]) {
+    const css = '.a:checked{outline:3px solid rgb(255, 0, 0)}';
+    expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).some(w => w.code === 'W_CSS_STATE_UNREACHABLE'), html).toBe(never);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${base}${css}</style></head><body>${html}</body></html>`);
+    await page.click('.a');
+    expect(await page.evaluate(() => document.querySelector('.a').matches(':checked')), html).toBe(!never);
+  }
+  for (const [html, never] of [['<input class="a" type="text" aria-label="x">', true], ['<input class="a" type="text" placeholder="Name" aria-label="x">', false]]) {
+    const css = '.a::placeholder{color:rgb(255, 0, 0)}';
+    expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).some(w => w.code === 'W_CSS_STATE_UNREACHABLE'), html).toBe(never);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const shot = (await page.locator('.a').screenshot()).toString('base64');
+    await page.setContent(`<!doctype html><html lang="en"><head><style></style></head><body>${html}</body></html>`);
+    expect(shot === (await page.locator('.a').screenshot()).toString('base64'), html).toBe(never);
+  }
+});

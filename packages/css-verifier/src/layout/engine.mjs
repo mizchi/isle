@@ -486,14 +486,25 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // (no tabindex, not a control or link), :hover on an element with pointer-events: none and no children (the
         // pointer never hits it).
         for (const rule of rules) for (const sel of rule.selectors ?? []) {
-          if (!['focus', 'focus-visible', 'hover'].includes(sel.state) || sel.pseudoElement || !matches(sel, box, new Set([sel.state]))) continue;
+          // F19: ::placeholder on an element that shows none (not a text field or textarea, or no placeholder attribute).
+          if (sel.pseudoElement === 'placeholder' && !sel.state) {
+            if (!matches(sel, box, new Set(['::placeholder']))) continue;
+            const field = box.tag === 'textarea' || (box.tag === 'input' && !['checkbox', 'radio', 'range', 'color', 'file', 'hidden', 'submit', 'reset', 'button', 'image'].includes(box.inputType));
+            if ((field && box.placeholder !== undefined) || box.inputType === 'dynamic' || layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source)) continue;
+            layoutWarnings.push({ code: 'W_CSS_STATE_UNREACHABLE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, state: '::placeholder', css: [{ property: '::placeholder', file: rule.file, line: rule.line, selector: sel.source }],
+              message: `${sel.source} never applies to ${box.label}: ${field ? 'it has no placeholder attribute' : 'it is not a text field or textarea'}, so there is no placeholder to style` });
+            continue;
+          }
+          if (!['focus', 'focus-visible', 'hover', 'active', 'checked'].includes(sel.state) || sel.pseudoElement || !matches(sel, box, new Set([sel.state]))) continue;
           // (Focus: not where the adapter could not tell — a dynamic tabindex — nor on elements whose focusability the box
           // tree does not record: frames, media with controls, image map areas, editable content.)
           const unrecorded = ['iframe', 'video', 'audio', 'embed', 'object', 'area', 'details'].includes(box.tag) || box.focusable === 'dynamic' || box.tabIndex === 'dynamic' || box.contentEditable !== undefined || box.attributes?.contenteditable !== undefined;
-          const never = sel.state === 'hover' ? style['pointer-events'] === 'none' && !(box.children ?? []).length && !box.inline?.length : !focusableBox(box) && !unrecorded;
+          // F19: :checked holds only for a checkbox, a radio button or an option.
+          const checkable = (box.tag === 'input' && ['checkbox', 'radio', 'dynamic'].includes(box.inputType)) || box.tag === 'option';
+          const never = ['hover', 'active'].includes(sel.state) ? style['pointer-events'] === 'none' && !(box.children ?? []).length && !box.inline?.length : sel.state === 'checked' ? !checkable : !focusableBox(box) && !unrecorded;
           if (!never || layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source)) continue;
           layoutWarnings.push({ code: 'W_CSS_STATE_UNREACHABLE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, state: sel.state, css: [{ property: `:${sel.state}`, file: rule.file, line: rule.line, selector: sel.source }],
-            message: sel.state === 'hover' ? `${sel.source} never applies to ${box.label}: it has pointer-events: none, so the pointer never hovers it. Remove pointer-events: none, or put the :hover on an element the pointer reaches` : `${sel.source} never applies to ${box.label}: it cannot take focus (no tabindex, and it is not a link, button or form control). Make it focusable (a button, or tabindex="0"), or use :focus-within on its container` });
+            message: sel.state === 'checked' ? `${sel.source} never applies to ${box.label}: only a checkbox, a radio button or an option is ever :checked. Use a class or an aria-checked / aria-pressed attribute selector for a custom control` : ['hover', 'active'].includes(sel.state) ? `${sel.source} never applies to ${box.label}: it has pointer-events: none, so the pointer never ${sel.state === 'hover' ? 'hovers' : 'activates'} it. Remove pointer-events: none, or put the :hover on an element the pointer reaches` : `${sel.source} never applies to ${box.label}: it cannot take focus (no tabindex, and it is not a link, button or form control). Make it focusable (a button, or tabindex="0"), or use :focus-within on its container` });
         }
         // F12: a transition with no duration (transition: opacity) is 0s: the change is instant (a delay only postpones it).
         for (const t of transitionsOf(style)) if (/^-?0+(?:\.0+)?m?s$/.test(String(t.duration)) && style.$sources?.['transition-property'] && style.$sources?.['transition-duration']?.specified === undefined && !layoutWarnings.some(w => w.code === 'W_CSS_TRANSITION_NO_DURATION' && w.path === box.path && w.property === t.property))
