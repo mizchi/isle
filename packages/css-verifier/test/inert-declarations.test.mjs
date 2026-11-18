@@ -386,3 +386,15 @@ test('@import after other rules is ignored: warned, and the rest of the sheet is
   assert.equal(first('@charset "utf-8";@layer base;@import "theme.css";.m{height:20px}').status, 'unknown');
   assert.equal(first('@media (min-width:1px){.m{color:red}}@import "theme.css";.m{height:20px}').status, 'verified');
 });
+
+test('@charset, @page and @view-transition do not change the screen layout: accepted, nothing else changes', () => {
+  const run = c => analyzeHTML('<html lang="en"><body><div class="m"></div></body></html>', {name: 'P', css: `${c}*{margin:0}html,body{${g}}.m{height:20px}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const base = JSON.stringify(run('').sizes);
+  for (const c of ['@charset "utf-8";', '@page{margin:1cm}', '@page :first{size:A4;margin:0}', '@view-transition{navigation:auto}']) {
+    const r = run(c);
+    assert.equal(r.status, 'verified', c);
+    assert.equal(JSON.stringify(r.sizes), base, c);
+  }
+  // The rules inside @page apply to the page box only (an element rule there is invalid).
+  assert.equal(run('@page{.m{height:90px}}').status, 'verified');
+});

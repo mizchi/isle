@@ -515,6 +515,9 @@ export function parseLayoutCSS(sheets, diagnostic) {
         keyframeFrames.set(name, frames.sort((a, b) => a.offset - b.offset));
         continue;
       }
+      // At-rules that never change the screen: @charset (the encoding of bytes the analysis already has as text), @page
+      // (the page box of paged media: print) and @view-transition (navigation transitions between documents).
+      if (node.type === 'atrule' && ['charset', 'page', 'view-transition'].includes(node.name.toLowerCase())) continue;
       if (node.type === 'atrule') {
         if (!['media', 'container'].includes(node.name.toLowerCase()) || !node.nodes) { problem('U_LAYOUT_CSS', `Unsupported @${node.name}`, node.source.start.line); continue; }
         try {

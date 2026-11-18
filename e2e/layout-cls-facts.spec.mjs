@@ -1176,3 +1176,11 @@ test('@import after other rules (or inside @media): the browser never loads it; 
   expect(warned(`.x{color:red}${sheet}`)).toBe(true);
   expect(warned(`@media (min-width:1px){${sheet}}`)).toBe(true);
 });
+
+test('@charset, @page and @view-transition: the screen layout is the same without them', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  const css = '*{margin:0}body{display:grid;grid-template-columns:minmax(0,1fr)}.m{height:20px}.n{height:30px;margin:7px}';
+  const rects = async extra => { await page.setContent(`<!doctype html><html lang="en"><head><style>${extra}${css}</style></head><body><div class="m"></div><div class="n"></div></body></html>`); return page.evaluate(() => JSON.stringify([...document.querySelectorAll('body *')].map(e => { const r = e.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }))); };
+  const base = await rects('');
+  for (const extra of ['@charset "utf-8";', '@page{margin:3cm;size:A5}', '@page :first{margin:0}', '@page{.m{height:90px}}', '@view-transition{navigation:auto}']) expect(await rects(extra), extra).toBe(base);
+});
