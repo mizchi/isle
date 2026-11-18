@@ -63,7 +63,9 @@ test('invalid substitution cannot reuse an earlier declaration or concatenate CS
   status(run('.cell{--cell:var(--cell)}'),'verified');
   // Substituted tokens outside the layout subset are not assumed invalid.
   for(const declaration of ['--cell:40;min-width:var(--cell)px','--cell:4/**/0px','--cell:10deg']) status(run('.cell{'+declaration+'}'),'unknown');
-  status(run('.row{--cell:40px}@property --cell{syntax:"<length>";inherits:false;initial-value:40px}'),'unknown');
+  // A registered property that does not inherit: .cell reads its initial value, not .row's (modeled since @property).
+  status(run('.row{--cell:40px}@property --cell{syntax:"<length>";inherits:false;initial-value:40px}'),'verified');
+  status(run('.row{--cell:2em}@property --cell{syntax:"<length>";inherits:true;initial-value:40px}'),'unknown');
 });
 
 test('exponential variable expansion is bounded and fallback cannot hide a work limit',()=>{

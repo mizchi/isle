@@ -1,7 +1,7 @@
 import { q, add, sub, mul, cmp, div, exact, number } from './linear.mjs';
 import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rectangle, clip, partition, projection, serialize } from './region.mjs';
 import { validateOptions } from './input.mjs';
-import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea, containsFixed, setUAProfile } from './css.mjs';
+import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea, containsFixed, setUAProfile, setRegisteredProperties } from './css.mjs';
 import { resolveUAProfile } from './ua-profile.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
@@ -251,7 +251,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map() } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -284,6 +284,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         message: `@media (max-width: ${number(b.value)}px) and @media (min-width: ${number(a.value)}px) leave the widths between them matched by neither (a zoomed page or a fractional device pixel ratio can make the viewport ${(number(b.value) + number(a.value)) / 2}px wide): there ${selector} gets neither rule's ${property}. Use max-width: ${number(a.value) - 0.02}px, or a range query (width < ${number(a.value)}px)` });
     }
   }
+  setRegisteredProperties(registered);
   for (const note of importIgnored) layoutWarnings.push({ code: 'W_CSS_IMPORT_IGNORED', severity: 'warning', css: [{ property: '@import', file: note.file, line: note.line, selector: '@import' }],
     message: `@import ${note.params} is ${note.nested ? 'inside another rule' : 'after other rules'}: @import is only valid before every other rule of the sheet (after @charset and @layer statements), so the browser ignores it and the sheet is never loaded. Move it to the top${note.nested ? ' (with the condition written as @import url(...) <media query>)' : ''}` });
   for (const note of keyframeImportant) layoutWarnings.push({ code: 'W_CSS_KEYFRAME_IMPORTANT', severity: 'warning', keyframes: note.name, css: [{ property: note.property, file: note.file, line: note.line, selector: `@keyframes ${note.name}` }],

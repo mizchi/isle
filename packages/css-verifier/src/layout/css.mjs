@@ -15,6 +15,13 @@ export function setRootFontSize(size) { rootFontSize = size; }
 // The form-control UA profile of the analysis (layout option ua), or null for the historical Chromium defaults.
 let uaProfile = null;
 export function setUAProfile(profile) { uaProfile = profile; }
+// @property registrations (name → {inherits, initial, syntax}), set by the analysis from the parsed sheets.
+let registeredProperties = new Map();
+export function setRegisteredProperties(registry) { registeredProperties = registry ?? new Map(); }
+// Typed syntaxes accepted, with the literal values whose computed value is the value itself (no em, var() or calc():
+// those compute where they are declared, which the unregistered substitution does not model).
+const typedValue = { '<length>': /^(?:0|-?\d*\.?\d+px)$/, '<number>': /^-?\d*\.?\d+$/, '<integer>': /^-?\d+$/, '<percentage>': /^-?\d*\.?\d+%$/, '<length-percentage>': /^(?:0|-?\d*\.?\d+(?:px|%))$/, '<color>': /^#[0-9a-f]{3,8}$/i };
+export const registeredValueProblem = (name, text) => { const r = registeredProperties.get(name); if (!r || r.syntax === '*') return null; const v = String(text).trim(); return typedValue[r.syntax].test(v) || ['initial', 'inherit', 'unset', 'revert'].includes(v.toLowerCase()) ? null : `${name} is registered as ${r.syntax}; its value ${v} is not a literal that computes to itself, which is not modeled`; };
 // Parse-time check of a px or rem length; rem resolves at layout time, against the html root (else Unknown).
 // env(safe-area-inset-*) (optionally with a px fallback, or as max(px, env(…))) resolves at layout time against the
 // declared safe area (setSafeArea; 0 without viewport-fit=cover, as browsers report).
@@ -459,7 +466,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [];
+  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map();
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -519,6 +526,17 @@ export function parseLayoutCSS(sheets, diagnostic) {
       // At-rules that never change the screen: @charset (the encoding of bytes the analysis already has as text), @page
       // (the page box of paged media: print) and @view-transition (navigation transitions between documents).
       if (node.type === 'atrule' && ['charset', 'page', 'view-transition'].includes(node.name.toLowerCase())) continue;
+      // @property registers a custom property (CSS Properties and Values API 1 §2): its inherits and initial-value change
+      // what var() reads. Only the universal syntax and the typed syntaxes above, with all three descriptors valid.
+      if (node.type === 'atrule' && node.name.toLowerCase() === 'property') {
+        const name = node.params.trim(), descriptor = d => (node.nodes ?? []).find(x => x.type === 'decl' && x.prop.toLowerCase() === d)?.value.trim();
+        const syntax = descriptor('syntax')?.replace(/^["']|["']$/g, '').trim(), inherits = descriptor('inherits')?.toLowerCase(), initial = descriptor('initial-value');
+        const problemOf = !customName(name) ? 'the name is not a custom property' : !syntax || !(syntax === '*' || typedValue[syntax]) ? `syntax ${syntax ?? '(missing)'} is not modeled` : !['true', 'false'].includes(inherits) ? 'inherits must be true or false' : syntax !== '*' && (initial === undefined || !typedValue[syntax].test(initial)) ? `initial-value ${initial ?? '(missing)'} is not a literal ${syntax}` : null;
+        if (problemOf) { problem('U_LAYOUT_CSS', `@property ${name}: ${problemOf}`, node.source.start.line); continue; }
+        if (depth > 0) { problem('U_LAYOUT_CSS', `@property ${name} inside a conditional rule is not modeled`, node.source.start.line); continue; }
+        registered.set(name, { syntax, inherits: inherits === 'true', initial: initial ?? null });
+        continue;
+      }
       // @supports: its rules apply where the condition holds in every target browser, and are skipped where it fails in
       // all of them; a condition not decided from the known features (supports.mjs) is Unknown.
       if (node.type === 'atrule' && node.name.toLowerCase() === 'supports' && node.nodes) {
@@ -612,7 +630,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
   }
   // An animation-name without @keyframes runs no animation.
   for (const rule of rules) for (const declaration of rule.declarations) if (declaration.property === 'animation-name' && !wide.has(declaration.value) && declaration.value !== 'none' && !keyframes.has(declaration.value)) declaration.value = 'none';
-  return { rules, layers, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored };
+  return { rules, layers, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered };
 }
 
 // The UA default family and the user's default font size are not author
@@ -776,7 +794,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
       }
     }
   }
-  const environment=variableEnvironment(custom,inherited.$variables,box.documentRoot,spend),expanded=new Map(),invalid=[];
+  for (const [name, declaration] of custom) { const issue = registeredValueProblem(name, declaration.specified ?? declaration.value ?? ''); if (issue) throw Object.assign(new Error(issue), { code: 'U_LAYOUT_VARIABLE' }); }
+  const environment=variableEnvironment(custom,inherited.$variables,box.documentRoot,spend,registeredProperties),expanded=new Map(),invalid=[];
   for (const property of Object.keys(values)) {
     let value = values[property];
     if(typeof value==='object') {

@@ -96,21 +96,33 @@ const closed={closed:true,lookup:missing};
 const external={closed:false,lookup:name=>({status:'unknown',code:'U_LAYOUT_VARIABLE',message:`Cannot resolve inherited ${name}; provide the real ancestor chain starting at html`})};
 
 /** Parent closures are immutable: inherited aliases cannot rebind to child vars. */
-export function variableEnvironment(declarations,parent,documentRoot,globalSpend=()=>{}) {
+/**
+ * registry: name → {inherits, initial} from @property (initial: the initial-value text, or null). A registered
+ * property that does not inherit reads its initial value where it is not set; one that inherits reads it at the root.
+ * initial, and (when it does not inherit) unset and revert give it too.
+ */
+export function variableEnvironment(declarations,parent,documentRoot,globalSpend=()=>{},registry=new Map()) {
   parent=documentRoot ? closed : parent ?? external;
-  if(!declarations.size) return parent;
+  if(!declarations.size && !registry.size) return parent;
   if(declarations.size>256) limit('An element has more than 256 custom-property bindings');
   const spend=resolutionBudget(globalSpend);
   const cyclic=cycles(declarations,spend),cache=new Map();
+  const registered=name=>registry.get(name);
+  const initialOf=name=>{const r=registered(name);return !r || r.initial===null ? missing(name) : evaluate(variableValue(r.initial).nodes,missing,spend);};
+  // The parent's value (inherit). At the root a registered property that is not set there has its initial value; a
+  // value invalid at computed-value time stays the guaranteed-invalid value (measured in Chromium, Firefox and WebKit).
+  const inherited=name=>registered(name) && documentRoot ? initialOf(name) : parent.lookup(name);
   function lookup(name) {
     spend();
     if(cache.has(name)) return cache.get(name);
-    if(!declarations.has(name)) return parent.lookup(name);
+    const r=registered(name);
+    if(!declarations.has(name)) return r ? (r.inherits ? inherited(name) : initialOf(name)) : parent.lookup(name);
     const declaration=declarations.get(name),keyword=wide(declaration.expression.nodes);
     let result;
     if(keyword==='revert-layer') result={status:'unknown',code:'U_LAYOUT_VARIABLE',message:'Custom-property revert-layer is outside the checked subset'};
-    else if(keyword==='initial') result=missing(name);
-    else if(keyword) result=parent.lookup(name);
+    else if(keyword==='initial') result=initialOf(name);
+    else if(r && !r.inherits && keyword!=='inherit' && keyword) result=initialOf(name);
+    else if(keyword) result=inherited(name);
     else if(cyclic.has(name)) {
       const {members,conditional}=cyclic.get(name);
       result={status:conditional ? 'unknown' : 'invalid',code:'U_LAYOUT_VARIABLE_CYCLE',message:`CSS variable cycle${conditional ? ' through fallback is outside the portable subset' : ''}: ${members.join(', ')}`};
@@ -119,7 +131,7 @@ export function variableEnvironment(declarations,parent,documentRoot,globalSpend
       result=evaluate(declaration.expression.nodes,lookup,spend);
       if(result.status==='resolved' && result.tokens.length===1 && defaults.has(result.tokens[0].toLowerCase())) {
         const value=result.tokens[0].toLowerCase();
-        result=value==='initial' ? missing(name) : value==='revert-layer' ? {status:'unknown',code:'U_LAYOUT_VARIABLE',message:'Custom-property revert-layer is outside the checked subset'} : parent.lookup(name);
+        result=value==='initial' ? initialOf(name) : value==='revert-layer' ? {status:'unknown',code:'U_LAYOUT_VARIABLE',message:'Custom-property revert-layer is outside the checked subset'} : r && !r.inherits && value!=='inherit' ? initialOf(name) : inherited(name);
       }
     }
     cache.set(name,result);return result;
