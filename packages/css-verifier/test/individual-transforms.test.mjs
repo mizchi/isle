@@ -24,3 +24,10 @@ test('translate, rotate and scale compose as translate · rotate · scale · tra
 test('3D values and an arbitrary rotation with another transform stay Unknown', () => {
   for (const c of ['.a{translate:1px 2px 3px}', '.a{scale:1 1 2}', '.a{rotate:x 90deg}', '.a{rotate:30deg;translate:1px}']) assert.equal(run(c).status, 'unknown', c);
 });
+
+test('rotation angles: a leading-dot number and grad units are the same turns', () => {
+  same('.a{transform:rotate(.25turn)}', '.a{transform:rotate(90deg)}');
+  same('.a{rotate:.5turn}', '.a{transform:rotate(180deg)}');
+  same('.a{transform:rotate(100grad)}', '.a{transform:rotate(90deg)}');
+  same('.a{rotate:-100grad}', '.a{transform:rotate(-90deg)}');
+});

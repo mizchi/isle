@@ -13,7 +13,7 @@ test('translate, rotate and scale paint the box where translate · rotate · sca
   const cases = [];
   for (let i = 0; i < 60; i++) {
     const tr = pick([null, `${rand(40) - 20}px`, `${rand(40) - 20}px ${rand(40) - 20}px`, `${rand(50)}% ${rand(30)}px`]);
-    const ro = pick([null, '90deg', '180deg', '-90deg', '0.25turn']);
+    const ro = pick([null, '90deg', '180deg', '-90deg', '0.25turn', '.5turn', '-100grad']);
     const sc = pick([null, '2', '1.5 0.5', '150%']);
     const tf = pick([null, `translateX(${rand(30)}px)`, 'scale(2)', 'rotate(90deg) translateY(10px)']);
     const individual = [tr && `translate:${tr}`, ro && `rotate:${ro}`, sc && `scale:${sc}`, tf && `transform:${tf}`].filter(Boolean).join(';');
