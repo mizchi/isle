@@ -30,6 +30,9 @@ const cases = [
   ['@keyframes grow{from{width:100px;animation-timing-function:cubic-bezier(0.5, -0.5, 0.5, 1.5)}50%{height:30px}to{width:140px}}', 'grow 1s linear infinite'],
   ['@keyframes grow{40%{height:25px}70%{width:139px}to{width:120px}}', 'grow 1s cubic-bezier(0.34, 1.56, 0.64, 1) infinite'],
   ['@keyframes grow{40%{height:25px}70%{width:135px}to{width:120px}}', 'grow 1s cubic-bezier(0.34, 1.56, 0.64, 1) infinite'],
+  // Mixed units (checklist A5): 56% of the 250px line is 140px; the overshoot is calc() of px and %.
+  ['@keyframes grow{to{width:56%}}', 'grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite'],
+  ['@keyframes grow{to{width:56%}}', 'grow 1s linear infinite'],
   // A list: the second animation overshoots; the first only fades.
   ['@keyframes fade{to{opacity:0.5}}@keyframes grow{to{width:140px}}', 'fade 1s, grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite'],
   ['@keyframes fade{to{opacity:0.5}}@keyframes grow{to{width:140px}}', 'fade 1s, grow 1s linear infinite'],

@@ -109,6 +109,10 @@ test('an overshoot between mixed units is checked as calc() at the extremes', ()
   const joint = tall('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{50%{padding-top:10px}to{height:50%}}');
   assert.notEqual(joint.status, 'unknown', JSON.stringify(joint.diagnostics.map(d => d.message)));
   assert.notEqual(tall('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{height:30vh}}').status, 'unknown');
+  // A flex item's width between px and % (56% of the 250px line): the overshoot wraps .b, as between 100px and 140px.
+  const flexMixed = wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{width:56%}}');
+  assert.notEqual(flexMixed.status, 'unknown', JSON.stringify(flexMixed.diagnostics.map(d => d.message)));
+  assert.ok(shifts(flexMixed).some(d => d.box === '.b' && /overshoot/.test(d.message)));
   // Units that do not combine with px here (em on a keyframe) stay Unknown.
   assert.equal(tall('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{height:8em}}').status, 'unknown');
   // Without an overshoot those stay as before (checked at the keyframes).

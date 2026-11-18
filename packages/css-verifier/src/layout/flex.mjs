@@ -85,8 +85,8 @@ export function flexItem(style, { empty = false, axis = 'inline', contentSizes }
   // A percentage main size with flex-basis: auto (checklist D2) is used as the basis — a share of the container — where
   // the specified-size suggestion does not matter: the item does not shrink, or its minimum is explicit.
   // A linear length (checklist D2: calc() of px, % and viewport units, or a vw / vh length, with no min()/max()) is the
-  // same: the engine evaluates it against the container's content width (linearBasis).
-  const linear = v => /^(?:calc\([^()]*(?:\([^()]*\)[^()]*)*\)|-?(?:\d+(?:\.\d+)?|\.\d+)(?:vw|vh))$/.test(String(v)) && !/\b(?:min|max|clamp)\(/.test(String(v)) && !/\b(?:var|env)\(/.test(String(v));
+  // same: the engine evaluates it against the container's content width (linearBasis); min() / max() / clamp() piecewise.
+  const linear = v => /^(?:(?:calc|min|max|clamp)\([^()]*(?:\([^()]*\)[^()]*)*\)|-?(?:\d+(?:\.\d+)?|\.\d+)(?:vw|vh))$/.test(String(v)) && !/\b(?:var|env)\(/.test(String(v));
   const shareLike = v => /^\d+(?:\.\d+)?%$/.test(String(v)) || linear(v);
   const percentSize = style['flex-basis'] === 'auto' && axis === 'inline' && shareLike(style[n.size]) && (cmp(shrink, q(0)) === 0 || style[n.min] !== 'auto');
   const basis = percentSize ? style[n.size] : style['flex-basis'];

@@ -20,6 +20,9 @@ const cases = [
   '.p{display:flex;width:300px;gap:6px}.a{flex:1 1 calc(40% + 20px);min-width:0}.b{width:50px;flex:none}.c{flex:2 0 calc(5% + 1px)}',
   '.p{display:flex;width:300px}.a{flex:1 1 calc(20% + 20px);min-width:10px}.b{width:50px;flex:none}.c{flex:1 1 30%;min-width:0}',
   '.p{display:flex;width:90vw}.a{width:calc(50% + 10px);flex:none;padding:0 5px}.b{width:10vw;flex:none}.c{flex:1 0 0;min-width:0}',
+  // min() / max() / clamp() flex widths and bases: piecewise over the viewport.
+  '.p{display:flex;width:80vw}.a{width:min(50%, 200px);flex:none}.b{width:50px;flex:none}.c{width:max(10%, 40px);flex:none}',
+  '.p{display:flex;width:90vw}.a{flex:0 0 clamp(80px, 30%, 150px)}.b{width:50px;flex:none}.c{flex:1 0 min(10%, 30px)}',
   // Percentage grid columns and column-gap in a px-wide grid.
   '.p{display:grid;width:300px;grid-template-columns:25% minmax(0,1fr) 10%;column-gap:5%}',
   '.p{display:grid;width:300px;grid-template-columns:repeat(2,33.5%) minmax(0,1fr)}',

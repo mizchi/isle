@@ -552,7 +552,7 @@ function expand(property, value) {
 // zero is a flex factor unless two factors already precede it.
 const flexNumber = /^\d+(?:\.\d+)?$/;
 // (calc() and vw / vh bases too, checklist D2: flexItem decides whether they are modeled.)
-const flexBasis = value => value === 'auto' || value === 'content' || /^\d+(?:\.\d+)?(?:px|%|vw|vh)$/.test(value) || /^calc\(.*\)$/.test(value);
+const flexBasis = value => value === 'auto' || value === 'content' || /^\d+(?:\.\d+)?(?:px|%|vw|vh)$/.test(value) || /^(?:calc|min|max|clamp)\(.*\)$/.test(value);
 function flexShorthand(value) {
   if (wide.has(value)) return ['flex-grow', 'flex-shrink', 'flex-basis'].map(key => [key, value]);
   if (value === 'none') return [['flex-grow', '0'], ['flex-shrink', '0'], ['flex-basis', 'auto']];

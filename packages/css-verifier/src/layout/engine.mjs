@@ -1167,18 +1167,23 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // mode grows it from its base and clamps it to the minimum).
         let parts = [{ region: state.region, below: new Set() }];
         // (A linear basis, checklist D2: its calc() / vw length evaluated against the content width.)
-        const percentBase = entry => sum(sum(entry.item.linearBasis ? lengthPieces(entry.item.linearBasis, contentInline, null, entry.child.style)[0].value : times(contentInline, entry.item.percentBasis), scalar(entry.item.contentBox ? entry.item.edges : zero)), scalar(entry.item.marginMain ?? zero));
+        // A min() / max() / clamp() basis is piecewise: the parts are split where each piece holds (picks).
+        model.forEach((entry, index) => {
+          if (!entry.item.linearBasis || !/\b(?:min|max|clamp)\(/.test(entry.item.linearBasis)) return;
+          parts = bounded(parts.flatMap(part => lengthPieces(entry.item.linearBasis, contentInline, part.region, entry.child.style).filter(piece => piece.region).map(piece => ({ ...part, region: piece.region, picks: new Map([...(part.picks ?? []), [index, piece.value]]) }))));
+        });
+        const percentBase = (entry, part) => sum(sum(entry.item.linearBasis ? (part?.picks?.get(model.indexOf(entry)) ?? lengthPieces(entry.item.linearBasis, contentInline, null, entry.child.style)[0].value) : times(contentInline, entry.item.percentBasis), scalar(entry.item.contentBox ? entry.item.edges : zero)), scalar(entry.item.marginMain ?? zero));
         model.forEach((entry, index) => {
           if (entry.item.percentBasis === undefined || cmp(entry.item.shrink, zero) === 0) return;
           const minimum = scalar(constantItem(entry.item).minimum.b ?? entry.item.minimum);
-          parts = bounded(parts.flatMap(part => { const split = partition(part.region, diff(percentBase(entry), minimum), '>='); return [...split.yes.map(r => ({ region: r, below: part.below })), ...split.no.map(r => ({ region: r, below: new Set([...part.below, index]) }))]; }));
+          parts = bounded(parts.flatMap(part => { const split = partition(part.region, diff(percentBase(entry, part), minimum), '>='); return [...split.yes.map(r => ({ region: r, below: part.below, picks: part.picks })), ...split.no.map(r => ({ region: r, picks: part.picks, below: new Set([...part.below, index]) }))]; }));
         });
         for (const part of parts) {
         const items = model.map((entry, index) => {
           const item = constantItem(entry.item);
           if (entry.item.percentBasis === undefined) return item;
           // Its outer size: the share, its edges in content-box, and its main-axis margins.
-          const base = percentBase(entry);
+          const base = percentBase(entry, part);
           if (cmp(entry.item.shrink, zero) === 0 && clip(part.region, diff(item.minimum, base), true)) throw flexUnknown(`${entry.child.box.label}: its minimum width can exceed its flex-basis ${entry.child.style['flex-basis']} here, which is not modeled`);
           // A non-shrinking item never goes below its base; a shrinking one down to its (explicit) minimum.
           // Its inner base size is P% of the content width when it has no constant part (no edges, margins or

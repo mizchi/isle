@@ -42,8 +42,9 @@ test('a flex item\'s calc() or vw width or basis is evaluated against the contai
   assert.equal(box('.p{display:flex;width:300px}.a{width:20vw;flex:none}.b{width:50px;flex:none}')['.b'][0], '0');
   // Shrinking items whose bases are not shares of one width: their weights are not modeled; Unknown.
   assert.match(String(box('.p{display:flex;width:300px}.a{flex:1 1 calc(70% + 20px);min-width:10px}.b{width:50px;flex:none}.c{flex:1 1 30%;min-width:0}', '<div class="p"><div class="a"></div><div class="b"></div><div class="c"></div></div>')), /^unknown/);
-  // min() / max() in a flex width stay Unknown.
-  assert.match(String(box('.p{display:flex;width:300px}.a{width:min(50%, 100px);flex:none}.b{width:50px;flex:none}')), /^unknown/);
+  // min() / max() / clamp(): piecewise (min(150px, 100px) here).
+  assert.deepEqual(box('.p{display:flex;width:300px}.a{width:min(50%, 100px);flex:none}.b{width:50px;flex:none}')['.a'], ['0', '100']);
+  assert.deepEqual(box('.p{display:flex;width:300px}.a{flex:0 0 clamp(80px, 10%, 150px)}.b{width:50px;flex:none}')['.a'], ['0', '80']);
 });
 
 test('percentage grid tracks and gaps against a constant container size (checklist D2)', () => {
