@@ -1085,7 +1085,7 @@ test('inline-block whitespace gap and inline image baseline gap: Chromium shows 
 test('inert sizes on a display: inline span: Chromium paints the line the same without them, exactly where the static check warns', async ({page}) => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   await page.setViewportSize({width: 400, height: 200});
-  for (const [decl, warn] of [['width:200px', true], ['height:60px', true], ['min-width:200px', true], ['margin-top:20px;margin-bottom:20px', true], ['aspect-ratio:1', true], ['transform:translateY(-6px) scale(1.5)', true], ['color:#c00', false], ['display:inline-block;width:200px', false], ['display:inline-block;transform:translateY(-6px)', false]]) {
+  for (const [decl, warn] of [['width:200px', true], ['height:60px', true], ['min-width:200px', true], ['margin-top:20px;margin-bottom:20px', true], ['aspect-ratio:1', true], ['transform:translateY(-6px) scale(1.5)', true], ['translate:4px 6px;rotate:90deg;scale:1.5', true], ['color:#c00', false], ['display:inline-block;width:200px', false], ['display:inline-block;transform:translateY(-6px)', false]]) {
     const css = `*{margin:0}html,body{${g}}.t{font-size:16px;line-height:24px;width:300px}.s{background:#fc0}`;
     const html = '<p class="t">Some <span class="s">marked</span> text in a line</p>';
     const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `${css}.s{${decl}}`, viewport: {min: 400, max: 400, height: {min: 200, max: 200}}, boxes: {'.t': {minInlineSize: 0, intrinsicBlockSize: 24}}});

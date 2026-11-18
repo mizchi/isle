@@ -230,6 +230,7 @@ test('sizes and vertical margins on a display: inline span do nothing', () => {
   assert.deepEqual(run('.s{color:red}'), []);
   // Transforms apply to block-level and atomic inline boxes only (CSS Transforms 1 §1, transformable element).
   assert.deepEqual(run('.s{transform:translateY(-4px)}'), ['transform']);
+  assert.deepEqual(run('.s{translate:2px;scale:1.2}'), ['translate scale']);
   assert.deepEqual(run('.s{transform:none}'), []);
 });
 

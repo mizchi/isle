@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import {findCSSWriteConflicts,cssWriteConflictMessage} from '../css-writes.mjs';
-import { q, cmp, add, mul, exact, number } from './linear.mjs';
+import { q, cmp, add, mul, div, exact, number } from './linear.mjs';
 import { parseCondition, preferenceValues } from './conditions.mjs';
 import {customName,variableValue,variableEnvironment,substituteDeclaration} from './variables.mjs';
 
@@ -47,7 +47,7 @@ const statePaint = /^(?:z-index|color|clip|clip-path|background(?:-.*)?|border-(
 // An element that is the containing block of its fixed (and absolute) descendants: a transform, a backdrop filter, or
 // will-change naming a property that would make one.
 export const containsFixed = style => Boolean(style) && ((style.transform ?? 'none') !== 'none' || (style['backdrop-filter'] ?? 'none') !== 'none' || /(?:^|,\s*)(?:transform|translate|rotate|scale|filter|backdrop-filter|perspective)(?:\s*,|$)/.test(style['will-change'] ?? 'auto'));
-export const paintProperties = ['hyphens', 'object-fit', 'scroll-behavior', 'overscroll-behavior-x', 'overscroll-behavior-y', 'scroll-snap-type', 'scroll-snap-align', 'resize', 'text-wrap-mode', 'text-wrap-style', 'text-overflow', 'line-clamp', 'box-orient', 'touch-action', 'color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'outline-color', 'outline-offset', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'animation-direction', 'color-scheme', 'z-index', 'isolation', 'transform', 'backdrop-filter', 'will-change', 'justify-self', 'justify-items', 'fill', 'stroke', 'list-style-position', 'caret-color', 'content-visibility', 'contain-intrinsic-block-size'];
+export const paintProperties = ['hyphens', 'object-fit', 'scroll-behavior', 'overscroll-behavior-x', 'overscroll-behavior-y', 'scroll-snap-type', 'scroll-snap-align', 'resize', 'text-wrap-mode', 'text-wrap-style', 'text-overflow', 'line-clamp', 'box-orient', 'touch-action', 'color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'outline-color', 'outline-offset', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'animation-direction', 'color-scheme', 'z-index', 'isolation', 'transform', 'translate', 'rotate', 'scale', 'backdrop-filter', 'will-change', 'justify-self', 'justify-items', 'fill', 'stroke', 'list-style-position', 'caret-color', 'content-visibility', 'contain-intrinsic-block-size'];
 const inheritedPaint = ['color', 'fill', 'stroke', 'list-style-position', 'caret-color', 'visibility', 'pointer-events', 'cursor', 'list-style-type', 'color-scheme', 'text-wrap-style', 'text-wrap-mode'];
 // Inherited text properties. They are kept as specified strings and only
 // interpreted for boxes whose contract derives text metrics from a font.
@@ -290,6 +290,19 @@ function expand(property, value) {
     if (!/^[a-z-]+(?:\s*,\s*[a-z-]+)*$/.test(v)) throw new Error(`Unsupported will-change: ${value}`);
     return [['will-change', v]];
   }
+  // The individual transform properties (CSS Transforms 2): each is parsed as the transform function it stands for and
+  // composed with transform when the style is computed (translate, then rotate, then scale, then transform). Only 2D
+  // values are modeled (a z length, a 3D axis or a z scale stays Unknown).
+  if (['translate', 'rotate', 'scale'].includes(property)) {
+    if (wide.has(value) || value === 'none') return [[property, value]];
+    const parts = postcss.list.space(value);
+    const fail = () => { throw new Error(`Unsupported ${property}: ${value} (only 2D values are modeled)`); };
+    const fn = property === 'translate' ? (parts.length > 2 ? fail() : `translate(${parts.join(',')})`)
+      : property === 'scale' ? (parts.length > 2 ? fail() : `scale(${parts.map(p => /%$/.test(p) ? String(Number(p.slice(0, -1)) / 100) : p).join(',')})`)
+      : (parts.length !== 1 ? fail() : `rotate(${parts[0]})`);
+    const [[, affine]] = expand('transform', fn);
+    return [[property, affine]];
+  }
   if (property === 'transform') {
     if (wide.has(value) || value === 'none') return [[property, value]];
     const fns = value.match(/[a-z]+\([^)]*\)/g) ?? [];
@@ -517,7 +530,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
       const insetMove = /^(?:left|right|top|bottom|inset(?:-inline|-block)?)$/;
       // A state rule may also transform the box (hover lift, focus scale): transforms paint and hit-test, never lay out.
       const focusOnly = selectors.every(selector => ['focus', 'focus-visible'].includes(selector.state));
-      const moves = d => (focusOnly && insetMove.test(d.prop.toLowerCase())) || d.prop.toLowerCase() === 'transform';
+      const moves = d => (focusOnly && insetMove.test(d.prop.toLowerCase())) || ['transform', 'translate', 'rotate', 'scale'].includes(d.prop.toLowerCase());
       const stateGeometry = selectors.every(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && moves(d)) && node.nodes.every(d => d.type !== 'decl' || d.prop.startsWith('--') || statePaint.test(d.prop.toLowerCase()) || moves(d));
       // A :checked::before/::after rule builds the pseudo-element only in the checked state; the engine requires it to be
       // absolutely positioned (an overlay), so it never moves the layout.
@@ -597,7 +610,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     'column-gap': 'normal', 'grid-template-areas': 'none', 'grid-column': 'auto', 'grid-row': 'auto',
     'background-color': 'transparent', 'background-image': 'none',
     'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none',
-    hyphens: inherited.hyphens ?? 'manual', 'object-fit': 'fill', 'scroll-behavior': 'auto', 'overscroll-behavior-x': 'auto', 'overscroll-behavior-y': 'auto', 'scroll-snap-type': 'none', 'scroll-snap-align': 'none', resize: 'none', 'text-wrap-mode': inherited['text-wrap-mode'] ?? 'white-space', 'text-wrap-style': inherited['text-wrap-style'] ?? 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'z-index': 'auto', 'content-visibility': 'visible', 'contain-intrinsic-block-size': 'none', isolation: 'auto', transform: 'none', 'backdrop-filter': 'none', 'will-change': 'auto', 'justify-self': 'auto', 'justify-items': 'normal', clip: 'auto', 'clip-path': 'none', ...Object.fromEntries(['margin', 'padding'].flatMap(kind => ['top', 'right', 'bottom', 'left'].map(side => [`scroll-${kind}-${side}`, kind === 'padding' ? 'auto' : '0']))), 'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal',
+    hyphens: inherited.hyphens ?? 'manual', 'object-fit': 'fill', 'scroll-behavior': 'auto', 'overscroll-behavior-x': 'auto', 'overscroll-behavior-y': 'auto', 'scroll-snap-type': 'none', 'scroll-snap-align': 'none', resize: 'none', 'text-wrap-mode': inherited['text-wrap-mode'] ?? 'white-space', 'text-wrap-style': inherited['text-wrap-style'] ?? 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'z-index': 'auto', 'content-visibility': 'visible', 'contain-intrinsic-block-size': 'none', isolation: 'auto', transform: 'none', translate: 'none', rotate: 'none', scale: 'none', 'backdrop-filter': 'none', 'will-change': 'auto', 'justify-self': 'auto', 'justify-items': 'normal', clip: 'auto', 'clip-path': 'none', ...Object.fromEntries(['margin', 'padding'].flatMap(kind => ['top', 'right', 'bottom', 'left'].map(side => [`scroll-${kind}-${side}`, kind === 'padding' ? 'auto' : '0']))), 'color-scheme': inherited['color-scheme'] ?? 'normal', cursor: inherited.cursor ?? 'auto', 'list-style-type': inherited['list-style-type'] ?? 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal',
     'table-layout': 'auto', // HTML UA: table { border-collapse: separate; border-spacing: 2px } (a UA rule on table, not inherited from above).
     'border-collapse': box.tag === 'table' ? 'separate' : inherited['border-collapse'] ?? 'separate', 'border-spacing': box.tag === 'table' ? '2px' : inherited['border-spacing'] ?? '0', 'caption-side': inherited['caption-side'] ?? 'top', 'empty-cells': 'show',
     // HTML UA: thead, tbody, tfoot, tr { vertical-align: middle } and td, th { vertical-align: inherit }.
@@ -701,7 +714,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   if(box.popover==='dynamic') throw Object.assign(new Error('A dynamic popover attribute decides whether it renders'),{code:'U_LAYOUT_ELEMENT'});
   if(box.hiddenAttr==='until-found' || box.hiddenAttr==='dynamic') throw Object.assign(new Error(`hidden=${box.hiddenAttr === 'dynamic' ? '(dynamic)' : 'until-found'} is outside the modeled rendering`),{code:'U_LAYOUT_ELEMENT'});
   const ua = { ...values };
-  const initial = { ...defaults, ...textInitial, fill: 'black', stroke: 'none', 'list-style-position': 'outside', 'caret-color': 'auto', hyphens: 'manual', 'object-fit': 'fill', 'scroll-behavior': 'auto', 'overscroll-behavior-x': 'auto', 'overscroll-behavior-y': 'auto', 'scroll-snap-type': 'none', 'scroll-snap-align': 'none', resize: 'none', 'text-wrap-mode': 'white-space', 'text-wrap-style': 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none', 'z-index': 'auto', 'content-visibility': 'visible', 'contain-intrinsic-block-size': 'none', isolation: 'auto', transform: 'none', 'backdrop-filter': 'none', 'will-change': 'auto', 'justify-self': 'auto', 'justify-items': 'normal', 'color-scheme': 'normal', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
+  const initial = { ...defaults, ...textInitial, fill: 'black', stroke: 'none', 'list-style-position': 'outside', 'caret-color': 'auto', hyphens: 'manual', 'object-fit': 'fill', 'scroll-behavior': 'auto', 'overscroll-behavior-x': 'auto', 'overscroll-behavior-y': 'auto', 'scroll-snap-type': 'none', 'scroll-snap-align': 'none', resize: 'none', 'text-wrap-mode': 'white-space', 'text-wrap-style': 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none', 'z-index': 'auto', 'content-visibility': 'visible', 'contain-intrinsic-block-size': 'none', isolation: 'auto', transform: 'none', translate: 'none', rotate: 'none', scale: 'none', 'backdrop-filter': 'none', 'will-change': 'auto', 'justify-self': 'auto', 'justify-items': 'normal', 'color-scheme': 'normal', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
   const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', 'border-collapse', 'border-spacing', 'caption-side', 'empty-cells', ...textProperties, ...inheritedPaint]);
   const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={};
   const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};
@@ -827,6 +840,25 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     const later = [sources[bw], sources[bs]].filter(Boolean).at(-1);
     sources[`border-${side}`] = later;
     delete values[bw]; delete values[bs];
+  }
+  // The used transform: translate · rotate · scale · transform (CSS Transforms 2 §6), each an affine map
+  // x ↦ A·x + t + W·u + H·w + em·e + rem·r; composing P after T gives A_P·A_T and A_P·(each T offset) + P's offsets.
+  const individual = ['translate', 'rotate', 'scale'].filter(key => values[key] && values[key] !== 'none' && !wide.has(values[key]));
+  if (individual.length) {
+    const maps = [...individual.map(key => values[key]), ...(values.transform && values.transform !== 'none' ? [values.transform] : [])];
+    if (maps.some(m => String(m).startsWith('rotate-any('))) {
+      if (maps.length > 1) throw new Error(`Unsupported transform: ${individual.join(', ')}${maps.length > individual.length ? ' and transform' : ''} combine a rotation by an angle that is not a quarter turn with another transform`);
+      values.transform = maps[0];
+    } else {
+      const parse = m => /^affine\((.+)\)$/.exec(m)[1].split(' ').map(x => { const [n, d = '1'] = x.split('/'); return div(q(n), q(d)); });
+      const compose = (P, T) => {
+        const [a, b, c, d] = P, lin = (x, y) => [add(mul(a, x), mul(b, y)), add(mul(c, x), mul(d, y))];
+        const A = [add(mul(a, T[0]), mul(b, T[2])), add(mul(a, T[1]), mul(b, T[3])), add(mul(c, T[0]), mul(d, T[2])), add(mul(c, T[1]), mul(d, T[3]))];
+        const offsets = [4, 6, 8, 10, 12].flatMap(i => { const [x, y] = lin(T[i], T[i + 1]); return [add(x, P[i]), add(y, P[i + 1])]; });
+        return [...A, ...offsets];
+      };
+      values.transform = `affine(${maps.map(parse).reduce((P, T) => compose(P, T)).map(exact).join(' ')})`;
+    }
   }
   values.$sources = sources;
   values.$dormant = dormant;
