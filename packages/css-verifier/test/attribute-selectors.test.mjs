@@ -30,9 +30,11 @@ test(':not() excludes, combines with attributes and combinators', () => {
   const html = '<div class="a" aria-expanded="true"></div><div class="b" aria-expanded="false"></div><div class="c"></div>';
   assert.deepEqual(heights(html, 'div{height:1px}div:not([aria-expanded="true"]){height:2px}'), {'.a': 1, '.b': 2, '.c': 2});
   assert.deepEqual(heights(html, 'div{height:1px}[aria-expanded="true"] + div{height:3px}'), {'.a': 1, '.b': 3, '.c': 1});
-  // A user-action state or a combinator inside :not() is not modeled.
+  // A user-action state inside :not() is not modeled. A combinator inside it is matched as a whole selector
+  // (checklist C3): no .y inside a .x here, so every div is :not(.x .y).
   assert.equal(analyze(html, 'div{height:1px}div:not(:hover){height:2px}').status, 'unknown');
-  assert.equal(analyze(html, 'div{height:1px}div:not(.x .y){height:2px}').status, 'unknown');
+  assert.deepEqual(heights(html, 'div{height:1px}div:not(.x .y){height:2px}'), {'.a': 2, '.b': 2, '.c': 2});
+  assert.deepEqual(heights(html, 'div{height:1px}div:not(.page > .b){height:2px}'), {'.a': 2, '.b': 1, '.c': 2});
 });
 
 test('a value test against a dynamic placeholder is Unknown; presence is known', () => {
