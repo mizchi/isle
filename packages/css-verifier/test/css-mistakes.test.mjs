@@ -190,3 +190,16 @@ test('a :disabled rule on an option in a disabled select (browsers differ) keeps
   const r = analyzeHTML('<html lang="en"><body><fieldset disabled><select aria-label="s"><option>a</option></select></fieldset></body></html>', {name: 'P', css: 'option:disabled{color:gray}', viewport: {min: 320, max: 800, height: {min: 300, max: 900}}});
   assert.ok(r.diagnostics.some(d => d.code === 'U_LAYOUT_ATTRIBUTE' && /browsers decide differently/.test(d.message)), JSON.stringify(r.diagnostics.map(d => d.message)));
 });
+
+test('F22: ::marker takes only some properties; on a non-list-item it never applies', () => {
+  const html = '<ul class="l"><li class="i"></li></ul><div class="d"></div>';
+  const css = '.l{display:block;padding-left:40px}.i{height:20px}.d{height:20px}';
+  const r = run(css + '.i::marker{color:red;margin-left:40px;background:blue}', html);
+  assert.deepEqual(codes(r, 'W_CSS_MARKER_IGNORED').map(w => w.property).sort(), ['background', 'margin-left']);
+  assert.notEqual(r.status, 'unknown', JSON.stringify(r.diagnostics.map(d => d.message)));
+  // Sizing the marker: Unknown (the marker box is not modeled).
+  assert.equal(run(css + '.i::marker{font-size:40px}', html).status, 'unknown');
+  // On an element that is not a list item.
+  assert.equal(codes(run(css + '.d::marker{color:red}', html), 'W_CSS_STATE_UNREACHABLE').length, 1);
+  assert.equal(codes(run(css + '.i::marker{color:red}', html), 'W_CSS_STATE_UNREACHABLE').length, 0);
+});

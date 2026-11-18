@@ -58,12 +58,13 @@ function compileCompound(source, depth = 0) {
     if (root) { parts.push({ kind: 'root' }); specificity[1]++; rest = rest.slice(root[0].length); continue; }
     // A trailing user-action state (paint-only rules; see parseLayoutCSS).
     // (:visited: never set by the analysis — links are taken as unvisited — so its rules only repaint a state not checked.)
-    const action = rest.match(/^:(hover|active|focus|focus-visible|focus-within|checked|visited)$/i);
+    // (:target likewise: the analysis takes the URL to have no fragment.)
+    const action = rest.match(/^:(hover|active|focus|focus-visible|focus-within|checked|visited|target)$/i);
     if (action) { state = action[1].toLowerCase(); specificity[1]++; rest = ''; continue; }
     // :checked::before / :checked::after: the generated check mark of a custom checkbox.
     const checkedMark = rest.match(/^:checked::?(before|after)$/i);
     if (checkedMark) { state = 'checked'; pseudoElement = checkedMark[1].toLowerCase(); specificity[1]++; specificity[2]++; rest = ''; continue; }
-    const pseudo = rest.match(/^::?(before|after)$/i) ?? rest.match(/^::(placeholder)$/i);
+    const pseudo = rest.match(/^::?(before|after)$/i) ?? rest.match(/^::(placeholder|marker)$/i);
     if (pseudo) { pseudoElement = pseudo[1].toLowerCase(); specificity[2]++; rest = ''; continue; }
     // Attribute selectors: [a], [a=v], [a~=v], [a|=v], [a^=v], [a$=v], [a*=v], with the i/s flags.
     const attribute = rest.match(/^\[\s*([a-zA-Z_][\w:-]*)\s*(?:([~|^$*]?=)\s*(?:"([^"]*)"|'([^']*)'|([^\s\]"']+))\s*([iIsS])?\s*)?\]/);
@@ -153,7 +154,7 @@ export function matches(selector, box, state) {
   if (box.anonymous) return false; // anonymous boxes are not elements
   if (selector.scope && (!compoundMatches(selector, box) || scopeProximity(selector, box, state) === null)) return false;
   // ::before/::after rules apply only to that pseudo-element (state '::before'), and other rules not to it.
-  const pseudo = [...(state ?? [])].find(s => s === '::before' || s === '::after' || s === '::placeholder');
+  const pseudo = [...(state ?? [])].find(s => s === '::before' || s === '::after' || s === '::placeholder' || s === '::marker');
   if (selector.pseudoElement ? `::${selector.pseudoElement}` !== pseudo : pseudo) return false;
   if (selector.state && !state?.has(selector.state)) return false;
   return compoundMatches(selector, box) && (!selector.chain || related(selector.chain, 0, box));

@@ -256,7 +256,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -313,6 +313,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   if (rules.some(rule => rule.selectors.some(sel => JSON.stringify(sel).includes('"kind":"disabled"'))) && boxes.some(box => box.disabled === 'dynamic')) unknown('U_LAYOUT_ATTRIBUTE', `${boxes.find(box => box.disabled === 'dynamic').label}: a :disabled or :enabled rule depends on a disabled state that is dynamic, or that browsers decide differently (an option in a disabled select)`);
   setRegisteredProperties(registered);
   if (defaultNamespace.length && boxes.some(box => ['svg', 'math'].includes(box.tag))) unknown('U_LAYOUT_CSS', 'A default XHTML @namespace keeps type and universal selectors off the SVG and MathML elements of this page, which is not modeled', defaultNamespace[0].line, undefined, defaultNamespace[0].file);
+  for (const note of markerIgnored) layoutWarnings.push({ code: 'W_CSS_MARKER_IGNORED', severity: 'warning', selector: note.selector, property: note.property, css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],
+    message: `${note.selector}: ${note.property} is ignored — ::marker takes only color, content, font and white-space properties (and animations): margins, padding, backgrounds and sizes of the marker do nothing. Style the list item, or use ::before for a marker box of your own` });
+  // A ::marker rule that sizes the marker (font, line-height, content, …) on a list item: the marker box is not modeled
+  // and it changes the first line's height (measured, by amounts browsers differ on).
+  {
+    const sized = markerSizing.find(note => boxes.some(box => !box.pseudo && note.selectors.some(sel => matches(sel, box, new Set(['::marker'])))));
+    if (sized) unknown('U_LAYOUT_CSS', `::marker sets ${sized.property}, which sizes the list marker and can change the line's height: the marker box is not modeled`, sized.line, undefined, sized.file);
+  }
   for (const note of visitedIgnored) layoutWarnings.push({ code: 'W_CSS_VISITED_IGNORED', severity: 'warning', selector: note.selector, property: note.property, css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],
     message: `${note.selector}: ${note.property} is ignored — in a :visited rule browsers apply only colors (color, background-color, border and outline colors, …), so that a page cannot read which links were visited. Style the visited state with a color, or move ${note.property} to the link itself` });
   for (const note of noDurationTransitions) layoutWarnings.push({ code: 'W_CSS_TRANSITION_NO_DURATION', severity: 'warning', selector: note.selector, property: note.item.split(/\s+/)[0], css: [{ property: 'transition', file: note.file, line: note.line, selector: note.selector }],
@@ -491,6 +499,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // (no tabindex, not a control or link), :hover on an element with pointer-events: none and no children (the
         // pointer never hits it).
         for (const rule of rules) for (const sel of rule.selectors ?? []) {
+          // F22: ::marker on an element that is not a list item has no marker.
+          if (sel.pseudoElement === 'marker' && !sel.state) {
+            if (!matches(sel, box, new Set(['::marker'])) || style.display === 'list-item' || style.$listItem || layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source)) continue;
+            layoutWarnings.push({ code: 'W_CSS_STATE_UNREACHABLE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, state: '::marker', css: [{ property: '::marker', file: rule.file, line: rule.line, selector: sel.source }],
+              message: `${sel.source} never applies to ${box.label}: it is display: ${style.display}, not a list item, so it has no marker` });
+            continue;
+          }
           // F19: ::placeholder on an element that shows none (not a text field or textarea, or no placeholder attribute).
           if (sel.pseudoElement === 'placeholder' && !sel.state) {
             if (!matches(sel, box, new Set(['::placeholder']))) continue;

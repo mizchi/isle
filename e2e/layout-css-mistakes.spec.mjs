@@ -222,3 +222,19 @@ test(':disabled and :enabled match as in the browser (own attribute, disabled fi
     }
   }
 });
+
+test('F22: ::marker ignores all but its own properties, and has no effect off list items', async ({page}) => {
+  await page.setViewportSize({width: 300, height: 120});
+  const html = '<ul class="l"><li class="i">item</li></ul><div class="d">div</div>';
+  const shot = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>*{margin:0}body{font:16px/20px sans-serif}.l{padding-left:40px}${css}</style></head><body>${html}</body></html>`); return (await page.screenshot()).toString('base64'); };
+  const plain = await shot('');
+  const analysis = css => analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.l{display:block;padding-left:40px}.i,.d{height:20px}${css}`, viewport: {min: 300, max: 300, height: {min: 120, max: 120}}, boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 20}, '.d': {minInlineSize: 0, intrinsicBlockSize: 20}}}).layoutWarnings ?? [];
+  const ignored = '.i::marker{margin-left:60px;padding:10px;background:rgb(255, 0, 0);width:80px}';
+  expect(analysis(ignored).filter(w => w.code === 'W_CSS_MARKER_IGNORED').length).toBe(4);
+  expect(await shot(ignored)).toBe(plain);
+  const offList = '.d::marker{color:rgb(255, 0, 0);font-size:40px}';
+  expect(analysis('.d::marker{color:rgb(255, 0, 0)}').some(w => w.code === 'W_CSS_STATE_UNREACHABLE')).toBe(true);
+  expect(await shot(offList)).toBe(plain);
+  // And color does apply on the list item (the check is not vacuous).
+  expect(await shot('.i::marker{color:rgb(255, 0, 0)}')).not.toBe(plain);
+});

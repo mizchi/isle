@@ -578,7 +578,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
+  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -745,6 +745,18 @@ export function parseLayoutCSS(sheets, diagnostic) {
           d.remove();
         }
       }
+      // Checklist F22: ::marker takes only font, white-space, color, content, direction, unicode-bidi, text-combine-upright,
+      // animation and transition properties (CSS Lists 3 §3.1.1): the rest is ignored — reported and dropped (measured:
+      // margin, padding, background, width and display change no pixel). Those that size the marker (font, line-height,
+      // content, white-space, spacing) are kept for the engine, which does not model the marker box (Unknown there).
+      if (selectors.some(sel => sel.pseudoElement === 'marker')) {
+        const markerApplies = /^(?:color|content|font(?:-.*)?|line-height|white-space(?:-collapse)?|text-wrap(?:-mode)?|direction|unicode-bidi|text-combine-upright|animation(?:-.*)?|transition(?:-.*)?|letter-spacing|word-spacing|text-transform|--.*)$/;
+        for (const d of [...(node.nodes ?? [])]) if (d.type === 'decl') {
+          const prop = d.prop.toLowerCase();
+          if (!markerApplies.test(prop)) { markerIgnored.push({ selector: node.selector, property: prop, file: filename, line: d.source.start.line }); d.remove(); }
+          else if (!/^(?:color|animation(?:-.*)?|transition(?:-.*)?|--.*)$/.test(prop)) markerSizing.push({ selectors, property: prop, file: filename, line: d.source.start.line });
+        }
+      }
       // Checklist F6: one property declared twice in a rule — the earlier declaration never applies (the later wins, or
       // the !important one). A later value the browser may not support (a newer function, unit or keyword, or a
       // vendor-prefixed one) is the progressive-enhancement fallback pattern and is left alone.
@@ -837,7 +849,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
     return 'none';
   }).join(', ');
-  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author

@@ -159,6 +159,12 @@
   (最初の legend の中は除く)、disabled な optgroup の中の option。disabled な select の中の option・optgroup は Chromium・WebKit
   が `:disabled` にし Firefox はしない(測った)ので、そこに頼る規則は Unknown。アダプターの式の disabled も Unknown。
   3 つのブラウザーの `matches()` と 11 の要素で一致。
+- [x] **F22. `::marker` を読む・効かない宣言**(`W_CSS_MARKER_IGNORED`、以前は Unknown): `::marker` は色・content・font・
+  white-space・アニメーションなどしか取らない。margin・padding・背景・大きさ・display は描画を変えない(3 つのブラウザーで
+  測った)ので報告して捨てる。font-size や line-height など marker を大きくする宣言は、行の高さを変え(量はブラウザーで違う)、
+  marker の箱は配置しないので Unknown。リスト項目でない要素の `::marker` は当たらない(`W_CSS_STATE_UNREACHABLE`)。
+- [x] **`:target` を読む**(以前は Unknown): URL に fragment がないとして扱う状態(`:hover` と同じく、色だけの規則は描画の
+  状態として受け、配置を変える規則は Unknown)。
 - [x] **F10. 要素(擬似要素でない)の `content`**: 文字列は何もしない(既存の `W_LAYOUT_DECLARATION_INERT` が出していた)。
   `url()` は要素を画像で置き換えるので効く(3 つのブラウザーで測った)。
 ## 済み(このチェックリストを作る前に済んだもの)
