@@ -126,6 +126,8 @@
 - [x] **F8. auto(や none)と長さの間の transition**(`W_CSS_TRANSITION_AUTO`): `height: auto` から `:hover` の `100px` などは
   補間されず、箱は跳ぶ(3 つのブラウザーで測った。`interpolate-size: allow-keywords` で動くのは Chromium だけ)。`:hover`・`:focus`
   の値と比べ、コンポーネントの状態の間(クラスの切り替え)は adapter-core が状態ごとの値(`transitionSizes`)を比べる。
+  状態のない素の HTML でも、スタイルシートが名指すクラスの切り替え(`.panel` の要素に `.panel.open` の規則)は、そのクラスを
+  足した計算値と比べる(その要素がすでに持つクラスを含む規則に限る)。
 - [x] **F9. content のない `::before`・`::after`**(`W_CSS_PSEUDO_NO_CONTENT`): ほかのプロパティを書いても、content がなければ
   作られない。
 - [x] **F11. 配置が Unknown でも報告する**: 配置の前に Unknown になる入力(配置を変える `:focus` の規則など)では、box ごとの警告(F2〜F4・

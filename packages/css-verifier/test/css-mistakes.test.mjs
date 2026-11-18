@@ -203,3 +203,13 @@ test('F22: ::marker takes only some properties; on a non-list-item it never appl
   assert.equal(codes(run(css + '.d::marker{color:red}', html), 'W_CSS_STATE_UNREACHABLE').length, 1);
   assert.equal(codes(run(css + '.i::marker{color:red}', html), 'W_CSS_STATE_UNREACHABLE').length, 0);
 });
+
+test('F8 in plain HTML: the class toggle the stylesheet names (.panel.open)', () => {
+  const html = '<div class="panel"></div>';
+  const jump = css => codes(run(`.panel{width:100px}${css}`, html), 'W_CSS_TRANSITION_AUTO');
+  const [w] = jump('.panel{transition:height .3s}.panel.open{height:120px}');
+  assert.ok(w); assert.match(w.message, /\.open/);
+  assert.equal(jump('.panel{height:0;transition:height .3s}.panel.open{height:120px}').length, 0);
+  // A rule for another element (another class it lacks on the subject's ancestor chain) is not a toggle of this one.
+  assert.equal(jump('.panel{transition:height .3s}.card .panel{height:120px}').length, 0);
+});

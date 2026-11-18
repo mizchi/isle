@@ -540,13 +540,22 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           if (covered.length && state === undefined && !transitionSizes.some(t => t.path === box.path)) transitionSizes.push({ box: box.label, path: box.path, properties: [...new Set(covered)], values: Object.fromEntries([...new Set(covered)].map(key => [key, String(style[key])])) });
           if (covered.length && state === undefined) {
             const keyword = v => /^(?:auto|none|fit-content|max-content|min-content|stretch)$/.test(String(v));
-            for (const st of ['hover', 'focus']) {
-              let alt; try { alt = styles(box, r, ancestors, inherited, false, gridItem, new Set([st])); } catch { continue; }
+            // The other states: :hover, :focus, and the class toggles the stylesheet implies — a rule for this element with
+            // classes it does not have yet (.panel.open for a .panel: plain HTML has no states, but the CSS names them).
+            const toggles = [...new Set(rules.flatMap(rule => (rule.selectors ?? []).filter(sel => !sel.state && !sel.pseudoElement).map(sel => {
+              const extra = sel.parts.filter(p => p.kind === 'class' && !box.classes.includes(p.value)).map(p => p.value);
+              // (The rule must already name this element by a class it has: .panel.open, not .open alone or another .x.)
+              const shared = sel.parts.some(p => p.kind === 'class' && box.classes.includes(p.value));
+              return shared && extra.length && extra.length <= 2 && matches(sel, { ...box, classes: [...box.classes, ...extra] }) ? extra.join(' ') : null;
+            }).filter(Boolean)))].slice(0, 8);
+            for (const st of ['hover', 'focus', ...toggles.map(t => `class:${t}`)]) {
+              const toggled = st.startsWith('class:') ? st.slice(6).split(' ') : null;
+              let alt; try { alt = toggled ? styles({ ...box, classes: [...box.classes, ...toggled] }, r, ancestors, inherited, false, gridItem) : styles(box, r, ancestors, inherited, false, gridItem, new Set([st])); } catch { continue; }
               for (const a of alt) for (const key of [...new Set(covered)]) {
                 if (String(a.style[key]) === String(style[key]) || keyword(a.style[key]) === keyword(style[key]) || layoutWarnings.some(w => w.code === 'W_CSS_TRANSITION_AUTO' && w.path === box.path && w.property === key)) continue;
                 const [from, to] = keyword(style[key]) ? [style[key], a.style[key]] : [a.style[key], style[key]];
                 layoutWarnings.push({ code: 'W_CSS_TRANSITION_AUTO', severity: 'warning', box: box.label, path: box.path, property: key, css: at('transition-property'),
-                  message: `${box.label} transitions ${key} between ${from} and ${to} (on :${st}), but a keyword size like ${keyword(style[key]) ? style[key] : a.style[key]} does not interpolate: the box jumps instead of animating (only Chromium animates it, with interpolate-size: allow-keywords). Animate a length (max-height, or grid-template-rows: 0fr → 1fr)`, ...ranges(r) });
+                  message: `${box.label} transitions ${key} between ${from} and ${to} (${st.startsWith('class:') ? `when it gets the class ${st.slice(6).split(' ').map(c => '.' + c).join('')}` : `on :${st}`}), but a keyword size like ${keyword(style[key]) ? style[key] : a.style[key]} does not interpolate: the box jumps instead of animating (only Chromium animates it, with interpolate-size: allow-keywords). Animate a length (max-height, or grid-template-rows: 0fr → 1fr)`, ...ranges(r) });
               }
             }
           }

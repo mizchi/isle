@@ -238,3 +238,12 @@ test('F22: ::marker ignores all but its own properties, and has no effect off li
   // And color does apply on the list item (the check is not vacuous).
   expect(await shot('.i::marker{color:rgb(255, 0, 0)}')).not.toBe(plain);
 });
+
+test('F8 in plain HTML: a class toggle named by the stylesheet jumps between auto and a length', async ({page}) => {
+  for (const [css, jumps] of [['.panel{width:100px;transition:height 1s linear}.panel.open{height:120px}', true], ['.panel{width:100px;height:0;transition:height 1s linear}.panel.open{height:120px}', false]]) {
+    expect((analyzeHTML('<html lang="en"><body><div class="panel"></div></body></html>', {name: 'P', css: base + css, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_CSS_TRANSITION_AUTO'), css).toBe(jumps);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body><div class="panel">x</div></body></html>`);
+    await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    expect(await page.evaluate(() => { document.querySelector('.panel').classList.add('open'); return document.getAnimations().length > 0; }), css).toBe(!jumps);
+  }
+});

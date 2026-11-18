@@ -332,7 +332,10 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope
     for (const r of results) for (const t of r.report.transitionSizes ?? []) { if (!byPath.has(t.path)) byPath.set(t.path, []); byPath.get(t.path).push({ t, r }); }
     for (const [path, list] of byPath) for (const key of new Set(list.flatMap(x => x.t.properties))) {
       const kw = list.find(x => keyword(x.t.values[key])), len = list.find(x => x.t.values[key] !== undefined && !keyword(x.t.values[key]));
-      if (!kw || !len || grouped.has(`W_CSS_TRANSITION_AUTO\u0000${kw.t.box}`)) continue;
+      if (!kw || !len) continue;
+      // (Already reported by a state's own analysis — a class toggle the stylesheet names: it holds between these states.)
+      const existing = grouped.get(`W_CSS_TRANSITION_AUTO\u0000${kw.t.box}`);
+      if (existing) { for (const c of [kw.r.choices, len.r.choices]) if (!existing.states.includes(c)) existing.states.push(c); continue; }
       grouped.set(`W_CSS_TRANSITION_AUTO\u0000${kw.t.box}`, { code: 'W_CSS_TRANSITION_AUTO', box: kw.t.box, path, severity: 'warning', rule: 'transition', states: [kw.r.choices, len.r.choices], html: kw.r.html, property: key,
         message: `${kw.t.box} transitions ${key} between ${kw.t.values[key]} and ${len.t.values[key]} (between its states), but a keyword size does not interpolate: the box jumps instead of animating (only Chromium animates it, with interpolate-size: allow-keywords). Animate a length (max-height, or grid-template-rows: 0fr → 1fr)` });
     }
