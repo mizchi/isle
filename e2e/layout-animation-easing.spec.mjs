@@ -3,6 +3,7 @@
 // overshoot past the keyframes moves it.
 import {test, expect} from '@playwright/test';
 import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
+import {easedFrames} from '../packages/css-verifier/src/layout/animation-extremes.mjs';
 
 const html = '<div class="p"><div class="a"></div><div class="b"></div></div>';
 const base = '*{box-sizing:border-box;margin:0}body{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:flex;flex-wrap:wrap;width:250px}.a{width:100px;height:20px;flex:none}.b{width:108px;height:20px;flex:none;margin-left:auto}';
@@ -145,5 +146,37 @@ test('a scroll-driven layout animation moves what follows as the page scrolls, w
     const moved = await page.evaluate(async () => { const seen = new Set(), max = document.documentElement.scrollHeight - innerHeight; for (let y = 0; y <= max; y += Math.max(1, Math.floor(max / 60))) { scrollTo(0, y); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); seen.add(Math.round((document.querySelector('.b').getBoundingClientRect().top + scrollY) * 64)); } return seen.size > 1; });
     if (supported) expect(reported, `${c}: moves as the page scrolls: ${moved}`).toBe(moved);
     else expect(reported || !moved, `${c}: moves, not reported`).toBe(true);
+  }
+});
+
+// Checklist A5: between px and % (or vh) the extreme frames are calc() of both units. The browser's height of .a,
+// sampled every 1ms, stays inside the frames' range (evaluated against the 200px parent and the viewport) and reaches
+// it up to the sampling step.
+const mixedCases = [
+  [[{offset: 1, layout: 'height:50%'}], 'cubic-bezier(0.5, -0.5, 0.5, 1.5)'],
+  [[{offset: 1, layout: 'height:50%'}], 'cubic-bezier(0.34, 1.56, 0.64, 1)'],
+  [[{offset: 0, layout: 'height:10%'}, {offset: 1, layout: 'height:80px'}], 'cubic-bezier(0.5, -0.5, 0.5, 1.5)'],
+  [[{offset: 1, layout: 'height:30vh'}], 'cubic-bezier(0.5, -0.5, 0.5, 1.5)'],
+];
+test('mixed-unit extremes bound the browser\'s animated height', async ({page}) => {
+  const [W, H] = [400, 300];
+  await page.setViewportSize({width: W, height: H});
+  const evaluate = text => {
+    const m = /^(?:max\(0px, )?calc\((-?[\d.]+)(px|%|vh) ([+-]) ([\d.]+)(px|%|vh)\)\)?$/.exec(text) ?? /^()()()(-?[\d.]+)(px|%|vh)$/.exec(text);
+    const amount = (n, u) => Number(n) * (u === '%' ? 2 : u === 'vh' ? H / 100 : 1);
+    const v = (m[1] ? amount(m[1], m[2]) : 0) + (m[3] === '-' ? -1 : 1) * amount(m[4], m[5]);
+    return text.startsWith('max(') ? Math.max(0, v) : v;
+  };
+  for (const [frames, easing] of mixedCases) {
+    const {frames: all} = easedFrames(frames, {easing, base: {height: '40px'}});
+    const model = [40, ...all.map(f => evaluate(f.layout.split(':')[1]))];
+    const keyframes = frames.map(f => `${f.offset * 100}%{${f.layout}}`).join('');
+    await page.setContent(`<!doctype html><html lang="en"><head><style>*{box-sizing:border-box;margin:0}.p{height:200px}.a{height:40px;animation:grow 1s ${easing} infinite}@keyframes grow{${keyframes}}</style></head><body><div class="p"><div class="a"></div></div></body></html>`);
+    const seen = await page.evaluate(() => { const [a] = document.getAnimations(); a.pause(); const hs = []; for (let t = 0; t <= 1000; t += 1) { a.currentTime = Math.min(t, 999.9); hs.push(document.querySelector('.a').getBoundingClientRect().height); } return [Math.min(...hs), Math.max(...hs)]; });
+    const label = `${keyframes} ${easing}: model ${Math.min(...model)}..${Math.max(...model)}, browser ${seen}`;
+    expect(Math.min(...model), label).toBeLessThanOrEqual(seen[0] + 1 / 64);
+    expect(Math.max(...model), label).toBeGreaterThanOrEqual(seen[1] - 1 / 64);
+    expect(Math.max(...model) - seen[1], label).toBeLessThan(0.25);
+    expect(seen[0] - Math.min(...model), label).toBeLessThan(0.25);
   }
 });

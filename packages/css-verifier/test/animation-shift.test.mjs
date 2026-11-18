@@ -95,8 +95,22 @@ test('properties with different keyframes are laid out together at every keyfram
   assert.notEqual(wrap('grow 1s linear infinite', '@keyframes grow{from{width:100px;animation-timing-function:cubic-bezier(0.5, -0.5, 0.5, 1.5)}50%{height:30px}to{width:140px}}').status, 'unknown');
 });
 
-test('an overshoot between mixed units is Unknown', () => {
-  assert.equal(wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{width:56%}}').status, 'unknown');
+// Checklist A5: between px and % the value is calc() of both, each amount carried past its keyframe by the easing.
+// .a grows from 40px to 50% of its 200px parent; the easing carries it past 100px, which pushes .b further down.
+const tall = (animation, keyframes) => analyzeHTML('<html lang="en"><body><div class="p"><div class="a"></div><div class="b"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}body{display:grid;grid-template-columns:minmax(0,1fr)}.p{height:200px}.a{height:40px}.b{height:20px}${keyframes}.a{animation:${animation}}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+test('an overshoot between mixed units is checked as calc() at the extremes', () => {
+  const mixed = tall('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{height:50%}}');
+  assert.notEqual(mixed.status, 'unknown', JSON.stringify(mixed.diagnostics.map(d => d.message)));
+  const over = shifts(mixed).filter(d => d.box === '.b' && /overshoot/.test(d.message));
+  assert.ok(over.length, JSON.stringify(shifts(mixed).map(d => d.message)));
+  assert.match(over[0].message, /calc\(/);
+  assert.equal(shifts(tall('grow 1s linear infinite', '@keyframes grow{to{height:50%}}')).filter(d => /overshoot/.test(d.message)).length, 0);
+  // With different keyframes per property too (A4), and px with vh.
+  const joint = tall('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{50%{padding-top:10px}to{height:50%}}');
+  assert.notEqual(joint.status, 'unknown', JSON.stringify(joint.diagnostics.map(d => d.message)));
+  assert.notEqual(tall('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{height:30vh}}').status, 'unknown');
+  // Units that do not combine with px here (em on a keyframe) stay Unknown.
+  assert.equal(tall('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{height:8em}}').status, 'unknown');
   // Without an overshoot those stay as before (checked at the keyframes).
   assert.notEqual(wrap('grow 1s linear infinite', '@keyframes grow{to{width:140px;height:30px}}').status, 'unknown');
 });

@@ -17,6 +17,27 @@ const lengthValue = (v, rem) => { const m = /^(-?(?:\d+(?:\.\d+)?|\.\d+))(px|%|e
 // Properties whose interpolated value is clamped at zero (CSS Values: negative lengths are invalid there).
 const nonNegative = /^(?:width|height|min-width|min-height|max-width|max-height|inline-size|block-size|min-inline-size|min-block-size|max-inline-size|max-block-size|padding(?:-.*)?|border(?:-(?:top|right|bottom|left))?-width|gap|row-gap|column-gap|flex-basis)$/;
 const percent = x => `${Math.round(x * 10000) / 100}%`;
+// Checklist A5: a value between lengths of different units (px and %, vw or vh) is calc(), each unit's amount
+// interpolated on its own: a·(1−y) of the one and b·y of the other. At an extreme each amount is rounded outward (as
+// if y were further out) to the six decimals layout numbers take. Where a property may not go negative and an amount
+// is negative, the sum is clamped at zero as the browser does (whether it is depends on the percentage basis):
+// max(0px, calc(…)). null where a unit is not one of these (the caller reports Unknown).
+const mixable = new Set(['px', '%', 'vw', 'vh']);
+function mixedValue(property, a, b, y, outward) {
+  if (!mixable.has(a.unit) || !mixable.has(b.unit)) return null;
+  const amounts = new Map([[a.unit, 0], [b.unit, 0]]);
+  const parts = [...amounts.keys()].map(unit => {
+    const from = a.unit === unit ? a.n : 0, to = b.unit === unit ? b.n : 0, v = from + (to - from) * y;
+    const up = outward === 0 ? null : (to - from) * outward >= 0;
+    const r = up === null ? Math.round(v * 1e6) / 1e6 : (up ? Math.ceil(v * 1e6 - 1e-9) : Math.floor(v * 1e6 + 1e-9)) / 1e6;
+    return [unit, r];
+  });
+  // A unit whose amount is zero (at a keyframe itself) drops out: a plain length, as the keyframe wrote it.
+  const kept = parts.filter(([, v]) => v !== 0);
+  if (kept.length < 2) { const [unit, v] = kept[0] ?? ['px', 0]; return nonNegative.test(property) && v < 0 ? '0px' : `${v}${unit}`; }
+  const [[u0, v0], [u1, v1]] = parts, sum = `calc(${v0}${u0} ${v1 < 0 ? '-' : '+'} ${Math.abs(v1)}${u1})`;
+  return nonNegative.test(property) && parts.some(([, v]) => v < 0) ? `max(0px, ${sum})` : sum;
+}
 
 export function easedFrames(frames, { easing = 'ease', base = {}, rem } = {}) {
   const layoutFrames = frames.filter(f => f.layout);
@@ -68,7 +89,9 @@ export function easedFrames(frames, { easing = 'ease', base = {}, rem } = {}) {
           const [a, b] = [lengthValue(i.from.value, rem), lengthValue(i.to.value, rem)];
           if (!i.moves) { parts.push(`${t.property}:${i.from.value}`); continue; }
           const unit = a?.unit ?? b?.unit ?? 'px';
-          if (!a || !b || (a.unit && b.unit && a.unit !== b.unit)) return { unknown: `the easing ${text} carries ${t.property} past its keyframes between ${percent(from.offset)} and ${percent(to.offset)}, and ${!a ? i.from.value ?? 'its own value' : !b ? i.to.value ?? 'its own value' : `${i.from.value} and ${i.to.value}`} ${!a || !b ? 'is not a length' : 'are in different units'} to extrapolate` };
+          const mixed = a && b && a.unit && b.unit && a.unit !== b.unit ? mixedValue(t.property, a, b, y, e.kind === 'max' ? 1 : -1) : undefined;
+          if (mixed) { parts.push(`${t.property}:${mixed}`); values.push(`${t.property} ${mixed}`); continue; }
+          if (!a || !b || mixed === null) return { unknown: `the easing ${text} carries ${t.property} past its keyframes between ${percent(from.offset)} and ${percent(to.offset)}, and ${!a ? i.from.value ?? 'its own value' : !b ? i.to.value ?? 'its own value' : `${i.from.value} and ${i.to.value}`} ${!a || !b ? 'is not a length' : 'are in units that are not combined (px, %, vw, vh are)'} to extrapolate` };
           let value = a.n + (b.n - a.n) * y;
           if (nonNegative.test(t.property)) value = Math.max(0, value);
           // Rounded outward: away from the nearer keyframe value, so the frame is at least as far as the browser goes.
@@ -121,10 +144,12 @@ function jointFrames(tracks, rem) {
       const i = at?.track === t ? at.interval : intervalAt(t, offset);
       if (!i.moves) { parts.push(`${t.property}:${i.from.value}`); continue; }
       const [a, b] = [lengthValue(i.from.value, rem), lengthValue(i.to.value, rem)];
-      if (!a || !b || (a.unit && b.unit && a.unit !== b.unit)) return { unknown: `${t.property} changes between ${i.from.value ?? 'its own value'} and ${i.to.value ?? 'its own value'} while other properties change between other keyframes: values that are not lengths of one unit are not interpolated` };
-      const unit = a.unit ?? b.unit ?? 'px', span = i.to.offset - i.from.offset;
+      const unit = a?.unit ?? b?.unit ?? 'px', span = i.to.offset - i.from.offset;
       // The property at its own extreme takes the outward bound; the others their eased value at this moment.
       const y = at?.track === t ? Number(at.extreme.kind === 'max' ? at.extreme.high : at.extreme.low) : easingAt(i.candidates[0], span ? (offset - i.from.offset) / span : 1);
+      const mixed = a && b && a.unit && b.unit && a.unit !== b.unit ? mixedValue(t.property, a, b, y, at?.track === t ? (at.extreme.kind === 'max' ? 1 : -1) : 0) : undefined;
+      if (mixed) { parts.push(`${t.property}:${mixed}`); values.push(`${t.property} ${mixed}`); continue; }
+      if (!a || !b || mixed === null) return { unknown: `${t.property} changes between ${i.from.value ?? 'its own value'} and ${i.to.value ?? 'its own value'} while other properties change between other keyframes: values that are not lengths of one unit or of px, %, vw and vh are not interpolated` };
       let value = a.n + (b.n - a.n) * y;
       if (nonNegative.test(t.property)) value = Math.max(0, value);
       const rounded = at?.track === t ? ((value >= Math.max(a.n, b.n) || (value > Math.min(a.n, b.n) && (at.extreme.kind === 'max') === (b.n >= a.n)) ? Math.ceil(value * 1e4) : Math.floor(value * 1e4)) / 1e4) : Math.round(value * 1e4) / 1e4;
