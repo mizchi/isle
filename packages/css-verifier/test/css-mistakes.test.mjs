@@ -243,3 +243,10 @@ test('F26: table > tr never matches: the parser inserts a tbody', () => {
   // A tbody written in the source is not implied.
   assert.equal(codes(run('.t > .r{color:red}', '<table class="t"><tbody><tr class="r"><td>x</td></tr></tbody></table>'), 'W_CSS_SELECTOR_IMPLIED_PARENT').length, 0);
 });
+
+test('F27: the HTML parser changed the structure written in the source', () => {
+  const re = html => codes(run('', html), 'W_HTML_RESTRUCTURED').map(w => w.tag);
+  assert.deepEqual(re('<p class="p">text<div class="d">x</div></p>'), ['p']);
+  assert.deepEqual(re('<a href="#x">a<a href="#y">b</a></a>'), ['a']);
+  for (const html of ['<p>a</p><p>b</p>', '<ul><li>a<li>b</ul>', '<svg width="10" height="10"><path d="M0 0"/></svg>', '<table><tr><td>x</td></tr></table>', '<img src="a.png" alt="">']) assert.deepEqual(re(html), [], html);
+});

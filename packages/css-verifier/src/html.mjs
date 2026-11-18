@@ -11,6 +11,7 @@ export function analyzeHTML(html,options) {
 }
 
 /** The box tree of a single-root HTML fragment (or a body root), and its adapter diagnostics. */
+const voidTags=new Set(['area','base','br','col','embed','hr','img','input','link','meta','source','track','wbr']);
 export function htmlBoxTree(html) {
   if(typeof html!=='string' || html.length>1_000_000) throw new TypeError('Invalid HTML input');
   const diagnostics=[];
@@ -66,7 +67,14 @@ export function htmlBoxTree(html) {
     })();
     if(inlineSvg) { const facts=accessibilityFacts('svg',attrs); facts.svgSize={...(facts.svgSize ?? {}),paint:svgPaint}; return {tag:'svg',attributes:attrs,...(attrs.id!==undefined ? {id:attrs.id} : {}),...facts,...(svgTitle ? {named:true} : {}),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),text:false,runs:[],children:[]}; }
     // (A table section or row the parser inserted — no start tag in the source — is marked implied: checklist F26.)
-    return {...(['tbody','tr','colgroup'].includes(node.tagName) && !node.sourceCodeLocation ? {implied:true} : {}),tag:node.tagName,attributes:attrs,...(attrs.id!==undefined ? {id:attrs.id} : {}),...(attrs.lang!==undefined ? {lang:attrs.lang.trim()} : {}),...accessibilityFacts(node.tagName,attrs),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),
+    // Checklist F27: the parser changed the structure written in the source — an element with no source location at all
+    // (an empty <p> made from a stray </p>, after a block closed the open paragraph), or one whose required end tag the
+    // parser supplied early (a nested <a>, a <div> inside a <button>…). Optional end tags (p, li, td, …), void and
+    // foreign (SVG, MathML) elements are left alone.
+    const html5=node.namespaceURI==='http://www.w3.org/1999/xhtml';
+    const optionalEnd=new Set(['html','head','body','p','li','dt','dd','option','optgroup','rt','rp','tr','td','th','thead','tbody','tfoot','colgroup','caption']);
+    const restructured=!html5 || !node.sourceCodeLocation && ['tbody','tr','colgroup','html','head','body'].includes(node.tagName) ? undefined : !node.sourceCodeLocation ? 'implied' : node.sourceCodeLocation.startTag && !node.sourceCodeLocation.endTag && !optionalEnd.has(node.tagName) && !voidTags.has(node.tagName) ? 'unclosed' : undefined;
+    return {...(['tbody','tr','colgroup'].includes(node.tagName) && !node.sourceCodeLocation ? {implied:true} : {}),...(restructured ? {restructured} : {}),tag:node.tagName,attributes:attrs,...(attrs.id!==undefined ? {id:attrs.id} : {}),...(attrs.lang!==undefined ? {lang:attrs.lang.trim()} : {}),...accessibilityFacts(node.tagName,attrs),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),
       text:node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)),
       ...(node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)) ? {textContent:node.childNodes.filter(n=>n.nodeName==='#text').map(n=>n.value).join(' ').replace(/[\t\n\r ]+/g,' ').trim()} : {}),
       ...(node.childNodes.some(n=>n.nodeName==='#text' && n.value && !/[^\t\n\r ]/.test(n.value)) ? {whitespace:true} : {}),

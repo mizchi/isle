@@ -311,6 +311,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // :disabled / :enabled where an element's disabled attribute is dynamic (an adapter's expression): whether the rule
   // applies is not known.
   if (rules.some(rule => rule.selectors.some(sel => JSON.stringify(sel).includes('"kind":"disabled"'))) && boxes.some(box => box.disabled === 'dynamic')) unknown('U_LAYOUT_ATTRIBUTE', `${boxes.find(box => box.disabled === 'dynamic').label}: a :disabled or :enabled rule depends on a disabled state that is dynamic, or that browsers decide differently (an option in a disabled select)`);
+  // F27: the HTML parser changed the structure written in the source (the analysis, like the browser, lays out the
+  // parsed tree; the CSS was likely written for the source's).
+  for (const b of boxes) if (b.restructured && !layoutWarnings.some(w => w.code === 'W_HTML_RESTRUCTURED' && w.path === b.path))
+    layoutWarnings.push({ code: 'W_HTML_RESTRUCTURED', severity: 'warning', box: b.label, path: b.path, tag: b.tag,
+      message: b.restructured === 'implied' ? `${b.label} is not in the source: the HTML parser made it (a stray </${b.tag}> after an element that cannot be inside a <${b.tag}> — a block in a paragraph — closed the open one, and the end tag became an empty <${b.tag}>). The elements written inside it are siblings in the page: nest only phrasing content in <${b.tag}>` : `${b.label} is closed early by the HTML parser (its </${b.tag}> does not end it: an element it cannot contain — a nested <a>, a block in a <button> or a heading in a heading — was written inside), so the elements after that point are not inside it in the page. Fix the nesting` });
   // F26: a child combinator through an element the HTML parser inserted (the tbody of a table written with its rows
   // directly inside): table > tr never matches — the selector matches only with the implied element skipped.
   for (const b of boxes) if (b.implied) for (const c of b.children ?? []) for (const rule of rules) for (const sel of rule.selectors ?? []) {
