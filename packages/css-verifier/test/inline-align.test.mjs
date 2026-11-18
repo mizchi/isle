@@ -101,3 +101,23 @@ test('an inline box in another weight: measured as its own run, else Unknown', (
   assert.equal(run('', 700).r.status, 'unknown');
   assert.equal(run('.u{font-weight:700;font-size:20px}', 700).r.status, 'unknown');
 });
+
+test('an icon in the line: measured with the contract, else Unknown', () => {
+  const run = (css, entry, size = 16) => {
+    const boxes = metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {...(entry ? {'.i': entry} : {}), '.u': 'guide'}}}});
+    return {boxes, r: analyzeHTML(`<html lang="en"><body><div class="page"><p class="p">Read the <img class="i" src="a.png" alt="" width="${size}" height="${size}"><a class="u" href="#x">guide</a> first.</p></div></body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0;padding:0}html,body,.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}${css}`, viewport: {min: 320, max: 800, height: {min: 300, max: 300}}, boxes})};
+  };
+  const plain = metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.u': 'guide'}}}});
+  const icon = run('', {atomic: [16, 16], at: 9});
+  assert.notEqual(icon.r.status, 'unknown', JSON.stringify(icon.r.diagnostics.map(d => d.message)));
+  assert.equal(icon.boxes['.p'].minInlineSize, plain['.p'].minInlineSize + 16);
+  // The link after it moves by its width.
+  const u0 = value(analyzeHTML('<html lang="en"><body><div class="page"><p class="p">Read the <a class="u" href="#x">guide</a> first.</p></div></body></html>', {name: 'P', css: '*{box-sizing:border-box;margin:0;padding:0}html,body,.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}', viewport: {min: 320, max: 800, height: {min: 300, max: 300}}, boxes: plain}).inlineBounds[0].outer.inlineStart.constant);
+  assert.equal(value(icon.r.inlineBounds.find(b => b.box === '.u').outer.inlineStart.constant), u0 + 16);
+  // Not measured, measured at another size, off the baseline, with edges, or taller than the ascent: Unknown or refused.
+  assert.equal(run('').r.status, 'unknown');
+  assert.equal(run('', {atomic: [16, 16], at: 9}, 12).r.status, 'unknown');
+  assert.equal(run('.i{vertical-align:middle}', {atomic: [16, 16], at: 9}).r.status, 'unknown');
+  assert.equal(run('.i{margin-left:4px}', {atomic: [16, 16], at: 9}).r.status, 'unknown');
+  assert.throws(() => run('', {atomic: [40, 40], at: 9}, 40), /taller than the line's ascent/);
+});

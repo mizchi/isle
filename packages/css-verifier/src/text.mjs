@@ -496,7 +496,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
       const fontContract = {family: font.family, size: font.size, lineHeight: font.lineHeight, ...(font.weight !== undefined ? {weight: font.weight} : {}), ...(font.letterSpacing ? {letterSpacing: font.letterSpacing} : {})};
       if (rest.wrap === 'normal' || rest.wrap === 'anywhere') {
         if (text.content === undefined) fail(`${selector}: wrapping is measured for fixed content; a character domain has no fixed line breaks`);
-        if (Object.values(text.inline ?? {}).some(v => typeof v !== 'string')) fail(`${selector}: inline boxes with edges are measured in one-line text only`);
+        if (Object.values(text.inline ?? {}).some(v => typeof v !== 'string')) fail(`${selector}: inline boxes with edges, weights or atomic boxes are measured in one-line text only`);
         const overflowWrap = rest.wrap === 'anywhere' ? 'anywhere' : (text.overflowWrap ?? 'normal');
         if (rest.wrap === 'anywhere' && text.overflowWrap !== undefined && text.overflowWrap !== 'anywhere') fail(`${selector}: wrap anywhere measures overflow-wrap: anywhere`);
         const lines = breakLines({font, text: text.content, overflowWrap, lang: text.lang});
@@ -516,7 +516,15 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         const measured = measureText({font, text: text.content, lang: text.lang});
         // Inline boxes with horizontal edges (checklist D3): {text, edges: [margin-left, border+padding-left,
         // border+padding-right, margin-right]} px. They add their edges to the line and move what follows.
-        const pieces = Object.fromEntries(Object.entries(text.inline ?? {}).map(([k, v]) => [k, typeof v === 'string' ? v : v?.text]));
+        // Atomic inline boxes (checklist D3: an image or icon in the line): {atomic: [width, height], at: n}, n the
+        // characters of the content before it. It widens the line by its width; sitting on the baseline, it must be no
+        // taller than the line's ascent (else the line grows, by amounts browsers differ on).
+        const atomics = Object.fromEntries(Object.entries(text.inline ?? {}).filter(([, v]) => typeof v !== 'string' && v?.atomic !== undefined).map(([k, v]) => {
+          const len = [...collapse(text.content)].length;
+          if (!Array.isArray(v.atomic) || v.atomic.length !== 2 || !v.atomic.every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 10_000) || !Number.isSafeInteger(v.at) || v.at < 0 || v.at > len || v.text !== undefined) fail(`${selector}: inline ${k} must be {atomic: [width, height], at} with at from 0 to ${len}`);
+          return [k, v];
+        }));
+        const pieces = Object.fromEntries(Object.entries(text.inline ?? {}).filter(([k]) => !atomics[k]).map(([k, v]) => [k, typeof v === 'string' ? v : v?.text]));
         // Inline boxes in another weight of the same family and size (checklist D3): {text, weight}. The line is the
         // sum of its font runs (browsers shape each run on its own), each with its own allowance.
         const weights = Object.fromEntries(Object.entries(text.inline ?? {}).filter(([, v]) => typeof v !== 'string' && v?.weight !== undefined).map(([k, v]) => {
@@ -529,9 +537,31 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
           if (!v || typeof v.text !== 'string' || !Array.isArray(v.edges) || v.edges.length !== 4 || !v.edges.every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 10_000)) fail(`${selector}: inline ${k} must be a string or {text, edges: [margin-left, border+padding-left, border+padding-right, margin-right]}`);
           return [k, v.edges];
         }));
-        const extra = Object.values(edges).flat().reduce((a, b) => a + b, 0);
+        const extra = Object.values(edges).flat().reduce((a, b) => a + b, 0) + Object.values(atomics).reduce((a, v) => a + v.atomic[0], 0);
         width = measured.bound + extra;
-        let inline = text.inline ? (runs ? runs.inline : inlineBounds({font, text: text.content, lang: text.lang, inline: pieces})) : null;
+        let inline = text.inline ? (runs ? runs.inline : Object.keys(pieces).length ? inlineBounds({font, text: text.content, lang: text.lang, inline: pieces}) : {}) : null;
+        if (inline && Object.keys(atomics).length) {
+          if (runs || Object.keys(edges).length) fail(`${selector}: atomic inline boxes together with weights or edges are not modeled`);
+          const {ascent, descent} = baselineMetrics(font), half = (font.lineHeight - ascent - descent) / 2;
+          // The baseline from the line's top: ascent + half-leading, which browsers round differently (17 or 17.5px).
+          const baseline = [ascent + Math.floor(half), ascent + Math.ceil(half)];
+          const collapsed = collapse(text.content), cps = [...collapsed], slack = 2 * scriptRuns(collapsed) / UNIT + 1 / UNIT;
+          const charStart = piece => [...collapsed.slice(0, collapsed.indexOf(collapse(piece)))].length;
+          const placed = Object.entries(atomics).sort((a, b) => a[1].at - b[1].at);
+          for (const [n, [k, v]] of placed.entries()) {
+            const [w, h] = v.atomic;
+            if (h > baseline[0]) fail(`${selector}: inline ${k} is ${h}px tall, taller than the line's ascent (${baseline[0]}px): the line grows, by amounts browsers differ on`);
+            // The boxes before it in the content (those at the same place come in order).
+            const before = placed.slice(0, n).reduce((a, [, o]) => a + o.atomic[0], 0);
+            const prefix = cps.slice(0, v.at).join(''), x = prefix ? shapeLine(font, prefix, text.lang) : 0;
+            inline[k] = {start: [x + before - slack, x + before + slack], end: [x + before + w - slack, x + before + w + slack], top: [baseline[0] - h, baseline[1] - h], bottom: [baseline[0], baseline[1]]};
+          }
+          for (const [k, piece] of Object.entries(pieces)) {
+            const shift = placed.filter(([, o]) => o.at <= charStart(piece)).reduce((a, [, o]) => a + o.atomic[0], 0);
+            if (placed.some(([, o]) => o.at > charStart(piece) && o.at < charStart(piece) + [...collapse(piece)].length)) fail(`${selector}: an atomic inline box inside the inline piece ${k} is not modeled`);
+            inline[k] = {...inline[k], start: inline[k].start.map(n => n + shift), end: inline[k].end.map(n => n + shift)};
+          }
+        }
         if (inline && Object.keys(edges).length) {
           // Each box moves by the edges of the boxes before it (and its own left margin); its border box spans its own
           // border and padding. Overlapping (nested) pieces with edges are not modeled.
@@ -544,7 +574,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
             return [k, {...b, start: b.start.map(v => v + shift), end: b.end.map(v => v + shift + bl + br)}];
           }));
         }
-        metrics = {kind: 'content', text: measured.text, width: measured.width + extra, baseline: baselineMetrics(font), ...(inline ? {inline, lineWidth: measured.range.map(v => v + extra), ...(Object.keys(edges).length ? {inlineEdges: edges} : {}), ...(runs ? {inlineWeights: weights} : {})} : {})};
+        metrics = {kind: 'content', text: measured.text, width: measured.width + extra, baseline: baselineMetrics(font), ...(inline ? {inline, lineWidth: measured.range.map(v => v + extra), ...(Object.keys(edges).length ? {inlineEdges: edges} : {}), ...(runs ? {inlineWeights: weights} : {}), ...(Object.keys(atomics).length ? {inlineAtomics: Object.fromEntries(Object.entries(atomics).map(([k, v]) => [k, v.atomic]))} : {})} : {})};
       } else {
         const domain = domainBounds({font, characters: text.characters, maxLength: text.maxLength, lang: text.lang});
         width = domain.bounds.at(-1);

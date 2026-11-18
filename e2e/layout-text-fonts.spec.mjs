@@ -360,6 +360,39 @@ test('inline boxes in another weight: the line width and every box\'s bounds', a
   }
 });
 
+// An icon in the line, measured with the text contract (inline {atomic: [width, height], at}), no taller than the line's
+// ascent (checklist D3): the line keeps its height, is as wide as the text and the icon, and the icon and the link after
+// it lie inside their bounds.
+test('an icon measured in the line: the line and every box', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the guide first.';
+  for (const [w, h, at] of [[16, 16, 9], [24, 12, 0], [10, 17, 21]]) {
+    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.i': {atomic: [w, h], at}, '.u': 'guide'}}}});
+    const before = [...content].slice(0, at).join(''), rest = [...content].slice(at).join('');
+    const mark = s => s.replace('guide', '<a class="u" href="#x">guide</a>');
+    const html = `<div class="page"><p class="p">${mark(before)}<img class="i" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" width="${w}" height="${h}">${mark(rest)}</p></div>`;
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p{font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}a{color:#000}`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 400, max: 900, height: {min: 300, max: 300}}, boxes});
+    const tag0 = `${w}x${h} at ${at}`;
+    expect(report.status === 'unknown', `${tag0}: ${JSON.stringify(report.diagnostics.map(d => d.message))}`).toBe(false);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const browser = await page.evaluate(() => ({height: document.querySelector('.p').getBoundingClientRect().height, width: (() => { const r = document.createRange(); r.selectNodeContents(document.querySelector('.p')); const rs = [...r.getClientRects()]; return Math.max(...rs.map(x => x.right)) - Math.min(...rs.map(x => x.left)); })(), i: document.querySelector('.i').getBoundingClientRect().toJSON(), u: document.querySelector('.u').getBoundingClientRect().toJSON()}));
+    expect(browser.height, tag0).toBe(24);
+    expect(browser.width, `${tag0} width`).toBeLessThanOrEqual(boxes['.p'].minInlineSize + 1e-9);
+    expect(browser.width, `${tag0} width`).toBeGreaterThanOrEqual(boxes['.p'].textMetrics.width - 0.25);
+    for (const key of ['i', 'u']) {
+      const bound = report.inlineBounds.find(b => b.box === `.${key}`);
+      const atv = a => value(a.coefficient) * 400 + value(a.heightCoefficient ?? '0') * 300 + value(a.constant);
+      const O = {x: atv(bound.outer.inlineStart), y: atv(bound.outer.blockStart), w: atv(bound.outer.inlineSize), h: atv(bound.outer.blockSize)}, r = browser[key], tag = `${tag0} .${key}`;
+      expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.right, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);
+      expect(r.y, `${tag} top`).toBeGreaterThanOrEqual(O.y - 1e-9); expect(r.bottom, `${tag} bottom`).toBeLessThanOrEqual(O.y + O.h + 1e-9);
+    }
+  }
+});
+
 // An image inside measured text is an atomic inline box: it widens the line and, taller than the text's ascent, makes
 // it taller (checklist D3). The analysis is Unknown there; the browser shows why.
 test('an image inside measured text changes the line', async ({page}) => {

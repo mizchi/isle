@@ -70,8 +70,12 @@
   `inline: {'.u': {text, weight}}` と測らせれば、行を太さごとの run の和として測る(Chromium で日本語・Latin、Firefox・WebKit で
   Latin が一致)。大きさや family の違う inline は Unknown のまま(行が高くなりうる)。**誤りの修正**: 文字の中の画像・svg・
   フォーム部品などの置換要素(atomic inline)は、自分の幅だけ行を広げ、文字の ascent より高ければ行を高くする(24px の行に 40px の
-  画像で 44px)のに、文字の大きさのまま Verified にしていた。U_LAYOUT_INLINE にする(横に並べるなら flex・grid の項目にする)。
-  残り: rtl、折り返す文字列の左右の端と太さ、atomic inline の配置そのもの。
+  画像で Chromium 47px、Firefox・WebKit 46.5px)のに、文字の大きさのまま Verified にしていた。U_LAYOUT_INLINE にする(横に並べるなら flex・grid の項目にする)。
+  一行の文字列で `inline: {'.i': {atomic: [幅, 高さ], at: 前の文字数}}` と測らせた画像・アイコンは、行の幅に足し、後ろの文字と箱を
+  ずらし、baseline に置いた矩形を出す。行を高くしない高さ(baseline までの高さ以下。Chromium は 17px、Firefox・WebKit は 17.5px:
+  ブラウザーで丸めが違うので小さい方)に限る(それより高いと行の高さがブラウザーごとに違う: 40px で Chromium 47px、ほか 46.5px)。
+  engine は CSS の大きさが契約と同じで、端がなく、baseline に置かれるときだけ受け入れる。3 つのブラウザーで一致。
+  残り: rtl、折り返す文字列の左右の端・太さ・画像、行を高くする画像。
 
 ## E. 新しい警告のパターン
 

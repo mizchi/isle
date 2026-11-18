@@ -334,8 +334,12 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
   その太さ)として shaping し、行の幅を run の和(run ごとに切り上げと allowance)にし、各箱の端に前の run の誤差を積む。上下は同じ
   family なので元の font の content area。engine は CSS の違いが font-weight だけで、その値が契約と同じときだけ受け入れる。
 - **文字の中の置換要素**(チェックリスト D3):img・svg・video・canvas・iframe・フォーム部品などは atomic inline の箱で、自分の幅だけ
-  行を広げ、文字の ascent より高ければ行を高くする(Chromium で 24px の行に 40px の画像を置くと 44px)。text の大きさの契約はそれを
-  数えないので U_LAYOUT_INLINE(以前は文字だけの大きさで Verified:誤り)。
+  行を広げ、文字の ascent より高ければ行を高くする(24px の行に 40px の画像を置くと Chromium で 47px、Firefox・WebKit で 46.5px)。text の大きさの契約はそれを
+  数えないので U_LAYOUT_INLINE(以前は文字だけの大きさで Verified:誤り)。一行の文字列では、text 契約の `inline` に
+  `{atomic: [幅, 高さ], at: 前の文字数}` を与えると、幅を行に足し、後ろの部分をずらし、箱を baseline の上に置く(baseline は行の上から
+  ascent + half-leading で、Chromium は切り捨て、Firefox・WebKit は端数のまま:その区間)。行の ascent より高い箱は行を高くし、量が
+  ブラウザーで違う(40px の画像で 47px と 46.5px、下の margin は Chromium だけ無視した)ので、契約が拒む。engine は CSS の大きさが
+  契約と同じで、端がなく、vertical-align: baseline のときだけ受け入れる。
 - **table cell の中**:cell は行の高さに伸び、行は `vertical-align` で揃う(UA は tbody/tr が middle、td/th はそれを継承。以前は baseline としていた:誤り)。
   top・middle・bottom は行数 × line-height の高さを content box の中でずらし(Chromium で測定)、baseline は行全体の揃えなので矩形を出さない
   (以前は cell の上端に置いていたので、高い行の中のリンクの位置が誤っていた)。

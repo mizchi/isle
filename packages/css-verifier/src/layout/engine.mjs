@@ -1399,8 +1399,21 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (style.display !== 'inline' || style.position !== 'static' || style.float !== 'none') throw Object.assign(new Error(`${child.label} inside text must stay display: inline and static to keep the text's measured size`), { code: 'U_LAYOUT_INLINE' });
       // A replaced element (an image, an icon, a control) inside text is an atomic inline box: it widens the line by its
       // own width and, taller than the text's ascent, makes the line taller (checklist D3) — neither of which the text's
-      // size contract counts. (Measured: a 40px image in a 24px line makes it 44px in Chromium.)
-      if (['img', 'svg', 'video', 'canvas', 'iframe', 'input', 'button', 'select', 'textarea', 'picture', 'object', 'embed'].includes(child.tag)) throw Object.assign(new Error(`${child.label} inside text is an atomic inline box: its width and height change the line, which the text's size does not count; lay it out beside the text (a flex or grid item) instead`), { code: 'U_LAYOUT_INLINE' });
+      // size contract counts. (Measured: a 40px image in a 24px line makes it 47px in Chromium, 46.5px in Firefox and WebKit.)
+      // Measured with the text contract (inline {atomic: [width, height], at}) it is accepted where its CSS size is that
+      // one, with no vertical margins, padding or border, on the baseline: the contract counted its width and checked
+      // that it does not make the line taller.
+      const atomic = ['img', 'svg', 'video', 'canvas', 'iframe', 'input', 'button', 'select', 'textarea', 'picture', 'object', 'embed'].includes(child.tag);
+      if (atomic) {
+        const measured = Object.entries(leaf.contract?.textMetrics?.inlineAtomics ?? {}).find(([selector]) => matches(compileSelector(selector), child))?.[1];
+        const pxOf = v => { const m = /^(\d+(?:\.\d+)?)px$/.exec(String(v)); return m ? Number(m[1]) : String(v) === '0' ? 0 : null; };
+        // (No edges at all: auto inline margins of an inline box are 0.)
+        const flat = ['top', 'bottom', 'left', 'right'].every(side => ['padding', 'border', 'margin'].every(k => pxOf(style[`${k}-${side}`] ?? '0') === 0 || (k === 'margin' && ['left', 'right'].includes(side) && String(style[`${k}-${side}`]) === 'auto')));
+        const sized = measured && pxOf(style['inline-size']) === measured[0] && pxOf(style['block-size']) === measured[1];
+        if (!(measured && sized && flat && ['baseline', undefined].includes(style['vertical-align']) && style.position === 'static' && style.float === 'none'))
+          throw Object.assign(new Error(`${child.label} inside text is an atomic inline box: its width and height change the line, which the text's size does not count${measured ? ` (the text contract measured it ${measured.join(' × ')}px, with no edges, on the baseline; its CSS differs)` : '; measure it with the text contract (inline {atomic: [width, height], at}) or lay it out beside the text (a flex or grid item)'}`), { code: 'U_LAYOUT_INLINE' });
+      }
+      if (!atomic && ['img', 'svg', 'video', 'canvas', 'iframe', 'input', 'button', 'select', 'textarea', 'picture', 'object', 'embed'].includes(child.tag)) throw Object.assign(new Error(`${child.label} inside text is an atomic inline box: its width and height change the line, which the text's size does not count; lay it out beside the text (a flex or grid item) instead`), { code: 'U_LAYOUT_INLINE' });
       // vertical-align other than baseline, top or bottom raises or lowers the inline box, and the line box grows to
       // hold it (measured: super, sub, middle, text-top and lengths all change the line's height in Chromium, Firefox
       // and WebKit, by amounts that differ between them). top and bottom with the text's own font change nothing.
