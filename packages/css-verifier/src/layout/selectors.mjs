@@ -54,7 +54,8 @@ function compileCompound(source, depth = 0) {
     const root = rest.match(/^:root(?![\w-])/i);
     if (root) { parts.push({ kind: 'root' }); specificity[1]++; rest = rest.slice(root[0].length); continue; }
     // A trailing user-action state (paint-only rules; see parseLayoutCSS).
-    const action = rest.match(/^:(hover|active|focus|focus-visible|focus-within|checked)$/i);
+    // (:visited: never set by the analysis — links are taken as unvisited — so its rules only repaint a state not checked.)
+    const action = rest.match(/^:(hover|active|focus|focus-visible|focus-within|checked|visited)$/i);
     if (action) { state = action[1].toLowerCase(); specificity[1]++; rest = ''; continue; }
     // :checked::before / :checked::after: the generated check mark of a custom checkbox.
     const checkedMark = rest.match(/^:checked::?(before|after)$/i);

@@ -578,7 +578,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
+  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -736,6 +736,15 @@ export function parseLayoutCSS(sheets, diagnostic) {
           return { ...rest, source: text, specificity: rest.specificity.map((v, i) => v + lead[i]), scope, scopeMode: m && m[2].trim() === '>' ? 'child' : 'descendant' };
         }) : node.selectors.map(selector => compileSelector(selector));
       } catch (error) { problem('U_LAYOUT_SELECTOR', error.message, node.source.start.line); continue; }
+      // Checklist F20: in a :visited rule browsers apply only color properties (CSS Selectors 4 §8.2, privacy): every other
+      // declaration is ignored — reported, and dropped as the browser does.
+      if (selectors.some(sel => sel.state === 'visited')) {
+        const visitedColor = /^(?:color|background-color|border-(?:(?:top|right|bottom|left|block-start|block-end|inline-start|inline-end)-)?color|column-rule-color|outline-color|text-decoration-color|text-emphasis-color|caret-color|fill|stroke|--.*)$/;
+        for (const d of [...(node.nodes ?? [])]) if (d.type === 'decl' && !visitedColor.test(d.prop.toLowerCase())) {
+          visitedIgnored.push({ selector: node.selector, property: d.prop.toLowerCase(), file: filename, line: d.source.start.line });
+          d.remove();
+        }
+      }
       // Checklist F6: one property declared twice in a rule — the earlier declaration never applies (the later wins, or
       // the !important one). A later value the browser may not support (a newer function, unit or keyword, or a
       // vendor-prefixed one) is the progressive-enhancement fallback pattern and is left alone.
@@ -828,7 +837,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
     return 'none';
   }).join(', ');
-  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author

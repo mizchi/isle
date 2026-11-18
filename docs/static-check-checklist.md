@@ -151,6 +151,10 @@
 - [x] **F19. 当たらない `:checked`・`::placeholder`**(`W_CSS_STATE_UNREACHABLE`): `:checked` はチェックボックス・ラジオ・
   option にしか当たらない(role="checkbox" の div でも)。`::placeholder` は placeholder 属性のある文字欄・textarea にしかない。
   `:active` も `:hover` と同じく `pointer-events: none` の子のない要素には当たらない。
+- [x] **F20. `:visited` の色でない宣言**(`W_CSS_VISITED_IGNORED`): 訪れたリンクを読み取られないよう、ブラウザーは `:visited`
+  の規則のうち色(color、background-color、border・outline の色など)しか当てない。ほかの宣言を報告し、ブラウザーと同じく
+  捨てる(以前は `:visited` を読めず Unknown)。3 つのブラウザーで、実際に訪れたリンクの色は変わり、幅(太さ・字間)は
+  変わらないことを確かめた。
 - [x] **F10. 要素(擬似要素でない)の `content`**: 文字列は何もしない(既存の `W_LAYOUT_DECLARATION_INERT` が出していた)。
   `url()` は要素を画像で置き換えるので効く(3 つのブラウザーで測った)。
 ## 済み(このチェックリストを作る前に済んだもの)

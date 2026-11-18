@@ -187,3 +187,19 @@ test('F19: :checked only on checkable elements, ::placeholder only where a place
     expect(shot === (await page.locator('.a').screenshot()).toString('base64'), html).toBe(never);
   }
 });
+
+test('F20: a visited link takes only the colors of a :visited rule', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  const css = 'a{font:16px/20px sans-serif;color:rgb(0, 0, 255)}a:visited{color:rgb(255, 0, 0);font-weight:900;letter-spacing:10px}';
+  expect((analyzeHTML('<html lang="en"><body><a class="a" href="#visited-target">Docs</a></body></html>', {name: 'P', css: base + css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, boxes: {'.a': {minInlineSize: 0, intrinsicBlockSize: 20}}}).layoutWarnings ?? []).filter(w => w.code === 'W_CSS_VISITED_IGNORED').map(w => w.property).sort()).toEqual(['font-weight', 'letter-spacing']);
+  // A real history entry: serve two pages, visit the target, then load the page whose link points there.
+  const page2 = (body, style = '') => `<!doctype html><html lang="en"><head><style>${style}</style></head><body>${body}</body></html>`;
+  await page.route('http://visited.test/**', route => route.fulfill({contentType: 'text/html', body: route.request().url().endsWith('/target') ? page2('target') : page2('<a class="a" href="http://visited.test/target">Docs</a> <a class="b" href="http://visited.test/never">Docs</a>', css)}));
+  await page.goto('http://visited.test/target');
+  await page.goto('http://visited.test/page'); await page.waitForTimeout(300);
+  const box = sel => page.evaluate(s => document.querySelector(s).getBoundingClientRect().width, sel);
+  const shot = async sel => (await page.locator(sel).screenshot()).toString('base64');
+  // .a is visited, .b is not: the same width (weight and spacing ignored), different pixels (the color applies).
+  expect(await box('.a')).toBe(await box('.b'));
+  expect((await shot('.a')) !== (await shot('.b'))).toBe(true);
+});

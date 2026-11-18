@@ -256,7 +256,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -310,6 +310,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   setRegisteredProperties(registered);
   if (defaultNamespace.length && boxes.some(box => ['svg', 'math'].includes(box.tag))) unknown('U_LAYOUT_CSS', 'A default XHTML @namespace keeps type and universal selectors off the SVG and MathML elements of this page, which is not modeled', defaultNamespace[0].line, undefined, defaultNamespace[0].file);
+  for (const note of visitedIgnored) layoutWarnings.push({ code: 'W_CSS_VISITED_IGNORED', severity: 'warning', selector: note.selector, property: note.property, css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],
+    message: `${note.selector}: ${note.property} is ignored — in a :visited rule browsers apply only colors (color, background-color, border and outline colors, …), so that a page cannot read which links were visited. Style the visited state with a color, or move ${note.property} to the link itself` });
   for (const note of noDurationTransitions) layoutWarnings.push({ code: 'W_CSS_TRANSITION_NO_DURATION', severity: 'warning', selector: note.selector, property: note.item.split(/\s+/)[0], css: [{ property: 'transition', file: note.file, line: note.line, selector: note.selector }],
     message: `${note.selector} has transition: ${note.item} with no duration (0s): the change happens at once, as if there were no transition. Give it a time (transition: ${note.item} .2s)` });
   for (const note of duplicateDeclarations) layoutWarnings.push({ code: 'W_CSS_DUPLICATE_DECLARATION', severity: 'warning', property: note.property, selector: note.selector, css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],

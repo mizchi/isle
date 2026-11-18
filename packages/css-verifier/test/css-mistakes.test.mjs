@@ -157,3 +157,13 @@ test('F19: :checked on an element that is never checked, ::placeholder on one th
   assert.equal(st('<input class="a" type="text" placeholder="Name" aria-label="x">', '.a::placeholder{color:red}').length, 0);
   assert.equal(st('<div class="a"></div>', '.a::placeholder{color:red}').length, 1);
 });
+
+test('F20: :visited applies only colors', () => {
+  const html = '<a class="a" href="#x">Docs</a>';
+  const run2 = (css, h) => analyzeHTML(`<html lang="en"><body>${h}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}, boxes: {'.a': {minInlineSize: 0, intrinsicBlockSize: 20}}});
+  const r = run2('.a{display:block;height:20px}.a:visited{color:purple;font-weight:bold;background-image:url(v.png)}', html);
+  assert.deepEqual(codes(r, 'W_CSS_VISITED_IGNORED').map(w => w.property).sort(), ['background-image', 'font-weight']);
+  // Dropped as the browser does: not a layout change in a state rule (no Unknown).
+  assert.notEqual(r.status, 'unknown', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.equal(codes(run('.a{display:block;height:20px}.a:visited{color:purple;border-color:red}', html), 'W_CSS_VISITED_IGNORED').length, 0);
+});
