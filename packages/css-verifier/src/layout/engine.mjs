@@ -541,6 +541,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             layoutWarnings.push({ code: 'W_A11Y_SUMMARY_INDICATOR', severity: 'warning', box: box.label, path: box.path, css: at(style.display !== 'list-item' && !style.$listItem ? 'display' : 'list-style-type'),
               message: `${box.label} is ${String(style['list-style-type']) === 'none' ? 'list-style: none' : `display: ${style.display}`}, so its disclosure triangle is gone, and nothing else shows whether the details are open or closed. Add an indicator (a ::before that turns with [open], or an icon)`, ...ranges(r) });
         }
+        // F24: table-layout: fixed on a table of auto width is the automatic layout (CSS 2.2 §17.5.2: fixed needs a
+        // width); F25: border-spacing with border-collapse: collapse does nothing (measured in Chromium, Firefox and WebKit).
+        if (['table', 'inline-table'].includes(String(style.display)) || box.tag === 'table') {
+          const inert = [];
+          if (String(style['table-layout']) === 'fixed' && style.$sources?.['table-layout'] && String(style['inline-size'] ?? 'auto') === 'auto') inert.push(['table-layout', 'table-layout: fixed has no effect on a table of width: auto (the fixed layout needs a width): its columns are sized by their content. Give the table a width']);
+          if (String(style['border-collapse']) === 'collapse' && style.$sources?.['border-spacing'] && !/^0(?:px)?(?:\s+0(?:px)?)?$/.test(String(style['border-spacing']))) inert.push(['border-spacing', 'border-spacing has no effect with border-collapse: collapse (the cells share their borders). Use border-collapse: separate for spacing, or remove it']);
+          for (const [prop, text] of inert) if (!layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(prop)))
+            layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: [prop], css: at(prop), message: `${box.label}: ${text}`, ...ranges(r) });
+        }
         // F12: a transition with no duration (transition: opacity) is 0s: the change is instant (a delay only postpones it).
         for (const t of transitionsOf(style)) if (/^-?0+(?:\.0+)?m?s$/.test(String(t.duration)) && style.$sources?.['transition-property'] && style.$sources?.['transition-duration']?.specified === undefined && !layoutWarnings.some(w => w.code === 'W_CSS_TRANSITION_NO_DURATION' && w.path === box.path && w.property === t.property))
           layoutWarnings.push({ code: 'W_CSS_TRANSITION_NO_DURATION', severity: 'warning', box: box.label, path: box.path, property: t.property, css: at('transition-property'),

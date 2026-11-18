@@ -223,3 +223,12 @@ test('F23, G1: user-select: none on a text field; a summary that lost its disclo
   assert.equal(sum('.s{display:block}.s::before{content:"+"}').length, 0);
   assert.equal(sum('').length, 0);
 });
+
+test('F24, F25: table-layout: fixed with no width, border-spacing with collapsed borders', () => {
+  const html = '<table class="t"><tbody><tr><td>a</td><td>b</td></tr></tbody></table>';
+  const inert = (css, prop) => codes(run(css, html), 'W_LAYOUT_DECLARATION_INERT').some(w => w.properties.includes(prop));
+  assert.equal(inert('.t{table-layout:fixed}', 'table-layout'), true);
+  assert.equal(inert('.t{table-layout:fixed;width:300px}', 'table-layout'), false);
+  assert.equal(inert('.t{border-collapse:collapse;border-spacing:8px}', 'border-spacing'), true);
+  assert.equal(inert('.t{border-spacing:8px}', 'border-spacing'), false);
+});

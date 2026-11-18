@@ -169,6 +169,12 @@
   状態として受け、配置を変える規則は Unknown)。
 - [x] **F23. 文字欄の `user-select: none`**(`W_LAYOUT_DECLARATION_INERT`): 文字欄・textarea の文字は選択も編集もできる
   ままで、何もしない(3 つのブラウザーで、3 回のクリックで 11 文字が選ばれた)。
+- [x] **F24. 幅のない表の `table-layout: fixed`**(`W_LAYOUT_DECLARATION_INERT`): 固定の配置は表の幅が要る(CSS 2.2 §17.5.2)。
+  width: auto の表では列は中身で決まる(3 つのブラウザーで、fixed を外したときと同じ列幅)。
+- [x] **F25. 線を重ねた表の `border-spacing`**(`W_LAYOUT_DECLARATION_INERT`): `border-collapse: collapse` ではセルが線を
+  共有し、間隔は何もしない(3 つのブラウザーで同じ位置)。
+- 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
+  (消えない)ので報告しない。
 
 ## G. HTML の要素が持つ働きを CSS が消す書き方
 
