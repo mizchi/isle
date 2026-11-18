@@ -3,6 +3,7 @@ import {findCSSWriteConflicts,cssWriteConflictMessage} from '../css-writes.mjs';
 import { q, cmp, add, mul, div, exact, number } from './linear.mjs';
 import { parseCondition, preferenceValues } from './conditions.mjs';
 import { supportsCondition } from './supports.mjs';
+import { flattenNesting } from './nesting.mjs';
 import {customName,variableValue,variableEnvironment,substituteDeclaration} from './variables.mjs';
 
 import { compileSelector, matches, greaterRank, scopeProximity } from './selectors.mjs';
@@ -670,7 +671,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     }
   };
   for (const sheet of sheets) {
-    try { const root = postcss.parse(sheet.css, { from: sheet.file }); visit(root.nodes, [], null, sheet.file); }
+    try { const root = flattenNesting(postcss.parse(sheet.css, { from: sheet.file })); visit(root.nodes, [], null, sheet.file); }
     catch (error) { diagnostic('U_LAYOUT_CSS', error.reason ?? error.message, error.line, sheet.file); }
   }
   // An animation-name without @keyframes runs no animation.
