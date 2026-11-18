@@ -45,6 +45,7 @@ export const recommended = {
   W_LAYOUT_CONTAINER_COLLAPSE: ['warning', 'give the query container a width, flex: 1 or a flex-basis'],
   W_LAYOUT_STICKY_NO_INSET: ['warning', 'add top: 0 (or the edge it should stick to)'],
   W_CSS_FONT_NO_GENERIC: ['warning', 'end the font-family list with a generic family (sans-serif, serif, monospace, system-ui)'],
+  W_LAYOUT_BALANCE_LINES: ['warning', 'bound the text length (data-text-max-length), or use text-wrap: pretty'],
   W_CSS_IMPORT_IGNORED: ['warning', 'move @import to the top of the sheet (before every other rule)'],
   W_CSS_KEYFRAME_IMPORTANT: ['warning', 'remove !important from the keyframe (it makes the declaration invalid there)'],
   W_CSS_TRANSITION_DISPLAY: ['warning', 'add transition-behavior: allow-discrete (and @starting-style), or transition opacity and visibility'],

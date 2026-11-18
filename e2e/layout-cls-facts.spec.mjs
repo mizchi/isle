@@ -1217,3 +1217,16 @@ test('a default XHTML @namespace: HTML elements lay out as without it; type sele
   const withSvg = html + '<svg aria-hidden="true"></svg>';
   expect(await rects('@namespace url(http://www.w3.org/1999/xhtml);', withSvg)).not.toBe(await rects('', withSvg));
 });
+
+// Checklist E3: text-wrap: balance balances a paragraph only up to a number of lines: 6 in Chromium and Firefox; WebKit
+// balanced every length tried (up to 17 lines). The text leaves a short last line under greedy wrapping, so balancing
+// changes the lines wherever it applies.
+test('text-wrap: balance stops balancing past 6 lines in Chromium and Firefox', async ({page}, testInfo) => {
+  const balanced = async n => {
+    const text = 'aaaa '.repeat(6 * n) + 'bb';
+    const lines = async wrap => { await page.setContent(`<style>body{margin:0}p{width:300px;font:16.6667px/20px monospace;text-wrap:${wrap}}</style><p>${text}</p>`); return page.evaluate(() => { const r = document.createRange(); r.selectNodeContents(document.querySelector('p')); const rows = new Map(); for (const x of r.getClientRects()) rows.set(Math.round(x.top), Math.max(rows.get(Math.round(x.top)) ?? 0, Math.round(x.right))); return [...rows.values()].join(); }); };
+    return (await lines('wrap')) !== (await lines('balance'));
+  };
+  expect(await balanced(5)).toBe(true);
+  expect(await balanced(8)).toBe(testInfo.project.name === 'webkit');
+});

@@ -447,3 +447,14 @@ test('font-palette and @font-palette-values only colour the glyphs of colour fon
     assert.equal(JSON.stringify(r.sizes), base, c);
   }
 });
+
+// Checklist E3: text-wrap: balance only balances short text (Chromium and Firefox up to 6 lines). On dynamic text with
+// no length bound it can stop balancing as the value grows: a warning.
+test('text-wrap: balance on dynamic text without a length bound is warned', () => {
+  const run = (html, c = '') => (analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{${g}}h2{width:200px;text-wrap:balance}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).filter(w => w.code === 'W_LAYOUT_BALANCE_LINES');
+  assert.equal(run('<h2>Welcome back, …</h2>').length, 1);
+  assert.match(run('<h2>Welcome back, …</h2>')[0].message, /6 lines/);
+  assert.equal(run('<h2 data-text-max-length="40">Welcome back, …</h2>').length, 0);
+  assert.equal(run('<h2>A fixed headline</h2>').length, 0);
+  assert.equal(run('<h2>Welcome back, …</h2>', 'h2{text-wrap:pretty}').length, 0);
+});

@@ -766,6 +766,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (style.display === 'contents') throw new Error('display: contents on the analyzed root or with text needs its parent box and anonymous items');
     if (!['block', 'grid', 'flex'].includes(style.display)) throw new Error(`Unsupported display: ${style.display}`);
     // text-wrap: balance / pretty re-break wrapping text; the measured line profile assumes greedy breaking.
+    // Checklist E3: balance only balances short text (measured: Chromium and Firefox up to 6 lines, WebKit longer). Dynamic text (the adapters'
+    // … for an expression) with no length bound can grow past that and stop balancing.
+    if (style['text-wrap-style'] === 'balance' && !['nowrap', 'pre'].includes(style['white-space']) && String(box.textContent ?? box.text ?? '').includes('…') && box.attributes?.['data-text-max-length'] === undefined && !layoutWarnings.some(w => w.code === 'W_LAYOUT_BALANCE_LINES' && w.path === box.path))
+      layoutWarnings.push({ code: 'W_LAYOUT_BALANCE_LINES', severity: 'warning', box: box.label, path: box.path, css: style.$sources?.['text-wrap-style'] ? [{ property: 'text-wrap', file: style.$sources['text-wrap-style'].file, line: style.$sources['text-wrap-style'].line, selector: style.$sources['text-wrap-style'].selector }] : undefined,
+        message: `${box.label} balances dynamic text (text-wrap: balance) with no length bound: Chromium and Firefox balance only up to 6 lines (WebKit longer), so a long value stops being balanced there. Bound its length (data-text-max-length), or use text-wrap: pretty` });
     if (['balance', 'pretty'].includes(style['text-wrap-style']) && (box.text || box.inline?.length) && !['nowrap', 'pre'].includes(style['white-space'])) throw Object.assign(new Error(`${box.label} has text-wrap: ${style['text-wrap-style']}, which changes where its text wraps (the line profile assumes greedy breaking); keep it on one line or drop it`), { code: 'U_LAYOUT_CSS' });
     if (['grid', 'flex'].includes(style.display) && box.text) throw new Error('Wrap text in an explicit leaf; anonymous grid/flex text items need a layout adapter');
     // Main-axis auto margins of flex items absorb free space (resolved by the flex line).
