@@ -47,6 +47,7 @@ export const recommended = {
   W_CSS_FONT_NO_GENERIC: ['warning', 'end the font-family list with a generic family (sans-serif, serif, monospace, system-ui)'],
   W_LAYOUT_SCROLLBAR_SHIFT: ['warning', 'keep the scrollbar gutter with html { scrollbar-gutter: stable }'],
   W_LAYOUT_BALANCE_LINES: ['warning', 'bound the text length (data-text-max-length), or use text-wrap: pretty'],
+  W_A11Y_TRANSITION_MOTION: ['warning', 'set transition: none (or a short duration) under @media (prefers-reduced-motion: reduce)'],
   W_CSS_IMPORT_IGNORED: ['warning', 'move @import to the top of the sheet (before every other rule)'],
   W_CSS_KEYFRAME_IMPORTANT: ['warning', 'remove !important from the keyframe (it makes the declaration invalid there)'],
   W_CSS_TRANSITION_DISPLAY: ['warning', 'add transition-behavior: allow-discrete (and @starting-style), or transition opacity and visibility'],

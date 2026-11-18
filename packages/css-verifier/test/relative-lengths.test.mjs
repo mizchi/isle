@@ -61,3 +61,13 @@ test('percentage heights and bases in a column flex container of a declared heig
   // An auto-height column: the percentage is not a share of anything known; Unknown.
   assert.equal(col('.a{height:25%;flex:none}.b{height:10px;flex:none}'), 'unknown');
 });
+
+test('percentage heights inside a stretched flex or grid item resolve against its height (checklist D2)', () => {
+  const nested = c => { const r = analyzeHTML('<html lang="en"><body><div class="p"><div class="q"><div class="a"></div><div class="b"></div></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}body{${g}}.b{height:10px}.a{height:50%}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}); return r.status === 'unknown' ? 'unknown' : r.sizes.filter(s => /^\.[ab]$/.test(s.box)).map(s => [s.rect.blockStart.constant, s.rect.blockSize.constant]); };
+  assert.deepEqual(nested('.p{height:200px;display:flex}.q{flex:1 1 0;min-width:0}'), [['0', '100'], ['100', '10']]);
+  assert.deepEqual(nested('.p{height:200px;display:flex;flex-direction:column}.q{flex:1 0 0;min-height:0}'), [['0', '100'], ['100', '10']]);
+  assert.deepEqual(nested('.p{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:200px}'), [['0', '100'], ['100', '10']]);
+  // Not stretched: the percentage computes to auto (not modeled here); Unknown.
+  assert.equal(nested('.p{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:200px}.q{align-self:start}'), 'unknown');
+  assert.equal(nested('.p{height:200px;display:flex;align-items:start}.q{flex:1 1 0;min-width:0}'), 'unknown');
+});

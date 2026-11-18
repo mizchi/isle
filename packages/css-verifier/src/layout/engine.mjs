@@ -1153,6 +1153,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // margins (measured: height: 50% with margin-top: 10px in a 100px row is 50px).
         ...(knownBlock ? { percentBlock: knownBlock } : {}),
         flexItem: { main }, ...(main === 'block' ? { flexBlockMinimum: true } : {}),
+        // Checklist D2: the item's height is definite — stretched in a single-line row of a definite height, or flexed
+        // in a column of a definite height — so its children's percentage heights resolve against it (measured in
+        // Chromium, Firefox and WebKit).
+        ...(knownBlock && ((main === 'inline' && !wrap && entry.align === 'stretch' && entry.child.style['block-size'] === 'auto') || main === 'block') ? { definiteBlock: true } : {}),
         ...(entry.align !== 'stretch' ? (main === 'inline' ? { alignBlock: entry.align } : { alignInline: entry.align }) : {}) });
       if (main === 'inline') {
         // A percentage basis (a frozen item): its size is that share of the content width (plus its edges in
@@ -2826,7 +2830,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             // Checklist D2: in block flow, a child's percentage height resolves against this box's height when that is
             // definite (a declared height, clamped by min/max): the used content height. Otherwise it computes to auto.
             // ($blockFlow is set below, where block flow becomes a one-column grid; the declared height is known here.)
-            const blockFlowPercent = bs.value && style['block-size'] !== 'auto' ? bs.value : null;
+            const blockFlowPercent = bs.value && (style['block-size'] !== 'auto' || available.definiteBlock) ? bs.value : null;
             const knownBlock = bs.value, own = { box, style, inline: contentInline, block: knownBlock, positioned:style.position!=='static' || containsFixed(style),
               contentOrigin,paddingOrigin:offset(origin,scalar(px(style['border-left'])),scalar(px(style['border-top']))),
               subgrid:style['grid-template-columns']==='subgrid' || style['grid-template-rows']==='subgrid',
@@ -3235,7 +3239,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                   const childColumns = item => trackSlice(cs.values, columnGap, box, item.start, item.span);
                   // Block-axis self-alignment (align-self, or the grid's align-items): an item that is not stretched keeps its
                   // own height and is offset in its area by that share of the free space (CSS Box Alignment §6.1).
-                  const gridAlign = item => { if (style.$blockFlow) return {}; const a = crossAlignment(style['align-items'], item.style['align-self']); return a === 'stretch' ? {} : { alignBlock: a }; };
+                  // (A stretched item of auto height is definite, checklist D2: its children's percentage heights resolve
+                  // against it — measured in Chromium, Firefox and WebKit; aligned otherwise, they compute to auto.)
+                  const gridAlign = item => { if (style.$blockFlow) return {}; const a = crossAlignment(style['align-items'], item.style['align-self']); return a === 'stretch' ? (item.style['block-size'] === 'auto' ? { definiteBlock: true } : {}) : { alignBlock: a }; };
                   if (!block) {
                     let endings = [children.region];
                     for (const item of placed) endings = bounded(endings.flatMap(r => solve(item.box, { inline: itemInline(item), percentInline: areaInline(item), tracks: { inline: childColumns(item) }, gridItem: true, ...(style.$blockFlow && blockFlowPercent ? { percentBlock: blockFlowPercent } : {}), ...(style.$blockFlow ? { blockFlowChild: true, ...(item.style.$collapsedTop ? { collapsedTop: true } : {}), ...(item.style.$collapsedBottom ? { collapsedBottom: true } : {}) } : {}), autoMargins: autoMargins(item), marginEnd: { inline: marginOf(item, 'right'), block: marginOf(item, 'bottom') }, fitInline: (box.contract?.overflow ?? 'fit') === 'fit' }, r, ancestors, item.inherited ?? style, emit).map(result => result.region)));

@@ -50,7 +50,9 @@
   3 つのブラウザーで、2 つの viewport の幅で一致。grid の `%` の列・行と `%` の gap も、その軸の容器の大きさが 1 つの定数のとき
   (px の幅、宣言した px の高さ)は px に書き換えて解く。flex の column の項目の `%` の高さ・basis・min-height も、column の
   宣言した高さが定数なら同じく解く。viewport で変わる容器の `%` のトラック、
-  auto の高さの親の中の `%` の高さ(grid の項目として伸ばされる親を含む)、flex の項目の `min()`/`max()` の幅は残り。
+  高さが決まる flex・grid の項目(高さを宣言した 1 行の row で伸ばされる、高さを宣言した column で伸び縮みする、grid の領域に
+  伸ばされる)の中の `%` の高さも、その高さに対して解く(3 つのブラウザーで一致。標準モードで測る。quirks モードの WebKit は auto に
+  した)。残り: 伸ばされない(align-self: start などの)項目の中の `%` の高さ(auto になる)、flex の項目の `min()`/`max()` の幅。
 - [~] **D3. inline の中の行の配置**: 文字の行と inline の箱の位置。大きい。
   最初の一歩として、測った文字の中の inline の箱(`inlineBounds`)を `text-align: center`・`right`・`end` でも出す(以前は start と
   left だけ)。行の幅の区間で外接・内接をずらし、改行が揺れる幅は除く(ADR-0013)。3 つのブラウザーで一致。残り: `justify`、rtl、

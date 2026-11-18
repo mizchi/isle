@@ -74,3 +74,25 @@ test('percentage heights in block flow against a declared height: every box is w
     }
   }
 });
+
+// Checklist D2: a percentage height inside a flex or grid item whose height is definite (stretched in a single-line
+// row of a declared height, flexed in a column of one, or stretched in a grid area) resolves against it, in every
+// browser (in standards mode; quirks mode differs). Aligned (align-self: start) it computes to auto: Unknown here.
+const nested = '<div class="p"><div class="q"><div class="a"></div><div class="b"></div><div class="c"></div></div></div>';
+const nestedBase = `*{box-sizing:border-box;margin:0}body{${g}}.b{height:10px}.c{height:20px}`;
+test('percentage heights inside a definite flex or grid item', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  for (const c of ['.p{height:200px;display:flex}.q{flex:1 1 0;min-width:0}.a{height:50%}', '.p{height:200px;display:flex;flex-direction:column;padding-top:8px}.q{flex:1 0 0;min-height:0}.a{height:25%}.c{height:10%}', '.p{height:240px;display:flex;gap:4px}.q{flex:none;width:100px;padding:6px 0}.a{height:calc(50% - 5px)}',
+    '.p{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:200px}.a{height:50%}', '.p{display:grid;grid-template-columns:minmax(0,1fr) 80px;grid-template-rows:minmax(0,1fr) 40px;height:220px;row-gap:10px}.q{padding-bottom:10px}.a{height:30%}']) {
+    const css = nestedBase + c;
+    const r = analyzeHTML(`<html lang="en"><body>${nested}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    expect(r.status === 'unknown', `${c}: ${JSON.stringify(r.diagnostics.map(d => d.message))}`).toBe(false);
+    const model = Object.fromEntries(r.sizes.filter(s => s.rect && /^\.(?:a|b|c)$/.test(s.box)).map(s => [s.box, [frac(s.rect.blockStart.constant), frac(s.rect.blockSize.constant)]]));
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${nested}</body></html>`);
+    const browser = await page.evaluate(() => Object.fromEntries(['.a', '.b', '.c'].map(s => { const r = document.querySelector(s).getBoundingClientRect(); return [s, [r.top, r.height]]; })));
+    for (const k of Object.keys(model)) model[k].forEach((v, i) => expect(Math.abs(v - browser[k][i]), `${c} ${k}[${i}]: model ${v}, browser ${browser[k][i]}`).toBeLessThanOrEqual(2 / 64 + 1e-9));
+    expect(Object.keys(model).length).toBe(3);
+  }
+  const start = nestedBase + '.p{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:200px}.q{align-self:start}.a{height:50%}';
+  expect(analyzeHTML(`<html lang="en"><body>${nested}</body></html>`, {name: 'P', css: start, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).status).toBe('unknown');
+});
