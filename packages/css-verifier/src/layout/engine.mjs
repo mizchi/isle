@@ -645,6 +645,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             layoutWarnings.push({ code: 'W_CSS_ANIMATION_NO_DURATION', severity: 'warning', box: box.label, path: box.path, keyframes: a.name, css: at('animation-duration'),
               message: `${box.label} runs animation ${a.name} for ${a.duration}: with no duration it ends as it starts and nothing is seen. Give it a duration (animation: ${a.name} 1s …)` });
         }
+        // F7: z-index on a box that is neither positioned nor a flex or grid item does not stack it (CSS 2.2 §9.9.1,
+        // CSS Flexbox §4.3, CSS Grid §9): it paints in tree order as if z-index were auto.
+        {
+          const ps = ancestors.at(-1)?.style, item = ps && ['flex', 'inline-flex', 'grid', 'inline-grid'].includes(String(ps.display)) && !ps.$blockFlow;
+          if (!['auto', undefined].includes(style['z-index']) && style.position === 'static' && !item && style.$sources?.['z-index'] && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('z-index')))
+            layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['z-index'], css: at('z-index'),
+              message: `${box.label}: z-index: ${style['z-index']} has no effect (it is position: static and not a flex or grid item, so it does not stack above or below its neighbours). Give it position: relative, or remove it`, ...ranges(r) });
+        }
         for (const [min, max] of [['min-inline-size', 'max-inline-size'], ['min-block-size', 'max-block-size']]) {
           const v = key => /^\d+(?:\.\d+)?px$/.test(String(style[key])) ? Number(String(style[key]).slice(0, -2)) : null;
           const [minName, maxName, sizeName] = min === 'min-inline-size' ? ['min-width', 'max-width', 'width'] : ['min-height', 'max-height', 'height'];

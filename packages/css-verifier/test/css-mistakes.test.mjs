@@ -55,3 +55,12 @@ test('F6: a property declared twice in one rule: the earlier one never applies',
   // The fallback pattern: a later value in a newer function or unit is left alone.
   for (const css of ['.a{height:100vh;height:100dvh}', '.a{width:100%;width:calc(100% - 10px)}', '.a{display:block;display:-webkit-box}', '.a{color:red}.a{color:blue}']) assert.equal(codes(run(css), 'W_CSS_DUPLICATE_DECLARATION').length, 0, css);
 });
+
+test('F7: z-index on a box that is neither positioned nor a flex or grid item', () => {
+  const html = '<div class="p"><div class="a"></div></div>';
+  const inert = css => codes(run(css, html), 'W_LAYOUT_DECLARATION_INERT').some(w => w.properties.includes('z-index'));
+  assert.equal(inert('.p{display:block}.a{z-index:5}'), true);
+  assert.equal(inert('.p{display:block}.a{z-index:5;position:relative}'), false);
+  assert.equal(inert('.p{display:flex}.a{z-index:5;flex:none;width:10px}'), false);
+  assert.equal(inert('.p{display:grid;grid-template-columns:minmax(0,1fr)}.a{z-index:5}'), false);
+});

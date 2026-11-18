@@ -121,6 +121,8 @@
 - [x] **F6. 同じ規則で 2 回書いたプロパティ**(`W_CSS_DUPLICATE_DECLARATION`): 前の宣言は効かない(後が勝つ。`!important` なら前が
   勝ち、後が効かない)。後の値が新しい関数・単位・キーワードやベンダー接頭辞(`100vh` のあとの `100dvh` など)なら、古い
   ブラウザーのための代わりの書き方なので報告しない。
+- [x] **F7. 重ならない `z-index`**(`W_LAYOUT_DECLARATION_INERT`): position: static で flex・grid の項目でもない箱の `z-index` は
+  重なりの順を変えない。3 つのブラウザーで、hit test の一番上の箱が警告と一致した(relative にするか、flex・grid の項目なら効く)。
 ## 済み(このチェックリストを作る前に済んだもの)
 
 - [x] easing の行き過ぎ(cubic-bezier、`linear()`)の極値でのシフト検査と CLS の上限、終わりの戻り、relative のオフセット、

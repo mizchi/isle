@@ -60,3 +60,18 @@ test('F6: a property declared twice in one rule: the browser uses the one the wa
     expect(w.message.includes(`(${kept}`) || w.message.includes(`${kept} twice`), `${css}: ${w.message}`).toBe(true);
   }
 });
+
+test('F7: z-index stacks a box only where it is positioned or a flex or grid item', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  // .a has z-index 5 and comes first; .b overlaps it (moved up 20px) and comes after. Painting order puts .b on top
+  // unless .a's z-index applies.
+  const html = '<div class="p"><div class="a"></div><div class="b"></div></div>';
+  for (const [css, inert] of [['.p{display:block}', true], ['.p{display:block}.a{position:relative}', false], ['.p{display:flex;flex-direction:column}.a,.b{flex:none}', false], ['.p{display:grid;grid-template-columns:minmax(0,1fr)}', false]]) {
+    const full = `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a,.b{height:40px;background:#888}.a{z-index:5;background:#f00}.b{position:relative;top:-20px}${css}`;
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${full}</style></head><body>${html}</body></html>`);
+    const top = await page.evaluate(() => document.elementFromPoint(10, 30)?.className);
+    const warned = (analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: full, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('z-index'));
+    expect(warned, css).toBe(inert);
+    expect(top, css).toBe(inert ? 'b' : 'a');
+  }
+});
