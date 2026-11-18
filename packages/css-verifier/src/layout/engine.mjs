@@ -461,6 +461,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: [ignored], css: at(ignored),
             message: `${box.label}: ${ignored}: ${declared(ignored)} has no effect (it is position: ${style.position} with ${a}, ${b} and ${label} all set, which over-constrains it, so ${ignored} is ignored). Drop ${label} to stretch it between the insets, or drop ${ignored}`, ...ranges(r) });
         }
+        // F14: a border width with no border style draws no border: the style is none, so the used width is 0 (the
+        // analysis lays it out that way too).
+        {
+          // (Declared a non-zero width, yet the used width is 0: the style is none or hidden.)
+          const declaredWidth = side => { const t = String(style.$sources?.[`$bw-${side}`]?.specified ?? '').trim().split(/\s+/); if (t.length < 2) return t[0] ?? ''; return { top: t[0], right: t[1], bottom: t[2] ?? t[0], left: t[3] ?? t[1] }[side] ?? ''; };
+          const sides = ['top', 'right', 'bottom', 'left'].filter(side => style.$sources?.[`$bw-${side}`] && /[1-9]|thin|medium|thick/.test(declaredWidth(side)) && ['0', '0px'].includes(String(style[`border-${side}`])));
+          if (sides.length && !layoutWarnings.some(w => w.code === 'W_CSS_BORDER_NO_STYLE' && w.path === box.path))
+            layoutWarnings.push({ code: 'W_CSS_BORDER_NO_STYLE', severity: 'warning', box: box.label, path: box.path, sides, css: at(`$bw-${sides[0]}`).map(c => ({ ...c, property: 'border-width' })),
+              message: `${box.label} sets a border width (${sides.join(', ')}) but no border style, which is none by default: no border is drawn and its width is 0. Add border-style: solid (or use the border shorthand: border: 2px solid)` });
+        }
         // F12: a transition with no duration (transition: opacity) is 0s: the change is instant (a delay only postpones it).
         for (const t of transitionsOf(style)) if (/^-?0+(?:\.0+)?m?s$/.test(String(t.duration)) && style.$sources?.['transition-property'] && style.$sources?.['transition-duration']?.specified === undefined && !layoutWarnings.some(w => w.code === 'W_CSS_TRANSITION_NO_DURATION' && w.path === box.path && w.property === t.property))
           layoutWarnings.push({ code: 'W_CSS_TRANSITION_NO_DURATION', severity: 'warning', box: box.label, path: box.path, property: t.property, css: at('transition-property'),

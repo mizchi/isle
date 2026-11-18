@@ -113,3 +113,12 @@ test('F13: an over-constrained absolutely positioned box ignores its end inset',
   // Auto margins take up the slack instead (centring).
   assert.equal(inert('.a{position:absolute;top:0;left:0;right:0;width:50px;margin:0 auto;height:10px}', 'right'), false);
 });
+
+test('F14: a border width with no border style draws no border', () => {
+  const [w] = codes(run('.a{border-width:2px}'), 'W_CSS_BORDER_NO_STYLE');
+  assert.ok(w); assert.deepEqual(w.sides, ['top', 'right', 'bottom', 'left']);
+  assert.deepEqual(codes(run('.a{border-left-width:4px}'), 'W_CSS_BORDER_NO_STYLE')[0]?.sides, ['left']);
+  assert.deepEqual(codes(run('.a{border-width:0 2px}'), 'W_CSS_BORDER_NO_STYLE')[0]?.sides, ['right', 'left']);
+  assert.equal(codes(run('.a{border-width:0 2px;border-style:solid}'), 'W_CSS_BORDER_NO_STYLE').length, 0);
+  for (const css of ['.a{border-width:2px;border-style:solid}', '.a{border:2px solid red}', '.a{border-width:0}', '.a{border-style:solid;border-width:2px}']) assert.equal(codes(run(css), 'W_CSS_BORDER_NO_STYLE').length, 0, css);
+});

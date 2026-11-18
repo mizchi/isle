@@ -53,6 +53,7 @@ export const recommended = {
   W_CSS_TRANSITION_AUTO: ['warning', 'animate a length instead (max-height, or grid-template-rows: 0fr to 1fr)'],
   W_CSS_PSEUDO_NO_CONTENT: ['warning', 'add content: "" (or the text the pseudo-element shows)'],
   W_CSS_TRANSITION_NO_DURATION: ['warning', 'give the transition a duration (transition: opacity .2s)'],
+  W_CSS_BORDER_NO_STYLE: ['warning', 'add border-style: solid (or write border: 2px solid)'],
   W_CSS_MEDIA_NEVER: ['warning', 'check the order of the bounds: min-width below max-width'],
   W_LAYOUT_SCROLLBAR_SHIFT: ['warning', 'keep the scrollbar gutter with html { scrollbar-gutter: stable }'],
   W_LAYOUT_BALANCE_LINES: ['warning', 'bound the text length (data-text-max-length), or use text-wrap: pretty'],
