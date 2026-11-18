@@ -79,6 +79,27 @@ const textPropertySet = new Set(textProperties);
 export const fontShorthand = 'font-shorthand';
 // A CSS string literal's value (escapes: \\hex and \\char).
 const cssString = literal => literal.slice(1, -1).replace(/\\([\da-f]{1,6}) ?|\\(.)/gi, (_, hex, ch) => hex ? String.fromCodePoint(parseInt(hex, 16)) : ch);
+// Checklist B2: an arbitrary rotation composed with other transforms, as floats. Each map is the 14 numbers of an
+// affine(...) (A, then the offsets t, W·u, H·w, em·e, rem·r); a rotation by any angle is cos/sin. The result is
+// linear-any(...), which the analysis bounds by its circumscribed rectangle (accessibility checks only). em and rem
+// offsets are not modeled there.
+const floatMap = m => {
+  const text = String(m);
+  const rot = /^rotate-any\((-?[\d.]+)\)$/.exec(text);
+  if (rot) { const r = Number(rot[1]) * Math.PI / 180; return [Math.cos(r), -Math.sin(r), Math.sin(r), Math.cos(r), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; }
+  const aff = /^(?:affine|linear-any)\((.+)\)$/.exec(text);
+  return aff[1].split(' ').map(x => { const [n, d = '1'] = x.split('/'); return Number(n) / Number(d); });
+};
+const composeFloat = (P, T) => {
+  const [a, b, c, d] = P, lin = (x, y) => [a * x + b * y, c * x + d * y];
+  const A = [a * T[0] + b * T[2], a * T[1] + b * T[3], c * T[0] + d * T[2], c * T[1] + d * T[3]];
+  return [...A, ...[4, 6, 8, 10, 12].flatMap(i => { const [x, y] = lin(T[i], T[i + 1]); return [x + P[i], y + P[i + 1]]; })];
+};
+const linearAny = (maps, value) => {
+  const m = maps.map(floatMap).reduce(composeFloat);
+  if (m.slice(10).some(v => Math.abs(v) > 1e-12)) throw new Error(`Unsupported transform: ${value} (an em or rem translation with a rotation by an angle that is not a quarter turn is not modeled)`);
+  return `linear-any(${m.map(v => { const t = (Math.round(v * 1e6) / 1e6).toFixed(6).replace(/\.?0+$/, ''); return t === '-0' || t === '' ? '0' : t; }).join(' ')})`;
+};
 function expand(property, value) {
   property = aliases[property] ?? property;
   property = insets[property] ?? property;
@@ -415,7 +436,8 @@ function expand(property, value) {
           const degrees = m[2] === 'rad' ? Number(m[1]) * 180 / Math.PI : Number(m[1]) * (m[2] === 'turn' ? 360 : m[2] === 'grad' ? 0.9 : 1);
           if (/e/i.test(String(degrees))) fail();
           if (fns.length === 1) return [[property, `rotate-any(${degrees})`]];
-          fail();
+          // With other functions: each function on its own, composed as floats (checklist B2).
+          return [[property, linearAny(fns.map(f => expand('transform', f)[0][1]), value)]];
         }
         A = times(A, [[1, 0, 0, 1], [0, -1, 1, 0], [-1, 0, 0, -1], [0, 1, -1, 0]][((Math.round(quarters) % 4) + 4) % 4].map(n => q(n)));
       } else fail();
@@ -1008,9 +1030,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   const individual = ['translate', 'rotate', 'scale'].filter(key => values[key] && values[key] !== 'none' && !wide.has(values[key]));
   if (individual.length) {
     const maps = [...individual.map(key => values[key]), ...(values.transform && values.transform !== 'none' ? [values.transform] : [])];
-    if (maps.some(m => String(m).startsWith('rotate-any('))) {
-      if (maps.length > 1) throw new Error(`Unsupported transform: ${individual.join(', ')}${maps.length > individual.length ? ' and transform' : ''} combine a rotation by an angle that is not a quarter turn with another transform`);
-      values.transform = maps[0];
+    if (maps.some(m => /^(?:rotate|linear)-any\(/.test(String(m)))) {
+      values.transform = maps.length === 1 ? maps[0] : linearAny(maps, individual.join(', '));
     } else {
       const parse = m => /^affine\((.+)\)$/.exec(m)[1].split(' ').map(x => { const [n, d = '1'] = x.split('/'); return div(q(n), q(d)); });
       const compose = (P, T) => {

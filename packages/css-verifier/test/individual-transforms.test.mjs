@@ -61,3 +61,21 @@ test('3D transforms without depth analyse as their 2D equivalents', () => {
   same('.a{scale:2 1 4}', '.a{scale:2 1}');
   for (const c of ['.a{transform:translateZ(10px)}', '.a{transform:rotateX(45deg)}', '.a{transform:rotate3d(1, 0, 0, 90deg)}', '.a{rotate:x 90deg}', '.a{transform:perspective(500px) translateZ(0)}']) assert.equal(run(c).status, 'unknown', c);
 });
+
+// Checklist B2: an arbitrary rotation composed with other transforms. The composed map's circumscribed rectangle (about
+// the box's centre, moved by the translation) is what the box may cover — the accessibility checks treat it as
+// undecided, as for a lone arbitrary rotation.
+test('an arbitrary rotation composed with translations and scales is bounded by the composed rectangle', () => {
+  const acc = c => analyzeHTML('<html lang="en"><body><main class="p"><button class="a" aria-label="A"></button><button class="b" aria-label="B"></button></main></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.p{display:grid;grid-template-columns:100px;grid-auto-rows:40px;row-gap:100px;background:#fff;color:#000}.a,.b{border:0;padding:0;background:#ddd;color:#000;width:100px;height:40px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, accessibility: true});
+  // Far from .b (row gap 100px) the rotated .a covers nothing: decided.
+  for (const c of ['.a{transform:rotate(30deg) translateX(10px)}', '.a{transform:rotate(15deg) scale(1.5)}', '.a{rotate:30deg;scale:1.2}']) assert.notEqual(acc(c).status, 'unknown', `${c}: ${JSON.stringify(acc(c).diagnostics.map(d => d.message))}`);
+  // Moved 120px down onto .b, it may cover it: undecided, as for a lone arbitrary rotation over a box.
+  const over = acc('.a{transform:translate(0, 120px) rotate(30deg)}');
+  assert.equal(over.status, 'unknown');
+  assert.match(over.diagnostics[0].message, /\.b lies under the circumscribed rectangle of the rotated \.a/);
+  assert.equal(JSON.stringify(acc('.a{rotate:30deg;translate:0 120px}').diagnostics), JSON.stringify(over.diagnostics));
+  // The bound follows the translation: 10px across does not reach .b, 60px down with a 1.5 scale does not either.
+  assert.notEqual(acc('.a{transform:translate(0, 40px) rotate(10deg)}').status, 'unknown');
+  // em translations and the integrity checks (overflow) stay Unknown, as for a lone arbitrary rotation.
+  assert.equal(acc('.a{transform:rotate(30deg) translateX(1em)}').status, 'unknown');
+});

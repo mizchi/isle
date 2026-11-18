@@ -751,7 +751,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       throw Object.assign(new Error(`${box.label} is position: sticky; only top: 0 under the page scroll (no scrolling or clipping ancestor) is modeled, for the accessibility and integrity checks`), { code: 'U_LAYOUT_CSS' });
     if (style.$fixed && !options.accessibility && !options.integrity) throw Object.assign(new Error(`${box.label} is position: fixed; it is modeled (against the viewport at scroll position 0) for the accessibility and integrity checks only`), { code: 'U_LAYOUT_CSS' });
     if (style.$fixed && (!options.viewport.height || (options.hostInset ?? 0) !== 0 || (options.hostBlockInset ?? 0) !== 0)) throw Object.assign(new Error(`${box.label} is position: fixed; the viewport needs a height range and the component must start at the viewport origin`), { code: 'U_LAYOUT_CSS' });
-    if (String(style.transform).startsWith('rotate-any(') && (!options.accessibility || options.integrity)) throw Object.assign(new Error(`transform ${style.transform}: an arbitrary rotation is modeled for the accessibility checks only (not integrity, whose overflow it changes)`), { code: 'U_LAYOUT_CSS' });
+    if (/^(?:rotate|linear)-any\(/.test(String(style.transform)) && (!options.accessibility || options.integrity)) throw Object.assign(new Error(`transform ${style.transform}: an arbitrary rotation is modeled for the accessibility checks only (not integrity, whose overflow it changes)`), { code: 'U_LAYOUT_CSS' });
     if (style.transform !== 'none' && !options.accessibility && !options.integrity) throw Object.assign(new Error(`transform ${style.transform} moves the painted box; it is modeled for the accessibility and integrity checks only`), { code: 'U_LAYOUT_CSS' });
     // float on a grid or flex item does nothing (CSS Flexbox §3, Grid §3: the item is blockified, float ignored;
     // measured: the rectangles are the same without it): it is also reported as inert, which says why. The checked
@@ -1777,12 +1777,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
       // An arbitrary rotation: the box's circumscribed rectangle (an upper bound: |cos|·w/2 + |sin|·h/2 per half
       // extent, rounded up) is what it may cover; its descendants have no position either.
-      const turn = /^rotate-any\((-?[\d.]+)\)$/.exec(String(style.transform));
-      if (turn && origin && blockSize) {
-        const radians = Number(turn[1]) * Math.PI / 180, up = v => q(String(Math.ceil(Math.abs(v) * 1e6 + 1) / 1e6));
-        const [c, sn] = [up(Math.cos(radians)), up(Math.sin(radians))], half = div(one, q(2));
-        const extentInline = sum(times(inline, mul(c, half)), times(blockSize, mul(sn, half))), extentBlock = sum(times(inline, mul(sn, half)), times(blockSize, mul(c, half)));
-        const centre = { inline: sum(origin.inline, times(inline, half)), block: sum(origin.block, times(blockSize, half)) };
+      // Composed with translations and scales (linear-any, checklist B2): |L11|·w/2 + |L12|·h/2 and |L21|·w/2 + |L22|·h/2
+      // per half extent, about the centre moved by the translation t + W·u + H·w (each rounded outward by 1e-5 px).
+      const turn = /^rotate-any\((-?[\d.]+)\)$/.exec(String(style.transform)), general = /^linear-any\((.+)\)$/.exec(String(style.transform));
+      if ((turn || general) && origin && blockSize) {
+        const radians = turn ? Number(turn[1]) * Math.PI / 180 : 0, up = v => q(String(Math.ceil(Math.abs(v) * 1e6 + 1) / 1e6));
+        const L = general ? general[1].split(' ').map(Number) : [Math.cos(radians), -Math.sin(radians), Math.sin(radians), Math.cos(radians), 0, 0, 0, 0, 0, 0];
+        const half = div(one, q(2)), slack = q('0.00001');
+        const extentInline = sum(sum(times(inline, mul(up(L[0]), half)), times(blockSize, mul(up(L[1]), half))), scalar(slack)), extentBlock = sum(sum(times(inline, mul(up(L[2]), half)), times(blockSize, mul(up(L[3]), half))), scalar(slack));
+        const exactly = v => q((Math.round(v * 1e6) / 1e6).toFixed(6));
+        const move = k => sum(sum(scalar(exactly(L[4 + k])), times(inline, exactly(L[6 + k]))), times(blockSize, exactly(L[8 + k])));
+        const centre = { inline: sum(sum(origin.inline, times(inline, half)), move(0)), block: sum(sum(origin.block, times(blockSize, half)), move(1)) };
         const own = geometry.findLast(row => row.path === box.path && intersectRegions(row.region, region));
         if (own) own.rotatedBounds = { origin: { inline: diff(centre.inline, extentInline), block: diff(centre.block, extentBlock) }, inline: times(extentInline, q(2)), block: times(extentBlock, q(2)) };
         if (box.$starts) for (const row of geometry.slice(box.$starts.geometry).filter(row => isDescendant(box.path, row.path) && intersectRegions(row.region, region))) { row.origin = null; row.clipOrigin = null; row.rotatedBy = box.path; }
@@ -1846,7 +1851,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function scaled(style, origin, inline, blockSize) {
     // An arbitrary rotation leaves no axis-aligned painted box: no position (its circumscribed rectangle is recorded).
-    if (String(style.transform).startsWith('rotate-any(')) return { origin: null, inline, block: blockSize };
+    if (/^(?:rotate|linear)-any\(/.test(String(style.transform))) return { origin: null, inline, block: blockSize };
     const matrix = linearOf(style);
     if (!matrix || !origin || !blockSize) return { origin: matrix ? null : origin, inline, block: blockSize };
     const half = div(one, q(2)), centre = { inline: sum(origin.inline, times(inline, half)), block: sum(origin.block, times(blockSize, half)) };

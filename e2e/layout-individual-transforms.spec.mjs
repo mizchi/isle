@@ -41,3 +41,27 @@ test('3D transforms without depth paint the box where their 2D equivalents do', 
     rects.forEach(([a, b], i) => expect(a, `${perspective} ${pairs[i][0]} vs ${pairs[i][1]}`).toEqual(b));
   }
 });
+
+// Checklist B2: an arbitrary rotation composed with translations and scales. Wherever the browser paints the rotated
+// box over the next button, the analysis does not claim it covers nothing: it reports a cover or leaves it undecided.
+import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
+test('composed arbitrary rotations: where the browser paints the box over the next one, the analysis does not clear it', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
+  const css = c => `*{margin:0}html,body{${g}}.p{display:grid;grid-template-columns:100px;grid-auto-rows:40px;row-gap:60px;background:#fff;color:#000}.a,.b{border:0;padding:0;background:#ddd;color:#000;width:100px;height:40px}.a{${c}}`;
+  const html = '<main class="p"><button class="a" aria-label="A"></button><button class="b" aria-label="B"></button></main>';
+  let seed = 11; const rand = n => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % n; };
+  let overlapping = 0;
+  for (let i = 0; i < 40; i++) {
+    const angle = `${rand(170) + 5}deg`, ty = `${rand(120) - 20}px`, tx = `${rand(60) - 30}px`, s = [1, 1.2, 0.8, 1.5][rand(4)];
+    const c = [`transform:translate(${tx}, ${ty}) rotate(${angle}) scale(${s})`, `transform:rotate(${angle}) translateY(${ty})`, `rotate:${angle};translate:${tx} ${ty};scale:${s}`][rand(3)];
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: css(c), viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, accessibility: true});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css(c)}</style></head><body>${html}</body></html>`);
+    const hits = await page.evaluate(() => { const [a, b] = ['.a', '.b'].map(s => document.querySelector(s).getBoundingClientRect()); return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom; });
+    if (!hits) continue;
+    overlapping++;
+    const cleared = r.status !== 'unknown' && !r.diagnostics.some(d => /^E_A11Y_(?:OCCLUDED|TARGET_OVERLAP)$/.test(d.code));
+    expect(cleared, `${c}: painted over .b in the browser, but the analysis says nothing covers it`).toBe(false);
+  }
+  expect(overlapping).toBeGreaterThan(3);
+});
