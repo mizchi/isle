@@ -81,7 +81,12 @@ export function flexItem(style, { empty = false, axis = 'inline', contentSizes }
   if (!/^-?\d+$/.test(String(style.order))) unknown('only integer order values are modeled');
   const [startSide, endSide] = n.sides;
   const autoStart = style[`margin-${startSide}`] === 'auto', autoEnd = style[`margin-${endSide}`] === 'auto';
-  const grow = q(style['flex-grow']), shrink = q(style['flex-shrink']), basis = style['flex-basis'];
+  const grow = q(style['flex-grow']), shrink = q(style['flex-shrink']);
+  // A percentage main size with flex-basis: auto (checklist D2) is used as the basis — a share of the container — where
+  // the specified-size suggestion does not matter: the item does not shrink, or its minimum is explicit.
+  const percentSize = style['flex-basis'] === 'auto' && axis === 'inline' && /^\d+(?:\.\d+)?%$/.test(String(style[n.size])) && (cmp(shrink, q(0)) === 0 || style[n.min] !== 'auto');
+  const basis = percentSize ? style[n.size] : style['flex-basis'];
+  if (percentSize) style = { ...style, [n.size]: 'auto' };
   const contentBox = style['box-sizing'] === 'content-box', own = edges(style, n.sides);
   // The automatic minimum is zero for empty boxes and scroll containers
   // (overflow other than visible/clip, §4.5); otherwise it depends on content.

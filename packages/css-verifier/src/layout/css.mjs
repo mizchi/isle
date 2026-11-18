@@ -43,7 +43,8 @@ const envPattern = /^env\(\s*safe-area-inset-(top|right|bottom|left)\s*(?:,\s*(\
 const maxEnv = /^max\(\s*(\d+(?:\.\d{1,6})?px|0)\s*,\s*(env\([^()]*\))\s*\)$/;
 let safeArea = null;
 export function setSafeArea(area) { safeArea = area; }
-const pxSyntax = text => { if (!/^\d+(?:\.\d{1,6})?rem$/.test(text) && !envPattern.test(text) && !maxEnv.test(text)) px(text); };
+// em (checklist D2) also resolves later, against the element's font-size (computeStyle); else it is Unknown where used.
+const pxSyntax = text => { if (!/^\d+(?:\.\d{1,6})?r?em$/.test(text) && !envPattern.test(text) && !maxEnv.test(text)) px(text); };
 export function px(text) {
   const env = envPattern.exec(text ?? ''), envMax = maxEnv.exec(text ?? '');
   if (envMax) { const a = px(envMax[1]), b = px(envMax[2]); return cmp(a, b) >= 0 ? a : b; }
@@ -215,7 +216,7 @@ function expand(property, value) {
     // Zero, or auto (only flex items may use it on their main axis; checked by the engine).
     // Zero, auto, or a non-negative px length (grid items take px margins; checked by the engine).
     // A non-negative rem margin stays rem until computeStyle resolves it against the root font size.
-    const margin = v => { if (v === 'auto') return 'auto'; if (/^\d+(?:\.\d{1,6})?rem$/.test(v)) return /^0+(?:\.0+)?rem$/.test(v) ? '0' : v; if (/^-\d+(?:\.\d{1,6})?px$/.test(v)) return v; /* a negative px margin: the engine models it on a flex row's main axis only */ const n = px(v); if (cmp(n, q(0)) === 0) return '0'; if (cmp(n, q(0)) < 0) throw new Error('Negative margins are not modeled'); if (!/^\d+(?:\.\d+)?px$/.test(v)) throw new Error('Only px, zero or auto margins are supported'); return v; };
+    const margin = v => { if (v === 'auto') return 'auto'; if (/^\d+(?:\.\d{1,6})?r?em$/.test(v)) return /^0+(?:\.0+)?r?em$/.test(v) ? '0' : v; if (/^-\d+(?:\.\d{1,6})?px$/.test(v)) return v; /* a negative px margin: the engine models it on a flex row's main axis only */ const n = px(v); if (cmp(n, q(0)) === 0) return '0'; if (cmp(n, q(0)) < 0) throw new Error('Negative margins are not modeled'); if (!/^\d+(?:\.\d+)?px$/.test(v)) throw new Error('Only px, zero or auto margins are supported'); return v; };
     const values = property === 'margin' ? [parts[0], parts[1] ?? parts[0], parts[2] ?? parts[0], parts[3] ?? parts[1] ?? parts[0]] : sides.length === 2 ? [parts[0], parts[1] ?? parts[0]] : [parts[0]];
     return sides.map((side, i) => [`margin-${side}`, margin(values[i])]);
   }
@@ -1043,6 +1044,17 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     const v = mul(q(m[1]), rootFontSize), text = number(v);
     if (/^\d+(?:\.\d{1,6})?$/.test(text)) values[key] = text === '0' ? '0' : `${text}px`;
   }
+  // em box lengths (checklist D2) compute to px against the element's own px font-size, as rem does against the root's.
+  // (font-size in em is relative to the parent's and is left as it is.)
+  if (/^\d+(?:\.\d{1,6})?px$/.test(String(values['font-size']))) for (const key of remLengths.filter(k => k !== 'font-size')) {
+    const m = /^(\d+(?:\.\d{1,6})?)em$/.exec(String(values[key] ?? ''));
+    if (!m) continue;
+    const v = mul(q(m[1]), q(values['font-size'].slice(0, -2))), text = number(v);
+    if (/^\d+(?:\.\d{1,6})?$/.test(text)) values[key] = text === '0' ? '0' : `${text}px`;
+  }
+  // An em length left over (the font-size is not px): Unknown, attributed to the declaration that set it.
+  for (const key of remLengths.filter(k => k !== 'font-size')) if (/^\d+(?:\.\d{1,6})?em$/.test(String(values[key] ?? '')))
+    throw Object.assign(new Error(`${key}: ${values[key]} needs a px font-size to resolve (font-size is ${values['font-size']})`), { code: 'U_LAYOUT_CSS', css: sources[key] ? { file: sources[key].file, line: sources[key].line } : undefined });
   // A list's UA padding-inline-start is 40px (Chromium's UA sheet): on the left in ltr, on the right in rtl.
   if (['ul', 'ol'].includes(box.tag) && values['padding-left'] === 'ua') {
     values['padding-left'] = values.direction === 'rtl' ? '0' : '40px';

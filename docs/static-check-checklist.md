@@ -39,7 +39,7 @@
 
 - [x] **D1. 0 以外のオフセットを持つ `position: relative`**(px。`%` と rtl の横のオフセットは残り): いまは Unknown(「Relative positioning spaces require zero
   offsets」)。箱だけが動くので、配置はそのままで、描画の位置をずらす。
-- [ ] **D2. flex の項目の `%` 幅と、`vw`・`em` の長さ**: 親の幅と root のフォントサイズから px に解く。
+- [~] **D2. flex の項目の `%` 幅と、`vw`・`em` の長さ**: `em` の長さと、縮まない(か min-width のある)flex の項目の `%` の幅は済み。flex の項目の `vw` の幅、`%` の高さ、px と % を混ぜた `calc()` は残り(flex の解き方を、定数ではなく viewport の式の大きさで解く必要がある)。
 - [ ] **D3. inline の中の行の配置**: 文字の行と inline の箱の位置。大きい。
 
 ## E. 新しい警告のパターン
