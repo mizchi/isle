@@ -214,6 +214,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   const untransformed = preferences.includes('untransformed');
   let sawTransform = false;
   const layoutWarnings = [], generatedTexts = [], textFonts = new Map();
+  // Checklist E1: whether the page fits the viewport and whether it overflows it somewhere in the viewport range, and
+  // whether html keeps a scrollbar gutter either way (scrollbar-gutter: stable, overflow-y: scroll) or never shows one
+  // (overflow-y: hidden or clip).
+  let pageScroll;
   const animated = []; // boxes with a running animation whose keyframes lay out: {box, region, name}
   const domain = validateOptions(options), block = options.block ?? Boolean(options.viewport.height);
   const component = options.name ?? 'Document';
@@ -1404,6 +1408,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // that is an ordinary long page. With overflow-y visible and a classic scrollbar profile the scrollbar would
         // appear and narrow the page, which is not laid out, so the root is still required to fit there. A hidden or
         // clipped root cannot scroll: content below the viewport is unreachable (the obligation stays).
+        if (box.documentRoot && available.root && available.block && blockSize && !hovered && !options.$animationFrame) {
+          const overflows = Boolean(clip(region, diff(blockSize, available.block), true)), fits = Boolean(clip(region, diff(available.block, blockSize)));
+          pageScroll = { fits: (pageScroll?.fits ?? false) || fits, overflows: (pageScroll?.overflows ?? false) || overflows, stable: String(style['scrollbar-gutter']).startsWith('stable') || ['scroll', 'hidden', 'clip'].includes(style['overflow-y']) };
+        }
         const viewportScrolls = box.documentRoot && available.root && !['hidden', 'clip'].includes(style['overflow-y']) && (['auto', 'scroll'].includes(style['overflow-y']) || (scrollbarProfile !== undefined && !(scrollbarProfile.inlineSize > 0)));
         // Without a scrollbar profile, a root taller than the viewport scrolls with a platform scrollbar of unknown width.
         if (box.documentRoot && available.root && available.block && !['hidden', 'clip', 'auto', 'scroll'].includes(style['overflow-y']) && scrollbarProfile === undefined && clip(region, diff(blockSize, available.block), true))
@@ -3869,7 +3877,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     ...(boxes.some(box=>box.layoutContracts?.length) ? {layoutBindings:boxes.flatMap(box=>(box.layoutContracts ?? []).map(declaration=>({path:box.path,declaration})))} : {}),
     ...(geometry.some(row => row.bounds) ? { inlineBounds: geometry.filter(row => row.bounds).flatMap(row => row.bounds.map(piece => ({ box: row.box.label, path: row.path, ...ranges(piece.region), ...(block ? { regionConstraints: serialize(piece.region).constraints } : {}),
       ...Object.fromEntries(['outer', 'inner'].map(key => [key, piece[key] ? { inlineStart: affine(piece[key].origin.inline), blockStart: affine(piece[key].origin.block), inlineSize: affine(piece[key].inline), blockSize: affine(piece[key].block) } : null])) }))) } : {}),
-    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}), ...(layoutWarnings.length ? { layoutWarnings } : {}), ...(options.reportTextFonts ? { textFonts: [...textFonts].map(([path, facts]) => facts === 'varied' ? { path, varied: true } : { path, ...facts }) } : {}), ...((options.selectors || options.scope) && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant ? { selectors: (() => { const usage = options.selectors ? selectorUsage(rules, boxes) : { rows: [], warnings: [] }; return options.scope ? { ...usage, warnings: [...usage.warnings, ...selectorScope(rules, boxes, options.scope).warnings] } : usage; })() } : {}), ...(generatedTexts.length ? { generatedText: generatedTexts } : {}),
+    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}), ...(layoutWarnings.length ? { layoutWarnings } : {}), ...(pageScroll ? { pageScroll } : {}), ...(options.reportTextFonts ? { textFonts: [...textFonts].map(([path, facts]) => facts === 'varied' ? { path, varied: true } : { path, ...facts }) } : {}), ...((options.selectors || options.scope) && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant ? { selectors: (() => { const usage = options.selectors ? selectorUsage(rules, boxes) : { rows: [], warnings: [] }; return options.scope ? { ...usage, warnings: [...usage.warnings, ...selectorScope(rules, boxes, options.scope).warnings] } : usage; })() } : {}), ...(generatedTexts.length ? { generatedText: generatedTexts } : {}),
     ...(options.accessibility ? { accessibility: { rules: accessibilityRules.filter(accessibilityProfiles[options.accessibility.profile ?? 'all']), profile: options.accessibility.profile ?? 'all', contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), warnings: accessibilityWarnings, exempted: accessibilityExempted, notes: accessibilityNotes } } : {}),
     ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', warnings: integrityWarnings, exempted: integrityExempted } } : {}) };
 }

@@ -25,6 +25,8 @@ export function analyzeInput(tree,options,adapterDiagnostics=[]) {
     if(!reports.some(r=>r[key])) continue;
     report[key]=reports.flatMap((r,i)=>(r[key] ?? []).map(row=>tag(row,i)));
   }
+  // pageScroll (checklist E1): fits or overflows in any case.
+  if(reports.some(r=>r.pageScroll)) report.pageScroll={fits:reports.some(r=>r.pageScroll?.fits),overflows:reports.some(r=>r.pageScroll?.overflows),stable:reports.every(r=>r.pageScroll?.stable ?? true)};
   if(configuration.devicePixelRatios) report.scope={...report.scope,devicePixelRatios:ratios};
   if(!configuration.scrollbars) {
     report.status=reports.some(r=>r.status==='unknown') ? 'unknown' : reports.some(r=>r.status==='violated') ? 'violated' : 'verified';

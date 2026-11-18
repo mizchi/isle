@@ -27,3 +27,14 @@ test('analyzeStates: verified only if every state is, findings list their states
   assert.deepEqual(two.findings.find(f => f.box === '.w').states, [{wide: true}]);
   assert.equal(analyzeStates({states: [], css}, {pageCSS, viewport}).status, 'unknown');
 });
+
+test('a state change that makes the page overflow the viewport shifts it by the scrollbar (W_LAYOUT_SCROLLBAR_SHIFT)', () => {
+  const css = '*{margin:0}.short{height:100px}.long{height:900px}';
+  const viewport = {min: 400, max: 400, height: {min: 600, max: 600}};
+  const states = [{html: '<div class="short"></div>', choices: {open: false}}, {html: '<div class="long"></div>', choices: {open: true}}];
+  const shift = analyzeStates({states, css}, {viewport}).findings.find(f => f.code === 'W_LAYOUT_SCROLLBAR_SHIFT');
+  assert.ok(shift, 'reported');
+  assert.equal(shift.states.length, 2);
+  assert.equal(analyzeStates({states, css: css + 'html{scrollbar-gutter:stable}'}, {viewport}).findings.some(f => f.code === 'W_LAYOUT_SCROLLBAR_SHIFT'), false);
+  assert.equal(analyzeStates({states: [states[0], {html: '<div class="short"></div><p></p>', choices: {open: true}}], css}, {viewport}).findings.some(f => f.code === 'W_LAYOUT_SCROLLBAR_SHIFT'), false);
+});

@@ -324,6 +324,16 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope
     for (const e of scope.escapes ?? []) grouped.set(`E_SCOPE_ESCAPE\u0000${e.selector}`, { code: 'E_SCOPE_ESCAPE', box: e.selector, severity: 'error', rule: 'component-scope', selector: e.selector, states: results.map(r => r.choices),
       message: `${e.selector} uses ${e.kind}, which reaches outside the component's own elements (the page, a parent or a child component): style those elements in the component that renders them, and pass context in as a custom property or a prop` });
   }
+  // Checklist E1: a state change that makes the page overflow the viewport (or fit it again) shows or hides a classic
+  // scrollbar, which narrows the page and shifts everything in it, unless html keeps the gutter (scrollbar-gutter: stable,
+  // overflow-y: scroll). Overlay-scrollbar platforms do not shift.
+  {
+    const scrolls = results.map(r => r.report.pageScroll).filter(Boolean);
+    const fitting = results.filter(r => r.report.pageScroll?.fits), overflowing = results.filter(r => r.report.pageScroll?.overflows);
+    if (results.length > 1 && fitting.length && overflowing.length && !scrolls.every(s => s.stable) && (fitting.some(r => !overflowing.includes(r)) || overflowing.some(r => !fitting.includes(r))))
+      grouped.set('W_LAYOUT_SCROLLBAR_SHIFT\u0000html', { code: 'W_LAYOUT_SCROLLBAR_SHIFT', box: 'html', severity: 'warning', rule: 'layout-shift', states: [...new Set([...fitting, ...overflowing])].map(r => r.choices), html: overflowing[0].html,
+        message: `the page fits the viewport in some states and overflows it in others: on platforms with classic scrollbars, switching between them shows or hides the page scrollbar, which narrows the page and shifts its content. Keep the gutter with html { scrollbar-gutter: stable }` });
+  }
   // Texts the given font files could not measure: their size is only assumed, so what depends on it is not checked.
   for (const [label, reason] of unmeasurable) { const message = `${label}: ${reason}; its text is only assumed to fit, so its overflow is not checked`; if (!unknowns.some(u => u.message === message)) unknowns.push({ code: 'U_TEXT_NOT_MEASURED', message }); }
   // data-noshift contracts the component declares on its own elements, compared between its states.
