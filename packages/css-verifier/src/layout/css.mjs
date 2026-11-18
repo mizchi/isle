@@ -578,7 +578,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
+  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], userSelectNone = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -773,6 +773,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
           seenProps.set(prop, d);
           // F15, F16: a declaration that only acts with another property: kept with the rule's selectors, checked per box
           // against the computed value of that property (background-image, text-decoration-line).
+          if (/^(?:-webkit-)?user-select$/.test(prop) && d.value.trim().toLowerCase() === 'none') userSelectNone.push({ selectors, file: filename, line: d.source.start.line, selector: node.selector });
           if (dependentProperty[prop] && !wide.has(d.value.trim().toLowerCase())) dependentDeclarations.push({ selectors, contexts, property: prop, value: d.value.trim(), file: filename, line: d.source.start.line, selector: node.selector });
           // F12: a transition shorthand item with no time is 0s.
           if (prop === 'transition' && !wide.has(d.value.trim().toLowerCase())) for (const item of postcss.list.comma(d.value)) if (!/(?:^|\s)-?(?:\d+(?:\.\d+)?|\.\d+)m?s(?:\s|$)/i.test(item.trim()) && item.trim().toLowerCase() !== 'none' && !/var\(/i.test(item))
@@ -849,7 +850,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
     return 'none';
   }).join(', ');
-  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, userSelectNone, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author

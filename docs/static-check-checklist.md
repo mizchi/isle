@@ -167,6 +167,14 @@
   marker の箱は配置しないので Unknown。リスト項目でない要素の `::marker` は当たらない(`W_CSS_STATE_UNREACHABLE`)。
 - [x] **`:target` を読む**(以前は Unknown): URL に fragment がないとして扱う状態(`:hover` と同じく、色だけの規則は描画の
   状態として受け、配置を変える規則は Unknown)。
+- [x] **F23. 文字欄の `user-select: none`**(`W_LAYOUT_DECLARATION_INERT`): 文字欄・textarea の文字は選択も編集もできる
+  ままで、何もしない(3 つのブラウザーで、3 回のクリックで 11 文字が選ばれた)。
+
+## G. HTML の要素が持つ働きを CSS が消す書き方
+
+- [x] **G1. 開閉の三角形を失った summary**(`W_A11Y_SUMMARY_INDICATOR`): `summary` の display を list-item 以外にするか
+  `list-style: none` にすると、開閉の三角形が消える(3 つのブラウザーで、display: block の描画が list-style: none と同じ)。
+  `::before`・`::after` の content や子の要素(アイコン)がなければ、開いているかどうかを示すものがない。
 - [x] **F10. 要素(擬似要素でない)の `content`**: 文字列は何もしない(既存の `W_LAYOUT_DECLARATION_INERT` が出していた)。
   `url()` は要素を画像で置き換えるので効く(3 つのブラウザーで測った)。
 ## 済み(このチェックリストを作る前に済んだもの)

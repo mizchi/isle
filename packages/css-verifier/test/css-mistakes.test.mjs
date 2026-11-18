@@ -213,3 +213,13 @@ test('F8 in plain HTML: the class toggle the stylesheet names (.panel.open)', ()
   // A rule for another element (another class it lacks on the subject's ancestor chain) is not a toggle of this one.
   assert.equal(jump('.panel{transition:height .3s}.card .panel{height:120px}').length, 0);
 });
+
+test('F23, G1: user-select: none on a text field; a summary that lost its disclosure triangle', () => {
+  assert.ok(codes(run('.i{user-select:none}', '<input class="i" aria-label="x">'), 'W_LAYOUT_DECLARATION_INERT').some(w => w.properties.includes('user-select')));
+  assert.equal(codes(run('.a{user-select:none}'), 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.includes('user-select')).length, 0);
+  const sum = css => codes(run(css, '<details><summary class="s">More</summary><p>x</p></details>'), 'W_A11Y_SUMMARY_INDICATOR');
+  assert.equal(sum('.s{display:block}').length, 1);
+  assert.equal(sum('.s{list-style:none}').length, 1);
+  assert.equal(sum('.s{display:block}.s::before{content:"+"}').length, 0);
+  assert.equal(sum('').length, 0);
+});

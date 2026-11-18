@@ -247,3 +247,16 @@ test('F8 in plain HTML: a class toggle named by the stylesheet jumps between aut
     expect(await page.evaluate(() => { document.querySelector('.panel').classList.add('open'); return document.getAnimations().length > 0; }), css).toBe(!jumps);
   }
 });
+
+test('F23, G1: user-select: none on a text field; a summary without its disclosure triangle', async ({page}) => {
+  await page.setContent('<!doctype html><html lang="en"><head><style>input{user-select:none;-webkit-user-select:none}</style></head><body><input aria-label="x" value="hello world"></body></html>');
+  await page.click('input', {clickCount: 3});
+  expect(await page.evaluate(() => { const i = document.querySelector('input'); return i.selectionEnd - i.selectionStart; })).toBe(11);
+  await page.setViewportSize({width: 200, height: 60});
+  const shot = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>*{margin:0}body{font:16px/20px sans-serif}${css}</style></head><body><details><summary class="s">More</summary>x</details></body></html>`); return (await page.screenshot()).toString('base64'); };
+  const triangle = await shot(''), none = await shot('.s{list-style:none}');
+  // display: block draws what list-style: none draws (no triangle); with a ::before the indicator is back.
+  expect(triangle).not.toBe(none);
+  expect(await shot('.s{display:block}')).toBe(none);
+  for (const [css, warned] of [['.s{display:block}', true], ['.s{display:block}.s::before{content:"+ "}', false]]) expect((analyzeHTML('<html lang="en"><body><details><summary class="s">More</summary><p>x</p></details></body></html>', {name: 'P', css: base + css, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_A11Y_SUMMARY_INDICATOR'), css).toBe(warned);
+});

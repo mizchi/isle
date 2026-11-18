@@ -256,7 +256,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], userSelectNone = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -525,6 +525,21 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           if (!never || layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source)) continue;
           layoutWarnings.push({ code: 'W_CSS_STATE_UNREACHABLE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, state: sel.state, css: [{ property: `:${sel.state}`, file: rule.file, line: rule.line, selector: sel.source }],
             message: sel.state === 'checked' ? `${sel.source} never applies to ${box.label}: only a checkbox, a radio button or an option is ever :checked. Use a class or an aria-checked / aria-pressed attribute selector for a custom control` : ['hover', 'active'].includes(sel.state) ? `${sel.source} never applies to ${box.label}: it has pointer-events: none, so the pointer never ${sel.state === 'hover' ? 'hovers' : 'activates'} it. Remove pointer-events: none, or put the :hover on an element the pointer reaches` : `${sel.source} never applies to ${box.label}: it cannot take focus (no tabindex, and it is not a link, button or form control). Make it focusable (a button, or tabindex="0"), or use :focus-within on its container` });
+        }
+        // F23: user-select: none on a text field does nothing — its text is still selected and edited (measured in Chromium,
+        // Firefox and WebKit).
+        const selectNone = userSelectNone.find(note => note.selectors.some(sel => matches(sel, box, state)));
+        if (selectNone && (box.tag === 'textarea' || (box.tag === 'input' && !['checkbox', 'radio', 'range', 'color', 'file', 'hidden', 'submit', 'reset', 'button', 'image'].includes(box.inputType))) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('user-select')))
+          layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['user-select'], css: [{ property: 'user-select', file: selectNone.file, line: selectNone.line, selector: selectNone.selector }], message: `${box.label}: user-select: none has no effect on a text field: its text is still selected and edited`, ...ranges(r) });
+        // G1: a summary that is no longer a list item (display changed, or list-style: none) loses its disclosure triangle
+        // (measured in Chromium, Firefox and WebKit); with no indicator of its own (a ::before / ::after, or a child element
+        // such as an icon) nothing shows whether it is open.
+        if (box.tag === 'summary' && (style.display !== 'list-item' && !style.$listItem || String(style['list-style-type']) === 'none')) {
+          const generated = ['before', 'after'].some(kind => { try { return styles({ ...box, path: `${box.path}/${kind}`, label: `${box.label}::${kind}`, children: [], pseudo: kind }, r, ancestors, style, false, false, new Set([`::${kind}`])).some(c => (c.style.content ?? 'none') !== 'none'); } catch { return true; } });
+          const icon = (box.children ?? []).some(c => !c.text || ['svg', 'img', 'span', 'i'].includes(c.tag)) || (box.inline ?? []).some(c => ['svg', 'img', 'i'].includes(c.tag));
+          if (!generated && !icon && !layoutWarnings.some(w => w.code === 'W_A11Y_SUMMARY_INDICATOR' && w.path === box.path))
+            layoutWarnings.push({ code: 'W_A11Y_SUMMARY_INDICATOR', severity: 'warning', box: box.label, path: box.path, css: at(style.display !== 'list-item' && !style.$listItem ? 'display' : 'list-style-type'),
+              message: `${box.label} is ${String(style['list-style-type']) === 'none' ? 'list-style: none' : `display: ${style.display}`}, so its disclosure triangle is gone, and nothing else shows whether the details are open or closed. Add an indicator (a ::before that turns with [open], or an icon)`, ...ranges(r) });
         }
         // F12: a transition with no duration (transition: opacity) is 0s: the change is instant (a delay only postpones it).
         for (const t of transitionsOf(style)) if (/^-?0+(?:\.0+)?m?s$/.test(String(t.duration)) && style.$sources?.['transition-property'] && style.$sources?.['transition-duration']?.specified === undefined && !layoutWarnings.some(w => w.code === 'W_CSS_TRANSITION_NO_DURATION' && w.path === box.path && w.property === t.property))
