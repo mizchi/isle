@@ -94,4 +94,12 @@ test('the mistakes are reported where the layout is Unknown too', () => {
   const r = run('.a{color:var(--x);min-width:50px;max-width:10px;z-index:2}.a:focus{height:30px}', '<div class="p"><div class="a"></div></div>');
   assert.equal(r.status, 'unknown');
   assert.deepEqual(['W_CSS_VAR_INVALID', 'W_LAYOUT_MIN_ABOVE_MAX'].map(code => codes(r, code).length), [1, 1]);
+  assert.equal(codes(run('.a::after{display:block;height:4px}.a:focus{height:30px}'), 'W_CSS_PSEUDO_NO_CONTENT').length, 1);
+});
+
+test('F12: a transition with no duration is instant', () => {
+  assert.equal(codes(run('.a{transition:opacity}'), 'W_CSS_TRANSITION_NO_DURATION').length, 1);
+  assert.equal(codes(run('.a{transition-property:opacity}'), 'W_CSS_TRANSITION_NO_DURATION').length, 1);
+  assert.deepEqual(codes(run('.a{transition:opacity .2s, transform}'), 'W_CSS_TRANSITION_NO_DURATION').map(w => w.property), ['transform']);
+  for (const css of ['.a{transition:opacity .2s}', '.a{transition:none}', '.a{transition-property:opacity;transition-duration:.3s}', '.a{transition:opacity 0s}']) assert.equal(codes(run(css), 'W_CSS_TRANSITION_NO_DURATION').length, 0, css);
 });

@@ -572,7 +572,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const duplicateDeclarations = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
+  const duplicateDeclarations = [], noDurationTransitions = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -744,6 +744,9 @@ export function parseLayoutCSS(sheets, diagnostic) {
             duplicateDeclarations.push({ property: prop, selector: node.selector, file: filename, line: dead.source.start.line, dead: dead.value.trim(), kept: (dead === d ? earlier : d).value.trim(), same: earlier.value.trim() === d.value.trim() });
           }
           seenProps.set(prop, d);
+          // F12: a transition shorthand item with no time is 0s.
+          if (prop === 'transition' && !wide.has(d.value.trim().toLowerCase())) for (const item of postcss.list.comma(d.value)) if (!/(?:^|\s)-?(?:\d+(?:\.\d+)?|\.\d+)m?s(?:\s|$)/i.test(item.trim()) && item.trim().toLowerCase() !== 'none' && !/var\(/i.test(item))
+            noDurationTransitions.push({ selector: node.selector, file: filename, line: d.source.start.line, item: item.trim() });
         }
       }
       // A state rule (:hover, :focus, …) may only repaint: the layout is proved for the base state.
@@ -816,7 +819,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
     return 'none';
   }).join(', ');
-  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author

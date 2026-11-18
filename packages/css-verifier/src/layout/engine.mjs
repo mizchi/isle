@@ -256,7 +256,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -310,6 +310,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   setRegisteredProperties(registered);
   if (defaultNamespace.length && boxes.some(box => ['svg', 'math'].includes(box.tag))) unknown('U_LAYOUT_CSS', 'A default XHTML @namespace keeps type and universal selectors off the SVG and MathML elements of this page, which is not modeled', defaultNamespace[0].line, undefined, defaultNamespace[0].file);
+  for (const note of noDurationTransitions) layoutWarnings.push({ code: 'W_CSS_TRANSITION_NO_DURATION', severity: 'warning', selector: note.selector, property: note.item.split(/\s+/)[0], css: [{ property: 'transition', file: note.file, line: note.line, selector: note.selector }],
+    message: `${note.selector} has transition: ${note.item} with no duration (0s): the change happens at once, as if there were no transition. Give it a time (transition: ${note.item} .2s)` });
   for (const note of duplicateDeclarations) layoutWarnings.push({ code: 'W_CSS_DUPLICATE_DECLARATION', severity: 'warning', property: note.property, selector: note.selector, css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],
     message: note.same ? `${note.selector} declares ${note.property}: ${note.kept} twice: the repeat does nothing. Remove one` : `${note.selector} declares ${note.property} twice: ${note.property}: ${note.dead} never applies (${note.kept} wins). Remove it, or merge the two`});
   for (const note of missingKeyframes) layoutWarnings.push({ code: 'W_CSS_KEYFRAMES_MISSING', severity: 'warning', keyframes: note.name, ...(note.selector ? { selector: note.selector } : {}), css: [{ property: 'animation-name', file: note.file, line: note.line, ...(note.selector ? { selector: note.selector } : {}) }],
@@ -415,6 +417,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   // Checklist F: CSS mistakes on one box's computed style (called from the styles of the layout pass, and from a style
   // walk where the layout did not run, so they are reported whether or not the layout is decided).
+  // F9: a ::before or ::after styled but with no content is never generated.
+  function pseudoWithoutContent(pbox, pstyle) {
+    if ((pstyle.content ?? 'none') !== 'none' || pstyle.display === 'none' || !Object.keys(pstyle.$sources ?? {}).some(key => key !== 'content') || layoutWarnings.some(w => w.code === 'W_CSS_PSEUDO_NO_CONTENT' && w.path === pbox.path)) return;
+    const src = Object.values(pstyle.$sources).find(Boolean);
+    layoutWarnings.push({ code: 'W_CSS_PSEUDO_NO_CONTENT', severity: 'warning', box: pbox.label, path: pbox.path, css: src ? [{ property: 'content', file: src.file, line: src.line, selector: src.selector }] : [],
+      message: `${pbox.label} is styled (${Object.keys(pstyle.$sources).filter(key => key !== 'content').slice(0, 3).join(', ')}) but has no content, so the browser never generates it. Add content: "" (or the text it should show)` });
+  }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
       // F3: a declaration whose var() has no value and no fallback is invalid at computed-value time: the property is
       // unset (inherited or initial), silently — a warning where it is written.
@@ -441,6 +450,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['z-index'], css: at('z-index'),
               message: `${box.label}: z-index: ${style['z-index']} has no effect (it is position: static and not a flex or grid item, so it does not stack above or below its neighbours). Give it position: relative, or remove it`, ...ranges(r) });
         }
+        // F12: a transition with no duration (transition: opacity) is 0s: the change is instant (a delay only postpones it).
+        for (const t of transitionsOf(style)) if (/^-?0+(?:\.0+)?m?s$/.test(String(t.duration)) && style.$sources?.['transition-property'] && style.$sources?.['transition-duration']?.specified === undefined && !layoutWarnings.some(w => w.code === 'W_CSS_TRANSITION_NO_DURATION' && w.path === box.path && w.property === t.property))
+          layoutWarnings.push({ code: 'W_CSS_TRANSITION_NO_DURATION', severity: 'warning', box: box.label, path: box.path, property: t.property, css: at('transition-property'),
+            message: `${box.label} transitions ${t.property} with no duration (0s): the change happens at once, as if there were no transition. Give it a time (transition: ${t.property} .2s)` });
         // F8: a transition between a keyword size (auto, none, fit-content, …) and a length does not animate: the box
         // jumps (measured in Chromium, Firefox and WebKit; interpolate-size: allow-keywords animates it in Chromium only).
         // The other value is the :hover or :focus one.
@@ -1388,12 +1401,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const pbox = { ...box, path: `${box.path}/${kind === 'before' ? -1 : (box.children ?? []).length}`, label: `${box.label}::${kind}`, children: [], pseudo: kind };
       for (const c of styles(pbox, region, parents, inheritedStyle, false, false, new Set([`::${kind}`]))) {
         const content = c.style.content ?? 'none';
-        // F9: a ::before or ::after styled but with no content is never generated.
-        if (content === 'none' && c.style.display !== 'none' && Object.keys(c.style.$sources ?? {}).some(key => key !== 'content') && !layoutWarnings.some(w => w.code === 'W_CSS_PSEUDO_NO_CONTENT' && w.path === pbox.path)) {
-          const src = Object.values(c.style.$sources).find(Boolean);
-          layoutWarnings.push({ code: 'W_CSS_PSEUDO_NO_CONTENT', severity: 'warning', box: pbox.label, path: pbox.path, css: src ? [{ property: 'content', file: src.file, line: src.line, selector: src.selector }] : [],
-            message: `${pbox.label} is styled (${Object.keys(c.style.$sources).filter(key => key !== 'content').slice(0, 3).join(', ')}) but has no content, so the browser never generates it. Add content: "" (or the text it should show)` });
-        }
+        pseudoWithoutContent(pbox, c.style);
         if (content === 'none' || c.style.display === 'none') continue;
         const text = content.startsWith('text:') ? content.slice(5) : null;
         const fixed = !(box.children ?? []).length && !box.inline?.length && ['inline-size', 'block-size'].every(key => /^\d+(?:\.\d+)?px$/.test(inheritedStyle[key])) && c.style.position === 'static';
@@ -3553,6 +3561,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       let state; try { [state] = styles(box, initial, ancestors, inherited, false); } catch { return; }
       if (!state) return;
       try { cssMistakes(box, state.style, ancestors, inherited, true, state.region, undefined); } catch { /* the rest still runs */ }
+      for (const kind of ['before', 'after']) try {
+        const pbox = { ...box, path: `${box.path}/${kind === 'before' ? -1 : (box.children ?? []).length}`, label: `${box.label}::${kind}`, children: [], pseudo: kind };
+        for (const c of styles(pbox, initial, ancestors, state.style, false, false, new Set([`::${kind}`]))) pseudoWithoutContent(pbox, c.style);
+      } catch { /* the rest still runs */ }
       if (state.style.display === 'none') return;
       for (const child of box.children ?? []) walkStyles(child, [...ancestors, { box, style: state.style, names: [] }], state.style);
     };
