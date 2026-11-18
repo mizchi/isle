@@ -29,8 +29,25 @@ test('a nested @media wraps the parent; declarations after a nested rule come af
 
 test('a parent list of one specificity expands; of several, & (:is) is Unknown', () => {
   assert.deepEqual(heights('.out,.card{& .k{height:30px}}'), ['30', '30', '10']);
-  assert.equal(heights('.out,div.card{& .k{height:30px}}'), 'unknown');
-  // & after another selector, with a parent that has combinators: :is() of a complex selector, not written out.
-  assert.equal(heights('.card .k{body &{height:30px}}'), 'unknown');
+  // Parents of different specificities: & is :is(.out, div.card), of specificity (0,1,1).
+  assert.deepEqual(heights('.out,div.card{& .k{height:30px}}'), ['30', '30', '10']);
+  assert.deepEqual(heights('.out,div.card{& .k{height:30px}}.card .k.k{height:20px}'), ['20', '20', '10']);
+  // & after another selector, with a parent that has combinators (checklist C3): :is() of the complex parent, so
+  // body & is body :is(.card .k) — a .k inside a .card, with body anywhere above it.
+  assert.deepEqual(heights('.card .k{body &{height:30px}}'), ['30', '30', '10']);
+  assert.deepEqual(heights('.card .k{.card &{height:30px}}'), ['30', '30', '10']);
+  // The order of the ancestors is free in :is(): .in is inside the inner .card, which is inside the outer one.
+  assert.deepEqual(heights('.card .card .k{.card &{height:30px}}'), ['10', '30', '10']);
   assert.deepEqual(heights('.card .k{&.in{height:15px}}'), ['10', '15', '10']);
+});
+
+test(':is(), :where() and :not() with combinators inside (checklist C3)', () => {
+  assert.deepEqual(heights(':is(.card .k){height:30px}'), ['30', '30', '10']);
+  // :where() has no specificity: it loses to the base .k{height:10px} unless it comes alone.
+  assert.deepEqual(heights(':where(.card > .k){height:30px}'), ['10', '10', '10']);
+  assert.deepEqual(heights('.k:where(.card > .k){height:30px}'), ['30', '30', '10']);
+  assert.deepEqual(heights('.k:not(.card .k){height:30px}'), ['10', '10', '30']);
+  // Specificity: :is() takes its most specific argument, :where() none.
+  assert.deepEqual(heights(':is(.card .k, #none){height:30px}.card .k.k{height:20px}'), ['30', '30', '10']);
+  assert.deepEqual(heights(':where(.card .k){height:30px}.k{height:20px}'), ['20', '20', '20']);
 });

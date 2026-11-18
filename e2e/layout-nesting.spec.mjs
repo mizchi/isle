@@ -11,6 +11,11 @@ const cases = [
   '.k{height:20px;@media (min-width:1px){height:40px}height:50px}', '.card{& .k{height:30px}}.card .k{height:20px}',
   '.out,.card{& .k{height:30px}}', '.card .k{&.in{height:15px}}', '.card{.k{height:30px;&.in{height:12px}}p{height:8px}}',
   '.card{@supports (display:grid){& > .k{height:33px}}}', '.k{height:20px;.card &{height:30px}height:5px}',
+  // Checklist C3: & after other selectors under a parent with combinators, parents of mixed specificity, and :is() /
+  // :where() / :not() with combinators.
+  '.card .k{body &{height:30px}}', '.card .k{.card &{height:30px}}', '.card .card .k{.card &{height:30px}}', '.card > .k{.card &{height:30px}}',
+  '.out,div.card{& .k{height:30px}}', '.out,div.card{& .k{height:30px}}.card .k.k{height:20px}',
+  ':is(.card .k){height:30px}', '.k:where(.card > .k){height:30px}', '.k:not(.card .k){height:30px}', ':is(.card .k, #none){height:30px}.card .k.k{height:20px}', ':where(.card .k){height:30px}.k{height:20px}',
 ];
 
 test('flattened nested rules: the analysis gives the browser\'s heights', async ({page}) => {

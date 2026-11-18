@@ -22,11 +22,12 @@ function splitComplex(source) {
   if (pending) throw new Error(`Unsupported selector: ${source}`);
   return out;
 }
-export function compileSelector(source, depth = 0) {
+// complex: a selector argument of :is() / :where() / :not(), which may hold combinators (each is matched as a whole).
+export function compileSelector(source, depth = 0, complex = false) {
   const compounds = splitComplex(String(source));
   if (compounds.length <= 1) return compileCompound(source, depth);
   // Combinators inside :is()/:where() are not modeled.
-  if (depth > 0) throw new Error(`Unsupported selector: ${source}`);
+  if (depth > 0 && !complex) throw new Error(`Unsupported selector: ${source}`);
   const compiled = compounds.map(c => ({ ...compileCompound(c.text, depth), combinator: c.combinator }));
   for (const c of compiled.slice(0, -1)) if (c.state || c.pseudoElement) throw new Error(`Unsupported selector (a state or pseudo-element before a combinator): ${source}`);
   const subject = compiled.at(-1);
@@ -98,7 +99,7 @@ function compileCompound(source, depth = 0) {
       let level = 1, end = not[0].length;
       while (end < rest.length && level) { if (rest[end] === '(') level++; if (rest[end] === ')') level--; end++; }
       if (level) throw new Error(`Unclosed selector function: ${source}`);
-      const choices = postcss.list.comma(rest.slice(not[0].length, end - 1)).map(s => compileSelector(s, depth + 1));
+      const choices = postcss.list.comma(rest.slice(not[0].length, end - 1)).map(s => compileSelector(s, depth + 1, true));
       if (choices.some(c => c.state || c.pseudoElement)) throw new Error(`Unsupported selector (a state or pseudo-element inside :not()): ${source}`);
       parts.push({ kind: 'not', choices });
       specificity = combine(specificity, choices.reduce((best, c) => greaterRank(c.specificity, best) ? c.specificity : best, [0, 0, 0]));
@@ -110,7 +111,7 @@ function compileCompound(source, depth = 0) {
       while (end < rest.length && level) { if (rest[end] === '(') level++; if (rest[end] === ')') level--; end++; }
       if (level) throw new Error(`Unclosed selector function: ${source}`);
       // Pseudo-elements are invalid in these forgiving lists, so those branches cannot match.
-      const choices = postcss.list.comma(rest.slice(fn[0].length, end - 1)).map(s => compileSelector(s, depth + 1)).filter(s => !s.pseudoElement);
+      const choices = postcss.list.comma(rest.slice(fn[0].length, end - 1)).map(s => compileSelector(s, depth + 1, true)).filter(s => !s.pseudoElement);
       parts.push({ kind: 'any', choices });
       if (fn[1].toLowerCase() === 'is') specificity = combine(specificity, choices.reduce((best, s) => greaterRank(s.specificity, best) ? s.specificity : best, [0, 0, 0]));
       rest = rest.slice(end); continue;

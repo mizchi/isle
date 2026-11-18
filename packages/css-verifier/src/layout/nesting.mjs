@@ -6,9 +6,9 @@
 // & is the parent selector; a nested selector without & is relative to it (a descendant, or the combinator it starts
 // with). A nested conditional rule (@media, @supports, @container) wraps a rule of the parent selector. Declarations
 // after a nested rule are a rule of their own that comes after it (CSS Nesting's nested declarations rule), so the order
-// of appearance is kept. & means :is(parent list), whose specificity is the largest of the list: a parent list whose
-// selectors have different specificities would give each expanded selector its own, so it is refused (the caller
-// reports Unknown), as are a pseudo-element parent and nesting inside rules other than the conditional ones.
+// of appearance is kept. & means :is(parent list), whose specificity is the largest of the list: it is written out per
+// parent where that means the same, and kept as :is(...) otherwise. A pseudo-element parent and nesting inside rules
+// other than the conditional ones are refused (the caller reports Unknown).
 import { compileSelector } from './selectors.mjs';
 
 const conditional = new Set(['media', 'supports', 'container']);
@@ -19,11 +19,11 @@ function resolve(parents, nested) {
   return nested.flatMap(selector => {
     const s = selector.trim();
     if (s.includes('&')) {
-      if (parents.length > 1 && new Set(specificities).size > 1) fail(`& in ${s} stands for :is(${parents.join(', ')}), whose specificity differs between them, which is not modeled`);
-      // & is :is(parent): a complex parent (with combinators) written out in place means the same only where & starts
-      // the selector, once (.x & with parent .a .b is .x :is(.a .b), which .x .a .b would narrow).
+      // & is :is(parent list) (checklist C3). Written out per parent, it means the same only when the parents share one
+      // specificity and, for a parent with combinators, where & starts the selector once (.x & with parent .a .b is
+      // .x :is(.a .b), which .x .a .b would narrow). Otherwise & stays :is(...), whose specificity is the largest.
       const complex = parents.some(p => /[\s>+~]/.test(p.replace(/\([^)]*\)/g, '()').trim()));
-      if (complex && (!s.startsWith('&') || (s.match(/&/g) ?? []).length > 1)) fail(`${s} puts & after other selectors while its parent ${parents.join(', ')} has combinators: :is() of a complex selector there is not modeled`);
+      if ((parents.length > 1 && new Set(specificities).size > 1) || (complex && (!s.startsWith('&') || (s.match(/&/g) ?? []).length > 1))) return [s.replace(/&/g, `:is(${parents.join(', ')})`)];
       return parents.map(p => s.replace(/&/g, p));
     }
     // A relative selector: a descendant of the parent, or joined by the combinator it starts with.
