@@ -12,6 +12,7 @@ import { viewportFont, zoomShortfall } from './zoom-font.mjs';
 import { gapSize, trackArea, trackSlice, inheritTracks } from './subgrid.mjs';
 import { scrollbarFrames } from './scrollbars.mjs';
 import {absoluteOrigin} from './positioned.mjs';
+import {easedFrames} from './animation-extremes.mjs';
 import {textFontMismatch, textBrowserMismatch, textLinesMismatch, textLangMismatch, fittingLength, fittingLines} from './text-font.mjs';
 import {validateFlexContainer, flexItem, crossAlignment, distribution, flexUnknown} from './flex.mjs';
 import {judgeIntegrity, intersect } from './integrity.mjs';
@@ -1451,7 +1452,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         style = { ...style, $sticky: false };
       }
       if (style.$sticky && parents.some(p => (p.clipped || p.clipScope || scrolling(p)) && !xClipOnly(p))) throw Object.assign(new Error(`${box.label} is position: sticky inside a scrolling or clipping ancestor, which it would stick to`), { code: 'U_LAYOUT_CSS' });
-      if (style['animation-name'] !== 'none' && style['animation-play-state'] !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(style['animation-duration']) && keyframeFrames.get(style['animation-name'])?.some(frame => frame.layout)) animated.push({ box, region, name: style['animation-name'], position: style.position, duration: style['animation-duration'], count: style['animation-iteration-count'], direction: style['animation-direction'] });
+      if (style['animation-name'] !== 'none' && style['animation-play-state'] !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(style['animation-duration']) && keyframeFrames.get(style['animation-name'])?.some(frame => frame.layout)) animated.push({ box, region, name: style['animation-name'], position: style.position, duration: style['animation-duration'], count: style['animation-iteration-count'], direction: style['animation-direction'], easing: style['animation-timing-function'] ?? 'ease', style });
       // A bar fixed to the bottom edge under viewport-fit=cover: its content must clear the bottom safe area (the home
       // indicator), so its bottom padding has to be at least that inset (env(safe-area-inset-bottom)).
       if (style.$fixed && cover && options.safeArea?.bottom > 0 && ['0', '0px'].includes(style.bottom) && (box.children ?? []).length && cmp(px(style['padding-bottom']), q(String(options.safeArea.bottom))) < 0 && !layoutWarnings.some(w => w.code === 'W_LAYOUT_SAFE_AREA' && w.path === box.path))
@@ -3444,8 +3445,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const where = animated.filter(other => `${other.box.path}|${other.name}` === id).map(other => other.region);
       const reported = new Set();
       const states = []; let complete = true; // keyframe layouts for the score bound
-      for (const frame of keyframeFrames.get(entry.name).filter(frame => frame.layout)) {
-        const label = `${entry.name} at ${number(q(String(Math.round(frame.offset * 1e4) / 100)))}%`;
+      // The keyframes and the frames at the easing's extremes (an overshoot carries a value past its keyframes).
+      const logical = { width: 'inline-size', height: 'block-size', 'min-width': 'min-inline-size', 'min-height': 'min-block-size', 'max-width': 'max-inline-size', 'max-height': 'max-block-size' };
+      const eased = easedFrames(keyframeFrames.get(entry.name), { easing: entry.easing, base: new Proxy({}, { get: (_, property) => { const v = entry.style[logical[property] ?? property]; return entry.position === 'relative' && ['top', 'bottom', 'left', 'right'].includes(property) && v === 'auto' ? '0px' : v; } }) });
+      if (eased.unknown) { diagnostics.push({ code: 'U_LAYOUT_ANIMATION_SHIFT', severity: 'unknown', message: `${entry.box.label}: animation ${entry.name}: ${eased.unknown}`, box: entry.box.label, path: entry.box.path }); continue; }
+      for (const frame of eased.frames) {
+        const label = frame.extreme ? `${entry.name} between ${frame.extreme.from} and ${frame.extreme.to} (the easing ${frame.extreme.easing} ${frame.extreme.y > 1 || frame.extreme.y < 0 ? 'overshoots' : 'turns'} to ${frame.extreme.property} ${frame.extreme.value}px)` : `${entry.name} at ${number(q(String(Math.round(frame.offset * 1e4) / 100)))}%`;
         // A nonzero px margin-top/left (the checked layout has zero margins) moves an in-flow box's own start: a shift
         // without a re-layout (margins are outside the layout subset).
         const starts = Object.fromEntries(frame.layout.split(';').flatMap(decl => {
@@ -3455,14 +3460,35 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           if (name === 'margin-inline' || name === 'margin-left' || name === 'margin-inline-start') return [['inlineStart', parts[0]]];
           return [];
         }));
+        // A position: relative box's offsets move it alone, by the change from its own offset (CSS 2 §9.4.3: top wins
+        // over bottom, left over right in ltr). An rtl box is laid out again instead.
+        let offsetsOnly = false;
+        if (entry.position === 'relative' && entry.style.direction !== 'rtl') {
+          offsetsOnly = frame.layout.split(';').filter(d => d.trim()).every(d => ['top', 'bottom', 'left', 'right'].includes(d.split(':')[0].trim().toLowerCase()) && /^\s*(?:-?(?:\d+(?:\.\d+)?|\.\d+)px|0)\s*$/.test(d.split(':').slice(1).join(':')));
+          const pxOf = v => v === 'auto' || v === undefined ? 0 : /^-?(?:\d+(?:\.\d+)?|\.\d+)px$|^0$/.test(String(v)) ? Number.parseFloat(v) || 0 : null;
+          const own = side => entry.style[side] ?? 'auto';
+          for (const decl of frame.layout.split(';')) {
+            const [prop, ...rest] = decl.split(':'), name = prop.trim().toLowerCase(), value = rest.join(':').trim();
+            if (!['top', 'bottom', 'left', 'right'].includes(name)) continue;
+            const [next, base] = [pxOf(value), pxOf(own(name))];
+            if (next === null || base === null) continue;
+            const field = ['top', 'bottom'].includes(name) ? 'blockStart' : 'inlineStart';
+            if (name === 'bottom' && own('top') !== 'auto') continue;
+            if (name === 'right' && own('left') !== 'auto') continue;
+            const delta = (['bottom', 'right'].includes(name) ? -1 : 1) * (next - base);
+            if (delta !== 0) starts[field] = `${Math.round(delta * 1e4) / 1e4}px`;
+          }
+        }
         const shifted = Object.entries(starts).find(([, value]) => /^-?\d+(?:\.\d+)?px$/.test(value) && Number.parseFloat(value) !== 0);
         if (shifted && !reported.has(entry.box.path) && !['absolute', 'fixed'].includes(entry.position)) {
           reported.add(entry.box.path);
           diagnostics.push({ code: 'E_LAYOUT_ANIMATION_SHIFT', severity: 'error', box: entry.box.label, path: entry.box.path, animated: entry.box.label, animatedPath: entry.box.path, animation: entry.name, offset: frame.offset, field: shifted[0], delta: exact(q(shifted[1].replace(/px$/, ''))),
-            message: `Animation ${label} on ${entry.box.label} sets a ${shifted[1]} start margin, which moves it (${shifted[0]}): a layout shift while it runs. Animate transform (translate) instead of margin`, ...ranges(entry.region) });
+            message: `Animation ${label} on ${entry.box.label} ${entry.position === 'relative' && /(?:^|;)\s*(?:top|bottom|left|right)\s*:/i.test(frame.layout) ? `moves its relative offset by ${shifted[1]}` : `sets a ${shifted[1]} start margin`}, which moves it (${shifted[0]}): a layout shift while it runs. Animate transform (translate) instead`, ...ranges(entry.region) });
           complete = false;
           continue;
         }
+        // Offsets that move nothing (bottom under a set top, an unchanged value): the layout is the box's own.
+        if (offsetsOnly) { states.push({ offset: frame.offset, sizes }); continue; }
         const moved = analyzeBoxTree(pristine, { ...options, $animationFrame: { path: entry.box.path, css: frame.layout } }, scrollbarProfile, budget, inlineSheets, [], preferences);
         if (moved.status === 'unknown') { diagnostics.push({ code: 'U_LAYOUT_ANIMATION_SHIFT', severity: 'unknown', message: `${entry.box.label}: the layout at keyframe ${label} is not decided (${moved.diagnostics.find(d => d.severity === 'unknown')?.message ?? 'unknown'})`, box: entry.box.label, path: entry.box.path }); continue; }
         if (moved.status !== 'unknown') states.push({ offset: frame.offset, sizes: moved.sizes }); else complete = false;
@@ -3504,8 +3530,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const iterations = Math.min(count, Math.ceil(5 / duration));
           const wraps = ['normal', 'reverse'].includes(entry.direction) ? Math.max(0, iterations - 1) : 0;
           const startJump = jump(sizes, frames[0].sizes) ?? 0, wrapJump = wraps ? (jump(frames.at(-1).sizes, frames[0].sizes) ?? 0) : 0;
-          const windowBound = perIteration * iterations + wraps * wrapJump + startJump;
-          for (const d of found) d.scoreBound = { window: windowBound, perIteration, iterations, viewport: { width: number(p.x), height: number(p.y) }, assumes: 'boxes move monotonically between keyframes' };
+          // A finite animation ends by jumping back to the box's own layout (no fill mode keeps the last frame; the fill
+          // mode is not read, so the jump is always counted). Where it ends depends on the direction and a fractional
+          // count, so the largest jump back from any frame bounds it.
+          const endJump = count === Infinity ? 0 : Math.max(0, ...frames.map(f => jump(f.sizes, sizes) ?? 0));
+          const windowBound = perIteration * iterations + wraps * wrapJump + startJump + endJump;
+          for (const d of found) d.scoreBound = { window: windowBound, perIteration, iterations, ...(endJump ? { endJump } : {}), viewport: { width: number(p.x), height: number(p.y) }, assumes: 'boxes move monotonically between keyframes and the easing extremes' };
         }
       }
     }

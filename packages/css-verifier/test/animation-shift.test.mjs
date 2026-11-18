@@ -44,9 +44,54 @@ test('an animation shift carries a session-window score bound under the monotone
   assert.ok(Math.abs(infinite.perIteration - per) < 1e-12);
   assert.equal(infinite.iterations, 10); // a 5 s window holds 10 iterations of 0.5 s
   assert.ok(Math.abs(infinite.window - (10 * per + 9 * per)) < 1e-12); // plus 9 jumps back from 100% to 0%
-  assert.equal(infinite.assumes, 'boxes move monotonically between keyframes');
+  assert.equal(infinite.assumes, 'boxes move monotonically between keyframes and the easing extremes');
+  // A finite animation ends by jumping back to the box's own layout: 2 iterations, 1 wrap, and the jump back at the end.
+  const twice = page('@keyframes grow{from{height:40px}to{height:80px}}.a{animation:grow .5s 2}');
+  assert.ok(Math.abs(twice.window - (2 * per + per + per)) < 1e-12, JSON.stringify(twice));
+  assert.ok(Math.abs(twice.endJump - per) < 1e-12);
   const alternate = page('@keyframes grow{from{height:40px}to{height:80px}}.a{animation:grow .5s infinite alternate}');
   assert.ok(Math.abs(alternate.window - 10 * per) < 1e-12); // no jumps
   // A margin keyframe is reported without a layout of its own: no bound.
   assert.equal(page('@keyframes nudge{to{margin-top:12px}}.a{animation:nudge 1s}'), undefined);
+});
+
+// Easing overshoot (easing.mjs): between keyframes a value goes as far as v0 + (v1 − v0)·y for the easing's extreme y,
+// so the layout at those extremes is checked too. Here .b (pushed right by margin-left: auto) fits beside .a at 140px
+// (140 + 108 ≤ 250) but wraps when the easing carries .a past it (100 + 40 × 1.0809 = 143.2).
+const wrap = (animation, extra = '') => analyzeHTML('<html lang="en"><body><div class="p"><div class="a"></div><div class="b"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}body{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:flex;flex-wrap:wrap;width:250px}.a{width:100px;height:20px;flex:none}.b{width:108px;height:20px;flex:none;margin-left:auto}@keyframes grow{to{width:140px}}${extra}.a{animation:${animation}}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+
+test('an easing that overshoots its keyframes is checked at its extremes', () => {
+  assert.equal(shifts(wrap('grow 1s linear infinite')).length, 0);
+  const [over] = shifts(wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite'));
+  assert.deepEqual([over?.box, over?.field], ['.b', 'blockStart']);
+  assert.match(over.message, /overshoot/);
+  // A keyframe's own animation-timing-function eases the interval that starts at it.
+  assert.equal(shifts(wrap('grow 1s linear infinite', '@keyframes grow{from{animation-timing-function:cubic-bezier(0.5, -0.5, 0.5, 1.5)}to{width:140px}}')).length, 1);
+  // ease (the default) does not overshoot.
+  assert.equal(shifts(wrap('grow 1s infinite')).length, 0);
+});
+
+test('an overshoot of values that are not px lengths, or of several layout properties at once, is Unknown', () => {
+  assert.equal(wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{width:56%}}').status, 'unknown');
+  assert.equal(wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{width:140px;height:30px}}').status, 'unknown');
+  // Without an overshoot those stay as before (checked at the keyframes).
+  assert.notEqual(wrap('grow 1s linear infinite', '@keyframes grow{to{width:140px;height:30px}}').status, 'unknown');
+});
+
+// A position: relative box whose keyframes move its offsets (top, left, bottom, right) shifts itself by the change:
+// nothing else is laid out again (relative offsets move the box only).
+test('relative offsets in keyframes shift the box itself', () => {
+  const [top] = shifts(run('@keyframes nudge{to{top:12px}}.a{position:relative;animation:nudge 1s}'));
+  assert.deepEqual([top?.box, top?.field, top?.delta], ['.a', 'blockStart', '12']);
+  const [left] = shifts(run('@keyframes nudge{to{left:-8px}}.a{position:relative;animation:nudge 1s}'));
+  assert.deepEqual([left?.box, left?.field, left?.delta], ['.a', 'inlineStart', '-8']);
+  const [bottom] = shifts(run('@keyframes nudge{to{bottom:5px}}.a{position:relative;animation:nudge 1s}'));
+  assert.deepEqual([bottom?.box, bottom?.field, bottom?.delta], ['.a', 'blockStart', '-5']);
+  // From its own top: 0 to 0: no change (and nothing is laid out again).
+  const stay = run('@keyframes stay{to{top:0}}.a{position:relative;top:0;animation:stay 1s}');
+  assert.equal(stay.status, 'verified');
+  // bottom does nothing while top is set.
+  assert.equal(run('@keyframes nudge{to{bottom:5px}}.a{position:relative;top:0;animation:nudge 1s}').status, 'verified');
+  // An overshooting easing carries the offset past 12px; the shift is reported at the extreme too.
+  assert.ok(shifts(run('@keyframes nudge{to{top:12px}}.a{position:relative;animation:nudge 1s cubic-bezier(0.34, 1.56, 0.64, 1)}')).length >= 1);
 });
