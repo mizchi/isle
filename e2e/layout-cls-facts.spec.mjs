@@ -1184,3 +1184,26 @@ test('@charset, @page and @view-transition: the screen layout is the same withou
   const base = await rects('');
   for (const extra of ['@charset "utf-8";', '@page{margin:3cm;size:A5}', '@page :first{margin:0}', '@page{.m{height:90px}}', '@view-transition{navigation:auto}']) expect(await rects(extra), extra).toBe(base);
 });
+
+test('@starting-style: a paint-only start never moves the boxes after it; a starting height does; a prefixed @namespace changes nothing', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  const base = '*{margin:0}body{display:grid;grid-template-columns:minmax(0,1fr)}.m,.n{height:20px}';
+  // The top of .n while the box appears (sampled every frame for 300ms) and once settled.
+  const tops = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>${base}${css}</style></head><body><div class="m"></div><div class="n"></div></body></html>`);
+    return page.evaluate(() => new Promise(done => { const seen = new Set(), start = performance.now(); const tick = () => { seen.add(Math.round(document.querySelector('.n').getBoundingClientRect().top * 64) / 64); if (performance.now() - start < 300) requestAnimationFrame(tick); else done([...seen]); }; tick(); })); };
+  expect(await tops('.m{transition:opacity .25s,transform .25s}@starting-style{.m{opacity:0;transform:translateY(8px)}}')).toEqual([20]);
+  expect((await tops('.m{transition:height .25s}@starting-style{.m{height:0}}')).length).toBeGreaterThan(1);
+  expect(await tops('@namespace svg url(http://www.w3.org/2000/svg);')).toEqual([20]);
+});
+
+test('@counter-style with outside markers, and font palettes: the item boxes are where they are without them', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  const css = '*{margin:0}body{display:grid;grid-template-columns:minmax(0,1fr)}.u{padding-left:20px}.i{height:20px}';
+  const rects = async extra => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css}${extra}</style></head><body><ul class="u"><li class="i">A</li><li class="i">B</li></ul><div class="i"></div></body></html>`); return page.evaluate(() => JSON.stringify([...document.querySelectorAll('.u, .i')].map(e => { const r = e.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }))); };
+  const base = await rects('');
+  expect(await rects('@counter-style thumbs{system:cyclic;symbols:"👍" "👎";suffix:"  "}.u{list-style-type:thumbs}')).toBe(base);
+  expect(await rects('@counter-style wide{system:fixed;symbols:"[first item]" "[second item]";suffix:" — "}.u{list-style-type:wide}')).toBe(base);
+  // font-palette and @font-palette-values: the colours of colour-font glyphs only.
+  expect(await rects('@font-palette-values --p{font-family:sans-serif;base-palette:1}.i{font-palette:--p}')).toBe(base);
+  expect(await rects('.i{font-palette:dark}')).toBe(base);
+});

@@ -364,7 +364,7 @@ function expand(property, value) {
   if (property === 'overscroll-behavior') { const parts = wide.has(value) ? [value] : postcss.list.space(value); if (parts.length > 2 || !parts.every(p => wide.has(p) || ['auto', 'contain', 'none'].includes(p))) throw new Error(`Unsupported overscroll-behavior: ${value}`); return [['overscroll-behavior-x', parts[0]], ['overscroll-behavior-y', parts[1] ?? parts[0]]]; }
   if (['overscroll-behavior-x', 'overscroll-behavior-y'].includes(property)) { if (!wide.has(value) && !['auto', 'contain', 'none'].includes(value)) throw new Error(`Unsupported ${property}: ${value}`); return [[property, value]]; }
   if (property === 'scroll-snap-type' || property === 'scroll-snap-align') return [[property, value.trim()]];
-  if (/^(?:object-position|user-select|-webkit-user-select|accent-color|-webkit-font-smoothing|-moz-osx-font-smoothing|-webkit-tap-highlight-color|print-color-adjust|-webkit-print-color-adjust|color-adjust|overflow-anchor|image-rendering|text-decoration-skip-ink|overscroll-behavior(?:-[xy]|-inline|-block)?|scroll-snap-(?:type|align|stop)|view-transition-name|view-transition-class|interpolate-size|anchor-name|anchor-scope|quotes|counter-(?:reset|increment|set)|-webkit-touch-callout|backface-visibility|-webkit-backface-visibility|text-underline-position|font-optical-sizing|font-kerning)$/.test(property)) return [];
+  if (/^(?:object-position|font-palette|user-select|-webkit-user-select|accent-color|-webkit-font-smoothing|-moz-osx-font-smoothing|-webkit-tap-highlight-color|print-color-adjust|-webkit-print-color-adjust|color-adjust|overflow-anchor|image-rendering|text-decoration-skip-ink|overscroll-behavior(?:-[xy]|-inline|-block)?|scroll-snap-(?:type|align|stop)|view-transition-name|view-transition-class|interpolate-size|anchor-name|anchor-scope|quotes|counter-(?:reset|increment|set)|-webkit-touch-callout|backface-visibility|-webkit-backface-visibility|text-underline-position|font-optical-sizing|font-kerning)$/.test(property)) return [];
   // Accepted only at values that leave line breaking, shaping, containing blocks and painting as modeled; any other
   // value changes what is checked, so it stays Unknown.
   const neutral = {
@@ -524,8 +524,26 @@ export function parseLayoutCSS(sheets, diagnostic) {
         continue;
       }
       // At-rules that never change the screen: @charset (the encoding of bytes the analysis already has as text), @page
-      // (the page box of paged media: print) and @view-transition (navigation transitions between documents).
-      if (node.type === 'atrule' && ['charset', 'page', 'view-transition'].includes(node.name.toLowerCase())) continue;
+      // (the page box of paged media: print), @view-transition (navigation transitions between documents), and
+      // @counter-style (the text of list markers: an outside marker is drawn beside its box and lays nothing out; an
+      // inside one is Unknown on its own), and @font-palette-values (the colours of colour-font glyphs).
+      if (node.type === 'atrule' && ['charset', 'page', 'view-transition', 'counter-style', 'font-palette-values'].includes(node.name.toLowerCase())) continue;
+      // @starting-style sets the values a transition starts from when the box first appears; the settled layout is the
+      // one without it. Accepted when it only paints (opacity, colours, transforms: nothing moves in the flow); a starting
+      // value that lays out animates the layout in (a shift), which is not modeled.
+      if (node.type === 'atrule' && node.name.toLowerCase() === 'starting-style') {
+        const paintOnly = /^(?:opacity|color|background-color|background|border-color|outline-color|box-shadow|filter|visibility|transform|translate|rotate|scale|text-decoration-color|fill|stroke)$/;
+        const declarations = []; node.walkDecls(d => { declarations.push(d.prop.toLowerCase()); });
+        const layout = declarations.filter(p => !paintOnly.test(p));
+        if (layout.length) problem('U_LAYOUT_CSS', `@starting-style sets ${layout.join(', ')}: a starting value that lays out animates the layout when the box appears, which is not modeled`, node.source.start.line);
+        continue;
+      }
+      // @namespace with a prefix only affects selectors written with that prefix; a default namespace changes what every
+      // type selector matches, which is not modeled.
+      if (node.type === 'atrule' && node.name.toLowerCase() === 'namespace') {
+        if (!/^[a-z_][\w-]*\s+(?:url\(|["'])/i.test(node.params.trim())) problem('U_LAYOUT_CSS', `@namespace ${node.params.trim()} sets the default namespace, which is not modeled`, node.source.start.line);
+        continue;
+      }
       // @property registers a custom property (CSS Properties and Values API 1 §2): its inherits and initial-value change
       // what var() reads. Only the universal syntax and the typed syntaxes above, with all three descriptors valid.
       if (node.type === 'atrule' && node.name.toLowerCase() === 'property') {

@@ -398,3 +398,41 @@ test('@charset, @page and @view-transition do not change the screen layout: acce
   // The rules inside @page apply to the page box only (an element rule there is invalid).
   assert.equal(run('@page{.m{height:90px}}').status, 'verified');
 });
+
+test('@starting-style that only paints is accepted (the settled layout is the same); one that lays out is Unknown', () => {
+  const run = c => analyzeHTML('<html lang="en"><body><div class="m"></div><div class="n"></div></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.m,.n{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const base = JSON.stringify(run('').sizes);
+  for (const c of ['@starting-style{.m{opacity:0}}', '.m{transition:opacity .3s,transform .3s}@starting-style{.m{opacity:0;transform:translateY(8px)}}']) {
+    const r = run(c);
+    assert.equal(r.status, 'verified', `${c}: ${JSON.stringify(r.diagnostics.map(d => d.message))}`);
+    assert.equal(JSON.stringify(r.sizes), base, c);
+  }
+  // A starting height animates the box in: what follows it moves (a layout shift), which is not modeled.
+  assert.equal(run('.m{transition:height .3s}@starting-style{.m{height:0}}').status, 'unknown');
+});
+
+test('@namespace with a prefix only affects selectors that use the prefix; a default namespace stays Unknown', () => {
+  const run = c => analyzeHTML('<html lang="en"><body><div class="m"></div></body></html>', {name: 'P', css: `${c}*{margin:0}html,body{${g}}.m{height:20px}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  assert.equal(run('@namespace svg url(http://www.w3.org/2000/svg);').status, 'verified');
+  assert.equal(run('@namespace url(http://www.w3.org/2000/svg);').status, 'unknown');
+});
+
+test('@counter-style only draws outside markers: accepted, the layout is the same', () => {
+  const run = c => analyzeHTML('<html lang="en"><body><ul class="u"><li class="i">A</li><li class="i">B</li></ul></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.u{padding-left:20px}.i{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 20}}});
+  const base = JSON.stringify(run('').sizes);
+  const r = run('@counter-style thumbs{system:cyclic;symbols:"👍" "👎";suffix:"  "}.u{list-style-type:thumbs}');
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.equal(JSON.stringify(r.sizes), base);
+  // Inside, the marker takes part in the first line: Unknown as before.
+  assert.equal(run('@counter-style thumbs{system:cyclic;symbols:"👍"}.u{list-style:inside thumbs}').status, 'unknown');
+});
+
+test('font-palette and @font-palette-values only colour the glyphs of colour fonts: accepted, the layout is the same', () => {
+  const run = c => analyzeHTML('<html lang="en"><body><div class="m"></div></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.m{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const base = JSON.stringify(run('').sizes);
+  for (const c of ['.m{font-palette:dark}', '@font-palette-values --p{font-family:Bixa;base-palette:1}.m{font-palette:--p}']) {
+    const r = run(c);
+    assert.equal(r.status, 'verified', `${c}: ${JSON.stringify(r.diagnostics.map(d => d.message))}`);
+    assert.equal(JSON.stringify(r.sizes), base, c);
+  }
+});
