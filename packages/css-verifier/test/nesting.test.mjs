@@ -51,3 +51,21 @@ test(':is(), :where() and :not() with combinators inside (checklist C3)', () => 
   assert.deepEqual(heights(':is(.card .k, #none){height:30px}.card .k.k{height:20px}'), ['30', '30', '10']);
   assert.deepEqual(heights(':where(.card .k){height:30px}.k{height:20px}'), ['20', '20', '20']);
 });
+
+// Checklist C4: revert-layer rolls a property back to the value the earlier layers give it (CSS Cascade 5 §7.3).
+// Unlayered rules are the implicit last layer, so there it rolls back to the explicit layers (measured in the three
+// browsers); with nothing earlier it is revert (the user agent's value).
+test('revert-layer rolls back to the earlier layers', () => {
+  // (Without the unlayered base .k{height:10px} of heights(): an unlayered rule beats every layer.)
+  const layered = c => { const r = analyzeHTML(html, {name: 'P', css: `*{margin:0}html,body,.card{${g}}.k{width:10px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}); return r.status === 'unknown' ? 'unknown' : r.sizes.filter(s => /^\.k/.test(s.box.split(' ').at(-1)) && s.rect).map(s => s.rect.blockSize.constant); };
+  assert.deepEqual(layered('@layer base, theme;@layer base{.k{height:20px}}@layer theme{.k{height:revert-layer}}'), ['20', '20', '20']);
+  assert.deepEqual(layered('@layer base, theme;@layer base{.k{height:20px}}@layer theme{.k{height:40px}.in{height:revert-layer}}'), ['40', '20', '40']);
+  // Two layers back: theme reverts to base, which reverts to nothing earlier — the user agent's auto (0 here).
+  assert.deepEqual(layered('@layer a, b, c;@layer a{.k{height:25px}}@layer b{.k{height:revert-layer}}@layer c{.k{height:revert-layer}}'), ['25', '25', '25']);
+  // Unlayered: back to the explicit layers; without any, to the user agent's auto (0 here).
+  assert.deepEqual(layered('@layer base{.k{height:20px}}.k.k{height:revert-layer}'), ['20', '20', '20']);
+  assert.deepEqual(layered('.k{height:20px}.k.k{height:revert-layer}'), ['0', '0', '0']);
+  // A shorthand expands to its longhands.
+  assert.deepEqual(heights('@layer base, theme;@layer base{.k{padding:4px}}@layer theme{.k{padding:9px;padding:revert-layer}}'), ['18', '18', '18']);
+  assert.equal(layered('@layer base, theme;@layer base{.k{height:20px}}@layer theme{.k{height:revert-layer !important}}'), 'unknown');
+});

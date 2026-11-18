@@ -61,7 +61,8 @@ const aliases = { width: 'inline-size', 'min-width': 'min-inline-size', 'max-wid
 const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset-block-start':'top', 'inset-block-end':'bottom' };
 const geometry = new Set(['aspect-ratio', 'display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-template-areas', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
-const wide = new Set(['inherit', 'initial', 'unset', 'revert']);
+// revert-layer (checklist C4) passes through every property like the other CSS-wide keywords; the cascade resolves it.
+const wide = new Set(['inherit', 'initial', 'unset', 'revert', 'revert-layer']);
 const decoration = /^(?:background-(?:position|size|repeat|clip|origin|attachment)|border-radius|text-shadow|text-decoration-(?:color|style|thickness)|text-underline-offset|transition-behavior|list-style-(?:position|image))$/;
 // Properties a :hover/:focus rule may set: they repaint (or restack) without changing geometry.
 const statePaint = /^(?:z-index|color|clip|clip-path|background(?:-.*)?|border-(?:(?:top|right|bottom|left)-)?color|border-radius|outline(?:-.*)?|box-shadow|text-shadow|text-decoration(?:-.*)?|text-underline-offset|cursor|opacity|visibility|pointer-events|animation(?:-.*)?|transition(?:-.*)?|color-scheme)$/;
@@ -106,7 +107,6 @@ function expand(property, value) {
   // Area names are case-sensitive identifiers.
   if (!['container', 'container-name', 'content', 'grid-template-areas', 'grid-area'].includes(property) && !(['grid-row', 'grid-column'].includes(property) && /^-?[A-Za-z_][\w-]*$/.test(value.trim()))) value = value.toLowerCase();
   if (property === 'container-name' && value.toLowerCase() === 'none') value = 'none';
-  if (value === 'revert-layer') throw new Error('revert-layer is outside this subset');
   // white-space also writes text-wrap-mode (CSS Text 4); its mark says white-space itself decides after substitution.
   if (property === 'white-space') return [['white-space', value], ['text-wrap-mode', 'white-space']];
   // aspect-ratio: auto, a ratio (w / h, or one number), or both (auto w / h): normalized to 'auto', 'w/h' or 'auto w/h'.
@@ -922,7 +922,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   const ua = { ...values };
   const initial = { ...defaults, ...textInitial, fill: 'black', stroke: 'none', 'list-style-position': 'outside', 'caret-color': 'auto', hyphens: 'manual', 'object-fit': 'fill', 'scroll-behavior': 'auto', 'overscroll-behavior-x': 'auto', 'overscroll-behavior-y': 'auto', 'scroll-snap-type': 'none', 'scroll-snap-align': 'none', resize: 'none', 'text-wrap-mode': 'white-space', 'text-wrap-style': 'auto', 'text-overflow': 'clip', 'line-clamp': 'none', 'box-orient': 'horizontal', 'touch-action': 'auto', 'table-layout': 'auto', 'border-collapse': 'separate', 'border-spacing': '0', 'caption-side': 'top', 'empty-cells': 'show', 'vertical-align': 'baseline', 'outline-style': 'none', 'outline-width': 'medium', 'outline-color': 'currentcolor', 'outline-offset': '0', 'box-shadow': 'none', 'z-index': 'auto', 'content-visibility': 'visible', 'contain-intrinsic-block-size': 'none', isolation: 'auto', transform: 'none', 'transform-origin': 'origin(0 0.5 0 0.5)', translate: 'none', rotate: 'none', scale: 'none', 'backdrop-filter': 'none', 'will-change': 'auto', 'justify-self': 'auto', 'justify-items': 'normal', 'color-scheme': 'normal', cursor: 'auto', 'list-style-type': 'disc', 'animation-name': 'none', 'animation-duration': '0s', 'animation-iteration-count': '1', 'animation-play-state': 'running', 'animation-direction': 'normal', 'animation-timing-function': 'ease', 'animation-delay': '0s', 'animation-fill-mode': 'none', 'animation-timeline': 'auto', 'transition-property': 'all', 'transition-duration': '0s', 'transition-timing-function': 'ease', 'transition-delay': '0s', color: 'canvastext', 'text-decoration-line': 'none', visibility: 'visible', 'pointer-events': 'auto', display: 'inline', 'white-space': 'normal', 'overflow-wrap': 'normal', 'writing-mode': 'horizontal-tb', direction: 'ltr', 'margin-left': '0', 'margin-right': '0', 'margin-top': '0', 'margin-bottom': '0' };
   const inheritedProperties = new Set(['white-space', 'overflow-wrap', 'writing-mode', 'direction', 'border-collapse', 'border-spacing', 'caption-side', 'empty-cells', ...textProperties, ...inheritedPaint]);
-  const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={};
+  const priorities = new Map(), sources = {},custom=new Map(),dormant={},overridden={}, candidates = {};
   const conditions = rule => rule.contexts.length ? {conditions: rule.contexts.map(c => ({kind: c.kind, ...(c.name ? {name: c.name} : {}), params: c.params, css: c.css}))} : {};
   // A preference rule holds when the state names its value, or the value is the default.
   const preferred = rule => (rule.preferences ?? []).every(({ feature, value }) => ([...(state ?? [])].find(s => s.startsWith(`${feature}:`))?.slice(feature.length + 1) ?? preferenceValues[feature][0]) === value);
@@ -944,6 +944,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
         // A logical side resolves by the box's direction (an rtl pass when the first one finds rtl; CSS Logical 1).
         if (declaration.flip) flipped = true;
         const property = rtl && declaration.flip ? declaration.flip : declaration.property;
+        if (!declaration.expression) (candidates[property] ??= []).push({ rank, value: declaration.pending ? declaration : declaration.value, origin, important: declaration.important });
         const wins = !priorities.has(property) || greaterRank(rank, priorities.get(property));
         // Explanation data only: the losing side of each comparison.
         const loser = wins ? sources[property] : origin;
@@ -955,6 +956,20 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
           sources[property] = origin;
         }
       }
+    }
+  }
+  // revert-layer (CSS Cascade 5 §7.3): roll the property back to the best declaration of an earlier layer (rank[2] is the
+  // layer; unlayered declarations are the implicit last layer, Infinity, so there it rolls back to the explicit layers —
+  // measured in Chromium, Firefox and WebKit). With nothing earlier it is revert (the UA value).
+  for (const property of Object.keys(values)) {
+    let guard = 0;
+    while (values[property] === 'revert-layer' && guard++ < 64) {
+      const current = priorities.get(property);
+      if (current[0]) throw Object.assign(new Error(`${property}: revert-layer !important is not modeled`), { code: 'U_LAYOUT_CSS' });
+      const earlier = (candidates[property] ?? []).filter(c => !c.important && c.rank[2] < current[2]);
+      if (!earlier.length) { values[property] = 'revert'; break; }
+      const best = earlier.reduce((a, b) => greaterRank(b.rank, a.rank) ? b : a);
+      values[property] = best.value; priorities.set(property, best.rank); sources[property] = best.origin;
     }
   }
   for (const [name, declaration] of custom) { const issue = registeredValueProblem(name, declaration.specified ?? declaration.value ?? ''); if (issue) throw Object.assign(new Error(issue), { code: 'U_LAYOUT_VARIABLE' }); }

@@ -15,6 +15,11 @@ const cases = [
   // :where() / :not() with combinators.
   '.card .k{body &{height:30px}}', '.card .k{.card &{height:30px}}', '.card .card .k{.card &{height:30px}}', '.card > .k{.card &{height:30px}}',
   '.out,div.card{& .k{height:30px}}', '.out,div.card{& .k{height:30px}}.card .k.k{height:20px}',
+  // revert-layer (checklist C4): back to the earlier layer; unlayered rules (the implicit last layer) back to the explicit
+  // layers, and without any to the UA value.
+  '@layer base, theme;@layer base{.k{padding-top:6px}}@layer theme{.k{padding-top:12px}.in{padding-top:revert-layer}}',
+  '@layer a, b, c;@layer a{.k{padding-top:5px}}@layer b{.k{padding-top:revert-layer}}@layer c{.k{padding-top:revert-layer}}',
+  '@layer base{.k{padding-top:6px}}.k.k{padding-top:revert-layer}', '.k{padding-top:6px}.k.k{padding-top:revert-layer}', '@layer base, theme;@layer base{.k{padding:4px}}@layer theme{.k{padding:9px;padding:revert-layer}}',
   ':is(.card .k){height:30px}', '.k:where(.card > .k){height:30px}', '.k:not(.card .k){height:30px}', ':is(.card .k, #none){height:30px}.card .k.k{height:20px}', ':where(.card .k){height:30px}.k{height:20px}',
 ];
 
