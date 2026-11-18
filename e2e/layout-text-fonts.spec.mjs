@@ -579,6 +579,44 @@ test('inline bounds on the last line of justified text', async ({page}) => {
   expect(placed).toBeGreaterThan(10);
 });
 
+// Edges of an inline box in wrapping text (checklist D3): the line layout counts them, so the paragraph's height (its
+// line count) and the link's bounds follow the browser at every width.
+test('inline box edges in wrapping text: line count and bounds', async ({page}) => {
+  test.setTimeout(240_000);
+  test.skip(test.info().project.name === 'firefox', 'Firefox rounds inline edges to 1/60px (ADR-0010)');
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the full installation guide before you start the upgrade of the cluster.', piece = 'installation guide';
+  for (const [extra, edges] of [['.u{padding:0 8px}', [0, 8, 8, 0]], ['.u{margin:0 6px;padding:0 3px}', [6, 3, 3, 6]]]) {
+    const at0 = content.indexOf(piece);
+    const html = `<div class="page"><p class="p">${content.slice(0, at0)}<a class="u" href="#x">${piece}</a>${content.slice(at0 + piece.length)}</p></div>`;
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:0 10px;background:#fff;color:#000}.p{font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400}.u{color:#000}${extra}`;
+    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': {text: piece, edges}}}, wrap: 'normal'}});
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 120, max: 900, height: {min: 600, max: 600}}, boxes});
+    expect(report.status === 'unknown', `${extra}: ${JSON.stringify(report.diagnostics.map(d => d.message))}`).toBe(false);
+    let placed = 0;
+    for (let width = 120; width <= 900; width += 11) {
+      const atv = a => value(a.coefficient) * width + value(a.heightCoefficient ?? '0') * 600 + value(a.constant);
+      const holds = row => (row.regionConstraints ?? []).every(c => { const slack = value(c.coefficient) * width + value(c.heightCoefficient ?? '0') * 600 + value(c.constant); return c.strict ? slack > 1e-9 : slack >= -1e-9; });
+      await page.setViewportSize({width, height: 600});
+      await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+      await page.evaluate(() => document.fonts.ready);
+      const b = await page.evaluate(() => ({h: document.querySelector('.p').getBoundingClientRect().height, rects: [...document.querySelector('.u').getClientRects()].map(r => ({x: r.x, y: r.y, w: r.width, h: r.height}))}));
+      // The line count where the profile knows it (the model's lines are never shorter than the browser's: at least as many).
+      const lines = boxes['.p'].intrinsicBlockSize.filter(e => e.atLeastInlineSize <= width - 20).at(-1);
+      if (lines?.blockSize !== undefined) expect(b.h, `${extra} at ${width}: height`).toBeLessThanOrEqual(lines.blockSize + 1e-9);
+      const bound = report.inlineBounds.find(holds);
+      if (!bound) continue;
+      expect(b.rects.length, `${extra} at ${width}`).toBe(1); placed++;
+      const [r] = b.rects, box = q => ({x: atv(q.inlineStart), y: atv(q.blockStart), w: atv(q.inlineSize), h: atv(q.blockSize)}), O = box(bound.outer), tag = `${extra} at ${width}`;
+      expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.x + r.w, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);
+      expect(r.y, `${tag} top`).toBeGreaterThanOrEqual(O.y - 1e-9); expect(r.y + r.h, `${tag} bottom`).toBeLessThanOrEqual(O.y + O.h + 1e-9);
+      if (bound.inner) { const I = box(bound.inner); expect(r.x, `${tag} inner left`).toBeLessThanOrEqual(I.x + 1e-9); expect(r.x + r.w, `${tag} inner right`).toBeGreaterThanOrEqual(I.x + I.w - 1e-9); }
+    }
+    expect(placed, extra).toBeGreaterThan(10);
+  }
+});
+
 // rtl (checklist D3): Hebrew text (letters and spaces only, so its visual order is the logical one reversed) in a
 // direction: rtl paragraph, one line and wrapping, aligned at the start (right), centred and at the end (left). Hebrew
 // widths are calibrated to Chromium (ADR-0010).

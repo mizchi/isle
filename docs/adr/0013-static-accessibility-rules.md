@@ -329,7 +329,9 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
 - **inline の箱の左右の端**(チェックリスト D3):左右の padding・border・margin は行の幅を広げ、後ろの文字と箱をずらす。一行の文字列では
   text 契約の `inline` に `{text, edges: [margin-left, border+padding-left, border+padding-right, margin-right]}` を与えると、フォント層が
   幅に端の和を足し、各箱を前の箱の端の和と自分の margin-left だけずらし、border box を自分の端の分だけ広げる。engine は inline の箱の
-  CSS の端が契約の値と一致するときだけ受け入れ、測っていない端や違う端は U_LAYOUT_INLINE。入れ子の箱の端と折り返す文字列の端は測らない。
+  CSS の端が契約の値と一致するときだけ受け入れ、測っていない端や違う端は U_LAYOUT_INLINE。入れ子の箱の端は測らない。折り返す文字列では、
+  左の端を箱の最初の文字に、右の端を最後の文字に足し(行は自分の文字の端の和を layout unit に切り上げて数える)、行数の profile・min-content・
+  改行の位置・行の幅がそれを含む。箱の矩形は、同じ行の前の箱の端と自分の margin-left だけずれる。
 - **太さの違う inline の箱**(チェックリスト D3):`inline` に `{text, weight}` を与えると、その部分を別の run(同じ family・大きさの
   その太さ)として shaping し、行の幅を run の和(run ごとに切り上げと allowance)にし、各箱の端に前の run の誤差を積む。上下は同じ
   family なので元の font の content area。engine は CSS の違いが font-weight だけで、その値が契約と同じときだけ受け入れる。

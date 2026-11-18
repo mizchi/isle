@@ -82,8 +82,13 @@ test('horizontal edges of inline boxes: measured with the contract, else Unknown
   assert.equal(run('.u{padding:0 4px}').r.status, 'unknown');
   assert.equal(run('.u{padding:0 4px}', [0, 5, 5, 0]).r.status, 'unknown');
   assert.equal(run('', [0, 4, 4, 0]).r.status, 'unknown');
-  // Wrapping text with edges is not measured.
-  assert.throws(() => metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.u': {text: 'guide', edges: [0, 4, 4, 0]}}}, wrap: 'normal'}}), /one-line/);
+  // Wrapping text counts the edges in its line layout: the widest word with its left padding, and the whole line.
+  const plainWrap = metrics.resolveBoxes({'.p': {text: {content: 'Read the installation guide first.', font, inline: {'.u': 'installation guide'}}, wrap: 'normal'}})['.p'];
+  const padWrap = metrics.resolveBoxes({'.p': {text: {content: 'Read the installation guide first.', font, inline: {'.u': {text: 'installation guide', edges: [0, 8, 8, 0]}}}, wrap: 'normal'}})['.p'];
+  assert.equal(padWrap.minInlineSize, plainWrap.minInlineSize + 8);
+  assert.equal(padWrap.maxInlineSize, plainWrap.maxInlineSize + 16);
+  // Weights and atomic boxes in wrapping text are not measured.
+  assert.throws(() => metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.u': {text: 'guide', weight: 700}}}, wrap: 'normal'}}), /one-line/);
 });
 
 test('an inline box in another weight: measured as its own run, else Unknown', () => {
