@@ -1146,7 +1146,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // (§9.7): the region is split there. Below, the item starts at the minimum (shrink mode freezes it there; grow
         // mode grows it from its base and clamps it to the minimum).
         let parts = [{ region: state.region, below: new Set() }];
-        const percentBase = entry => sum(sum(times(contentInline, entry.item.percentBasis), scalar(entry.item.contentBox ? entry.item.edges : zero)), scalar(entry.item.marginMain ?? zero));
+        // (A linear basis, checklist D2: its calc() / vw length evaluated against the content width.)
+        const percentBase = entry => sum(sum(entry.item.linearBasis ? lengthPieces(entry.item.linearBasis, contentInline, null, entry.child.style)[0].value : times(contentInline, entry.item.percentBasis), scalar(entry.item.contentBox ? entry.item.edges : zero)), scalar(entry.item.marginMain ?? zero));
         model.forEach((entry, index) => {
           if (entry.item.percentBasis === undefined || cmp(entry.item.shrink, zero) === 0) return;
           const minimum = scalar(constantItem(entry.item).minimum.b ?? entry.item.minimum);
@@ -1163,7 +1164,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           // Its inner base size is P% of the content width when it has no constant part (no edges, margins or
           // content-box padding): shrinking is then weighted by the constant shrink × P (innerShare).
           const constantPart = add(entry.item.contentBox ? zero : mul(entry.item.edges, q(-1)), zero);
-          const innerShare = cmp(constantPart, zero) === 0 && cmp(entry.item.marginMain ?? zero, zero) === 0 && (!entry.item.contentBox || cmp(entry.item.edges, zero) === 0) ? entry.item.percentBasis : null;
+          const innerShare = !entry.item.linearBasis && cmp(constantPart, zero) === 0 && cmp(entry.item.marginMain ?? zero, zero) === 0 && (!entry.item.contentBox || cmp(entry.item.edges, zero) === 0) ? entry.item.percentBasis : null;
           const below = part.below.has(index);
           return { ...item, base, minimum: cmp(entry.item.shrink, zero) === 0 ? base : item.minimum, maximum: null, baseAtLeastMinimum: !below, baseBelowMinimum: below, innerShare, percentItem: true };
         });

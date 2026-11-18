@@ -14,20 +14,28 @@ const cases = [
   '.p{display:flex;width:300px}.a{width:40%;flex-grow:1;flex-shrink:0}.b{width:50px;flex:none}.c{width:10%;flex:none}',
   '.p{display:flex;width:300px}.a{width:40%;min-width:0}.b{width:50px;flex:none}.c{width:70%;min-width:20px}',
   '.p{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:300px}.a{font-size:14px;width:5em}.b{margin-left:1em;font-size:8px}',
+  // Linear flex widths and bases: calc() of px and %, and vw (the rest of checklist D2).
+  '.p{display:flex;width:300px}.a{width:20vw;flex:none}.b{width:50px;flex:none}.c{width:calc(10vw + 7px);flex:none}',
+  '.p{display:flex;width:300px}.a{width:calc(50% - 10px);flex:none}.b{width:50px;flex:none}.c{flex:0 0 calc(10% + 3px)}',
+  '.p{display:flex;width:300px;gap:6px}.a{flex:1 1 calc(40% + 20px);min-width:0}.b{width:50px;flex:none}.c{flex:2 0 calc(5% + 1px)}',
+  '.p{display:flex;width:300px}.a{flex:1 1 calc(20% + 20px);min-width:10px}.b{width:50px;flex:none}.c{flex:1 1 30%;min-width:0}',
+  '.p{display:flex;width:90vw}.a{width:calc(50% + 10px);flex:none;padding:0 5px}.b{width:10vw;flex:none}.c{flex:1 0 0;min-width:0}',
 ];
 
 test('em lengths and percentage flex widths: every box is where the browser puts it', async ({page}) => {
-  await page.setViewportSize({width: 400, height: 300});
+  for (const W of [400, 640]) {
+  await page.setViewportSize({width: W, height: 300});
   for (const c of cases) {
     const css = base + c;
-    const r = analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    const r = analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css, viewport: {min: W, max: W, height: {min: 300, max: 300}}});
     expect(r.status === 'unknown', `${c}: ${JSON.stringify(r.diagnostics.map(d => d.message))}`).toBe(false);
-    const model = Object.fromEntries(r.sizes.filter(s => s.rect && /^\.(?:a|b|c)$/.test(s.box)).map(s => [s.box, [frac(s.rect.inlineStart.constant), frac(s.rect.inlineSize.constant)]]));
+    const model = Object.fromEntries(r.sizes.filter(s => s.rect && /^\.(?:a|b|c)$/.test(s.box)).map(s => [s.box, [frac(s.rect.inlineStart.constant) + frac(s.rect.inlineStart.coefficient) * W, frac(s.rect.inlineSize.constant) + frac(s.rect.inlineSize.coefficient) * W]]));
     await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${body}</body></html>`);
     const browser = await page.evaluate(() => Object.fromEntries(['.a', '.b', '.c'].map(s => { const r = document.querySelector(s).getBoundingClientRect(); return [s, [r.left, r.width]]; })));
     // Browsers round positions to 1/64px (LayoutUnit), which a shrinking flex line's fractions show: 2/64px is allowed.
-    for (const k of Object.keys(model)) model[k].forEach((v, i) => expect(Math.abs(v - browser[k][i]), `${c} ${k}[${i}]: model ${v}, browser ${browser[k][i]}`).toBeLessThanOrEqual(2 / 64 + 1e-9));
+    for (const k of Object.keys(model)) model[k].forEach((v, i) => expect(Math.abs(v - browser[k][i]), `${W} ${c} ${k}[${i}]: model ${v}, browser ${browser[k][i]}`).toBeLessThanOrEqual(2 / 64 + 1e-9));
     expect(Object.keys(model).length).toBe(3);
+  }
   }
 });
 

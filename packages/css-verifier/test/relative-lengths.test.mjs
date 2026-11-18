@@ -32,3 +32,16 @@ test('a percentage height in block flow resolves against the parent\'s declared 
   // An auto-height parent: the percentage computes to auto there, which is not modeled in a grid item; Unknown.
   assert.match(String(tall('.p{}.a{height:50%}')), /^unknown/);
 });
+
+test('a flex item\'s calc() or vw width or basis is evaluated against the container (checklist D2)', () => {
+  assert.deepEqual(box('.p{display:flex;width:300px}.a{width:calc(50% - 10px);flex:none}.b{width:50px;flex:none}'), {'.a': ['0', '140'], '.b': ['140', '50']});
+  assert.deepEqual(box('.p{display:flex;width:300px}.a{flex:0 0 calc(25% + 5px)}.b{width:50px;flex:none}')['.a'], ['0', '80']);
+  // Growing from a calc() basis: 140px + 50px leave 110px, all to .a.
+  assert.deepEqual(box('.p{display:flex;width:300px}.a{flex:1 1 calc(40% + 20px);min-width:0}.b{width:50px;flex:none}')['.a'], ['0', '250']);
+  // vw: an affine width (W/5), not a constant.
+  assert.equal(box('.p{display:flex;width:300px}.a{width:20vw;flex:none}.b{width:50px;flex:none}')['.b'][0], '0');
+  // Shrinking items whose bases are not shares of one width: their weights are not modeled; Unknown.
+  assert.match(String(box('.p{display:flex;width:300px}.a{flex:1 1 calc(70% + 20px);min-width:10px}.b{width:50px;flex:none}.c{flex:1 1 30%;min-width:0}', '<div class="p"><div class="a"></div><div class="b"></div><div class="c"></div></div>')), /^unknown/);
+  // min() / max() in a flex width stay Unknown.
+  assert.match(String(box('.p{display:flex;width:300px}.a{width:min(50%, 100px);flex:none}.b{width:50px;flex:none}')), /^unknown/);
+});

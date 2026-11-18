@@ -84,7 +84,11 @@ export function flexItem(style, { empty = false, axis = 'inline', contentSizes }
   const grow = q(style['flex-grow']), shrink = q(style['flex-shrink']);
   // A percentage main size with flex-basis: auto (checklist D2) is used as the basis — a share of the container — where
   // the specified-size suggestion does not matter: the item does not shrink, or its minimum is explicit.
-  const percentSize = style['flex-basis'] === 'auto' && axis === 'inline' && /^\d+(?:\.\d+)?%$/.test(String(style[n.size])) && (cmp(shrink, q(0)) === 0 || style[n.min] !== 'auto');
+  // A linear length (checklist D2: calc() of px, % and viewport units, or a vw / vh length, with no min()/max()) is the
+  // same: the engine evaluates it against the container's content width (linearBasis).
+  const linear = v => /^(?:calc\([^()]*(?:\([^()]*\)[^()]*)*\)|-?(?:\d+(?:\.\d+)?|\.\d+)(?:vw|vh))$/.test(String(v)) && !/\b(?:min|max|clamp)\(/.test(String(v)) && !/\b(?:var|env)\(/.test(String(v));
+  const shareLike = v => /^\d+(?:\.\d+)?%$/.test(String(v)) || linear(v);
+  const percentSize = style['flex-basis'] === 'auto' && axis === 'inline' && shareLike(style[n.size]) && (cmp(shrink, q(0)) === 0 || style[n.min] !== 'auto');
   const basis = percentSize ? style[n.size] : style['flex-basis'];
   if (percentSize) style = { ...style, [n.size]: 'auto' };
   const contentBox = style['box-sizing'] === 'content-box', own = edges(style, n.sides);
@@ -110,8 +114,8 @@ export function flexItem(style, { empty = false, axis = 'inline', contentSizes }
   // the container's content width, an affine size the engine supplies (percentBasis); its minimum is checked there
   // (it never goes below the base). A shrinking one (flex: 1 1 P%) shrinks to an explicit min-width (0 or px), or with
   // min-width auto to its automatic minimum, the min-content width the engine measured (contentSizes).
-  else if (/^\d+(?:\.\d+)?%$/.test(String(basis)) && axis === 'inline' && (cmp(shrink, q(0)) === 0 || style[n.min] !== 'auto' || contentSizes) && style[n.size] === 'auto' && style['max-inline-size'] === 'none') {
-    const item = { grow, shrink, edges: own, autoStart, autoEnd, automaticBelowBase: false, base: q(0), percentBasis: div(q(String(basis).slice(0, -1)), q(100)), contentBox };
+  else if (shareLike(basis) && axis === 'inline' && (cmp(shrink, q(0)) === 0 || style[n.min] !== 'auto' || contentSizes) && style[n.size] === 'auto' && style['max-inline-size'] === 'none') {
+    const item = { grow, shrink, edges: own, autoStart, autoEnd, automaticBelowBase: false, base: q(0), percentBasis: linear(basis) ? q(0) : div(q(String(basis).slice(0, -1)), q(100)), ...(linear(basis) ? { linearBasis: String(basis) } : {}), contentBox };
     if (style[n.min] !== 'auto') item.minimum = outer(px(style[n.min]), own, contentBox);
     else if (!automatic) item.minimum = own;
     else if (contentSizes) item.minimum = cmp(contentSizes.min, own) < 0 ? own : contentSizes.min;

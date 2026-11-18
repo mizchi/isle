@@ -551,7 +551,8 @@ function expand(property, value) {
 // css-flexbox-1 §7.2: [<grow> <shrink>?] || <basis>, none, auto. A unitless
 // zero is a flex factor unless two factors already precede it.
 const flexNumber = /^\d+(?:\.\d+)?$/;
-const flexBasis = value => value === 'auto' || value === 'content' || /^\d+(?:\.\d+)?(?:px|%)$/.test(value);
+// (calc() and vw / vh bases too, checklist D2: flexItem decides whether they are modeled.)
+const flexBasis = value => value === 'auto' || value === 'content' || /^\d+(?:\.\d+)?(?:px|%|vw|vh)$/.test(value) || /^calc\(.*\)$/.test(value);
 function flexShorthand(value) {
   if (wide.has(value)) return ['flex-grow', 'flex-shrink', 'flex-basis'].map(key => [key, value]);
   if (value === 'none') return [['flex-grow', '0'], ['flex-shrink', '0'], ['flex-basis', 'auto']];
