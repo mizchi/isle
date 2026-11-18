@@ -30,3 +30,30 @@ test('em lengths and percentage flex widths: every box is where the browser puts
     expect(Object.keys(model).length).toBe(3);
   }
 });
+
+// Checklist D2: a percentage height in block flow, against a parent with a declared (px or vh) height, and px and %
+// mixed in calc(): every box's top and height are where the browser puts them.
+const heightCases = [
+  '.p{height:200px}.a{height:50%}',
+  '.p{height:200px;padding-top:10px}.a{height:25%;margin-top:5px}',
+  '.p{height:200px}.a{height:calc(50% - 10px)}.c{height:calc(10% + 4px)}',
+  '.p{height:50vh}.a{height:50%}',
+  '.p{height:200px;max-height:120px}.a{height:50%}',
+  '.p{height:220px;box-sizing:content-box;padding:10px 0}.a{height:50%}.c{min-height:10%}',
+];
+test('percentage heights in block flow against a declared height: every box is where the browser puts it', async ({page}) => {
+  const at = (v, W, H) => frac(v.constant) + frac(v.coefficient) * W + frac(v.heightCoefficient ?? 0) * H;
+  for (const [W, H] of [[400, 300], [400, 500]]) {
+    await page.setViewportSize({width: W, height: H});
+    for (const c of heightCases) {
+      const css = base + c;
+      const r = analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 500}}});
+      expect(r.status === 'unknown', `${c}: ${JSON.stringify(r.diagnostics.map(d => d.message))}`).toBe(false);
+      const model = Object.fromEntries(r.sizes.filter(s => s.rect && /^\.(?:a|b|c)$/.test(s.box)).map(s => [s.box, [at(s.rect.blockStart, W, H), at(s.rect.blockSize, W, H)]]));
+      await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${body}</body></html>`);
+      const browser = await page.evaluate(() => Object.fromEntries(['.a', '.b', '.c'].map(s => { const r = document.querySelector(s).getBoundingClientRect(); return [s, [r.top, r.height]]; })));
+      for (const k of Object.keys(model)) model[k].forEach((v, i) => expect(Math.abs(v - browser[k][i]), `${W}x${H} ${c} ${k}[${i}]: model ${v}, browser ${browser[k][i]}`).toBeLessThanOrEqual(2 / 64 + 1e-9));
+      expect(Object.keys(model).length).toBe(3);
+    }
+  }
+});

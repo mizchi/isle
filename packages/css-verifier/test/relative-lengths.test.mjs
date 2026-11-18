@@ -20,3 +20,15 @@ test('a flex item\'s percentage width with flex-basis auto is a share of the con
   // Shrinking with an automatic minimum: the specified-size suggestion caps the minimum, which is not modeled.
   assert.match(String(box('.p{display:flex;width:300px}.a{width:40%}.b{width:50px}')), /^unknown/);
 });
+
+test('a percentage height in block flow resolves against the parent\'s declared height', () => {
+  const tall = (c, html = '<div class="p"><div class="a"></div><div class="b"></div></div>') => { const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0}body{${g}}.b{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}); return r.status === 'unknown' ? `unknown: ${r.diagnostics.find(d => d.severity === 'unknown')?.message}` : Object.fromEntries(r.sizes.filter(s => s.rect && /^\.(?:a|b)$/.test(s.box)).map(s => [s.box, [s.rect.blockStart.constant, s.rect.blockSize.constant]])); };
+  assert.deepEqual(tall('.p{height:200px}.a{height:50%}'), {'.a': ['0', '100'], '.b': ['100', '20']});
+  // Against the content box (padding taken out), and clamped by max-height: the used height.
+  assert.deepEqual(tall('.p{height:200px;padding-top:40px}.a{height:50%}')['.a'], ['40', '80']);
+  assert.deepEqual(tall('.p{height:200px;max-height:120px}.a{height:50%}')['.a'], ['0', '60']);
+  // px and % mixed in calc().
+  assert.deepEqual(tall('.p{height:200px}.a{height:calc(50% - 10px)}')['.a'], ['0', '90']);
+  // An auto-height parent: the percentage computes to auto there, which is not modeled in a grid item; Unknown.
+  assert.match(String(tall('.p{}.a{height:50%}')), /^unknown/);
+});
