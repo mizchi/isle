@@ -2,6 +2,7 @@ import postcss from 'postcss';
 import {findCSSWriteConflicts,cssWriteConflictMessage} from '../css-writes.mjs';
 import { q, cmp, add, mul, div, exact, number } from './linear.mjs';
 import { parseCondition, preferenceValues } from './conditions.mjs';
+import { supportsCondition } from './supports.mjs';
 import {customName,variableValue,variableEnvironment,substituteDeclaration} from './variables.mjs';
 
 import { compileSelector, matches, greaterRank } from './selectors.mjs';
@@ -518,6 +519,14 @@ export function parseLayoutCSS(sheets, diagnostic) {
       // At-rules that never change the screen: @charset (the encoding of bytes the analysis already has as text), @page
       // (the page box of paged media: print) and @view-transition (navigation transitions between documents).
       if (node.type === 'atrule' && ['charset', 'page', 'view-transition'].includes(node.name.toLowerCase())) continue;
+      // @supports: its rules apply where the condition holds in every target browser, and are skipped where it fails in
+      // all of them; a condition not decided from the known features (supports.mjs) is Unknown.
+      if (node.type === 'atrule' && node.name.toLowerCase() === 'supports' && node.nodes) {
+        const holds = supportsCondition(node.params);
+        if (holds === true) visit(node.nodes, contexts, layer, filename, depth + 1, preferences);
+        else if (holds === undefined) problem('U_LAYOUT_CSS', `@supports ${node.params.trim()}: the condition is not decided from the features known to be supported in every target browser`, node.source.start.line);
+        continue;
+      }
       if (node.type === 'atrule') {
         if (!['media', 'container'].includes(node.name.toLowerCase()) || !node.nodes) { problem('U_LAYOUT_CSS', `Unsupported @${node.name}`, node.source.start.line); continue; }
         try {
