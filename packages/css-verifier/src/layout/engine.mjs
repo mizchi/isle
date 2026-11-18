@@ -2685,7 +2685,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         {
           const parent = parents.at(-1), grand = parents.at(-2);
           const blockish = st => st && ['block', 'list-item'].includes(String(st.display)) && !st.$blockFlowGrid;
-          if (/^\d+(?:\.\d+)?%$/.test(String(style['block-size'])) && style.position === 'static' && parent && grand && blockish(parent.style) && blockish(grand.style) && String(parent.style['block-size']) === 'auto' && !['html', 'body'].includes(parent.box.tag) && !available.percentBlock && !box.pseudo) {
+          // (Also in a grid item, or the item of a row flex container, that is aligned rather than stretched: its auto
+          // height depends on its content too — measured in Chromium, Firefox and WebKit, checklist D2.)
+          const alignedItem = grand && !grand.style.$blockFlow && String(parent?.style['block-size']) === 'auto' && (['grid', 'inline-grid'].includes(String(grand.style.display)) || (['flex', 'inline-flex'].includes(String(grand.style.display)) && !String(grand.style['flex-direction']).startsWith('column')))
+            && crossAlignment(grand.style['align-items'], parent.style['align-self']) !== 'stretch';
+          if (/^\d+(?:\.\d+)?%$/.test(String(style['block-size'])) && style.position === 'static' && parent && grand && blockish(parent.style) && (blockish(grand.style) || alignedItem) && String(parent.style['block-size']) === 'auto' && !['html', 'body'].includes(parent.box.tag) && !available.percentBlock && !box.pseudo) {
             if (!layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('block-size')))
               layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['block-size'], ...(style.$sources?.['block-size'] ? { css: [{ property: 'block-size', file: style.$sources['block-size'].file, line: style.$sources['block-size'].line, selector: style.$sources['block-size'].selector }] } : {}),
                 message: `${box.label}: block-size: ${style['block-size']} has no effect (its parent ${parent.box.label} has an auto height, which depends on its content, so a percentage height computes to auto). Give ${parent.box.label} a height, or make it a grid or flex container that stretches ${box.label}`, ...ranges(state.region) });

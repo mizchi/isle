@@ -96,6 +96,14 @@ test('percentage heights inside a definite flex or grid item', async ({page}) =>
     for (const k of Object.keys(model)) model[k].forEach((v, i) => expect(Math.abs(v - browser[k][i]), `${c} ${k}[${i}]: model ${v}, browser ${browser[k][i]}`).toBeLessThanOrEqual(2 / 64 + 1e-9));
     expect(Object.keys(model).length).toBe(3);
   }
-  const start = nestedBase + '.p{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:200px}.q{align-self:start}.a{height:50%}';
-  expect(analyzeHTML(`<html lang="en"><body>${nested}</body></html>`, {name: 'P', css: start, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).status).toBe('unknown');
+  // Aligned (not stretched): the percentage computes to auto, which the analysis reports as inert.
+  for (const c of ['.p{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:200px}.q{align-self:start}.a{height:50%}', '.p{height:200px;display:flex;align-items:center}.q{flex:1 1 0;min-width:0}.a{height:50%}']) {
+    const css = nestedBase + c;
+    const r = analyzeHTML(`<html lang="en"><body>${nested}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    expect(r.status === 'unknown', `${c}: ${JSON.stringify(r.diagnostics.map(d => d.message))}`).toBe(false);
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.box === '.a')).toBe(true);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${nested}</body></html>`);
+    const height = await page.evaluate(() => document.querySelector('.a').getBoundingClientRect().height);
+    expect(frac(r.sizes.find(s => s.box === '.a').blockSize.constant), c).toBe(height);
+  }
 });

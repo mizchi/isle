@@ -42,7 +42,7 @@
 
 - [x] **D1. 0 以外のオフセットを持つ `position: relative`**(px。`%` と rtl の横のオフセットは残り): いまは Unknown(「Relative positioning spaces require zero
   offsets」)。箱だけが動くので、配置はそのままで、描画の位置をずらす。
-- [~] **D2. flex の項目の `%` 幅と、`vw`・`em` の長さ**: `em` の長さと、縮まない(か min-width のある)flex の項目の `%` の幅は済み。
+- [x] **D2. flex の項目の `%` 幅と、`vw`・`em` の長さ**: `em` の長さと、縮まない(か min-width のある)flex の項目の `%` の幅は済み。
   block flow の中の `%` の高さ(親が高さを宣言しているとき。px でも vh でもよく、min/max で詰めたあとの内容の高さに対して)と、
   その高さでの px と % を混ぜた `calc()` も済み(3 つのブラウザーで、2 つの viewport の高さで位置と高さが一致)。
   flex の項目の `vw` の幅と `calc()`(px・%・vw・vh の和)の幅や basis も済み: `%` の basis と同じく、容器の内容の幅に対する
@@ -53,7 +53,8 @@
   高さが決まる flex・grid の項目(高さを宣言した 1 行の row で伸ばされる、高さを宣言した column で伸び縮みする、grid の領域に
   伸ばされる)の中の `%` の高さも、その高さに対して解く(3 つのブラウザーで一致。標準モードで測る。quirks モードの WebKit は auto に
   した)。flex の項目の `min()`・`max()`・`clamp()` の幅と basis も、区間ごとに分けて解く(A5 の `max(0px, calc(…))` の行き過ぎも
-  これで解ける)。残り: 伸ばされない(align-self: start などの)項目の中の `%` の高さ(auto になる)。
+  これで解ける)。伸ばされない(align-self: start などの)grid・row の flex の項目の中の `%` の高さは auto になる(3 つのブラウザーで
+  測った)ので、block の中の block と同じく `W_LAYOUT_DECLARATION_INERT` を出して auto として解く。
 - [~] **D3. inline の中の行の配置**: 文字の行と inline の箱の位置。大きい。
   最初の一歩として、測った文字の中の inline の箱(`inlineBounds`)を `text-align: center`・`right`・`end` でも出す(以前は start と
   left だけ)。行の幅の区間で外接・内接をずらし、改行が揺れる幅は除く(ADR-0013)。3 つのブラウザーで一致。残り: `justify`、rtl、
