@@ -2217,3 +2217,17 @@ test('page-start-unreachable: content centered in a 100vh body that is taller th
   assert.deepEqual(run('.b{height:100px}'), []);
   assert.deepEqual(run('.b{height:800px}body{justify-content:flex-start}'), []);
 });
+
+test('motion: a transition that moves the box over 5s must stop under prefers-reduced-motion: reduce (checklist E4)', () => {
+  const tree = page([{tag: 'div', classes: ['slide']}]);
+  const warn = report => report.accessibility.warnings.filter(d => d.code === 'W_A11Y_TRANSITION_MOTION');
+  const css = extra => pageCSS(`.page { background: #fff; color: #000; grid-auto-rows: 20px; }\n${extra}`);
+  assert.deepEqual(warn(run(tree, css('.slide { transition: transform 6s; }'))).map(d => d.box), ['.slide']);
+  assert.deepEqual(warn(run(tree, css('.slide { transition: opacity 0.2s, all 8s ease-in; }'))).map(d => d.box), ['.slide']);
+  assert.deepEqual(warn(run(tree, css('.slide { transition-property: margin-left; transition-duration: 6000ms; }'))).map(d => d.box), ['.slide']);
+  assert.equal(warn(run(tree, css('.slide { transition: transform 6s; }\n@media (prefers-reduced-motion: reduce) { .slide { transition: none; } }'))).length, 0);
+  assert.equal(warn(run(tree, css('.slide { transition: transform 6s; }\n@media (prefers-reduced-motion: reduce) { .slide { transition-duration: 0.01s; } }'))).length, 0);
+  // Short, or not motion (colour and opacity fade, they do not move).
+  assert.equal(warn(run(tree, css('.slide { transition: transform 0.3s; }'))).length, 0);
+  assert.equal(warn(run(tree, css('.slide { transition: color 6s, opacity 10s; }'))).length, 0);
+});

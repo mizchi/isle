@@ -68,6 +68,7 @@
 //   clickable-look   → W_A11Y_CLICK_LOOK        cursor: pointer set on an element that is neither focusable nor interactive (SC 2.1.1)
 //   list-style-semantics → W_A11Y_LIST_STYLE   ul/ol with list-style-type: none and no role=list (WebKit drops the list role)
 //   motion           → W_A11Y_MOTION            an animation running over 5s that prefers-reduced-motion: reduce does not stop (SC 2.2.2, 2.3.3)
+//                    → W_A11Y_TRANSITION_MOTION  a transition moving the box over 5s that reduce leaves running (SC 2.3.3)
 //   blink            → E_A11Y_BLINK             rendered marquee/blink (SC 2.2.2)
 //   definition-list  → E_A11Y_DL                dl children other than dt/dd/div groups, or dt/dd outside dl
 //   accesskeys       → W_A11Y_ACCESSKEY         the same accesskey on more than one element
@@ -96,7 +97,7 @@
 //   label-pointer    → W_A11Y_LABEL_POINTER     a field's label with pointer-events: none (clicks pass through it)
 //   caret-hidden     → W_A11Y_CARET_HIDDEN      a text field whose caret is transparent or its background color
 //   contents-focus   → E_A11Y_CONTENTS_FOCUS    a link, button or tabindex element with display: contents (drawn by its children; Tab skips it)
-import { animationsOf } from './css.mjs';
+import { animationsOf, transitionsOf } from './css.mjs';
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
 import { languageTag } from './text-font.mjs';
@@ -181,7 +182,8 @@ export function paintFacts(style) {
   return { ...(style.$iconPaint !== undefined ? { iconPaint: style.$iconPaint } : {}), ...(hiddenVisually ? { hiddenVisually: true } : {}), caretColor: style['caret-color'], objectFit: style['object-fit'], scrollBehavior: style['scroll-behavior'], touchAction: style['touch-action'], color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontStyle: style['font-style'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
     isolation: style.isolation, transform: style.transform, backdropFilter: style['backdrop-filter'] ?? 'none', ...(style.$stacks ? { stacks: true } : {}), willChange: style['will-change'] ?? 'auto', scrollMargin: { top: style['scroll-margin-top'], bottom: style['scroll-margin-bottom'] }, scrollPadding: { top: style['scroll-padding-top'], bottom: style['scroll-padding-bottom'] }, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], outlineColor: style['outline-color'], outlineOffset: style['outline-offset'], clippedAway: style['clip-path'] === 'empty' || (style.clip === 'empty' && ['absolute', 'fixed'].includes(style.$fixed ? 'fixed' : style.position)), borderColors: { top: style['border-top-color'], right: style['border-right-color'], bottom: style['border-bottom-color'], left: style['border-left-color'] }, boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
-    animations: animationsOf(style).map(a => ({ name: a.name, duration: a.duration, count: a.count, playState: a.playState, direction: a.direction })) };
+    animations: animationsOf(style).map(a => ({ name: a.name, duration: a.duration, count: a.count, playState: a.playState, direction: a.direction })),
+    transitions: transitionsOf(style).map(t => ({ property: t.property, duration: t.duration })) };
 }
 const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(String(value)); return m && (m[2] ? Number(m[1]) / 100 : Number(m[1])) >= 1; };
 /**
@@ -1905,6 +1907,15 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
     const a = row.paint.animations.find(lasting);
     const still = (row.reducedMotion ?? []).filter(s => (s.paint.animations ?? []).some(b => lasting(b) || running(b)));
     for (const s of still) report(warnings, 'W_A11Y_MOTION', 'warning', `${row.box.label} runs animation ${a.name} (${a.duration} × ${a.count}) and prefers-reduced-motion: reduce does not stop it; moving content over 5s needs a pause mechanism`, row, s.region, { rule: 'motion', animation: a });
+  }
+  // Checklist E4: a transition of a property that moves the box (its position, size or transform), over 5s, that
+  // prefers-reduced-motion: reduce leaves running (SC 2.3.3). Colour and opacity fade without moving: not motion.
+  const moving = property => /^(?:all|transform|translate|rotate|scale|inset(?:-.*)?|top|right|bottom|left|margin(?:-.*)?|padding(?:-.*)?|(?:min-|max-)?(?:width|height|inline-size|block-size)|offset(?:-.*)?|perspective|flex(?:-basis|-grow|-shrink)?|gap|row-gap|column-gap|grid-template-(?:rows|columns)|font-size|letter-spacing|line-height)$/.test(property);
+  const longMove = t => moving(t.property) && seconds(t.duration) > 5;
+  for (const row of geometry.filter(row => (row.paint.transitions ?? []).some(longMove) && visible(row) && !hiddenFrom(row.path))) {
+    const t = row.paint.transitions.find(longMove);
+    for (const s of (row.reducedMotion ?? []).filter(s => (s.paint.transitions ?? []).some(longMove)))
+      report(warnings, 'W_A11Y_TRANSITION_MOTION', 'warning', `${row.box.label} transitions ${t.property} over ${t.duration} and prefers-reduced-motion: reduce does not shorten it; a change of state then moves the box for over 5s, also for people who asked for less motion. Set transition: none (or a short duration) under @media (prefers-reduced-motion: reduce)`, row, s.region, { rule: 'motion', transition: t });
   }
   // flash (SC 2.3.1): an animation whose frames swing the box's composited luminance by 0.1 or more (the darker side
   // below 0.8) is a pair of opposing changes per flash. Over three flashes in a second, on a box of at least the WCAG

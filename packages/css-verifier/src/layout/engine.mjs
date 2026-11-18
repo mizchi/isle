@@ -1737,7 +1737,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         contentBlockSize: contentBlock ?? null, fontSize: style['font-size'],
         // The focused paint (paint-only :focus/:focus-visible/:focus-within rules) of focusable boxes.
         ...(focusableBox(box) || box.tag === 'a' ? { hoverStates: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, hoverState).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
-        ...(style['animation-name'] !== 'none' ? { reducedMotion: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set(['prefers-reduced-motion:reduce'])).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
+        // (a transition too, checklist E4: whether reduce shortens it)
+        ...(style['animation-name'] !== 'none' || /[1-9]/.test(String(style['transition-duration'] ?? '')) ? { reducedMotion: styles(box, region, parents.map(p => ({ ...p, names: p.names ?? [] })), parents.at(-1)?.style, false, false, new Set(['prefers-reduced-motion:reduce'])).map(s => ({ region: s.region, paint: paintFacts(s.style) })) } : {}),
         // Both checked states of a checkbox/radio (paint-only :checked rules), for the checked-indicator rule.
         // A ::before/::after generated in a state is described by its content and paint (`marks`); one that is not
         // absolutely positioned would move the layout (`markUnknown`).
