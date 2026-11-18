@@ -79,3 +79,16 @@ test('an arbitrary rotation composed with translations and scales is bounded by 
   // em translations and the integrity checks (overflow) stay Unknown, as for a lone arbitrary rotation.
   assert.equal(acc('.a{transform:rotate(30deg) translateX(1em)}').status, 'unknown');
 });
+
+// Checklist B3: transform-origin. About an origin O the map is O + A(p − O) + t, which is the map about the centre C
+// plus the translation (I − A)(O − C); the box here is 100 × 40, its centre (50, 20).
+test('transform-origin adds (I − A)(O − C) to the map about the centre', () => {
+  same('.a{transform-origin:0 0;transform:scale(2)}', '.a{transform:translate(50px, 20px) scale(2)}');
+  same('.a{transform-origin:top left;transform:scale(2)}', '.a{transform:translate(50px, 20px) scale(2)}');
+  same('.a{transform-origin:100% 100%;scale:0.5}', '.a{transform:translate(25px, 10px) scale(0.5)}');
+  same('.a{transform-origin:right bottom;scale:0.5}', '.a{transform:translate(25px, 10px) scale(0.5)}');
+  same('.a{transform-origin:10px 0;transform:rotate(90deg)}', '.a{transform:translate(-60px, 20px) rotate(90deg)}');
+  same('.a{transform-origin:center;transform:scale(2)}', '.a{transform:scale(2)}');
+  same('.a{transform-origin:0 0 0;transform:scale(2)}', '.a{transform:translate(50px, 20px) scale(2)}');
+  for (const c of ['.a{transform-origin:1em 0;transform:scale(2)}', '.a{transform-origin:0 0 5px;transform:scale(2)}']) assert.equal(run(c).status, 'unknown', c);
+});

@@ -65,3 +65,27 @@ test('composed arbitrary rotations: where the browser paints the box over the ne
   }
   expect(overlapping).toBeGreaterThan(3);
 });
+
+// Checklist B3: transform-origin. In each browser, the map about an origin O paints the box where the map about the
+// centre with the extra translation (I − A)(O − C) does (the formula the analysis uses), for random origins and
+// quarter-turn rotations and scales.
+test('transform-origin paints the box where the centre map plus (I − A)(O − C) does', async ({page}) => {
+  await page.setViewportSize({width: 600, height: 400});
+  let seed = 5; const rand = n => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % n; };
+  const W = 80, H = 30, cases = [];
+  for (let i = 0; i < 40; i++) {
+    const [ox, oy] = [[`${rand(100)}%`, `${rand(100)}%`], [`${rand(120) - 20}px`, `${rand(60) - 10}px`], [['left', 'center', 'right'][rand(3)], ['top', 'center', 'bottom'][rand(3)]]][rand(3)];
+    const turn = rand(4), sx = [1, 2, 0.5, 1.5][rand(4)], sy = [1, 2, 0.5][rand(3)];
+    const A = [[1, 0, 0, 1], [0, -1, 1, 0], [-1, 0, 0, -1], [0, 1, -1, 0]][turn].map(v => v);
+    // A = R·S (rotate then scale in the list order rotate() scale(): the scale applies first).
+    const M = [A[0] * sx, A[1] * sy, A[2] * sx, A[3] * sy];
+    const px = (v, size) => v.endsWith('%') ? Number(v.slice(0, -1)) / 100 * size : v.endsWith('px') ? Number(v.slice(0, -2)) : { left: 0, top: 0, center: size / 2, right: size, bottom: size }[v];
+    const vx = px(ox, W) - W / 2, vy = px(oy, H) - H / 2;
+    const dx = (1 - M[0]) * vx - M[1] * vy, dy = -M[2] * vx + (1 - M[3]) * vy;
+    const list = `rotate(${turn * 90}deg) scale(${sx}, ${sy})`;
+    cases.push([`transform-origin:${ox} ${oy};transform:${list}`, `transform:translate(${dx}px, ${dy}px) ${list}`]);
+  }
+  await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}.c{position:relative;height:200px}.x{position:absolute;left:250px;top:80px;width:${W}px;height:${H}px}</style></head><body>${cases.map(([a, b]) => `<div class="c"><div class="x" style="${a}"></div><div class="x" style="${b}"></div></div>`).join('')}</body></html>`);
+  const rects = await page.evaluate(() => [...document.querySelectorAll('.c')].map(c => [...c.children].map(x => { const r = x.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(v => Math.round(v * 16) / 16); })));
+  rects.forEach(([a, b], i) => expect(a, `${cases[i][0]} vs ${cases[i][1]}`).toEqual(b));
+});
