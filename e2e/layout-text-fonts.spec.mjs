@@ -290,6 +290,25 @@ test('spaced line profiles (letter 0.12em, word 0.16em) match Chromium', async (
 });
 
 // Inline bounds: a link inside one line of measured text lies inside the outer bounds and covers the inner ones.
+// vertical-align off the baseline raises or lowers the inline box and makes the line taller, by amounts that differ
+// between browsers: Unknown; top and bottom with the text's own font change nothing.
+test('vertical-align on an inline box inside measured text', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the guide first.';
+  const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': 'guide'}}}});
+  const html = '<div class="page"><p class="p">Read the <a class="u" href="#x">guide</a> first.</p></div>';
+  for (const v of ['baseline', 'top', 'bottom', 'middle', 'super', 'sub', 'text-top', '5px', '-3px']) {
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p{font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}.u{color:#000;vertical-align:${v}}`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 400, max: 900, height: {min: 300, max: 300}}, boxes});
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const height = await page.evaluate(() => document.querySelector('.p').getBoundingClientRect().height);
+    // Known exactly where the line keeps its 24px; Unknown wherever it does not.
+    expect(report.status === 'unknown', `${v}: line ${height}px`).toBe(height !== 24);
+  }
+});
+
 test('inline element bounds contain the rendered inline box', async ({page}) => {
   const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
   const roboto = {family: 'Roboto', size: 20, lineHeight: 20, weight: 400};
@@ -301,11 +320,12 @@ test('inline element bounds contain the rendered inline box', async ({page}) => 
     {font: roboto, content: 'Tiny link at the start', piece: 'Tiny'},
   ];
   // text-align moves the line (checklist D3): centred and at the end too.
-  for (const align of ['start', 'center', 'right']) for (const {font, content, piece} of cases) {
+  // Vertical padding on the inline box extends its box above and below the line (checklist D3).
+  for (const pad of ['', '.u{padding:4px 0}']) for (const align of ['start', 'center', 'right']) for (const {font, content, piece} of cases) {
     const at = content.indexOf(piece);
     const html = `<div class="page"><p class="p">${content.slice(0, at)}<a class="u" href="#x">${piece}</a>${content.slice(at + piece.length)}</p></div>`;
     const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:${font.lineHeight + 8}px;padding:4px 7px;background:#fff;color:#000}.p{font-family:"${font.family}";font-size:${font.size}px;line-height:${font.lineHeight}px;font-weight:${font.weight};white-space:nowrap}.u{color:#000}`;
-    const alignedCSS = css + `.p{text-align:${align}}`;
+    const alignedCSS = css + `.p{text-align:${align}}` + pad;
     const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': piece}}}});
     const report = analyzeHTML(html, {name: 'Page', css: alignedCSS, viewport: {min: 400, max: 900, height: {min: 300, max: 300}}, boxes});
     const [bound] = report.inlineBounds ?? [];
@@ -319,7 +339,7 @@ test('inline element bounds contain the rendered inline box', async ({page}) => 
     expect(rects.length).toBe(1);
     const [r] = rects, o = bound.outer, i = bound.inner;
     const box = b => ({x: at400(b.inlineStart), y: at400(b.blockStart), w: at400(b.inlineSize), h: at400(b.blockSize)});
-    const O = box(o), I = i && box(i), tag = `${align} ${font.family} ${JSON.stringify(content)}`;
+    const O = box(o), I = i && box(i), tag = `${pad} ${align} ${font.family} ${JSON.stringify(content)}`;
     expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.x + r.w, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);
     expect(r.y, `${tag} top`).toBeGreaterThanOrEqual(O.y - 1e-9); expect(r.y + r.h, `${tag} bottom`).toBeLessThanOrEqual(O.y + O.h + 1e-9);
     expect(I, tag).toBeTruthy();

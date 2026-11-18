@@ -321,6 +321,11 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
   揃う(CSS Text 3 §6.1)ので、収まる幅だけで矩形を出す。折り返す文字列では、次の改行の幅(allowance で広げた値)の少し下(allowance の
   分)で、ブラウザーがもう次の改行で並べることがある(行の幅が変わる)。そこには矩形を出さない(`alignBelow`)。`justify` と rtl は
   まだ矩形を出さない。3 つのブラウザーで、start・center・right の 3 通りで、上の 2 つの e2e が通る。
+- **inline の箱の上下の padding と vertical-align**(チェックリスト D3):上下の padding(と border)は行の高さを変えず、箱を content area
+  の上下に広げる(描画と hit test の範囲。Chromium・Firefox・WebKit で 19px のリンクが `padding: 4px 0` で 27px)。矩形の上下をその分広げる
+  (以前は広げず、覆いや focus の隠れの判定が範囲の外を見落としうる誤り)。`vertical-align` が baseline・top・bottom 以外の inline の箱は
+  行を高くする(super で 24px → 29.4〜30.3px のようにブラウザーで違う)ので、測った文字の大きさが成り立たない:U_LAYOUT_INLINE
+  (以前は 24px のまま Verified:誤り)。
 - **table cell の中**:cell は行の高さに伸び、行は `vertical-align` で揃う(UA は tbody/tr が middle、td/th はそれを継承。以前は baseline としていた:誤り)。
   top・middle・bottom は行数 × line-height の高さを content box の中でずらし(Chromium で測定)、baseline は行全体の揃えなので矩形を出さない
   (以前は cell の上端に置いていたので、高い行の中のリンクの位置が誤っていた)。

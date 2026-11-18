@@ -49,3 +49,17 @@ test('aligned wrapping text has no bounds within the allowance below a line brea
   // justify (other than the last line) is not modeled: no bounds.
   assert.equal(bounds('justify', 'Read the guide first.', 'guide').length, 0);
 });
+
+// The inline box's own vertical padding extends its box; vertical-align off the baseline makes the line taller.
+const one = extra => {
+  const boxes = metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.u': 'guide'}}}});
+  return analyzeHTML('<html lang="en"><body><div class="page"><p class="p">Read the <a class="u" href="#x">guide</a> first.</p></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0;padding:0}html,body,.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}${extra}`, viewport: {min: 320, max: 800, height: {min: 300, max: 300}}, boxes});
+};
+test('vertical padding extends the inline box; vertical-align off the baseline is Unknown', () => {
+  const [plain] = one('').inlineBounds, [padded] = one('.u{padding:4px 0 6px}').inlineBounds;
+  assert.equal(value(padded.outer.blockStart.constant), value(plain.outer.blockStart.constant) - 4);
+  assert.equal(value(padded.outer.blockSize.constant), value(plain.outer.blockSize.constant) + 10);
+  assert.equal(value(padded.inner.blockSize.constant), value(plain.inner.blockSize.constant) + 10);
+  for (const v of ['top', 'bottom', 'baseline']) assert.notEqual(one(`.u{vertical-align:${v}}`).status, 'unknown', v);
+  for (const v of ['super', 'sub', 'middle', 'text-top', '5px', '20%']) assert.equal(one(`.u{vertical-align:${v}}`).status, 'unknown', v);
+});

@@ -57,8 +57,12 @@
   測った)ので、block の中の block と同じく `W_LAYOUT_DECLARATION_INERT` を出して auto として解く。
 - [~] **D3. inline の中の行の配置**: 文字の行と inline の箱の位置。大きい。
   最初の一歩として、測った文字の中の inline の箱(`inlineBounds`)を `text-align: center`・`right`・`end` でも出す(以前は start と
-  left だけ)。行の幅の区間で外接・内接をずらし、改行が揺れる幅は除く(ADR-0013)。3 つのブラウザーで一致。残り: `justify`、rtl、
-  inline の箱の padding・border・margin、`vertical-align`、行の中の画像などの atomic inline、フォントの違う inline。
+  left だけ)。行の幅の区間で外接・内接をずらし、改行が揺れる幅は除く(ADR-0013)。3 つのブラウザーで一致。
+  **誤りの修正**: inline の箱の上下の padding は行を動かさないが箱(描画と hit test)を上下に広げる(19px のリンクが 27px になる)のに、
+  矩形に入れていなかった(覆いや focus の隠れの判定が甘くなる)。上下の padding だけ矩形を広げる。`vertical-align` が baseline・top・
+  bottom 以外(super、sub、middle、text-top、長さ、%)の inline の箱は、行を高くする(24px → 29px など、ブラウザーで量が違う)のに、
+  測った文字の高さのまま Verified にしていた。Unknown にする。残り: `justify`、rtl、inline の箱の左右の padding・border・margin
+  (文字の幅が変わる)、行の中の画像などの atomic inline、フォントの違う inline。
 
 ## E. 新しい警告のパターン
 

@@ -1330,7 +1330,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   const sixtyfourths = (value, round) => div(q(String(round(value * 64))), q(64));
   // A list of {region, outer, inner}: one piece for one line of text, one per width interval of the
   // line layout for wrapping text (none where the element is split across lines).
-  function inlineBounds(child, leaf, leafStyle, leafRow, region) {
+  function inlineBounds(child, leaf, leafStyle, leafRow, region, childStyle = {}) {
     const metrics = leaf.contract?.textMetrics;
     // Checklist D3: text-align moves each line by (content width − line width) × f: 0 at the start, 1/2 centred, 1 at the
     // end (ltr). Where the line does not fit it is start-aligned (CSS Text 3 §6.1), so only widths where it fits count.
@@ -1346,6 +1346,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const contentBlock = leafRow.block && diff(leafRow.block, scalar(['top', 'bottom'].map(side => add(px(leafStyle[`padding-${side}`]), px(leafStyle[`border-${side}`]))).reduce(add, zero)));
     const shift = lines => align === 'top' ? scalar(zero) : times(diff(contentBlock, scalar(mul(q(String(L)), q(lines)))), align === 'middle' ? div(q(1), q(2)) : q(1));
     let y = sum(leafRow.origin.block, scalar(leafRow.content.top));
+    // The inline box's vertical padding and border do not move the line but extend its box (painted and hit) above and
+    // below the content area (measured: padding: 4px 0 makes a 19px link 27px tall).
+    const vertical = side => { const v = ['padding', 'border'].map(k => String(childStyle[`${k}-${side}`] ?? '0')); return v.every(x => /^(?:0|\d+(?:\.\d+)?px)$/.test(x)) ? v.map(x => x === '0' ? zero : px(x)).reduce(add, zero) : null; };
+    const [padTop, padBottom] = [vertical('top'), vertical('bottom')];
+    if (!padTop || !padBottom) return null;
     const rect = (x0, x1, y0, y1, shift = null) => cmp(x1, x0) > 0 && cmp(y1, y0) > 0 ? { origin: { inline: sum(shift ? sum(x, shift) : x, scalar(x0)), block: sum(y, scalar(y0)) }, inline: scalar(sub(x1, x0)), block: scalar(sub(y1, y0)) } : null;
     const aligned = cmp(alignFactor, zero) !== 0;
     // An aligned line of width [lo, hi]: the outer bound starts where the widest line puts it and ends where the
@@ -1354,8 +1359,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const lo = aligned ? sixtyfourths(width[0], Math.floor) : zero, hi = aligned ? sixtyfourths(width[1], Math.ceil) : zero, spread = mul(sub(hi, lo), alignFactor);
       // (Both bounds are relative to the widest line's position; spread is how much further the narrowest one goes.)
       const outerShift = aligned ? times(diff(leafRow.content.inline, scalar(hi)), alignFactor) : null;
-      return { region: r, outer: rect(sixtyfourths(b.start[0], Math.floor), add(sixtyfourths(b.end[1], Math.ceil), spread), sixtyfourths(b.top[0], Math.floor), sixtyfourths(b.bottom[1], Math.ceil), outerShift),
-        inner: rect(add(sixtyfourths(b.start[1], Math.ceil), spread), sixtyfourths(b.end[0], Math.floor), sixtyfourths(b.top[1], Math.ceil), sixtyfourths(b.bottom[0], Math.floor), outerShift) };
+      return { region: r, outer: rect(sixtyfourths(b.start[0], Math.floor), add(sixtyfourths(b.end[1], Math.ceil), spread), sub(sixtyfourths(b.top[0], Math.floor), padTop), add(sixtyfourths(b.bottom[1], Math.ceil), padBottom), outerShift),
+        inner: rect(add(sixtyfourths(b.start[1], Math.ceil), spread), sixtyfourths(b.end[0], Math.floor), sub(sixtyfourths(b.top[1], Math.ceil), padTop), add(sixtyfourths(b.bottom[0], Math.floor), padBottom), outerShift) };
     };
     const fits = (r, width) => !aligned ? r : r && clip(r, diff(leafRow.content.inline, scalar(sixtyfourths(width[1], Math.ceil))));
     const base = y;
@@ -1386,6 +1391,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const generatedText = generatedElsewhere(child, state.region, parents, style);
       if (generatedText) child.generated = generatedText;
       if (style.display !== 'inline' || style.position !== 'static' || style.float !== 'none') throw Object.assign(new Error(`${child.label} inside text must stay display: inline and static to keep the text's measured size`), { code: 'U_LAYOUT_INLINE' });
+      // vertical-align other than baseline, top or bottom raises or lowers the inline box, and the line box grows to
+      // hold it (measured: super, sub, middle, text-top and lengths all change the line's height in Chromium, Firefox
+      // and WebKit, by amounts that differ between them). top and bottom with the text's own font change nothing.
+      if (!['baseline', 'top', 'bottom'].includes(String(style['vertical-align'] ?? 'baseline'))) throw Object.assign(new Error(`${child.label} inside text has vertical-align: ${style['vertical-align']}, which moves it off the baseline and makes the line taller; the measured text height does not hold`), { code: 'U_LAYOUT_INLINE' });
       // auto margins of inline boxes compute to 0.
       for (const side of ['left', 'right']) for (const key of [`padding-${side}`, `border-${side}`, `margin-${side}`]) if (!['0', '0px', ...(key.startsWith('margin') ? ['auto'] : [])].includes(String(style[key]))) throw Object.assign(new Error(`${child.label} inside text has horizontal ${key}; inline box edges change the measured text`), { code: 'U_LAYOUT_INLINE' });
       if (leaf.contract?.textMetrics && fontKeys.some(key => style[key] !== leafStyle[key])) throw Object.assign(new Error(`${child.label} changes the font inside text measured as one run`), { code: 'U_LAYOUT_INLINE' });
@@ -1402,7 +1411,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const own = [...chain, paintFacts(style)];
       geometry.push({ box: child, path: child.path, region: state.region, origin: null, inline: null, block: null, position: 'static', inlineFlow: true,
         borders: { left: zero, right: zero, top: zero, bottom: zero }, overflow: 'visible', overflowValue: 'visible', painted: paints(style), paint: paintFacts(style), chain: own, parentText: leaf.path,
-        ...(leafRow ? { bounds: inlineBounds(child, leaf, leafStyle, leafRow, state.region) ?? undefined } : {}) });
+        ...(leafRow ? { bounds: inlineBounds(child, leaf, leafStyle, leafRow, state.region, style) ?? undefined } : {}) });
       if (child.children?.length) inlineContent({ ...child, inline: child.children, contract: leaf.contract }, style, state.region, [...parents, { box: child, style }], own);
     }
   }
