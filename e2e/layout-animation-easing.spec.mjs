@@ -120,3 +120,24 @@ test('a transitioned starting value moves what follows while the box appears, ex
     expect(reported, `${c}: moves in the browser: ${moved}`).toBe(moved);
   }
 });
+
+// Scroll-driven animations (checklist A3): .b moves as the page scrolls exactly where the analysis reports a
+// scroll-driven shift of it. A browser without scroll-driven animations runs the keyframes on time instead; there the
+// analysis must only not miss a move.
+test('a scroll-driven layout animation moves what follows as the page scrolls, where the analysis says', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  const html5 = '<div class="page"><div class="a"></div><div class="b"></div><div class="tall"></div></div>';
+  const base5 = '*{box-sizing:border-box;margin:0}body,.page{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:40px}.b{height:40px}.tall{height:2000px}@keyframes grow{to{height:80px}}@keyframes bar{to{transform:scaleX(0.5)}}';
+  await page.setContent('<!doctype html><html lang="en"><body></body></html>');
+  const supported = await page.evaluate(() => CSS.supports('animation-timeline: scroll()'));
+  for (const c of ['.a{animation:grow linear both}.page .a{animation-timeline:scroll()}', '.a{animation:grow linear both}.page .a{animation-timeline:scroll(root block);animation-range:0% 50%}', '.a{animation:bar linear both}.page .a{animation-timeline:scroll()}']) {
+    const css = base5 + c;
+    const r = analyzeHTML(`<html lang="en"><body>${html5}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, scrollbars: [{name: 'overlay', inlineSize: 0, blockSize: 0}]});
+    expect(r.status, `${c}: ${JSON.stringify(r.diagnostics.map(d => d.message))}`).not.toBe('unknown');
+    const reported = r.diagnostics.some(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT' && d.box === '.b' && d.scrollDriven);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html5}</body></html>`);
+    const moved = await page.evaluate(async () => { const seen = new Set(), max = document.documentElement.scrollHeight - innerHeight; for (let y = 0; y <= max; y += Math.max(1, Math.floor(max / 60))) { scrollTo(0, y); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); seen.add(Math.round((document.querySelector('.b').getBoundingClientRect().top + scrollY) * 64)); } return seen.size > 1; });
+    if (supported) expect(reported, `${c}: moves as the page scrolls: ${moved}`).toBe(moved);
+    else expect(reported || !moved, `${c}: moves, not reported`).toBe(true);
+  }
+});

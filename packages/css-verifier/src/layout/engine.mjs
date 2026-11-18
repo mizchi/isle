@@ -1482,7 +1482,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         }
       }
       // Each animation of the list (animationsOf repeats the longhand lists to the names).
-      for (const a of animationsOf(style)) if (a.playState !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(a.duration) && keyframeFrames.get(a.name)?.some(frame => frame.layout)) animated.push({ box, region, name: a.name, position: style.position, duration: a.duration, count: a.count, direction: a.direction, easing: a.easing, delay: a.delay, fill: a.fill, style });
+      // A scroll-driven animation (scroll() / view()) runs with the scroll position whatever its duration.
+      for (const a of animationsOf(style)) { const scrollDriven = /^(?:scroll|view)\(/.test(a.timeline); if (a.playState !== 'paused' && (scrollDriven || !/^-?0+(?:\.0+)?m?s$/.test(a.duration)) && keyframeFrames.get(a.name)?.some(frame => frame.layout)) animated.push({ box, region, name: a.name, position: style.position, duration: a.duration, count: a.count, direction: a.direction, easing: a.easing, delay: a.delay, fill: a.fill, scrollDriven, style }); }
       // A bar fixed to the bottom edge under viewport-fit=cover: its content must clear the bottom safe area (the home
       // indicator), so its bottom padding has to be at least that inset (env(safe-area-inset-bottom)).
       if (style.$fixed && cover && options.safeArea?.bottom > 0 && ['0', '0px'].includes(style.bottom) && (box.children ?? []).length && cmp(px(style['padding-bottom']), q(String(options.safeArea.bottom))) < 0 && !layoutWarnings.some(w => w.code === 'W_LAYOUT_SAFE_AREA' && w.path === box.path))
@@ -3541,7 +3542,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // The score bound of one 5 s session window (Chromium's CLS window), under the premise that boxes move
       // monotonically between keyframes. Missing 0% / 100% keyframes are the box's own (base) layout.
       const found = diagnostics.filter(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT' && d.animatedPath === entry.box.path && d.animation === entry.name);
-      if (complete && found.length && block && options.viewport.height) {
+      // Scroll-driven: the shifts happen as the page scrolls (not input for CLS), as often as it is scrolled; no time
+      // window bounds the score.
+      if (entry.scrollDriven) for (const d of found) if (!d.scrollDriven) { d.scrollDriven = true; d.message += ` The animation is scroll-driven (${entry.style['animation-timeline']}): it moves the boxes as the page scrolls, which is not input for CLS, and as often as the page is scrolled.`; }
+      if (complete && found.length && block && options.viewport.height && !entry.scrollDriven) {
         const frames = [...states].sort((a, b) => a.offset - b.offset);
         if (!frames.length || frames[0].offset > 0) frames.unshift({ offset: 0, sizes });
         if (frames.at(-1).offset < 1) frames.push({ offset: 1, sizes });

@@ -158,3 +158,18 @@ test('the score bound counts the start jump only after a delay without backwards
   // The longhands too.
   assert.equal(bound('.a{animation:grow .5s 2}.page .a{animation-fill-mode:forwards}').endJump, undefined);
 });
+
+// Scroll-driven animations (checklist A3): animation-timeline: scroll() / view() ties the progress to scrolling, which
+// is not input for CLS, so layout keyframes shift boxes as the page scrolls. The whole progress 0..1 is checked (keyframes
+// and easing extremes); there is no time window to bound the score in (the page can be scrolled back and forth).
+test('a scroll-driven layout animation is checked over its whole progress, with no score bound', () => {
+  const [moved] = shifts(run('@keyframes grow{to{height:80px}}.a{animation:grow linear both}.page .a{animation-timeline:scroll()}'));
+  assert.deepEqual([moved?.box, moved?.scrollDriven, moved?.scoreBound], ['.b', true, undefined]);
+  assert.match(moved.message, /scroll/);
+  assert.equal(shifts(run('@keyframes grow{to{height:80px}}.a{animation:grow linear both}.page .a{animation-timeline:view()}')).length, 1);
+  assert.equal(shifts(run('@keyframes grow{to{height:80px}}.a{animation:grow linear both}.page .a{animation-timeline:scroll(root block);animation-range:0% 50%}')).length, 1);
+  // A paint-only scroll-driven animation (the usual reading progress bar) shifts nothing.
+  assert.equal(run('@keyframes bar{to{transform:scaleX(1)}}.a{animation:bar linear both}.page .a{animation-timeline:scroll()}').status, 'verified');
+  // A named timeline (scroll-timeline-name on some scroller) is not modeled.
+  assert.equal(run('@keyframes grow{to{height:80px}}.a{animation:grow linear both}.page .a{animation-timeline:--list}').status, 'unknown');
+});
