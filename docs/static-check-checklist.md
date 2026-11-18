@@ -55,7 +55,7 @@
   した)。flex の項目の `min()`・`max()`・`clamp()` の幅と basis も、区間ごとに分けて解く(A5 の `max(0px, calc(…))` の行き過ぎも
   これで解ける)。伸ばされない(align-self: start などの)grid・row の flex の項目の中の `%` の高さは auto になる(3 つのブラウザーで
   測った)ので、block の中の block と同じく `W_LAYOUT_DECLARATION_INERT` を出して auto として解く。
-- [~] **D3. inline の中の行の配置**: 文字の行と inline の箱の位置。大きい。
+- [x] **D3. inline の中の行の配置**: 文字の行と inline の箱の位置。大きい。
   最初の一歩として、測った文字の中の inline の箱(`inlineBounds`)を `text-align: center`・`right`・`end` でも出す(以前は start と
   left だけ)。行の幅の区間で外接・内接をずらし、改行が揺れる幅は除く(ADR-0013)。3 つのブラウザーで一致。
   **誤りの修正**: inline の箱の上下の padding は行を動かさないが箱(描画と hit test)を上下に広げる(19px のリンクが 27px になる)のに、
@@ -82,7 +82,10 @@
   行の幅のすべてに入る)。Chromium・WebKit で 120〜900px の行数と矩形が一致。
   折り返す文字列の太さの違う inline の箱も、太さの run を shaping の run として分けて改行を求め、行ごとに run の和で位置を出す
   (行が太さの run を切る行には矩形を出さない)。Chromium・WebKit で行数と矩形が一致。
-  残り: 折り返す文字列の画像、行を高くする画像、bidi の混ざった文字列。
+  折り返す文字列の画像・アイコンも、U+FFFC の置き場所として改行を求める(3 つのブラウザーとも、空白がなくても画像の前後で改行できた:
+  前後を改行の機会にし、幅は追加の advance、shaping からは除く)。Chromium・WebKit で行数と矩形が一致。
+  意図して Unknown のまま残すもの: 行を高くする画像(行の高さがブラウザーごとに違う)、bidi の混ざった rtl の文字列(並べ替えを
+  測らない)、大きさや family の違う inline。
 
 ## E. 新しい警告のパターン
 

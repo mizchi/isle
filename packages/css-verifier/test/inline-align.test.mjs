@@ -90,8 +90,12 @@ test('horizontal edges of inline boxes: measured with the contract, else Unknown
   // A weight in wrapping text: its own shaping run in the line layout (bold is wider).
   const boldWrap = metrics.resolveBoxes({'.p': {text: {content: 'Read the installation guide first.', font, inline: {'.u': {text: 'installation guide', weight: 700}}}, wrap: 'normal'}})['.p'];
   assert.ok(boldWrap.minInlineSize > plainWrap.minInlineSize && boldWrap.maxInlineSize > plainWrap.maxInlineSize);
-  // Atomic boxes in wrapping text are not measured.
-  assert.throws(() => metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.i': {atomic: [16, 16], at: 9}}}, wrap: 'normal'}}), /one-line/);
+  // An icon in wrapping text: its width in the line layout, a break opportunity on both sides (so it never widens the
+  // widest unbreakable run beyond itself), and too tall an icon refused.
+  const iconWrap = metrics.resolveBoxes({'.p': {text: {content: 'Read the installation guide first.', font, inline: {'.i': {atomic: [16, 16], at: 9}}}, wrap: 'normal'}})['.p'];
+  assert.equal(iconWrap.minInlineSize, plainWrap.minInlineSize);
+  assert.ok(Math.abs(iconWrap.maxInlineSize - plainWrap.maxInlineSize - 16) < 0.1);
+  assert.throws(() => metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.i': {atomic: [30, 30], at: 9}}}, wrap: 'normal'}}), /taller than the line's ascent/);
 });
 
 test('an inline box in another weight: measured as its own run, else Unknown', () => {

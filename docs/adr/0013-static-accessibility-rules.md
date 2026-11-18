@@ -344,6 +344,9 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
   ascent + half-leading で、Chromium は切り捨て、Firefox・WebKit は端数のまま:その区間)。行の ascent より高い箱は行を高くし、量が
   ブラウザーで違う(40px の画像で 47px と 46.5px、下の margin は Chromium だけ無視した)ので、契約が拒む。engine は CSS の大きさが
   契約と同じで、端がなく、vertical-align: baseline のときだけ受け入れる。
+  折り返す文字列では、画像を U+FFFC の置き場所として内容に入れて改行を求める。Chromium・Firefox・WebKit は空白のない語の間の画像の前後でも
+  改行したので、置き場所の前後を改行の機会にし、幅は追加の advance として行に足し、shaping からは除く。画像の矩形は、その行の前の文字と
+  端の和だけ後ろの baseline の上。
 - **rtl**(チェックリスト D3):`direction: rtl` の段落の、ヘブライ文字と空白だけの文字列では、見た目の順は論理順の逆なので、部分は
   [行の右端 − end, 行の右端 − start] にある。行の右端は content の左から C·(1 − f) + w·f(f は start・right で 0、center で 1/2、
   left・end で 1)。Chromium は右から左の単語を 1 つずつ layout unit に丸めるので、部分の端の誤差にも単語数 × 1/64 を足す。ほかの

@@ -618,6 +618,48 @@ test('inline box edges and weights in wrapping text: line count and bounds', asy
   }
 });
 
+// An icon in wrapping text (checklist D3): a break opportunity on both sides, its width in the line layout; the
+// paragraph's height and the icon's and link's bounds follow the browser at every width.
+test('an icon in wrapping text: line count and bounds', async ({page}) => {
+  test.setTimeout(240_000);
+  test.skip(test.info().project.name !== 'chromium' && test.info().project.name !== 'webkit', 'Firefox rounds to 1/60px (ADR-0010)');
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the full installation guide before you start the upgrade of the cluster.';
+  const img = (w, h) => `<img class="i" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" width="${w}" height="${h}">`;
+  for (const [w, h, at] of [[16, 16, 14], [40, 12, 9], [16, 16, 76]]) {
+    const before = [...content].slice(0, at).join(''), rest = [...content].slice(at).join('');
+    const link = t => t.replace('installation guide', '<a class="u" href="#x">installation guide</a>');
+    const html = `<div class="page"><p class="p">${link(before)}${img(w, h)}${link(rest)}</p></div>`;
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:0 10px;background:#fff;color:#000}.p{font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400}.u{color:#000}`;
+    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': 'installation guide', '.i': {atomic: [w, h], at}}}, wrap: 'normal'}});
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 120, max: 900, height: {min: 600, max: 600}}, boxes});
+    const tag0 = `${w}x${h} at ${at}`;
+    expect(report.status === 'unknown', `${tag0}: ${JSON.stringify(report.diagnostics.map(d => d.message))}`).toBe(false);
+    let placed = 0;
+    for (let width = 120; width <= 900; width += 11) {
+      const atv = a => value(a.coefficient) * width + value(a.heightCoefficient ?? '0') * 600 + value(a.constant);
+      const holds = row => (row.regionConstraints ?? []).every(c => { const slack = value(c.coefficient) * width + value(c.heightCoefficient ?? '0') * 600 + value(c.constant); return c.strict ? slack > 1e-9 : slack >= -1e-9; });
+      await page.setViewportSize({width, height: 600});
+      await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+      await page.evaluate(() => document.fonts.ready);
+      const b = await page.evaluate(() => ({h: document.querySelector('.p').getBoundingClientRect().height, i: document.querySelector('.i').getBoundingClientRect().toJSON(), u: [...document.querySelector('.u').getClientRects()].map(r => r.toJSON())}));
+      const lines = boxes['.p'].intrinsicBlockSize.filter(e => e.atLeastInlineSize <= width - 20).at(-1);
+      if (lines?.blockSize !== undefined) expect(b.h, `${tag0} at ${width}: height`).toBeLessThanOrEqual(lines.blockSize + 1e-9);
+      for (const key of ['i', 'u']) {
+        const bound = report.inlineBounds.filter(x => x.box === `.${key}`).find(holds);
+        if (!bound) continue;
+        const r = key === 'i' ? b.i : (expect(b.u.length, `${tag0} at ${width} .u`).toBe(1), b.u[0]);
+        placed++;
+        const box = q => ({x: atv(q.inlineStart), y: atv(q.blockStart), w: atv(q.inlineSize), h: atv(q.blockSize)}), O = box(bound.outer), tag = `${tag0} at ${width} .${key}`;
+        expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.x + r.width, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);
+        expect(r.y, `${tag} top`).toBeGreaterThanOrEqual(O.y - 1e-9); expect(r.y + r.height, `${tag} bottom`).toBeLessThanOrEqual(O.y + O.h + 1e-9);
+      }
+    }
+    expect(placed, tag0).toBeGreaterThan(20);
+  }
+});
+
 // rtl (checklist D3): Hebrew text (letters and spaces only, so its visual order is the logical one reversed) in a
 // direction: rtl paragraph, one line and wrapping, aligned at the start (right), centred and at the end (left). Hebrew
 // widths are calibrated to Chromium (ADR-0010).
