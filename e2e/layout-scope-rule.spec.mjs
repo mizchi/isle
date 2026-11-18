@@ -1,5 +1,5 @@
 // @scope: where the analysis applies scoped rules (inside the root only; at equal specificity the nearer root wins,
-// and a scoped declaration beats a later unscoped one), every box is as tall in the browser as the analysis says.
+// and a scoped declaration beats a later unscoped one; limits exclude their elements and what is inside them), every box is as tall in the browser as the analysis says.
 import {test, expect} from '@playwright/test';
 import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
 
@@ -16,6 +16,13 @@ const cases = [
   '@scope (div.card){.k{height:30px}}@scope (.card){.k{height:15px}}',
   '@scope (.card){@media (min-width: 1px){.k{height:30px}}}',
   '.k{height:10px !important}@scope (.card){.k{height:30px}}',
+  // Limits (to …): the limit elements and what is inside them are out of that root's scope.
+  '.k{height:10px}@scope (.card) to (.in){.k{height:30px}}',
+  '.k{height:10px}@scope (.card) to (.card){.k{height:30px}}',
+  '.k{height:10px}@scope (body) to (.card){.k{height:30px}}',
+  '.k{height:10px}@scope (body) to (section){.k{height:30px}}',
+  '.k{height:10px}@scope (.card) to (p){.k{height:30px}}',
+  '.k{height:10px}@scope (.card) to (.k){.k{height:30px}}',
 ];
 
 test('scoped rules: the analysis gives the browser\'s heights', async ({page}) => {

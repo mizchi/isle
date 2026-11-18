@@ -574,10 +574,14 @@ export function parseLayoutCSS(sheets, diagnostic) {
       // @scope (root) { … }: the rules inside apply to the root's descendants, and the nearer root wins ties (Cascade 6
       // §2.5). Only a root without a limit, with compound selectors inside (no :scope, &, or combinators), is modeled.
       if (node.type === 'atrule' && node.name.toLowerCase() === 'scope') {
-        const m = /^\(\s*([^()]+?)\s*\)$/.exec(node.params.trim());
-        if (!m || scope) { problem('U_LAYOUT_SELECTOR', `@scope ${node.params.trim()}: ${!m ? 'a limit (to …), an implicit root or a selector list root is' : 'a nested @scope is'} not modeled`, node.source.start.line); continue; }
+        const m = /^\(\s*([^()]+?)\s*\)(?:\s+to\s+\(\s*([^()]+?)\s*\))?$/i.exec(node.params.trim());
+        if (!m || scope) { problem('U_LAYOUT_SELECTOR', `@scope ${node.params.trim()}: ${!m ? 'an implicit root or a selector list is' : 'a nested @scope is'} not modeled`, node.source.start.line); continue; }
         let root;
-        try { root = compileSelector(m[1]); if (root.state || root.pseudoElement) throw new Error('a state or pseudo-element root'); } catch (error) { problem('U_LAYOUT_SELECTOR', `@scope (${m[1]}): ${error.message}`, node.source.start.line); continue; }
+        try {
+          root = compileSelector(m[1]); if (root.state || root.pseudoElement) throw new Error('a state or pseudo-element root');
+          // The limit (to …): its elements below the root, and what is inside them, are outside the scope.
+          if (m[2]) { if (/:scope\b|&/.test(m[2])) throw new Error('a limit relative to the root (:scope, &) is not modeled'); const limit = compileSelector(m[2]); if (limit.state || limit.pseudoElement) throw new Error('a state or pseudo-element limit'); root = { ...root, limit }; }
+        } catch (error) { problem('U_LAYOUT_SELECTOR', `@scope ${node.params.trim()}: ${error.message}`, node.source.start.line); continue; }
         scope = root;
         try { visit(node.nodes ?? [], contexts, layer, filename, depth + 1, preferences); } finally { scope = null; }
         continue;

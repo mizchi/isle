@@ -20,6 +20,15 @@ test('at equal specificity the nearer scope root wins, and a scoped declaration 
   assert.deepEqual(heights('@scope (.card){.k{height:30px}}@scope (body){.k{height:20px}}'), ['30', '30', '20']);
 });
 
-test('limits, :scope, & and combinators inside @scope stay Unknown', () => {
-  for (const c of ['@scope (.card) to (.in){.k{height:30px}}', '@scope (.card){:scope{height:30px}}', '@scope (.card){& .k{height:30px}}', '@scope (.card){.card .k{height:30px}}', '@scope{.k{height:30px}}']) assert.equal(heights(c), 'unknown', c);
+test('a scope limit (to …) excludes the limit elements and what is inside them', () => {
+  // .in is a limit: the .k that is .in is outside the scope; the other .k inside .card is in it.
+  assert.deepEqual(heights('.k{height:10px}@scope (.card) to (.in){.k{height:30px}}'), ['30', '10', '10']);
+  // A limit that contains elements: the inner .card is a limit, so the .k inside it is out of the outer card's scope,
+  // but the inner .card is a root of its own (it matches .card) — its limit is below it, so its .k is in.
+  assert.deepEqual(heights('.k{height:10px}@scope (.card) to (.card){.k{height:30px}}'), ['30', '30', '10']);
+  assert.deepEqual(heights('.k{height:10px}@scope (body) to (.card){.k{height:30px}}'), ['10', '10', '30']);
+});
+
+test(':scope, & and combinators inside @scope stay Unknown', () => {
+  for (const c of ['@scope (.card){:scope{height:30px}}', '@scope (.card){& .k{height:30px}}', '@scope (.card){.card .k{height:30px}}', '@scope{.k{height:30px}}']) assert.equal(heights(c), 'unknown', c);
 });

@@ -125,8 +125,12 @@ function compileCompound(source, depth = 0) {
  * does. Without the whole ancestor chain (a component root whose page is not known) the answer is not known.
  */
 export function scopeProximity(selector, box, state) {
+  // The elements from box up to (not including) the candidate root: a limit among them puts box outside that root's
+  // scope (and outside every root above it, which the limit is also below).
+  const path = [box];
   let distance = 1, p = box[PARENT], last = box;
-  for (; p; p = p[PARENT], distance++) { if (matches(p.anonymous ? '__never__' : selector.scope, p, new Set())) return distance; last = p; }
+  const limited = () => selector.scope.limit && path.some(e => !e.anonymous && matches(selector.scope.limit, e, new Set()));
+  for (; p; p = p[PARENT], distance++) { if (!p.anonymous && matches(selector.scope, p, new Set())) { if (!limited()) return distance; } path.push(p); last = p; }
   if (!last.documentRoot) throw Object.assign(new Error(`@scope (${selector.scope.source}): whether ${box.label ?? box.tag} is inside a scope root depends on ancestors that are not known`), { code: 'U_LAYOUT_SELECTOR' });
   return null;
 }
