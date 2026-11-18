@@ -77,8 +77,9 @@ test('reset syntax errors retain the originating file and unsupported generated 
     '*::before {content:"generated";}', '@import "external.css";',
     '@layer outer {@layer inner {*{box-sizing:border-box;}}}',
     '@media (width > 400px) {@layer conditional {*{box-sizing:border-box;}}}',
-    '.copy {box-sizing:revert-layer;}',
   ]) assert.equal(run({ reset: [{ css }] }).status, 'unknown', css);
+  // revert-layer is resolved now (checklist C4): with no earlier layer it is the UA's content-box.
+  assert.notEqual(run({ reset: [{ css: '.copy {box-sizing:revert-layer;}' }] }).status, 'unknown');
 });
 
 test('ordered reset inputs and ancestry validate their closed contracts', () => {
