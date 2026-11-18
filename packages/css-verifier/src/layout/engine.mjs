@@ -450,6 +450,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['z-index'], css: at('z-index'),
               message: `${box.label}: z-index: ${style['z-index']} has no effect (it is position: static and not a flex or grid item, so it does not stack above or below its neighbours). Give it position: relative, or remove it`, ...ranges(r) });
         }
+        // F13: an absolutely positioned box with both insets and a size on an axis (and no auto margin there) is
+        // over-constrained: the end inset is ignored (right in ltr, left in rtl; bottom), CSS 2.2 §10.3.7 / §10.6.4.
+        if (['absolute', 'fixed'].includes(style.position)) for (const [a, b, size, m1, m2, label] of [['left', 'right', 'inline-size', 'margin-left', 'margin-right', 'width'], ['top', 'bottom', 'block-size', 'margin-top', 'margin-bottom', 'height']]) {
+          // (The declared value: the cascade already sets the ignored inset to auto.)
+          const declared = key => style.$sources?.[key]?.specified, set = key => declared(key) !== undefined && String(declared(key)).trim() !== 'auto';
+          if (!set(a) || !set(b) || !set(size) || String(style[m1]) === 'auto' || String(style[m2]) === 'auto') continue;
+          const ignored = a === 'left' && style.direction === 'rtl' ? 'left' : b;
+          if (!style.$sources?.[ignored] || layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(ignored))) continue;
+          layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: [ignored], css: at(ignored),
+            message: `${box.label}: ${ignored}: ${declared(ignored)} has no effect (it is position: ${style.position} with ${a}, ${b} and ${label} all set, which over-constrains it, so ${ignored} is ignored). Drop ${label} to stretch it between the insets, or drop ${ignored}`, ...ranges(r) });
+        }
         // F12: a transition with no duration (transition: opacity) is 0s: the change is instant (a delay only postpones it).
         for (const t of transitionsOf(style)) if (/^-?0+(?:\.0+)?m?s$/.test(String(t.duration)) && style.$sources?.['transition-property'] && style.$sources?.['transition-duration']?.specified === undefined && !layoutWarnings.some(w => w.code === 'W_CSS_TRANSITION_NO_DURATION' && w.path === box.path && w.property === t.property))
           layoutWarnings.push({ code: 'W_CSS_TRANSITION_NO_DURATION', severity: 'warning', box: box.label, path: box.path, property: t.property, css: at('transition-property'),

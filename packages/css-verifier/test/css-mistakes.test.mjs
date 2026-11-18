@@ -103,3 +103,13 @@ test('F12: a transition with no duration is instant', () => {
   assert.deepEqual(codes(run('.a{transition:opacity .2s, transform}'), 'W_CSS_TRANSITION_NO_DURATION').map(w => w.property), ['transform']);
   for (const css of ['.a{transition:opacity .2s}', '.a{transition:none}', '.a{transition-property:opacity;transition-duration:.3s}', '.a{transition:opacity 0s}']) assert.equal(codes(run(css), 'W_CSS_TRANSITION_NO_DURATION').length, 0, css);
 });
+
+test('F13: an over-constrained absolutely positioned box ignores its end inset', () => {
+  const html = '<div class="p"><div class="a"></div></div>';
+  const inert = (css, side) => codes(run(`.p{position:relative;height:100px}${css}`, html), 'W_LAYOUT_DECLARATION_INERT').some(w => w.properties.includes(side));
+  assert.equal(inert('.a{position:absolute;top:0;left:10px;right:10px;width:50px;height:10px}', 'right'), true);
+  assert.equal(inert('.a{position:absolute;top:0;bottom:0;left:0;width:10px;height:30px}', 'bottom'), true);
+  assert.equal(inert('.a{position:absolute;top:0;left:10px;right:10px;height:10px}', 'right'), false);
+  // Auto margins take up the slack instead (centring).
+  assert.equal(inert('.a{position:absolute;top:0;left:0;right:0;width:50px;margin:0 auto;height:10px}', 'right'), false);
+});
