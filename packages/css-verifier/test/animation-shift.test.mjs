@@ -71,9 +71,21 @@ test('an easing that overshoots its keyframes is checked at its extremes', () =>
   assert.equal(shifts(wrap('grow 1s infinite')).length, 0);
 });
 
-test('an overshoot of values that are not px lengths, or of several layout properties at once, is Unknown', () => {
+test('an overshoot of same-unit values and of properties that share their keyframes is checked at the shared extreme', () => {
+  // rem at the keyframes with a known root font size (6.25rem → 8.75rem at 16px is 100px → 140px): converted to px.
+  const rem = wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', 'html{font-size:16px}.a{width:6.25rem}@keyframes grow{to{width:8.75rem}}');
+  assert.notEqual(rem.status, 'unknown', JSON.stringify(rem.diagnostics.map(d => d.message)));
+  assert.equal(shifts(rem).filter(d => d.box === '.b').length, 1);
+  assert.equal(shifts(wrap('grow 1s linear infinite', 'html{font-size:16px}.a{width:6.25rem}@keyframes grow{to{width:8.75rem}}')).length, 0);
+  // Two properties between the same keyframes with one easing share the progress: one frame at the extreme.
+  const both = wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{width:140px;height:30px}}');
+  assert.notEqual(both.status, 'unknown');
+  assert.ok(shifts(both).some(d => d.box === '.b' && /overshoot/.test(d.message)));
+});
+
+test('an overshoot between mixed units, or of properties whose keyframes differ, is Unknown', () => {
   assert.equal(wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{width:56%}}').status, 'unknown');
-  assert.equal(wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{width:140px;height:30px}}').status, 'unknown');
+  assert.equal(wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{50%{height:30px}to{width:140px}}').status, 'unknown');
   // Without an overshoot those stay as before (checked at the keyframes).
   assert.notEqual(wrap('grow 1s linear infinite', '@keyframes grow{to{width:140px;height:30px}}').status, 'unknown');
 });

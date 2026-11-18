@@ -3448,10 +3448,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const states = []; let complete = true; // keyframe layouts for the score bound
       // The keyframes and the frames at the easing's extremes (an overshoot carries a value past its keyframes).
       const logical = { width: 'inline-size', height: 'block-size', 'min-width': 'min-inline-size', 'min-height': 'min-block-size', 'max-width': 'max-inline-size', 'max-height': 'max-block-size' };
-      const eased = easedFrames(keyframeFrames.get(entry.name), { easing: entry.easing, base: new Proxy({}, { get: (_, property) => { const v = entry.style[logical[property] ?? property]; return entry.position === 'relative' && ['top', 'bottom', 'left', 'right'].includes(property) && v === 'auto' ? '0px' : v; } }) });
+      const eased = easedFrames(keyframeFrames.get(entry.name), { easing: entry.easing, rem: unitContext.rootFontSize ? number(unitContext.rootFontSize) : undefined, base: new Proxy({}, { get: (_, property) => { const v = entry.style[logical[property] ?? property]; return entry.position === 'relative' && ['top', 'bottom', 'left', 'right'].includes(property) && v === 'auto' ? '0px' : v; } }) });
       if (eased.unknown) { diagnostics.push({ code: 'U_LAYOUT_ANIMATION_SHIFT', severity: 'unknown', message: `${entry.box.label}: animation ${entry.name}: ${eased.unknown}`, box: entry.box.label, path: entry.box.path }); continue; }
       for (const frame of eased.frames) {
-        const label = frame.extreme ? `${entry.name} between ${frame.extreme.from} and ${frame.extreme.to} (the easing ${frame.extreme.easing} ${frame.extreme.y > 1 || frame.extreme.y < 0 ? 'overshoots' : 'turns'} to ${frame.extreme.property} ${frame.extreme.value}px)` : `${entry.name} at ${number(q(String(Math.round(frame.offset * 1e4) / 100)))}%`;
+        const label = frame.extreme ? `${entry.name} between ${frame.extreme.from} and ${frame.extreme.to} (the easing ${frame.extreme.easing} ${frame.extreme.y > 1 || frame.extreme.y < 0 ? 'overshoots' : 'turns'} to ${frame.extreme.value})` : `${entry.name} at ${number(q(String(Math.round(frame.offset * 1e4) / 100)))}%`;
         // A nonzero px margin-top/left (the checked layout has zero margins) moves an in-flow box's own start: a shift
         // without a re-layout (margins are outside the layout subset).
         const starts = Object.fromEntries(frame.layout.split(';').flatMap(decl => {
