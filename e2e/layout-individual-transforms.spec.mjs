@@ -24,3 +24,20 @@ test('translate, rotate and scale paint the box where translate · rotate · sca
   const rects = await page.evaluate(() => [...document.querySelectorAll('.c')].map(c => [...c.children].map(x => { const r = x.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(v => Math.round(v * 64) / 64); })));
   rects.forEach(([a, b], i) => expect(a, `${cases[i][0]} vs transform: ${cases[i][1]}`).toEqual(b));
 });
+
+// Checklist B1: 3D syntax without depth paints the box where its 2D equivalent does, even under a perspective.
+test('3D transforms without depth paint the box where their 2D equivalents do', async ({page}) => {
+  await page.setViewportSize({width: 600, height: 400});
+  const pairs = [
+    ['transform:translateZ(0)', 'transform:none'], ['transform:translate3d(10px, 20px, 0)', 'transform:translate(10px, 20px)'],
+    ['transform:translate3d(10px, 20px, 0px) scale3d(2, 1, 5)', 'transform:translate(10px, 20px) scale(2, 1)'],
+    ['transform:rotateZ(90deg) scaleZ(3)', 'transform:rotate(90deg)'], ['transform:rotate3d(0, 0, 1, 90deg)', 'transform:rotate(90deg)'],
+    ['transform:rotate3d(0, 0, -2, 90deg)', 'transform:rotate(-90deg)'], ['translate:10px 20px 0', 'translate:10px 20px'],
+    ['rotate:z 90deg', 'rotate:90deg'], ['rotate:0 0 1 90deg', 'rotate:90deg'], ['scale:2 1 4', 'scale:2 1'],
+  ];
+  for (const perspective of ['', 'perspective:400px;']) {
+    await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}.c{position:relative;height:160px;${perspective}}.x{position:absolute;left:200px;top:60px;width:80px;height:30px}</style></head><body>${pairs.map(([a, b]) => `<div class="c"><div class="x" style="${a}"></div><div class="x" style="${b}"></div></div>`).join('')}</body></html>`);
+    const rects = await page.evaluate(() => [...document.querySelectorAll('.c')].map(c => [...c.children].map(x => { const r = x.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(v => Math.round(v * 64) / 64); })));
+    rects.forEach(([a, b], i) => expect(a, `${perspective} ${pairs[i][0]} vs ${pairs[i][1]}`).toEqual(b));
+  }
+});

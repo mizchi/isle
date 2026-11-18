@@ -21,8 +21,9 @@ test('translate, rotate and scale compose as translate · rotate · scale · tra
   assert.equal(run('.a{translate:none;rotate:none;scale:none}').status, run('').status);
 });
 
-test('3D values and an arbitrary rotation with another transform stay Unknown', () => {
-  for (const c of ['.a{translate:1px 2px 3px}', '.a{scale:1 1 2}', '.a{rotate:x 90deg}', '.a{rotate:30deg;translate:1px}']) assert.equal(run(c).status, 'unknown', c);
+test('3D values with depth and an arbitrary rotation with another transform stay Unknown', () => {
+  // (A z scale does nothing to a flat box: scale: 1 1 2 is scale: 1 1, checklist B1.)
+  for (const c of ['.a{translate:1px 2px 3px}', '.a{rotate:x 90deg}', '.a{rotate:30deg;translate:1px}']) assert.equal(run(c).status, 'unknown', c);
 });
 
 test('rotation angles: a leading-dot number and grad units are the same turns', () => {
@@ -42,4 +43,21 @@ test('rad angles: zero is no turn; any other is an arbitrary rotation (accessibi
 
 test('an angle too small to write without an exponent stays Unknown', () => {
   assert.equal(run('.a{rotate:0.0000001rad}').status, 'unknown');
+});
+
+// Checklist B1: 3D syntax without depth is the 2D transform (a flat box has z = 0, so a zero z translation and a z scale
+// change nothing; a rotation about z is a 2D rotation). translateZ(0) still makes a containing block for fixed boxes,
+// as any transform other than none does.
+test('3D transforms without depth analyse as their 2D equivalents', () => {
+  same('.a{transform:translateZ(0)}', '.a{transform:translate(0)}');
+  same('.a{transform:translate3d(10px, 20px, 0)}', '.a{transform:translate(10px, 20px)}');
+  same('.a{transform:translate3d(10px, 20px, 0px) scale3d(2, 1, 5)}', '.a{transform:translate(10px, 20px) scale(2, 1)}');
+  same('.a{transform:rotateZ(90deg) scaleZ(3)}', '.a{transform:rotate(90deg)}');
+  same('.a{transform:rotate3d(0, 0, 1, 90deg)}', '.a{transform:rotate(90deg)}');
+  same('.a{transform:rotate3d(0, 0, -2, 90deg)}', '.a{transform:rotate(-90deg)}');
+  same('.a{translate:10px 20px 0}', '.a{translate:10px 20px}');
+  same('.a{rotate:z 90deg}', '.a{rotate:90deg}');
+  same('.a{rotate:0 0 1 90deg}', '.a{rotate:90deg}');
+  same('.a{scale:2 1 4}', '.a{scale:2 1}');
+  for (const c of ['.a{transform:translateZ(10px)}', '.a{transform:rotateX(45deg)}', '.a{transform:rotate3d(1, 0, 0, 90deg)}', '.a{rotate:x 90deg}', '.a{transform:perspective(500px) translateZ(0)}']) assert.equal(run(c).status, 'unknown', c);
 });

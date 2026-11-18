@@ -352,16 +352,22 @@ function expand(property, value) {
     if (wide.has(value) || value === 'none') return [[property, value]];
     const parts = postcss.list.space(value);
     const fail = () => { throw new Error(`Unsupported ${property}: ${value} (only 2D values are modeled)`); };
-    const fn = property === 'translate' ? (parts.length > 2 ? fail() : `translate(${parts.join(',')})`)
-      : property === 'scale' ? (parts.length > 2 ? fail() : `scale(${parts.map(p => /%$/.test(p) ? String(Number(p.slice(0, -1)) / 100) : p).join(',')})`)
-      : (parts.length !== 1 ? fail() : `rotate(${parts[0]})`);
+    // A third (z) value without depth (checklist B1): translate's z must be 0, scale's z does nothing to a flat box,
+    // and rotate about the z axis (z, or the axis 0 0 n) is the 2D rotation.
+    const zero = v => /^-?0+(?:\.0+)?(?:px)?$/.test(v);
+    const fn = property === 'translate' ? (parts.length > 3 || (parts.length === 3 && !zero(parts[2])) ? fail() : `translate(${parts.slice(0, 2).join(',')})`)
+      : property === 'scale' ? (parts.length > 3 ? fail() : `scale(${parts.slice(0, 2).map(p => /%$/.test(p) ? String(Number(p.slice(0, -1)) / 100) : p).join(',')})`)
+      : parts.length === 1 ? `rotate(${parts[0]})`
+      : parts.length === 2 && parts[0] === 'z' ? `rotate(${parts[1]})`
+      : parts.length === 4 && zero(parts[0]) && zero(parts[1]) && !zero(parts[2]) && Number.isFinite(Number(parts[2])) ? `rotate(${Number(parts[2]) < 0 ? (parts[3].startsWith('-') ? parts[3].slice(1) : `-${parts[3]}`) : parts[3]})`
+      : fail();
     const [[, affine]] = expand('transform', fn);
     return [[property, affine]];
   }
   if (property === 'transform') {
     if (wide.has(value) || value === 'none') return [[property, value]];
-    const fns = value.match(/[a-z]+\([^)]*\)/g) ?? [];
-    if (!fns.length || value.replace(/[a-z]+\([^)]*\)/g, '').trim()) throw new Error(`Unsupported transform: ${value}`);
+    const fns = value.match(/[a-z][a-z0-9]*\([^)]*\)/g) ?? [];
+    if (!fns.length || value.replace(/[a-z][a-z0-9]*\([^)]*\)/g, '').trim()) throw new Error(`Unsupported transform: ${value}`);
     const fail = () => { throw new Error(`Unsupported transform: ${value} (only px translate, positive scale and quarter-turn rotation are modeled)`); };
     // A length: px, or a percentage of the box's own width (x) or height (y): [px, fraction].
     // A length: px, a percentage of the box's own width (x) or height (y), or em (the element's font-size): [px, fraction, em].
@@ -373,7 +379,21 @@ function expand(property, value) {
     const apply = ([a, b, c, d], [x, y]) => [add(mul(a, x), mul(b, y)), add(mul(c, x), mul(d, y))];
     const times = (m, n) => [add(mul(m[0], n[0]), mul(m[1], n[2])), add(mul(m[0], n[1]), mul(m[1], n[3])), add(mul(m[2], n[0]), mul(m[3], n[2])), add(mul(m[2], n[1]), mul(m[3], n[3]))];
     for (const fn of fns) {
-      const [, name, args] = /^([a-z]+)\((.*)\)$/.exec(fn), parts = args.split(',');
+      let [, name, args] = /^([a-z][a-z0-9]*)\((.*)\)$/.exec(fn), parts = args.split(',');
+      // 3D functions without depth (checklist B1): a flat box has z = 0, so a zero z translation and any z scale change
+      // nothing, and a rotation about the z axis is the 2D rotation. Depth (a z translation, a rotation about x or y,
+      // perspective) changes what is drawn with a perspective, which is not modeled.
+      const isZero = v => /^\s*-?0+(?:\.0+)?(?:px)?\s*$/.test(v);
+      if (name === 'translatez') { if (parts.length !== 1 || !isZero(parts[0])) fail(); continue; }
+      if (name === 'scalez') { factor(parts[0]); continue; }
+      if (name === 'translate3d') { if (parts.length !== 3 || !isZero(parts[2])) fail(); name = 'translate'; parts = parts.slice(0, 2); args = parts.join(','); }
+      if (name === 'scale3d') { if (parts.length !== 3) fail(); factor(parts[2]); name = 'scale'; parts = parts.slice(0, 2); args = parts.join(','); }
+      if (name === 'rotatez') name = 'rotate';
+      if (name === 'rotate3d') {
+        if (parts.length !== 4 || !isZero(parts[0]) || !isZero(parts[1]) || isZero(parts[2]) || !Number.isFinite(Number(parts[2]))) fail();
+        const angle = parts[3].trim();
+        name = 'rotate'; args = Number(parts[2]) < 0 ? (angle.startsWith('-') ? angle.slice(1) : `-${angle}`) : angle; parts = [args];
+      }
       if (name === 'translate' || name === 'translatex' || name === 'translatey') {
         if (parts.length > (name === 'translate' ? 2 : 1)) fail();
         const zeroLen = [q(0), q(0), q(0), q(0)];
