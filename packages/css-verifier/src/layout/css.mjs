@@ -331,12 +331,15 @@ function expand(property, value) {
         const [sx, sy] = name === 'scalex' ? [factor(parts[0]), q(1)] : name === 'scaley' ? [q(1), factor(parts[0])] : [factor(parts[0]), factor(parts[1] ?? parts[0])];
         A = times(A, [sx, q(0), q(0), sy]);
       } else if (name === 'rotate') {
-        const m = /^\s*([-+]?(?:\d+(?:\.\d+)?|\.\d+))(deg|turn|grad)\s*$/.exec(args); if (!m) fail();
-        const quarters = Number(m[1]) * (m[2] === 'turn' ? 4 : m[2] === 'grad' ? 1 / 100 : 1 / 90);
+        const m = /^\s*([-+]?(?:\d+(?:\.\d+)?|\.\d+))(deg|turn|grad|rad)\s*$/.exec(args); if (!m) fail();
+        // In rad only 0 is a whole number of quarter turns (π is irrational): any other angle is an arbitrary rotation.
+        const quarters = m[2] === 'rad' ? (Number(m[1]) === 0 ? 0 : 0.5) : Number(m[1]) * (m[2] === 'turn' ? 4 : m[2] === 'grad' ? 1 / 100 : 1 / 90);
         if (Math.abs(quarters - Math.round(quarters)) > 1e-9) {
           // A lone rotation by any other angle: the box is painted somewhere inside its circumscribed rectangle
           // (modeled for the accessibility checks, which treat what it may cover as undecided).
-          if (fns.length === 1) return [[property, `rotate-any(${Number(m[1]) * (m[2] === 'turn' ? 360 : m[2] === 'grad' ? 0.9 : 1)})`]];
+          const degrees = m[2] === 'rad' ? Number(m[1]) * 180 / Math.PI : Number(m[1]) * (m[2] === 'turn' ? 360 : m[2] === 'grad' ? 0.9 : 1);
+          if (/e/i.test(String(degrees))) fail();
+          if (fns.length === 1) return [[property, `rotate-any(${degrees})`]];
           fail();
         }
         A = times(A, [[1, 0, 0, 1], [0, -1, 1, 0], [-1, 0, 0, -1], [0, 1, -1, 0]][((Math.round(quarters) % 4) + 4) % 4].map(n => q(n)));
