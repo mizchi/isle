@@ -167,3 +167,26 @@ test('F20: :visited applies only colors', () => {
   assert.notEqual(r.status, 'unknown', JSON.stringify(r.diagnostics.map(d => d.message)));
   assert.equal(codes(run('.a{display:block;height:20px}.a:visited{color:purple;border-color:red}', html), 'W_CSS_VISITED_IGNORED').length, 0);
 });
+
+test(':disabled and :enabled match form controls by their disabled attribute and a disabled fieldset', () => {
+  const color = (html, css) => { const r = analyzeHTML(`<html lang="en"><body><main class="m">${html}</main></body></html>`, {name: 'P', css: `*{margin:0}html,body,.m{display:grid;grid-template-columns:minmax(0,1fr)}.m{background:#fff;color:#000}button{height:20px;font:16px/20px sans-serif;padding:0;border:0}${css}`, viewport: {min: 320, max: 800, height: {min: 300, max: 900}}, boxes: {'button': {minInlineSize: 0, intrinsicBlockSize: 20}}}); return r.status === 'unknown' ? 'unknown:' + r.diagnostics.map(d => d.message).join('|').slice(0, 120) : 'ok'; };
+  assert.equal(color('<button type="button" disabled>A</button>', 'button:disabled{display:none}'), 'ok');
+  // Parsed (not Unknown any more).
+  assert.equal(color('<button type="button">A</button>', 'button:enabled{height:20px}'), 'ok');
+});
+
+test(':disabled matching: own attribute, a disabled fieldset, and its first legend excepted', async () => {
+  const {htmlBoxTree} = await import('../src/html.mjs');
+  const {compileSelector, matches} = await import('../src/layout/selectors.mjs');
+  const {normalizeTree} = await import('../src/tree.mjs');
+  const {root: tree} = normalizeTree(htmlBoxTree('<html lang="en"><body><form><input class="own" disabled aria-label="a"><fieldset disabled><legend><input class="legend" aria-label="b"></legend><input class="inside" aria-label="c"></fieldset><input class="free" aria-label="d"></form></body></html>').tree, 'P');
+  const all = []; (function walk(b) { all.push(b); for (const c of [...(b.children ?? []), ...(b.inline ?? [])]) walk(c); })(tree);
+  const by = cls => all.find(b => b.classes?.includes(cls));
+  const dis = compileSelector('input:disabled'), en = compileSelector('input:enabled');
+  assert.deepEqual(['own', 'legend', 'inside', 'free'].map(c => [matches(dis, by(c)), matches(en, by(c))]), [[true, false], [false, true], [true, false], [false, true]]);
+});
+
+test('a :disabled rule on an option in a disabled select (browsers differ) keeps the analysis Unknown', () => {
+  const r = analyzeHTML('<html lang="en"><body><fieldset disabled><select aria-label="s"><option>a</option></select></fieldset></body></html>', {name: 'P', css: 'option:disabled{color:gray}', viewport: {min: 320, max: 800, height: {min: 300, max: 900}}});
+  assert.ok(r.diagnostics.some(d => d.code === 'U_LAYOUT_ATTRIBUTE' && /browsers decide differently/.test(d.message)), JSON.stringify(r.diagnostics.map(d => d.message)));
+});

@@ -155,6 +155,10 @@
   の規則のうち色(color、background-color、border・outline の色など)しか当てない。ほかの宣言を報告し、ブラウザーと同じく
   捨てる(以前は `:visited` を読めず Unknown)。3 つのブラウザーで、実際に訪れたリンクの色は変わり、幅(太さ・字間)は
   変わらないことを確かめた。
+- [x] **F21. `:disabled`・`:enabled` を読む**(以前は Unknown): フォーム部品の disabled 属性と、disabled な fieldset の中
+  (最初の legend の中は除く)、disabled な optgroup の中の option。disabled な select の中の option・optgroup は Chromium・WebKit
+  が `:disabled` にし Firefox はしない(測った)ので、そこに頼る規則は Unknown。アダプターの式の disabled も Unknown。
+  3 つのブラウザーの `matches()` と 11 の要素で一致。
 - [x] **F10. 要素(擬似要素でない)の `content`**: 文字列は何もしない(既存の `W_LAYOUT_DECLARATION_INERT` が出していた)。
   `url()` は要素を画像で置き換えるので効く(3 つのブラウザーで測った)。
 ## 済み(このチェックリストを作る前に済んだもの)

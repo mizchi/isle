@@ -51,6 +51,9 @@ function compileCompound(source, depth = 0) {
       parts.push({ kind: token[1] === '.' ? 'class' : 'id', value: token[2] });
       specificity[token[1] === '.' ? 1 : 0]++; rest = rest.slice(token[0].length); continue;
     }
+    // :disabled / :enabled (a form control's own disabled attribute, or a disabled fieldset around it: box.disabled).
+    const enabledness = rest.match(/^:(disabled|enabled)(?![\w-])/i);
+    if (enabledness) { parts.push({ kind: 'disabled', value: enabledness[1].toLowerCase() === 'disabled' }); specificity[1]++; rest = rest.slice(enabledness[0].length); continue; }
     const root = rest.match(/^:root(?![\w-])/i);
     if (root) { parts.push({ kind: 'root' }); specificity[1]++; rest = rest.slice(root[0].length); continue; }
     // A trailing user-action state (paint-only rules; see parseLayoutCSS).
@@ -174,7 +177,7 @@ export function compoundMatches(selector, box) {
   if (box.anonymous) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
-    part.kind === 'root' ? box.documentRoot === true : part.kind === 'path' ? box.path === part.value :
+    part.kind === 'root' ? box.documentRoot === true : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
     part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'structural' ? structuralMatches(part, box) : part.kind === 'has' ? hasMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
     part.choices.some(choice => matches(choice, box)));
 }

@@ -308,6 +308,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         message: `@media ${c.params} matches no viewport (its lower bound is above its upper bound): its rules never apply. Check the order of min and max (min-width: 600px and max-width: 900px)` });
     }
   }
+  // :disabled / :enabled where an element's disabled attribute is dynamic (an adapter's expression): whether the rule
+  // applies is not known.
+  if (rules.some(rule => rule.selectors.some(sel => JSON.stringify(sel).includes('"kind":"disabled"'))) && boxes.some(box => box.disabled === 'dynamic')) unknown('U_LAYOUT_ATTRIBUTE', `${boxes.find(box => box.disabled === 'dynamic').label}: a :disabled or :enabled rule depends on a disabled state that is dynamic, or that browsers decide differently (an option in a disabled select)`);
   setRegisteredProperties(registered);
   if (defaultNamespace.length && boxes.some(box => ['svg', 'math'].includes(box.tag))) unknown('U_LAYOUT_CSS', 'A default XHTML @namespace keeps type and universal selectors off the SVG and MathML elements of this page, which is not modeled', defaultNamespace[0].line, undefined, defaultNamespace[0].file);
   for (const note of visitedIgnored) layoutWarnings.push({ code: 'W_CSS_VISITED_IGNORED', severity: 'warning', selector: note.selector, property: note.property, css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],

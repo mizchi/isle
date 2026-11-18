@@ -203,3 +203,22 @@ test('F20: a visited link takes only the colors of a :visited rule', async ({pag
   expect(await box('.a')).toBe(await box('.b'));
   expect((await shot('.a')) !== (await shot('.b'))).toBe(true);
 });
+
+test(':disabled and :enabled match as in the browser (own attribute, disabled fieldset, its first legend)', async ({page}) => {
+  const {htmlBoxTree} = await import('../packages/css-verifier/src/html.mjs');
+  const {normalizeTree} = await import('../packages/css-verifier/src/tree.mjs');
+  const {compileSelector, matches} = await import('../packages/css-verifier/src/layout/selectors.mjs');
+  const html = '<form><input class="c1" disabled aria-label="a"><fieldset disabled><legend><input class="c2" aria-label="b"><button class="c3" type="button">x</button></legend><input class="c4" aria-label="c"><select class="c5" aria-label="s"><option class="c6">o</option></select></fieldset><button class="c7" type="button">y</button><fieldset><input class="c8" aria-label="d" disabled></fieldset><select class="c9" aria-label="t"><optgroup class="c10" disabled label="g"><option class="c11">p</option></optgroup></select></form>';
+  const {root} = normalizeTree(htmlBoxTree(`<html lang="en"><body>${html}</body></html>`).tree, 'P');
+  const all = []; (function walk(b) { all.push(b); for (const c of [...(b.children ?? []), ...(b.inline ?? [])]) walk(c); })(root);
+  await page.setContent(`<!doctype html><html lang="en"><body>${html}</body></html>`);
+  for (let i = 1; i <= 11; i++) {
+    const box = all.find(b => b.classes?.includes(`c${i}`));
+    for (const pseudo of [':disabled', ':enabled']) {
+      const browser = await page.evaluate(([cls, p]) => document.querySelector(`.${cls}`).matches(p), [`c${i}`, pseudo]);
+      // Where browsers differ (an option in a disabled select) the box tree says dynamic: the analysis stays Unknown.
+      if (box.disabled === 'dynamic') continue;
+      expect(matches(compileSelector(`.c${i}${pseudo}`), box), `c${i}${pseudo}`).toBe(browser);
+    }
+  }
+});
