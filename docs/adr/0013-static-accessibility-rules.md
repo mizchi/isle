@@ -333,6 +333,9 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
 - **太さの違う inline の箱**(チェックリスト D3):`inline` に `{text, weight}` を与えると、その部分を別の run(同じ family・大きさの
   その太さ)として shaping し、行の幅を run の和(run ごとに切り上げと allowance)にし、各箱の端に前の run の誤差を積む。上下は同じ
   family なので元の font の content area。engine は CSS の違いが font-weight だけで、その値が契約と同じときだけ受け入れる。
+- **文字の中の置換要素**(チェックリスト D3):img・svg・video・canvas・iframe・フォーム部品などは atomic inline の箱で、自分の幅だけ
+  行を広げ、文字の ascent より高ければ行を高くする(Chromium で 24px の行に 40px の画像を置くと 44px)。text の大きさの契約はそれを
+  数えないので U_LAYOUT_INLINE(以前は文字だけの大きさで Verified:誤り)。
 - **table cell の中**:cell は行の高さに伸び、行は `vertical-align` で揃う(UA は tbody/tr が middle、td/th はそれを継承。以前は baseline としていた:誤り)。
   top・middle・bottom は行数 × line-height の高さを content box の中でずらし(Chromium で測定)、baseline は行全体の揃えなので矩形を出さない
   (以前は cell の上端に置いていたので、高い行の中のリンクの位置が誤っていた)。

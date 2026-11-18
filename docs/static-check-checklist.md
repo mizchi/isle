@@ -68,8 +68,10 @@
   と測らせれば、行の幅に足し、後ろの箱をずらす(engine は CSS の値が契約と一致するときだけ受け入れる。Chromium・WebKit で一致、
   Firefox は 1/60px の丸めで 3/1000px ずれる)。同じ family・大きさで太さだけ違う inline の箱(`<strong>` など)は、一行の文字列で
   `inline: {'.u': {text, weight}}` と測らせれば、行を太さごとの run の和として測る(Chromium で日本語・Latin、Firefox・WebKit で
-  Latin が一致)。大きさや family の違う inline は Unknown のまま(行が高くなりうる)。残り: rtl、折り返す文字列の左右の端と太さ、
-  行の中の画像などの atomic inline。
+  Latin が一致)。大きさや family の違う inline は Unknown のまま(行が高くなりうる)。**誤りの修正**: 文字の中の画像・svg・
+  フォーム部品などの置換要素(atomic inline)は、自分の幅だけ行を広げ、文字の ascent より高ければ行を高くする(24px の行に 40px の
+  画像で 44px)のに、文字の大きさのまま Verified にしていた。U_LAYOUT_INLINE にする(横に並べるなら flex・grid の項目にする)。
+  残り: rtl、折り返す文字列の左右の端と太さ、atomic inline の配置そのもの。
 
 ## E. 新しい警告のパターン
 

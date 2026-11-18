@@ -360,6 +360,28 @@ test('inline boxes in another weight: the line width and every box\'s bounds', a
   }
 });
 
+// An image inside measured text is an atomic inline box: it widens the line and, taller than the text's ascent, makes
+// it taller (checklist D3). The analysis is Unknown there; the browser shows why.
+test('an image inside measured text changes the line', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the guide first.';
+  const boxes = metrics.resolveBoxes({'.p': {text: {content, font}}});
+  const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p{font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}`;
+  for (const size of [12, 40]) {
+    const html = `<div class="page"><p class="p">Read the guide first.<img class="i" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" width="${size}" height="${size}"></p></div>`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 400, max: 900, height: {min: 300, max: 300}}, boxes});
+    expect(report.status, `${size}px`).toBe('unknown');
+    expect(report.diagnostics.some(d => /atomic inline box/.test(d.message))).toBe(true);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const line = await page.evaluate(() => { const r = document.createRange(); r.selectNodeContents(document.querySelector('.p')); const rs = [...r.getClientRects()]; return {height: document.querySelector('.p').getBoundingClientRect().height, width: Math.max(...rs.map(x => x.right)) - Math.min(...rs.map(x => x.left))}; });
+    // Wider than the text alone in every case; taller where the image is taller than the ascent.
+    expect(line.width, `${size}px`).toBeGreaterThan(boxes['.p'].minInlineSize + size - 1);
+    if (size === 40) expect(line.height).toBeGreaterThan(24);
+  }
+});
+
 // vertical-align off the baseline raises or lowers the inline box and makes the line taller, by amounts that differ
 // between browsers: Unknown; top and bottom with the text's own font change nothing.
 test('vertical-align on an inline box inside measured text', async ({page}) => {

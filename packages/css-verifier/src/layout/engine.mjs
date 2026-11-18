@@ -1397,6 +1397,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const generatedText = generatedElsewhere(child, state.region, parents, style);
       if (generatedText) child.generated = generatedText;
       if (style.display !== 'inline' || style.position !== 'static' || style.float !== 'none') throw Object.assign(new Error(`${child.label} inside text must stay display: inline and static to keep the text's measured size`), { code: 'U_LAYOUT_INLINE' });
+      // A replaced element (an image, an icon, a control) inside text is an atomic inline box: it widens the line by its
+      // own width and, taller than the text's ascent, makes the line taller (checklist D3) — neither of which the text's
+      // size contract counts. (Measured: a 40px image in a 24px line makes it 44px in Chromium.)
+      if (['img', 'svg', 'video', 'canvas', 'iframe', 'input', 'button', 'select', 'textarea', 'picture', 'object', 'embed'].includes(child.tag)) throw Object.assign(new Error(`${child.label} inside text is an atomic inline box: its width and height change the line, which the text's size does not count; lay it out beside the text (a flex or grid item) instead`), { code: 'U_LAYOUT_INLINE' });
       // vertical-align other than baseline, top or bottom raises or lowers the inline box, and the line box grows to
       // hold it (measured: super, sub, middle, text-top and lengths all change the line's height in Chromium, Firefox
       // and WebKit, by amounts that differ between them). top and bottom with the text's own font change nothing.
