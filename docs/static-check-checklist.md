@@ -66,8 +66,10 @@
   ADR-0010 のとおり Chromium に合わせてあり、Firefox はこの文で別の幅で改行した)。inline の箱の左右の padding・border・margin は、
   一行の文字列で text 契約に `inline: {'.u': {text, edges: [margin-left, border+padding-left, border+padding-right, margin-right]}}`
   と測らせれば、行の幅に足し、後ろの箱をずらす(engine は CSS の値が契約と一致するときだけ受け入れる。Chromium・WebKit で一致、
-  Firefox は 1/60px の丸めで 3/1000px ずれる)。残り: rtl、折り返す文字列の左右の端、行の中の画像などの atomic inline、
-  フォントの違う inline。
+  Firefox は 1/60px の丸めで 3/1000px ずれる)。同じ family・大きさで太さだけ違う inline の箱(`<strong>` など)は、一行の文字列で
+  `inline: {'.u': {text, weight}}` と測らせれば、行を太さごとの run の和として測る(Chromium で日本語・Latin、Firefox・WebKit で
+  Latin が一致)。大きさや family の違う inline は Unknown のまま(行が高くなりうる)。残り: rtl、折り返す文字列の左右の端と太さ、
+  行の中の画像などの atomic inline。
 
 ## E. 新しい警告のパターン
 

@@ -6,7 +6,7 @@ import {q, cmp} from './linear.mjs';
 import {fontShorthand} from './css.mjs';
 
 const fontKeys = new Set(['family', 'size', 'lineHeight', 'weight', 'style', 'letterSpacing']);
-const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance', 'minContent', 'overflowWrap', 'profile', 'lang', 'spacedProfile', 'inline', 'baseline', 'lineWidth', 'inlineEdges']);
+const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance', 'minContent', 'overflowWrap', 'profile', 'lang', 'spacedProfile', 'inline', 'baseline', 'lineWidth', 'inlineEdges', 'inlineWeights']);
 export const languageTag = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
 // Languages whose break opportunities were compared with Chromium (e2e). Chinese differs (e.g. !〜).
 // he: Hebrew letters break at spaces only (measured against Chromium with right-to-left text).
@@ -39,6 +39,7 @@ export function validateTextMetrics(metrics) {
   }
   if (metrics.baseline !== undefined && (!metrics.baseline || Object.keys(metrics.baseline).some(k => !['ascent', 'descent'].includes(k)) || !['ascent', 'descent'].every(k => Number.isSafeInteger(metrics.baseline[k]) && metrics.baseline[k] >= 0))) throw new Error('Invalid text baseline metrics');
   if (metrics.inlineEdges !== undefined && !(metrics.kind === 'content' && metrics.inline && typeof metrics.inlineEdges === 'object' && Object.entries(metrics.inlineEdges).every(([k, e]) => k in metrics.inline && Array.isArray(e) && e.length === 4 && e.every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 10_000)))) throw new Error('Invalid inline edges');
+  if (metrics.inlineWeights !== undefined && !(metrics.kind === 'content' && metrics.inline && typeof metrics.inlineWeights === 'object' && Object.entries(metrics.inlineWeights).every(([k, w]) => k in metrics.inline && finite(w, 1, 1000)))) throw new Error('Invalid inline weights');
   // lineWidth (checklist D3): the width range of the one line of content text, for text-align.
   if (metrics.lineWidth !== undefined && !(metrics.kind === 'content' && Array.isArray(metrics.lineWidth) && metrics.lineWidth.length === 2 && metrics.lineWidth.every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 1_000_000) && metrics.lineWidth[0] <= metrics.lineWidth[1])) throw new Error('Invalid text line width');
   if (metrics.inline !== undefined) {

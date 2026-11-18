@@ -1412,7 +1412,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (firstKey && !(declared && own.every((v, i) => v !== null && Math.abs(v - declared[i]) < 1e-9))) throw Object.assign(new Error(`${child.label} inside text has horizontal ${firstKey}; inline box edges change the measured text${declared ? ` (the text contract measured edges ${declared.join(', ')}px, not these)` : ' (measure them with the text contract: inline {text, edges})'}`), { code: 'U_LAYOUT_INLINE' });
         if (!firstKey && declared && declared.some(v => v)) throw Object.assign(new Error(`${child.label}: the text contract measured inline edges ${declared.join(', ')}px that its CSS does not declare`), { code: 'U_LAYOUT_INLINE' });
       }
-      if (leaf.contract?.textMetrics && fontKeys.some(key => style[key] !== leafStyle[key])) throw Object.assign(new Error(`${child.label} changes the font inside text measured as one run`), { code: 'U_LAYOUT_INLINE' });
+      // Another weight of the same font (checklist D3) where the text contract measured that run (inline {text, weight}).
+      {
+        const changed = fontKeys.filter(key => style[key] !== leafStyle[key]);
+        const weightOf = v => v === 'normal' ? 400 : v === 'bold' ? 700 : /^\d+$/.test(String(v)) ? Number(v) : null;
+        const measuredWeight = Object.entries(leaf.contract?.textMetrics?.inlineWeights ?? {}).find(([selector]) => matches(compileSelector(selector), child))?.[1];
+        const weighted = changed.length === 1 && changed[0] === 'font-weight' && measuredWeight !== undefined && weightOf(style['font-weight']) === measuredWeight;
+        if (leaf.contract?.textMetrics && changed.length && !weighted) throw Object.assign(new Error(`${child.label} changes the font inside text measured as one run${changed.length === 1 && changed[0] === 'font-weight' ? ' (measure its weight with the text contract: inline {text, weight})' : ''}`), { code: 'U_LAYOUT_INLINE' });
+        if (measuredWeight !== undefined && !weighted && !changed.length) throw Object.assign(new Error(`${child.label}: the text contract measured it in weight ${measuredWeight}, which its CSS does not set`), { code: 'U_LAYOUT_INLINE' });
+      }
       // Sizes, vertical margins and aspect-ratio do not apply to a non-replaced inline box (CSS 2.2 §10.3.1, §10.6.1;
       // measured: width, height, min/max-width, margin-top and aspect-ratio on a span change no pixel), nor do
       // transforms (CSS Transforms 1 §1: only block-level and atomic inline boxes are transformable; measured too).

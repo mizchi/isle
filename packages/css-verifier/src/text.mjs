@@ -419,6 +419,40 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     }
     return out;
   }
+  /**
+   * One line of text with some inline pieces in another weight: the runs (the pieces and the text between them), each
+   * shaped in its own font; the width, its bound (each run rounded and allowed for on its own) and every piece's
+   * bounds, its edges carrying the allowance of every run before it. The vertical extent is the base font's content
+   * area (the same family: the same ascent and descent).
+   */
+  function fontRuns({font, text, lang, pieces, weights, selector}) {
+    const collapsed = collapse(text), cp = [...collapsed];
+    const spans = Object.entries(pieces).map(([k, piece]) => {
+      const part = collapse(piece), at = collapsed.indexOf(part);
+      if (!part || at < 0 || collapsed.indexOf(part, at + 1) >= 0) fail(`${selector}: inline text ${JSON.stringify(piece)} must occur exactly once in the content`);
+      const start = [...collapsed.slice(0, at)].length;
+      return {k, start, end: start + [...part].length};
+    }).sort((a, b) => a.start - b.start);
+    for (let i = 1; i < spans.length; i++) if (spans[i].start < spans[i - 1].end) fail(`${selector}: overlapping inline pieces with a weight are not modeled`);
+    // The runs: a weighted piece is a run of its own; the text between them is in the base font.
+    const runs = [];
+    let at = 0;
+    for (const sp of spans.filter(sp => weights[sp.k] !== undefined)) { if (sp.start > at) runs.push({from: at, to: sp.start, font}); runs.push({from: sp.start, to: sp.end, font: {...font, weight: weights[sp.k]}}); at = sp.end; }
+    if (at < cp.length) runs.push({from: at, to: cp.length, font});
+    const shaped = runs.map(r => { const t = cp.slice(r.from, r.to).join(''), w = t ? shapeLine(r.font, t, lang) : 0, b = textBound(t, w); return {...r, text: t, w, b, slack: b - w + 1 / UNIT}; });
+    const width = shaped.reduce((a, r) => a + r.w, 0), bound = shaped.reduce((a, r) => a + r.b, 0), spread = shaped.reduce((a, r) => a + r.slack, 0);
+    const vertical = inlineBounds({font, text: collapsed, lang, inline: {x: [...collapsed].slice(spans[0].start, spans[0].end).join('')}}).x;
+    const inline = {};
+    for (const sp of spans) {
+      const i = shaped.findIndex(r => sp.start >= r.from && sp.end <= r.to);
+      if (i < 0) fail(`${selector}: inline piece ${sp.k} crosses a weighted run`);
+      const r = shaped[i], before = shaped.slice(0, i), x0 = before.reduce((a, q) => a + q.w, 0), err = before.reduce((a, q) => a + q.slack, 0);
+      const inner = cp.slice(r.from, sp.start).join(''), piece = cp.slice(sp.start, sp.end).join('');
+      const s0 = x0 + (inner ? shapeLine(r.font, inner, lang) : 0), e0 = s0 + shapeLine(r.font, piece, lang), local = r.slack + 2 * scriptRuns(inner + piece) / UNIT;
+      inline[sp.k] = {start: [s0 - err - local, s0 + err + local], end: [e0 - err - local, e0 + err + local], top: vertical.top, bottom: vertical.bottom};
+    }
+    return {width, bound, range: [Math.max(0, width - spread), bound], inline};
+  }
   function inlineBounds({font, text, lang, inline}, offset) {
     const collapsed = collapse(text), out = {};
     const {info} = lookup(font);
@@ -483,13 +517,21 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         // Inline boxes with horizontal edges (checklist D3): {text, edges: [margin-left, border+padding-left,
         // border+padding-right, margin-right]} px. They add their edges to the line and move what follows.
         const pieces = Object.fromEntries(Object.entries(text.inline ?? {}).map(([k, v]) => [k, typeof v === 'string' ? v : v?.text]));
-        const edges = Object.fromEntries(Object.entries(text.inline ?? {}).filter(([, v]) => typeof v !== 'string').map(([k, v]) => {
+        // Inline boxes in another weight of the same family and size (checklist D3): {text, weight}. The line is the
+        // sum of its font runs (browsers shape each run on its own), each with its own allowance.
+        const weights = Object.fromEntries(Object.entries(text.inline ?? {}).filter(([, v]) => typeof v !== 'string' && v?.weight !== undefined).map(([k, v]) => {
+          if (!Number.isFinite(v.weight) || v.weight < 1 || v.weight > 1000) fail(`${selector}: inline ${k} weight must be a number from 1 to 1000`);
+          return [k, v.weight];
+        }));
+        const runs = Object.keys(weights).length ? fontRuns({font, text: text.content, lang: text.lang, pieces, weights, selector}) : null;
+        if (runs) { measured.width = runs.width; measured.bound = runs.bound; measured.range = runs.range; }
+        const edges = Object.fromEntries(Object.entries(text.inline ?? {}).filter(([, v]) => typeof v !== 'string' && v?.edges !== undefined).map(([k, v]) => {
           if (!v || typeof v.text !== 'string' || !Array.isArray(v.edges) || v.edges.length !== 4 || !v.edges.every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 10_000)) fail(`${selector}: inline ${k} must be a string or {text, edges: [margin-left, border+padding-left, border+padding-right, margin-right]}`);
           return [k, v.edges];
         }));
         const extra = Object.values(edges).flat().reduce((a, b) => a + b, 0);
         width = measured.bound + extra;
-        let inline = text.inline ? inlineBounds({font, text: text.content, lang: text.lang, inline: pieces}) : null;
+        let inline = text.inline ? (runs ? runs.inline : inlineBounds({font, text: text.content, lang: text.lang, inline: pieces})) : null;
         if (inline && Object.keys(edges).length) {
           // Each box moves by the edges of the boxes before it (and its own left margin); its border box spans its own
           // border and padding. Overlapping (nested) pieces with edges are not modeled.
@@ -502,7 +544,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
             return [k, {...b, start: b.start.map(v => v + shift), end: b.end.map(v => v + shift + bl + br)}];
           }));
         }
-        metrics = {kind: 'content', text: measured.text, width: measured.width + extra, baseline: baselineMetrics(font), ...(inline ? {inline, lineWidth: measured.range.map(v => v + extra), ...(Object.keys(edges).length ? {inlineEdges: edges} : {})} : {})};
+        metrics = {kind: 'content', text: measured.text, width: measured.width + extra, baseline: baselineMetrics(font), ...(inline ? {inline, lineWidth: measured.range.map(v => v + extra), ...(Object.keys(edges).length ? {inlineEdges: edges} : {}), ...(runs ? {inlineWeights: weights} : {})} : {})};
       } else {
         const domain = domainBounds({font, characters: text.characters, maxLength: text.maxLength, lang: text.lang});
         width = domain.bounds.at(-1);

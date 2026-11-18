@@ -323,6 +323,43 @@ test('inline boxes with horizontal edges: the line width and every box\'s bounds
   }
 });
 
+// An inline box in another weight of the same font (checklist D3): measured as its own run (inline {text, weight}),
+// the line is as wide as the sum of the runs and every box lies inside its bounds.
+test('inline boxes in another weight: the line width and every box\'s bounds', async ({page}) => {
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  for (const [font, content, u, v, extra] of [
+    [{family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, 'Read the guide and the notes first.', 'guide', 'notes', '.u{font-weight:700}'],
+    [{family: 'Roboto', size: 20, lineHeight: 28, weight: 300}, 'Bold WAVE then light AVATAR text', 'WAVE', 'AVATAR', '.u{font-weight:900}.v{font-weight:500}'],
+    [jp, '日本語のテキスト幅を確認します', 'テキスト', '確認', '.u{font-weight:700}'],
+  ]) {
+    // Japanese shaping outside Chromium is outside the text metrics (ADR-0010: Firefox and WebKit set this line 0.3px wider).
+    if (font === jp && test.info().project.name !== 'chromium') continue;
+    const weightOf = sel => { const m = new RegExp(`\\.${sel}\\{font-weight:(\\d+)\\}`).exec(extra); return m ? Number(m[1]) : undefined; };
+    const entry = (sel, text) => weightOf(sel) ? {text, weight: weightOf(sel)} : text;
+    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': entry('u', u), '.v': entry('v', v)}}}});
+    const at1 = content.indexOf(u), at2 = content.indexOf(v);
+    const html = `<div class="page"><p class="p">${content.slice(0, at1)}<a class="u" href="#x">${u}</a>${content.slice(at1 + u.length, at2)}<a class="v" href="#y">${v}</a>${content.slice(at2 + v.length)}</p></div>`;
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p{font-family:"${font.family}";font-size:${font.size}px;line-height:${font.lineHeight}px;font-weight:${font.weight};white-space:nowrap}a{color:#000}${extra}`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 400, max: 900, height: {min: 300, max: 300}}, boxes});
+    expect(report.status === 'unknown', `${extra}: ${JSON.stringify(report.diagnostics.map(d => d.message))}`).toBe(false);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const browser = await page.evaluate(() => ({p: (() => { const r = document.createRange(); r.selectNodeContents(document.querySelector('.p')); const rs = [...r.getClientRects()]; return Math.max(...rs.map(x => x.right)) - Math.min(...rs.map(x => x.left)); })(), u: document.querySelector('.u').getBoundingClientRect().toJSON(), v: document.querySelector('.v').getBoundingClientRect().toJSON()}));
+    const tag0 = `${font.family} ${extra}`;
+    expect(browser.p, `${tag0} width`).toBeLessThanOrEqual(boxes['.p'].minInlineSize + 1e-9);
+    expect(browser.p, `${tag0} width`).toBeGreaterThanOrEqual(boxes['.p'].textMetrics.width - 0.25);
+    for (const key of ['u', 'v']) {
+      const bound = report.inlineBounds.find(b => b.box === `.${key}`);
+      const at = a => value(a.coefficient) * 400 + value(a.heightCoefficient ?? '0') * 300 + value(a.constant), O = {x: at(bound.outer.inlineStart), w: at(bound.outer.inlineSize)}, I = bound.inner && {x: at(bound.inner.inlineStart), w: at(bound.inner.inlineSize)};
+      const r = browser[key], tag = `${tag0} .${key}`;
+      expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.x + r.width, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);
+      expect(I, tag).toBeTruthy(); expect(r.x, `${tag} inner left`).toBeLessThanOrEqual(I.x + 1e-9); expect(r.x + r.width, `${tag} inner right`).toBeGreaterThanOrEqual(I.x + I.w - 1e-9);
+    }
+  }
+});
+
 // vertical-align off the baseline raises or lowers the inline box and makes the line taller, by amounts that differ
 // between browsers: Unknown; top and bottom with the text's own font change nothing.
 test('vertical-align on an inline box inside measured text', async ({page}) => {

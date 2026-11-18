@@ -85,3 +85,19 @@ test('horizontal edges of inline boxes: measured with the contract, else Unknown
   // Wrapping text with edges is not measured.
   assert.throws(() => metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.u': {text: 'guide', edges: [0, 4, 4, 0]}}}, wrap: 'normal'}}), /one-line/);
 });
+
+test('an inline box in another weight: measured as its own run, else Unknown', () => {
+  const run = (css, weight) => {
+    const boxes = metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.u': weight ? {text: 'guide', weight} : 'guide'}}}});
+    return {boxes, r: analyzeHTML('<html lang="en"><body><div class="page"><p class="p">Read the <a class="u" href="#x">guide</a> first.</p></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0;padding:0}html,body,.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}${css}`, viewport: {min: 320, max: 800, height: {min: 300, max: 300}}, boxes})};
+  };
+  const plain = run(''), bold = run('.u{font-weight:700}', 700);
+  assert.notEqual(bold.r.status, 'unknown');
+  assert.ok(bold.boxes['.p'].textMetrics.width > plain.boxes['.p'].textMetrics.width, 'bold is wider');
+  assert.equal(run('.u{font-weight:bold}', 700).r.status === 'unknown', false);
+  // Not measured, measured in another weight, measured but not set, or a size change: Unknown.
+  assert.equal(run('.u{font-weight:700}').r.status, 'unknown');
+  assert.equal(run('.u{font-weight:600}', 700).r.status, 'unknown');
+  assert.equal(run('', 700).r.status, 'unknown');
+  assert.equal(run('.u{font-weight:700;font-size:20px}', 700).r.status, 'unknown');
+});
