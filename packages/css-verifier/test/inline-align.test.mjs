@@ -46,8 +46,11 @@ test('aligned wrapping text has no bounds within the allowance below a line brea
   }
   // Narrow bands below each break, and bounds everywhere else.
   assert.ok(band > 0 && both > 10 * band, `${band} ${both}`);
-  // justify (other than the last line) is not modeled: no bounds.
-  assert.equal(bounds('justify', 'Read the guide first.', 'guide').length, 0);
+  // justify: the last line (here the only one) is start-aligned, so its bounds are the start-aligned ones.
+  assert.deepEqual(bounds('justify', 'Read the guide first.', 'guide'), bounds('start', 'Read the guide first.', 'guide'));
+  // Wrapping: only where the piece is on the last line (the earlier lines are stretched).
+  const justified = bounds('justify', content, 'installation guide', 'normal');
+  for (let W = 320; W <= 800; W += 0.5) assert.ok(!justified.some(b => holds(b, W)) || start.some(b => holds(b, W)), `${W}`);
 });
 
 // The inline box's own vertical padding extends its box; vertical-align off the baseline makes the line taller.

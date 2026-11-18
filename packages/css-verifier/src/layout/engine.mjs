@@ -1334,7 +1334,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const metrics = leaf.contract?.textMetrics;
     // Checklist D3: text-align moves each line by (content width − line width) × f: 0 at the start, 1/2 centred, 1 at the
     // end (ltr). Where the line does not fit it is start-aligned (CSS Text 3 §6.1), so only widths where it fits count.
-    const alignFactor = { start: q(0), left: q(0), center: div(q(1), q(2)), right: q(1), end: q(1) }[String(leafStyle['text-align'])];
+    // justify stretches every line but the last, which is start-aligned (text-align-last: auto): only last lines count.
+    const justify = String(leafStyle['text-align']) === 'justify' && ['auto', undefined].includes(leafStyle['text-align-last']);
+    const alignFactor = justify ? q(0) : { start: q(0), left: q(0), center: div(q(1), q(2)), right: q(1), end: q(1) }[String(leafStyle['text-align'])];
     if (!leafRow?.origin || !metrics?.inline || !alignFactor || leafStyle.direction !== 'ltr') return null;
     if (!(metrics.kind === 'content' && ['nowrap', 'one-line'].includes(leaf.contract.wrap)) && metrics.kind !== 'lines') return null;
     const entry = Object.entries(metrics.inline).find(([selector]) => matches(compileSelector(selector), child));
@@ -1376,6 +1378,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       let r = clip(region, diff(content, scalar(sixtyfourths(step.atLeastInlineSize, Math.round))));
       if (r && step.below !== null) r = clip(r, diff(scalar(sixtyfourths(step.below, Math.round)), content), true);
       if (r && align !== 'top' && step.lines === undefined) return null;
+      // A justified line that is not the last is stretched: its inline boxes move with the word spacing (no bounds).
+      // The line count varies at the line-break widths like the line widths do: only below alignBelow.
+      if (r && justify && (step.lines === undefined || step.line !== step.lines - 1)) r = null;
+      if (r && justify && step.below !== null) r = step.alignBelow === undefined ? null : clip(r, diff(scalar(sixtyfourths(step.alignBelow, Math.floor)), content), true);
       if (r && aligned && !step.lineWidth) return null;
       if (r) r = fits(r, step.lineWidth);
       // Aligned: only below alignBelow, where no wider layout can apply yet.

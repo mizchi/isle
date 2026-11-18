@@ -319,8 +319,8 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
   行の幅を区間で出す(一行の文字列は shaping の幅から allowance を引いたものから上限まで、折り返す文字列は区間ごとの行の、行末の空白を
   除いた幅)。outer は最も広い行の位置から最も狭い行の位置の端まで、inner はその逆にする。行が content に収まらない幅では行は start に
   揃う(CSS Text 3 §6.1)ので、収まる幅だけで矩形を出す。折り返す文字列では、次の改行の幅(allowance で広げた値)の少し下(allowance の
-  分)で、ブラウザーがもう次の改行で並べることがある(行の幅が変わる)。そこには矩形を出さない(`alignBelow`)。`justify` と rtl は
-  まだ矩形を出さない。3 つのブラウザーで、start・center・right の 3 通りで、上の 2 つの e2e が通る。
+  分)で、ブラウザーがもう次の改行で並べることがある(行の幅が変わる)。そこには矩形を出さない(`alignBelow`)。`justify` は最後の行
+  (`text-align-last: auto` で start に揃う)に載る区間だけ start と同じ矩形を出し、ほかの行には出さない。rtl はまだ矩形を出さない。3 つのブラウザーで、start・center・right の 3 通りで、上の 2 つの e2e が通る。
 - **inline の箱の上下の padding と vertical-align**(チェックリスト D3):上下の padding(と border)は行の高さを変えず、箱を content area
   の上下に広げる(描画と hit test の範囲。Chromium・Firefox・WebKit で 19px のリンクが `padding: 4px 0` で 27px)。矩形の上下をその分広げる
   (以前は広げず、覆いや focus の隠れの判定が範囲の外を見落としうる誤り)。`vertical-align` が baseline・top・bottom 以外の inline の箱は

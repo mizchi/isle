@@ -421,6 +421,39 @@ test('inline bounds in wrapping text follow the line layout', async ({page}) => 
   }
 });
 
+// text-align: justify (checklist D3): the last line is start-aligned, so a link on it has bounds; the earlier lines are
+// stretched and have none. Swept like the wrapping test, in every browser.
+test('inline bounds on the last line of justified text', async ({page}) => {
+  test.setTimeout(240_000);
+  // Line breaking of measured text is calibrated to Chromium (ADR-0010: other browsers' rounding is out of scope; Firefox
+  // breaks this text elsewhere at some widths, also start-aligned).
+  test.skip(test.info().project.name !== 'chromium', 'measured line breaks are Chromium-calibrated (ADR-0010)');
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the full installation guide before you start the upgrade of the cluster.', piece = 'cluster';
+  const html = `<div class="page"><p class="p">Read the full installation guide before you start the upgrade of the <a class="u" href="#x">cluster</a>.</p></div>`;
+  const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:0 10px;background:#fff;color:#000}.p{font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400;text-align:justify}.u{color:#000}`;
+  const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': piece}}, wrap: 'normal'}});
+  const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 120, max: 900, height: {min: 600, max: 600}}, boxes});
+  let placed = 0;
+  for (let width = 120; width <= 900; width += 13) {
+    const at = a => value(a.coefficient) * width + value(a.heightCoefficient ?? '0') * 600 + value(a.constant);
+    const holds = row => row.regionConstraints.every(c => { const slack = value(c.coefficient) * width + value(c.heightCoefficient ?? '0') * 600 + value(c.constant); return c.strict ? slack > 1e-9 : slack >= -1e-9; });
+    const bound = (report.inlineBounds ?? []).find(holds);
+    if (!bound) continue;
+    await page.setViewportSize({width, height: 600});
+    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const rects = await page.evaluate(() => [...document.querySelector('.u').getClientRects()].map(r => ({x: r.x, y: r.y, w: r.width, h: r.height})));
+    expect(rects.length).toBe(1); placed++;
+    const [r] = rects, box = b => ({x: at(b.inlineStart), y: at(b.blockStart), w: at(b.inlineSize), h: at(b.blockSize)}), O = box(bound.outer), tag = `justify at ${width}`;
+    expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.x + r.w, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);
+    expect(r.y, `${tag} top`).toBeGreaterThanOrEqual(O.y - 1e-9); expect(r.y + r.h, `${tag} bottom`).toBeLessThanOrEqual(O.y + O.h + 1e-9);
+    if (bound.inner) { const I = box(bound.inner); expect(r.x, `${tag} inner left`).toBeLessThanOrEqual(I.x + 1e-9); expect(r.x + r.w, `${tag} inner right`).toBeGreaterThanOrEqual(I.x + I.w - 1e-9); }
+  }
+  expect(placed).toBeGreaterThan(10);
+});
+
 // A rowspan cell with auto height and measured wrapping text: its line count at the column width gives its height.
 test('a measured text rowspan cell grows its rows like Chromium', async ({page}) => {
   const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');

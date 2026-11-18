@@ -61,7 +61,9 @@
   **誤りの修正**: inline の箱の上下の padding は行を動かさないが箱(描画と hit test)を上下に広げる(19px のリンクが 27px になる)のに、
   矩形に入れていなかった(覆いや focus の隠れの判定が甘くなる)。上下の padding だけ矩形を広げる。`vertical-align` が baseline・top・
   bottom 以外(super、sub、middle、text-top、長さ、%)の inline の箱は、行を高くする(24px → 29px など、ブラウザーで量が違う)のに、
-  測った文字の高さのまま Verified にしていた。Unknown にする。残り: `justify`、rtl、inline の箱の左右の padding・border・margin
+  測った文字の高さのまま Verified にしていた。Unknown にする。`text-align: justify` は最後の行(1 行の文字列ではその行)が start に
+  揃うので、そこに載る inline の箱の矩形を出す(前の行は単語の間が伸びるので出さない。Chromium で確認。折り返しの位置は
+  ADR-0010 のとおり Chromium に合わせてあり、Firefox はこの文で別の幅で改行した)。残り: rtl、inline の箱の左右の padding・border・margin
   (文字の幅が変わる)、行の中の画像などの atomic inline、フォントの違う inline。
 
 ## E. 新しい警告のパターン
