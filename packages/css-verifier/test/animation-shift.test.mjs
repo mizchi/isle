@@ -137,3 +137,24 @@ test('a transitioned starting value is checked like an animation from it; an unt
   // A starting rule for another element does not apply.
   assert.equal(shifts(run('.a{transition:height .25s}@starting-style{.b{height:0}}')).length, 0);
 });
+
+// animation-delay and animation-fill-mode (checklist A2): the box jumps from its own layout to the first keyframe only
+// when a delay shows its own layout first (no backwards fill); it jumps back at the end only without a forwards fill.
+test('the score bound counts the start jump only after a delay without backwards fill, and the end jump only without forwards fill', () => {
+  const at = {min: 800, max: 800, height: {min: 600, max: 600}};
+  const bound = css => analyzeHTML(html, {name: 'P', css: base + '@keyframes grow{from{height:60px}to{height:80px}}' + css, viewport: at}).diagnostics.find(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT')?.scoreBound;
+  const plain = bound('.a{animation:grow .5s 2}');
+  assert.equal(plain.startJump, undefined); // no delay: the first frame drawn is already the first keyframe
+  assert.ok(plain.endJump > 0);
+  const delayed = bound('.a{animation:grow .5s 1s 2}');
+  assert.ok(delayed.startJump > 0);
+  assert.ok(Math.abs(delayed.window - plain.window - delayed.startJump) < 1e-12);
+  assert.equal(bound('.a{animation:grow .5s 1s 2 backwards}').startJump, undefined);
+  const kept = bound('.a{animation:grow .5s 2 forwards}');
+  assert.equal(kept.endJump, undefined);
+  assert.ok(kept.window < plain.window);
+  const both = bound('.a{animation:grow .5s 1s 2 both}');
+  assert.deepEqual([both.startJump, both.endJump], [undefined, undefined]);
+  // The longhands too.
+  assert.equal(bound('.a{animation:grow .5s 2}.page .a{animation-fill-mode:forwards}').endJump, undefined);
+});

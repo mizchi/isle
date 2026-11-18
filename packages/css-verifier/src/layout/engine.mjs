@@ -1482,7 +1482,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         }
       }
       // Each animation of the list (animationsOf repeats the longhand lists to the names).
-      for (const a of animationsOf(style)) if (a.playState !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(a.duration) && keyframeFrames.get(a.name)?.some(frame => frame.layout)) animated.push({ box, region, name: a.name, position: style.position, duration: a.duration, count: a.count, direction: a.direction, easing: a.easing, style });
+      for (const a of animationsOf(style)) if (a.playState !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(a.duration) && keyframeFrames.get(a.name)?.some(frame => frame.layout)) animated.push({ box, region, name: a.name, position: style.position, duration: a.duration, count: a.count, direction: a.direction, easing: a.easing, delay: a.delay, fill: a.fill, style });
       // A bar fixed to the bottom edge under viewport-fit=cover: its content must clear the bottom safe area (the home
       // indicator), so its bottom padding has to be at least that inset (env(safe-area-inset-bottom)).
       if (style.$fixed && cover && options.safeArea?.bottom > 0 && ['0', '0px'].includes(style.bottom) && (box.children ?? []).length && cmp(px(style['padding-bottom']), q(String(options.safeArea.bottom))) < 0 && !layoutWarnings.some(w => w.code === 'W_LAYOUT_SAFE_AREA' && w.path === box.path))
@@ -3559,13 +3559,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (ok && duration > 0 && count > 0) {
           const iterations = Math.min(count, Math.ceil(5 / duration));
           const wraps = ['normal', 'reverse'].includes(entry.direction) ? Math.max(0, iterations - 1) : 0;
-          const startJump = jump(sizes, frames[0].sizes) ?? 0, wrapJump = wraps ? (jump(frames.at(-1).sizes, frames[0].sizes) ?? 0) : 0;
-          // A finite animation ends by jumping back to the box's own layout (no fill mode keeps the last frame; the fill
-          // mode is not read, so the jump is always counted). Where it ends depends on the direction and a fractional
+          // The start: with no delay (or a negative one) the first frame drawn is already inside the animation, and a
+          // backwards fill shows the first keyframe during the delay; only a positive delay without it draws the box's own
+          // layout first and then jumps to the first keyframe.
+          const delayed = Number.parseFloat(entry.delay ?? '0') > 0 && !['backwards', 'both'].includes(entry.fill);
+          const startJump = delayed ? (jump(sizes, frames[0].sizes) ?? 0) : 0, wrapJump = wraps ? (jump(frames.at(-1).sizes, frames[0].sizes) ?? 0) : 0;
+          // A finite animation ends by jumping back to the box's own layout, unless a forwards fill keeps the last frame. Where it ends depends on the direction and a fractional
           // count, so the largest jump back from any frame bounds it.
-          const endJump = count === Infinity ? 0 : Math.max(0, ...frames.map(f => jump(f.sizes, sizes) ?? 0));
+          const endJump = count === Infinity || ['forwards', 'both'].includes(entry.fill) ? 0 : Math.max(0, ...frames.map(f => jump(f.sizes, sizes) ?? 0));
           const windowBound = perIteration * iterations + wraps * wrapJump + startJump + endJump;
-          for (const d of found) d.scoreBound = { window: windowBound, perIteration, iterations, ...(endJump ? { endJump } : {}), viewport: { width: number(p.x), height: number(p.y) }, assumes: 'boxes move monotonically between keyframes and the easing extremes' };
+          for (const d of found) d.scoreBound = { window: windowBound, perIteration, iterations, ...(startJump ? { startJump } : {}), ...(endJump ? { endJump } : {}), viewport: { width: number(p.x), height: number(p.y) }, assumes: 'boxes move monotonically between keyframes and the easing extremes' };
         }
       }
     }

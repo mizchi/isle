@@ -53,7 +53,8 @@ test('the CLS score of eased animation frames stays under the score bound', asyn
   const html2 = '<div class="page"><div class="a"></div><div class="b"></div></div>';
   const base2 = '*{box-sizing:border-box;margin:0}body,.page{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:40px}.b{height:40px}@keyframes grow{to{height:80px}}';
   const bound = easing => analyzeHTML(`<html lang="en"><body>${html2}</body></html>`, {name: 'P', css: `${base2}.a{animation:grow 1s ${easing}}`, viewport: {min: width, max: width, height: {min: height, max: height}}}).diagnostics.find(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT')?.scoreBound?.window;
-  for (const easing of ['linear', 'ease', 'cubic-bezier(0.34, 1.56, 0.64, 1)', 'cubic-bezier(0.68, -0.6, 0.32, 1.6)', 'linear(0, 1.2 40%, 0.9 70%, 1)']) {
+  // Each case: the animation's easing and what follows it in the shorthand (delay, count, fill mode: checklist A2).
+  for (const easing of ['linear', 'ease', 'cubic-bezier(0.34, 1.56, 0.64, 1)', 'cubic-bezier(0.68, -0.6, 0.32, 1.6)', 'linear(0, 1.2 40%, 0.9 70%, 1)', 'linear 0.3s', 'linear 0.3s backwards', 'linear forwards', 'ease-out 0.2s both', 'linear 2']) {
     const limit = bound(easing);
     expect(limit, easing).toBeGreaterThan(0);
     for (const fps of [30, 60, 120]) {
@@ -64,9 +65,12 @@ test('the CLS score of eased animation frames stays under the score bound', asyn
         const clip = r => { const x0 = Math.max(0, r.x), y0 = Math.max(0, r.y), x1 = Math.min(W, r.x + r.w), y1 = Math.min(H, r.y + r.h); return x1 > x0 && y1 > y0 ? {x0, y0, x1, y1} : null; };
         const area = r => r ? (r.x1 - r.x0) * (r.y1 - r.y0) : 0;
         const overlap = (p, q) => p && q ? area({x0: Math.max(p.x0, q.x0), y0: Math.max(p.y0, q.y0), x1: Math.min(p.x1, q.x1), y1: Math.min(p.y1, q.y1)}.x1 > Math.max(p.x0, q.x0) && Math.min(p.y1, q.y1) > Math.max(p.y0, q.y0) ? {x0: Math.max(p.x0, q.x0), y0: Math.max(p.y0, q.y0), x1: Math.min(p.x1, q.x1), y1: Math.min(p.y1, q.y1)} : null) : 0;
+        // Real time from the start of the timeline (the delay included) until after the end, where the fill mode decides
+        // what is drawn; each sample is a frame.
+        const t = a.effect.getComputedTiming(), end = t.endTime + 50;
         let total = 0, previous = (a.currentTime = 0, rect());
-        for (let i = 1; i * 1000 / fps <= 1000 + 1e-9; i++) {
-          a.currentTime = Math.min(1000, i * 1000 / fps) - (i * 1000 / fps >= 1000 ? 0.001 : 0);
+        for (let i = 1; i * 1000 / fps <= end; i++) {
+          a.currentTime = i * 1000 / fps;
           const now = rect();
           if (now.x !== previous.x || now.y !== previous.y) {
             const [p, q] = [clip(previous), clip(now)];
@@ -75,12 +79,10 @@ test('the CLS score of eased animation frames stays under the score bound', asyn
           }
           previous = now;
         }
-        // The end: the animation finishes and the box returns to its own layout (no fill mode).
-        a.cancel(); const end = rect();
-        if (end.x !== previous.x || end.y !== previous.y) { const [p, q] = [clip(previous), clip(end)]; total += (area(p) + area(q) - overlap(p, q)) / (W * H) * Math.hypot(end.x - previous.x, end.y - previous.y) / Math.max(W, H); }
         return total;
       }, [fps, width, height]);
       expect(score, `${easing} at ${fps}fps: score ${score} ≤ bound ${limit}`).toBeLessThanOrEqual(limit + 1e-9);
+      expect(score, `${easing} at ${fps}fps: the animation moves .b`).toBeGreaterThan(0);
     }
   }
 });
