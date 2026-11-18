@@ -50,7 +50,10 @@
   3 つのブラウザーで、2 つの viewport の幅で一致。grid の `%` の列・行と `%` の gap も、その軸の容器の大きさが 1 つの定数のとき
   (px の幅、宣言した px の高さ)は px に書き換えて解く。flex の column の `%` の高さ、viewport で変わる容器の `%` のトラック、
   auto の高さの親の中の `%` の高さ(grid の項目として伸ばされる親を含む)、flex の項目の `min()`/`max()` の幅は残り。
-- [ ] **D3. inline の中の行の配置**: 文字の行と inline の箱の位置。大きい。
+- [~] **D3. inline の中の行の配置**: 文字の行と inline の箱の位置。大きい。
+  最初の一歩として、測った文字の中の inline の箱(`inlineBounds`)を `text-align: center`・`right`・`end` でも出す(以前は start と
+  left だけ)。行の幅の区間で外接・内接をずらし、改行が揺れる幅は除く(ADR-0013)。3 つのブラウザーで一致。残り: `justify`、rtl、
+  inline の箱の padding・border・margin、`vertical-align`、行の中の画像などの atomic inline、フォントの違う inline。
 
 ## E. 新しい警告のパターン
 

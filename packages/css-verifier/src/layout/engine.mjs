@@ -1307,7 +1307,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // line layout for wrapping text (none where the element is split across lines).
   function inlineBounds(child, leaf, leafStyle, leafRow, region) {
     const metrics = leaf.contract?.textMetrics;
-    if (!leafRow?.origin || !metrics?.inline || !['start', 'left'].includes(leafStyle['text-align']) || leafStyle.direction !== 'ltr') return null;
+    // Checklist D3: text-align moves each line by (content width − line width) × f: 0 at the start, 1/2 centred, 1 at the
+    // end (ltr). Where the line does not fit it is start-aligned (CSS Text 3 §6.1), so only widths where it fits count.
+    const alignFactor = { start: q(0), left: q(0), center: div(q(1), q(2)), right: q(1), end: q(1) }[String(leafStyle['text-align'])];
+    if (!leafRow?.origin || !metrics?.inline || !alignFactor || leafStyle.direction !== 'ltr') return null;
     if (!(metrics.kind === 'content' && ['nowrap', 'one-line'].includes(leaf.contract.wrap)) && metrics.kind !== 'lines') return null;
     const entry = Object.entries(metrics.inline).find(([selector]) => matches(compileSelector(selector), child));
     if (!entry) return null;
@@ -1318,18 +1321,36 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const contentBlock = leafRow.block && diff(leafRow.block, scalar(['top', 'bottom'].map(side => add(px(leafStyle[`padding-${side}`]), px(leafStyle[`border-${side}`]))).reduce(add, zero)));
     const shift = lines => align === 'top' ? scalar(zero) : times(diff(contentBlock, scalar(mul(q(String(L)), q(lines)))), align === 'middle' ? div(q(1), q(2)) : q(1));
     let y = sum(leafRow.origin.block, scalar(leafRow.content.top));
-    const rect = (x0, x1, y0, y1) => cmp(x1, x0) > 0 && cmp(y1, y0) > 0 ? { origin: { inline: sum(x, scalar(x0)), block: sum(y, scalar(y0)) }, inline: scalar(sub(x1, x0)), block: scalar(sub(y1, y0)) } : null;
-    const piece = (b, r) => ({ region: r, outer: rect(sixtyfourths(b.start[0], Math.floor), sixtyfourths(b.end[1], Math.ceil), sixtyfourths(b.top[0], Math.floor), sixtyfourths(b.bottom[1], Math.ceil)),
-      inner: rect(sixtyfourths(b.start[1], Math.ceil), sixtyfourths(b.end[0], Math.floor), sixtyfourths(b.top[1], Math.ceil), sixtyfourths(b.bottom[0], Math.floor)) });
+    const rect = (x0, x1, y0, y1, shift = null) => cmp(x1, x0) > 0 && cmp(y1, y0) > 0 ? { origin: { inline: sum(shift ? sum(x, shift) : x, scalar(x0)), block: sum(y, scalar(y0)) }, inline: scalar(sub(x1, x0)), block: scalar(sub(y1, y0)) } : null;
+    const aligned = cmp(alignFactor, zero) !== 0;
+    // An aligned line of width [lo, hi]: the outer bound starts where the widest line puts it and ends where the
+    // narrowest does; the inner bound the other way round.
+    const piece = (b, r, width) => {
+      const lo = aligned ? sixtyfourths(width[0], Math.floor) : zero, hi = aligned ? sixtyfourths(width[1], Math.ceil) : zero, spread = mul(sub(hi, lo), alignFactor);
+      // (Both bounds are relative to the widest line's position; spread is how much further the narrowest one goes.)
+      const outerShift = aligned ? times(diff(leafRow.content.inline, scalar(hi)), alignFactor) : null;
+      return { region: r, outer: rect(sixtyfourths(b.start[0], Math.floor), add(sixtyfourths(b.end[1], Math.ceil), spread), sixtyfourths(b.top[0], Math.floor), sixtyfourths(b.bottom[1], Math.ceil), outerShift),
+        inner: rect(add(sixtyfourths(b.start[1], Math.ceil), spread), sixtyfourths(b.end[0], Math.floor), sixtyfourths(b.top[1], Math.ceil), sixtyfourths(b.bottom[0], Math.floor), outerShift) };
+    };
+    const fits = (r, width) => !aligned ? r : r && clip(r, diff(leafRow.content.inline, scalar(sixtyfourths(width[1], Math.ceil))));
     const base = y;
-    if (metrics.kind === 'content') { y = sum(base, shift(1)); return [piece(entry[1], region)]; }
+    if (metrics.kind === 'content') {
+      y = sum(base, shift(1));
+      if (aligned && !metrics.lineWidth) return null;
+      const r = fits(region, metrics.lineWidth);
+      return r ? [piece(entry[1], r, metrics.lineWidth)] : null;
+    }
     const content = leafRow.content.inline, out = [];
     for (const step of entry[1]) {
       if (step.split) continue;
       let r = clip(region, diff(content, scalar(sixtyfourths(step.atLeastInlineSize, Math.round))));
       if (r && step.below !== null) r = clip(r, diff(scalar(sixtyfourths(step.below, Math.round)), content), true);
       if (r && align !== 'top' && step.lines === undefined) return null;
-      if (r) { y = sum(base, shift(step.lines ?? 1)); out.push(piece(step, r)); }
+      if (r && aligned && !step.lineWidth) return null;
+      if (r) r = fits(r, step.lineWidth);
+      // Aligned: only below alignBelow, where no wider layout can apply yet.
+      if (r && aligned && step.below !== null) r = step.alignBelow === undefined ? null : clip(r, diff(scalar(sixtyfourths(step.alignBelow, Math.floor)), content), true);
+      if (r) { y = sum(base, shift(step.lines ?? 1)); out.push(piece(step, r, step.lineWidth)); }
     }
     return out;
   }

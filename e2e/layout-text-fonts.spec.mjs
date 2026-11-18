@@ -300,24 +300,26 @@ test('inline element bounds contain the rendered inline box', async ({page}) => 
     {font: roboto, content: 'AVATAR Wave today', piece: 'Wave'},
     {font: roboto, content: 'Tiny link at the start', piece: 'Tiny'},
   ];
-  for (const {font, content, piece} of cases) {
+  // text-align moves the line (checklist D3): centred and at the end too.
+  for (const align of ['start', 'center', 'right']) for (const {font, content, piece} of cases) {
     const at = content.indexOf(piece);
     const html = `<div class="page"><p class="p">${content.slice(0, at)}<a class="u" href="#x">${piece}</a>${content.slice(at + piece.length)}</p></div>`;
     const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:${font.lineHeight + 8}px;padding:4px 7px;background:#fff;color:#000}.p{font-family:"${font.family}";font-size:${font.size}px;line-height:${font.lineHeight}px;font-weight:${font.weight};white-space:nowrap}.u{color:#000}`;
+    const alignedCSS = css + `.p{text-align:${align}}`;
     const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': piece}}}});
-    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 400, max: 900, height: {min: 300, max: 300}}, boxes});
+    const report = analyzeHTML(html, {name: 'Page', css: alignedCSS, viewport: {min: 400, max: 900, height: {min: 300, max: 300}}, boxes});
     const [bound] = report.inlineBounds ?? [];
     expect(bound, JSON.stringify(report.diagnostics)).toBeTruthy();
     const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
     const at400 = a => value(a.coefficient) * 400 + value(a.heightCoefficient ?? '0') * 300 + value(a.constant);
     await page.setViewportSize({width: 400, height: 300});
-    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.setContent(`<!doctype html><html><head><style>${face}${alignedCSS}</style></head><body>${html}</body></html>`);
     await page.evaluate(() => document.fonts.ready);
     const rects = await page.evaluate(() => [...document.querySelector('.u').getClientRects()].map(r => ({x: r.x, y: r.y, w: r.width, h: r.height})));
     expect(rects.length).toBe(1);
     const [r] = rects, o = bound.outer, i = bound.inner;
     const box = b => ({x: at400(b.inlineStart), y: at400(b.blockStart), w: at400(b.inlineSize), h: at400(b.blockSize)});
-    const O = box(o), I = i && box(i), tag = `${font.family} ${JSON.stringify(content)}`;
+    const O = box(o), I = i && box(i), tag = `${align} ${font.family} ${JSON.stringify(content)}`;
     expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.x + r.w, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);
     expect(r.y, `${tag} top`).toBeGreaterThanOrEqual(O.y - 1e-9); expect(r.y + r.h, `${tag} bottom`).toBeLessThanOrEqual(O.y + O.h + 1e-9);
     expect(I, tag).toBeTruthy();
@@ -355,9 +357,10 @@ test('inline link occlusion and obscured focus agree with Chromium', async ({pag
 
 // Wrapping text: per width, the link's line and bounds from the line layout, or split across lines.
 test('inline bounds in wrapping text follow the line layout', async ({page}) => {
+  test.setTimeout(240_000);
   const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
-  for (const {font, content, piece, anywhere} of [
+  for (const align of ['start', 'center', 'right']) for (const {font, content, piece, anywhere} of [
     {font: {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content: 'Read the full installation guide before you start the upgrade of the cluster.', piece: 'installation guide'},
     {font: jp, content: '日本語のテキストを折り返して幅を確認します英ABC 123', piece: 'ABC'},
     // Bracket trim (text-spacing-trim) gives two line layouts; bounds hold where both keep the link on one line.
@@ -368,7 +371,8 @@ test('inline bounds in wrapping text follow the line layout', async ({page}) => 
     const html = `<div class="page"><p class="p">${content.slice(0, at)}<a class="u" href="#x">${piece}</a>${content.slice(at + piece.length)}</p></div>`;
     const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:0 10px;background:#fff;color:#000}.p{font-family:"${font.family}";font-size:${font.size}px;line-height:${font.lineHeight}px;font-weight:${font.weight}${anywhere ? ';overflow-wrap:anywhere' : ''}}.u{color:#000}`;
     const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': piece}}, wrap: anywhere ? 'anywhere' : 'normal'}});
-    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 120, max: 900, height: {min: 600, max: 600}}, boxes});
+    const alignedCSS = css + `.p{text-align:${align}}`;
+    const report = analyzeHTML(html, {name: 'Page', css: alignedCSS, viewport: {min: 120, max: 900, height: {min: 600, max: 600}}, boxes});
     expect(report.inlineBounds?.length, JSON.stringify(report.diagnostics)).toBeGreaterThan(0);
     let split = 0, placed = 0;
     for (let width = 120; width <= 900; width += 13) {
@@ -376,11 +380,12 @@ test('inline bounds in wrapping text follow the line layout', async ({page}) => 
       const holds = row => row.regionConstraints.every(c => { const slack = value(c.coefficient) * width + value(c.heightCoefficient ?? '0') * 600 + value(c.constant); return c.strict ? slack > 1e-9 : slack >= -1e-9; });
       const bound = report.inlineBounds.find(holds);
       await page.setViewportSize({width, height: 600});
-      await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+      await page.setContent(`<!doctype html><html><head><style>${face}${alignedCSS}</style></head><body>${html}</body></html>`);
       await page.evaluate(() => document.fonts.ready);
       const rects = await page.evaluate(() => [...document.querySelector('.u').getClientRects()].map(r => ({x: r.x, y: r.y, w: r.width, h: r.height})));
-      const tag = `${font.family} at ${width}`;
-      if (!bound) { expect(rects.length, `${tag}: split`).toBeGreaterThan(1); split++; continue; }
+      const tag = `${align} ${font.family} at ${width}`;
+      // Aligned text also has no bounds just below a line break's width, where the browser may already break differently.
+      if (!bound) { if (align === 'start') expect(rects.length, `${tag}: split`).toBeGreaterThan(1); if (rects.length > 1) split++; continue; }
       expect(rects.length, tag).toBe(1); placed++;
       const [r] = rects, box = b => ({x: at(b.inlineStart), y: at(b.blockStart), w: at(b.inlineSize), h: at(b.blockSize)}), O = box(bound.outer);
       expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.x + r.w, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);

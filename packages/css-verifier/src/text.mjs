@@ -196,8 +196,11 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     const collapsed = collapse(text);
     if (!collapsed) return {text: collapsed, width: 0, bound: 0};
     const width = shapeLine(font, collapsed, lang);
-    const bound = Math.max(...languagesFor(font, codepoints(collapsed), lang).map(language => textBound(collapsed, shapeLine(font, collapsed, language))));
-    return {text: collapsed, width, bound};
+    const shaped = languagesFor(font, codepoints(collapsed), lang).map(language => shapeLine(font, collapsed, language));
+    const bound = Math.max(...shaped.map(w => textBound(collapsed, w)));
+    // The line's width as a range (checklist D3: text-align moves the line by it): the narrowest shaping less the
+    // allowance, up to the bound.
+    return {text: collapsed, width, bound, range: [Math.max(0, Math.min(...shaped) - 2 * scriptRuns(collapsed) / UNIT), bound]};
   }
 
   /**
@@ -382,6 +385,8 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     const languages = languagesFor(font, codepoints(collapsed), lang);
     // The width axis split at every variant's layout boundary; each piece holds where every variant keeps the element on one line.
     const cuts = [...new Set([lines.floor, ...lines.layouts.flatMap(list => list.map(l => l.atLeastInlineSize))])].filter(w => w >= lines.floor).sort((a, b) => a - b);
+    // The most any line's widened width exceeds its shaped width (textBound): ceil + (2k − 1 + rtl words)/64, k script runs.
+    const allowance = (2 + 2 * scriptRuns(collapsed) + rtlWords(collapsed)) / UNIT;
     for (const [selector, piece] of Object.entries(inline ?? {})) {
       const part = collapse(piece), at = collapsed.indexOf(part);
       if (!part || at < 0 || collapsed.indexOf(part, at + 1) >= 0) fail(`${selector}: inline text ${JSON.stringify(piece)} must occur exactly once in the content`);
@@ -392,7 +397,10 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         let to = layout.breaks[line]; while (to > end && cp[to - 1] === ' ') to--;
         const b = inlineBounds({font, text: cp.slice(from, to).join(''), lang: language, inline: {[selector]: part}}, start - from)[selector];
         const shift = line * font.lineHeight;
-        return {line, ...b, top: b.top.map(v => v + shift), bottom: b.bottom.map(v => v + shift)};
+        // The line's own width without the spaces that hang at its end (checklist D3: text-align moves it by that).
+        let last = layout.breaks[line]; while (last > from && cp[last - 1] === ' ') last--;
+        const lineText = cp.slice(from, last).join(''), w = lineText ? shapeLine(font, lineText, language) : 0, slack = 2 * scriptRuns(lineText) / UNIT;
+        return {line, ...b, top: b.top.map(v => v + shift), bottom: b.bottom.map(v => v + shift), lineWidth: [Math.max(0, w - slack), textBound(lineText, w)]};
       };
       const steps = [];
       cuts.forEach((w, k) => {
@@ -402,7 +410,9 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
         const counts = lines.layouts.map(list => list.filter(l => l.atLeastInlineSize <= w).at(-1).breaks.length);
         if (placed.some(p => !p) || new Set(placed.map(p => p.line)).size > 1 || new Set(counts).size > 1) { steps.push({atLeastInlineSize: w, below, split: true}); return; }
         const hull = key => [Math.min(...placed.map(p => p[key][0])), Math.max(...placed.map(p => p[key][1]))];
-        steps.push({atLeastInlineSize: w, below, line: placed[0].line, lines: counts[0], start: hull('start'), end: hull('end'), top: hull('top'), bottom: hull('bottom')});
+        // alignBelow (checklist D3): the next layout starts at its widened width, so within the allowance below it the
+        // browser may already lay the text out that way, with other line widths: text-align only holds below that.
+        steps.push({atLeastInlineSize: w, below, line: placed[0].line, lines: counts[0], start: hull('start'), end: hull('end'), top: hull('top'), bottom: hull('bottom'), lineWidth: hull('lineWidth'), ...(below !== null ? {alignBelow: Math.max(w, below - allowance)} : {})});
       });
       if (lines.floor > 0) steps.unshift({atLeastInlineSize: 0, below: lines.floor, split: true});
       out[selector] = steps;
@@ -470,7 +480,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
       if (text.content !== undefined) {
         const measured = measureText({font, text: text.content, lang: text.lang});
         width = measured.bound;
-        metrics = {kind: 'content', text: measured.text, width: measured.width, baseline: baselineMetrics(font), ...(text.inline ? {inline: inlineBounds({font, text: text.content, lang: text.lang, inline: text.inline})} : {})};
+        metrics = {kind: 'content', text: measured.text, width: measured.width, baseline: baselineMetrics(font), ...(text.inline ? {inline: inlineBounds({font, text: text.content, lang: text.lang, inline: text.inline}), lineWidth: measured.range} : {})};
       } else {
         const domain = domainBounds({font, characters: text.characters, maxLength: text.maxLength, lang: text.lang});
         width = domain.bounds.at(-1);

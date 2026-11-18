@@ -6,7 +6,7 @@ import {q, cmp} from './linear.mjs';
 import {fontShorthand} from './css.mjs';
 
 const fontKeys = new Set(['family', 'size', 'lineHeight', 'weight', 'style', 'letterSpacing']);
-const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance', 'minContent', 'overflowWrap', 'profile', 'lang', 'spacedProfile', 'inline', 'baseline']);
+const metricKeys = new Set(['kind', 'text', 'width', 'characters', 'maxLength', 'perCharacter', 'pairAdjustment', 'bounds', 'widest', 'font', 'allowance', 'minContent', 'overflowWrap', 'profile', 'lang', 'spacedProfile', 'inline', 'baseline', 'lineWidth']);
 export const languageTag = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
 // Languages whose break opportunities were compared with Chromium (e2e). Chinese differs (e.g. !〜).
 // he: Hebrew letters break at spaces only (measured against Chromium with right-to-left text).
@@ -38,12 +38,14 @@ export function validateTextMetrics(metrics) {
     if (profile.at(-1).lines === null || known.some((entry, i) => i && entry.lines >= known[i - 1].lines)) throw new Error('A text line profile must have decreasing line counts and end with a known count');
   }
   if (metrics.baseline !== undefined && (!metrics.baseline || Object.keys(metrics.baseline).some(k => !['ascent', 'descent'].includes(k)) || !['ascent', 'descent'].every(k => Number.isSafeInteger(metrics.baseline[k]) && metrics.baseline[k] >= 0))) throw new Error('Invalid text baseline metrics');
+  // lineWidth (checklist D3): the width range of the one line of content text, for text-align.
+  if (metrics.lineWidth !== undefined && !(metrics.kind === 'content' && Array.isArray(metrics.lineWidth) && metrics.lineWidth.length === 2 && metrics.lineWidth.every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 1_000_000) && metrics.lineWidth[0] <= metrics.lineWidth[1])) throw new Error('Invalid text line width');
   if (metrics.inline !== undefined) {
     const pair = v => Array.isArray(v) && v.length === 2 && v.every(n => finite(n, -1_000_000, 1_000_000)) && v[0] <= v[1];
     const box = b => b && Object.keys(b).every(k => ['start', 'end', 'top', 'bottom'].includes(k)) && ['start', 'end', 'top', 'bottom'].every(k => pair(b[k]));
     // lines: per width interval [atLeastInlineSize, below) the bounds on one line, or split across lines.
     const step = (b, i, all) => b && finite(b.atLeastInlineSize, 0, 1_000_000) && (b.below === null ? i === all.length - 1 : finite(b.below, b.atLeastInlineSize, 1_000_000) && i < all.length - 1 && all[i + 1].atLeastInlineSize >= b.below - 1e-9)
-      && (b.split === true ? Object.keys(b).every(k => ['atLeastInlineSize', 'below', 'split'].includes(k)) : Number.isSafeInteger(b.line) && b.line >= 0 && (b.lines === undefined || (Number.isSafeInteger(b.lines) && b.lines > b.line)) && box(Object.fromEntries(Object.entries(b).filter(([k]) => !['atLeastInlineSize', 'below', 'line', 'lines'].includes(k)))));
+      && (b.split === true ? Object.keys(b).every(k => ['atLeastInlineSize', 'below', 'split'].includes(k)) : Number.isSafeInteger(b.line) && b.line >= 0 && (b.lines === undefined || (Number.isSafeInteger(b.lines) && b.lines > b.line)) && (b.lineWidth === undefined || pair(b.lineWidth)) && (b.alignBelow === undefined || (b.below !== null && finite(b.alignBelow, b.atLeastInlineSize, b.below))) && box(Object.fromEntries(Object.entries(b).filter(([k]) => !['atLeastInlineSize', 'below', 'line', 'lines', 'lineWidth', 'alignBelow'].includes(k)))));
     if (!['content', 'lines'].includes(metrics.kind) || !metrics.inline || typeof metrics.inline !== 'object' || Array.isArray(metrics.inline) || Object.keys(metrics.inline).length > 32
       || Object.values(metrics.inline).some(b => metrics.kind === 'content' ? !box(b) : !(Array.isArray(b) && b.length && b.length <= 257 && b[0].atLeastInlineSize === 0 && b.every(step)))) throw new Error('Invalid inline bounds');
   }
