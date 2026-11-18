@@ -481,7 +481,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map();
+  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -557,7 +557,11 @@ export function parseLayoutCSS(sheets, diagnostic) {
       // @namespace with a prefix only affects selectors written with that prefix; a default namespace changes what every
       // type selector matches, which is not modeled.
       if (node.type === 'atrule' && node.name.toLowerCase() === 'namespace') {
-        if (!/^[a-z_][\w-]*\s+(?:url\(|["'])/i.test(node.params.trim())) problem('U_LAYOUT_CSS', `@namespace ${node.params.trim()} sets the default namespace, which is not modeled`, node.source.start.line);
+        // A default XHTML namespace: type and universal selectors match HTML elements only, which changes nothing unless
+        // the page has SVG or MathML elements (checked against the tree by the analysis).
+        const xhtml = /^(?:url\(\s*["']?http:\/\/www\.w3\.org\/1999\/xhtml["']?\s*\)|["']http:\/\/www\.w3\.org\/1999\/xhtml["'])$/i.test(node.params.trim());
+        if (xhtml) defaultNamespace.push({ file: filename, line: node.source.start.line });
+        else if (!/^[a-z_][\w-]*\s+(?:url\(|["'])/i.test(node.params.trim())) problem('U_LAYOUT_CSS', `@namespace ${node.params.trim()} sets the default namespace, which is not modeled`, node.source.start.line);
         continue;
       }
       // @property registers a custom property (CSS Properties and Values API 1 §2): its inherits and initial-value change
@@ -680,7 +684,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
   }
   // An animation-name without @keyframes runs no animation.
   for (const rule of rules) for (const declaration of rule.declarations) if (declaration.property === 'animation-name' && !wide.has(declaration.value)) declaration.value = postcss.list.comma(declaration.value).map(name => name === 'none' || keyframes.has(name) ? name : 'none').join(', ');
-  return { rules, layers, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered };
+  return { rules, layers, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace };
 }
 
 // The UA default family and the user's default font size are not author

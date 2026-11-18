@@ -1207,3 +1207,13 @@ test('@counter-style with outside markers, and font palettes: the item boxes are
   expect(await rects('@font-palette-values --p{font-family:sans-serif;base-palette:1}.i{font-palette:--p}')).toBe(base);
   expect(await rects('.i{font-palette:dark}')).toBe(base);
 });
+
+test('a default XHTML @namespace: HTML elements lay out as without it; type selectors stop matching SVG elements', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  const css = '*{margin:0}body{display:grid;grid-template-columns:minmax(0,1fr)}div{height:20px;width:30px}.m{height:15px}svg{display:block;width:60px;height:40px}';
+  const rects = async (extra, body) => { await page.setContent(`<!doctype html><html lang="en"><head><style>${extra}${css}</style></head><body>${body}</body></html>`); return page.evaluate(() => JSON.stringify([...document.querySelectorAll('body *')].map(e => { const r = e.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }))); };
+  const html = '<div class="m"></div><div></div><section><div></div></section>';
+  for (const ns of ['@namespace url(http://www.w3.org/1999/xhtml);', '@namespace "http://www.w3.org/1999/xhtml";']) expect(await rects(ns, html), ns).toBe(await rects('', html));
+  const withSvg = html + '<svg aria-hidden="true"></svg>';
+  expect(await rects('@namespace url(http://www.w3.org/1999/xhtml);', withSvg)).not.toBe(await rects('', withSvg));
+});

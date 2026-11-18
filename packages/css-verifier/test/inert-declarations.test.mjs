@@ -417,6 +417,17 @@ test('@namespace with a prefix only affects selectors that use the prefix; a def
   assert.equal(run('@namespace url(http://www.w3.org/2000/svg);').status, 'unknown');
 });
 
+test('a default XHTML namespace changes nothing on a page without SVG or MathML elements', () => {
+  const page = (body, c) => analyzeHTML(`<html lang="en"><body>${body}</body></html>`, {name: 'P', css: `${c}*{margin:0}html,body{${g}}.m{height:20px}div{width:30px}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const xhtml = '@namespace url(http://www.w3.org/1999/xhtml);';
+  const r = page('<div class="m"></div>', xhtml);
+  assert.equal(r.status, 'verified', JSON.stringify(r.diagnostics.map(d => d.message)));
+  assert.equal(JSON.stringify(r.sizes), JSON.stringify(page('<div class="m"></div>', '').sizes));
+  assert.equal(page('<div class="m"></div>', '@namespace "http://www.w3.org/1999/xhtml";').status, 'verified');
+  // An SVG element is in the SVG namespace: type and universal selectors no longer match it.
+  assert.equal(page('<div class="m"></div><svg width="10" height="10" aria-hidden="true"></svg>', xhtml).status, 'unknown');
+});
+
 test('@counter-style only draws outside markers: accepted, the layout is the same', () => {
   const run = c => analyzeHTML('<html lang="en"><body><ul class="u"><li class="i">A</li><li class="i">B</li></ul></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.u{padding-left:20px}.i{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, boxes: {'.i': {minInlineSize: 0, intrinsicBlockSize: 20}}});
   const base = JSON.stringify(run('').sizes);
