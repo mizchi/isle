@@ -653,6 +653,25 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['z-index'], css: at('z-index'),
               message: `${box.label}: z-index: ${style['z-index']} has no effect (it is position: static and not a flex or grid item, so it does not stack above or below its neighbours). Give it position: relative, or remove it`, ...ranges(r) });
         }
+        // F8: a transition between a keyword size (auto, none, fit-content, …) and a length does not animate: the box
+        // jumps (measured in Chromium, Firefox and WebKit; interpolate-size: allow-keywords animates it in Chromium only).
+        // The other value is the :hover or :focus one.
+        {
+          const sizeNames = { height: 'block-size', width: 'inline-size', 'max-height': 'max-block-size', 'max-width': 'max-inline-size', 'min-height': 'min-block-size', 'min-width': 'min-inline-size', 'block-size': 'block-size', 'inline-size': 'inline-size' };
+          const covered = transitionsOf(style).filter(t => !/^-?0+(?:\.0+)?m?s$/.test(String(t.duration))).flatMap(t => t.property === 'all' ? Object.values(sizeNames) : sizeNames[t.property] ? [sizeNames[t.property]] : []);
+          if (covered.length && state === undefined) {
+            const keyword = v => /^(?:auto|none|fit-content|max-content|min-content|stretch)$/.test(String(v));
+            for (const st of ['hover', 'focus']) {
+              let alt; try { alt = styles(box, r, ancestors, inherited, false, gridItem, new Set([st])); } catch { continue; }
+              for (const a of alt) for (const key of [...new Set(covered)]) {
+                if (String(a.style[key]) === String(style[key]) || keyword(a.style[key]) === keyword(style[key]) || layoutWarnings.some(w => w.code === 'W_CSS_TRANSITION_AUTO' && w.path === box.path && w.property === key)) continue;
+                const [from, to] = keyword(style[key]) ? [style[key], a.style[key]] : [a.style[key], style[key]];
+                layoutWarnings.push({ code: 'W_CSS_TRANSITION_AUTO', severity: 'warning', box: box.label, path: box.path, property: key, css: at('transition-property'),
+                  message: `${box.label} transitions ${key} between ${from} and ${to} (on :${st}), but a keyword size like ${keyword(style[key]) ? style[key] : a.style[key]} does not interpolate: the box jumps instead of animating (only Chromium animates it, with interpolate-size: allow-keywords). Animate a length (max-height, or grid-template-rows: 0fr → 1fr)`, ...ranges(r) });
+              }
+            }
+          }
+        }
         for (const [min, max] of [['min-inline-size', 'max-inline-size'], ['min-block-size', 'max-block-size']]) {
           const v = key => /^\d+(?:\.\d+)?px$/.test(String(style[key])) ? Number(String(style[key]).slice(0, -2)) : null;
           const [minName, maxName, sizeName] = min === 'min-inline-size' ? ['min-width', 'max-width', 'width'] : ['min-height', 'max-height', 'height'];
@@ -1362,6 +1381,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       const pbox = { ...box, path: `${box.path}/${kind === 'before' ? -1 : (box.children ?? []).length}`, label: `${box.label}::${kind}`, children: [], pseudo: kind };
       for (const c of styles(pbox, region, parents, inheritedStyle, false, false, new Set([`::${kind}`]))) {
         const content = c.style.content ?? 'none';
+        // F9: a ::before or ::after styled but with no content is never generated.
+        if (content === 'none' && c.style.display !== 'none' && Object.keys(c.style.$sources ?? {}).some(key => key !== 'content') && !layoutWarnings.some(w => w.code === 'W_CSS_PSEUDO_NO_CONTENT' && w.path === pbox.path)) {
+          const src = Object.values(c.style.$sources).find(Boolean);
+          layoutWarnings.push({ code: 'W_CSS_PSEUDO_NO_CONTENT', severity: 'warning', box: pbox.label, path: pbox.path, css: src ? [{ property: 'content', file: src.file, line: src.line, selector: src.selector }] : [],
+            message: `${pbox.label} is styled (${Object.keys(c.style.$sources).filter(key => key !== 'content').slice(0, 3).join(', ')}) but has no content, so the browser never generates it. Add content: "" (or the text it should show)` });
+        }
         if (content === 'none' || c.style.display === 'none') continue;
         const text = content.startsWith('text:') ? content.slice(5) : null;
         const fixed = !(box.children ?? []).length && !box.inline?.length && ['inline-size', 'block-size'].every(key => /^\d+(?:\.\d+)?px$/.test(inheritedStyle[key])) && c.style.position === 'static';

@@ -75,3 +75,25 @@ test('F7: z-index stacks a box only where it is positioned or a flex or grid ite
     expect(top, css).toBe(inert ? 'b' : 'a');
   }
 });
+
+test('F8: a transition between auto (or none) and a length jumps', async ({page}) => {
+  for (const [css, jumps] of [['.a{width:100px;height:auto;transition:height 1s linear}.a:hover{height:100px}', true], ['.a{width:100px;height:20px;transition:height 1s linear}.a:hover{height:100px}', false], ['.a{width:100px;max-height:none;transition:max-height 1s linear}.a:hover{max-height:10px}', true]]) {
+    expect(warns(css, 'W_CSS_TRANSITION_AUTO'), css).toBe(jumps);
+    // The hovered state, applied after a first frame: a transition runs, or the box is at its end value at once.
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${base}${css.replace(':hover', '.on')}</style></head><body><div class="a">x</div></body></html>`);
+    await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    const running = await page.evaluate(() => { document.querySelector('.a').classList.add('on'); return document.getAnimations().length > 0; });
+    expect(running, css).toBe(!jumps);
+  }
+});
+
+test('F9, F10: a pseudo-element without content, and content on an element', async ({page}) => {
+  for (const [css, generated] of [['.a::before{display:block;width:10px;height:10px}', false], ['.a::before{content:"";display:block;height:10px}', true]]) {
+    await load(page, css);
+    expect(await page.evaluate(() => getComputedStyle(document.querySelector('.a'), '::before').content !== 'none'), css).toBe(generated);
+    expect(warns(css, 'W_CSS_PSEUDO_NO_CONTENT'), css).toBe(!generated);
+  }
+  await load(page, '.a{content:"hi"}');
+  expect(await page.evaluate(() => document.querySelector('.a').getBoundingClientRect().height)).toBe(20);
+  expect((analyzeHTML('<html lang="en"><body><div class="a"></div></body></html>', {name: 'P', css: base + '.a{content:"hi"}', viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('content'))).toBe(true);
+});

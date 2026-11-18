@@ -64,3 +64,27 @@ test('F7: z-index on a box that is neither positioned nor a flex or grid item', 
   assert.equal(inert('.p{display:flex}.a{z-index:5;flex:none;width:10px}'), false);
   assert.equal(inert('.p{display:grid;grid-template-columns:minmax(0,1fr)}.a{z-index:5}'), false);
 });
+
+test('F8: a transition between auto (or none) and a length jumps', () => {
+  const jump = css => codes(run(`.a{width:100px}${css}`), 'W_CSS_TRANSITION_AUTO');
+  const [w] = jump('.a{height:auto;transition:height .3s}.a:hover{height:100px}');
+  assert.ok(w); assert.equal(w.property, 'block-size'); assert.match(w.message, /auto/);
+  assert.equal(jump('.a{max-height:none;transition:max-height .3s}.a:hover{max-height:10px}').length, 1);
+  assert.equal(jump('.a{height:20px;transition:height .3s}.a:hover{height:100px}').length, 0);
+  // all covers it; no transition, no warning.
+  assert.equal(jump('.a{height:auto;transition:all .3s}.a:hover{height:100px}').length, 1);
+  assert.equal(jump('.a{height:auto}.a:hover{height:100px}').length, 0);
+});
+
+test('F9: a ::before or ::after with no content is never generated', () => {
+  const [w] = codes(run('.a::before{display:block;width:10px;height:10px;background:red}'), 'W_CSS_PSEUDO_NO_CONTENT');
+  assert.ok(w); assert.match(w.message, /content/);
+  assert.equal(codes(run('.a::before{content:"";display:block;height:10px}'), 'W_CSS_PSEUDO_NO_CONTENT').length, 0);
+  // Content from another rule counts.
+  assert.equal(codes(run('.a::after{content:""}.a::after{display:block;height:4px}'), 'W_CSS_PSEUDO_NO_CONTENT').length, 0);
+});
+
+test('F10: content on an element (not a pseudo-element) does nothing, unless it is an image', () => {
+  assert.ok(codes(run('.a{content:"hi"}'), 'W_LAYOUT_DECLARATION_INERT').some(w => w.properties.includes('content')));
+  assert.equal(codes(run('.a{content:normal}'), 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.includes('content')).length, 0);
+});
