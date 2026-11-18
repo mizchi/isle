@@ -31,6 +31,21 @@ export function htmlBoxTree(html) {
   }
   const fragment=asHtml ? documentNode : asBody ? documentNode.childNodes.find(n=>n.tagName==='body') : parseFragment(html,{sourceCodeLocationInfo:true,onParseError:error=>unknown(`HTML parse recovery: ${error.code}`)});
   const roots=asBody ? [fragment] : fragment.childNodes.filter(node=>node.tagName);
+  // Checklist F27 (moves the parser makes): an element written inside a <table> outside its cells is moved before the
+  // table (foster parenting), and a <form> start tag inside a form is dropped. Found from the source offsets.
+  {
+    const source=asBody ? (asHtml ? (/^\s*<!doctype/i.test(html) ? html.trim() : `<!doctype html>${html.trim()}`) : `<!doctype html><html><head></head>${html.trim()}</html>`) : html;
+    // (Within the same bounds as the conversion below — 64 levels, 2048 elements — beyond which the input is refused anyway.)
+    const all=[]; let bounded=true;
+    (function collect(n,ancestors){ if(!bounded) return; if(ancestors.length>64 || all.length>2048) { bounded=false; return; } if(n.tagName) all.push({n,ancestors}); for(const c of n.childNodes??[]) collect(c,n.tagName ? [...ancestors,n] : ancestors); })(fragment,[]);
+    if(!bounded) all.length=0;
+    const tables=all.filter(x=>x.n.tagName==='table' && x.n.sourceCodeLocation);
+    for(const x of all) { const at=x.n.sourceCodeLocation?.startOffset; if(at===undefined) continue;
+      const t=tables.find(t=>t.n!==x.n && at>t.n.sourceCodeLocation.startOffset && at<(t.n.sourceCodeLocation.endOffset ?? Infinity) && !x.ancestors.includes(t.n));
+      if(t) x.n.fostered=true; }
+    const formStarts=new Set(all.filter(x=>x.n.tagName==='form' && x.n.sourceCodeLocation).map(x=>x.n.sourceCodeLocation.startOffset));
+    for(const m of source.matchAll(/<form[\s>]/gi)) if(!formStarts.has(m.index)) { const outer=all.filter(x=>x.n.tagName==='form' && x.n.sourceCodeLocation && x.n.sourceCodeLocation.startOffset<m.index && m.index<(x.n.sourceCodeLocation.endOffset ?? Infinity)).at(-1); if(outer) outer.n.nestedForm=true; }
+  }
   if(roots.length!==1 || !asBody && fragment.childNodes.some(n=>n.nodeName==='#text' && n.value.trim())) throw new TypeError('Static HTML adapter requires a single root element');
   let count=0;
   function convert(node,depth=0) {
@@ -73,7 +88,7 @@ export function htmlBoxTree(html) {
     // foreign (SVG, MathML) elements are left alone.
     const html5=node.namespaceURI==='http://www.w3.org/1999/xhtml';
     const optionalEnd=new Set(['html','head','body','p','li','dt','dd','option','optgroup','rt','rp','tr','td','th','thead','tbody','tfoot','colgroup','caption']);
-    const restructured=!html5 || !node.sourceCodeLocation && ['tbody','tr','colgroup','html','head','body'].includes(node.tagName) ? undefined : !node.sourceCodeLocation ? 'implied' : node.sourceCodeLocation.startTag && !node.sourceCodeLocation.endTag && !optionalEnd.has(node.tagName) && !voidTags.has(node.tagName) ? 'unclosed' : undefined;
+    const restructured=node.fostered ? 'fostered' : node.nestedForm ? 'nested-form' : !html5 || !node.sourceCodeLocation && ['tbody','tr','colgroup','html','head','body'].includes(node.tagName) ? undefined : !node.sourceCodeLocation ? 'implied' : node.sourceCodeLocation.startTag && !node.sourceCodeLocation.endTag && !optionalEnd.has(node.tagName) && !voidTags.has(node.tagName) ? 'unclosed' : undefined;
     return {...(['tbody','tr','colgroup'].includes(node.tagName) && !node.sourceCodeLocation ? {implied:true} : {}),...(restructured ? {restructured} : {}),tag:node.tagName,attributes:attrs,...(attrs.id!==undefined ? {id:attrs.id} : {}),...(attrs.lang!==undefined ? {lang:attrs.lang.trim()} : {}),...accessibilityFacts(node.tagName,attrs),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),
       text:node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)),
       ...(node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)) ? {textContent:node.childNodes.filter(n=>n.nodeName==='#text').map(n=>n.value).join(' ').replace(/[\t\n\r ]+/g,' ').trim()} : {}),

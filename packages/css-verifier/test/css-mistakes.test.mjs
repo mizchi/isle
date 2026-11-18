@@ -248,5 +248,7 @@ test('F27: the HTML parser changed the structure written in the source', () => {
   const re = html => codes(run('', html), 'W_HTML_RESTRUCTURED').map(w => w.tag);
   assert.deepEqual(re('<p class="p">text<div class="d">x</div></p>'), ['p']);
   assert.deepEqual(re('<a href="#x">a<a href="#y">b</a></a>'), ['a']);
-  for (const html of ['<p>a</p><p>b</p>', '<ul><li>a<li>b</ul>', '<svg width="10" height="10"><path d="M0 0"/></svg>', '<table><tr><td>x</td></tr></table>', '<img src="a.png" alt="">']) assert.deepEqual(re(html), [], html);
+  assert.deepEqual(re('<table><div class="f">x</div><tr><td>a</td></tr></table>'), ['div']);
+  assert.deepEqual(re('<form action="/a"><form action="/b"><input aria-label="x"></form></form>'), ['form']);
+  for (const html of ['<table><tr><td><div>ok</div></td></tr></table>', '<form action="/a"></form><form action="/b"></form>', '<p>a</p><p>b</p>', '<ul><li>a<li>b</ul>', '<svg width="10" height="10"><path d="M0 0"/></svg>', '<table><tr><td>x</td></tr></table>', '<img src="a.png" alt="">']) assert.deepEqual(re(html), [], html);
 });
