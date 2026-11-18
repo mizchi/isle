@@ -232,3 +232,14 @@ test('F24, F25: table-layout: fixed with no width, border-spacing with collapsed
   assert.equal(inert('.t{border-collapse:collapse;border-spacing:8px}', 'border-spacing'), true);
   assert.equal(inert('.t{border-spacing:8px}', 'border-spacing'), false);
 });
+
+test('F26: table > tr never matches: the parser inserts a tbody', () => {
+  const html = '<table class="t"><tr class="r"><td>x</td></tr></table>';
+  const w = css => codes(run(css, html), 'W_CSS_SELECTOR_IMPLIED_PARENT');
+  assert.equal(w('.t > .r{color:red}').length, 1);
+  assert.equal(w('table > tr{color:red}').length, 1);
+  assert.equal(w('.t .r{color:red}').length, 0);
+  assert.equal(w('.t > tbody > .r{color:red}').length, 0);
+  // A tbody written in the source is not implied.
+  assert.equal(codes(run('.t > .r{color:red}', '<table class="t"><tbody><tr class="r"><td>x</td></tr></tbody></table>'), 'W_CSS_SELECTOR_IMPLIED_PARENT').length, 0);
+});

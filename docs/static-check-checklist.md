@@ -173,6 +173,10 @@
   width: auto の表では列は中身で決まる(3 つのブラウザーで、fixed を外したときと同じ列幅)。
 - [x] **F25. 線を重ねた表の `border-spacing`**(`W_LAYOUT_DECLARATION_INERT`): `border-collapse: collapse` ではセルが線を
   共有し、間隔は何もしない(3 つのブラウザーで同じ位置)。
+- [x] **F26. HTML の解析が補う tbody を飛ばす子の結合子**(`W_CSS_SELECTOR_IMPLIED_PARENT`): 行を table の直下に書いた
+  HTML でも、解析は tbody を挟むので `table > tr`(や `.t > .r`)は当たらない。ソースに開始タグのない tbody・tr・colgroup を
+  補われた要素として記録し、それを飛ばせば当たる選択子を報告する(3 つのブラウザーの `querySelector` と一致)。DOM の API で
+  組み立てる UI ライブラリ(React など)は tbody を挟まないので、アダプターの木には印を付けない(HTML の解析を通るときだけ)。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

@@ -58,6 +58,7 @@ export const recommended = {
   W_CSS_VISITED_IGNORED: ['warning', 'change only colors in :visited (color, background-color, border and outline colors)'],
   W_CSS_MARKER_IGNORED: ['warning', 'style the list item, or draw your own marker with ::before'],
   W_A11Y_SUMMARY_INDICATOR: ['warning', 'show the open state: a ::before that turns with details[open], or an icon'],
+  W_CSS_SELECTOR_IMPLIED_PARENT: ['warning', 'write the implied element in the selector (table > tbody > tr), or use a descendant combinator'],
   W_CSS_MEDIA_NEVER: ['warning', 'check the order of the bounds: min-width below max-width'],
   W_LAYOUT_SCROLLBAR_SHIFT: ['warning', 'keep the scrollbar gutter with html { scrollbar-gutter: stable }'],
   W_LAYOUT_BALANCE_LINES: ['warning', 'bound the text length (data-text-max-length), or use text-wrap: pretty'],

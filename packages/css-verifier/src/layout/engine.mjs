@@ -311,6 +311,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // :disabled / :enabled where an element's disabled attribute is dynamic (an adapter's expression): whether the rule
   // applies is not known.
   if (rules.some(rule => rule.selectors.some(sel => JSON.stringify(sel).includes('"kind":"disabled"'))) && boxes.some(box => box.disabled === 'dynamic')) unknown('U_LAYOUT_ATTRIBUTE', `${boxes.find(box => box.disabled === 'dynamic').label}: a :disabled or :enabled rule depends on a disabled state that is dynamic, or that browsers decide differently (an option in a disabled select)`);
+  // F26: a child combinator through an element the HTML parser inserted (the tbody of a table written with its rows
+  // directly inside): table > tr never matches — the selector matches only with the implied element skipped.
+  for (const b of boxes) if (b.implied) for (const c of b.children ?? []) for (const rule of rules) for (const sel of rule.selectors ?? []) {
+    if (sel.state || sel.pseudoElement || matches(sel, c) || !matches(sel, { ...c, [PARENT]: b[PARENT] }) || layoutWarnings.some(w => w.code === 'W_CSS_SELECTOR_IMPLIED_PARENT' && w.selector === sel.source)) continue;
+    layoutWarnings.push({ code: 'W_CSS_SELECTOR_IMPLIED_PARENT', severity: 'warning', box: c.label, path: c.path, selector: sel.source, css: [{ property: 'selector', file: rule.file, line: rule.line, selector: sel.source }],
+      message: `${sel.source} never matches ${c.label}: the HTML parser puts a ${b.tag} between it and its ${b[PARENT]?.tag ?? 'parent'} (no ${b.tag} is written in the source, but every table has one), so the child combinator skips nothing. Write ${b[PARENT]?.tag ?? 'table'} > ${b.tag} > ${c.tag}, or use a descendant combinator` });
+  }
   setRegisteredProperties(registered);
   if (defaultNamespace.length && boxes.some(box => ['svg', 'math'].includes(box.tag))) unknown('U_LAYOUT_CSS', 'A default XHTML @namespace keeps type and universal selectors off the SVG and MathML elements of this page, which is not modeled', defaultNamespace[0].line, undefined, defaultNamespace[0].file);
   for (const note of markerIgnored) layoutWarnings.push({ code: 'W_CSS_MARKER_IGNORED', severity: 'warning', selector: note.selector, property: note.property, css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],
