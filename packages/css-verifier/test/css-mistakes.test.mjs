@@ -46,3 +46,12 @@ test('F5: a media query that no viewport matches', () => {
   // A list matches when any query does.
   assert.equal(codes(run('@media (min-width:900px) and (max-width:600px), print{.a{color:red}}'), 'W_CSS_MEDIA_NEVER').length, 0);
 });
+
+test('F6: a property declared twice in one rule: the earlier one never applies', () => {
+  const [w] = codes(run('.a{color:red;color:blue}'), 'W_CSS_DUPLICATE_DECLARATION');
+  assert.ok(w); assert.equal(w.property, 'color'); assert.match(w.message, /color: red never applies/);
+  // !important keeps the earlier: the later never applies.
+  assert.match(codes(run('.a{color:red !important;color:blue}'), 'W_CSS_DUPLICATE_DECLARATION')[0].message, /color: blue never applies/);
+  // The fallback pattern: a later value in a newer function or unit is left alone.
+  for (const css of ['.a{height:100vh;height:100dvh}', '.a{width:100%;width:calc(100% - 10px)}', '.a{display:block;display:-webkit-box}', '.a{color:red}.a{color:blue}']) assert.equal(codes(run(css), 'W_CSS_DUPLICATE_DECLARATION').length, 0, css);
+});

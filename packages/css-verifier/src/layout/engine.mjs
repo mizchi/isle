@@ -256,7 +256,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -310,6 +310,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   setRegisteredProperties(registered);
   if (defaultNamespace.length && boxes.some(box => ['svg', 'math'].includes(box.tag))) unknown('U_LAYOUT_CSS', 'A default XHTML @namespace keeps type and universal selectors off the SVG and MathML elements of this page, which is not modeled', defaultNamespace[0].line, undefined, defaultNamespace[0].file);
+  for (const note of duplicateDeclarations) layoutWarnings.push({ code: 'W_CSS_DUPLICATE_DECLARATION', severity: 'warning', property: note.property, selector: note.selector, css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],
+    message: note.same ? `${note.selector} declares ${note.property}: ${note.kept} twice: the repeat does nothing. Remove one` : `${note.selector} declares ${note.property} twice: ${note.property}: ${note.dead} never applies (${note.kept} wins). Remove it, or merge the two`});
   for (const note of missingKeyframes) layoutWarnings.push({ code: 'W_CSS_KEYFRAMES_MISSING', severity: 'warning', keyframes: note.name, ...(note.selector ? { selector: note.selector } : {}), css: [{ property: 'animation-name', file: note.file, line: note.line, ...(note.selector ? { selector: note.selector } : {}) }],
     message: `${note.selector ?? 'A rule'} runs animation ${note.name}, but no @keyframes ${note.name} exists: the animation does nothing. Check the name (it is case-sensitive) or add the @keyframes rule` });
   for (const note of importIgnored) layoutWarnings.push({ code: 'W_CSS_IMPORT_IGNORED', severity: 'warning', css: [{ property: '@import', file: note.file, line: note.line, selector: '@import' }],

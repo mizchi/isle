@@ -572,7 +572,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
+  const duplicateDeclarations = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -730,6 +730,22 @@ export function parseLayoutCSS(sheets, diagnostic) {
           return { ...rest, source: text, specificity: rest.specificity.map((v, i) => v + lead[i]), scope, scopeMode: m && m[2].trim() === '>' ? 'child' : 'descendant' };
         }) : node.selectors.map(selector => compileSelector(selector));
       } catch (error) { problem('U_LAYOUT_SELECTOR', error.message, node.source.start.line); continue; }
+      // Checklist F6: one property declared twice in a rule — the earlier declaration never applies (the later wins, or
+      // the !important one). A later value the browser may not support (a newer function, unit or keyword, or a
+      // vendor-prefixed one) is the progressive-enhancement fallback pattern and is left alone.
+      {
+        const newer = /(?:\b(?:var|env|calc|min|max|clamp|color-mix|oklch|oklab|lab|lch|light-dark|round|mod|rem|anchor|attr)\(|-webkit-|-moz-|-ms-|\d(?:dvh|svh|lvh|dvw|svw|lvw|dvi|svi|dvb|svb|cqi|cqw|cqh|cqb|cqmin|cqmax|rlh|lh|ic|cap)\b|\b(?:fit-content|max-content|min-content|stretch|-webkit-fill-available|subgrid|contents|clip|anchor-size)\b)/i;
+        const seenProps = new Map();
+        for (const d of node.nodes ?? []) {
+          if (d.type !== 'decl') continue;
+          const prop = d.prop.toLowerCase(), earlier = seenProps.get(prop);
+          if (earlier && !newer.test(d.value) && !newer.test(earlier.value) && !duplicateDeclarations.some(n => n.file === filename && n.line === d.source.start.line && n.property === prop)) {
+            const dead = earlier.important && !d.important ? d : earlier;
+            duplicateDeclarations.push({ property: prop, selector: node.selector, file: filename, line: dead.source.start.line, dead: dead.value.trim(), kept: (dead === d ? earlier : d).value.trim(), same: earlier.value.trim() === d.value.trim() });
+          }
+          seenProps.set(prop, d);
+        }
+      }
       // A state rule (:hover, :focus, …) may only repaint: the layout is proved for the base state.
       // Preference rules (prefers-reduced-motion, prefers-color-scheme, …) likewise: layout is proved under the default preferences.
       if (preferences.length && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_QUERY', `Preference media rules may only change paint and animation; ${node.selector} changes layout`, node.source.start.line); continue; }
@@ -800,7 +816,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
     return 'none';
   }).join(', ');
-  return { rules, layers, keyframes, missingKeyframes, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author

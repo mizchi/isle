@@ -49,6 +49,7 @@ export const recommended = {
   W_CSS_KEYFRAMES_MISSING: ['warning', 'fix the animation name (it is case-sensitive) or add the @keyframes rule'],
   W_CSS_ANIMATION_NO_DURATION: ['warning', 'give the animation a duration (animation: name 1s)'],
   W_CSS_VAR_INVALID: ['warning', 'define the custom property, or give var() a fallback (var(--x, value))'],
+  W_CSS_DUPLICATE_DECLARATION: ['warning', 'remove the declaration that never applies'],
   W_CSS_MEDIA_NEVER: ['warning', 'check the order of the bounds: min-width below max-width'],
   W_LAYOUT_SCROLLBAR_SHIFT: ['warning', 'keep the scrollbar gutter with html { scrollbar-gutter: stable }'],
   W_LAYOUT_BALANCE_LINES: ['warning', 'bound the text length (data-text-max-length), or use text-wrap: pretty'],
