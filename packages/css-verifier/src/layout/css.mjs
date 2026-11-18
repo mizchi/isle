@@ -71,6 +71,12 @@ const statePaint = /^(?:z-index|color|clip|clip-path|background(?:-.*)?|border-(
 // An element that is the containing block of its fixed (and absolute) descendants: a transform, a backdrop filter, or
 // will-change naming a property that would make one.
 export const containsFixed = style => Boolean(style) && ((style.transform ?? 'none') !== 'none' || (style['backdrop-filter'] ?? 'none') !== 'none' || /(?:^|,\s*)(?:transform|translate|rotate|scale|filter|backdrop-filter|perspective)(?:\s*,|$)/.test(style['will-change'] ?? 'auto'));
+// Declarations that only act together with another property of the same element (checklist F15, F16): the property
+// they need, and the computed value at which they do nothing. (Not inherited, so they act on this element only.)
+export const dependentProperty = {
+  'background-size': ['background-image', 'none'], 'background-position': ['background-image', 'none'], 'background-repeat': ['background-image', 'none'], 'background-attachment': ['background-image', 'none'], 'background-origin': ['background-image', 'none'],
+  'text-decoration-color': ['text-decoration-line', 'none'], 'text-decoration-style': ['text-decoration-line', 'none'], 'text-decoration-thickness': ['text-decoration-line', 'none'],
+};
 export const paintProperties = ['hyphens', 'object-fit', 'scroll-behavior', 'overscroll-behavior-x', 'overscroll-behavior-y', 'scroll-snap-type', 'scroll-snap-align', 'resize', 'text-wrap-mode', 'text-wrap-style', 'text-overflow', 'line-clamp', 'box-orient', 'touch-action', 'color', 'visibility', 'pointer-events', 'opacity', 'text-decoration-line', 'outline-style', 'outline-width', 'outline-color', 'outline-offset', 'box-shadow', 'cursor', 'list-style-type', 'animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'animation-direction', 'animation-timing-function', 'animation-delay', 'animation-fill-mode', 'animation-timeline', 'transition-property', 'transition-duration', 'transition-timing-function', 'transition-delay', 'color-scheme', 'z-index', 'isolation', 'transform', 'transform-origin', 'translate', 'rotate', 'scale', 'backdrop-filter', 'will-change', 'justify-self', 'justify-items', 'fill', 'stroke', 'list-style-position', 'caret-color', 'content-visibility', 'contain-intrinsic-block-size'];
 const inheritedPaint = ['color', 'fill', 'stroke', 'list-style-position', 'caret-color', 'visibility', 'pointer-events', 'cursor', 'list-style-type', 'color-scheme', 'text-wrap-style', 'text-wrap-mode'];
 // Inherited text properties. They are kept as specified strings and only
@@ -572,7 +578,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const duplicateDeclarations = [], noDurationTransitions = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
+  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -744,6 +750,9 @@ export function parseLayoutCSS(sheets, diagnostic) {
             duplicateDeclarations.push({ property: prop, selector: node.selector, file: filename, line: dead.source.start.line, dead: dead.value.trim(), kept: (dead === d ? earlier : d).value.trim(), same: earlier.value.trim() === d.value.trim() });
           }
           seenProps.set(prop, d);
+          // F15, F16: a declaration that only acts with another property: kept with the rule's selectors, checked per box
+          // against the computed value of that property (background-image, text-decoration-line).
+          if (dependentProperty[prop] && !wide.has(d.value.trim().toLowerCase())) dependentDeclarations.push({ selectors, contexts, property: prop, value: d.value.trim(), file: filename, line: d.source.start.line, selector: node.selector });
           // F12: a transition shorthand item with no time is 0s.
           if (prop === 'transition' && !wide.has(d.value.trim().toLowerCase())) for (const item of postcss.list.comma(d.value)) if (!/(?:^|\s)-?(?:\d+(?:\.\d+)?|\.\d+)m?s(?:\s|$)/i.test(item.trim()) && item.trim().toLowerCase() !== 'none' && !/var\(/i.test(item))
             noDurationTransitions.push({ selector: node.selector, file: filename, line: d.source.start.line, item: item.trim() });
@@ -819,7 +828,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
     return 'none';
   }).join(', ');
-  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author

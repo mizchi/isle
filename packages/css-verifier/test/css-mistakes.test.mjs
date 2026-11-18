@@ -122,3 +122,17 @@ test('F14: a border width with no border style draws no border', () => {
   assert.equal(codes(run('.a{border-width:0 2px;border-style:solid}'), 'W_CSS_BORDER_NO_STYLE').length, 0);
   for (const css of ['.a{border-width:2px;border-style:solid}', '.a{border:2px solid red}', '.a{border-width:0}', '.a{border-style:solid;border-width:2px}']) assert.equal(codes(run(css), 'W_CSS_BORDER_NO_STYLE').length, 0, css);
 });
+
+test('F15, F16: background-size with no image, text-decoration-color with no line', () => {
+  const inert = (css, prop) => codes(run(css), 'W_LAYOUT_DECLARATION_INERT').some(w => w.properties.includes(prop));
+  assert.equal(inert('.a{background-size:cover}', 'background-size'), true);
+  assert.equal(inert('.a{background:url(a.png);background-size:cover}', 'background-size'), false);
+  assert.equal(inert('.a{background-position:center;background-color:red}', 'background-position'), true);
+  assert.equal(inert('.a{text-decoration-color:red}', 'text-decoration-color'), true);
+  assert.equal(inert('.a{text-decoration:underline;text-decoration-color:red}', 'text-decoration-color'), false);
+  // An image only on :hover (or in a media condition): the size acts there.
+  assert.equal(inert('.a{background-size:cover}.a:hover{background-image:url(a.png)}', 'background-size'), false);
+  assert.equal(inert('.a{background-size:cover}@media (min-width:800px){.a{background-image:url(a.png)}}', 'background-size'), false);
+  // Another rule for another element is not this one's.
+  assert.equal(inert('.b{background-size:cover}', 'background-size'), false);
+});

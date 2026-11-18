@@ -1,7 +1,7 @@
 import { q, add, sub, mul, cmp, div, exact, number } from './linear.mjs';
 import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rectangle, clip, partition, projection, serialize } from './region.mjs';
 import { validateOptions } from './input.mjs';
-import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea, containsFixed, setUAProfile, setRegisteredProperties, animationsOf, transitionsOf } from './css.mjs';
+import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea, containsFixed, setUAProfile, setRegisteredProperties, animationsOf, transitionsOf, dependentProperty } from './css.mjs';
 import { resolveUAProfile } from './ua-profile.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
@@ -256,7 +256,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -470,6 +470,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           if (sides.length && !layoutWarnings.some(w => w.code === 'W_CSS_BORDER_NO_STYLE' && w.path === box.path))
             layoutWarnings.push({ code: 'W_CSS_BORDER_NO_STYLE', severity: 'warning', box: box.label, path: box.path, sides, css: at(`$bw-${sides[0]}`).map(c => ({ ...c, property: 'border-width' })),
               message: `${box.label} sets a border width (${sides.join(', ')}) but no border style, which is none by default: no border is drawn and its width is 0. Add border-style: solid (or use the border shorthand: border: 2px solid)` });
+        }
+        // F15, F16: background-size (…) with no background-image, text-decoration-color (…) with no decoration line on the
+        // element itself: they do nothing.
+        for (const note of dependentDeclarations) {
+          const [needed, idle] = dependentProperty[note.property];
+          // (Not where any state of the element — :hover, :focus, … or a media condition — sets the needed property.)
+          const anyState = new Set(['hover', 'focus', 'focus-visible', 'focus-within', 'active', 'checked', 'visited', 'target']);
+          if (rules.some(rule => rule.declarations.some(d => d.property === needed && String(d.value) !== idle) && rule.selectors.some(sel => matches(sel, box, anyState) || matches(sel, box, state)))) continue;
+          if (String(style[needed] ?? idle) !== idle || !note.selectors.some(sel => matches(sel, box, state)) || layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(note.property))) continue;
+          layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: [note.property], css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],
+            message: `${box.label}: ${note.property}: ${note.value} has no effect (its ${needed} is ${idle}: ${needed === 'background-image' ? 'there is no background image to size or place' : 'the element draws no decoration line of its own'}). Set ${needed}, or remove it`, ...ranges(r) });
         }
         // F12: a transition with no duration (transition: opacity) is 0s: the change is instant (a delay only postpones it).
         for (const t of transitionsOf(style)) if (/^-?0+(?:\.0+)?m?s$/.test(String(t.duration)) && style.$sources?.['transition-property'] && style.$sources?.['transition-duration']?.specified === undefined && !layoutWarnings.some(w => w.code === 'W_CSS_TRANSITION_NO_DURATION' && w.path === box.path && w.property === t.property))
