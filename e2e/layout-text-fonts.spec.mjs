@@ -290,6 +290,39 @@ test('spaced line profiles (letter 0.12em, word 0.16em) match Chromium', async (
 });
 
 // Inline bounds: a link inside one line of measured text lies inside the outer bounds and covers the inner ones.
+// Horizontal padding, border and margin on inline boxes (checklist D3): measured with the text contract (inline
+// {text, edges}), they widen the line and move what follows; each box's border box lies inside its outer bound.
+test('inline boxes with horizontal edges: the line width and every box\'s bounds', async ({page}) => {
+  // Firefox positions these boxes on its own 1/60px grid (3/1000px past the 1/64px bounds measured here): other
+  // browsers' rounding is outside the text metrics (ADR-0010). Chromium and WebKit hold.
+  test.skip(test.info().project.name === 'firefox', 'Firefox rounds inline edges to 1/60px (ADR-0010)');
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the guide and the notes first.';
+  const html = '<div class="page"><p class="p">Read the <a class="u" href="#x">guide</a> and the <a class="v" href="#y">notes</a> first.</p><div class="after"></div></div>';
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  for (const [extra, u, v] of [['.u{padding:0 6px}', [0, 6, 6, 0], [0, 0, 0, 0]], ['.u{padding:0 4px;margin:0 3px;border-style:solid;border-width:0 1px 0 2px}.v{padding-left:10px}', [3, 6, 5, 3], [0, 10, 0, 0]], ['.v{margin-right:12px;padding:0 2px}', [0, 0, 0, 0], [0, 2, 2, 12]]]) {
+    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': {text: 'guide', edges: u}, '.v': {text: 'notes', edges: v}}}}});
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p{font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}a{color:#000}${extra}`;
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 400, max: 900, height: {min: 300, max: 300}}, boxes});
+    expect(report.status === 'unknown', `${extra}: ${JSON.stringify(report.diagnostics.map(d => d.message))}`).toBe(false);
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => document.fonts.ready);
+    const browser = await page.evaluate(() => ({p: (() => { const r = document.createRange(); r.selectNodeContents(document.querySelector('.p')); const rs = [...r.getClientRects()]; return Math.max(...rs.map(x => x.right)) - Math.min(...rs.map(x => x.left)); })(), u: document.querySelector('.u').getBoundingClientRect().toJSON(), v: document.querySelector('.v').getBoundingClientRect().toJSON()}));
+    // The line is as wide as measured: the contract's width bounds the browser's max-content width.
+    const width = boxes['.p'].minInlineSize, exact = boxes['.p'].textMetrics.width;
+    expect(browser.p, `${extra} width`).toBeLessThanOrEqual(width + 1e-9); // (and the edges count: the browser's width is within a quarter pixel of the shaped width plus the edges)
+    expect(browser.p, `${extra} width`).toBeGreaterThanOrEqual(exact - 0.25);
+    for (const key of ['u', 'v']) {
+      const bound = report.inlineBounds.find(b => b.box === `.${key}`) ?? report.inlineBounds[key === 'u' ? 0 : 1];
+      const at = a => value(a.coefficient) * 400 + value(a.heightCoefficient ?? '0') * 300 + value(a.constant), O = {x: at(bound.outer.inlineStart), w: at(bound.outer.inlineSize)}, I = bound.inner && {x: at(bound.inner.inlineStart), w: at(bound.inner.inlineSize)};
+      const r = browser[key], tag = `${extra} .${key}`;
+      expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.x + r.width, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);
+      expect(I, tag).toBeTruthy(); expect(r.x, `${tag} inner left`).toBeLessThanOrEqual(I.x + 1e-9); expect(r.x + r.width, `${tag} inner right`).toBeGreaterThanOrEqual(I.x + I.w - 1e-9);
+    }
+  }
+});
+
 // vertical-align off the baseline raises or lowers the inline box and makes the line taller, by amounts that differ
 // between browsers: Unknown; top and bottom with the text's own font change nothing.
 test('vertical-align on an inline box inside measured text', async ({page}) => {

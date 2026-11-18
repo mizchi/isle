@@ -1402,7 +1402,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // and WebKit, by amounts that differ between them). top and bottom with the text's own font change nothing.
       if (!['baseline', 'top', 'bottom'].includes(String(style['vertical-align'] ?? 'baseline'))) throw Object.assign(new Error(`${child.label} inside text has vertical-align: ${style['vertical-align']}, which moves it off the baseline and makes the line taller; the measured text height does not hold`), { code: 'U_LAYOUT_INLINE' });
       // auto margins of inline boxes compute to 0.
-      for (const side of ['left', 'right']) for (const key of [`padding-${side}`, `border-${side}`, `margin-${side}`]) if (!['0', '0px', ...(key.startsWith('margin') ? ['auto'] : [])].includes(String(style[key]))) throw Object.assign(new Error(`${child.label} inside text has horizontal ${key}; inline box edges change the measured text`), { code: 'U_LAYOUT_INLINE' });
+      // Horizontal edges add to the line (checklist D3): allowed where the text contract measured them (inline
+      // {text, edges}) and they are the ones declared here.
+      {
+        const edge = key => { const v = String(style[key] ?? '0'); if (v === 'auto' && key.startsWith('margin')) return 0; if (v === '0') return 0; const m = /^(\d+(?:\.\d+)?)px$/.exec(v); return m ? Number(m[1]) : null; };
+        const own = [edge('margin-left'), [edge('border-left'), edge('padding-left')], [edge('padding-right'), edge('border-right')], edge('margin-right')].map(e => Array.isArray(e) ? (e.includes(null) ? null : e[0] + e[1]) : e);
+        const declared = Object.entries(leaf.contract?.textMetrics?.inlineEdges ?? {}).find(([selector]) => matches(compileSelector(selector), child))?.[1];
+        const firstKey = ['margin-left', 'border-left', 'padding-left', 'padding-right', 'border-right', 'margin-right'].find(key => !['0', '0px', ...(key.startsWith('margin') ? ['auto'] : [])].includes(String(style[key])));
+        if (firstKey && !(declared && own.every((v, i) => v !== null && Math.abs(v - declared[i]) < 1e-9))) throw Object.assign(new Error(`${child.label} inside text has horizontal ${firstKey}; inline box edges change the measured text${declared ? ` (the text contract measured edges ${declared.join(', ')}px, not these)` : ' (measure them with the text contract: inline {text, edges})'}`), { code: 'U_LAYOUT_INLINE' });
+        if (!firstKey && declared && declared.some(v => v)) throw Object.assign(new Error(`${child.label}: the text contract measured inline edges ${declared.join(', ')}px that its CSS does not declare`), { code: 'U_LAYOUT_INLINE' });
+      }
       if (leaf.contract?.textMetrics && fontKeys.some(key => style[key] !== leafStyle[key])) throw Object.assign(new Error(`${child.label} changes the font inside text measured as one run`), { code: 'U_LAYOUT_INLINE' });
       // Sizes, vertical margins and aspect-ratio do not apply to a non-replaced inline box (CSS 2.2 §10.3.1, §10.6.1;
       // measured: width, height, min/max-width, margin-top and aspect-ratio on a span change no pixel), nor do

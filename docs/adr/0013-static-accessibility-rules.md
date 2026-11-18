@@ -326,6 +326,10 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
   (以前は広げず、覆いや focus の隠れの判定が範囲の外を見落としうる誤り)。`vertical-align` が baseline・top・bottom 以外の inline の箱は
   行を高くする(super で 24px → 29.4〜30.3px のようにブラウザーで違う)ので、測った文字の大きさが成り立たない:U_LAYOUT_INLINE
   (以前は 24px のまま Verified:誤り)。
+- **inline の箱の左右の端**(チェックリスト D3):左右の padding・border・margin は行の幅を広げ、後ろの文字と箱をずらす。一行の文字列では
+  text 契約の `inline` に `{text, edges: [margin-left, border+padding-left, border+padding-right, margin-right]}` を与えると、フォント層が
+  幅に端の和を足し、各箱を前の箱の端の和と自分の margin-left だけずらし、border box を自分の端の分だけ広げる。engine は inline の箱の
+  CSS の端が契約の値と一致するときだけ受け入れ、測っていない端や違う端は U_LAYOUT_INLINE。入れ子の箱の端と折り返す文字列の端は測らない。
 - **table cell の中**:cell は行の高さに伸び、行は `vertical-align` で揃う(UA は tbody/tr が middle、td/th はそれを継承。以前は baseline としていた:誤り)。
   top・middle・bottom は行数 × line-height の高さを content box の中でずらし(Chromium で測定)、baseline は行全体の揃えなので矩形を出さない
   (以前は cell の上端に置いていたので、高い行の中のリンクの位置が誤っていた)。

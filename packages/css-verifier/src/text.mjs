@@ -462,6 +462,7 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
       const fontContract = {family: font.family, size: font.size, lineHeight: font.lineHeight, ...(font.weight !== undefined ? {weight: font.weight} : {}), ...(font.letterSpacing ? {letterSpacing: font.letterSpacing} : {})};
       if (rest.wrap === 'normal' || rest.wrap === 'anywhere') {
         if (text.content === undefined) fail(`${selector}: wrapping is measured for fixed content; a character domain has no fixed line breaks`);
+        if (Object.values(text.inline ?? {}).some(v => typeof v !== 'string')) fail(`${selector}: inline boxes with edges are measured in one-line text only`);
         const overflowWrap = rest.wrap === 'anywhere' ? 'anywhere' : (text.overflowWrap ?? 'normal');
         if (rest.wrap === 'anywhere' && text.overflowWrap !== undefined && text.overflowWrap !== 'anywhere') fail(`${selector}: wrap anywhere measures overflow-wrap: anywhere`);
         const lines = breakLines({font, text: text.content, overflowWrap, lang: text.lang});
@@ -479,8 +480,29 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
       if (text.inline !== undefined && text.content === undefined) fail(`${selector}: inline bounds need fixed content`);
       if (text.content !== undefined) {
         const measured = measureText({font, text: text.content, lang: text.lang});
-        width = measured.bound;
-        metrics = {kind: 'content', text: measured.text, width: measured.width, baseline: baselineMetrics(font), ...(text.inline ? {inline: inlineBounds({font, text: text.content, lang: text.lang, inline: text.inline}), lineWidth: measured.range} : {})};
+        // Inline boxes with horizontal edges (checklist D3): {text, edges: [margin-left, border+padding-left,
+        // border+padding-right, margin-right]} px. They add their edges to the line and move what follows.
+        const pieces = Object.fromEntries(Object.entries(text.inline ?? {}).map(([k, v]) => [k, typeof v === 'string' ? v : v?.text]));
+        const edges = Object.fromEntries(Object.entries(text.inline ?? {}).filter(([, v]) => typeof v !== 'string').map(([k, v]) => {
+          if (!v || typeof v.text !== 'string' || !Array.isArray(v.edges) || v.edges.length !== 4 || !v.edges.every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 10_000)) fail(`${selector}: inline ${k} must be a string or {text, edges: [margin-left, border+padding-left, border+padding-right, margin-right]}`);
+          return [k, v.edges];
+        }));
+        const extra = Object.values(edges).flat().reduce((a, b) => a + b, 0);
+        width = measured.bound + extra;
+        let inline = text.inline ? inlineBounds({font, text: text.content, lang: text.lang, inline: pieces}) : null;
+        if (inline && Object.keys(edges).length) {
+          // Each box moves by the edges of the boxes before it (and its own left margin); its border box spans its own
+          // border and padding. Overlapping (nested) pieces with edges are not modeled.
+          const order = Object.entries(inline).sort((a, b) => a[1].start[0] - b[1].start[0]);
+          for (let i = 1; i < order.length; i++) if (order[i][1].start[0] < order[i - 1][1].end[1] && (edges[order[i][0]] || edges[order[i - 1][0]])) fail(`${selector}: nested inline boxes with edges are not modeled`);
+          let before = 0;
+          inline = Object.fromEntries(order.map(([k, b]) => {
+            const [ml, bl, br, mr] = edges[k] ?? [0, 0, 0, 0], shift = before + ml;
+            before += ml + bl + br + mr;
+            return [k, {...b, start: b.start.map(v => v + shift), end: b.end.map(v => v + shift + bl + br)}];
+          }));
+        }
+        metrics = {kind: 'content', text: measured.text, width: measured.width + extra, baseline: baselineMetrics(font), ...(inline ? {inline, lineWidth: measured.range.map(v => v + extra), ...(Object.keys(edges).length ? {inlineEdges: edges} : {})} : {})};
       } else {
         const domain = domainBounds({font, characters: text.characters, maxLength: text.maxLength, lang: text.lang});
         width = domain.bounds.at(-1);

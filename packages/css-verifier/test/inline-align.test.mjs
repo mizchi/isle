@@ -66,3 +66,22 @@ test('vertical padding extends the inline box; vertical-align off the baseline i
   for (const v of ['top', 'bottom', 'baseline']) assert.notEqual(one(`.u{vertical-align:${v}}`).status, 'unknown', v);
   for (const v of ['super', 'sub', 'middle', 'text-top', '5px', '20%']) assert.equal(one(`.u{vertical-align:${v}}`).status, 'unknown', v);
 });
+
+test('horizontal edges of inline boxes: measured with the contract, else Unknown', () => {
+  const run = (css, edges) => {
+    const boxes = metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.u': edges ? {text: 'guide', edges} : 'guide'}}}});
+    return {boxes, r: analyzeHTML('<html lang="en"><body><div class="page"><p class="p">Read the <a class="u" href="#x">guide</a> first.</p></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0;padding:0}html,body,.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}${css}`, viewport: {min: 320, max: 800, height: {min: 300, max: 300}}, boxes})};
+  };
+  const plain = run(''), padded = run('.u{padding:0 4px;margin-left:3px}', [3, 4, 4, 0]);
+  assert.equal(padded.boxes['.p'].minInlineSize, plain.boxes['.p'].minInlineSize + 11);
+  assert.notEqual(padded.r.status, 'unknown');
+  const [a] = plain.r.inlineBounds, [b] = padded.r.inlineBounds;
+  assert.equal(value(b.outer.inlineStart.constant), value(a.outer.inlineStart.constant) + 3);
+  assert.equal(value(b.outer.inlineSize.constant), value(a.outer.inlineSize.constant) + 8);
+  // Not measured, or measured with other edges, or measured but not declared: Unknown.
+  assert.equal(run('.u{padding:0 4px}').r.status, 'unknown');
+  assert.equal(run('.u{padding:0 4px}', [0, 5, 5, 0]).r.status, 'unknown');
+  assert.equal(run('', [0, 4, 4, 0]).r.status, 'unknown');
+  // Wrapping text with edges is not measured.
+  assert.throws(() => metrics.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.u': {text: 'guide', edges: [0, 4, 4, 0]}}}, wrap: 'normal'}}), /one-line/);
+});
