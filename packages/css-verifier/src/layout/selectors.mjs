@@ -120,9 +120,20 @@ function compileCompound(source, depth = 0) {
   return { source, parts, specificity, pseudoElement, ...(state ? { state } : {}) };
 }
 /** `state` is the set of user-action states that hold (e.g. focus): a state selector matches only then. */
+/**
+ * @scope: the number of generations from box up to the nearest ancestor matching the scope root, or null when none
+ * does. Without the whole ancestor chain (a component root whose page is not known) the answer is not known.
+ */
+export function scopeProximity(selector, box, state) {
+  let distance = 1, p = box[PARENT], last = box;
+  for (; p; p = p[PARENT], distance++) { if (matches(p.anonymous ? '__never__' : selector.scope, p, new Set())) return distance; last = p; }
+  if (!last.documentRoot) throw Object.assign(new Error(`@scope (${selector.scope.source}): whether ${box.label ?? box.tag} is inside a scope root depends on ancestors that are not known`), { code: 'U_LAYOUT_SELECTOR' });
+  return null;
+}
 export function matches(selector, box, state) {
   if (typeof selector === 'string') selector = compileSelector(selector);
   if (box.anonymous) return false; // anonymous boxes are not elements
+  if (selector.scope && (!compoundMatches(selector, box) || scopeProximity(selector, box, state) === null)) return false;
   // ::before/::after rules apply only to that pseudo-element (state '::before'), and other rules not to it.
   const pseudo = [...(state ?? [])].find(s => s === '::before' || s === '::after' || s === '::placeholder');
   if (selector.pseudoElement ? `::${selector.pseudoElement}` !== pseudo : pseudo) return false;

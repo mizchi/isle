@@ -5,7 +5,7 @@ import { parseCondition, preferenceValues } from './conditions.mjs';
 import { supportsCondition } from './supports.mjs';
 import {customName,variableValue,variableEnvironment,substituteDeclaration} from './variables.mjs';
 
-import { compileSelector, matches, greaterRank } from './selectors.mjs';
+import { compileSelector, matches, greaterRank, scopeProximity } from './selectors.mjs';
 export { matches, simpleSelector } from './selectors.mjs';
 const pointSize = /^(?:\d+(?:\.\d{1,6})?px|0)$/;
 const remLengths = ['top', 'right', 'bottom', 'left'].flatMap(side => [`margin-${side}`, `padding-${side}`, side]).concat(['inline-size', 'block-size', 'min-inline-size', 'max-inline-size', 'min-block-size', 'max-block-size', 'row-gap', 'column-gap', 'flex-basis', 'font-size']);
@@ -468,7 +468,7 @@ function flexShorthand(value) {
 export function parseLayoutCSS(sheets, diagnostic) {
   const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map();
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
-  let count = 0;
+  let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
     const problem = (code, message, line) => diagnostic(code, message, line, filename);
     if (depth > 32) { problem('U_LAYOUT_LIMIT', 'Conditional nesting limit exceeded'); return; }
@@ -555,6 +555,17 @@ export function parseLayoutCSS(sheets, diagnostic) {
         registered.set(name, { syntax, inherits: inherits === 'true', initial: initial ?? null });
         continue;
       }
+      // @scope (root) { … }: the rules inside apply to the root's descendants, and the nearer root wins ties (Cascade 6
+      // §2.5). Only a root without a limit, with compound selectors inside (no :scope, &, or combinators), is modeled.
+      if (node.type === 'atrule' && node.name.toLowerCase() === 'scope') {
+        const m = /^\(\s*([^()]+?)\s*\)$/.exec(node.params.trim());
+        if (!m || scope) { problem('U_LAYOUT_SELECTOR', `@scope ${node.params.trim()}: ${!m ? 'a limit (to …), an implicit root or a selector list root is' : 'a nested @scope is'} not modeled`, node.source.start.line); continue; }
+        let root;
+        try { root = compileSelector(m[1]); if (root.state || root.pseudoElement) throw new Error('a state or pseudo-element root'); } catch (error) { problem('U_LAYOUT_SELECTOR', `@scope (${m[1]}): ${error.message}`, node.source.start.line); continue; }
+        scope = root;
+        try { visit(node.nodes ?? [], contexts, layer, filename, depth + 1, preferences); } finally { scope = null; }
+        continue;
+      }
       // @supports: its rules apply where the condition holds in every target browser, and are skipped where it fails in
       // all of them; a condition not decided from the known features (supports.mjs) is Unknown.
       if (node.type === 'atrule' && node.name.toLowerCase() === 'supports' && node.nodes) {
@@ -583,6 +594,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
       try {
         if (node.type !== 'rule') throw new Error(`Unsupported CSS node: ${node.type}`);
         selectors = node.selectors.map(selector => compileSelector(selector));
+        if (scope) selectors = selectors.map(selector => { if (selector.chain || /:scope\b|&/.test(selector.source)) throw new Error(`${selector.source} inside @scope: :scope, & and combinators are not modeled there`); return { ...selector, scope }; });
       } catch (error) { problem('U_LAYOUT_SELECTOR', error.message, node.source.start.line); continue; }
       // A state rule (:hover, :focus, …) may only repaint: the layout is proved for the base state.
       // Preference rules (prefers-reduced-motion, prefers-color-scheme, …) likewise: layout is proved under the default preferences.
@@ -794,7 +806,8 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
       for (const declaration of rule.declarations) {
         const layer = rule.layer === null ? (declaration.important ? -Infinity : Infinity) : declaration.important ? -rule.layer : rule.layer;
         // The style attribute (element-attached) wins over every selector and layer, below only importance (Cascade 5).
-        const rank = [declaration.important, rule.attached ? 1 : 0, layer, ...selector.specificity];
+        // Scope proximity (Cascade 6 §6.6): after specificity, the nearer scope root wins; unscoped is farthest.
+        const rank = [declaration.important, rule.attached ? 1 : 0, layer, ...selector.specificity, selector.scope ? -scopeProximity(selector, box, state) : -Infinity];
         const origin = { file: declaration.file, line: declaration.line, selector: selector.source, layer: rule.layerName, specified: declaration.specified ?? declaration.value, ...conditions(rule), ...(declaration.flip ? { logical: true } : {}) };
         // A logical side resolves by the box's direction (an rtl pass when the first one finds rtl; CSS Logical 1).
         if (declaration.flip) flipped = true;
