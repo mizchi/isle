@@ -358,3 +358,17 @@ test('a font-family list with no generic family at its end is warned once per de
   // No text in the box: nothing is set in the font.
   assert.equal(run('.m{font-family:Inter}', '<div class="m"></div>').length, 0);
 });
+
+test('!important in @keyframes is ignored: warned, and the frame does not use it', () => {
+  const run = c => analyzeHTML('<html lang="en"><body><div class="m"></div></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.m{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}, integrity: true});
+  const codes = c => (run(c).layoutWarnings ?? []).filter(w => w.code === 'W_CSS_KEYFRAME_IMPORTANT');
+  const w = codes('@keyframes grow{to{height:80px !important}}.m{animation:grow 1s infinite}');
+  assert.equal(w.length, 1);
+  assert.equal(w[0].css[0].property, 'height');
+  assert.match(w[0].message, /grow/);
+  assert.equal(codes('@keyframes grow{to{height:80px}}.m{animation:grow 1s infinite}').length, 0);
+  // The ignored declaration moves nothing: no animation layout shift from it.
+  const shift = c => analyzeHTML('<html lang="en"><body><div class="m"></div><div class="n"></div></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.m,.n{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).diagnostics.some(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT');
+  assert.equal(shift('@keyframes grow{to{height:80px}}.m{animation:grow 1s infinite}'), true);
+  assert.equal(shift('@keyframes grow{to{height:80px !important}}.m{animation:grow 1s infinite}'), false);
+});

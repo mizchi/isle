@@ -1153,3 +1153,12 @@ test('a font-family list with no generic family: a missing font falls back to th
   expect(warned('font-family:Qwzxv')).toBe(true);
   expect(warned('font-family:Qwzxv,monospace')).toBe(false);
 });
+
+test('!important in @keyframes: the browser ignores the declaration (the frame keeps the other ones)', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  const at = async frame => { await page.setContent(`<!doctype html><html lang="en"><head><style>*{margin:0}.m{height:20px;width:20px;animation:k 1s linear paused;animation-delay:-0.5s}@keyframes k{to{${frame}}}</style></head><body><div class="m"></div></body></html>`); return page.evaluate(() => { const r = document.querySelector('.m').getBoundingClientRect(); return [r.width, r.height]; }); };
+  expect(await at('height:80px;width:60px')).toEqual([40, 50]);
+  expect(await at('height:80px !important;width:60px')).toEqual([40, 20]);
+  const warned = (analyzeHTML('<html lang="en"><body><div class="m"></div></body></html>', {name: 'P', css: '*{margin:0}.m{height:20px;animation:k 1s infinite}@keyframes k{to{height:80px !important}}', viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).some(w => w.code === 'W_CSS_KEYFRAME_IMPORTANT');
+  expect(warned).toBe(true);
+});

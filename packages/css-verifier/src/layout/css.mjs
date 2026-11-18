@@ -458,7 +458,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [];
+  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -498,7 +498,9 @@ export function parseLayoutCSS(sheets, diagnostic) {
           // Declarations that lay out (not paint, transform or the other compositor-only properties): each such frame
           // is laid out again to find layout shifts.
           const layout = [];
-          for (const d of frame.nodes ?? []) if (d.type === 'decl') { const prop = d.prop.toLowerCase(), value = d.value.trim().toLowerCase(); if (prop === 'background-color' || prop === 'background') props['background-color'] = value; if (prop === 'opacity') props.opacity = value; if (!prop.startsWith('--') && !statePaint.test(prop) && !/^(?:transform|translate|scale|rotate|filter|backdrop-filter|will-change|offset(?:-.*)?)$/.test(prop)) layout.push(`${d.prop}:${d.value}`); }
+          // !important in a keyframe makes the declaration invalid there: the browser ignores it (CSS Animations 1 §3).
+          for (const d of frame.nodes ?? []) if (d.type === 'decl' && d.important && !keyframeImportant.some(n => n.line === d.source.start.line && n.file === filename && n.property === d.prop.toLowerCase())) keyframeImportant.push({ name, property: d.prop.toLowerCase(), file: filename, line: d.source.start.line });
+          for (const d of frame.nodes ?? []) if (d.type === 'decl' && !d.important) { const prop = d.prop.toLowerCase(), value = d.value.trim().toLowerCase(); if (prop === 'background-color' || prop === 'background') props['background-color'] = value; if (prop === 'opacity') props.opacity = value; if (!prop.startsWith('--') && !statePaint.test(prop) && !/^(?:transform|translate|scale|rotate|filter|backdrop-filter|will-change|offset(?:-.*)?)$/.test(prop)) layout.push(`${d.prop}:${d.value}`); }
           frames.push({ offset, props, ...(layout.length ? { layout: layout.join(';') } : {}) });
         }
         keyframeFrames.set(name, frames.sort((a, b) => a.offset - b.offset));
@@ -589,7 +591,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
   }
   // An animation-name without @keyframes runs no animation.
   for (const rule of rules) for (const declaration of rule.declarations) if (declaration.property === 'animation-name' && !wide.has(declaration.value) && declaration.value !== 'none' && !keyframes.has(declaration.value)) declaration.value = 'none';
-  return { rules, layers, keyframeFrames, fontFaces, transitionNotes };
+  return { rules, layers, keyframeFrames, fontFaces, transitionNotes, keyframeImportant };
 }
 
 // The UA default family and the user's default font size are not author
