@@ -136,3 +136,15 @@ test('F15, F16: background-size with no image, text-decoration-color with no lin
   // Another rule for another element is not this one's.
   assert.equal(inert('.b{background-size:cover}', 'background-size'), false);
 });
+
+test('F17, F18: a :focus rule on an element that cannot take focus, a :hover on one the pointer never hits', () => {
+  const st = (html, css) => codes(run(css, html), 'W_CSS_STATE_UNREACHABLE');
+  assert.equal(st('<div class="a"></div>', '.a:focus{color:red}').length, 1);
+  assert.equal(st('<div class="a" tabindex="0"></div>', '.a:focus{color:red}').length, 0);
+  assert.equal(st('<button class="a" type="button">Go</button>', '.a:focus-visible{color:red}').length, 0);
+  assert.equal(st('<a class="a" href="#x">Go</a>', '.a:focus{color:red}').length, 0);
+  assert.equal(st('<details><summary class="a">More</summary></details>', '.a:focus{color:red}').length, 0);
+  assert.equal(st('<a class="a">No href</a>', '.a:focus{color:red}').length, 1);
+  assert.equal(st('<div class="a"></div>', '.a{pointer-events:none}.a:hover{color:red}').length, 1);
+  assert.equal(st('<div class="a"></div>', '.a:hover{color:red}').length, 0);
+});
