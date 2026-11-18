@@ -467,6 +467,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
         const family = descriptor('font-family')?.replace(/^["']|["']$/g, '');
         if (!family) { problem('U_LAYOUT_CSS', '@font-face needs a font-family', node.source.start.line); continue; }
         fontFaces.push({ family, display: (descriptor('font-display') ?? 'auto').toLowerCase(), local: /^\s*local\(/i.test(descriptor('src') ?? ''),
+          embedded: (() => { const urls = [...(descriptor('src') ?? '').matchAll(/url\(\s*(["']?)([^"')]*)/gi)].map(m => m[2]); return urls.length > 0 && urls.every(u => /^data:/i.test(u)); })(),
           overrides: ['size-adjust', 'ascent-override', 'descent-override', 'line-gap-override'].filter(name => descriptor(name) !== undefined), file: filename, line: node.source.start.line });
         continue;
       }

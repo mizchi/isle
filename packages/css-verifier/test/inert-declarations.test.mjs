@@ -335,3 +335,22 @@ test('grid-auto-flow: column over listed rows fills each column top to bottom', 
   assert.equal(r('.p{grid-template-rows:20px}.a{grid-row:span 2}').status, 'unknown');
   assert.equal(r('.p{grid-template-rows:20px}').status, 'unknown');
 });
+
+test('a font-family list with no generic family at its end is warned once per declaration', () => {
+  const run = (c, html = '<p class="m">Hello</p><p class="m">World</p>') => (analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{${g}}.m{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).filter(w => w.code === 'W_CSS_FONT_NO_GENERIC');
+  const one = run('.m{font-family:"Brand Sans",Helvetica}');
+  assert.equal(one.length, 1);
+  assert.equal(one[0].css[0].selector, '.m');
+  assert.match(one[0].message, /brand sans/i);
+  // Inherited from body: reported at body's declaration, once.
+  assert.equal(run('body{font-family:Inter}').length, 1);
+  for (const ok of ['.m{font-family:"Brand Sans",sans-serif}', '.m{font-family:Menlo,ui-monospace}', '.m{font-family:system-ui}', '.m{font-family:inherit}', '.m{font:16px/1.5 Georgia,serif}', '.m{font-family:emoji}']) assert.equal(run(ok).length, 0, ok);
+  assert.equal(run('.m{font:16px/1.5 Georgia}').length, 1);
+  // A family known to be there: named in knownFonts (the font files a lint is given), or its @font-face is embedded (data: URLs).
+  const known = (c, knownFonts) => (analyzeHTML('<html lang="en"><body><p class="m">Hello</p></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.m{height:20px}${c}`, ...(knownFonts ? {knownFonts} : {}), viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).filter(w => w.code === 'W_CSS_FONT_NO_GENERIC').length;
+  assert.equal(known('.m{font-family:Roboto}', ['Roboto']), 0);
+  assert.equal(known('@font-face{font-family:Brand;src:url(data:font/woff2;base64,AAAA) format("woff2")}.m{font-family:Brand}'), 0);
+  assert.equal(known('@font-face{font-family:Brand;src:url(/brand.woff2) format("woff2")}.m{font-family:Brand}'), 1);
+  // No text in the box: nothing is set in the font.
+  assert.equal(run('.m{font-family:Inter}', '<div class="m"></div>').length, 0);
+});

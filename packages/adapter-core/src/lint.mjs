@@ -44,6 +44,7 @@ export const recommended = {
   W_LAYOUT_FOCUS_SHIFT: ['warning', 'draw focus with outline or box-shadow, or keep the size (change border-color, not border-width)'],
   W_LAYOUT_CONTAINER_COLLAPSE: ['warning', 'give the query container a width, flex: 1 or a flex-basis'],
   W_LAYOUT_STICKY_NO_INSET: ['warning', 'add top: 0 (or the edge it should stick to)'],
+  W_CSS_FONT_NO_GENERIC: ['warning', 'end the font-family list with a generic family (sans-serif, serif, monospace, system-ui)'],
   W_CSS_TRANSITION_DISPLAY: ['warning', 'add transition-behavior: allow-discrete (and @starting-style), or transition opacity and visibility'],
   W_LAYOUT_SCROLL_NEVER: ['warning', 'give the scrolling box a max-height (or height) so it scrolls instead of growing'],
   W_CSS_MEDIA_GAP: ['warning', 'make the breakpoints meet: max-width 0.02px below the min-width, or a range query (width < N)'],

@@ -1139,3 +1139,17 @@ test('inert percentage height: against a block parent of auto height, Chromium l
     if (pct === 'height:100%') expect(warned).toBe(true);
   }
 });
+
+test('a font-family list with no generic family: a missing font falls back to the browser default font, not one of the kind asked for', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  const width = async family => { await page.setContent(`<!doctype html><html lang="en"><body><span style="${family ? `font-family:${family};` : ''}font-size:20px">Hamburgefonstiv 0123</span></body></html>`); return page.evaluate(() => document.querySelector('span').getBoundingClientRect().width); };
+  // (A made-up name with a word like Sans in it can be matched to a real font by the system's font matching, so the
+  // missing family here is a nonsense word.)
+  const missing = await width('Qwzxv'), withGeneric = await width('Qwzxv,monospace');
+  expect(missing).toBe(await width(''));
+  expect(withGeneric).toBe(await width('monospace'));
+  expect(missing).not.toBe(withGeneric);
+  const warned = css => (analyzeHTML('<html lang="en"><body><p class="t">Hello</p></body></html>', {name: 'P', css: `*{margin:0}.t{height:20px;${css}}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).some(w => w.code === 'W_CSS_FONT_NO_GENERIC');
+  expect(warned('font-family:Qwzxv')).toBe(true);
+  expect(warned('font-family:Qwzxv,monospace')).toBe(false);
+});

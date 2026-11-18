@@ -231,6 +231,8 @@ function analyzeOneProfile(component, allOptions = {}) {
 function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope }, { pageCSS = '', page: wrap = page, name = 'Component', assumeText, textMetrics, fonts = {}, textResize, ...options } = {}) {
   // unmeasured: text boxes (markers the analysis laid out as text) left at the assumed size; null until fonts were reported.
   let assumedTexts = 0, measuredTexts = 0, unmeasured = null;
+  // The font files given to the lint are known to be there (the font-family fallback rule does not report them).
+  const knownFonts = Object.keys(fonts).length ? { knownFonts: Object.keys(fonts) } : {};
   const unbounded = new Map(), unmeasurable = new Map();
   // Component scope: the component's own CSS starts on its own line after the page CSS, so the scope check can tell
   // the component's selectors from the page's.
@@ -253,7 +255,7 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope
       // (A pass can stop at the first text it cannot size, before the next is styled: passes repeat while they find
       // new texts to measure.)
       for (let pass = 0; pass < 6; pass++) try {
-        const first = analyzeHTML(wrap(html), { name, ...options, boxes, css: allCSS, reportTextFonts: true });
+        const first = analyzeHTML(wrap(html), { name, ...options, ...knownFonts, boxes, css: allCSS, reportTextFonts: true });
         // The markers that became text boxes (a marked inline run laid out as a grid or flex container is not one).
         // Dynamic text ('…', the adapters' rendering of {expression}) kept on one line (nowrap or data-text-one-line) with no
         // length bound (data-text-max-length) and no truncation (ellipsis): a long value runs past its box.
@@ -286,7 +288,7 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope
         if (!fresh.length) { unmeasured = Math.max(unmeasured ?? 0, [...textLeaves].filter(m => !boxes[`.${m}`]?.font).length); break; }
       } catch { break; /* the final analysis below reports the failure */ }
     }
-    try { report = analyzeHTML(wrap(html), { name, ...options, ...(boxes ? { boxes } : {}), css: allCSS, ...(scopeOption ? { scope: scopeOption } : {}) }); }
+    try { report = analyzeHTML(wrap(html), { name, ...options, ...knownFonts, ...(boxes ? { boxes } : {}), css: allCSS, ...(scopeOption ? { scope: scopeOption } : {}) }); }
     catch (error) { report = { status: 'unknown', diagnostics: [{ code: 'U_ADAPTER_ANALYSIS', severity: 'unknown', message: `the analysis of this state failed: ${error.message}` }], sizes: [] }; }
     return { choices: state.choices, html: state.html, report };
   });

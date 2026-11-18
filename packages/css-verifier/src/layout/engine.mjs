@@ -1480,6 +1480,23 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             message: `${box.label} is set in the web font ${face.family} (font-display: ${face.display}) and takes its ${heightFromFont ? 'height' : 'width'} from its text: when the font file arrives the text is laid out again${fallback ? `; the fallback ${fallback.family} overrides metrics (${fallback.overrides.join(', ')}), which only reduces the change` : ''}. Use font-display: optional, preload the font, match the fallback metrics (size-adjust, ascent-override, descent-override), or reserve the box's height`, ...ranges(region) });
         }
       }
+      // A font-family list that ends without a generic family: when none of the named fonts is there (not installed, the
+      // web font file failed or is still loading with font-display: block/swap), the browser falls back to its default
+      // font (the initial font-family, Times New Roman in Chromium), not to a font of the same kind. One warning per declaration (the box itself
+      // or the ancestor the value is inherited from), on boxes with text only.
+      if ((box.text || box.inline?.length) && !box.pseudo) {
+        const owner = [...parents, { box, style }].toReversed().find(p => p.style?.$sources?.['font-family']);
+        const source = owner?.style.$sources['font-family'], value = String(source?.specified ?? style['font-family'] ?? '').replace(/\s*!important\s*$/i, '');
+        const generic = /^(?:serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-serif|ui-sans-serif|ui-monospace|ui-rounded|math|emoji|fangsong)$/i;
+        const families = value.split(',').map(f => f.trim());
+        // Families known to be there: named by the caller (knownFonts, the font files a lint was given), or an @font-face whose sources are all
+        // embedded (data: URLs, which cannot fail to load).
+        const known = new Set([...(options.knownFonts ?? []), ...fontFaces.filter(face => face.embedded).map(face => face.family)].map(f => f.toLowerCase()));
+        if (source && !/var\(|^(?:inherit|initial|unset|revert|revert-layer|ua-default|ua-control)$/i.test(value.trim()) && !families.some(f => generic.test(f) || known.has(f.replace(/^["']|["']$/g, '').toLowerCase()))
+          && !layoutWarnings.some(w => w.code === 'W_CSS_FONT_NO_GENERIC' && w.css[0].file === source.file && w.css[0].line === source.line && w.css[0].selector === source.selector))
+          layoutWarnings.push({ code: 'W_CSS_FONT_NO_GENERIC', severity: 'warning', box: box.label, path: box.path, value, css: [{ property: 'font-family', file: source.file, line: source.line, selector: source.selector }],
+            message: `${source.selector ?? owner.box.label} sets font-family: ${value} with no generic family at the end: where ${families.length > 1 ? 'none of these fonts is' : `${families[0]} is not`} available (not installed, or a web font that failed or has not loaded), ${box.label}'s text falls back to the browser's default font (in Chromium and Firefox usually a serif such as Times New Roman), not to a font of the kind asked for. End the list with a generic family (sans-serif, serif, monospace, system-ui)` });
+      }
       // Physical sides in an rtl box: a left/right value written physically (not as an inline-start/end side) that
       // differs from the other side, or text-align: left/right, stays on that side instead of following the reading
       // direction (an ltr style copied into rtl content). A warning: a deliberate physical side is possible.
