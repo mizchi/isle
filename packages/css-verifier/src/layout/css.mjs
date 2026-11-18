@@ -716,8 +716,17 @@ export function parseLayoutCSS(sheets, diagnostic) {
       let selectors;
       try {
         if (node.type !== 'rule') throw new Error(`Unsupported CSS node: ${node.type}`);
-        selectors = node.selectors.map(selector => compileSelector(selector));
-        if (scope) selectors = selectors.map(selector => { if (selector.chain || /:scope\b|&/.test(selector.source)) throw new Error(`${selector.source} inside @scope: :scope, & and combinators are not modeled there`); return { ...selector, scope }; });
+        // Inside @scope (checklist C2): :scope is the root itself (one pseudo-class of specificity) and & is
+        // :where(:scope) (no specificity, whatever the root's selector: measured in Chromium, Firefox and WebKit);
+        // :scope > x / & x / x (relative) reach its children or descendants.
+        selectors = scope ? node.selectors.map(raw => {
+          const text = raw.trim(), m = /^(:scope|&)(?:(\s*>\s*|\s+)(.+))?$/.exec(text);
+          const lead = m && m[1] === ':scope' ? [0, 1, 0] : [0, 0, 0];
+          if (m && !m[2]) return { ...scope, source: text, specificity: lead, scope, scopeMode: 'self' };
+          const rest = compileSelector(m ? m[3] : text);
+          if (rest.chain || /:scope\b|&/.test(rest.source)) throw new Error(`${text} inside @scope: a selector with more combinators, or :scope / & further in, is not modeled there`);
+          return { ...rest, source: text, specificity: rest.specificity.map((v, i) => v + lead[i]), scope, scopeMode: m && m[2].trim() === '>' ? 'child' : 'descendant' };
+        }) : node.selectors.map(selector => compileSelector(selector));
       } catch (error) { problem('U_LAYOUT_SELECTOR', error.message, node.source.start.line); continue; }
       // A state rule (:hover, :focus, …) may only repaint: the layout is proved for the base state.
       // Preference rules (prefers-reduced-motion, prefers-color-scheme, …) likewise: layout is proved under the default preferences.

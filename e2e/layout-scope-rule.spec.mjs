@@ -23,6 +23,10 @@ const cases = [
   '.k{height:10px}@scope (body) to (section){.k{height:30px}}',
   '.k{height:10px}@scope (.card) to (p){.k{height:30px}}',
   '.k{height:10px}@scope (.card) to (.k){.k{height:30px}}',
+  // :scope and & (checklist C2): the root itself, its children and descendants, with their specificities.
+  '.k{height:10px}@scope (.card){:scope > .k{height:30px}}', '.k{height:10px}@scope (.card){& > .k{height:30px}}', '.k{height:10px}@scope (.card){& .k{height:30px}}',
+  '.k{height:10px}@scope (div.card){:scope > .k{height:30px}}.card > .k{height:15px}', '.k{height:10px}@scope (div.card){& > .k{height:30px}}.card > .k{height:15px}', '@scope (div.card){& > .k{height:30px}}.k{height:15px}', '.k{height:10px}@scope (div.card){:scope > .k{height:30px}}div.card > .k{height:15px}',
+  '.k{height:10px}@scope (.card){:scope{padding-top:5px}}', '.k{height:10px}@scope (.card) to (.in){:scope > .k{height:30px}}',
 ];
 
 test('scoped rules: the analysis gives the browser\'s heights', async ({page}) => {

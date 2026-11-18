@@ -29,6 +29,22 @@ test('a scope limit (to …) excludes the limit elements and what is inside them
   assert.deepEqual(heights('.k{height:10px}@scope (body) to (.card){.k{height:30px}}'), ['10', '10', '30']);
 });
 
-test(':scope, & and combinators inside @scope stay Unknown', () => {
-  for (const c of ['@scope (.card){:scope{height:30px}}', '@scope (.card){& .k{height:30px}}', '@scope (.card){.card .k{height:30px}}', '@scope{.k{height:30px}}']) assert.equal(heights(c), 'unknown', c);
+// Checklist C2: :scope is the root itself (specificity of one pseudo-class), & is :where(:scope) (no specificity, as
+// measured in the three browsers); :scope > x and & x reach its children and descendants.
+test(':scope and & inside @scope', () => {
+  const cards = c => { const r = analyzeHTML(html, {name: 'P', css: `*{margin:0}html,body,.card{${g}}.k{height:10px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}); return r.status === 'unknown' ? 'unknown' : r.sizes.filter(s => /\.card$/.test(s.box.split(' ').at(-1)) && s.rect).map(s => s.rect.blockSize.constant); };
+  // :scope gives each .card a padding; the outer card (with its padding) grows.
+  assert.notEqual(cards('@scope (.card){:scope{padding-top:5px}}'), 'unknown');
+  assert.deepEqual(heights('.k{height:10px}@scope (.card){:scope > .k{height:30px}}'), ['30', '30', '10']);
+  assert.deepEqual(heights('.k{height:10px}@scope (.card){& > .k{height:30px}}'), ['30', '30', '10']);
+  assert.deepEqual(heights('.k{height:10px}@scope (.card){& .k{height:30px}}'), ['30', '30', '10']);
+  // Specificity: :scope counts as one pseudo-class, & as nothing. Against .card > .k (0,2,0): :scope > .k (0,2,0)
+  // ties and the scoped one is nearer, so it wins; & > .k (0,1,0) loses. Against .k (0,1,0), & > .k ties and wins.
+  assert.deepEqual(heights('.k{height:10px}@scope (div.card){:scope > .k{height:30px}}.card > .k{height:15px}'), ['30', '30', '10']);
+  assert.deepEqual(heights('.k{height:10px}@scope (div.card){& > .k{height:30px}}.card > .k{height:15px}'), ['15', '15', '10']);
+  assert.deepEqual(heights('@scope (div.card){& > .k{height:30px}}.k{height:15px}'), ['30', '30', '15']);
+});
+
+test('limits, combinators after :scope or &, and nested @scope stay Unknown', () => {
+  for (const c of ['@scope (.card){:scope > .card .k{height:30px}}', '@scope (.card){& + .k{height:30px}}', '@scope (.card){.card .k{height:30px}}', '@scope{.k{height:30px}}', '@scope (.card){@scope (.k){:scope{height:30px}}}']) assert.equal(heights(c), 'unknown', c);
 });
