@@ -256,7 +256,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -289,8 +289,29 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         message: `@media (max-width: ${number(b.value)}px) and @media (min-width: ${number(a.value)}px) leave the widths between them matched by neither (a zoomed page or a fractional device pixel ratio can make the viewport ${(number(b.value) + number(a.value)) / 2}px wide): there ${selector} gets neither rule's ${property}. Use max-width: ${number(a.value) - 0.02}px, or a range query (width < ${number(a.value)}px)` });
     }
   }
+  // F5: a media query no viewport matches (every query of its list contradicts itself: min-width above max-width).
+  {
+    const seen = new Set();
+    for (const rule of rules) for (const c of rule.contexts ?? []) {
+      if (c.kind !== 'media' || !c.groups?.length || c.groups.length !== c.listed || seen.has(c.params)) continue;
+      const never = group => ['width', 'height'].some(feature => {
+        let lo = null, loStrict = false, hi = null, hiStrict = false;
+        for (const a of group.filter(a => a.feature === feature)) {
+          if (['>=', '>', '='].includes(a.relation) && (lo === null || cmp(a.value, lo) > 0 || (cmp(a.value, lo) === 0 && a.relation === '>'))) { lo = a.value; loStrict = a.relation === '>'; }
+          if (['<=', '<', '='].includes(a.relation) && (hi === null || cmp(a.value, hi) < 0 || (cmp(a.value, hi) === 0 && a.relation === '<'))) { hi = a.value; hiStrict = a.relation === '<'; }
+        }
+        return lo !== null && hi !== null && (cmp(lo, hi) > 0 || (cmp(lo, hi) === 0 && (loStrict || hiStrict)));
+      });
+      if (!c.groups.every(never)) continue;
+      seen.add(c.params);
+      layoutWarnings.push({ code: 'W_CSS_MEDIA_NEVER', severity: 'warning', media: c.params, selector: rule.selectors?.[0]?.source, css: [{ property: '@media', file: rule.file, line: rule.line, selector: `@media ${c.params}` }],
+        message: `@media ${c.params} matches no viewport (its lower bound is above its upper bound): its rules never apply. Check the order of min and max (min-width: 600px and max-width: 900px)` });
+    }
+  }
   setRegisteredProperties(registered);
   if (defaultNamespace.length && boxes.some(box => ['svg', 'math'].includes(box.tag))) unknown('U_LAYOUT_CSS', 'A default XHTML @namespace keeps type and universal selectors off the SVG and MathML elements of this page, which is not modeled', defaultNamespace[0].line, undefined, defaultNamespace[0].file);
+  for (const note of missingKeyframes) layoutWarnings.push({ code: 'W_CSS_KEYFRAMES_MISSING', severity: 'warning', keyframes: note.name, ...(note.selector ? { selector: note.selector } : {}), css: [{ property: 'animation-name', file: note.file, line: note.line, ...(note.selector ? { selector: note.selector } : {}) }],
+    message: `${note.selector ?? 'A rule'} runs animation ${note.name}, but no @keyframes ${note.name} exists: the animation does nothing. Check the name (it is case-sensitive) or add the @keyframes rule` });
   for (const note of importIgnored) layoutWarnings.push({ code: 'W_CSS_IMPORT_IGNORED', severity: 'warning', css: [{ property: '@import', file: note.file, line: note.line, selector: '@import' }],
     message: `@import ${note.params} is ${note.nested ? 'inside another rule' : 'after other rules'}: @import is only valid before every other rule of the sheet (after @charset and @layer statements), so the browser ignores it and the sheet is never loaded. Move it to the top${note.nested ? ' (with the condition written as @import url(...) <media query>)' : ''}` });
   for (const note of keyframeImportant) layoutWarnings.push({ code: 'W_CSS_KEYFRAME_IMPORTANT', severity: 'warning', keyframes: note.name, css: [{ property: note.property, file: note.file, line: note.line, selector: `@keyframes ${note.name}` }],
@@ -604,7 +625,32 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (options.accessibility && !box.pseudo && box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType) && style.appearance === 'auto' && ['ua', 'inline-block', 'block'].includes(style.display)
         && ['inline-size', 'block-size'].every(key => style[key] === 'auto') && ['left', 'right', 'top', 'bottom'].every(side => ['ua', '0', '0px'].includes(style[`padding-${side}`]) && ['ua', '0', '0px'].includes(style[`border-${side}`])) && ['min-inline-size', 'min-block-size'].every(key => ['ua', 'auto'].includes(style[key])))
         style = { ...style, appearance: 'none', display: 'block', 'box-sizing': 'border-box', 'inline-size': '13px', 'block-size': '13px', 'min-inline-size': 'auto', 'min-block-size': 'auto', ...Object.fromEntries(['left', 'right', 'top', 'bottom'].flatMap(side => [[`padding-${side}`, '0'], [`border-${side}`, '0']])), $uaControl: true };
+      // F3: a declaration whose var() has no value and no fallback is invalid at computed-value time: the property is
+      // unset (inherited or initial), silently — a warning where it is written.
+      if (emit) for (const entry of style.$invalid) if (!layoutWarnings.some(w => w.code === 'W_CSS_VAR_INVALID' && w.css?.[0]?.line === entry.line && w.css?.[0]?.file === entry.file && w.property === entry.property))
+        layoutWarnings.push({ code: 'W_CSS_VAR_INVALID', severity: 'warning', box: box.label, path: box.path, property: entry.property, css: [{ property: entry.property, file: entry.file, line: entry.line }],
+          message: `${box.label}: ${entry.property} uses a custom property with no value here and no fallback (${entry.message}), so the declaration is invalid at computed-value time and ${entry.property} falls back to inherited or initial. Define the property, or give var() a fallback` });
       if (emit) for (const entry of style.$invalid) invalidSubstitutions.push({ box: box.label, path: box.path, property: entry.property, longhands: entry.longhands, css: { file: entry.file, line: entry.line }, reason: entry.code === 'U_LAYOUT_VARIABLE_CYCLE' ? 'cycle' : 'guaranteed-invalid', message: entry.message, resolution: 'unset', ...ranges(r) });
+      // Checklist F: an animation that does nothing — its @keyframes do not exist (F1), or it runs for 0s (F2: an
+      // animation shorthand without a time; 0s with fill-mode forwards or both applies the end state on purpose). A max
+      // size below the min size (F4): the size is always the min (clamped by the max, then raised to the min), so the
+      // width or height and the max no longer size the box — usually swapped values.
+      if (emit && !box.pseudo) {
+        const at = key => style.$sources?.[key] ? [{ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector }] : [];
+        for (const a of animationsOf(style)) {
+          const scrollDriven = /^(?:scroll|view)\(/.test(a.timeline);
+          if (keyframeNames.has(a.name) && /^-?0+(?:\.0+)?m?s$/.test(String(a.duration)) && !scrollDriven && !['forwards', 'both'].includes(a.fill) && !layoutWarnings.some(w => w.code === 'W_CSS_ANIMATION_NO_DURATION' && w.keyframes === a.name && w.path === box.path))
+            layoutWarnings.push({ code: 'W_CSS_ANIMATION_NO_DURATION', severity: 'warning', box: box.label, path: box.path, keyframes: a.name, css: at('animation-duration'),
+              message: `${box.label} runs animation ${a.name} for ${a.duration}: with no duration it ends as it starts and nothing is seen. Give it a duration (animation: ${a.name} 1s …)` });
+        }
+        for (const [min, max] of [['min-inline-size', 'max-inline-size'], ['min-block-size', 'max-block-size']]) {
+          const v = key => /^\d+(?:\.\d+)?px$/.test(String(style[key])) ? Number(String(style[key]).slice(0, -2)) : null;
+          const [minName, maxName, sizeName] = min === 'min-inline-size' ? ['min-width', 'max-width', 'width'] : ['min-height', 'max-height', 'height'];
+          if (v(min) !== null && v(max) !== null && v(max) < v(min) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_MIN_ABOVE_MAX' && w.path === box.path && w.properties.includes(max)))
+            layoutWarnings.push({ code: 'W_LAYOUT_MIN_ABOVE_MAX', severity: 'warning', box: box.label, path: box.path, properties: [min, max], css: [...at(min), ...at(max)],
+              message: `${box.label}: ${maxName}: ${style[max]} is below ${minName}: ${style[min]}, so the box is always ${style[min]} ${min === 'min-inline-size' ? 'wide' : 'tall'} (clamped by the max, then raised to the min): its ${sizeName} and content no longer size it. The two values are probably swapped`, ...ranges(r) });
+        }
+      }
       if (emit) for (const [condition, compiled] of contexts) if (condition.kind === 'container') {
         queries.push({ box: box.label, path: box.path, name: condition.name, target: compiled.target, targetPath: compiled.path, matched: activeContext(compiled), ...ranges(r) });
         queryFacts.push({ condition, target: compiled.target, box: box.label, matched: activeContext(compiled), region: r });

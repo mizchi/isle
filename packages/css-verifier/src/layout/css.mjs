@@ -793,8 +793,14 @@ export function parseLayoutCSS(sheets, diagnostic) {
     catch (error) { diagnostic('U_LAYOUT_CSS', error.reason ?? error.message, error.line, sheet.file); }
   }
   // An animation-name without @keyframes runs no animation.
-  for (const rule of rules) for (const declaration of rule.declarations) if (declaration.property === 'animation-name' && !wide.has(declaration.value)) declaration.value = postcss.list.comma(declaration.value).map(name => name === 'none' || keyframes.has(name) ? name : 'none').join(', ');
-  return { rules, layers, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  // (Checklist F1: the names without @keyframes are kept for a warning — a typo or a missing rule.)
+  const missingKeyframes = [];
+  for (const rule of rules) for (const declaration of rule.declarations) if (declaration.property === 'animation-name' && !wide.has(declaration.value)) declaration.value = postcss.list.comma(declaration.value).map(name => {
+    if (name === 'none' || keyframes.has(name)) return name;
+    if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
+    return 'none';
+  }).join(', ');
+  return { rules, layers, keyframes, missingKeyframes, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author

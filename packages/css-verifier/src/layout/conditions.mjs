@@ -49,5 +49,6 @@ export function parseCondition(params, kind) {
     }
     return atoms;
   }).filter(Boolean);
-  return { kind, name, groups };
+  // listed: the queries of the list (a print query is dropped from groups, which are the ones that can match a screen).
+  return { kind, name, groups, listed: postcss.list.comma(params).length, params };
 }

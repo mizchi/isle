@@ -102,6 +102,22 @@
   `W_A11Y_TRANSITION_MOTION`。箱を動かすプロパティ(位置・大きさ・余白・transform、`all`)の transition だけを数え、色と opacity の
   変化は動きではないので除く。reduce の下で `transition: none` か 5 秒以下になれば報告しない。
 
+
+## F. ブラウザーが受け入れるのに何もしない CSS
+
+ブラウザーは文法として受け入れるが、効果のない書き方。打ち間違いや値の入れ違いで起きやすい。3 つのブラウザーで、警告が出るところで
+宣言の効果がないことを確かめた(`e2e/layout-css-mistakes.spec.mjs`)。
+
+- [x] **F1. `@keyframes` のないアニメーション名**(`W_CSS_KEYFRAMES_MISSING`): 名前は大文字小文字を区別する。並びの中の 1 つだけでも報告する。
+- [x] **F2. 長さのないアニメーション**(`W_CSS_ANIMATION_NO_DURATION`): `animation: spin infinite` は 0s で、何も見えない。
+  `fill-mode: forwards`・`both` の 0s(終わりの状態を当てる書き方)とスクロール連動は除く。
+- [x] **F3. 値も代わりもない `var()`**(`W_CSS_VAR_INVALID`): 計算値の時点で無効になり、その宣言は unset(継承か初期値)になる。
+  解析は以前から unset として扱っていた(`invalidSubstitutions`)が、警告にしていなかった。
+- [x] **F4. min より小さい max**(`W_LAYOUT_MIN_ABOVE_MAX`): 大きさは max で詰めてから min に広げるので、いつも min になる(width や
+  内容が効かない)。「max が効かない」のではない(width: 80px は max で詰められてから min の 50px になる。max がなければ 80px):
+  最初にそう書いて測り、誤りに気付いた。
+- [x] **F5. どの viewport にも当たらない `@media`**(`W_CSS_MEDIA_NEVER`): 下限が上限より上(`min-width: 900px` と
+  `max-width: 600px`、`width > 600px` と `width < 600px`)。並びのどれかが当たりうるなら報告しない(`print` を含む)。
 ## 済み(このチェックリストを作る前に済んだもの)
 
 - [x] easing の行き過ぎ(cubic-bezier、`linear()`)の極値でのシフト検査と CLS の上限、終わりの戻り、relative のオフセット、
