@@ -18,7 +18,7 @@ const chromiumOnly = page => { test.skip(test.info().project.name !== 'chromium'
 
 
 const fixtures = new URL('../packages/css-verifier/text-metrics/fixtures/', import.meta.url);
-const files = {'Noto Sans JP': 'japanese-variable.ttf', Roboto: 'roboto-variable.ttf'};
+const files = {'Noto Sans JP': 'japanese-variable.ttf', Roboto: 'roboto-variable.ttf', 'Noto Sans Hebrew': 'hebrew-variable.ttf'};
 const face = Object.entries(files).map(([family, file]) => `@font-face{font-family:"${family}";src:url(data:font/ttf;base64,${readFileSync(new URL(file, fixtures)).toString('base64')})}`).join('');
 const jp = {family: 'Noto Sans JP', size: 16, lineHeight: 24, weight: 400};
 const characters = '日本語のテキスト幅検査折り返しを確認します英ABC123 ';
@@ -577,6 +577,42 @@ test('inline bounds on the last line of justified text', async ({page}) => {
     if (bound.inner) { const I = box(bound.inner); expect(r.x, `${tag} inner left`).toBeLessThanOrEqual(I.x + 1e-9); expect(r.x + r.w, `${tag} inner right`).toBeGreaterThanOrEqual(I.x + I.w - 1e-9); }
   }
   expect(placed).toBeGreaterThan(10);
+});
+
+// rtl (checklist D3): Hebrew text (letters and spaces only, so its visual order is the logical one reversed) in a
+// direction: rtl paragraph, one line and wrapping, aligned at the start (right), centred and at the end (left). Hebrew
+// widths are calibrated to Chromium (ADR-0010).
+test('inline bounds in rtl Hebrew text', async ({page}) => {
+  test.setTimeout(240_000);
+  test.skip(test.info().project.name !== 'chromium', 'measured Hebrew widths are Chromium-calibrated (ADR-0010)');
+  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
+  const font = {family: 'Noto Sans Hebrew', size: 16, lineHeight: 24, weight: 400};
+  for (const [content, piece, wrap] of [['שלום עולם וכל הדרך', 'עולם', null], ['שלום לכל מי שקורא את הספר הארוך הבא בעברית כדי לבדוק אם הקטע נמסר במקום הטוב בשורה האדומה', 'הקטע', 'normal']]) for (const align of ['start', 'center', 'left']) {
+    const at = content.indexOf(piece);
+    const html = `<div class="page"><p class="p" lang="he">${content.slice(0, at)}<a class="u" href="#x">${piece}</a>${content.slice(at + piece.length)}</p></div>`;
+    const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:0 10px;background:#fff;color:#000;direction:rtl}.p{font-family:"Noto Sans HebrewX";font-size:16px;line-height:24px;font-weight:400;${wrap ? '' : 'white-space:nowrap;'}text-align:${align}}.u{color:#000}`.replace('HebrewX', 'Hebrew');
+    const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': piece}, lang: 'he'}, ...(wrap ? {wrap} : {})}});
+    const report = analyzeHTML(html, {name: 'Page', css, viewport: {min: 160, max: 900, height: {min: 600, max: 600}}, boxes});
+    expect(report.inlineBounds?.length, `${align} ${JSON.stringify(report.diagnostics.map(d => d.message))}`).toBeGreaterThan(0);
+    let placed = 0;
+    for (let width = 160; width <= 900; width += 17) {
+      const atv = a => value(a.coefficient) * width + value(a.heightCoefficient ?? '0') * 600 + value(a.constant);
+      const holds = row => row.regionConstraints.every(c => { const slack = value(c.coefficient) * width + value(c.heightCoefficient ?? '0') * 600 + value(c.constant); return c.strict ? slack > 1e-9 : slack >= -1e-9; });
+      const bound = report.inlineBounds.find(holds);
+      if (!bound) continue;
+      await page.setViewportSize({width, height: 600});
+      await page.setContent(`<!doctype html><html><head><style>${face}${css}</style></head><body>${html}</body></html>`);
+      await page.evaluate(() => document.fonts.ready);
+      const rects = await page.evaluate(() => [...document.querySelector('.u').getClientRects()].map(r => ({x: r.x, y: r.y, w: r.width, h: r.height})));
+      expect(rects.length).toBe(1); placed++;
+      const [r] = rects, box = b => ({x: atv(b.inlineStart), y: atv(b.blockStart), w: atv(b.inlineSize), h: atv(b.blockSize)}), O = box(bound.outer), tag = `${align} ${wrap ?? 'nowrap'} at ${width}`;
+      expect(r.x, `${tag} left`).toBeGreaterThanOrEqual(O.x - 1e-9); expect(r.x + r.w, `${tag} right`).toBeLessThanOrEqual(O.x + O.w + 1e-9);
+      expect(r.y, `${tag} top`).toBeGreaterThanOrEqual(O.y - 1e-9); expect(r.y + r.h, `${tag} bottom`).toBeLessThanOrEqual(O.y + O.h + 1e-9);
+      if (bound.inner) { const I = box(bound.inner); expect(r.x, `${tag} inner left`).toBeLessThanOrEqual(I.x + 1e-9); expect(r.x + r.w, `${tag} inner right`).toBeGreaterThanOrEqual(I.x + I.w - 1e-9); }
+    }
+    expect(placed, `${align} ${wrap}`).toBeGreaterThan(5);
+  }
 });
 
 // A rowspan cell with auto height and measured wrapping text: its line count at the column width gives its height.

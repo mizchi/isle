@@ -121,3 +121,23 @@ test('an icon in the line: measured with the contract, else Unknown', () => {
   assert.equal(run('.i{margin-left:4px}', {atomic: [16, 16], at: 9}).r.status, 'unknown');
   assert.throws(() => run('', {atomic: [40, 40], at: 9}, 40), /taller than the line's ascent/);
 });
+
+test('rtl Hebrew text: pieces mirror from the line\'s right edge; mixed scripts get no bounds', async () => {
+  const heb = await loadTextMetrics({fonts: {Heb: {file: new URL('../text-metrics/fixtures/hebrew-variable.ttf', import.meta.url).pathname}, Roboto: {file: new URL('../text-metrics/fixtures/roboto-variable.ttf', import.meta.url).pathname}}});
+  const hf = {family: 'Heb', size: 16, lineHeight: 24, weight: 400};
+  const run = (content, piece, align, extra = '') => {
+    const boxes = heb.resolveBoxes({'.p': {text: {content, font: hf, inline: {'.u': piece}, lang: 'he'}}});
+    const i = content.indexOf(piece);
+    return analyzeHTML(`<html lang="he"><body><div class="page"><p class="p">${content.slice(0, i)}<a class="u" href="#x">${piece}</a>${content.slice(i + piece.length)}</p></div></body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0;padding:0}html,body,.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}html{direction:rtl}.p{font-family:Heb;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap;text-align:${align}}${extra}`, viewport: {min: 320, max: 800, height: {min: 300, max: 300}}, boxes}).inlineBounds ?? [];
+  };
+  const [start] = run('שלום עולם וכל הדרך', 'עולם', 'start'), [left] = run('שלום עולם וכל הדרך', 'עולם', 'left'), [center] = run('שלום עולם וכל הדרך', 'עולם', 'center');
+  // At the start (right) the piece follows the content's right edge; at the end (left) it does not move; centred, half.
+  assert.equal(value(start.outer.inlineStart.coefficient), 1);
+  assert.equal(value(left.outer.inlineStart.coefficient), 0);
+  assert.equal(value(center.outer.inlineStart.coefficient), 0.5);
+  // The first word is rightmost: the piece (the second word) ends left of the right edge by the first word's width.
+  assert.ok(at(start.outer.inlineStart, 400) + at(start.outer.inlineSize, 400) < 400 - 20);
+  // Other text in an rtl paragraph (here Latin, which the bidi algorithm lays out as its own run): no bounds.
+  const latin = heb.resolveBoxes({'.p': {text: {content: 'Read the guide first.', font, inline: {'.u': 'guide'}}}});
+  assert.equal((analyzeHTML('<html lang="en"><body><div class="page"><p class="p">Read the <a class="u" href="#x">guide</a> first.</p></div></body></html>', {name: 'P', css: '*{box-sizing:border-box;margin:0;padding:0}html,body,.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}html{direction:rtl}.p{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}', viewport: {min: 320, max: 800, height: {min: 300, max: 300}}, boxes: latin}).inlineBounds ?? []).length, 0);
+});

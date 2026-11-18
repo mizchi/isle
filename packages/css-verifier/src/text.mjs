@@ -459,7 +459,8 @@ export function createTextMetrics({fonts, shaper, limits = {}}) {
     const typo = info.os2 && (info.os2.fsSelection & 128);
     const ascent = typo ? info.os2.typoAscender : info.ascent, descent = Math.abs(typo ? info.os2.typoDescender : info.descent);
     const area = (ascent + descent) / info.unitsPerEm * font.size, top = (font.lineHeight - area) / 2;
-    const width = value => value ? shapeLine(font, value, lang) : 0, slack = 2 * scriptRuns(collapsed) / UNIT;
+    // (Each right-to-left word is rounded on its own, measured in Chromium: one more unit a word, as in textBound.)
+    const width = value => value ? shapeLine(font, value, lang) : 0, slack = (2 * scriptRuns(collapsed) + rtlWords(collapsed)) / UNIT;
     for (const [selector, piece] of Object.entries(inline ?? {})) {
       const part = collapse(piece);
       const at = offset !== undefined ? [...collapsed].slice(0, offset).join('').length : collapsed.indexOf(part);

@@ -1336,8 +1336,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // end (ltr). Where the line does not fit it is start-aligned (CSS Text 3 §6.1), so only widths where it fits count.
     // justify stretches every line but the last, which is start-aligned (text-align-last: auto): only last lines count.
     const justify = String(leafStyle['text-align']) === 'justify' && ['auto', undefined].includes(leafStyle['text-align-last']);
-    const alignFactor = justify ? q(0) : { start: q(0), left: q(0), center: div(q(1), q(2)), right: q(1), end: q(1) }[String(leafStyle['text-align'])];
-    if (!leafRow?.origin || !metrics?.inline || !alignFactor || leafStyle.direction !== 'ltr') return null;
+    // rtl (checklist D3): only text of Hebrew letters and spaces, whose visual order is the logical order reversed (no
+    // bidi reordering of mixed runs): a piece lies at [line's right edge − end, line's right edge − start]. The factor
+    // then moves the line's right edge to the left: 0 at the start (right), 1/2 centred, 1 at the end (left).
+    const rtl = leafStyle.direction === 'rtl';
+    if (rtl && !/^[\u05D0-\u05EA ]+$/.test(String(metrics?.text ?? ''))) return null;
+    const alignFactor = justify ? q(0) : (rtl ? { start: q(0), right: q(0), center: div(q(1), q(2)), left: q(1), end: q(1) } : { start: q(0), left: q(0), center: div(q(1), q(2)), right: q(1), end: q(1) })[String(leafStyle['text-align'])];
+    if (!leafRow?.origin || !metrics?.inline || !alignFactor || !['ltr', 'rtl'].includes(leafStyle.direction)) return null;
     if (!(metrics.kind === 'content' && ['nowrap', 'one-line'].includes(leaf.contract.wrap)) && metrics.kind !== 'lines') return null;
     const entry = Object.entries(metrics.inline).find(([selector]) => matches(compileSelector(selector), child));
     if (!entry) return null;
@@ -1359,6 +1364,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // narrowest does; the inner bound the other way round.
     const piece = (b, r, width) => {
       const lo = aligned ? sixtyfourths(width[0], Math.floor) : zero, hi = aligned ? sixtyfourths(width[1], Math.ceil) : zero, spread = mul(sub(hi, lo), alignFactor);
+      if (rtl) {
+        // The line's right edge is C·(1 − f) + w·f from the content's left, w in [lo, hi].
+        const right = times(leafRow.content.inline, sub(q(1), alignFactor)), lf = mul(lo, alignFactor), hf = mul(hi, alignFactor);
+        return { region: r, outer: rect(sub(lf, sixtyfourths(b.end[1], Math.ceil)), sub(hf, sixtyfourths(b.start[0], Math.floor)), sub(sixtyfourths(b.top[0], Math.floor), padTop), add(sixtyfourths(b.bottom[1], Math.ceil), padBottom), right),
+          inner: rect(sub(hf, sixtyfourths(b.end[0], Math.floor)), sub(lf, sixtyfourths(b.start[1], Math.ceil)), sub(sixtyfourths(b.top[1], Math.ceil), padTop), add(sixtyfourths(b.bottom[0], Math.floor), padBottom), right) };
+      }
       // (Both bounds are relative to the widest line's position; spread is how much further the narrowest one goes.)
       const outerShift = aligned ? times(diff(leafRow.content.inline, scalar(hi)), alignFactor) : null;
       return { region: r, outer: rect(sixtyfourths(b.start[0], Math.floor), add(sixtyfourths(b.end[1], Math.ceil), spread), sub(sixtyfourths(b.top[0], Math.floor), padTop), add(sixtyfourths(b.bottom[1], Math.ceil), padBottom), outerShift),

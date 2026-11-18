@@ -340,6 +340,10 @@ text leaf の子が phrasing 要素(`a`・`span`・`strong`・`em`・`b`・`i`�
   ascent + half-leading で、Chromium は切り捨て、Firefox・WebKit は端数のまま:その区間)。行の ascent より高い箱は行を高くし、量が
   ブラウザーで違う(40px の画像で 47px と 46.5px、下の margin は Chromium だけ無視した)ので、契約が拒む。engine は CSS の大きさが
   契約と同じで、端がなく、vertical-align: baseline のときだけ受け入れる。
+- **rtl**(チェックリスト D3):`direction: rtl` の段落の、ヘブライ文字と空白だけの文字列では、見た目の順は論理順の逆なので、部分は
+  [行の右端 − end, 行の右端 − start] にある。行の右端は content の左から C·(1 − f) + w·f(f は start・right で 0、center で 1/2、
+  left・end で 1)。Chromium は右から左の単語を 1 つずつ layout unit に丸めるので、部分の端の誤差にも単語数 × 1/64 を足す。ほかの
+  文字を含む rtl の文字列は bidi で並べ替わるので矩形を出さない。
 - **table cell の中**:cell は行の高さに伸び、行は `vertical-align` で揃う(UA は tbody/tr が middle、td/th はそれを継承。以前は baseline としていた:誤り)。
   top・middle・bottom は行数 × line-height の高さを content box の中でずらし(Chromium で測定)、baseline は行全体の揃えなので矩形を出さない
   (以前は cell の上端に置いていたので、高い行の中のリンクの位置が誤っていた)。
