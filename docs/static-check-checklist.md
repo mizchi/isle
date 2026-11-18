@@ -37,7 +37,7 @@
 
 ## D. 配置のモデル
 
-- [ ] **D1. 0 以外のオフセットを持つ `position: relative`**: いまは Unknown(「Relative positioning spaces require zero
+- [x] **D1. 0 以外のオフセットを持つ `position: relative`**(px。`%` と rtl の横のオフセットは残り): いまは Unknown(「Relative positioning spaces require zero
   offsets」)。箱だけが動くので、配置はそのままで、描画の位置をずらす。
 - [ ] **D2. flex の項目の `%` 幅と、`vw`・`em` の長さ**: 親の幅と root のフォントサイズから px に解く。
 - [ ] **D3. inline の中の行の配置**: 文字の行と inline の箱の位置。大きい。

@@ -780,7 +780,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     if (!['static', 'relative', 'absolute'].includes(style.position) || style['writing-mode'] !== 'horizontal-tb' || !['ltr', 'rtl'].includes(style.direction)) throw new Error('Only static/relative/local-absolute horizontal-tb boxes are supported');
     // rtl scroll containers put the scrollbar on the left; the container's own box and content width do not change,
     // and positions inside a scroll container are withheld anyway, so nothing depends on the side.
-    if (style.position === 'relative' && ['left','right','top','bottom'].some(key=>!['auto','0','0px'].includes(style[key]))) throw new Error('Relative positioning spaces require zero offsets');
+    // Relative offsets (checklist D1) in px move the box and its contents (resolvedOrigin); a percentage needs the
+    // containing block's size, which is not modeled here.
+    if (style.position === 'relative' && ['left','right','top','bottom'].some(key=>!['auto'].includes(style[key]) && !/^-?(?:\d+(?:\.\d+)?|\.\d+)px$|^0$/.test(String(style[key])))) throw new Error('Relative positioning offsets other than px are not modeled');
+    // In an rtl box the children are placed from its inline end, mirrored: an inline offset there is not modeled yet.
+    if (style.position === 'relative' && style.direction === 'rtl' && ['left','right'].some(key=>!['auto','0','0px'].includes(String(style[key])))) throw new Error('A relative inline offset in an rtl box is not modeled');
     if (style.position === 'absolute' && (!block || ['inline-size','block-size'].some(key=>style[key]==='auto') || style['grid-column']!=='auto' || style['grid-row']!=='auto')) throw new Error('Absolute boxes require both explicit sizes, both-axis analysis and auto Grid placement');
     if (!['border-box', 'content-box'].includes(style['box-sizing'])) throw new Error('Unsupported box-sizing');
     if (!['normal', 'inline-size', 'size'].includes(style['container-type'])) throw new Error('Unsupported container-type');
@@ -1875,7 +1879,19 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     return offset(origin, along(0), along(1));
   }
   function resolvedOrigin(style,available,inline,blockSize,parents) {
-    return translated(style, untranslatedOrigin(style,available,inline,blockSize,parents), { inline, block: blockSize });
+    return relativelyOffset(style, translated(style, untranslatedOrigin(style,available,inline,blockSize,parents), { inline, block: blockSize }));
+  }
+  // position: relative (checklist D1): the box and its contents move by its offsets, nothing else is laid out again
+  // (CSS 2 §9.4.3: top over bottom; left over right in ltr). The offsets are px here; an inline offset in an rtl box is
+  // refused before (its children are placed mirrored).
+  function relativelyOffset(style, origin) {
+    if (!origin || style.position !== 'relative') return origin;
+    const v = key => { const m = /^(-?(?:\d+(?:\.\d+)?|\.\d+))px$|^(0)$/.exec(String(style[key] ?? 'auto')); return m ? q(m[1] ?? '0') : null; };
+    const [top, bottom, left, right] = ['top', 'bottom', 'left', 'right'].map(v);
+    const dy = top ?? (bottom === null ? zero : mul(bottom, minusOne));
+    const dx = left ?? (right === null ? zero : mul(right, minusOne));
+    if (cmp(dx, zero) === 0 && cmp(dy, zero) === 0) return origin;
+    return offset(origin, scalar(dx), scalar(dy));
   }
   function untranslatedOrigin(style,available,inline,blockSize,parents) {
     // overflow: clip never scrolls, so positions inside it stay exact; hidden/auto/scroll may be scrolled.
