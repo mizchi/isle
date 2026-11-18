@@ -34,3 +34,23 @@ test('linear() takes its range from its points; malformed functions are undefine
   assert.equal(easingRange('cubic-bezier(1.5, 0, 0, 1)'), undefined); // x outside [0, 1] is invalid
   assert.equal(easingRange('bounce'), undefined);
 });
+
+// Checklist A4: the input progress t of each extreme, and the eased progress at any t (to put the other properties at
+// their values at that moment).
+import {easingAt} from '../src/layout/easing.mjs';
+test('extremes carry their input progress; easingAt follows the curve', () => {
+  const r = easingRange('cubic-bezier(0.34, 1.56, 0.64, 1)');
+  const t = r.extremes[0].t;
+  assert.ok(t > 0 && t < 1);
+  assert.ok(Math.abs(easingAt('cubic-bezier(0.34, 1.56, 0.64, 1)', t) - Number(r.max)) < 2e-4);
+  for (const e of ['linear', 'ease', 'ease-in-out', 'cubic-bezier(0.68, -0.6, 0.32, 1.6)']) { assert.equal(easingAt(e, 0), 0, e); assert.ok(Math.abs(easingAt(e, 1) - 1) < 1e-9, e); }
+  assert.equal(easingAt('linear', 0.25), 0.25);
+  // linear() with positions: the extreme of linear(0, 1.2 60%, 1) is at 60% of the input.
+  const l = easingRange('linear(0, 1.2 60%, 1)');
+  assert.equal(l.extremes[0].t, 0.6);
+  assert.equal(easingAt('linear(0, 1.2 60%, 1)', 0.3), 0.6);
+  assert.ok(Math.abs(easingAt('linear(0, 1.2 60%, 1)', 0.8) - 1.1) < 1e-12);
+  // steps(4): jump-end by default.
+  assert.deepEqual([0, 0.3, 0.99, 1].map(u => easingAt('steps(4)', u)), [0, 0.25, 0.75, 1]);
+  assert.deepEqual([0, 0.3].map(u => easingAt('steps(4, jump-start)', u)), [0.25, 0.5]);
+});

@@ -23,6 +23,12 @@ const cases = [
   ['html{font-size:16px}.a{width:6.25rem}@keyframes grow{to{width:8.75rem}}', 'grow 1s linear infinite'],
   ['@keyframes grow{to{width:140px;height:30px}}', 'grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite'],
   ['@keyframes grow{to{width:139px;height:10px}}', 'grow 1s cubic-bezier(0.34, 1.56, 0.64, 1) infinite'],
+  // Properties with different keyframes (checklist A4): laid out together at every keyframe and extreme.
+  ['@keyframes grow{50%{height:30px}to{width:140px}}', 'grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite'],
+  ['@keyframes grow{50%{height:30px}to{width:140px}}', 'grow 1s linear infinite'],
+  ['@keyframes grow{from{width:100px;animation-timing-function:cubic-bezier(0.5, -0.5, 0.5, 1.5)}50%{height:30px}to{width:140px}}', 'grow 1s linear infinite'],
+  ['@keyframes grow{40%{height:25px}70%{width:139px}to{width:120px}}', 'grow 1s cubic-bezier(0.34, 1.56, 0.64, 1) infinite'],
+  ['@keyframes grow{40%{height:25px}70%{width:135px}to{width:120px}}', 'grow 1s cubic-bezier(0.34, 1.56, 0.64, 1) infinite'],
   // A list: the second animation overshoots; the first only fades.
   ['@keyframes fade{to{opacity:0.5}}@keyframes grow{to{width:140px}}', 'fade 1s, grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite'],
   ['@keyframes fade{to{opacity:0.5}}@keyframes grow{to{width:140px}}', 'fade 1s, grow 1s linear infinite'],

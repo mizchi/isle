@@ -83,9 +83,20 @@ test('an overshoot of same-unit values and of properties that share their keyfra
   assert.ok(shifts(both).some(d => d.box === '.b' && /overshoot/.test(d.message)));
 });
 
-test('an overshoot between mixed units, or of properties whose keyframes differ, is Unknown', () => {
+// Checklist A4: properties whose keyframes (or easings) differ. Every property is placed at its value at each moment
+// that matters — the keyframe offsets and every property's easing extremes — so the frames are whole states.
+test('properties with different keyframes are laid out together at every keyframe and every extreme', () => {
+  const joint = wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{50%{height:30px}to{width:140px}}');
+  assert.notEqual(joint.status, 'unknown', JSON.stringify(joint.diagnostics.map(d => d.message)));
+  assert.match(shifts(joint).find(d => d.box === '.b')?.message ?? '', /overshoot/);
+  // Linear: width never passes 140px, so .b stays beside .a.
+  assert.equal(shifts(wrap('grow 1s linear infinite', '@keyframes grow{50%{height:30px}to{width:140px}}')).filter(d => d.box === '.b').length, 0);
+  // A keyframe's own easing on one property only.
+  assert.notEqual(wrap('grow 1s linear infinite', '@keyframes grow{from{width:100px;animation-timing-function:cubic-bezier(0.5, -0.5, 0.5, 1.5)}50%{height:30px}to{width:140px}}').status, 'unknown');
+});
+
+test('an overshoot between mixed units is Unknown', () => {
   assert.equal(wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{to{width:56%}}').status, 'unknown');
-  assert.equal(wrap('grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite', '@keyframes grow{50%{height:30px}to{width:140px}}').status, 'unknown');
   // Without an overshoot those stay as before (checked at the keyframes).
   assert.notEqual(wrap('grow 1s linear infinite', '@keyframes grow{to{width:140px;height:30px}}').status, 'unknown');
 });
