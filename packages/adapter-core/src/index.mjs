@@ -324,6 +324,19 @@ function analyzeStatesOnce({ states, css, unknowns = [], assumptions = [], scope
     for (const e of scope.escapes ?? []) grouped.set(`E_SCOPE_ESCAPE\u0000${e.selector}`, { code: 'E_SCOPE_ESCAPE', box: e.selector, severity: 'error', rule: 'component-scope', selector: e.selector, states: results.map(r => r.choices),
       message: `${e.selector} uses ${e.kind}, which reaches outside the component's own elements (the page, a parent or a child component): style those elements in the component that renders them, and pass context in as a custom property or a prop` });
   }
+  // Checklist F8: a size transitioned between a keyword (auto, none, …) in one state and a length in another (a class
+  // toggle) does not interpolate: the box jumps between the states.
+  {
+    const keyword = v => /^(?:auto|none|fit-content|max-content|min-content|stretch)$/.test(String(v));
+    const byPath = new Map();
+    for (const r of results) for (const t of r.report.transitionSizes ?? []) { if (!byPath.has(t.path)) byPath.set(t.path, []); byPath.get(t.path).push({ t, r }); }
+    for (const [path, list] of byPath) for (const key of new Set(list.flatMap(x => x.t.properties))) {
+      const kw = list.find(x => keyword(x.t.values[key])), len = list.find(x => x.t.values[key] !== undefined && !keyword(x.t.values[key]));
+      if (!kw || !len || grouped.has(`W_CSS_TRANSITION_AUTO\u0000${kw.t.box}`)) continue;
+      grouped.set(`W_CSS_TRANSITION_AUTO\u0000${kw.t.box}`, { code: 'W_CSS_TRANSITION_AUTO', box: kw.t.box, path, severity: 'warning', rule: 'transition', states: [kw.r.choices, len.r.choices], html: kw.r.html, property: key,
+        message: `${kw.t.box} transitions ${key} between ${kw.t.values[key]} and ${len.t.values[key]} (between its states), but a keyword size does not interpolate: the box jumps instead of animating (only Chromium animates it, with interpolate-size: allow-keywords). Animate a length (max-height, or grid-template-rows: 0fr → 1fr)` });
+    }
+  }
   // Checklist E1: a state change that makes the page overflow the viewport (or fit it again) shows or hides a classic
   // scrollbar, which narrows the page and shifts everything in it, unless html keeps the gutter (scrollbar-gutter: stable,
   // overflow-y: scroll). Overlay-scrollbar platforms do not shift.

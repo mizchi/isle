@@ -213,7 +213,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // The untransformed re-layout (CSS transforms removed): the layout boxes, which is what a layout shift compares.
   const untransformed = preferences.includes('untransformed');
   let sawTransform = false;
-  const layoutWarnings = [], generatedTexts = [], textFonts = new Map();
+  const layoutWarnings = [], generatedTexts = [], textFonts = new Map(), transitionSizes = [];
   // Checklist E1: whether the page fits the viewport and whether it overflows it somewhere in the viewport range, and
   // whether html keeps a scrollbar gutter either way (scrollbar-gutter: stable, overflow-y: scroll) or never shows one
   // (overflow-y: hidden or clip).
@@ -659,6 +659,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         {
           const sizeNames = { height: 'block-size', width: 'inline-size', 'max-height': 'max-block-size', 'max-width': 'max-inline-size', 'min-height': 'min-block-size', 'min-width': 'min-inline-size', 'block-size': 'block-size', 'inline-size': 'inline-size' };
           const covered = transitionsOf(style).filter(t => !/^-?0+(?:\.0+)?m?s$/.test(String(t.duration))).flatMap(t => t.property === 'all' ? Object.values(sizeNames) : sizeNames[t.property] ? [sizeNames[t.property]] : []);
+          // (The values, for adapter-core to compare between component states: a class toggle.)
+          if (covered.length && state === undefined && !transitionSizes.some(t => t.path === box.path)) transitionSizes.push({ box: box.label, path: box.path, properties: [...new Set(covered)], values: Object.fromEntries([...new Set(covered)].map(key => [key, String(style[key])])) });
           if (covered.length && state === undefined) {
             const keyword = v => /^(?:auto|none|fit-content|max-content|min-content|stretch)$/.test(String(v));
             for (const st of ['hover', 'focus']) {
@@ -4095,7 +4097,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     ...(boxes.some(box=>box.layoutContracts?.length) ? {layoutBindings:boxes.flatMap(box=>(box.layoutContracts ?? []).map(declaration=>({path:box.path,declaration})))} : {}),
     ...(geometry.some(row => row.bounds) ? { inlineBounds: geometry.filter(row => row.bounds).flatMap(row => row.bounds.map(piece => ({ box: row.box.label, path: row.path, ...ranges(piece.region), ...(block ? { regionConstraints: serialize(piece.region).constraints } : {}),
       ...Object.fromEntries(['outer', 'inner'].map(key => [key, piece[key] ? { inlineStart: affine(piece[key].origin.inline), blockStart: affine(piece[key].origin.block), inlineSize: affine(piece[key].inline), blockSize: affine(piece[key].block) } : null])) }))) } : {}),
-    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}), ...(layoutWarnings.length ? { layoutWarnings } : {}), ...(pageScroll ? { pageScroll } : {}), ...(options.reportTextFonts ? { textFonts: [...textFonts].map(([path, facts]) => facts === 'varied' ? { path, varied: true } : { path, ...facts }) } : {}), ...((options.selectors || options.scope) && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant ? { selectors: (() => { const usage = options.selectors ? selectorUsage(rules, boxes) : { rows: [], warnings: [] }; return options.scope ? { ...usage, warnings: [...usage.warnings, ...selectorScope(rules, boxes, options.scope).warnings] } : usage; })() } : {}), ...(generatedTexts.length ? { generatedText: generatedTexts } : {}),
+    ...(scrollbars.length ? {scrollbars} : {}), ...(invalidSubstitutions.length ? {invalidSubstitutions} : {}), ...(layoutWarnings.length ? { layoutWarnings } : {}), ...(pageScroll ? { pageScroll } : {}), ...(transitionSizes.length ? { transitionSizes } : {}), ...(options.reportTextFonts ? { textFonts: [...textFonts].map(([path, facts]) => facts === 'varied' ? { path, varied: true } : { path, ...facts }) } : {}), ...((options.selectors || options.scope) && !untransformed && hovered === undefined && !options.$animationFrame && !options.$slideVariant ? { selectors: (() => { const usage = options.selectors ? selectorUsage(rules, boxes) : { rows: [], warnings: [] }; return options.scope ? { ...usage, warnings: [...usage.warnings, ...selectorScope(rules, boxes, options.scope).warnings] } : usage; })() } : {}), ...(generatedTexts.length ? { generatedText: generatedTexts } : {}),
     ...(options.accessibility ? { accessibility: { rules: accessibilityRules.filter(accessibilityProfiles[options.accessibility.profile ?? 'all']), profile: options.accessibility.profile ?? 'all', contrast: options.accessibility.contrast ?? 'AA', targetLevel: options.accessibility.targetLevel ?? 'AA', targetSize: options.accessibility.targetSize ?? (options.accessibility.targetLevel === 'AAA' ? 44 : 24), warnings: accessibilityWarnings, exempted: accessibilityExempted, notes: accessibilityNotes } } : {}),
     ...(options.integrity ? { integrity: { rules: ['page-overflow-x', 'container-protrusion', 'text-collision', 'target-undersized', 'clipped-content', 'nested-scroll'], targetSize: options.integrity.targetSize ?? 24, protrusion: options.integrity.protrusion ?? 'all', warnings: integrityWarnings, exempted: integrityExempted } } : {}) };
 }

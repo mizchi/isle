@@ -25,6 +25,8 @@ export function analyzeInput(tree,options,adapterDiagnostics=[]) {
     if(!reports.some(r=>r[key])) continue;
     report[key]=reports.flatMap((r,i)=>(r[key] ?? []).map(row=>tag(row,i)));
   }
+  // transitionSizes (checklist F8): the same in every case (computed values, not layout).
+  if(reports.some(r=>r.transitionSizes)) report.transitionSizes=reports.find(r=>r.transitionSizes).transitionSizes;
   // pageScroll (checklist E1): fits or overflows in any case.
   if(reports.some(r=>r.pageScroll)) report.pageScroll={fits:reports.some(r=>r.pageScroll?.fits),overflows:reports.some(r=>r.pageScroll?.overflows),stable:reports.every(r=>r.pageScroll?.stable ?? true)};
   if(configuration.devicePixelRatios) report.scope={...report.scope,devicePixelRatios:ratios};

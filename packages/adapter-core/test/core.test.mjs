@@ -38,3 +38,13 @@ test('a state change that makes the page overflow the viewport shifts it by the 
   assert.equal(analyzeStates({states, css: css + 'html{scrollbar-gutter:stable}'}, {viewport}).findings.some(f => f.code === 'W_LAYOUT_SCROLLBAR_SHIFT'), false);
   assert.equal(analyzeStates({states: [states[0], {html: '<div class="short"></div><p></p>', choices: {open: true}}], css}, {viewport}).findings.some(f => f.code === 'W_LAYOUT_SCROLLBAR_SHIFT'), false);
 });
+
+test('a size transitioned between auto in one state and a length in another jumps (W_CSS_TRANSITION_AUTO)', () => {
+  const css = '*{margin:0}.panel{width:100px;transition:height .3s}.panel.open{height:120px}';
+  const viewport = {min: 400, max: 400, height: {min: 600, max: 600}};
+  const states = [{html: '<div class="panel"></div>', choices: {open: false}}, {html: '<div class="panel open"></div>', choices: {open: true}}];
+  const w = analyzeStates({states, css}, {viewport}).findings.find(f => f.code === 'W_CSS_TRANSITION_AUTO');
+  assert.ok(w, 'reported'); assert.equal(w.states.length, 2);
+  assert.equal(analyzeStates({states, css: css.replace('transition:height .3s', 'transition:height .3s;height:0')}, {viewport}).findings.some(f => f.code === 'W_CSS_TRANSITION_AUTO'), false);
+  assert.equal(analyzeStates({states, css: css.replace('transition:height .3s', '')}, {viewport}).findings.some(f => f.code === 'W_CSS_TRANSITION_AUTO'), false);
+});

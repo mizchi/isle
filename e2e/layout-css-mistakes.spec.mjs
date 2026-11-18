@@ -2,6 +2,7 @@
 // effect of the declaration.
 import {test, expect} from '@playwright/test';
 import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
+import {analyzeStates} from '../packages/adapter-core/src/index.mjs';
 
 const base = '*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px;color:rgb(0, 0, 0)}';
 const warns = (css, code) => (analyzeHTML('<html lang="en"><body><div class="a"></div></body></html>', {name: 'P', css: base + css, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === code);
@@ -96,4 +97,15 @@ test('F9, F10: a pseudo-element without content, and content on an element', asy
   await load(page, '.a{content:"hi"}');
   expect(await page.evaluate(() => document.querySelector('.a').getBoundingClientRect().height)).toBe(20);
   expect((analyzeHTML('<html lang="en"><body><div class="a"></div></body></html>', {name: 'P', css: base + '.a{content:"hi"}', viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('content'))).toBe(true);
+});
+
+test('F8 between component states: a class toggle that changes a size between auto and a length jumps', async ({page}) => {
+  const viewport = {min: 400, max: 400, height: {min: 600, max: 600}};
+  for (const [css, jumps] of [['*{margin:0}.panel{width:100px;transition:height 1s linear}.panel.open{height:120px}', true], ['*{margin:0}.panel{width:100px;height:0;transition:height 1s linear}.panel.open{height:120px}', false]]) {
+    const states = [{html: '<div class="panel"></div>', choices: {open: false}}, {html: '<div class="panel open"></div>', choices: {open: true}}];
+    expect(analyzeStates({states, css}, {viewport}).findings.some(f => f.code === 'W_CSS_TRANSITION_AUTO'), css).toBe(jumps);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body><div class="panel">x</div></body></html>`);
+    await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    expect(await page.evaluate(() => { document.querySelector('.panel').classList.add('open'); return document.getAnimations().length > 0; }), css).toBe(!jumps);
+  }
 });
