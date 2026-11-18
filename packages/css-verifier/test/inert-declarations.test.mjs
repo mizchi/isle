@@ -372,3 +372,17 @@ test('!important in @keyframes is ignored: warned, and the frame does not use it
   assert.equal(shift('@keyframes grow{to{height:80px}}.m{animation:grow 1s infinite}'), true);
   assert.equal(shift('@keyframes grow{to{height:80px !important}}.m{animation:grow 1s infinite}'), false);
 });
+
+test('@import after other rules is ignored: warned, and the rest of the sheet is checked', () => {
+  const run = c => analyzeHTML('<html lang="en"><body><div class="m"></div></body></html>', {name: 'P', css: `*{margin:0}html,body{${g}}.m{height:20px}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  const r = run('@import url("theme.css");');
+  assert.equal(r.status, 'verified');
+  const w = (r.layoutWarnings ?? []).filter(x => x.code === 'W_CSS_IMPORT_IGNORED');
+  assert.equal(w.length, 1);
+  assert.match(w[0].message, /theme\.css/);
+  // In its place (before every other rule, after @charset and @layer statements) it loads another sheet: Unknown.
+  const first = c => analyzeHTML('<html lang="en"><body><div class="m"></div></body></html>', {name: 'P', css: `${c}*{margin:0}html,body{${g}}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  assert.equal(first('@import "theme.css";.m{height:20px}').status, 'unknown');
+  assert.equal(first('@charset "utf-8";@layer base;@import "theme.css";.m{height:20px}').status, 'unknown');
+  assert.equal(first('@media (min-width:1px){.m{color:red}}@import "theme.css";.m{height:20px}').status, 'verified');
+});

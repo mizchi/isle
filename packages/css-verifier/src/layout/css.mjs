@@ -458,15 +458,24 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [];
+  const rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
     const problem = (code, message, line) => diagnostic(code, message, line, filename);
     if (depth > 32) { problem('U_LAYOUT_LIMIT', 'Conditional nesting limit exceeded'); return; }
+    // @import loads another sheet only before every other rule of its sheet (after @charset and @layer statements);
+    // anywhere else (after a rule, or inside @media) it is invalid and ignored (CSS Cascade 5 §2).
+    let ruleSeen = depth > 0;
     for (const node of nodes) {
       if (node.type === 'comment') continue;
       if (++count > 2048) { problem('U_LAYOUT_LIMIT', 'CSS node limit exceeded'); return; }
+      if (node.type === 'atrule' && node.name.toLowerCase() === 'import') {
+        if (!ruleSeen) { problem('U_LAYOUT_CSS', `@import ${node.params.trim()} loads another stylesheet, which the analysis does not have`, node.source.start.line); continue; }
+        importIgnored.push({ params: node.params.trim(), file: filename, line: node.source.start.line, nested: depth > 0 });
+        continue;
+      }
+      if (!(node.type === 'atrule' && (node.name.toLowerCase() === 'charset' || (node.name.toLowerCase() === 'layer' && !node.nodes)))) ruleSeen = true;
       if (node.type === 'atrule' && node.name.toLowerCase() === 'layer') {
         if (layer !== null || contexts.length) { problem('U_LAYOUT_LAYER', 'Nested or conditional layer declarations are outside the subset', node.source.start.line); continue; }
         const names = node.params.trim() ? postcss.list.comma(node.params) : [];
@@ -591,7 +600,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
   }
   // An animation-name without @keyframes runs no animation.
   for (const rule of rules) for (const declaration of rule.declarations) if (declaration.property === 'animation-name' && !wide.has(declaration.value) && declaration.value !== 'none' && !keyframes.has(declaration.value)) declaration.value = 'none';
-  return { rules, layers, keyframeFrames, fontFaces, transitionNotes, keyframeImportant };
+  return { rules, layers, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored };
 }
 
 // The UA default family and the user's default font size are not author

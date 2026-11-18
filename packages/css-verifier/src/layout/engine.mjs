@@ -251,7 +251,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -284,6 +284,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         message: `@media (max-width: ${number(b.value)}px) and @media (min-width: ${number(a.value)}px) leave the widths between them matched by neither (a zoomed page or a fractional device pixel ratio can make the viewport ${(number(b.value) + number(a.value)) / 2}px wide): there ${selector} gets neither rule's ${property}. Use max-width: ${number(a.value) - 0.02}px, or a range query (width < ${number(a.value)}px)` });
     }
   }
+  for (const note of importIgnored) layoutWarnings.push({ code: 'W_CSS_IMPORT_IGNORED', severity: 'warning', css: [{ property: '@import', file: note.file, line: note.line, selector: '@import' }],
+    message: `@import ${note.params} is ${note.nested ? 'inside another rule' : 'after other rules'}: @import is only valid before every other rule of the sheet (after @charset and @layer statements), so the browser ignores it and the sheet is never loaded. Move it to the top${note.nested ? ' (with the condition written as @import url(...) <media query>)' : ''}` });
   for (const note of keyframeImportant) layoutWarnings.push({ code: 'W_CSS_KEYFRAME_IMPORTANT', severity: 'warning', keyframes: note.name, css: [{ property: note.property, file: note.file, line: note.line, selector: `@keyframes ${note.name}` }],
     message: `@keyframes ${note.name}: ${note.property} is marked !important, which makes it invalid in a keyframe: the browser ignores the declaration and the animation never changes ${note.property} there. Remove !important (an animation already overrides every normal declaration)` });
   for (const note of transitionNotes) layoutWarnings.push({ code: 'W_CSS_TRANSITION_DISPLAY', severity: 'warning', selector: note.selector, css: [{ property: 'transition', file: note.file, line: note.line, selector: note.selector }],

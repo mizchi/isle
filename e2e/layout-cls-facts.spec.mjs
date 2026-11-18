@@ -1162,3 +1162,17 @@ test('!important in @keyframes: the browser ignores the declaration (the frame k
   const warned = (analyzeHTML('<html lang="en"><body><div class="m"></div></body></html>', {name: 'P', css: '*{margin:0}.m{height:20px;animation:k 1s infinite}@keyframes k{to{height:80px !important}}', viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).some(w => w.code === 'W_CSS_KEYFRAME_IMPORTANT');
   expect(warned).toBe(true);
 });
+
+test('@import after other rules (or inside @media): the browser never loads it; at the top it does', async ({page}) => {
+  await page.setViewportSize({width: 400, height: 300});
+  const sheet = '@import url("data:text/css,.m%7Bheight:80px%7D");';
+  const height = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body><div class="m"></div></body></html>`); await page.waitForTimeout(100); return page.evaluate(() => document.querySelector('.m').getBoundingClientRect().height); };
+  expect(await height(`${sheet}.m{width:10px}`)).toBe(80);
+  expect(await height(`@charset "utf-8";@layer base;${sheet}.m{width:10px}`)).toBe(80);
+  expect(await height(`.m{width:10px}${sheet}`)).toBe(0);
+  expect(await height(`@media (min-width:1px){.m{width:10px}}${sheet}`)).toBe(0);
+  expect(await height(`@media (min-width:1px){${sheet}}`)).toBe(0);
+  const warned = css => (analyzeHTML('<html lang="en"><body><div class="m"></div></body></html>', {name: 'P', css: `${css}*{margin:0}.m{height:20px}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}).layoutWarnings ?? []).some(w => w.code === 'W_CSS_IMPORT_IGNORED');
+  expect(warned(`.x{color:red}${sheet}`)).toBe(true);
+  expect(warned(`@media (min-width:1px){${sheet}}`)).toBe(true);
+});
