@@ -88,3 +88,10 @@ test('F10: content on an element (not a pseudo-element) does nothing, unless it 
   assert.ok(codes(run('.a{content:"hi"}'), 'W_LAYOUT_DECLARATION_INERT').some(w => w.properties.includes('content')));
   assert.equal(codes(run('.a{content:normal}'), 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.includes('content')).length, 0);
 });
+
+test('the mistakes are reported where the layout is Unknown too', () => {
+  // A :focus rule that changes the layout keeps the layout Unknown before it runs; a style walk still reports them.
+  const r = run('.a{color:var(--x);min-width:50px;max-width:10px;z-index:2}.a:focus{height:30px}', '<div class="p"><div class="a"></div></div>');
+  assert.equal(r.status, 'unknown');
+  assert.deepEqual(['W_CSS_VAR_INVALID', 'W_LAYOUT_MIN_ABOVE_MAX'].map(code => codes(r, code).length), [1, 1]);
+});

@@ -413,6 +413,64 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     }));
     return { groups, target: target.box?.label, path: target.box?.path };
   }
+  // Checklist F: CSS mistakes on one box's computed style (called from the styles of the layout pass, and from a style
+  // walk where the layout did not run, so they are reported whether or not the layout is decided).
+  function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
+      // F3: a declaration whose var() has no value and no fallback is invalid at computed-value time: the property is
+      // unset (inherited or initial), silently — a warning where it is written.
+    for (const entry of style.$invalid ?? []) if (!layoutWarnings.some(w => w.code === 'W_CSS_VAR_INVALID' && w.css?.[0]?.line === entry.line && w.css?.[0]?.file === entry.file && w.property === entry.property))
+        layoutWarnings.push({ code: 'W_CSS_VAR_INVALID', severity: 'warning', box: box.label, path: box.path, property: entry.property, css: [{ property: entry.property, file: entry.file, line: entry.line }],
+          message: `${box.label}: ${entry.property} uses a custom property with no value here and no fallback (${entry.message}), so the declaration is invalid at computed-value time and ${entry.property} falls back to inherited or initial. Define the property, or give var() a fallback` });
+      // Checklist F: an animation that does nothing — its @keyframes do not exist (F1), or it runs for 0s (F2: an
+      // animation shorthand without a time; 0s with fill-mode forwards or both applies the end state on purpose). A max
+      // size below the min size (F4): the size is always the min (clamped by the max, then raised to the min), so the
+      // width or height and the max no longer size the box — usually swapped values.
+    if (!box.pseudo) {
+        const at = key => style.$sources?.[key] ? [{ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector }] : [];
+        for (const a of animationsOf(style)) {
+          const scrollDriven = /^(?:scroll|view)\(/.test(a.timeline);
+          if (keyframeNames.has(a.name) && /^-?0+(?:\.0+)?m?s$/.test(String(a.duration)) && !scrollDriven && !['forwards', 'both'].includes(a.fill) && !layoutWarnings.some(w => w.code === 'W_CSS_ANIMATION_NO_DURATION' && w.keyframes === a.name && w.path === box.path))
+            layoutWarnings.push({ code: 'W_CSS_ANIMATION_NO_DURATION', severity: 'warning', box: box.label, path: box.path, keyframes: a.name, css: at('animation-duration'),
+              message: `${box.label} runs animation ${a.name} for ${a.duration}: with no duration it ends as it starts and nothing is seen. Give it a duration (animation: ${a.name} 1s …)` });
+        }
+        // F7: z-index on a box that is neither positioned nor a flex or grid item does not stack it (CSS 2.2 §9.9.1,
+        // CSS Flexbox §4.3, CSS Grid §9): it paints in tree order as if z-index were auto.
+        {
+          const ps = ancestors.at(-1)?.style, item = ps && ['flex', 'inline-flex', 'grid', 'inline-grid'].includes(String(ps.display)) && !ps.$blockFlow;
+          if (!['auto', undefined].includes(style['z-index']) && style.position === 'static' && !item && style.$sources?.['z-index'] && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('z-index')))
+            layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['z-index'], css: at('z-index'),
+              message: `${box.label}: z-index: ${style['z-index']} has no effect (it is position: static and not a flex or grid item, so it does not stack above or below its neighbours). Give it position: relative, or remove it`, ...ranges(r) });
+        }
+        // F8: a transition between a keyword size (auto, none, fit-content, …) and a length does not animate: the box
+        // jumps (measured in Chromium, Firefox and WebKit; interpolate-size: allow-keywords animates it in Chromium only).
+        // The other value is the :hover or :focus one.
+        {
+          const sizeNames = { height: 'block-size', width: 'inline-size', 'max-height': 'max-block-size', 'max-width': 'max-inline-size', 'min-height': 'min-block-size', 'min-width': 'min-inline-size', 'block-size': 'block-size', 'inline-size': 'inline-size' };
+          const covered = transitionsOf(style).filter(t => !/^-?0+(?:\.0+)?m?s$/.test(String(t.duration))).flatMap(t => t.property === 'all' ? Object.values(sizeNames) : sizeNames[t.property] ? [sizeNames[t.property]] : []);
+          // (The values, for adapter-core to compare between component states: a class toggle.)
+          if (covered.length && state === undefined && !transitionSizes.some(t => t.path === box.path)) transitionSizes.push({ box: box.label, path: box.path, properties: [...new Set(covered)], values: Object.fromEntries([...new Set(covered)].map(key => [key, String(style[key])])) });
+          if (covered.length && state === undefined) {
+            const keyword = v => /^(?:auto|none|fit-content|max-content|min-content|stretch)$/.test(String(v));
+            for (const st of ['hover', 'focus']) {
+              let alt; try { alt = styles(box, r, ancestors, inherited, false, gridItem, new Set([st])); } catch { continue; }
+              for (const a of alt) for (const key of [...new Set(covered)]) {
+                if (String(a.style[key]) === String(style[key]) || keyword(a.style[key]) === keyword(style[key]) || layoutWarnings.some(w => w.code === 'W_CSS_TRANSITION_AUTO' && w.path === box.path && w.property === key)) continue;
+                const [from, to] = keyword(style[key]) ? [style[key], a.style[key]] : [a.style[key], style[key]];
+                layoutWarnings.push({ code: 'W_CSS_TRANSITION_AUTO', severity: 'warning', box: box.label, path: box.path, property: key, css: at('transition-property'),
+                  message: `${box.label} transitions ${key} between ${from} and ${to} (on :${st}), but a keyword size like ${keyword(style[key]) ? style[key] : a.style[key]} does not interpolate: the box jumps instead of animating (only Chromium animates it, with interpolate-size: allow-keywords). Animate a length (max-height, or grid-template-rows: 0fr → 1fr)`, ...ranges(r) });
+              }
+            }
+          }
+        }
+        for (const [min, max] of [['min-inline-size', 'max-inline-size'], ['min-block-size', 'max-block-size']]) {
+          const v = key => /^\d+(?:\.\d+)?px$/.test(String(style[key])) ? Number(String(style[key]).slice(0, -2)) : null;
+          const [minName, maxName, sizeName] = min === 'min-inline-size' ? ['min-width', 'max-width', 'width'] : ['min-height', 'max-height', 'height'];
+          if (v(min) !== null && v(max) !== null && v(max) < v(min) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_MIN_ABOVE_MAX' && w.path === box.path && w.properties.includes(max)))
+            layoutWarnings.push({ code: 'W_LAYOUT_MIN_ABOVE_MAX', severity: 'warning', box: box.label, path: box.path, properties: [min, max], css: [...at(min), ...at(max)],
+              message: `${box.label}: ${maxName}: ${style[max]} is below ${minName}: ${style[min]}, so the box is always ${style[min]} ${min === 'min-inline-size' ? 'wide' : 'tall'} (clamped by the max, then raised to the min): its ${sizeName} and content no longer size it. The two values are probably swapped`, ...ranges(r) });
+        }
+      }
+  }
   function styles(box, region, ancestors, inherited, emit, gridItem = true, state) {
     spend(rules.length + 1);
     if (preferences.length) state = new Set([...(state ?? []), ...preferences]);
@@ -627,61 +685,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (options.accessibility && !box.pseudo && box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType) && style.appearance === 'auto' && ['ua', 'inline-block', 'block'].includes(style.display)
         && ['inline-size', 'block-size'].every(key => style[key] === 'auto') && ['left', 'right', 'top', 'bottom'].every(side => ['ua', '0', '0px'].includes(style[`padding-${side}`]) && ['ua', '0', '0px'].includes(style[`border-${side}`])) && ['min-inline-size', 'min-block-size'].every(key => ['ua', 'auto'].includes(style[key])))
         style = { ...style, appearance: 'none', display: 'block', 'box-sizing': 'border-box', 'inline-size': '13px', 'block-size': '13px', 'min-inline-size': 'auto', 'min-block-size': 'auto', ...Object.fromEntries(['left', 'right', 'top', 'bottom'].flatMap(side => [[`padding-${side}`, '0'], [`border-${side}`, '0']])), $uaControl: true };
-      // F3: a declaration whose var() has no value and no fallback is invalid at computed-value time: the property is
-      // unset (inherited or initial), silently — a warning where it is written.
-      if (emit) for (const entry of style.$invalid) if (!layoutWarnings.some(w => w.code === 'W_CSS_VAR_INVALID' && w.css?.[0]?.line === entry.line && w.css?.[0]?.file === entry.file && w.property === entry.property))
-        layoutWarnings.push({ code: 'W_CSS_VAR_INVALID', severity: 'warning', box: box.label, path: box.path, property: entry.property, css: [{ property: entry.property, file: entry.file, line: entry.line }],
-          message: `${box.label}: ${entry.property} uses a custom property with no value here and no fallback (${entry.message}), so the declaration is invalid at computed-value time and ${entry.property} falls back to inherited or initial. Define the property, or give var() a fallback` });
+      if (emit) cssMistakes(box, style, ancestors, inherited, gridItem, r, state);
       if (emit) for (const entry of style.$invalid) invalidSubstitutions.push({ box: box.label, path: box.path, property: entry.property, longhands: entry.longhands, css: { file: entry.file, line: entry.line }, reason: entry.code === 'U_LAYOUT_VARIABLE_CYCLE' ? 'cycle' : 'guaranteed-invalid', message: entry.message, resolution: 'unset', ...ranges(r) });
-      // Checklist F: an animation that does nothing — its @keyframes do not exist (F1), or it runs for 0s (F2: an
-      // animation shorthand without a time; 0s with fill-mode forwards or both applies the end state on purpose). A max
-      // size below the min size (F4): the size is always the min (clamped by the max, then raised to the min), so the
-      // width or height and the max no longer size the box — usually swapped values.
-      if (emit && !box.pseudo) {
-        const at = key => style.$sources?.[key] ? [{ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector }] : [];
-        for (const a of animationsOf(style)) {
-          const scrollDriven = /^(?:scroll|view)\(/.test(a.timeline);
-          if (keyframeNames.has(a.name) && /^-?0+(?:\.0+)?m?s$/.test(String(a.duration)) && !scrollDriven && !['forwards', 'both'].includes(a.fill) && !layoutWarnings.some(w => w.code === 'W_CSS_ANIMATION_NO_DURATION' && w.keyframes === a.name && w.path === box.path))
-            layoutWarnings.push({ code: 'W_CSS_ANIMATION_NO_DURATION', severity: 'warning', box: box.label, path: box.path, keyframes: a.name, css: at('animation-duration'),
-              message: `${box.label} runs animation ${a.name} for ${a.duration}: with no duration it ends as it starts and nothing is seen. Give it a duration (animation: ${a.name} 1s …)` });
-        }
-        // F7: z-index on a box that is neither positioned nor a flex or grid item does not stack it (CSS 2.2 §9.9.1,
-        // CSS Flexbox §4.3, CSS Grid §9): it paints in tree order as if z-index were auto.
-        {
-          const ps = ancestors.at(-1)?.style, item = ps && ['flex', 'inline-flex', 'grid', 'inline-grid'].includes(String(ps.display)) && !ps.$blockFlow;
-          if (!['auto', undefined].includes(style['z-index']) && style.position === 'static' && !item && style.$sources?.['z-index'] && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('z-index')))
-            layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['z-index'], css: at('z-index'),
-              message: `${box.label}: z-index: ${style['z-index']} has no effect (it is position: static and not a flex or grid item, so it does not stack above or below its neighbours). Give it position: relative, or remove it`, ...ranges(r) });
-        }
-        // F8: a transition between a keyword size (auto, none, fit-content, …) and a length does not animate: the box
-        // jumps (measured in Chromium, Firefox and WebKit; interpolate-size: allow-keywords animates it in Chromium only).
-        // The other value is the :hover or :focus one.
-        {
-          const sizeNames = { height: 'block-size', width: 'inline-size', 'max-height': 'max-block-size', 'max-width': 'max-inline-size', 'min-height': 'min-block-size', 'min-width': 'min-inline-size', 'block-size': 'block-size', 'inline-size': 'inline-size' };
-          const covered = transitionsOf(style).filter(t => !/^-?0+(?:\.0+)?m?s$/.test(String(t.duration))).flatMap(t => t.property === 'all' ? Object.values(sizeNames) : sizeNames[t.property] ? [sizeNames[t.property]] : []);
-          // (The values, for adapter-core to compare between component states: a class toggle.)
-          if (covered.length && state === undefined && !transitionSizes.some(t => t.path === box.path)) transitionSizes.push({ box: box.label, path: box.path, properties: [...new Set(covered)], values: Object.fromEntries([...new Set(covered)].map(key => [key, String(style[key])])) });
-          if (covered.length && state === undefined) {
-            const keyword = v => /^(?:auto|none|fit-content|max-content|min-content|stretch)$/.test(String(v));
-            for (const st of ['hover', 'focus']) {
-              let alt; try { alt = styles(box, r, ancestors, inherited, false, gridItem, new Set([st])); } catch { continue; }
-              for (const a of alt) for (const key of [...new Set(covered)]) {
-                if (String(a.style[key]) === String(style[key]) || keyword(a.style[key]) === keyword(style[key]) || layoutWarnings.some(w => w.code === 'W_CSS_TRANSITION_AUTO' && w.path === box.path && w.property === key)) continue;
-                const [from, to] = keyword(style[key]) ? [style[key], a.style[key]] : [a.style[key], style[key]];
-                layoutWarnings.push({ code: 'W_CSS_TRANSITION_AUTO', severity: 'warning', box: box.label, path: box.path, property: key, css: at('transition-property'),
-                  message: `${box.label} transitions ${key} between ${from} and ${to} (on :${st}), but a keyword size like ${keyword(style[key]) ? style[key] : a.style[key]} does not interpolate: the box jumps instead of animating (only Chromium animates it, with interpolate-size: allow-keywords). Animate a length (max-height, or grid-template-rows: 0fr → 1fr)`, ...ranges(r) });
-              }
-            }
-          }
-        }
-        for (const [min, max] of [['min-inline-size', 'max-inline-size'], ['min-block-size', 'max-block-size']]) {
-          const v = key => /^\d+(?:\.\d+)?px$/.test(String(style[key])) ? Number(String(style[key]).slice(0, -2)) : null;
-          const [minName, maxName, sizeName] = min === 'min-inline-size' ? ['min-width', 'max-width', 'width'] : ['min-height', 'max-height', 'height'];
-          if (v(min) !== null && v(max) !== null && v(max) < v(min) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_MIN_ABOVE_MAX' && w.path === box.path && w.properties.includes(max)))
-            layoutWarnings.push({ code: 'W_LAYOUT_MIN_ABOVE_MAX', severity: 'warning', box: box.label, path: box.path, properties: [min, max], css: [...at(min), ...at(max)],
-              message: `${box.label}: ${maxName}: ${style[max]} is below ${minName}: ${style[min]}, so the box is always ${style[min]} ${min === 'min-inline-size' ? 'wide' : 'tall'} (clamped by the max, then raised to the min): its ${sizeName} and content no longer size it. The two values are probably swapped`, ...ranges(r) });
-        }
-      }
       if (emit) for (const [condition, compiled] of contexts) if (condition.kind === 'container') {
         queries.push({ box: box.label, path: box.path, name: condition.name, target: compiled.target, targetPath: compiled.path, matched: activeContext(compiled), ...ranges(r) });
         queryFacts.push({ condition, target: compiled.target, box: box.label, matched: activeContext(compiled), region: r });
@@ -3540,6 +3545,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
       for (const environment of environments) (ancestorPaint = environment.paint ?? [], solve(root, { root: true,origin:{inline:scalar(0),block:scalar(0)}, inline: diff(width, scalar(options.hostInset ?? 0)), block: block && options.viewport.height ? diff(height, scalar(options.hostBlockInset ?? 0)) : null }, environment.region, [], environment.style));
     } catch (error) { unknown(error.code?.startsWith('U_LAYOUT_') ? error.code : 'U_LAYOUT_ANCESTOR', error.message,error.css?.line,undefined,error.css?.file); }
+  }
+  // Checklist F where the layout did not run to the end: a style walk over every box (no layout), so the mistakes in
+  // the CSS are reported whatever is Unknown. (Each warning is reported once per box.)
+  if (diagnostics.some(d => d.severity === 'unknown') && hovered === undefined && !options.$animationFrame && !options.$slideVariant && !untransformed) {
+    const walkStyles = (box, ancestors, inherited) => {
+      let state; try { [state] = styles(box, initial, ancestors, inherited, false); } catch { return; }
+      if (!state) return;
+      try { cssMistakes(box, state.style, ancestors, inherited, true, state.region, undefined); } catch { /* the rest still runs */ }
+      if (state.style.display === 'none') return;
+      for (const child of box.children ?? []) walkStyles(child, [...ancestors, { box, style: state.style, names: [] }], state.style);
+    };
+    try { walkStyles(root, [], undefined); } catch { /* best effort */ }
   }
   // Preserve compact one-dimensional diagnostics; 2-D regions retain correlated constraints.
   findings.sort((a, b) => a.signature.localeCompare(b.signature) || a.range.min - b.range.min);
