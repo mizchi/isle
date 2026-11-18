@@ -20,6 +20,9 @@ const cases = [
   '.p{display:flex;width:300px;gap:6px}.a{flex:1 1 calc(40% + 20px);min-width:0}.b{width:50px;flex:none}.c{flex:2 0 calc(5% + 1px)}',
   '.p{display:flex;width:300px}.a{flex:1 1 calc(20% + 20px);min-width:10px}.b{width:50px;flex:none}.c{flex:1 1 30%;min-width:0}',
   '.p{display:flex;width:90vw}.a{width:calc(50% + 10px);flex:none;padding:0 5px}.b{width:10vw;flex:none}.c{flex:1 0 0;min-width:0}',
+  // Percentage grid columns and column-gap in a px-wide grid.
+  '.p{display:grid;width:300px;grid-template-columns:25% minmax(0,1fr) 10%;column-gap:5%}',
+  '.p{display:grid;width:300px;grid-template-columns:repeat(2,33.5%) minmax(0,1fr)}',
 ];
 
 test('em lengths and percentage flex widths: every box is where the browser puts it', async ({page}) => {
@@ -48,6 +51,9 @@ const heightCases = [
   '.p{height:50vh}.a{height:50%}',
   '.p{height:200px;max-height:120px}.a{height:50%}',
   '.p{height:220px;box-sizing:content-box;padding:10px 0}.a{height:50%}.c{min-height:10%}',
+  // Percentage grid rows and row-gap in a grid of a declared height.
+  '.p{height:200px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:50% minmax(0,1fr) 10%;row-gap:5%}.a,.b,.c{height:auto}',
+  '.p{height:200px;max-height:160px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:25% 30px 25%}',
 ];
 test('percentage heights in block flow against a declared height: every box is where the browser puts it', async ({page}) => {
   const at = (v, W, H) => frac(v.constant) + frac(v.coefficient) * W + frac(v.heightCoefficient ?? 0) * H;

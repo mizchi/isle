@@ -2911,6 +2911,25 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                 return states;
               };
               if (isFlex) { for (const result of layoutFlex({ box, style, region: geometryRegion, inline, contentInline, knownBlock, blockEdges, available, parents, ancestors, contentOrigin, collect, emit })) results.push(result); continue; }
+              // Checklist D2: percentage tracks and gaps of a container whose size on that axis is one constant (a px width,
+              // a declared px height): written as px. Columns and column-gap against the content width; rows and row-gap
+              // against the content height where the height is declared (otherwise a percentage row is auto: not modeled).
+              {
+                const constantOf = e => e && cmp(e.x, zero) === 0 && cmp(e.y, zero) === 0 ? e.b : null;
+                const inlineBasis = constantOf(contentInline), blockBasis = style['block-size'] !== 'auto' ? constantOf(knownBlock) : null;
+                const share = (token, basis) => /^\d+(?:\.\d+)?%$/.test(token) && basis ? `${number(mul(basis, div(q(token.slice(0, -1)), q(100))))}px` : token;
+                const exactShare = (token, basis) => { const v = mul(basis, div(q(token.slice(0, -1)), q(100))); return /^\d+(?:\.\d{1,6})?$/.test(String(number(v))) && cmp(q(String(number(v))), v) === 0; };
+                const rewrite = (key, basis) => {
+                  const text = String(style[key] ?? '');
+                  if (!/%/.test(text) || !basis || /\bmin\(/.test(text) || /auto-(?:fill|fit)/.test(text)) return;
+                  let list; try { list = expandTracks(text); } catch { return; }
+                  if (list.some(t => /%/.test(t) && (!/^\d+(?:\.\d+)?%$/.test(t) || !exactShare(t, basis)))) return;
+                  style = { ...style, [key]: list.map(t => share(t, basis)).join(' ') };
+                };
+                rewrite('grid-template-columns', inlineBasis); rewrite('grid-template-rows', blockBasis);
+                for (const [key, basis] of [['column-gap', inlineBasis], ['row-gap', blockBasis]])
+                  if (/^\d+(?:\.\d+)?%$/.test(String(style[key])) && basis && exactShare(String(style[key]), basis)) style = { ...style, [key]: share(String(style[key]), basis) };
+              }
               const sharedColumns = inheritedAxes.inline;
               // Flex: the items' flex properties define one row of tracks.
               // repeat(auto-fill, T) with T = Lpx or minmax(Lpx | min(Lpx, 100%), Nfr): as many tracks as fit at their

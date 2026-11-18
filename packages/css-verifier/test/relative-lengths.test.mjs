@@ -45,3 +45,12 @@ test('a flex item\'s calc() or vw width or basis is evaluated against the contai
   // min() / max() in a flex width stay Unknown.
   assert.match(String(box('.p{display:flex;width:300px}.a{width:min(50%, 100px);flex:none}.b{width:50px;flex:none}')), /^unknown/);
 });
+
+test('percentage grid tracks and gaps against a constant container size (checklist D2)', () => {
+  assert.deepEqual(box('.p{width:300px;display:grid;grid-template-columns:25% minmax(0,1fr);column-gap:5%}'), {'.a': ['0', '75'], '.b': ['90', '210']});
+  const rows = c => { const r = analyzeHTML('<html lang="en"><body><div class="p"><div class="a"></div><div class="b"></div></div></body></html>', {name: 'P', css: `*{box-sizing:border-box;margin:0}body{${g}}${c}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}}); return r.status === 'unknown' ? 'unknown' : r.sizes.filter(s => /^\.[ab]$/.test(s.box)).map(s => [s.rect.blockStart.constant, s.rect.blockSize.constant]); };
+  assert.deepEqual(rows('.p{height:200px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:50% minmax(0,1fr);row-gap:10%}'), [['0', '100'], ['120', '80']]);
+  // A container whose width follows the viewport, or an auto height: the percentage is not one constant; Unknown.
+  assert.match(String(box('.p{display:grid;grid-template-columns:25% minmax(0,1fr)}')), /^unknown/);
+  assert.equal(rows('.p{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:50% 20px}'), 'unknown');
+});
