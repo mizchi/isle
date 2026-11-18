@@ -96,6 +96,7 @@
 //   label-pointer    → W_A11Y_LABEL_POINTER     a field's label with pointer-events: none (clicks pass through it)
 //   caret-hidden     → W_A11Y_CARET_HIDDEN      a text field whose caret is transparent or its background color
 //   contents-focus   → E_A11Y_CONTENTS_FOCUS    a link, button or tabindex element with display: contents (drawn by its children; Tab skips it)
+import { animationsOf } from './css.mjs';
 import { exact, number } from './linear.mjs';
 import { scalar, sum, diff, times, sample, clip, serialize, width as domainWidth, height } from './region.mjs';
 import { languageTag } from './text-font.mjs';
@@ -180,7 +181,7 @@ export function paintFacts(style) {
   return { ...(style.$iconPaint !== undefined ? { iconPaint: style.$iconPaint } : {}), ...(hiddenVisually ? { hiddenVisually: true } : {}), caretColor: style['caret-color'], objectFit: style['object-fit'], scrollBehavior: style['scroll-behavior'], touchAction: style['touch-action'], color: style.color, backgroundColor: style['background-color'], backgroundImage: style['background-image'], opacity: style.opacity,
     visibility: style.visibility, pointerEvents: style['pointer-events'], fontSize: style['font-size'], fontStyle: style['font-style'], fontWeight: style['font-weight'], position: style.position, decoration: style['text-decoration-line'],
     isolation: style.isolation, transform: style.transform, backdropFilter: style['backdrop-filter'] ?? 'none', ...(style.$stacks ? { stacks: true } : {}), willChange: style['will-change'] ?? 'auto', scrollMargin: { top: style['scroll-margin-top'], bottom: style['scroll-margin-bottom'] }, scrollPadding: { top: style['scroll-padding-top'], bottom: style['scroll-padding-bottom'] }, outlineStyle: style['outline-style'], outlineWidth: style['outline-width'], outlineColor: style['outline-color'], outlineOffset: style['outline-offset'], clippedAway: style['clip-path'] === 'empty' || (style.clip === 'empty' && ['absolute', 'fixed'].includes(style.$fixed ? 'fixed' : style.position)), borderColors: { top: style['border-top-color'], right: style['border-right-color'], bottom: style['border-bottom-color'], left: style['border-left-color'] }, boxShadow: style['box-shadow'], cursor: style.cursor, listStyleType: style['list-style-type'],
-    animation: style['animation-name'] === 'none' ? null : { name: style['animation-name'], duration: style['animation-duration'], count: style['animation-iteration-count'], playState: style['animation-play-state'] , direction: style['animation-direction'] } };
+    animations: animationsOf(style).map(a => ({ name: a.name, duration: a.duration, count: a.count, playState: a.playState, direction: a.direction })) };
 }
 const opaqueValue = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(%?)$/.exec(String(value)); return m && (m[2] ? Number(m[1]) / 100 : Number(m[1])) >= 1; };
 /**
@@ -1899,17 +1900,20 @@ export function judgeAccessibility({ geometry, waived = [], root, domain }, { ke
   // motion: an animation longer than 5s (or infinite) needs a way to stop; prefers-reduced-motion: reduce should stop it.
   const seconds = value => { const m = /^(-?(?:\d+(?:\.\d+)?|\.\d+))(m?s)$/.exec(String(value)); return m ? Number(m[1]) / (m[2] === 'ms' ? 1000 : 1) : null; };
   const lasting = a => a && a.playState !== 'paused' && seconds(a.duration) > 0 && (a.count === 'infinite' || seconds(a.duration) * Number(a.count) > 5);
-  for (const row of geometry.filter(row => lasting(row.paint.animation) && visible(row) && !hiddenFrom(row.path))) {
-    const still = (row.reducedMotion ?? []).filter(s => lasting(s.paint.animation) || (s.paint.animation && s.paint.animation.playState !== 'paused' && seconds(s.paint.animation.duration) > 0 && s.paint.animation.count === 'infinite'));
-    for (const s of still) report(warnings, 'W_A11Y_MOTION', 'warning', `${row.box.label} runs animation ${row.paint.animation.name} (${row.paint.animation.duration} × ${row.paint.animation.count}) and prefers-reduced-motion: reduce does not stop it; moving content over 5s needs a pause mechanism`, row, s.region, { rule: 'motion', animation: row.paint.animation });
+  const running = a => a.playState !== 'paused' && seconds(a.duration) > 0 && a.count === 'infinite';
+  for (const row of geometry.filter(row => (row.paint.animations ?? []).some(lasting) && visible(row) && !hiddenFrom(row.path))) {
+    const a = row.paint.animations.find(lasting);
+    const still = (row.reducedMotion ?? []).filter(s => (s.paint.animations ?? []).some(b => lasting(b) || running(b)));
+    for (const s of still) report(warnings, 'W_A11Y_MOTION', 'warning', `${row.box.label} runs animation ${a.name} (${a.duration} × ${a.count}) and prefers-reduced-motion: reduce does not stop it; moving content over 5s needs a pause mechanism`, row, s.region, { rule: 'motion', animation: a });
   }
   // flash (SC 2.3.1): an animation whose frames swing the box's composited luminance by 0.1 or more (the darker side
   // below 0.8) is a pair of opposing changes per flash. Over three flashes in a second, on a box of at least the WCAG
   // small-safe area (21824 px², a quarter of 341 × 256), is an error. Frames give background-color and opacity.
   const flashSeconds = value => { const m = /^(\d+(?:\.\d+)?|\.\d+)(ms|s)$/.exec(String(value)); return m ? Number(m[1]) / (m[2] === 'ms' ? 1000 : 1) : null; };
   const constant = a => a && a.x.n === 0n && a.y.n === 0n ? number(a.b) : null;
-  for (const row of placed.filter(row => row.paint.animation && visible(row) && !hiddenFrom(row.path) && row.chain && keyframeFrames?.get(row.paint.animation.name)?.length)) {
-    const a = row.paint.animation, duration = flashSeconds(a.duration), count = a.count === 'infinite' ? Infinity : Number(a.count);
+  // Each animation of the list.
+  for (const row of placed.filter(row => (row.paint.animations ?? []).length && visible(row) && !hiddenFrom(row.path) && row.chain)) for (const a of row.paint.animations.filter(a => keyframeFrames?.get(a.name)?.length)) {
+    const duration = flashSeconds(a.duration), count = a.count === 'infinite' ? Infinity : Number(a.count);
     if (!(duration > 0) || a.playState === 'paused' || !(count > 0)) continue;
     const frames = keyframeFrames.get(a.name), own = row.chain.at(-1);
     const steps = [...(frames[0].offset > 0 ? [{ offset: 0, props: {} }] : []), ...frames, ...(frames.at(-1).offset < 1 ? [{ offset: 1, props: {} }] : [])];

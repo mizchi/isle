@@ -794,6 +794,8 @@ test('motion: long animations must stop under prefers-reduced-motion: reduce', (
   // No @keyframes, no animation; under five seconds in total is fine.
   assert.equal(warn(run(tree, pageCSS('.page { grid-auto-rows: 20px; }\n.spin { animation: spin 1s infinite; }\n')), 'W_A11Y_MOTION').length, 0);
   assert.equal(warn(run(tree, pageCSS('.page { grid-auto-rows: 20px; }\n.spin { animation: pop 2s 2; transition: color 0.2s; }\n@keyframes pop { to { opacity: 0.5; } }\n')), 'W_A11Y_MOTION').length, 0);
+  // The long animation second in a list.
+  assert.deepEqual(warn(run(tree, pageCSS('.page { background: #fff; color: #000; grid-auto-rows: 20px; }\n.spin { animation: pop 0.2s, spin 1s linear infinite; }\n@keyframes pop { to { opacity: 0.5; } }\n@keyframes spin { to { opacity: 0.5; } }\n')), 'W_A11Y_MOTION').map(d => d.box), ['.spin']);
 });
 
 test('clickable-look, list-style semantics, blink, dl, accesskeys, ismap and aria-hidden body', () => {
@@ -1531,6 +1533,8 @@ test('flash: a large box that flashes more than three times a second', () => {
   assert.deepEqual(codes('blink 0.2s infinite', '100px'), []); // below the small-flash area
   assert.deepEqual(codes('soft 0.1s infinite alternate'), []); // too small a luminance change
   assert.deepEqual(codes('blink 0.2s 2'), []); // two flashes in all
+  // The flashing animation second in a list is checked too.
+  assert.deepEqual(codes('soft 1s, blink 0.2s infinite'), ['E_A11Y_FLASH']);
 });
 
 test('flash: a saturated red flash counts even with a small luminance change', () => {

@@ -95,3 +95,15 @@ test('relative offsets in keyframes shift the box itself', () => {
   // An overshooting easing carries the offset past 12px; the shift is reported at the extreme too.
   assert.ok(shifts(run('@keyframes nudge{to{top:12px}}.a{position:relative;animation:nudge 1s cubic-bezier(0.34, 1.56, 0.64, 1)}')).length >= 1);
 });
+
+// Several animations in one declaration (CSS Animations 1 §4): each runs; the longhand lists repeat to the length of
+// animation-name. A layout animation anywhere in the list is checked.
+test('every animation of a list is checked, with the other longhand lists repeated to the names', () => {
+  const [second] = shifts(run('@keyframes fade{to{opacity:0}}@keyframes grow{to{height:80px}}.a{animation:fade 1s,grow 1s infinite}'));
+  assert.deepEqual([second?.box, second?.animation], ['.b', 'grow']);
+  // animation-duration: 1s repeats for grow; 0s for grow would run nothing.
+  assert.equal(shifts(run('@keyframes fade{to{opacity:0}}@keyframes grow{to{height:80px}}.a{animation-name:fade,grow;animation-duration:1s}')).length, 1);
+  assert.equal(shifts(run('@keyframes fade{to{opacity:0}}@keyframes grow{to{height:80px}}.a{animation-name:fade,grow;animation-duration:1s,0s}')).length, 0);
+  // A name without @keyframes in the list runs nothing; the others still run.
+  assert.equal(shifts(run('@keyframes grow{to{height:80px}}.a{animation:missing 1s,grow 1s}')).length, 1);
+});

@@ -18,6 +18,9 @@ const cases = [
   ['@keyframes grow{from{width:120px}50%{width:139px}to{width:120px}}', 'grow 1s cubic-bezier(0.34, 1.56, 0.64, 1) infinite'],
   ['@keyframes grow{from{width:120px}50%{width:135px}to{width:120px}}', 'grow 1s cubic-bezier(0.34, 1.56, 0.64, 1) infinite'],
   ['@keyframes grow{to{width:140px}}', 'grow 1s linear(0, 1.1 50%, 1) infinite'],
+  // A list: the second animation overshoots; the first only fades.
+  ['@keyframes fade{to{opacity:0.5}}@keyframes grow{to{width:140px}}', 'fade 1s, grow 1s cubic-bezier(0.5, -0.5, 0.5, 1.5) infinite'],
+  ['@keyframes fade{to{opacity:0.5}}@keyframes grow{to{width:140px}}', 'fade 1s, grow 1s linear infinite'],
 ];
 
 test('.b moves during the animation where the analysis says it shifts', async ({page}) => {
@@ -28,7 +31,7 @@ test('.b moves during the animation where the analysis says it shifts', async ({
     expect(r.status, `${animation}: ${JSON.stringify(r.diagnostics.map(d => d.message))}`).not.toBe('unknown');
     const reported = r.diagnostics.some(d => d.code === 'E_LAYOUT_ANIMATION_SHIFT' && d.box === '.b');
     await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
-    const moved = await page.evaluate(() => { const [a] = document.getAnimations(); a.pause(); const tops = new Set(); for (let t = 0; t <= 1000; t += 5) { a.currentTime = t; const r = document.querySelector('.b').getBoundingClientRect(); tops.add(`${r.left},${r.top}`); } return tops.size > 1; });
+    const moved = await page.evaluate(() => { const all = document.getAnimations(); for (const a of all) a.pause(); const tops = new Set(); for (let t = 0; t <= 1000; t += 5) { for (const a of all) a.currentTime = t; const r = document.querySelector('.b').getBoundingClientRect(); tops.add(`${r.left},${r.top}`); } return tops.size > 1; });
     if (either) expect(reported || !moved, `${keyframes} ${animation}: moves in the browser, not reported`).toBe(true);
     else expect(reported, `${keyframes} ${animation}: moves in the browser: ${moved}`).toBe(moved);
   }

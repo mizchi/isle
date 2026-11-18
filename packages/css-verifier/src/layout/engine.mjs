@@ -1,7 +1,7 @@
 import { q, add, sub, mul, cmp, div, exact, number } from './linear.mjs';
 import { scalar, width, height, sum, diff, times, evaluate, affine, sample, rectangle, clip, partition, projection, serialize } from './region.mjs';
 import { validateOptions } from './input.mjs';
-import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea, containsFixed, setUAProfile, setRegisteredProperties } from './css.mjs';
+import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea, containsFixed, setUAProfile, setRegisteredProperties, animationsOf } from './css.mjs';
 import { resolveUAProfile } from './ua-profile.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
@@ -1452,7 +1452,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         style = { ...style, $sticky: false };
       }
       if (style.$sticky && parents.some(p => (p.clipped || p.clipScope || scrolling(p)) && !xClipOnly(p))) throw Object.assign(new Error(`${box.label} is position: sticky inside a scrolling or clipping ancestor, which it would stick to`), { code: 'U_LAYOUT_CSS' });
-      if (style['animation-name'] !== 'none' && style['animation-play-state'] !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(style['animation-duration']) && keyframeFrames.get(style['animation-name'])?.some(frame => frame.layout)) animated.push({ box, region, name: style['animation-name'], position: style.position, duration: style['animation-duration'], count: style['animation-iteration-count'], direction: style['animation-direction'], easing: style['animation-timing-function'] ?? 'ease', style });
+      // Each animation of the list (animationsOf repeats the longhand lists to the names).
+      for (const a of animationsOf(style)) if (a.playState !== 'paused' && !/^-?0+(?:\.0+)?m?s$/.test(a.duration) && keyframeFrames.get(a.name)?.some(frame => frame.layout)) animated.push({ box, region, name: a.name, position: style.position, duration: a.duration, count: a.count, direction: a.direction, easing: a.easing, style });
       // A bar fixed to the bottom edge under viewport-fit=cover: its content must clear the bottom safe area (the home
       // indicator), so its bottom padding has to be at least that inset (env(safe-area-inset-bottom)).
       if (style.$fixed && cover && options.safeArea?.bottom > 0 && ['0', '0px'].includes(style.bottom) && (box.children ?? []).length && cmp(px(style['padding-bottom']), q(String(options.safeArea.bottom))) < 0 && !layoutWarnings.some(w => w.code === 'W_LAYOUT_SAFE_AREA' && w.path === box.path))

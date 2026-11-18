@@ -18,6 +18,13 @@ export function setUAProfile(profile) { uaProfile = profile; }
 // @property registrations (name → {inherits, initial, syntax}), set by the analysis from the parsed sheets.
 let registeredProperties = new Map();
 export function setRegisteredProperties(registry) { registeredProperties = registry ?? new Map(); }
+// The animations of a computed style: one per animation-name entry (none included, so indices match), each longhand
+// list repeated to that length (CSS Animations 1 §4).
+export function animationsOf(style) {
+  const list = key => postcss.list.comma(String(style[key] ?? ''));
+  const names = list('animation-name'), at = (key, i, fallback) => { const l = list(key); return l.length ? l[i % l.length] : fallback; };
+  return names.map((name, i) => ({ name, duration: at('animation-duration', i, '0s'), count: at('animation-iteration-count', i, '1'), playState: at('animation-play-state', i, 'running'), direction: at('animation-direction', i, 'normal'), easing: at('animation-timing-function', i, 'ease') })).filter(a => a.name !== 'none');
+}
 // Typed syntaxes accepted, with the literal values whose computed value is the value itself (no em, var() or calc():
 // those compute where they are declared, which the unregistered substitution does not model).
 const typedValue = { '<length>': /^(?:0|-?\d*\.?\d+px)$/, '<number>': /^-?\d*\.?\d+$/, '<integer>': /^-?\d+$/, '<percentage>': /^-?\d*\.?\d+%$/, '<length-percentage>': /^(?:0|-?\d*\.?\d+(?:px|%))$/, '<color>': /^#[0-9a-f]{3,8}$/i };
@@ -263,11 +270,15 @@ function expand(property, value) {
   // An outside marker does not take part in the list item's layout; an inside one is an inline box in its first line.
   if (property === 'list-style-position') { if (!wide.has(value) && !['inside', 'outside'].includes(value)) throw new Error(`Unsupported list-style-position: ${value}`); return [[property, value]]; }
   // The easing of an animation (CSS Easing 2): it decides how far past its keyframes a value can go (easing.mjs).
-  if (property === 'animation-timing-function') { if (!wide.has(value) && postcss.list.comma(value).length > 1) throw new Error('Use one animation per declaration'); return [[property, value]]; }
+  if (property === 'animation-timing-function') return [[property, wide.has(value) ? value : postcss.list.comma(value).join(', ')]];
   if (property === 'animation') {
     const keys = ['animation-name', 'animation-duration', 'animation-iteration-count', 'animation-play-state', 'animation-direction', 'animation-timing-function'];
     if (wide.has(value)) return keys.map(key => [key, value]);
-    if (postcss.list.comma(value).length > 1) throw new Error('Use one animation per declaration');
+    // A list of animations: each item sets one entry of every longhand list (CSS Animations 1 §4).
+    const items = postcss.list.comma(value).map(item => one(item));
+    return keys.map((key, i) => [key, items.map(item => item[i][1]).join(', ')]);
+  }
+  function one(value) {
     const parts = postcss.list.space(value), times = parts.filter(p => /^-?(?:\d+(?:\.\d+)?|\.\d+)m?s$/.test(p));
     const count = parts.find(p => p === 'infinite' || /^(?:\d+(?:\.\d+)?|\.\d+)$/.test(p)), state = parts.find(p => ['running', 'paused'].includes(p));
     const keyword = /^(?:infinite|running|paused|normal|reverse|alternate|alternate-reverse|none|forwards|backwards|both|linear|ease|ease-in|ease-out|ease-in-out|step-start|step-end|(?:cubic-bezier|steps|linear)\(.*)$/;
@@ -663,7 +674,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     catch (error) { diagnostic('U_LAYOUT_CSS', error.reason ?? error.message, error.line, sheet.file); }
   }
   // An animation-name without @keyframes runs no animation.
-  for (const rule of rules) for (const declaration of rule.declarations) if (declaration.property === 'animation-name' && !wide.has(declaration.value) && declaration.value !== 'none' && !keyframes.has(declaration.value)) declaration.value = 'none';
+  for (const rule of rules) for (const declaration of rule.declarations) if (declaration.property === 'animation-name' && !wide.has(declaration.value)) declaration.value = postcss.list.comma(declaration.value).map(name => name === 'none' || keyframes.has(name) ? name : 'none').join(', ');
   return { rules, layers, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered };
 }
 
