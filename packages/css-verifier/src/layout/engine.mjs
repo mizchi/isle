@@ -256,7 +256,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], placeholderIgnored = [], gridAreasInvalid = [], radiusRules = [], userSelectNone = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], placeholderIgnored = [], gridAreasInvalid = [], radiusRules = [], contentRules = [], userSelectNone = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -521,6 +521,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       }
       return;
     }
+    if (contentRules.some(sels => sels.some(sel => sel.pseudoElement === pbox.pseudo && matches(sel, pbox, new Set([`::${pbox.pseudo}`]))))) return;
     if ((pstyle.content ?? 'none') !== 'none' || pstyle.display === 'none' || !Object.keys(pstyle.$sources ?? {}).some(key => key !== 'content') || layoutWarnings.some(w => w.code === 'W_CSS_PSEUDO_NO_CONTENT' && w.path === pbox.path)) return;
     const src = Object.values(pstyle.$sources).find(Boolean);
     layoutWarnings.push({ code: 'W_CSS_PSEUDO_NO_CONTENT', severity: 'warning', box: pbox.label, path: pbox.path, css: src ? [{ property: 'content', file: src.file, line: src.line, selector: src.selector }] : [],

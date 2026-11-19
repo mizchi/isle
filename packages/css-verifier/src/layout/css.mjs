@@ -626,7 +626,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], placeholderIgnored = [], gridAreasInvalid = [], radiusRules = [], userSelectNone = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
+  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], placeholderIgnored = [], gridAreasInvalid = [], radiusRules = [], contentRules = [], userSelectNone = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -885,6 +885,8 @@ export function parseLayoutCSS(sheets, diagnostic) {
       if (!stateGeometry && !checkedMark && !stateLayout && selectors.some(selector => selector.state) && node.nodes.some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `State selector rules may only change paint (color, background, outline, box-shadow, text-decoration); ${node.selector} changes layout`, node.source.start.line); continue; }
       const declarations = [];
       const authored=node.nodes.filter(declaration=>declaration.type==='decl');
+      // Rules that declare content at all (also a value not read here, such as attr()): F9 does not call them content-less.
+      if (authored.some(d => d.prop.toLowerCase() === 'content')) contentRules.push(selectors);
       // transition of display: display is discrete and does not transition without transition-behavior: allow-discrete
       // (CSS Transitions 2; measured: display: none applies at once). Paint timing only, reported as a warning.
       {
@@ -932,7 +934,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
     return 'none';
   }).join(', ');
-  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, firstPseudo, selectionIgnored, placeholderIgnored, gridAreasInvalid, radiusRules, userSelectNone, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, firstPseudo, selectionIgnored, placeholderIgnored, gridAreasInvalid, radiusRules, contentRules, userSelectNone, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author

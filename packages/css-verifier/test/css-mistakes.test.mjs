@@ -648,3 +648,9 @@ test('F59: border-radius does not round the border of a border-collapse: collaps
   assert.equal(w('.t{border-collapse:collapse;border-radius:8px}').length, 0);
   assert.equal(w('.t{border-collapse:collapse;border:2px solid red;border-radius:0}').length, 0);
 });
+
+test('F9: a content the analysis cannot read (attr()) is still content: no W_CSS_PSEUDO_NO_CONTENT', () => {
+  const r = run('.a{position:relative}.x::after{content:attr(data-tip);position:absolute;top:0;left:0;width:10px;height:10px}', '<div class="x a" data-tip="Hi"></div>');
+  assert.equal(codes(r, 'W_CSS_PSEUDO_NO_CONTENT').length, 0);
+  assert.equal(codes(run('.x::after{position:absolute;top:0}', '<div class="x a"></div>'), 'W_CSS_PSEUDO_NO_CONTENT').length, 1);
+});

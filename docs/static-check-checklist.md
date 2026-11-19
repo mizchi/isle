@@ -294,6 +294,8 @@
 - [x] **F59. 線を重ねた表の `border-radius`**(`W_LAYOUT_DECLARATION_INERT`): border-collapse: collapse の表では、border-radius で
   表の線は丸くならない(3 つのブラウザーで、背景のない表の描画が同じ。背景だけは丸く切られる)。separate と border-spacing: 0
   にするか、丸い div で包むことを勧める。同じ表に radius 0 の規則があれば報告しない。
+- F9 を直した: 解析が読めない content(`attr(data-tip)` など)を書いた ::before・::after を「content がない」と報告していた。
+  content を書いた規則に当たる擬似要素は報告しない(その配置は今までどおり Unknown)。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 
