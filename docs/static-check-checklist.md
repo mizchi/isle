@@ -314,6 +314,9 @@
   textarea・select の value、React の defaultValue・defaultChecked は、HTML に書いても何もしない(3 つのブラウザーで、
   indeterminate は false、textarea は空、select は最初の option)。script で性質を設定するか、HTML の書き方(textarea の中身、
   option の selected、value、checked)を勧める。
+- [x] **F65. 取らない要素の `disabled`・`checked`・`selected`**(`W_HTML_ATTRIBUTE_NOT_HTML`、selected は以前 Unknown): disabled は
+  button・input・select・textarea・option・optgroup・fieldset にしか効かず、a や div に書いてもフォーカスでき押せる(:disabled にも
+  ならない)。checked は checkbox・radio に、selected は option にしか効かない(3 つのブラウザーで測った)。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

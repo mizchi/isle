@@ -70,6 +70,11 @@ export function htmlBoxTree(html) {
       // F64: names that are DOM properties, not HTML attributes (indeterminate; value on a textarea or select; React's
       // defaultValue / defaultChecked) do nothing in markup (measured in Chromium, Firefox and WebKit). Recorded for a warning.
       if(!attr.namespace && (['indeterminate','defaultvalue','defaultchecked'].includes(attr.name) || (attr.name==='value' && ['textarea','select'].includes(node.tagName)))) { (node.notAttributes ??= []).push(attr.name); continue; }
+      // F65: disabled, checked and selected only work on the elements that take them (measured in Chromium, Firefox and
+      // WebKit: an a or div with disabled stays focusable and is not :disabled; checked on a text field is not :checked).
+      if(!attr.namespace && attr.name==='disabled' && !['button','input','select','textarea','optgroup','option','fieldset','link','style'].includes(node.tagName)) (node.notAttributes ??= []).push('disabled');
+      if(!attr.namespace && attr.name==='checked' && !(node.tagName==='input' && ['checkbox','radio'].includes(String(attrs.type ?? '').trim().toLowerCase()))) (node.notAttributes ??= []).push('checked');
+      if(!attr.namespace && attr.name==='selected' && node.tagName!=='option') { (node.notAttributes ??= []).push('selected'); continue; }
       if(attr.namespace || !/^(?:class|id|style|dir|target|title|role|lang|tabindex|href|disabled|alt|src|type|for|name|value|placeholder|required|readonly|checked|autocomplete|headers|scope|controls|autoplay|muted|loop|playsinline|poster|kind|srclang|label|accesskey|ismap|colspan|rowspan|hidden|inert|autofocus|popover|popovertarget|popovertargetaction|aria-[\w-]+|data-[\w-]+)$/.test(attr.name)) unknown(`HTML rendering attribute needs an adapter: ${attr.name}`);
     }
     // An inline svg is one replaced box: its content is SVG, not CSS boxes, so its children are not converted.

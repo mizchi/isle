@@ -725,3 +725,14 @@ test('F64: DOM properties written as HTML attributes do nothing', async ({page})
     expect((r.layoutWarnings ?? []).some(w => w.code === 'W_HTML_ATTRIBUTE_NOT_HTML'), html).toBe(true);
   }
 });
+
+test('F65: disabled on a link or div, checked on a text field, selected on a div do nothing', async ({page}) => {
+  for (const [html, warn] of [['<a class="x" href="#y" disabled>link</a>', true], ['<div class="x" tabindex="0" disabled>d</div>', true], ['<input class="x" aria-label="q" checked>', true], ['<div class="x" selected>s</div>', true], ['<button class="x" type="button" disabled>b</button>', false]]) {
+    await page.setContent(`<!doctype html><html lang="en"><body>${html}</body></html>`);
+    const [disabled, focused, checked] = await page.evaluate(() => { const x = document.querySelector('.x'); x.focus(); return [x.matches(':disabled'), document.activeElement === x, x.matches(':checked')]; });
+    if (warn) expect(disabled || checked, html).toBe(false);
+    if (/disabled/.test(html) && warn) expect(focused, html).toBe(true);
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: '', viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_HTML_ATTRIBUTE_NOT_HTML'), html).toBe(warn);
+  }
+});

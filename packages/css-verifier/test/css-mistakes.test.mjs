@@ -716,3 +716,13 @@ test('F64: attributes that are only DOM properties (indeterminate, value on text
   assert.equal(w('<input class="x" aria-label="q" defaultValue="x">').length, 1);
   assert.equal(w('<input class="x" aria-label="q" value="x">').length, 0);
 });
+
+test('F65: disabled, checked and selected on elements that do not take them do nothing', () => {
+  const w = html => codes(run('', html), 'W_HTML_ATTRIBUTE_NOT_HTML');
+  const [hit] = w('<div class="a" disabled></div>');
+  assert.ok(hit && /focusable|clickable/.test(hit.message));
+  assert.equal(w('<input class="a" aria-label="q" checked>').length, 1);
+  assert.equal(w('<div class="a" selected></div>').length, 1);
+  assert.equal(w('<button class="a" type="button" disabled>b</button>').length, 0);
+  assert.equal(w('<input class="a" type="checkbox" aria-label="q" checked>').length, 0);
+});
