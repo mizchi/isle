@@ -537,6 +537,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           layoutWarnings.push({ code: 'W_CSS_CHILD_INDEX_HIDDEN_SIBLING', severity: 'warning', box: box.label, path: box.path, selector: sel.source, css: [{ property: 'selector', file: rule.file, line: rule.line, selector: sel.source }],
             message: `${sel.source} does not match ${box.label}: its parent also holds ${tags}, which is never shown but still counts as a child for :first-child, :last-child and :nth-child. Use :first-of-type / :last-of-type / :nth-of-type, or move the ${tags} out of the list` });
         }
+        // F34: columns / column-count / column-width on a flex or grid container (css.mjs resets them to auto).
+        if (style.$multicolInert && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(style.$multicolInert[0][0]))) {
+          const keys = style.$multicolInert.map(([key]) => key), src = style.$sources?.[keys[0]];
+          layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: keys, ...(src ? { css: [{ property: keys[0], file: src.file, line: src.line, selector: src.selector }] } : {}),
+            message: `${box.label}: ${style.$multicolInert.map(([key, value]) => `${key}: ${value}`).join(', ')} has no effect (it is display: ${style.display}; multi-column layout applies only to a block container). Use grid-template-columns (or flex-wrap with a flex-basis) for columns, or display: block for flowing columns` });
+        }
         // F17, F18: a state rule that can never apply here: :focus / :focus-visible on an element that cannot take focus
         // (no tabindex, not a control or link), :hover on an element with pointer-events: none and no children (the
         // pointer never hits it).

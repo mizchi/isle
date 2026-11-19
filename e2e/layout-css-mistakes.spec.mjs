@@ -349,3 +349,14 @@ test('F33: :last-child and :nth-child miss because of a template or script sibli
   }
   expect(await page.evaluate(() => { document.body.innerHTML = '<template id="x"><b>t</b></template>'; return document.getElementById('x').getBoundingClientRect().height; })).toBe(0);
 });
+
+test('F34: columns on a flex or grid container do nothing', async ({page}) => {
+  const items = '<div class="x"><div class="a">a</div><div class="a">b</div><div class="a">c</div></div>';
+  const rects = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0;width:400px}.a{height:20px}${css}</style></head><body>${items}</body></html>`); return page.evaluate(() => [...document.querySelectorAll('.a')].map(e => JSON.stringify(e.getBoundingClientRect()))); };
+  for (const [base, extra, inert] of [['.x{display:flex}', '.x{columns:2}', true], ['.x{display:grid}', '.x{column-count:3}', true], ['.x{display:flex;flex-direction:column}', '.x{column-width:100px}', true], ['.x{display:block}', '.x{columns:2}', false]]) {
+    expect(JSON.stringify(await rects(base)) === JSON.stringify(await rects(base + extra)), base + extra).toBe(inert);
+    const r = analyzeHTML(`<html lang="en"><body>${items}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}${base}${extra}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.some(p => p.startsWith('column-'))), base + extra).toBe(inert);
+    if (!inert) expect(r.status).toBe('unknown');
+  }
+});

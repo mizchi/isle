@@ -204,6 +204,9 @@
   link・meta は描かれない(display: none)が、`:first-child`・`:last-child`・`:only-child`・`:nth-child` の数には入る。それらが
   なければ当たる規則を報告する(`-of-type` は別の要素名なので影響しない)。また `template`(shadowrootmode のないもの)を
   UA の display: none として扱い、Unknown にしない(author の display は今までどおり Unknown)。3 つのブラウザーで測った。
+- [x] **F34. flex・grid の容器の `columns`**(`W_LAYOUT_DECLARATION_INERT`、以前は Unknown): 段組みはブロック容器にしか
+  効かない。flex・grid の容器の `columns`・`column-count`・`column-width` は、3 つのブラウザーで項目の位置がないときと同じ。
+  解析はそれを捨てて配置する(ブロック容器の段組みは今までどおり Unknown)。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

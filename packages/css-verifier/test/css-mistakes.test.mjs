@@ -323,3 +323,16 @@ test('F33: :last-child / :first-child / :nth-child miss because of a sibling tha
   assert.equal(run('', list('<template shadowrootmode="open"><b></b></template>')).status, 'unknown');
   assert.equal(run('template{display:block}', list('<template></template>')).status, 'unknown');
 });
+
+test('F34: columns on a flex or grid container do nothing', () => {
+  const items = '<div class="x"><div class="a"></div><div class="a"></div></div>';
+  const w = css => codes(run(css, items), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.some(p => p.startsWith('column-')));
+  const r = run('.x{display:flex;columns:2}', items);
+  assert.equal(r.status, 'verified');
+  const [hit] = codes(r, 'W_LAYOUT_DECLARATION_INERT');
+  assert.ok(hit && /multi-column/.test(hit.message) && hit.properties.includes('column-count'));
+  assert.equal(w('.x{display:grid;column-count:3}').length, 1);
+  assert.equal(w('.x{display:flex;column-width:100px}').length, 1);
+  assert.equal(w('.x{display:flex}').length, 0);
+  assert.equal(run('.x{columns:2}', items).status, 'unknown');
+});
