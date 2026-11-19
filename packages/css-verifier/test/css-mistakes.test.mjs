@@ -577,3 +577,14 @@ test('F53: margin-top / margin-bottom: auto in block flow are 0 (no vertical cen
   assert.equal(codes(run('.p{display:flex;flex-direction:column;height:200px}.c{margin-top:auto;height:20px}', html), 'W_LAYOUT_DECLARATION_INERT').length, 0);
   assert.equal(codes(run('.p{display:block;height:200px}.c{margin:0 auto;width:20px;height:20px}', html), 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.some(p => /^margin/.test(p))).length, 0);
 });
+
+test('F54: clear on a flex or grid item does nothing', () => {
+  const html = '<div class="p"><div class="x"></div></div>';
+  const r = run('.p{display:flex}.x{clear:both;height:20px;width:20px}', html);
+  assert.equal(r.status, 'verified');
+  const [hit] = codes(r, 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.includes('clear'));
+  assert.ok(hit && /flex/.test(hit.message));
+  assert.equal(codes(run('.p{display:grid}.x{clear:left;height:20px}', html), 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.includes('clear')).length, 1);
+  assert.equal(run('.p{display:block}.x{clear:both;height:20px}', html).status, 'unknown');
+  assert.equal(run('.p{display:flex}.x{clear:none;height:20px;width:20px}', html).status, 'verified');
+});

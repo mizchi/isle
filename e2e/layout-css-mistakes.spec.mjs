@@ -589,3 +589,15 @@ test('F53: auto margin-top / margin-bottom are 0 in block flow; the analysed pos
     expect(r.layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.some(p => /^margin-(?:top|bottom)$/.test(p))), child).toBe(true);
   }
 });
+
+test('F54: clear on a flex or grid item does nothing', async ({page}) => {
+  const html = '<div class="p"><div class="a"></div><div class="x"></div><div class="a"></div></div>';
+  for (const parent of ['display:flex', 'display:grid;grid-template-columns:50px 50px', 'display:flex;flex-direction:column']) {
+    const base = `.p{${parent};width:200px}.a{width:30px;height:30px}.x{width:40px;height:20px}`;
+    const rects = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}${base}${css}</style></head><body>${html}</body></html>`); return page.evaluate(() => [...document.querySelectorAll('.p > div')].map(e => JSON.stringify(e.getBoundingClientRect())).join()); };
+    expect(await rects('.x{clear:both}'), parent).toBe(await rects(''));
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${base}.x{clear:both}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('clear')), parent).toBe(true);
+    expect(r.diagnostics.some(d => /clear/.test(d.message)), parent).toBe(false);
+  }
+});

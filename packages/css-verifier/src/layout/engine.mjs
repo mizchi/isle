@@ -509,6 +509,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
     firstPseudoInert(box, style);
+    if (style.$clearInert && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('clear')))
+      layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['clear'], ...(style.$sources?.clear ? { css: [{ property: 'clear', file: style.$sources.clear.file, line: style.$sources.clear.line, selector: style.$sources.clear.selector }] } : {}),
+        message: `${box.label}: clear: ${style.$clearInert} has no effect on a ${String(inherited?.display ?? '').includes('grid') ? 'grid' : 'flex'} item (floats do not apply there, so there is nothing to clear). Remove it, or use the container's wrapping (flex-wrap, grid rows) to start a new line` });
     // F51: body's overflow goes to the viewport only while html's is visible. With overflow on both (overflow-x: hidden on
     // html and body, the usual guard against a horizontal scrollbar), body is a scroll container of its own that does not
     // scroll (it is as tall as its content): a sticky box in it sticks to body and scrolls away with the page (measured

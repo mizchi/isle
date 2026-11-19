@@ -274,6 +274,9 @@
 - [x] **F53. ブロックの流れの中の縦の `margin: auto`**(`W_LAYOUT_DECLARATION_INERT`、以前は Unknown): 流れの中のブロックの
   margin-top・margin-bottom の auto は 0 で、縦に中央へ寄せない(CSS 2.2 §10.6.3。3 つのブラウザーで、flow-root・
   overflow: hidden の親でも同じ。flex・grid では寄る)。解析も 0 として配置し、位置がブラウザーと同じことを確かめた。
+- [x] **F54. flex・grid の項目の `clear`**(`W_LAYOUT_DECLARATION_INERT`、以前は Unknown): 項目には float が効かないので、
+  clear で避けるものがない(3 つのブラウザーで、横に float があってもなくても配置が同じ)。捨てて配置する。ブロックの流れの
+  clear は float を解析しないので今までどおり Unknown。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 
