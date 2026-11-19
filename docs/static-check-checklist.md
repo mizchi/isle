@@ -296,6 +296,9 @@
   にするか、丸い div で包むことを勧める。同じ表に radius 0 の規則があれば報告しない。
 - F9 を直した: 解析が読めない content(`attr(data-tip)` など)を書いた ::before・::after を「content がない」と報告していた。
   content を書いた規則に当たる擬似要素は報告しない(その配置は今までどおり Unknown)。
+- [x] **F60. 表の `gap`、線を重ねた表の `padding`**(`W_LAYOUT_DECLARATION_INERT`、padding は以前 Unknown): 表のセルの間は gap では
+  空かず(border-spacing を使う)、border-collapse: collapse の表には padding がない(3 つのブラウザーで配置が同じ。separate の表の
+  padding は効く)。collapse の表の padding は 0 として配置する。(表の aspect-ratio は WebKit だけ効くので除いた。)
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

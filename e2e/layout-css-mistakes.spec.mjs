@@ -669,3 +669,14 @@ test('F59: border-radius does not round the border of a collapsed table', async 
     expect(warned, collapse).toBe(inert);
   }
 });
+
+test('F60: gap on a table and padding on a collapsed table do nothing', async ({page}) => {
+  const t = '<table class="t"><tbody><tr><td class="c">a</td><td class="c">b</td></tr><tr><td class="c">c</td><td class="c">d</td></tr></tbody></table>';
+  for (const [collapse, d, inert] of [['separate', 'gap:10px', true], ['collapse', 'gap:10px', true], ['collapse', 'padding:10px', true], ['separate', 'padding:10px', false]]) {
+    const base = `.t{border-collapse:${collapse};border-spacing:0;border:2px solid red}.c{padding:0}`;
+    const m = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}${base}${css}</style></head><body>${t}</body></html>`); return page.evaluate(() => JSON.stringify([...document.querySelectorAll('td, table')].map(e => e.getBoundingClientRect()))); };
+    expect(await m('') === await m(`.t{${d}}`), `${collapse} ${d}`).toBe(inert);
+    const warned = (analyzeHTML(`<html lang="en"><body>${t}</body></html>`, {name: 'P', css: `${base}.t{${d}}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.some(p => /^(?:row-gap|column-gap|padding-)/.test(p)));
+    expect(warned, `${collapse} ${d}`).toBe(inert);
+  }
+});

@@ -1307,6 +1307,12 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   // tables): the row's height rules. Dropped here (reported by the engine).
   if (!box.pseudo && ['td', 'th'].includes(box.tag) && ['ua', 'table-cell'].includes(String(values.display))) for (const [key, initial] of [['min-block-size', 'auto'], ['max-block-size', 'none']])
     if (sources[key] && !['auto', 'none', '0', '0px'].includes(String(values[key]))) { (values.$cellInert ??= []).push([key, values[key]]); values[key] = initial; }
+  // F60: in the collapsing border model the table has no padding (measured in Chromium, Firefox and WebKit: same layout
+  // with it and without); used as 0 here, reported by the engine.
+  if (!box.pseudo && (['table', 'inline-table'].includes(values.display) || (box.tag === 'table' && values.display === 'ua')) && String(values['border-collapse']) === 'collapse') {
+    const pads = ['top', 'right', 'bottom', 'left'].map(side => `padding-${side}`).filter(key => sources[key] && !['0', '0px'].includes(String(values[key])));
+    if (pads.length) { values.$tablePaddingInert = pads.map(key => [key, values[key]]); for (const key of pads) values[key] = '0'; }
+  }
   // overflow: auto or scroll on a table is used as visible (F31, measured in Chromium, Firefox and WebKit): the table
   // grows to its content and never scrolls. Mixed with hidden or clip on the other axis (not measured), it is left as is.
   if (!box.pseudo && (['table', 'inline-table'].includes(values.display) || (box.tag === 'table' && values.display === 'ua')) && ['overflow-x', 'overflow-y'].every(key => ['auto', 'scroll'].includes(String(values[key]))))

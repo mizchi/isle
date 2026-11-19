@@ -654,3 +654,14 @@ test('F9: a content the analysis cannot read (attr()) is still content: no W_CSS
   assert.equal(codes(r, 'W_CSS_PSEUDO_NO_CONTENT').length, 0);
   assert.equal(codes(run('.x::after{position:absolute;top:0}', '<div class="x a"></div>'), 'W_CSS_PSEUDO_NO_CONTENT').length, 1);
 });
+
+test('F60: gap on a table, and padding on a collapsed table, do nothing', () => {
+  const t = '<table class="t"><tbody><tr><td class="c"></td><td class="c"></td></tr></tbody></table>';
+  const base = '.t{table-layout:fixed;inline-size:200px;border-spacing:0}.c{inline-size:100px;block-size:20px;padding:0}';
+  const w = css => codes(run(base + css, t), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.some(p => /^(?:row-gap|column-gap|padding-)/.test(p)));
+  assert.ok(/border-spacing/.test(w('.t{gap:10px}')[0]?.message));
+  const r = run(base + '.t{border-collapse:collapse;padding:10px}', t);
+  assert.equal(r.status, 'verified');
+  assert.ok(codes(r, 'W_LAYOUT_DECLARATION_INERT').some(x => x.properties.includes('padding-top') && /collapse/.test(x.message)));
+  assert.equal(w('.t{padding:10px}').length, 0);
+});
