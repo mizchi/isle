@@ -1045,7 +1045,7 @@ test('tables: a cell margin and a row padding change nothing in Chromium, and a 
   }
 });
 
-test('tables: Chromium ignores min/max sizes on cells and spreads a table min-height over its rows; the analysis is Unknown for all three', async ({page}) => {
+test('tables: Chromium ignores min/max sizes on cells and spreads a table min-height over its rows; a cell min-height is laid out as inert (F43), the others are Unknown', async ({page}) => {
   const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
   const html = '<table class="t"><tbody><tr><td class="c"></td><td class="c"></td></tr></tbody></table>';
   const base = `*{margin:0;padding:0}html,body{${g}}.t{table-layout:fixed;inline-size:200px;border-spacing:0}.c{inline-size:100px;block-size:20px}`;
@@ -1054,7 +1054,11 @@ test('tables: Chromium ignores min/max sizes on cells and spreads a table min-he
   for (const [css, size] of [['td{min-height:50px}', [100, 20]], ['td{max-width:50px}', [100, 20]], ['.t{min-height:100px}', [100, 100]]]) {
     expect(await cell(css), css).toEqual(size);
     const report = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
-    expect(report.status, css).toBe('unknown');
+    // A cell's min-height does nothing in Chromium, Firefox and WebKit (F43): laid out without it, and warned.
+    if (css === 'td{min-height:50px}') {
+      expect(report.status, css).toBe('verified');
+      expect(report.layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('min-block-size')), css).toBe(true);
+    } else expect(report.status, css).toBe('unknown');
   }
 });
 
