@@ -319,6 +319,9 @@
   ならない)。checked は checkbox・radio に、selected は option にしか効かない(3 つのブラウザーで測った)。
 - [x] **F66. 文字を入れない部品の `readonly`**(`W_HTML_ATTRIBUTE_NOT_HTML`): readonly は文字の編集を止めるだけで、checkbox・
   radio・select はクリックや選択で変わる(3 つのブラウザーで測った。文字の input・textarea では止まる)。disabled を勧める。
+- [x] **F67. 出ない `placeholder`、数の欄の `maxlength`**(`W_HTML_ATTRIBUTE_NOT_HTML`、maxlength は以前 Unknown): placeholder は
+  文字の欄・number・textarea にしか出ず、select・checkbox・date・range では何も出ない。maxlength は文字の欄にしか効かず、
+  number の欄には何桁でも入る(3 つのブラウザーで測った)。label・最初の option、number には max を勧める。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

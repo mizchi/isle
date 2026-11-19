@@ -75,6 +75,12 @@ export function htmlBoxTree(html) {
       if(!attr.namespace && attr.name==='disabled' && !['button','input','select','textarea','optgroup','option','fieldset','link','style'].includes(node.tagName)) (node.notAttributes ??= []).push('disabled');
       if(!attr.namespace && attr.name==='checked' && !(node.tagName==='input' && ['checkbox','radio'].includes(String(attrs.type ?? '').trim().toLowerCase()))) (node.notAttributes ??= []).push('checked');
       if(!attr.namespace && attr.name==='selected' && node.tagName!=='option') { (node.notAttributes ??= []).push('selected'); continue; }
+      // F67: placeholder shows only in a text-like field or textarea (not a select, checkbox, date or range), and maxlength
+      // limits only text fields (a number input takes any length) — measured in Chromium, Firefox and WebKit. maxlength has
+      // no rendering of its own.
+      const textType = /^(?:|text|search|url|tel|email|password)$/.test(String(attrs.type ?? '').trim().toLowerCase());
+      if(!attr.namespace && attr.name==='placeholder' && !(node.tagName==='textarea' || (node.tagName==='input' && (textType || String(attrs.type ?? '').trim().toLowerCase()==='number')))) { (node.notAttributes ??= []).push('placeholder'); continue; }
+      if(!attr.namespace && attr.name==='maxlength') { if(!(node.tagName==='textarea' || (node.tagName==='input' && textType))) (node.notAttributes ??= []).push('maxlength'); continue; }
       // F66: readonly only stops editing text (a textarea or a text-like input); a checkbox, radio or select still changes
       // (measured in Chromium, Firefox and WebKit).
       if(!attr.namespace && attr.name==='readonly' && !(node.tagName==='textarea' || (node.tagName==='input' && /^(?:|text|search|url|tel|email|password|number|date|month|week|time|datetime-local)$/.test(String(attrs.type ?? '').trim().toLowerCase())))) (node.notAttributes ??= []).push('readonly');

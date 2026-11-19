@@ -747,3 +747,16 @@ test('F66: readonly on a checkbox, radio or select does not stop changes', async
     expect((r.layoutWarnings ?? []).some(w => w.code === 'W_HTML_ATTRIBUTE_NOT_HTML'), html).toBe(warn);
   }
 });
+
+test('F67: placeholder where no placeholder shows, maxlength on a number input', async ({page}) => {
+  for (const [h, warn] of [['<select class="x" aria-label="q"><option></option></select>', true], ['<input class="x" type="checkbox" aria-label="q">', true], ['<input class="x" type="date" aria-label="q">', true], ['<input class="x" type="number" aria-label="q">', false], ['<input class="x" aria-label="q">', false]]) {
+    const shot = async attr => { await page.setContent(`<!doctype html><html lang="en"><body style="margin:10px">${h.replace('class="x"', `class="x" ${attr}`)}</body></html>`); return (await page.screenshot()).toString('base64'); };
+    expect(await shot('') === await shot('placeholder="Pick one"'), h).toBe(warn);
+    const r = analyzeHTML(`<html lang="en"><body>${h.replace('class="x"', 'class="x" placeholder="Pick one"')}</body></html>`, {name: 'P', css: '', viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_HTML_ATTRIBUTE_NOT_HTML'), h).toBe(warn);
+  }
+  await page.setContent('<!doctype html><html lang="en"><body><input class="x" type="number" aria-label="q" maxlength="2"></body></html>');
+  await page.click('.x'); await page.keyboard.type('12345');
+  expect(await page.evaluate(() => document.querySelector('.x').value)).toBe('12345');
+  expect((analyzeHTML('<html lang="en"><body><input class="x" type="number" aria-label="q" maxlength="2"></body></html>', {name: 'P', css: '', viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_HTML_ATTRIBUTE_NOT_HTML')).toBe(true);
+});

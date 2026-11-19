@@ -735,3 +735,13 @@ test('F66: readonly on a checkbox, radio or select does nothing (they still chan
   assert.equal(w('<input class="a" aria-label="q" readonly>').length, 0);
   assert.equal(w('<textarea class="a" aria-label="q" readonly></textarea>').length, 0);
 });
+
+test('F67: placeholder on a select, checkbox, date or range, and maxlength on a number input, do nothing', () => {
+  const w = html => codes(run('', html), 'W_HTML_ATTRIBUTE_NOT_HTML');
+  assert.ok(/placeholder/.test(w('<select class="a" aria-label="q" placeholder="Pick"><option>a</option></select>')[0]?.message));
+  assert.equal(w('<input class="a" type="date" aria-label="q" placeholder="d">').length, 1);
+  assert.ok(/max/.test(w('<input class="a" type="number" aria-label="q" maxlength="2">')[0]?.message));
+  assert.equal(w('<input class="a" aria-label="q" placeholder="x" maxlength="2">').length, 0);
+  assert.equal(w('<input class="a" type="number" aria-label="q" placeholder="0">').length, 0);
+  assert.ok(!JSON.stringify(run('', '<input class="a" aria-label="q" maxlength="2">').diagnostics).includes('maxlength'));
+});
