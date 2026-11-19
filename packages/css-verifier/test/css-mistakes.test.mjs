@@ -440,3 +440,16 @@ test('F42: background, color, border and padding on a checkbox or radio of appea
   assert.equal(w('.x{accent-color:red}').length, 0);
   assert.equal(codes(run('.x{background-color:red}', '<input class="x" type="text" aria-label="q">'), 'W_LAYOUT_DECLARATION_INERT').length, 0);
 });
+
+test('F43: min-height / max-height on a table cell do nothing; min-width / max-width neither in a fixed table', () => {
+  const t = '<table class="t"><tbody><tr><td class="c"></td><td class="d"></td></tr></tbody></table>';
+  const base = '.t{border-spacing:0}td{padding:0;height:20px}';
+  const w = css => codes(run(base + css, t), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.some(p => /^(?:min|max)-(?:block|inline)-size$/.test(p)));
+  const r = run(base + '.c{min-height:80px}', t);
+  const [hit] = w('.c{min-height:80px}');
+  assert.ok(hit && /table cell/.test(hit.message) && hit.properties.includes('min-block-size'));
+  assert.ok(!JSON.stringify(r).includes('min-block-size on a table cell has no defined effect'));
+  assert.equal(w('.c{max-height:10px}').length, 1);
+  assert.equal(w('.t{table-layout:fixed;width:300px}.c{max-width:60px}').length, 1);
+  assert.equal(w('.c{max-width:60px}').length, 0);
+});

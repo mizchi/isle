@@ -1233,6 +1233,10 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
     if (['flex', 'inline-flex', 'grid', 'inline-grid'].includes(values.display)) { values.$multicolInert = multicol.map(key => [key, values[key]]); for (const key of multicol) values[key] = 'auto'; }
     else if (!['none', 'contents'].includes(values.display)) throw new Error('Unsupported layout property: columns (multi-column layout is not modeled)');
   }
+  // F43: min-height / max-height on a table cell do nothing (measured in Chromium, Firefox and WebKit, in auto and fixed
+  // tables): the row's height rules. Dropped here (reported by the engine).
+  if (!box.pseudo && ['td', 'th'].includes(box.tag) && ['ua', 'table-cell'].includes(String(values.display))) for (const [key, initial] of [['min-block-size', 'auto'], ['max-block-size', 'none']])
+    if (sources[key] && !['auto', 'none', '0', '0px'].includes(String(values[key]))) { (values.$cellInert ??= []).push([key, values[key]]); values[key] = initial; }
   // overflow: auto or scroll on a table is used as visible (F31, measured in Chromium, Firefox and WebKit): the table
   // grows to its content and never scrolls. Mixed with hidden or clip on the other axis (not measured), it is left as is.
   if (!box.pseudo && (['table', 'inline-table'].includes(values.display) || (box.tag === 'table' && values.display === 'ua')) && ['overflow-x', 'overflow-y'].every(key => ['auto', 'scroll'].includes(String(values[key]))))

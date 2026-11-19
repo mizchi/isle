@@ -178,9 +178,13 @@ test('tables: a cell\'s margin and a row\'s padding do nothing; a row\'s height 
   }
 });
 
-test('tables: min/max sizes on a cell, and a table min-height, are Unknown (Chromium ignores the first, spreads the second over the rows)', () => {
+test('tables: a min/max width on a cell and a table min-height are Unknown; a cell min/max height is inert (F43)', () => {
   const table = css => analyzeHTML('<html lang="en"><body><table class="t"><tbody><tr><td class="c"></td><td class="c"></td></tr></tbody></table></body></html>', {name: 'P', css: `*{margin:0;padding:0}html,body{${g}}.t{table-layout:fixed;inline-size:200px;border-spacing:0}.c{inline-size:100px;block-size:20px}${css}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
-  for (const css of ['td{min-height:50px}', 'td{max-width:50px}', '.t{min-height:100px}']) {
+  // min-height / max-height on a cell do nothing in Chromium, Firefox and WebKit (F43): laid out without them, and warned.
+  const inert = table('td{min-height:50px}');
+  assert.equal(inert.status, 'verified');
+  assert.ok(inert.layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('min-block-size')));
+  for (const css of ['td{max-width:50px}', '.t{min-height:100px}']) {
     const r = table(css);
     assert.equal(r.status, 'unknown', css);
     assert.ok(r.diagnostics.some(d => d.code === 'U_LAYOUT_TABLE'), `${css}: ${JSON.stringify(r.diagnostics)}`);

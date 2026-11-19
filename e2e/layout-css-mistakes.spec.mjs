@@ -459,3 +459,14 @@ test('F42: background, color, border and padding on a checkbox or radio of appea
     expect(warned, `${type} ${d}`).toBe(inert);
   }
 });
+
+test('F43: min-height / max-height on a table cell, and min-width / max-width in a fixed table, do nothing', async ({page}) => {
+  for (const layout of ['auto', 'fixed']) for (const d of ['min-height:80px', 'max-height:5px', 'max-width:30px', 'min-width:250px']) {
+    const table = '<table class="t"><tbody><tr><td class="c">word word</td><td>x</td></tr><tr><td>a</td><td>b</td></tr></tbody></table>';
+    const css = `.t{table-layout:${layout};width:300px;border-spacing:0}td{padding:0}`;
+    const m = async extra => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}${css}${extra}</style></head><body>${table}</body></html>`); return page.evaluate(() => [...document.querySelectorAll('td')].map(t => JSON.stringify(t.getBoundingClientRect())).join()); };
+    const inert = await m('') === await m(`.c{${d}}`);
+    const warned = (analyzeHTML(`<html lang="en"><body>${table}</body></html>`, {name: 'P', css: `${css}.c{${d}}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && /table cell/.test(w.message));
+    expect(warned, `${layout} ${d}`).toBe(inert);
+  }
+});

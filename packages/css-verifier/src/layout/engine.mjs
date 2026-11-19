@@ -493,6 +493,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
     firstPseudoInert(box, style);
+    // F43: min-width / max-width on a cell of a fixed table (table-layout: fixed with a width) do nothing (measured in
+    // three browsers): the first row's widths size the columns. Reported; the layout stays Unknown there.
+    if (!box.pseudo && ['td', 'th'].includes(box.tag)) {
+      const table = [...(ancestors ?? [])].reverse().find(a => a.box?.tag === 'table')?.style;
+      if (table && String(table['table-layout']) === 'fixed' && String(table['inline-size'] ?? 'auto') !== 'auto') for (const key of ['min-inline-size', 'max-inline-size'])
+        if (style.$sources?.[key] && !['auto', 'none', '0', '0px'].includes(String(style[key])) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(key)))
+          layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: [key], css: [{ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector }],
+            message: `${box.label}: ${key === 'min-inline-size' ? 'min-width' : 'max-width'} has no effect on a table cell of a fixed table (table-layout: fixed sizes the columns from the first row's widths). Give the column a width (on the first row's cell or a col)` });
+    }
+    if (style.$cellInert && !box.pseudo && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(style.$cellInert[0][0])))
+      layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: style.$cellInert.map(([key]) => key), css: style.$cellInert.filter(([key]) => style.$sources?.[key]).map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
+        message: `${box.label}: ${style.$cellInert.map(([key, value]) => `${key === 'min-block-size' ? 'min-height' : 'max-height'}: ${value}`).join(', ')} ${style.$cellInert.length === 1 ? 'has' : 'have'} no effect on a table cell (the row's height decides it). Use height on the cell or the row, or put the bound on a div inside the cell` });
       // F42: a checkbox or radio of appearance auto is drawn by the platform: background, color, border and padding
       // change no pixel and not its size (measured in Chromium, Firefox and WebKit); accent-color colors it.
     if (!box.pseudo && box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType) && style.appearance === 'auto') {

@@ -235,6 +235,9 @@
   checkbox・radio は、background-color・color・border・padding で描画も大きさも変わらない(3 つのブラウザーで、画素も
   大きさも後ろの要素の位置も同じ)。accent-color か appearance: none を勧める。あわせて、ブラウザーの checkbox の配置
   (accessibility の検査)が padding・border のある書き方でも働くようにした。(box-shadow は WebKit だけ描かないので除いた。)
+- [x] **F43. 表のセルの最小・最大の大きさ**(`W_LAYOUT_DECLARATION_INERT`、高さは以前 Unknown): セルの min-height・max-height は
+  何もしない(行の高さで決まる)。table-layout: fixed(幅のある表)では min-width・max-width も何もしない。3 つのブラウザーで、
+  auto・fixed の両方の表で測った(auto の表の min-width・max-width は効くので報告しない)。高さの上下限は捨てて配置する。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 
