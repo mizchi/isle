@@ -333,6 +333,10 @@
   解析した高さがブラウザーと同じことを確かめた。
 - 健全さを直した: 表の行・行のまとまり・列の `visibility: collapse` を hidden(場所を取る)として配置していたが、3 つのブラウザーで
   行はなくなる(次の行が上がる)。flex の項目の collapse は Firefox だけ詰める。どちらも Unknown にした(ほかの箱では hidden)。
+- [x] **F71. `canvas` を読む・引き伸ばされる canvas**(`W_LAYOUT_IMAGE_DISTORTED`、以前は Unknown): CSS で幅と高さを決めた
+  canvas を配置する。canvas は width・height 属性(ない・不正なら 300×150)の bitmap を object-fit(初期値 fill)で箱に描くので、
+  箱の形が bitmap と違うと絵が伸びる(3 つのブラウザーで、contain と描画が違うのは形が違うときだけ)。測るとき、setContent は
+  ページの大域を残すので、script の const はブロックに入れた。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

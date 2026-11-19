@@ -807,3 +807,14 @@ test('visibility: collapse removes a table row: the analysis does not lay it out
     if (status === 'verified') expect(Number(r.sizes.find(s => s.box.includes('.n')).rect.blockStart.constant)).toBe(y);
   }
 });
+
+test('F71: a canvas box of another shape than its bitmap stretches the drawing', async ({page}) => {
+  for (const [attrs, css] of [['', 'width:300px;height:300px'], ['width="200" height="200"', 'width:300px;height:300px'], ['width="400" height="200"', 'width:300px;height:300px'], ['', 'width:300px;height:150px']]) {
+    // (The script is in a block: setContent keeps the page's global scope, where a second const would throw.)
+    const shot = async fit => { await page.setContent(`<!doctype html><html lang="en"><body style="margin:0"><canvas class="x" ${attrs} style="display:block;${css};${fit}"></canvas><script>{const c=document.querySelector('.x'),x=c.getContext('2d');x.fillStyle='red';x.fillRect(0,0,c.width/2,c.height);}</script></body></html>`); await page.waitForTimeout(150); return page.screenshot(); };
+    const stretched = !(await shot('')).equals(await shot('object-fit:contain'));
+    const r = analyzeHTML(`<html lang="en"><body><canvas class="x" ${attrs}></canvas></body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.x{display:block;${css}}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect(r.status, `${attrs} ${css}`).toBe('verified');
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_IMAGE_DISTORTED'), `${attrs} ${css}`).toBe(stretched);
+  }
+});

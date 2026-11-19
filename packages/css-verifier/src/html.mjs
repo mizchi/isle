@@ -64,6 +64,9 @@ export function htmlBoxTree(html) {
       if(node.tagName==='svg' && !attr.namespace && /^(?:width|height|viewbox|xmlns|version|fill|stroke|stroke-width|stroke-linecap|stroke-linejoin|stroke-miterlimit|stroke-dasharray|fill-rule|clip-rule|fill-opacity|stroke-opacity|opacity|preserveaspectratio|focusable)$/i.test(attr.name)) continue;
       if(node.tagName==='svg' && attr.namespace==='http://www.w3.org/2000/xmlns/') continue;
       if(!attr.namespace && ((['img','source'].includes(node.tagName) && /^(?:width|height|srcset|sizes|media|loading|decoding)$/.test(attr.name)) || (node.tagName==='video' && /^(?:width|height|preload)$/.test(attr.name)) || (node.tagName==='iframe' && /^(?:width|height)$/.test(attr.name)))) continue;
+      // A canvas's width / height set its bitmap (and an intrinsic size the layout uses only where CSS leaves it auto,
+      // which the engine does not admit): recorded in the box tree as canvasSize (F71).
+      if(!attr.namespace && node.tagName==='canvas' && /^(?:width|height)$/.test(attr.name)) continue;
       // Checklist F28: a presentational attribute on an element it does not map to (HTML rendering §15) does nothing:
       // width/height on a div, bgcolor on a span… Recorded for a warning instead of Unknown.
       if(!attr.namespace && presentationalInert(node.tagName,attr.name)) { (node.inertAttributes ??= []).push(attr.name); continue; }

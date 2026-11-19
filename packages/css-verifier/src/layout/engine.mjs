@@ -544,6 +544,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
     firstPseudoInert(box, style);
+    // F71: a canvas draws its bitmap (width × height attributes, 300×150 by default) into its box with object-fit (fill
+    // by default): a box of another shape stretches the drawing (measured in Chromium, Firefox and WebKit).
+    if (!box.pseudo && box.tag === 'canvas' && String(style['object-fit'] ?? 'fill') === 'fill' && !layoutWarnings.some(w => w.code === 'W_LAYOUT_IMAGE_DISTORTED' && w.path === box.path)) {
+      const bw = box.canvasSize?.width ?? 300, bh = box.canvasSize?.height ?? 150, px1 = v => /^\d+(?:\.\d+)?px$/.test(String(v)) ? Number(String(v).slice(0, -2)) : null;
+      const cw = px1(style['inline-size']), ch = px1(style['block-size']);
+      if (typeof bw === 'number' && typeof bh === 'number' && bw > 0 && bh > 0 && cw && ch && Math.abs(cw / ch - bw / bh) > 1e-6)
+        layoutWarnings.push({ code: 'W_LAYOUT_IMAGE_DISTORTED', severity: 'warning', box: box.label, path: box.path,
+          message: `${box.label}: the canvas bitmap is ${bw}×${bh}${box.canvasSize?.width === undefined || !box.canvasSize ? ' (the default)' : ''} but its box is ${cw}×${ch}px, so the drawing is stretched. Set the width and height attributes to the same shape as the CSS size (times devicePixelRatio for sharpness), or object-fit: contain` });
+    }
     inlineOverflow(box, style);
     decorationNone(box, style, ancestors);
     // F59: in the collapsing border model the table's border is not rounded by border-radius (measured in Chromium,
@@ -1244,7 +1253,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     // sizes its main axis from those alone (its intrinsic width is neither its base size nor its automatic minimum).
     const flexSized = (textField || rangeLike) && available.flexItem?.main === 'inline' && available.inline && /^\d+(?:\.\d+)?px$/.test(String(style['flex-basis']))
       && /^\d+(?:\.\d+)?px$|^0$/.test(String(style['min-inline-size']));
-    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'svg', 'video', 'audio', 'marquee'].includes(box.tag) && (style.display!=='block' || (style['inline-size']==='auto' && !stretchedField && !flexSized) || (block && style['block-size']==='auto' && !(['img', 'video', 'iframe', 'svg'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
+    if(!box.pseudo && ['img', 'input', 'select', 'textarea', 'iframe', 'svg', 'video', 'audio', 'marquee', 'canvas'].includes(box.tag) && (style.display!=='block' || (style['inline-size']==='auto' && !stretchedField && !flexSized) || (block && style['block-size']==='auto' && !(['img', 'video', 'iframe', 'svg'].includes(box.tag) && ratioOf(style))))) throw new Error(`Checked ${box.tag} elements require display:block and an explicit inline-size${block ? ' and block-size' : ''}; intrinsic sizes are not modeled`);
     // A translate moves painted and hit-tested coordinates, which the accessibility and integrity checks use; layout
     // proofs (transitions, no-shift, coordinate contracts) keep it Unknown.
     // A closed popover that author CSS displays keeps the UA [popover] { position: fixed; inset: 0; margin: auto }:

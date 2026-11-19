@@ -781,3 +781,13 @@ test('visibility: collapse on a table row removes it (and differs on flex items)
   assert.equal(page('.f{display:flex;flex-direction:column}.f>div{height:20px}.x{visibility:collapse}', '<div class="f"><div></div><div class="x"></div></div>').status, 'unknown');
   assert.equal(page('.x{visibility:collapse;height:20px}', '<div class="x"></div>').status, 'verified');
 });
+
+test('F71: a canvas sized by CSS is laid out; a CSS shape other than its bitmap stretches the drawing', () => {
+  const w = (attrs, css) => { const r = run(`.x{display:block;${css}}`, `<canvas class="x" ${attrs}></canvas>`); return [r.status, codes(r, 'W_LAYOUT_IMAGE_DISTORTED').length]; };
+  assert.deepEqual(w('', 'width:300px;height:150px'), ['verified', 0]);
+  assert.deepEqual(w('', 'width:300px;height:300px'), ['verified', 1]);
+  assert.deepEqual(w('width="400" height="200"', 'width:300px;height:300px'), ['verified', 1]);
+  assert.deepEqual(w('width="200" height="200"', 'width:300px;height:300px'), ['verified', 0]);
+  assert.deepEqual(w('width="400" height="200"', 'width:300px;height:300px;object-fit:contain'), ['verified', 0]);
+  assert.equal(run('.x{display:block}', '<canvas class="x"></canvas>').status, 'unknown');
+});
