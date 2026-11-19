@@ -385,3 +385,15 @@ test('F36: a :hover transform on an inline link does not move it', async ({page}
     expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.state === 'hover'), css).toBe(inert);
   }
 });
+
+test('F37: ::first-letter / ::first-line on an inline, flex or grid box never applies', async ({page}) => {
+  for (const [css, html, inert] of [['.x{display:flex}', '<div class="x">Hello there</div>', true], ['.x{display:grid}', '<div class="x">Hello there</div>', true], ['', '<p>t <span class="x">Hello</span></p>', true], ['', '<p class="x">Hello there</p>', false], ['.x{display:inline-block}', '<p>t <span class="x">Hello</span></p>', false]]) {
+    for (const pe of ['first-letter', 'first-line']) {
+      const rule = `.x::${pe}{color:rgb(255,0,0)}`;
+      const shot = async extra => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:10px;font:16px sans-serif}${css}${extra}</style></head><body>${html}</body></html>`); return (await page.screenshot()).toString('base64'); };
+      expect(await shot('') === await shot(rule), css + rule).toBe(inert);
+      const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: css + rule, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+      expect((r.layoutWarnings ?? []).some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.state === `::${pe}`), css + rule).toBe(inert);
+    }
+  }
+});

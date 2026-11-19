@@ -256,7 +256,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], userSelectNone = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], userSelectNone = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -447,6 +447,21 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // walk where the layout did not run, so they are reported whether or not the layout is decided).
   // F9: a ::before or ::after styled but with no content is never generated.
   const neverRendered = new Set(['template', 'script', 'style', 'link', 'meta']);
+  // F37: a box ::first-letter / ::first-line selects, and the boxes proven to have none (not a block container).
+  const firstInert = new Set();
+  function firstPseudoInert(box, style) {
+    if (box.pseudo) return;
+    for (const note of firstPseudo) for (const sel of note.selectors) {
+      const pe = `::${sel.pseudoElement}`;
+      if (!matches(sel, box, new Set([pe, ...(sel.state ? [sel.state] : [])]))) continue;
+      const replaced = ['img', 'video', 'canvas', 'iframe', 'svg', 'input', 'select', 'textarea'].includes(box.tag);
+      if (!replaced && !['inline', 'flex', 'inline-flex', 'grid', 'inline-grid', 'none', 'contents'].includes(style.display)) continue;
+      firstInert.add(`${box.path}|${sel.source}`);
+      if (['none', 'contents'].includes(style.display) || layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source)) continue;
+      layoutWarnings.push({ code: 'W_CSS_STATE_UNREACHABLE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, state: pe, css: [{ property: pe, file: note.file, line: note.line, selector: sel.source }],
+        message: `${sel.source} never applies to ${box.label}: it is ${replaced ? `a <${box.tag}>` : `display: ${style.display}`}, not a block container, so it has no ${pe}. ${style.display === 'inline' ? 'Make it display: inline-block or block' : 'Put the rule on the item that holds the text'}` });
+    }
+  }
   function inlineStateTransforms(box, style) {
         // F36: a :hover / :focus / :active transform on a non-replaced inline box (a link or span in text) does nothing,
         // as a static one does (CSS Transforms 1 §1; measured in Chromium, Firefox and WebKit): the hover lift never shows.
@@ -477,6 +492,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       message: `${pbox.label} is styled (${Object.keys(pstyle.$sources).filter(key => key !== 'content').slice(0, 3).join(', ')}) but has no content, so the browser never generates it. Add content: "" (or the text it should show)` });
   }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
+    firstPseudoInert(box, style);
       // F3: a declaration whose var() has no value and no fallback is invalid at computed-value time: the property is
       // unset (inherited or initial), silently — a warning where it is written.
     for (const entry of style.$invalid ?? []) if (!layoutWarnings.some(w => w.code === 'W_CSS_VAR_INVALID' && w.css?.[0]?.line === entry.line && w.css?.[0]?.file === entry.file && w.property === entry.property))
@@ -1742,6 +1758,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // measured: width, height, min/max-width, margin-top and aspect-ratio on a span change no pixel), nor do
       // transforms (CSS Transforms 1 §1: only block-level and atomic inline boxes are transformable; measured too).
       inlineStateTransforms(child, style);
+      firstPseudoInert(child, style);
       if (!['img', 'video', 'canvas', 'iframe', 'svg', 'input', 'button', 'select', 'textarea'].includes(child.tag) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === child.path)) {
         const initial = { 'inline-size': ['auto'], 'block-size': ['auto'], 'min-inline-size': ['auto', '0', '0px'], 'min-block-size': ['auto', '0', '0px'], 'max-inline-size': ['none'], 'max-block-size': ['none'], 'margin-top': ['0', '0px', 'auto'], 'margin-bottom': ['0', '0px', 'auto'], 'aspect-ratio': ['auto'], transform: ['none'], translate: ['none'], rotate: ['none'], scale: ['none'] };
         const written = Object.keys(initial).filter(key => style.$sources?.[key] && !initial[key].includes(String(style[key])));
@@ -3766,11 +3783,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         let c; try { [c] = styles(child, initial, chain, parentStyle, false, false); } catch { return; }
         if (!c || c.style.display === 'none') return;
         try { inlineStateTransforms(child, c.style); } catch { /* the rest still runs */ }
+        try { firstPseudoInert(child, c.style); } catch { /* the rest still runs */ }
         for (const grand of child.inline ?? child.children ?? []) walkInline(grand, [...chain, { box: child, style: c.style, names: [] }], c.style);
       };
       for (const child of box.inline ?? []) walkInline(child, [...ancestors, { box, style: state.style, names: [] }], state.style);
     };
     try { walkStyles(root, [], undefined); } catch { /* best effort */ }
+  }
+  // F37: a ::first-letter / ::first-line that may apply (a block container it selects, not shown to have none) restyles
+  // text in a way that is not modeled.
+  for (const note of firstPseudo) {
+    const open = boxes.find(box => !box.pseudo && note.selectors.some(sel => matches(sel, box, new Set([`::${sel.pseudoElement}`, ...(sel.state ? [sel.state] : [])])) && !firstInert.has(`${box.path}|${sel.source}`)));
+    if (open) unknown('U_LAYOUT_SELECTOR', `${note.selector} restyles the first letter or line of ${open.label}, which is not modeled`, note.line, open, note.file);
   }
   // Preserve compact one-dimensional diagnostics; 2-D regions retain correlated constraints.
   findings.sort((a, b) => a.signature.localeCompare(b.signature) || a.range.min - b.range.min);

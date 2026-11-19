@@ -215,6 +215,10 @@
   span(display: inline)には transform・translate・rotate・scale が効かないので、`a:hover { transform: translateY(-2px) }` の
   持ち上げは見えない(3 つのブラウザーで、hover しても位置が同じ)。同じ規則で display を変えるもの、inline-block・置き換え
   要素は報告しない。配置が Unknown でも、文の中の要素まで見て報告する。
+- [x] **F37. ブロック容器でない要素の `::first-letter`・`::first-line`**(`W_CSS_STATE_UNREACHABLE`、以前は Unknown): この 2 つは
+  ブロック容器(block・inline-block・list-item・表のセルなど)にしかない。display: inline・flex・grid の要素では何も変わらない
+  (3 つのブラウザーで、規則のあるときとないときの描画が同じ)。その要素だけなら報告して配置を続ける。ブロック容器に当たる
+  ときは、変わる最初の文字・行を解析しないので今までどおり Unknown。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

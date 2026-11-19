@@ -362,3 +362,16 @@ test('F36: a :hover / :focus transform on an inline box does nothing', () => {
   assert.equal(w('.x{display:inline-block}.x:hover{transform:translateY(-2px)}', '<p class="a">t <a class="x" href="/y">y</a></p>').length, 0);
   assert.equal(w('.x:hover{transform:translateY(-2px)}', '<p class="a">t <img class="x" alt="" src="a.png" width="10" height="10"></p>').length, 0);
 });
+
+test('F37: ::first-letter / ::first-line on a box that is not a block container (inline, flex, grid) never applies', () => {
+  const w = (css, html) => codes(run(css, html), 'W_CSS_STATE_UNREACHABLE').filter(x => /^::first-/.test(x.state));
+  const r = run('.x{display:flex}.x::first-letter{font-size:2em}', '<div class="x"><div class="a"></div></div>');
+  assert.equal(r.status, 'verified');
+  const [hit] = codes(r, 'W_CSS_STATE_UNREACHABLE');
+  assert.ok(hit && hit.state === '::first-letter' && /block container/.test(hit.message));
+  assert.equal(w('.x{display:grid}.x::first-line{color:red}', '<div class="x"><div class="a"></div></div>').length, 1);
+  assert.equal(w('.x::first-letter{color:red}', '<p class="a">t <span class="x">s</span></p>').length, 1);
+  assert.equal(run('.x::first-letter{font-size:2em}', '<p class="x a">text</p>').status, 'unknown');
+  assert.equal(w('.x::first-letter{font-size:2em}', '<p class="x a">text</p>').length, 0);
+  assert.equal(run('.y::first-letter{font-size:2em}', '<div class="x a"></div>').status, 'verified');
+});
