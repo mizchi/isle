@@ -563,3 +563,14 @@ test('F51: overflow on both html and body stops a sticky header from sticking', 
     expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_STICKY_SCROLLER'), css || 'none').toBe(!sticks);
   }
 });
+
+test('F52: an invalid grid-template-areas is dropped (the layout is as without it)', async ({page}) => {
+  const items = '<div class="x"><div class="a">a</div><div class="b">b</div></div>';
+  const base = '.x{display:grid;grid-template-columns:100px 100px}.a,.b{height:20px}.a{grid-area:a}.b{grid-area:b}';
+  const rects = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}${base}${css}</style></head><body>${items}</body></html>`); return page.evaluate(() => [...document.querySelectorAll('.a,.b')].map(e => JSON.stringify(e.getBoundingClientRect())).join()); };
+  for (const [v, invalid] of [['"a b" "b b"', true], ['"a b" "a"', true], ['"a b" "c a"', true], ['"b a"', false], ['"a ." ". b"', false]]) {
+    expect(await rects(`.x{grid-template-areas:${v}}`) === await rects(''), v).toBe(invalid);
+    const warned = (analyzeHTML(`<html lang="en"><body>${items}</body></html>`, {name: 'P', css: `${base}.x{grid-template-areas:${v}}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_CSS_GRID_AREAS_INVALID');
+    expect(warned, v).toBe(invalid);
+  }
+});

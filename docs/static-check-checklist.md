@@ -268,6 +268,9 @@
   visible のときだけ viewport に移る。`html, body { overflow-x: hidden }` のように両方に書くと、body が内容と同じ高さの
   スクロール容器になり、sticky の見出しは body に貼り付いてページと一緒に流れる(3 つのブラウザーで、500px 送ると見出しが
   上に消える。clip はスクロール容器を作らないので貼り付く)。配置が Unknown でも報告する。
+- [x] **F52. 無効な `grid-template-areas`**(`W_CSS_GRID_AREAS_INVALID`、以前は Unknown): 行ごとに区画の数が違う、または同じ名前が
+  1 つの長方形にならない値は、宣言ごと捨てられる(3 つのブラウザーで CSS.supports が false、配置が宣言のないときと同じ)。
+  解析も読むときに捨て、そこで名付けた grid-area は分からなくなる(自動で並ぶ)と報告する。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

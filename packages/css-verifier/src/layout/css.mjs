@@ -60,6 +60,21 @@ export function px(text) {
 
 const aliases = { width: 'inline-size', 'min-width': 'min-inline-size', 'max-width': 'max-inline-size', height: 'block-size', 'min-height': 'min-block-size', 'max-height': 'max-block-size' };
 const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset-block-start':'top', 'inset-block-end':'bottom' };
+// Why a grid-template-areas value is invalid, or null (a list of strings with equal cell counts, each name a rectangle).
+function invalidAreas(value) {
+  const strings = [...String(value).matchAll(/"([^"]*)"|'([^']*)'/g)].map(m => (m[1] ?? m[2]).trim());
+  if (!strings.length || String(value).replace(/"[^"]*"|'[^']*'/g, '').trim()) return null; // none, a keyword or a var(): not judged here
+  const grid = strings.map(row => row.match(/\.+|[^\s.]+/g) ?? []);
+  if (grid.some(row => !row.length)) return 'an empty row';
+  if (grid.some(row => row.length !== grid[0].length)) return `rows of different lengths (${grid.map(row => row.length).join(', ')} cells)`;
+  const cells = new Map();
+  grid.forEach((row, y) => row.forEach((name, x) => { if (!/^\./.test(name)) (cells.get(name) ?? cells.set(name, []).get(name)).push([x, y]); }));
+  for (const [name, at] of cells) {
+    const xs = at.map(([x]) => x), ys = at.map(([, y]) => y), w = Math.max(...xs) - Math.min(...xs) + 1, h = Math.max(...ys) - Math.min(...ys) + 1;
+    if (w * h !== at.length) return `the area ${name} is not a rectangle`;
+  }
+  return null;
+}
 const textInputTypes = new Set(['text', 'email', 'password', 'search', 'tel', 'url', 'number']);
 export const noPseudoHost = box => ['img', 'select', 'textarea', 'iframe', 'video', 'br', 'canvas'].includes(box.tag) || (box.tag === 'input' && textInputTypes.has(box.inputType));
 const geometry = new Set(['aspect-ratio', 'display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-template-areas', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
@@ -609,7 +624,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], placeholderIgnored = [], userSelectNone = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
+  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], placeholderIgnored = [], gridAreasInvalid = [], userSelectNone = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -808,6 +823,12 @@ export function parseLayoutCSS(sheets, diagnostic) {
       if (/:placeholder-shown(?![\w-])/i.test(node.selector) && (node.nodes ?? []).some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `${node.selector}: :placeholder-shown holds only until the user types, and this rule changes the layout`, node.source.start.line); continue; }
       // F48: :link matches only while the link is unvisited; a rule in it that changes the layout depends on the history.
       if (/:link(?![\w-])/i.test(node.selector) && (node.nodes ?? []).some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `${node.selector}: :link holds only while the link is unvisited, and this rule changes the layout (use :any-link for every link)`, node.source.start.line); continue; }
+      // F52: an invalid grid-template-areas (rows of different lengths, a name that does not make one rectangle) is
+      // dropped by the browser (measured: CSS.supports is false in Chromium, Firefox and WebKit): dropped here too.
+      for (const d of [...(node.nodes ?? [])]) if (d.type === 'decl' && d.prop.toLowerCase() === 'grid-template-areas') {
+        const why = invalidAreas(d.value);
+        if (why) { gridAreasInvalid.push({ selector: node.selector, value: d.value, why, file: filename, line: d.source.start.line }); d.remove(); }
+      }
       // F47: in ::placeholder, margin, height, display and position are ignored by Chromium, Firefox and WebKit (measured
       // against a ::placeholder rule without them: same pixels, same field size) — reported and dropped.
       if (selectors.length && selectors.every(sel => sel.pseudoElement === 'placeholder'))
@@ -905,7 +926,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
     return 'none';
   }).join(', ');
-  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, firstPseudo, selectionIgnored, placeholderIgnored, userSelectNone, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, firstPseudo, selectionIgnored, placeholderIgnored, gridAreasInvalid, userSelectNone, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author

@@ -552,3 +552,18 @@ test('F51: html and body both with overflow make body a scroll container, so a s
   assert.equal(w('html{overflow-x:hidden}').length, 0);
   assert.equal(w('html,body{overflow-x:clip}').length, 0);
 });
+
+test('F52: an invalid grid-template-areas (rows of different lengths, an area that is not a rectangle) is dropped', () => {
+  const items = '<div class="x"><div class="a"></div><div class="b"></div></div>';
+  const base = '.x{display:grid;grid-template-columns:100px 100px}.a,.b{height:20px}';
+  const w = css => codes(run(base + css, items), 'W_CSS_GRID_AREAS_INVALID');
+  const [hit] = w('.x{grid-template-areas:"a b" "b b"}');
+  assert.ok(hit && /rectangle/.test(hit.message));
+  assert.equal(w('.x{grid-template-areas:"a b" "a"}').length, 1);
+  assert.equal(w('.x{grid-template-areas:"a a" "b b"}').length, 0);
+  assert.equal(w('.x{grid-template-areas:"a ." ". b"}').length, 0);
+  // Dropped as the browser drops it: laid out as without it (no Unknown for the invalid value).
+  const r = run(base + '.x{grid-template-areas:"a b" "b b"}', items);
+  assert.ok(!JSON.stringify(r.diagnostics).includes('is not a rectangle'));
+  assert.equal(r.status, run(base, items).status);
+});
