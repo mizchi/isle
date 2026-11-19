@@ -665,3 +665,22 @@ test('F60: gap on a table, and padding on a collapsed table, do nothing', () => 
   assert.ok(codes(r, 'W_LAYOUT_DECLARATION_INERT').some(x => x.properties.includes('padding-top') && /collapse/.test(x.message)));
   assert.equal(w('.t{padding:10px}').length, 0);
 });
+
+test('F61: :read-write / :read-only follow readonly, disabled and the field type', () => {
+  const base = '.x{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}';
+  assert.equal(run(base + '.x:read-write{border-color:red}', '<input class="x" aria-label="q">').status, 'verified');
+  assert.equal(run(base + '.x:read-only{border-color:red}', '<input class="x" aria-label="q" readonly>').status, 'verified');
+  const w = (css, html) => codes(run(base + css, html), 'W_CSS_STATE_UNREACHABLE').filter(x => x.state === ':read-write');
+  const [hit] = w('.x:read-write{color:red}', '<div class="x"></div>');
+  assert.ok(hit && /editable/.test(hit.message));
+  assert.equal(w('.x:read-write{color:red}', '<input class="x" type="checkbox" aria-label="q">').length, 1);
+  assert.equal(w('.x:read-write{color:red}', '<input class="x" aria-label="q" readonly>').length, 0);
+  assert.equal(w('.x:read-write{color:red}', '<input class="x" aria-label="q">').length, 0);
+  assert.equal(run(base + '.x:read-write{color:red}', '<div class="x" contenteditable="true"></div>').status, 'unknown');
+});
+
+test('F61: a tag selector for another element is not reported', () => {
+  const r = run('span:read-write{color:red}', '<div class="a"></div>');
+  assert.equal(codes(r, 'W_CSS_STATE_UNREACHABLE').filter(x => x.state === ':read-write').length, 0);
+  assert.equal(codes(run('div:read-write{color:red}', '<div class="a"></div>'), 'W_CSS_STATE_UNREACHABLE').filter(x => x.state === ':read-write').length, 1);
+});

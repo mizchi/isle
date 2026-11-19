@@ -59,6 +59,9 @@ function compileCompound(source, depth = 0) {
     // :placeholder-shown: a text field or textarea with a placeholder attribute (an empty one too) and no value, in the
     // initial state (typing hides it: a :placeholder-shown rule that changes the layout is kept Unknown, parseLayoutCSS).
     // :required / :optional (measured in Chromium, Firefox and WebKit): see requiredMatches.
+    // :read-write / :read-only (measured in Chromium, Firefox and WebKit): see readWrite.
+    const rw = rest.match(/^:(read-write|read-only)(?![\w-])/i);
+    if (rw) { parts.push({ kind: 'read-write', value: rw[1].toLowerCase() === 'read-write' }); specificity[1]++; rest = rest.slice(rw[0].length); continue; }
     const req = rest.match(/^:(required|optional)(?![\w-])/i);
     if (req) { parts.push({ kind: 'required', value: req[1].toLowerCase() === 'required' }); specificity[1]++; rest = rest.slice(req[0].length); continue; }
     const shown = rest.match(/^:placeholder-shown(?![\w-])/i);
@@ -212,13 +215,31 @@ function requiredMatches(box, required) {
   if (optionalDivergent(box)) return divergentOptional;
   return requiredCapable(box) && box.nativeStates?.required !== true;
 }
+// :read-write holds for a textarea or a text-like input that is neither readonly nor disabled (a disabled fieldset's too);
+// every other element is :read-only. A contenteditable element, a dynamic disabled state and input types not measured
+// are 'unknown' (the engine reports Unknown where a :read-write / :read-only rule could select them).
+const editableTypes = new Set(['text', 'search', 'url', 'tel', 'email', 'password', 'number', 'date']);
+const unmeasuredTypes = new Set(['datetime-local', 'month', 'time', 'week', 'dynamic']);
+export function readWriteKnown(box) {
+  if (box.contentEditable !== undefined || box.attributes?.contenteditable !== undefined) return false;
+  if (box.tag === 'input' && unmeasuredTypes.has(box.inputType)) return false;
+  if ((box.tag === 'textarea' || box.tag === 'input') && (box.disabled === 'dynamic')) return false;
+  return true;
+}
+let editableWhatIf = false;
+export function asEditable(fn) { const before = editableWhatIf; editableWhatIf = true; try { return fn(); } finally { editableWhatIf = before; } }
+export function readWrite(box) {
+  if (editableWhatIf) return true;
+  const field = box.tag === 'textarea' || (box.tag === 'input' && editableTypes.has(box.inputType));
+  return field && box.nativeStates?.readonly !== true && box.nativeStates?.disabled !== true && box.disabled !== true;
+}
 export const isLink = box => (box.tag === 'a' && box.href !== undefined) || (box.tag === 'area' && (box.href !== undefined || box.attributes?.href !== undefined));
 /** The compound (tag, classes, id, :root, :is/:where) alone, ignoring states, pseudo-elements and combinators. */
 export function compoundMatches(selector, box) {
   if (box.anonymous) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
-    part.kind === 'root' ? box.documentRoot === true : part.kind === 'link' ? isLink(box) : part.kind === 'placeholder-shown' ? placeholderShown(box) : part.kind === 'required' ? requiredMatches(box, part.value) : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
+    part.kind === 'root' ? box.documentRoot === true : part.kind === 'link' ? isLink(box) : part.kind === 'placeholder-shown' ? placeholderShown(box) : part.kind === 'required' ? requiredMatches(box, part.value) : part.kind === 'read-write' ? readWrite(box) === part.value : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
     part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'structural' ? structuralMatches(part, box) : part.kind === 'has' ? hasMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
     part.choices.some(choice => matches(choice, box)));
 }

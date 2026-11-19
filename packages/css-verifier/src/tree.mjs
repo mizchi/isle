@@ -42,7 +42,7 @@ export function accessibilityFacts(tag, attributes) {
   // Native states that ARIA must not contradict (Chromium announces the native one).
   // disabled (for :disabled / :enabled): a form control's own attribute ('dynamic' where the adapter cannot tell).
   const disabledAttr = ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(tag) && has('disabled') ? (value('disabled') === undefined ? 'dynamic' : true) : undefined;
-  const nativeStates = Object.fromEntries([['required', ['input', 'select', 'textarea']], ['disabled', ['button', 'input', 'select', 'textarea', 'fieldset']], ['checked', ['input']]].filter(([name, tags]) => tags.includes(tag) && has(name)).map(([name]) => [name, true]));
+  const nativeStates = Object.fromEntries([['required', ['input', 'select', 'textarea']], ['disabled', ['button', 'input', 'select', 'textarea', 'fieldset']], ['checked', ['input']], ['readonly', ['input', 'textarea']]].filter(([name, tags]) => tags.includes(tag) && has(name)).map(([name]) => [name, true]));
   // A button submits unless its type is button or reset (the default type is submit).
   const buttonType = tag === 'button' ? (has('type') ? (value('type') === undefined ? 'dynamic' : value('type').trim().toLowerCase()) : 'submit') : undefined;
   const target = ['a', 'form'].includes(tag) && has('target') ? (value('target') === undefined ? 'dynamic' : value('target').trim().toLowerCase()) : undefined;

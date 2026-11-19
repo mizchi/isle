@@ -5,7 +5,7 @@ import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea
 import { resolveUAProfile } from './ua-profile.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
-import { compileSelector, PARENT, dynamicAttributeTests, ignoringSiblings, placeholderField, requiredCapable, optionalDivergent, optionalDivergence, asFormField } from './selectors.mjs';
+import { compileSelector, PARENT, dynamicAttributeTests, ignoringSiblings, placeholderField, requiredCapable, optionalDivergent, optionalDivergence, asFormField, readWriteKnown, asEditable } from './selectors.mjs';
 import { selectorUsage } from './selector-usage.mjs';
 import { selectorScope } from './selector-scope.mjs';
 import { viewportFont, zoomShortfall } from './zoom-font.mjs';
@@ -686,6 +686,22 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const keys = style.$multicolInert.map(([key]) => key), src = style.$sources?.[keys[0]];
           layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: keys, ...(src ? { css: [{ property: keys[0], file: src.file, line: src.line, selector: src.selector }] } : {}),
             message: `${box.label}: ${style.$multicolInert.map(([key, value]) => `${key}: ${value}`).join(', ')} has no effect (it is display: ${style.display}; multi-column layout applies only to a block container). Use grid-template-columns (or flex-wrap with a flex-basis) for columns, or display: block for flowing columns` });
+        }
+        // F61: :read-write on what can never be edited (not a text field or textarea, or a checkbox) never applies; where
+        // editability is not known (contenteditable, a dynamic disabled, an unmeasured input type) it is Unknown.
+        if (!box.pseudo) for (const rule of rules) for (const sel of rule.selectors ?? []) {
+          const v = JSON.stringify([sel.parts, sel.chain ?? []]).match(/"kind":"read-write","value":(true|false)/)?.[1];
+          if (!v) continue;
+          const st = sel.pseudoElement ? new Set([...(state ?? []), `::${sel.pseudoElement}`]) : state;
+          // Would the rule select it were it editable (or, for :read-only, were it not)?
+          const ifEditable = asEditable(() => matches(sel, box, st)), ifNot = matches(sel, { ...box, tag: box.tag === 'textarea' || box.tag === 'input' ? 'span' : box.tag }, st);
+          if (!readWriteKnown(box)) { if (ifEditable || ifNot) unknown('U_LAYOUT_SELECTOR', `${sel.source}: whether ${box.label} is editable is not known`, rule.line, box, rule.file); continue; }
+          // Reported only where it can never be editable (a readonly or disabled text field may become editable).
+          const textField = box.tag === 'textarea' || (box.tag === 'input' && ['text', 'search', 'url', 'tel', 'email', 'password', 'number', 'date'].includes(box.inputType));
+          if (v !== 'true' || textField || matches(sel, box, st) || !ifEditable) continue;
+          if (layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source)) continue;
+          layoutWarnings.push({ code: 'W_CSS_STATE_UNREACHABLE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, state: ':read-write', css: [{ property: ':read-write', file: rule.file, line: rule.line, selector: sel.source }],
+            message: `${sel.source} never applies to ${box.label}: ${box.tag === 'input' ? `a type=${box.inputType} input` : `a <${box.tag}>`} is not editable text, so it is always :read-only. Select it with a class, or use a text field` });
         }
         // F50: :required / :optional on what is not a form field (a label, a div) or on an input type that ignores required
         // never apply; :optional where browsers differ (Firefox) is Unknown.

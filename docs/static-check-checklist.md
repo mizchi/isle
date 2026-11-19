@@ -299,6 +299,10 @@
 - [x] **F60. 表の `gap`、線を重ねた表の `padding`**(`W_LAYOUT_DECLARATION_INERT`、padding は以前 Unknown): 表のセルの間は gap では
   空かず(border-spacing を使う)、border-collapse: collapse の表には padding がない(3 つのブラウザーで配置が同じ。separate の表の
   padding は効く)。collapse の表の padding は 0 として配置する。(表の aspect-ratio は WebKit だけ効くので除いた。)
+- [x] **F61. `:read-write`・`:read-only` を読む・書けない要素の `:read-write`**(`W_CSS_STATE_UNREACHABLE`、以前は Unknown):
+  :read-write は readonly でも disabled(fieldset から受けるものも)でもない textarea と文字の input(text・search・url・tel・
+  email・password・number・date)に当たり、ほかはすべて :read-only(3 つのブラウザーで測った)。div・button・checkbox・range に
+  :read-write を書くと当たらないので報告する。contenteditable、動的な disabled、測っていない型(time など)は Unknown。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

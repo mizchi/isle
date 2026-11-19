@@ -680,3 +680,16 @@ test('F60: gap on a table and padding on a collapsed table do nothing', async ({
     expect(warned, `${collapse} ${d}`).toBe(inert);
   }
 });
+
+test('F61: :read-write never matches what cannot be edited', async ({page}) => {
+  const base = '.x{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}';
+  for (const [html, warn] of [['<div class="x"></div>', true], ['<input class="x" type="checkbox" aria-label="q">', true], ['<input class="x" type="range" aria-label="q">', true], ['<button class="x" type="button">b</button>', true],
+    ['<input class="x" aria-label="q">', false], ['<input class="x" aria-label="q" readonly>', false], ['<textarea class="x" aria-label="q"></textarea>', false], ['<input class="x" type="number" aria-label="q">', false]]) {
+    await page.setContent(`<!doctype html><html lang="en"><body>${html}</body></html>`);
+    const [rw, ro] = await page.evaluate(() => [':read-write', ':read-only'].map(s => document.querySelector('.x').matches(s)));
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${base}.x:read-write{border-color:red}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.state === ':read-write'), html).toBe(warn);
+    if (warn) expect([rw, ro], html).toEqual([false, true]);
+    expect(r.diagnostics.some(d => /Unsupported selector/.test(d.message)), html).toBe(false);
+  }
+});
