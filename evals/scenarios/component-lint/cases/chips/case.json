@@ -1,1 +1,0 @@
-{"framework": "svelte", "intent": "Tag chips that wrap onto lines.", "planted": "inline-block chips in a block container: inline layout is outside the model; the eval checks the linter says so instead of passing it", "expect": []}

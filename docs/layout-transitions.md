@@ -1,6 +1,6 @@
 # 状態間のレイアウト契約: noshift/1
 
-`@mizchi/css-verifier/transitions` に、二つの状態で指定boxのborder矩形が
+`@mizchi/veriss/transitions` に、二つの状態で指定boxのborder矩形が
 変わらないことを検査するAPIを実装しています。ブラウザーを描画せず、CSSから
 独立に抽出した前後の幾何モデルをZ3で比較します。Isle固有の構文や状態機械には
 依存せず、Isleが作った解析結果も入力できます。IsleではDOM側の`@noshift`を基本にし、
@@ -161,12 +161,12 @@ Workerでは`layout/noshift`の`createNoShiftPlan` / `verifyNoShiftPlan`を使�
 ## API
 
 以下は独立パッケージの例です。パッケージは現在private・レジストリ未公開です。
-インストールは[ローカルアーカイブの手順](../packages/css-verifier/README.md)を参照してください。
+インストールは[ローカルアーカイブの手順](https://github.com/mizchi/veriss/blob/HEAD/packages/veriss/README.md)を参照してください。
 
 ```js
-import {analyzeHTML} from '@mizchi/css-verifier/html';
-import {createNoShiftContract} from '@mizchi/css-verifier/transitions';
-import {verifyNoShift} from '@mizchi/css-verifier/transitions/node';
+import {analyzeHTML} from '@mizchi/veriss/html';
+import {createNoShiftContract} from '@mizchi/veriss/transitions';
+import {verifyNoShift} from '@mizchi/veriss/transitions/node';
 
 const html = '<main class="page"><div class="content"></div><div class="action"></div></main>';
 const base = `
@@ -273,7 +273,7 @@ root原点・viewport・host割当・スクロール位置が前後で同じこ�
 ## transform とレイアウトの矩形
 
 `transform` は描画される箱だけを動かし、レイアウトの箱は動かしません。Chromium の Layout Instability API も
-transform による移動を layout shift に数えません(測定は [cls-evaluation.md](cls-evaluation.md))。そこで
+transform による移動を layout shift に数えません(測定は [cls-evaluation.md](https://github.com/mizchi/veriss/blob/HEAD/docs/cls-evaluation.md))。そこで
 noshift は、transform を除いたレイアウトの矩形を比べます。
 
 - endpoint のどこかに transform があると、解析は transform を外して配置し直し、各 size 行に `layoutRect`

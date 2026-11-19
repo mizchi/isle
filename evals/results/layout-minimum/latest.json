@@ -44,6 +44,109 @@
             "viewportExact": "130",
             "available": 32.5,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -70,6 +173,109 @@
             "viewportExact": "130",
             "available": 32.5,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -96,6 +302,109 @@
             "viewportExact": "130",
             "available": 32.5,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -122,6 +431,109 @@
             "viewportExact": "130",
             "available": 32.5,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         }
       ]
@@ -189,6 +601,129 @@
             "viewportExact": "319/2",
             "available": 39.875,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  },
+                  "dormant": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".row",
+                        "specified": "minmax(0,1fr) minmax(0,1fr)",
+                        "conditions": [
+                          {
+                            "kind": "media",
+                            "params": "(width < 159px)",
+                            "css": {
+                              "file": "<css>",
+                              "line": 1
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -215,6 +750,129 @@
             "viewportExact": "319/2",
             "available": 39.875,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  },
+                  "dormant": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".row",
+                        "specified": "minmax(0,1fr) minmax(0,1fr)",
+                        "conditions": [
+                          {
+                            "kind": "media",
+                            "params": "(width < 159px)",
+                            "css": {
+                              "file": "<css>",
+                              "line": 1
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -241,6 +899,129 @@
             "viewportExact": "319/2",
             "available": 39.875,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  },
+                  "dormant": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".row",
+                        "specified": "minmax(0,1fr) minmax(0,1fr)",
+                        "conditions": [
+                          {
+                            "kind": "media",
+                            "params": "(width < 159px)",
+                            "css": {
+                              "file": "<css>",
+                              "line": 1
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -267,6 +1048,129 @@
             "viewportExact": "319/2",
             "available": 39.875,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  },
+                  "dormant": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".row",
+                        "specified": "minmax(0,1fr) minmax(0,1fr)",
+                        "conditions": [
+                          {
+                            "kind": "media",
+                            "params": "(width < 159px)",
+                            "css": {
+                              "file": "<css>",
+                              "line": 1
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         }
       ]
@@ -314,6 +1218,171 @@
             "viewportExact": "156",
             "available": 26,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "8px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "8px"
+                  }
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "padding-left",
+                  "value": "12px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "12px"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "border-left",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "padding-right",
+                  "value": "12px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "12px"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "border-right",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -340,6 +1409,171 @@
             "viewportExact": "156",
             "available": 26,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "8px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "8px"
+                  }
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "padding-left",
+                  "value": "12px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "12px"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "border-left",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "padding-right",
+                  "value": "12px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "12px"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "border-right",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -366,6 +1600,171 @@
             "viewportExact": "156",
             "available": 26,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "8px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "8px"
+                  }
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "padding-left",
+                  "value": "12px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "12px"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "border-left",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "padding-right",
+                  "value": "12px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "12px"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "border-right",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -392,6 +1791,171 @@
             "viewportExact": "156",
             "available": 26,
             "required": 40
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "8px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "8px"
+                  }
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "padding-left",
+                  "value": "12px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "12px"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "border-left",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "padding-right",
+                  "value": "12px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "12px"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "border-right",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                }
+              ]
+            }
           }
         }
       ]
@@ -439,6 +2003,175 @@
             "viewportExact": "142",
             "available": 35.5,
             "required": 46
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "content-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "content-box"
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": "*",
+                        "specified": "border-box"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "padding-left",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "2px"
+                  }
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "border-left",
+                  "value": "1px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "padding-right",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "2px"
+                  }
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "border-right",
+                  "value": "1px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "solid"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -465,6 +2198,175 @@
             "viewportExact": "142",
             "available": 35.5,
             "required": 46
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "content-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "content-box"
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": "*",
+                        "specified": "border-box"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "padding-left",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "2px"
+                  }
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "border-left",
+                  "value": "1px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "padding-right",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "2px"
+                  }
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "border-right",
+                  "value": "1px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "solid"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -491,6 +2393,175 @@
             "viewportExact": "142",
             "available": 35.5,
             "required": 46
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "content-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "content-box"
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": "*",
+                        "specified": "border-box"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "padding-left",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "2px"
+                  }
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "border-left",
+                  "value": "1px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "padding-right",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "2px"
+                  }
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "border-right",
+                  "value": "1px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "solid"
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -517,6 +2588,175 @@
             "viewportExact": "142",
             "available": 35.5,
             "required": 46
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "content-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "content-box"
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": "*",
+                        "specified": "border-box"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "40px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "40px"
+                  }
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "padding-left",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "2px"
+                  }
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "border-left",
+                  "value": "1px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "solid"
+                  }
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "padding-right",
+                  "value": "2px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "2px"
+                  }
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "border-right",
+                  "value": "1px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "solid"
+                  }
+                }
+              ]
+            }
           }
         }
       ]
@@ -597,11 +2837,6 @@
             ],
             "constraints": [
               {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
-              },
-              {
                 "coefficient": "0",
                 "constant": "-400",
                 "heightCoefficient": "1",
@@ -626,6 +2861,148 @@
             "viewportHeightExact": "450",
             "available": 77.5,
             "required": 80
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr)"
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".row",
+                        "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/0",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "80px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "80px",
+                    "conditions": [
+                      {
+                        "kind": "media",
+                        "params": "(height >= 400px)",
+                        "css": {
+                          "file": "<css>",
+                          "line": 1
+                        }
+                      },
+                      {
+                        "kind": "container",
+                        "name": "Row",
+                        "params": "Row (width >= 150px)",
+                        "css": {
+                          "file": "<css>",
+                          "line": 1
+                        }
+                      }
+                    ]
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".cell",
+                        "specified": "40px"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
           }
         },
         {
@@ -676,11 +3053,6 @@
             ],
             "constraints": [
               {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
-              },
-              {
                 "coefficient": "0",
                 "constant": "-400",
                 "heightCoefficient": "1",
@@ -705,6 +3077,148 @@
             "viewportHeightExact": "450",
             "available": 77.5,
             "required": 80
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr)"
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".row",
+                        "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/1",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "80px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "80px",
+                    "conditions": [
+                      {
+                        "kind": "media",
+                        "params": "(height >= 400px)",
+                        "css": {
+                          "file": "<css>",
+                          "line": 1
+                        }
+                      },
+                      {
+                        "kind": "container",
+                        "name": "Row",
+                        "params": "Row (width >= 150px)",
+                        "css": {
+                          "file": "<css>",
+                          "line": 1
+                        }
+                      }
+                    ]
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".cell",
+                        "specified": "40px"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
           }
         },
         {
@@ -755,11 +3269,6 @@
             ],
             "constraints": [
               {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
-              },
-              {
                 "coefficient": "0",
                 "constant": "-400",
                 "heightCoefficient": "1",
@@ -784,6 +3293,148 @@
             "viewportHeightExact": "450",
             "available": 77.5,
             "required": 80
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr)"
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".row",
+                        "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/2",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "80px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "80px",
+                    "conditions": [
+                      {
+                        "kind": "media",
+                        "params": "(height >= 400px)",
+                        "css": {
+                          "file": "<css>",
+                          "line": 1
+                        }
+                      },
+                      {
+                        "kind": "container",
+                        "name": "Row",
+                        "params": "Row (width >= 150px)",
+                        "css": {
+                          "file": "<css>",
+                          "line": 1
+                        }
+                      }
+                    ]
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".cell",
+                        "specified": "40px"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
           }
         },
         {
@@ -834,11 +3485,6 @@
             ],
             "constraints": [
               {
-                "coefficient": "1",
-                "constant": "0",
-                "strict": false
-              },
-              {
                 "coefficient": "0",
                 "constant": "-400",
                 "heightCoefficient": "1",
@@ -863,6 +3509,148 @@
             "viewportHeightExact": "450",
             "available": 77.5,
             "required": 80
+          },
+          "explanation": {
+            "version": 1,
+            "available": {
+              "facts": [
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "grid-template-columns",
+                  "value": "minmax(0,1fr) minmax(0,1fr)",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".row",
+                    "specified": "minmax(0,1fr) minmax(0,1fr)"
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".row",
+                        "specified": "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "column-gap",
+                  "value": "normal",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "grid-column",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four",
+                  "box": ".row",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "kind": "viewport",
+                  "axis": "inline"
+                }
+              ]
+            },
+            "required": {
+              "facts": [
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "box-sizing",
+                  "value": "border-box",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": "*",
+                    "specified": "border-box"
+                  }
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "inline-size",
+                  "value": "auto",
+                  "origin": "default"
+                },
+                {
+                  "path": "Four/3",
+                  "box": ".cell",
+                  "owner": "Four",
+                  "property": "min-inline-size",
+                  "value": "80px",
+                  "origin": "author",
+                  "css": {
+                    "file": "<css>",
+                    "line": 1,
+                    "selector": ".cell",
+                    "specified": "80px",
+                    "conditions": [
+                      {
+                        "kind": "media",
+                        "params": "(height >= 400px)",
+                        "css": {
+                          "file": "<css>",
+                          "line": 1
+                        }
+                      },
+                      {
+                        "kind": "container",
+                        "name": "Row",
+                        "params": "Row (width >= 150px)",
+                        "css": {
+                          "file": "<css>",
+                          "line": 1
+                        }
+                      }
+                    ]
+                  },
+                  "overridden": [
+                    {
+                      "css": {
+                        "file": "<css>",
+                        "line": 1,
+                        "selector": ".cell",
+                        "specified": "40px"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
           }
         }
       ]

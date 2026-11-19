@@ -1,1 +1,0 @@
-{"framework": "linaria", "intent": "A notice card that is also used in right-to-left languages.", "planted": "the icon offset uses physical margin-left and padding-left; in rtl the text start sits under the absolutely positioned icon", "expect": ["W_LAYOUT_PHYSICAL_DIRECTION"]}

@@ -30,7 +30,7 @@
   "assumptions": [
     "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
     "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
-    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+    "Only horizontal-tb/ltr in-flow and explicitly sized local absolute geometry is checked; ink overflow and browser pixel rounding are outside the contract."
   ],
   "styleSources": [
     {
@@ -170,19 +170,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       }
     },
     {
@@ -225,19 +213,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       }
     }
   ],
@@ -334,13 +310,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -393,19 +363,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "1",
@@ -457,19 +415,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -522,19 +468,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "1",
@@ -586,24 +520,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-64",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -656,30 +573,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-64",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-64",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "1",
@@ -731,30 +625,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-64",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-64",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "1",
@@ -806,30 +677,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-64",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-64",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -883,30 +731,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-64",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-64",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -959,30 +784,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-64",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-64",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "1",
@@ -1034,30 +836,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-64",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-64",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -1076,6 +855,26 @@
     {
       "box": ".copy",
       "path": "ResetPanel/0",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "-32"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "-32",
+          "heightCoefficient": "1"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "reset.css",
@@ -1084,11 +883,143 @@
         "layer": "reset",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
       "inlineSize": {
         "coefficient": "1",
         "constant": "-32"
       },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-64"
+      },
       "blockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "-64",
+        "heightCoefficient": "1"
+      },
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": []
+      }
+    },
+    {
+      "box": ".panel",
+      "path": "ResetPanel",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "0"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "0",
+          "heightCoefficient": "1"
+        }
+      },
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "reset.css",
+        "line": 4,
+        "selector": "*",
+        "layer": "reset",
+        "specified": "inherit"
+      },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "contentBlockSize": {
         "coefficient": "0",
         "constant": "-32",
         "heightCoefficient": "1"
@@ -1128,52 +1059,69 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-64",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-64",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       }
+    }
+  ],
+  "queries": [],
+  "subgrids": [],
+  "elements": [
+    {
+      "path": "ResetPanel",
+      "tag": "main",
+      "classes": [
+        "panel"
+      ],
+      "owner": "ResetPanel"
     },
     {
-      "box": ".panel",
-      "path": "ResetPanel",
-      "boxSizing": "border-box",
-      "boxSizingSource": {
-        "file": "reset.css",
-        "line": 4,
-        "selector": "*",
-        "layer": "reset",
-        "specified": "inherit"
-      },
-      "inlineSize": {
-        "coefficient": "1",
-        "constant": "0"
-      },
-      "blockSize": {
-        "coefficient": "0",
-        "constant": "0",
-        "heightCoefficient": "1"
-      },
+      "path": "ResetPanel/0",
+      "tag": "p",
+      "classes": [
+        "copy"
+      ],
+      "owner": "ResetPanel"
+    }
+  ],
+  "layoutWarnings": [
+    {
+      "code": "W_CSS_PSEUDO_NO_CONTENT",
+      "severity": "warning",
+      "box": ".copy::before",
+      "path": "ResetPanel/0/-1",
+      "css": [
+        {
+          "property": "content",
+          "file": "reset.css",
+          "line": 4,
+          "selector": "*::before"
+        }
+      ],
+      "message": ".copy::before is styled (box-sizing) but has no content, so the browser never generates it. Add content: \"\" (or the text it should show)"
+    },
+    {
+      "code": "W_CSS_PSEUDO_NO_CONTENT",
+      "severity": "warning",
+      "box": ".copy::after",
+      "path": "ResetPanel/0/0",
+      "css": [
+        {
+          "property": "content",
+          "file": "reset.css",
+          "line": 4,
+          "selector": "*::after"
+        }
+      ],
+      "message": ".copy::after is styled (box-sizing) but has no content, so the browser never generates it. Add content: \"\" (or the text it should show)"
+    },
+    {
+      "code": "W_LAYOUT_LINE_HEIGHT_FIXED",
+      "severity": "warning",
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "lineHeight": "24px",
+      "fontSize": "medium",
+      "message": ".copy has line-height: 24px but font-size: medium, which follows the user's default font size: with a larger default the text grows and the lines do not, so wrapped lines overlap. Use a unitless line-height (e.g. 1.5)",
       "range": {
         "min": 240,
         "max": 1000,
@@ -1209,33 +1157,8 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-64",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-64",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       }
     }
-  ],
-  "queries": [],
-  "subgrids": []
+  ]
 }

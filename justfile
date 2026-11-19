@@ -3,45 +3,21 @@ set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 default:
     @just --list
 
-# The Svelte component adapter (generality check of the core outside Isle): unit tests against Svelte's own
-# compiler and SSR. The Chromium comparison is e2e/layout-svelte.spec.mjs.
-svelte-adapter-check:
-    node --test packages/adapter-core/test/*.test.mjs packages/svelte-adapter/test/*.test.mjs packages/vue-adapter/test/*.test.mjs packages/react-adapter/test/*.test.mjs
-
-# Independent static CSS core, isolated package consumer and Isle adapter parity.
+# The CSS verifier is mizchi/veriss (@mizchi/veriss, a git dependency): its own tests, text metrics and oracle live
+# there. Here: the Isle adapter layer's parity with the core (lib/layout) and the CLI text-metric examples.
 css-verifier-check: check-types
-    node --test tests/css-verifier.test.mjs tests/css-verifier-package.test.mjs tests/css-transitions.test.mjs
-    node packages/css-verifier/examples/responsive.mjs
-    node --test packages/css-verifier/test/explanations.test.mjs tests/layout-explanations.test.mjs
-    node evals/scenarios/layout-explanations/check.mjs
+    node --test tests/css-verifier.test.mjs tests/css-transitions.test.mjs tests/layout-explanations.test.mjs
 
-# Build-time text metrics backed by mizchi/font (MoonBit -> JS). Never shipped to app runtime.
-css-text-build:
-    cd packages/css-verifier/text-metrics && moon build --target js --release
-
-css-text-check: css-text-build
-    node --test tests/css-text-metrics.test.mjs packages/css-verifier/test/text-font.test.mjs
+css-text-check:
+    node --test tests/text-metrics-cli.test.mjs
     pnpm exec playwright test --config playwright.layout.config.mjs e2e/layout-text-fonts.spec.mjs
-
-# Development-only differential oracle backed by mizchi/css (MoonBit -> JS).
-css-oracle-build:
-    cd packages/css-verifier/oracle && moon build --target js --release
-
-css-oracle-check: css-oracle-build
-    node --test packages/css-verifier/oracle/differential.test.mjs
-    node evals/scenarios/css-cascade-oracle/check.mjs
 
 # Static endpoint relations; no browser is needed to decide the proof.
 noshift-check: build-compiler check-types
     node --test tests/css-transitions.test.mjs tests/layout-noshift*.test.mjs
-    node evals/scenarios/layout-transitions/check.mjs
     node evals/scenarios/layout-transitions/declared.mjs
     node evals/scenarios/layout-transitions/dom.mjs
     node evals/scenarios/layout-transitions/keys.mjs
-
-# Supplementary browser oracle for analyzer semantics, separate from proof.
-noshift-oracle:
-    node evals/scenarios/layout-transitions/check.mjs --browser-oracle
 
 # Local interactive map: independent async channels, owned Canvas and lazy details.
 async-map-build: build-compiler
@@ -109,7 +85,7 @@ verify:
     moon prove models/permit
     node models/check-negative.mjs
 
-test: build-compiler css-text-build
+test: build-compiler
     moon test --target js --deny-warn
     pnpm test
 
@@ -505,10 +481,3 @@ lexical-events-check: build-compiler
 
 lexical-events-quality: build-compiler
     node tools/check-lexical-events.mjs
-
-# Component lint eval: planted breakages linted and laid out in Chromium (evals/scenarios/component-lint).
-component-lint-eval:
-    node tools/eval-component-lint.mjs
-    node tools/eval-component-lint.mjs --attempt run-1
-    node tools/eval-component-lint.mjs --attempt run-2
-    node tools/eval-component-lint.mjs --attempt run-3

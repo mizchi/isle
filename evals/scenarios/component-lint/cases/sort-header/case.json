@@ -1,1 +1,0 @@
-{"framework": "linaria", "intent": "Data table with sortable column headers (buttons inside th).", "planted": "the sort buttons have only an icon and no accessible name", "expect": ["E_A11Y_NAME"]}

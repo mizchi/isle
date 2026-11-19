@@ -1,1 +1,0 @@
-{"framework": "linaria", "intent": "Two KPI cards side by side with large numbers.", "planted": "the numbers are 32px and nowrap in half-width cards: '$1,284,900' spills out of its card on a phone", "expect": ["E_LAYOUT_CONTENT"]}

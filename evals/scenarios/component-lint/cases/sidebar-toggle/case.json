@@ -1,1 +1,0 @@
-{"framework": "stylex", "intent": "A layout whose sidebar collapses to a narrow rail.", "planted": "the collapsed rail is 56px but its nav labels stay nowrap at full width: they spill over the main content", "expect": ["E_LAYOUT_CONTENT"]}

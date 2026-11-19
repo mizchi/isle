@@ -1,7 +1,6 @@
-import '../packages/css-verifier/test/core.test.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {analyzeLayout} from '../packages/css-verifier/src/index.mjs';
+import {analyzeLayout} from '@mizchi/veriss/src/index.mjs';
 import {compile, requireIR} from '../lib/compiler.mjs';
 import {analyzeLayout as analyzeIsle} from '../lib/layout.mjs';
 

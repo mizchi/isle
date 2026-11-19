@@ -1,1 +1,1 @@
-export * from '../packages/css-verifier/src/transitions-node.mjs';
+export * from '@mizchi/veriss/src/transitions-node.mjs';

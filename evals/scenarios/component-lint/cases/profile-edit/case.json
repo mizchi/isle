@@ -1,1 +1,0 @@
-{"framework": "linaria", "intent": "Profile edit: an avatar beside name and bio fields.", "planted": "a fixed 200px label column beside a 240px field column: wider than phones", "expect": ["E_LAYOUT_TRACKS"]}

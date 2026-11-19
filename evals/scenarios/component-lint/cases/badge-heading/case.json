@@ -1,1 +1,0 @@
-{"framework": "stylex", "intent": "Section header with a NEW badge in the corner.", "planted": "the badge is absolutely positioned at the top left and sits on the start of the heading text", "expect": ["E_A11Y_TEXT_START_OBSCURED"]}

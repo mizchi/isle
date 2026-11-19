@@ -1,1 +1,0 @@
-{"framework": "stylex", "intent": "File picker: a hidden input with a styled label as the button.", "planted": "the input is hidden with display: none, so the picker cannot be reached with the keyboard; the label is only a 20px tall target", "expect": ["E_A11Y_CONTROL_HIDDEN"]}

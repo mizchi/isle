@@ -1,6 +1,6 @@
 # 静的な負荷予測と実測の接続
 
-状態: **現行 v0 の最適化済み plan に対する CostSummary、CLI、Vite sidecar、budget による build 失敗を実装した。** 別の CLI pass として [Grid / container / 両軸のサイズ契約検査](layout-checking.md)を追加した。任意 TS、list / branch の記号式、CSS layout の実時間の予測、時間の校正モデルと専用の形式モデルは未実装である。後半の将来要件と区別する。既存の [manifest と User Timing](chunk-profiling.md) を併用できる。次段階の構文は [Component を実行計画として宣言する](component-declarations.md) を参照する。
+状態: **現行 v0 の最適化済み plan に対する CostSummary、CLI、Vite sidecar、budget による build 失敗を実装した。** 別の CLI pass として [Grid / container / 両軸のサイズ契約検査](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md)を追加した。任意 TS、list / branch の記号式、CSS layout の実時間の予測、時間の校正モデルと専用の形式モデルは未実装である。後半の将来要件と区別する。既存の [manifest と User Timing](chunk-profiling.md) を併用できる。次段階の構文は [Component を実行計画として宣言する](component-declarations.md) を参照する。
 
 ## 現在の利用方法
 

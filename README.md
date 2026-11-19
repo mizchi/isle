@@ -126,10 +126,10 @@ This build generates the initial HTML at build time. Request-time server actions
 
 - `component Label(title: string)` declares a pure component usable on either side. Add `client` for state/events or `server` to restrict rendering to the server.
 - [`event` and `on:click`](docs/events.md) declare typed event inputs and DOM bindings. Add `.preventDefault` for synchronous cancellation before lazy loading; bodies need no `inline(ts)`.
-- [Template CSS](docs/inline-css.md) uses static, scoped `<style>` blocks. Checked builds use Z3 to reject layout violations within declared width/height ranges; the playground runs Z3 Wasm on demand. [CSS variables](docs/css-variables.md) resolve statically within the checked subset.
+- [Template CSS](docs/inline-css.md) uses static, scoped `<style>` blocks. Checked builds use Z3 to reject layout violations within declared width/height ranges; the playground runs Z3 Wasm on demand. [CSS variables](https://github.com/mizchi/veriss/blob/HEAD/docs/css-variables.md) resolve statically within the checked subset.
 - [Shorthand checks](docs/css-shorthands.md) reject overlapping shorthand/longhand writes in the same rule, including implicit resets. Put intentional overrides in separate rules; checks add no app runtime.
 - [`layout SafeGrid`](docs/layout-contract-language.md) declares component input ranges and fit guarantees. Vite, the CLI and the playground check actual allocations against them; declarations add no application runtime.
-- The CSS verification core is an independent [`@mizchi/css-verifier`](packages/css-verifier/README.md) package with box-tree and static-HTML inputs. Isle is an adapter to it; the package is not yet published.
+- The CSS verification core is an independent [`@mizchi/veriss`](https://github.com/mizchi/veriss) package with box-tree and static-HTML inputs. Isle is an adapter to it; the package is not yet published.
 - [`noshift/1`](docs/layout-transitions.md) attaches `@noshift` to a DOM element and checks its box presence, position and size across finite state candidates in Vite, the CLI and playground. The component's `layout` declares the environment; selector contracts remain available. Browser CLS values and intermediate frames are outside the contract.
 - [`layout PositionedGrid`](examples/layout-contracts/positioned.isle) checks named local coordinate spaces, absolute-box containment and peer overlay separation. [Child contracts](examples/layout-contracts/positioned-components.isle) connect public roots while checking private layouts recursively. Unsupported transforms or scrolling remain Unknown.
 - [`Show`, `For`, `Switch` / `Match` and `ErrorBoundary`](docs/control-components.md) compile to selective updates. Put each row's `key` on its returned root, or a `Fragment` for multiple roots. Props passed into a client component are immutable initial values.
@@ -155,7 +155,7 @@ Browser output targets ES2023 and native DOM / ESM / fetch. It ships no MoonBit/
 | `@isle/prototype/resources` | Resource-owner APIs and types |
 | `pnpm exec isle` | Inspect source, manifests, cost budgets and layout contracts |
 
-The feature examples are bilingual. Detailed guides are currently in Japanese: [composition](docs/composition.md), [forms](docs/forms.md), [control flow](docs/control-flow.md), [loading](docs/resolution-optimizer.md), [widgets](docs/widgets.md), [CSS contracts](docs/layout-checking.md), [all documentation](docs/README.md).
+The feature examples are bilingual. Detailed guides are currently in Japanese: [composition](docs/composition.md), [forms](docs/forms.md), [control flow](docs/control-flow.md), [loading](docs/resolution-optimizer.md), [widgets](docs/widgets.md), [CSS contracts](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md), [all documentation](docs/README.md).
 
 ## Current scope
 

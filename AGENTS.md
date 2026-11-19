@@ -29,7 +29,7 @@ CSSのレイアウト契約をcomponentの型システムへ組み込むこと�
 - ES2023とWeb標準を優先し、チャンク分割はVite/Rolldownへ接続する。
 - アプリの記述はTS前提の制約付きDSL。`event`と`on:click`等を使い、`inline(ts)`を要求しない。
 - compiler frontendと開発用の有限モデルには現在MoonBitを使う。アプリのbrowser runtimeへMoonBit/Wasmを追加しない。
-- 汎用CSS検証は`packages/css-verifier/`に置く。同packageからIsle、ProgramIR、compilerをimportしない。
+- 汎用CSS検証は別リポジトリ [mizchi/veriss](https://github.com/mizchi/veriss)(`@mizchi/veriss`、git 依存)に置く。Isle はその利用者で、`lib/layout/` が ProgramIR から box tree を作る層。veriss から Isle、ProgramIR、compiler を import しない。
 - Isle adapterがtemplate、状態候補、key、owner、source位置を汎用コアへ渡す。
 - 契約、実装由来の事実、証明義務を分離する。要求を実装の前提にして自己証明しない。
 - 未対応、被覆不足、上限超過、timeoutを成功へ変えない。

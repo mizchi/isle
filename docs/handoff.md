@@ -39,7 +39,7 @@ LinuxのCIでOS依存も必要なら、browser installを`pnpm exec playwright i
 just check
 just check-types
 just test
-pnpm --filter @mizchi/css-verifier test
+pnpm --filter @mizchi/veriss test
 ```
 
 `just test`はcompilerを生成してMoonBitとrootのNodeテストを実行する。
@@ -53,9 +53,9 @@ CSSコア単独のテストはworkspace package内にあり、rootのテスト�
 | 独立CSS package、npm consumer、Z3、反例の出典 | `just css-verifier-check` |
 | mizchi/cssとのcascade差分(MoonBit必要) | `just css-oracle-check` |
 | フォントから導出するテキスト寸法(MoonBit必要) | `just css-text-check`。折り返し(行分割 profile、括弧・約物・小書き仮名・`ー` を含む)はコア3件・計測5件・CLI 1件・Vite 1件、Chromium で11構成+ランダム140文字列×2言語の行数、全クラス対+3000文字列の分割可能位置、例の高さを照合。`lang` 契約はコア3件・計測2件・Vite 1件、Chromium で言語別の行数と en/ja/ko の分割可能位置。Vite の `layout.fonts` は `tests/layout-build.test.mjs` の3件(証明書へのフォント記録、狭い viewport での失敗、設定エラー) |
-| アクセシビリティ規則(`packages/css-verifier/test/accessibility.test.mjs`、`e2e/layout-accessibility.spec.mjs`、ADR-0013) | コア64件、Isle template 2件、Vite 2件、playground 1件。Chromium(AX tree・hit testing・focus・矩形・計算値の色・autocomplete の IDL 正規化・CDP で強制した :focus/:hover・line-height 1.5 の注入)と33構成×3幅で一致(page の規則は単体テストのみ)、1280px で vlmkit a11y contrast とも一致 |
-| integrity 規則(`packages/css-verifier/test/integrity.test.mjs`、`e2e/layout-integrity.spec.mjs`) | コア9件(塗りのある親、Z3 の確認を含む)、Vite の build 2件、playground 1件。vlmkit 0.24.0 と8構成×3幅で規則ごとに一致(フォント契約のあるテキストは text-collision も一致、契約のない text は vlmkit ⇒ 静的のみ) |
-| flex/contents サブセット(`packages/css-verifier/test/flex-contents.test.mjs`、`e2e/layout-flex.spec.mjs`) | コア24件、Chromium 25ケースで矩形が1/64 px以内で一致。flexの比較はmizchi/css 0.8.2で既定に含める |
+| アクセシビリティ規則(`veriss: packages/veriss/test/accessibility.test.mjs`、`e2e/layout-accessibility.spec.mjs`、ADR-0013) | コア64件、Isle template 2件、Vite 2件、playground 1件。Chromium(AX tree・hit testing・focus・矩形・計算値の色・autocomplete の IDL 正規化・CDP で強制した :focus/:hover・line-height 1.5 の注入)と33構成×3幅で一致(page の規則は単体テストのみ)、1280px で vlmkit a11y contrast とも一致 |
+| integrity 規則(`veriss: packages/veriss/test/integrity.test.mjs`、`e2e/layout-integrity.spec.mjs`) | コア9件(塗りのある親、Z3 の確認を含む)、Vite の build 2件、playground 1件。vlmkit 0.24.0 と8構成×3幅で規則ごとに一致(フォント契約のあるテキストは text-collision も一致、契約のない text は vlmkit ⇒ 静的のみ) |
+| flex/contents サブセット(`veriss: packages/veriss/test/flex-contents.test.mjs`、`e2e/layout-flex.spec.mjs`) | コア24件、Chromium 25ケースで矩形が1/64 px以内で一致。flexの比較はmizchi/css 0.8.2で既定に含める |
 | noshift、DOM注釈、key、CLI/Vite、有限case eval | `just noshift-check` |
 | 宣言した親子のlayout契約 | `just layout-contract-check` |
 | browser compilerとplayground | `just playground-check` |
@@ -87,7 +87,7 @@ node tools/isle.mjs layout examples/layout-contracts/noshift-keys.isle --summary
 
 ## 現在の実装
 
-- CSS解析・box model・契約・Z3は独立した`packages/css-verifier/`へ分離済み。
+- CSS解析・box model・契約・Z3は独立した`veriss: packages/veriss/`へ分離済み。
 - SafeGrid、PositionedGrid、親子の公開root/private座標系を検査する。
 - DOM側の`@noshift`とselector指定を、CLI・Vite・playgroundへ接続済み。
 - 有限な配列の順序とrecordの相関を保持し、Forのsiteとtyped key列で行を追跡する。
@@ -103,7 +103,7 @@ node tools/isle.mjs layout examples/layout-contracts/noshift-keys.isle --summary
 | DOM注釈と最適化後の要求保持 | `lib/layout-annotations.mjs`、`lib/compiler-core.mjs` |
 | 状態候補とkey同一性 | `lib/layout/bounds.mjs`、`structure.mjs`、`identities.mjs` |
 | sourceのnoshiftと汎用遷移の接続 | `lib/layout-noshift.mjs` |
-| 汎用の解析・証明 | `packages/css-verifier/src/` |
+| 汎用の解析・証明 | `veriss: packages/veriss/src/` |
 | 配布物の検査 | `lib/layout-build.mjs`、`lib/vite.mjs` |
 | browser Z3 | `playground/layout.worker.mjs` |
 
@@ -137,7 +137,7 @@ CLS、任意のtext/paint、未対応のscroll/transform等を保証したとは
 | `pnpm install --frozen-lockfile` | 成功、lockfile変更なし |
 | `just check`、`just check-types` | 成功 |
 | `just test` | MoonBit 55件、root Node 679件成功 |
-| `pnpm --filter @mizchi/css-verifier test` | 28件成功 |
+| `pnpm --filter @mizchi/veriss test` | 28件成功 |
 | layout-transitionsのcheck/declared/dom/keys eval | 9/5/7/8シナリオ成功、key例のHTML/JS/CSS増分0 byte |
 | playground E2E | 29件成功 |
 | 公開サイトE2E | 29件成功 |
@@ -151,7 +151,7 @@ CLS、任意のtext/paint、未対応のscroll/transform等を保証したとは
 | 検証 | 結果 |
 | --- | --- |
 | `just test`相当(compiler build後の`pnpm test`) | root Node 682件成功 |
-| `pnpm --filter @mizchi/css-verifier test` | 33件成功 |
+| `pnpm --filter @mizchi/veriss test` | 33件成功 |
 | `just css-oracle-check`(mizchi/css 0.8.2、flex系を含む) | 12件成功。30,000ケース全て一致、比較対象外0件(guaranteed-invalidな`var()`をunsetとして扱う変更後)、変異6種を全て検出 |
 | `evals/scenarios/layout-explanations/check.mjs` | 5/5 |
 | `just css-text-check` | Node 7件・コア5件・Chromium 3件成功。実測幅は全て`[advance, 上界]`、上界の余裕は2/64 px以下 |

@@ -1,1 +1,0 @@
-{"framework": "svelte", "intent": "A map pin with an info popup above it.", "planted": "the popup is absolutely placed at left: 260px with a fixed 220px width: on phones it reaches past the page", "expect": ["E_LAYOUT_PAGE_OVERFLOW"]}

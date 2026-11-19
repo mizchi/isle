@@ -1,1 +1,0 @@
-{"framework": "vue", "intent": "News cards with a thumbnail, a headline and a byline.", "planted": "the byline is #aaa on white (low contrast) and the headline is clamped by a fixed 48px height that cuts its third line", "expect": ["E_A11Y_CONTRAST", "E_LAYOUT_CONTENT"]}

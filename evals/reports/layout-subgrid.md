@@ -1,6 +1,6 @@
 # Subgrid の意味論と照合
 
-基準は [CSS Grid Level 2](https://www.w3.org/TR/css-grid-2/#subgrids) と、このプロトタイプの[検査 subset](../../docs/layout-checking.md#subgrid-の共有トラック)。親の track 定義をコピーして再配分する実装は採用せず、解決済みの track vector を共有する。
+基準は [CSS Grid Level 2](https://www.w3.org/TR/css-grid-2/#subgrids) と、このプロトタイプの[検査 subset](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md#subgrid-の共有トラック)。親の track 定義をコピーして再配分する実装は採用せず、解決済みの track vector を共有する。
 
 ## 有限モデル
 

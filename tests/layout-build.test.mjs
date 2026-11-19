@@ -231,7 +231,7 @@ test('integrity warnings are reported by the build without failing it', async t 
 
 // Font-derived text contracts (ADR-0010) in the checked build: `layout.fonts`
 // maps CSS families to font files next to the entry, as layout.json does.
-const fontFile = new URL('../packages/css-verifier/text-metrics/fixtures/japanese-variable.ttf', import.meta.url);
+const fontFile = new URL('../node_modules/@mizchi/veriss/text-metrics/fixtures/japanese-variable.ttf', import.meta.url);
 const jp = {family:'Noto Sans JP', size:16, lineHeight:24, weight:400};
 async function textFixture(t, {viewport:range, boxes, fonts = {'Noto Sans JP':{file:'./jp.ttf'}}, plugins = [], lang = 'en'}) {
   const directory = await mkdtemp(join(tmpdir(), 'isle-layout-fonts-'));

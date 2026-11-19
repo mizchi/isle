@@ -1,1 +1,0 @@
-{"framework": "linaria", "intent": "Price range with min and max values beside a slider.", "planted": "the value labels are a fixed 120px each beside the slider in a fixed 3-column grid: wider than phones", "expect": ["E_LAYOUT_TRACKS"]}

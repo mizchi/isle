@@ -1,1 +1,0 @@
-{"framework": "linaria", "intent": "A settings row with a label and an on/off switch.", "planted": "the switch is a styled div with role switch but no tabindex (the keyboard cannot reach it) and no aria-checked (a spec error Chromium hides by defaulting it to false)", "expect": ["E_A11Y_ROLE_FOCUS"]}

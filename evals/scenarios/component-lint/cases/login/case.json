@@ -1,1 +1,0 @@
-{"framework": "stylex", "intent": "A login form: email, password and a submit button.", "planted": "the inputs have only placeholders, no labels (the placeholder names them, but disappears on input)", "expect": ["W_A11Y_PLACEHOLDER_LABEL"]}

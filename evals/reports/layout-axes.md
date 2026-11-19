@@ -1,6 +1,6 @@
 # Container query と両軸のサイズ契約
 
-2026-11-06。横幅の検査を、container size query と縦方向へ拡張した。標準 CSS と template IR を入力にする明示的な compiler CLI pass であり、browser runtime は追加しない。[現行仕様](../../docs/layout-checking.md)を参照。
+2026-11-06。横幅の検査を、container size query と縦方向へ拡張した。標準 CSS と template IR を入力にする明示的な compiler CLI pass であり、browser runtime は追加しない。[現行仕様](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md)を参照。
 
 ```sh
 just layout-axes

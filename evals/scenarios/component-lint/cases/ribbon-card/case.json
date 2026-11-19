@@ -1,1 +1,0 @@
-{"framework": "vue", "intent": "A pricing card with an optional 'Most popular' ribbon in the corner.", "planted": "the ribbon sits over the top-right of the card with no room reserved: on a 320px card the end of the bold plan name runs under it", "expect": ["E_A11Y_TEXT_LINE_OBSCURED"]}

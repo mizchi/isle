@@ -209,7 +209,7 @@ SSR に必要な CSS は JS の import を待たずに配信する。将来の f
 
 以上は parser・CSS optimizer・live backend の未実装の契約である。実装時には [評価課題](../evals/scenarios/inline-live-css/brief.md) の Red を先に置き、サイズ・CSS bytes・request と browser の computed style の一致を測る。
 
-2026-11-06 に、標準 CSS と既存 template IR を入力にする独立した [Grid / box model の横幅検査](layout-checking.md)を追加した。これは上記 stylesheet DSL、class token、CSS dead-code elimination の実装とは別であり、明示した viewport 区間・入力サイズ契約・CSS 部分集合について反例区間を求める。
+2026-11-06 に、標準 CSS と既存 template IR を入力にする独立した [Grid / box model の横幅検査](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md)を追加した。これは上記 stylesheet DSL、class token、CSS dead-code elimination の実装とは別であり、明示した viewport 区間・入力サイズ契約・CSS 部分集合について反例区間を求める。
 
 ### 2.4 循環参照の検出と診断
 

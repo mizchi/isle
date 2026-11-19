@@ -1,1 +1,0 @@
-{"framework": "stylex", "intent": "A row of four tabs that must stay on one line.", "planted": "four fixed 110px tabs in a nowrap flex row: wider than phones", "expect": ["E_LAYOUT_PAGE_OVERFLOW"]}

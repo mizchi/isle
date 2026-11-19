@@ -4,7 +4,7 @@
   "ancestors": [{ "tag": "html" }, { "tag": "body" }],
   "viewport": { "min": 240, "max": 1000, "height": { "min": 200, "max": 600 } },
   "fonts": {
-    "Noto Sans JP": { "file": "../../packages/css-verifier/text-metrics/fixtures/japanese-variable.ttf" }
+    "Noto Sans JP": { "file": "../../node_modules/@mizchi/veriss/text-metrics/fixtures/japanese-variable.ttf" }
   },
   "boxes": {
     ".name": {

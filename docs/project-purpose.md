@@ -35,7 +35,7 @@ gapが8pxなら3個分を加えて184px以上になる。実際のCSSの寸法�
 CSSの全プロパティを一般のTS型として表現できる段階ではなく、閉じたprofileの意味論をZ3で検査する。
 sourceの型・文法検査は`compile`/`check`、CSSへの適合検査は`layout`、Vite build gate、playground Workerが担当する。
 
-検証コアは一般ライブラリの`packages/css-verifier/`へ分離する。入力はCSS、box tree、環境、契約であり、
+検証コアは一般ライブラリの`veriss: packages/veriss/`へ分離する。入力はCSS、box tree、環境、契約であり、
 Isleはtemplate・状態・key・sourceをそれらへ変換する利用者の一つとする。
 
 ## Layout Instabilityの静的検証へ進む
@@ -46,7 +46,7 @@ Isleはtemplate・状態・key・sourceをそれらへ変換する利用者の�
 
 現行`@noshift`は、選んだ要素の存在・位置・寸法を有限候補間で比較する契約である。
 textのfragment、任意のfont、paint、frame順序、CLS全体の保証はまだない。
-この境界と段階実装は[ADR-0001](adr/0001-static-layout-instability-verification.md)に記録する。
+この境界と段階実装は[ADR-0001](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0001-static-layout-instability-verification.md)に記録する。
 
 ## 開発で優先すること
 

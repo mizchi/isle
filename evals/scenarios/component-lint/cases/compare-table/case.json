@@ -1,1 +1,0 @@
-{"framework": "linaria", "intent": "Product comparison table with a sticky first column.", "planted": "the header cells are #999 on #f5f5f5 (low contrast)", "expect": ["E_A11Y_CONTRAST"]}

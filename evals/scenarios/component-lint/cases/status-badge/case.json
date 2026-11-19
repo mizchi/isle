@@ -1,1 +1,0 @@
-{"framework": "svelte", "intent": "A job row with a status badge; status is typed as 'Active' | 'Paused' | 'Pending review'.", "planted": "the badge column is a fixed 72px and nowrap: 'Pending review' does not fit (each literal of the prop's type is a state the lint measures)", "expect": ["E_LAYOUT_CONTENT"]}

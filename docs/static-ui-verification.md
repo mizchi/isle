@@ -6,8 +6,8 @@
 
 ## 現在の実装境界
 
-[`packages/css-verifier`](../packages/css-verifier/README.md) に幾何解析・CSS解析・
-契約IR・Z3検証を移した。仮の名前は `@mizchi/css-verifier`。privateな試作で、
+[`veriss の packages/veriss`](https://github.com/mizchi/veriss/blob/HEAD/packages/veriss/README.md) に幾何解析・CSS解析・
+契約IR・Z3検証を移した。仮の名前は `@mizchi/veriss`。privateな試作で、
 npmレジストリには未公開。入力はCSS、汎用box tree、viewport範囲、祖先・
 内容寸法・scrollbarの前提。静的HTML fragmentをbox treeに変換する入口もある。
 Isleの構文、コンパイラ、ProgramIR、ブラウザー描画器には依存しない。

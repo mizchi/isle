@@ -2,7 +2,7 @@
 
 状態: 独立した検査 IR と、component 本文の `layout SafeGrid { ... }` / `layout PositionedGrid { ... }` を実装しました。Vite・playground・CLI がソースの宣言を検査します。任意の profile 定義、一般の述語構文、子の本体を省略する合成証明は設計段階です。
 
-CSS解析・幾何モデル・契約IR・Z3検査の実装は、汎用の[`@mizchi/css-verifier`](../packages/css-verifier/README.md)へ分離しています。Isleはテンプレートと状態候補を汎用box treeへ変換するadapterです。[保証範囲と静的モデルの方針](static-ui-verification.md)を参照してください。
+CSS解析・幾何モデル・契約IR・Z3検査の実装は、汎用の[`@mizchi/veriss`](https://github.com/mizchi/veriss/blob/HEAD/packages/veriss/README.md)へ分離しています。Isleはテンプレートと状態候補を汎用box treeへ変換するadapterです。[保証範囲と静的モデルの方針](static-ui-verification.md)を参照してください。
 
 状態間の比較には[`noshift/1`](layout-transitions.md)があります。DOM要素への`@noshift`を基本にし、`ensures { noshift ".action"; }`も外部・集約指定として使えます。Isle adapterが有限な候補を汎用APIへ渡し、対象boxの存在・位置・寸法を比較します。fit保証だけからnoshiftを推論することはありません。
 

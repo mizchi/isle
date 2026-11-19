@@ -30,7 +30,7 @@ node tools/isle.mjs layout examples/layout-contracts/app.isle examples/layout-co
 
 ## Subgrid
 
-[subgrid.isle](subgrid.isle), [subgrid.css](subgrid.css) and [subgrid.json](subgrid.json) share two parent columns and two rows. `A` ends at the first parent row, alongside `Peer`; `B` starts in the second row and column. Padding/borders affect outer tracks, and `gap: normal` follows the parent's gap. Run `just layout-subgrid` for static diagnostics or `just layout-subgrid-check` for the finite model and browser comparison. Parent auto-row intrinsic contributions and named lines remain unknown. Keep size query containers on the parent Grid. See [semantics and limits](../../docs/layout-checking.md#subgrid-の共有トラック).
+[subgrid.isle](subgrid.isle), [subgrid.css](subgrid.css) and [subgrid.json](subgrid.json) share two parent columns and two rows. `A` ends at the first parent row, alongside `Peer`; `B` starts in the second row and column. Padding/borders affect outer tracks, and `gap: normal` follows the parent's gap. Run `just layout-subgrid` for static diagnostics or `just layout-subgrid-check` for the finite model and browser comparison. Parent auto-row intrinsic contributions and named lines remain unknown. Keep size query containers on the parent Grid. See [semantics and limits](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md#subgrid-の共有トラック).
 
 親の2列・2行を共有する例です。A と Peer の下端は親の最初の行末に揃い、B は2行・2列目に入ります。padding/border は端のトラックへ反映し、省略時の gap は親へ追従します。解析結果は `just layout-subgrid`、有限モデルとブラウザー照合は `just layout-subgrid-check`。親の auto 行への intrinsic contribution と名前付き line は unknown とします。size query container は親の Grid に置きます。
 
@@ -90,7 +90,7 @@ just noshift-check
 
 ## Font-derived text / フォントから導出するテキスト幅
 
-[text-fonts.isle](text-fonts.isle), [text-fonts.css](text-fonts.css) and [text-fonts.json](text-fonts.json) map `Noto Sans JP` to a subset font and declare a name of up to 12 characters from a fixed character set, plus a fixed title. The widths come from [mizchi/font](https://github.com/mizchi/font) shaping, not from trusted numbers. The name may overflow below `17921/64`px and the summary reports how many characters still fit. Run `just css-text-check` for the tests and the Chromium comparison. [text-wrap.isle](text-wrap.isle) wraps fixed text with `wrap: "normal"`: the line-breaking model derives the number of lines at every content width, and the body needs a third line in its 48px row below `14247/64`px. See [ADR-0010](../../docs/adr/0010-font-derived-text-metrics.md).
+[text-fonts.isle](text-fonts.isle), [text-fonts.css](text-fonts.css) and [text-fonts.json](text-fonts.json) map `Noto Sans JP` to a subset font and declare a name of up to 12 characters from a fixed character set, plus a fixed title. The widths come from [mizchi/font](https://github.com/mizchi/font) shaping, not from trusted numbers. The name may overflow below `17921/64`px and the summary reports how many characters still fit. Run `just css-text-check` for the tests and the Chromium comparison. [text-wrap.isle](text-wrap.isle) wraps fixed text with `wrap: "normal"`: the line-breaking model derives the number of lines at every content width, and the body needs a third line in its 48px row below `14247/64`px. See [ADR-0010](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0010-font-derived-text-metrics.md).
 
 名前欄に最大12文字、題名に固定文字列を宣言し、幅をフォントのshapingから導出する例です。名前欄は `17921/64`px 未満で溢れ得ると報告し、その幅で収まる文字数も示します。
 
@@ -100,12 +100,12 @@ node tools/isle.mjs layout examples/layout-contracts/text-fonts.isle examples/la
 
 ## Integrity rules / 静的な integrity 検査
 
-[integrity.isle](integrity.isle) is a toolbar with two 24px icon buttons. With `integrity: {targetSize: 24, protrusion: 'painted'}` the layout check also enforces vlmkit's box-model rules over the whole viewport domain: page overflow, protrusion from painted parents, text collision and interactive target size. Shrinking the buttons to 20px is a violation. Open the **Integrity · page overflow, protrusion & 24px targets** preset in the playground. See [ADR-0012](../../docs/adr/0012-static-integrity-rules.md).
+[integrity.isle](integrity.isle) is a toolbar with two 24px icon buttons. With `integrity: {targetSize: 24, protrusion: 'painted'}` the layout check also enforces vlmkit's box-model rules over the whole viewport domain: page overflow, protrusion from painted parents, text collision and interactive target size. Shrinking the buttons to 20px is a violation. Open the **Integrity · page overflow, protrusion & 24px targets** preset in the playground. See [ADR-0012](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0012-static-integrity-rules.md).
 
 24px のアイコンボタンを持つツールバーです。`integrity` を有効にすると、ページの横溢れ・塗りのある親からのはみ出し・テキストの重なり・操作対象の寸法も viewport の全域で検査します。ボタンを 20px にすると違反になります。
 
 ## Accessibility rules / DOM と CSS のアクセシビリティ検査
 
-[accessibility.isle](accessibility.isle) is a notice card: a bold title, body text hidden below 360px, and a 24px dismiss button named by `aria-label`. With `accessibility: true` the layout check combines DOM facts with the cascade and geometry over the whole viewport domain: accessible names, text contrast against the composited backgrounds, occluded or overlapping targets, headings, ids, focus and reflow. Removing `aria-label` is `E_A11Y_NAME`; a lighter body color is `E_A11Y_CONTRAST`. Open the **Accessibility · names, contrast & focus** preset in the playground. See [ADR-0013](../../docs/adr/0013-static-accessibility-rules.md).
+[accessibility.isle](accessibility.isle) is a notice card: a bold title, body text hidden below 360px, and a 24px dismiss button named by `aria-label`. With `accessibility: true` the layout check combines DOM facts with the cascade and geometry over the whole viewport domain: accessible names, text contrast against the composited backgrounds, occluded or overlapping targets, headings, ids, focus and reflow. Removing `aria-label` is `E_A11Y_NAME`; a lighter body color is `E_A11Y_CONTRAST`. Open the **Accessibility · names, contrast & focus** preset in the playground. See [ADR-0013](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0013-static-accessibility-rules.md).
 
 見出し・本文・24px の閉じるボタンを持つ通知カードです。`accessibility` を有効にすると、名前・コントラスト・覆い・見出し・id・フォーカス・reflow を viewport の全域で検査します。`aria-label` を外すと名前がなく、本文の色を薄くするとコントラスト不足になります。

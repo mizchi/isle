@@ -36,8 +36,8 @@ Isle adapterはschema・有限state・key付き要素から根拠を渡し、コ
 ## 依存関係と変更箇所
 
 必須の先行ADRはない。[0004](0004-async-layout-reservations.md)と
-[0001](0001-static-layout-instability-verification.md)の動的内容検査の前提になる。
-型と正規化は`packages/css-verifier/src/layout-contracts.d.ts`および独立module、
+[0001](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0001-static-layout-instability-verification.md)の動的内容検査の前提になる。
+型と正規化は`veriss: packages/veriss/src/layout-contracts.d.ts`および独立module、
 幾何への接続は同packageの`layout/`、Isleの値候補は`lib/layout/bounds.mjs`と`structure.mjs`を対象にする。
 Node/Worker用の入口とcompat exportは同じ正規化器を使う。
 

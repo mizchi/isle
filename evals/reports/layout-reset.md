@@ -1,6 +1,6 @@
 # CSS reset を含むボックスモデルの検査
 
-2026-11-06。reset を明示した順序で app CSS より前に読み、実際の cascade と継承に従って box-sizing 等を解決する経路を追加した。[仕様と API](../../docs/layout-checking.md#css-reset-と継承)を参照。
+2026-11-06。reset を明示した順序で app CSS より前に読み、実際の cascade と継承に従って box-sizing 等を解決する経路を追加した。[仕様と API](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md#css-reset-と継承)を参照。
 
 ```sh
 just layout-reset

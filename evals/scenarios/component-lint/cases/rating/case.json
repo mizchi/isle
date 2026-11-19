@@ -1,1 +1,0 @@
-{"framework": "vue", "intent": "Five star buttons to rate a product.", "planted": "icon-only star buttons with no accessible name, 16px squares (below the 24px target size and too close to each other)", "expect": ["E_A11Y_NAME", "E_A11Y_TARGET_SIZE"]}

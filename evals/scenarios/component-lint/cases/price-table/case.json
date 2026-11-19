@@ -1,1 +1,0 @@
-{"framework": "svelte", "intent": "Comparison table of plans with a nowrap feature column.", "planted": "a table whose nowrap header cells are wider than phones: the table pushes the page sideways", "expect": ["E_LAYOUT_TRACKS"]}

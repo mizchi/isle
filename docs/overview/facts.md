@@ -11,7 +11,7 @@
 | SSR のみなら Isle の browser JS は不要 | [build tests](../../tests/build.test.mjs) の forced-ssr / server / universal / no-handlers | ページ上の任意の外部 JS まで削除する意味ではない |
 | Form / server action | [Form tests](../../tests/forms.test.mjs)、[ガイド](../forms.md)、[共通 schema](../schema-contracts.md) | 認証・業務 policy は trusted host adapter が実装する |
 | Web Components widget | [widget architecture](../widget-architecture.md)、[共有 runtime tests](../../tests/shared-runtime.test.mjs) | ShadowRoot、固定寸法、完全一致版で runtime 共有。異なる版は拒否 |
-| Grid / CSS 静的検査 | [独立 CLI](../../tools/isle.mjs)、[リジェクト14例](../../evals/results/layout-rejections/index.md)、[仕様](../layout-checking.md) | 宣言されたサイズ・折り返し・overflow 契約内。unknown を成功扱いしない |
+| Grid / CSS 静的検査 | [独立 CLI](../../tools/isle.mjs)、[リジェクト14例](../../evals/results/layout-rejections/index.md)、[仕様](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md) | 宣言されたサイズ・折り返し・overflow 契約内。unknown を成功扱いしない |
 | 有限モデルで寿命を検査 | [独立した参照モデル](../../models/README.md)、`just verify` | compiler IR からのモデル自動生成と全体証明は未実装 |
 | ES2023 / Web 標準 API、MoonBit / Wasm runtime の配布なし | [runtime](../../runtime/)、[出力検査](../../tools/check-build.mjs) | コンパイラは開発時に動く |
 

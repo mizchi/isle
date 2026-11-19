@@ -1,5 +1,4 @@
 packages:
-  - 'packages/*'
   - 'benchmarks/variants/*'
 allowBuilds:
   esbuild: true

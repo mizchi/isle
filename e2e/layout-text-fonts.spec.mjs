@@ -4,9 +4,9 @@
 // exactly where the static analysis says it may.
 import {test, expect} from '@playwright/test';
 import {readFileSync} from 'node:fs';
-import {loadTextMetrics} from '../packages/css-verifier/src/text-node.mjs';
-import {analyzeHTML} from '../packages/css-verifier/src/html.mjs';
-import {scriptRuns, breakOpportunities} from '../packages/css-verifier/src/text.mjs';
+import {loadTextMetrics} from '@mizchi/veriss/src/text-node.mjs';
+import {analyzeHTML} from '@mizchi/veriss/src/html.mjs';
+import {scriptRuns, breakOpportunities} from '@mizchi/veriss/src/text.mjs';
 import {compile, requireIR} from '../lib/compiler.mjs';
 import {prepareProgram} from '../lib/codegen.mjs';
 import {analyzeLayout} from '../lib/layout.mjs';
@@ -17,7 +17,7 @@ test.beforeEach(({}, testInfo) => applyBrowserBaseline(testInfo));
 const chromiumOnly = page => { test.skip(test.info().project.name !== 'chromium', 'uses the Chrome DevTools Protocol (Chromium only)'); return page.context().newCDPSession(page); };
 
 
-const fixtures = new URL('../packages/css-verifier/text-metrics/fixtures/', import.meta.url);
+const fixtures = new URL('../node_modules/@mizchi/veriss/text-metrics/fixtures/', import.meta.url);
 const files = {'Noto Sans JP': 'japanese-variable.ttf', Roboto: 'roboto-variable.ttf', 'Noto Sans Hebrew': 'hebrew-variable.ttf'};
 const face = Object.entries(files).map(([family, file]) => `@font-face{font-family:"${family}";src:url(data:font/ttf;base64,${readFileSync(new URL(file, fixtures)).toString('base64')})}`).join('');
 const jp = {family: 'Noto Sans JP', size: 16, lineHeight: 24, weight: 400};
@@ -296,7 +296,7 @@ test('inline boxes with horizontal edges: the line width and every box\'s bounds
   // Firefox positions these boxes on its own 1/60px grid (3/1000px past the 1/64px bounds measured here): other
   // browsers' rounding is outside the text metrics (ADR-0010). Chromium and WebKit hold.
   test.skip(test.info().project.name === 'firefox', 'Firefox rounds inline edges to 1/60px (ADR-0010)');
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the guide and the notes first.';
   const html = '<div class="page"><p class="p">Read the <a class="u" href="#x">guide</a> and the <a class="v" href="#y">notes</a> first.</p><div class="after"></div></div>';
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
@@ -326,7 +326,7 @@ test('inline boxes with horizontal edges: the line width and every box\'s bounds
 // An inline box in another weight of the same font (checklist D3): measured as its own run (inline {text, weight}),
 // the line is as wide as the sum of the runs and every box lies inside its bounds.
 test('inline boxes in another weight: the line width and every box\'s bounds', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
   for (const [font, content, u, v, extra] of [
     [{family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, 'Read the guide and the notes first.', 'guide', 'notes', '.u{font-weight:700}'],
@@ -364,7 +364,7 @@ test('inline boxes in another weight: the line width and every box\'s bounds', a
 // ascent (checklist D3): the line keeps its height, is as wide as the text and the icon, and the icon and the link after
 // it lie inside their bounds.
 test('an icon measured in the line: the line and every box', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
   const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the guide first.';
   for (const [w, h, at] of [[16, 16, 9], [24, 12, 0], [10, 17, 21]]) {
@@ -396,7 +396,7 @@ test('an icon measured in the line: the line and every box', async ({page}) => {
 // An image inside measured text is an atomic inline box: it widens the line and, taller than the text's ascent, makes
 // it taller (checklist D3). The analysis is Unknown there; the browser shows why.
 test('an image inside measured text changes the line', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the guide first.';
   const boxes = metrics.resolveBoxes({'.p': {text: {content, font}}});
   const css = `*{box-sizing:border-box;margin:0;padding:0}.page{display:grid;grid-template-columns:minmax(0,1fr);background:#fff;color:#000}.p{font-family:"Roboto";font-size:16px;line-height:24px;font-weight:400;white-space:nowrap}`;
@@ -418,7 +418,7 @@ test('an image inside measured text changes the line', async ({page}) => {
 // vertical-align off the baseline raises or lowers the inline box and makes the line taller, by amounts that differ
 // between browsers: Unknown; top and bottom with the text's own font change nothing.
 test('vertical-align on an inline box inside measured text', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the guide first.';
   const boxes = metrics.resolveBoxes({'.p': {text: {content, font, inline: {'.u': 'guide'}}}});
   const html = '<div class="page"><p class="p">Read the <a class="u" href="#x">guide</a> first.</p></div>';
@@ -435,7 +435,7 @@ test('vertical-align on an inline box inside measured text', async ({page}) => {
 });
 
 test('inline element bounds contain the rendered inline box', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const roboto = {family: 'Roboto', size: 20, lineHeight: 20, weight: 400};
   const cases = [
     {font: jp, content: '日本語のテキスト幅を確認します', piece: 'テキスト'},
@@ -475,7 +475,7 @@ test('inline element bounds contain the rendered inline box', async ({page}) => 
 
 // Occlusion and obscured focus for an inline link, from its measured bounds, against Chromium's hit testing.
 test('inline link occlusion and obscured focus agree with Chromium', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
   const content = 'Read the guide first.';
   const html = '<div class="page"><p class="p">Read the <a class="u" href="#x">guide</a> first.</p><div class="cover"></div></div>';
@@ -503,7 +503,7 @@ test('inline link occlusion and obscured focus agree with Chromium', async ({pag
 // Wrapping text: per width, the link's line and bounds from the line layout, or split across lines.
 test('inline bounds in wrapping text follow the line layout', async ({page}) => {
   test.setTimeout(240_000);
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
   for (const align of ['start', 'center', 'right']) for (const {font, content, piece, anywhere} of [
     {font: {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content: 'Read the full installation guide before you start the upgrade of the cluster.', piece: 'installation guide'},
@@ -553,7 +553,7 @@ test('inline bounds on the last line of justified text', async ({page}) => {
   // Line breaking of measured text is calibrated to Chromium (ADR-0010: other browsers' rounding is out of scope; Firefox
   // breaks this text elsewhere at some widths, also start-aligned).
   test.skip(test.info().project.name !== 'chromium', 'measured line breaks are Chromium-calibrated (ADR-0010)');
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
   const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the full installation guide before you start the upgrade of the cluster.', piece = 'cluster';
   const html = `<div class="page"><p class="p">Read the full installation guide before you start the upgrade of the <a class="u" href="#x">cluster</a>.</p></div>`;
@@ -584,7 +584,7 @@ test('inline bounds on the last line of justified text', async ({page}) => {
 test('inline box edges and weights in wrapping text: line count and bounds', async ({page}) => {
   test.setTimeout(240_000);
   test.skip(test.info().project.name === 'firefox', 'Firefox rounds inline edges to 1/60px (ADR-0010)');
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
   const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the full installation guide before you start the upgrade of the cluster.', piece = 'installation guide';
   // (and another weight of the same font, measured as its own shaping run)
@@ -623,7 +623,7 @@ test('inline box edges and weights in wrapping text: line count and bounds', asy
 test('an icon in wrapping text: line count and bounds', async ({page}) => {
   test.setTimeout(240_000);
   test.skip(test.info().project.name !== 'chromium' && test.info().project.name !== 'webkit', 'Firefox rounds to 1/60px (ADR-0010)');
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
   const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400}, content = 'Read the full installation guide before you start the upgrade of the cluster.';
   const img = (w, h) => `<img class="i" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" width="${w}" height="${h}">`;
@@ -666,7 +666,7 @@ test('an icon in wrapping text: line count and bounds', async ({page}) => {
 test('inline bounds in rtl Hebrew text', async ({page}) => {
   test.setTimeout(240_000);
   test.skip(test.info().project.name !== 'chromium', 'measured Hebrew widths are Chromium-calibrated (ADR-0010)');
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
   const font = {family: 'Noto Sans Hebrew', size: 16, lineHeight: 24, weight: 400};
   for (const [content, piece, wrap] of [['שלום עולם וכל הדרך', 'עולם', null], ['שלום לכל מי שקורא את הספר הארוך הבא בעברית כדי לבדוק אם הקטע נמסר במקום הטוב בשורה האדומה', 'הקטע', 'normal']]) for (const align of ['start', 'center', 'left']) {
@@ -698,7 +698,7 @@ test('inline bounds in rtl Hebrew text', async ({page}) => {
 
 // A rowspan cell with auto height and measured wrapping text: its line count at the column width gives its height.
 test('a measured text rowspan cell grows its rows like Chromium', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const font = {family: 'Roboto', size: 16, lineHeight: 20, weight: 400};
   const content = 'This note spans two rows and wraps over several lines in a narrow column.';
   const html = `<table class="t"><tbody><tr><td class="s" rowspan="2">${content}</td><td class="a"></td></tr><tr><td class="b"></td></tr></tbody></table>`;
@@ -719,7 +719,7 @@ test('a measured text rowspan cell grows its rows like Chromium', async ({page})
 
 // The same in a table whose width follows the viewport: the region splits where the note's line count changes.
 test('a measured text rowspan cell in a viewport-wide table follows its line count', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const font = {family: 'Roboto', size: 16, lineHeight: 20, weight: 400};
   const content = 'This note spans two rows and wraps over several lines in a column that grows with the viewport.';
   const html = `<div class="g"><table class="t"><tbody><tr><td class="s" rowspan="2">${content}</td><td class="a"></td></tr><tr><td class="b"></td></tr></tbody></table></div>`;
@@ -747,7 +747,7 @@ test('a measured text rowspan cell in a viewport-wide table follows its line cou
 
 // The same with the text as a child stacked under a px block.
 test('a rowspan cell stacking a px block and wrapping measured text follows the line count', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const font = {family: 'Roboto', size: 16, lineHeight: 20, weight: 400};
   const content = 'This note spans two rows and wraps over several lines in a column that grows with the viewport.';
   const html = `<div class="g"><table class="t"><tbody><tr><td class="s" rowspan="2"><div class="pad"></div><p class="note">${content}</p></td><td class="a"></td></tr><tr><td class="b"></td></tr></tbody></table></div>`;
@@ -775,7 +775,7 @@ test('a rowspan cell stacking a px block and wrapping measured text follows the 
 
 // Inline bounds in a table cell follow its vertical-align (middle by default) inside a taller row.
 test('inline bounds in a table cell follow vertical-align', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const font = {family: 'Roboto', size: 16, lineHeight: 20, weight: 400};
   const value = text => { const [n, d = '1'] = String(text).split('/'); return Number(n) / Number(d); };
   for (const [align, wrap, content] of [['', 'nowrap', 'Read the guide.'], ['top', 'nowrap', 'Read the guide.'], ['bottom', 'nowrap', 'Read the guide.'], ['', 'normal', 'Read the guide before the long upgrade of the cluster.']]) {
@@ -800,7 +800,7 @@ test('inline bounds in a table cell follow vertical-align', async ({page}) => {
 
 // Baseline-aligned text cells: the first line's baseline is floor((L − (A + D)) / 2) + A (rounded ascent/descent).
 test('baseline-aligned text and block cells line up like Chromium', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const roboto = {family: 'Roboto', size: 20, lineHeight: 30, weight: 400}, noto = {family: 'Noto Sans JP', size: 13, lineHeight: 17, weight: 400};
   const html = '<table class="t"><tbody><tr><td class="r">Ax</td><td class="n">日本語</td><td class="b"><div class="k"></div></td><td class="m"><div class="h"></div></td></tr></tbody></table>';
   const css = `*{box-sizing:border-box;margin:0;padding:0}.t{table-layout:fixed;inline-size:300px;border-spacing:2px;background:#fff;color:#000}td{padding:3px;vertical-align:baseline}.r{font-family:"Roboto";font-size:20px;line-height:30px;font-weight:400;white-space:nowrap}.n{padding-top:9px;font-family:"Noto Sans JP";font-size:13px;line-height:17px;font-weight:400;white-space:nowrap}.k{block-size:40px}.m{vertical-align:middle}.h{block-size:70px}`;
@@ -820,7 +820,7 @@ test('baseline-aligned text and block cells line up like Chromium', async ({page
 
 // A table cell's text runs between block children are anonymous blocks stacked in DOM order.
 test('anonymous text blocks in a table cell stack like Chromium', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const font = {family: 'Roboto', size: 16, lineHeight: 20, weight: 400};
   const runs = ['Total for this order', 'due before the end of the week, including shipping'];
   const html = `<table class="t"><tbody><tr><td class="c">${runs[0]}<div class="k"></div>${runs[1]}</td><td class="d"></td></tr></tbody></table>`;
@@ -889,7 +889,7 @@ test('right-to-left Hebrew widths and line profiles match Chromium; Arabic stays
 });
 
 test('::before/::after text is measured with the leaf content (withGeneratedText) and fits exactly where Chromium shows', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const ro = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
   const base = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.price{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap}.price::before{content:"$ "}.price::after{content:" USD"}';
   const html = '<div class="page"><p class="price">1,200</p></div>';
@@ -910,7 +910,7 @@ test('::before/::after text is measured with the leaf content (withGeneratedText
 });
 
 test('-webkit-line-clamp caps wrapped text at N lines like Chromium, and warns exactly where text is cut', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const ro = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
   const content = 'Static layout checks prove that every card title fits its box at every viewport width';
   const css = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr)}.t{font-family:Roboto;font-size:16px;line-height:24px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.b{height:10px}';
@@ -931,7 +931,7 @@ test('-webkit-line-clamp caps wrapped text at N lines like Chromium, and warns e
 });
 
 test('text-overflow: ellipsis warns exactly where Chromium truncates the line', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const ro = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400};
   const content = 'Wireless noise-cancelling headphones, midnight blue';
   const css = '*{box-sizing:border-box;margin:0}.page{display:grid;grid-template-columns:minmax(0,1fr);padding:0 16px}.t{font-family:Roboto;font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
@@ -952,7 +952,7 @@ test('text-overflow: ellipsis warns exactly where Chromium truncates the line', 
 });
 
 test('letter-spacing (px, or em made px at its element) is measured like Chromium lays it out', async ({page}) => {
-  const {analyzeHTML} = await import('../packages/css-verifier/src/html.mjs');
+  const {analyzeHTML} = await import('@mizchi/veriss/src/html.mjs');
   const texts = ['Checkout', 'Wireless headphones', 'office ffi fl'];
   for (const [spacing, css] of [[0.32, 'letter-spacing:0.02em'], [1, 'letter-spacing:1px'], [-0.5, 'letter-spacing:-0.5px'], [2.4, 'letter-spacing:0.15em']]) {
     const font = {family: 'Roboto', size: 16, lineHeight: 24, weight: 400, letterSpacing: spacing};
@@ -973,7 +973,7 @@ test('letter-spacing (px, or em made px at its element) is measured like Chromiu
 });
 
 test('lint with a font file: a measured auto column of text is as wide as Chromium renders it, and the verdict agrees', async ({page}) => {
-  const {analyzeStates} = await import('../packages/adapter-core/src/index.mjs');
+  const {analyzeStates} = await import('@mizchi/veriss-adapter-core');
   const fonts = {Roboto: {file: new URL('roboto-variable.ttf', fixtures).pathname}};
   const css = '.row{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:8px}.label,.value{font-family:Roboto;font-size:16px;line-height:24px;font-weight:400;color:#000}';
   const pageCSS = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}span{display:block}';
@@ -1012,7 +1012,7 @@ test('one-line text: the static violation fires exactly at the widths where Chro
 });
 
 test('placeholder clipped: the static warning fires exactly where Chromium\'s placeholder text is wider than the field', async ({page}) => {
-  const {analyzeStates} = await import('../packages/adapter-core/src/index.mjs');
+  const {analyzeStates} = await import('@mizchi/veriss-adapter-core');
   const fonts = {Roboto: {file: new URL('roboto-variable.ttf', fixtures).pathname}};
   const pageCSS = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}label{display:block;color:#000;font-family:Roboto;font-size:16px;line-height:24px;font-weight:400}';
   for (const [placeholder, columns] of [['Enter the email address you use at work', 'minmax(0,1fr)'], ['you@example.com', '200px'], ['Search products, brands and more', 'minmax(0,1fr) minmax(0,1fr)']]) {
@@ -1033,7 +1033,7 @@ test('placeholder clipped: the static warning fires exactly where Chromium\'s pl
 });
 
 test('text resize (SC 1.4.4): with Chromium\'s default font size doubled, the text overflows exactly where E_A11Y_TEXT_RESIZE is reported', async ({page}) => {
-  const {analyzeStates} = await import('../packages/adapter-core/src/index.mjs');
+  const {analyzeStates} = await import('@mizchi/veriss-adapter-core');
   const fonts = {Roboto: {file: new URL('roboto-variable.ttf', fixtures).pathname}};
   const pageCSS = '*{box-sizing:border-box;margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}';
   const cdp = await chromiumOnly(page);
@@ -1104,7 +1104,7 @@ test('text-line-obscured holds only where Chromium has glyphs of the first line 
 });
 
 test('dynamic-unbounded: with a long value in place of the dynamic text, Chromium overflows the box exactly where the warning holds', async ({page}) => {
-  const {analyzeStates} = await import('../packages/adapter-core/src/index.mjs');
+  const {analyzeStates} = await import('@mizchi/veriss-adapter-core');
   const fonts = {Roboto: {file: new URL('roboto-variable.ttf', fixtures).pathname}};
   const long = 'Bartholomew Montgomery-Fitzwilliam the Third of Somewhere Very Far';
   for (const [attrs, extra] of [['', ''], ['data-text-max-length="12"', ''], ['', '.name{overflow:hidden;text-overflow:ellipsis}'], ['', '.name{white-space:normal;overflow-wrap:anywhere}'], ['data-text-one-line', '.name{white-space:normal}']]) {

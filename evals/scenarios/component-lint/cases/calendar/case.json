@@ -1,1 +1,0 @@
-{"framework": "svelte", "intent": "A month grid of day buttons, seven per row.", "planted": "seven fixed 48px day columns plus gaps are wider than small phones", "expect": ["E_LAYOUT_TRACKS"]}

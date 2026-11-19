@@ -38,9 +38,9 @@ opaqueなiframe/SDK内部は境界の寸法だけが対象で、内部のshift�
 - 必須: [0003](0003-dynamic-dimension-contracts.md)の内容寸法・相関・由来。
 - 初版は明示したphaseの全候補比較で実装できる。
 - 時系列の被覆と中間frameの保証には[0005](0005-key-generations-and-frame-transitions.md)を接続する。
-- shift score/CLSへ結び付けるのは[0001](0001-static-layout-instability-verification.md)の責務。
+- shift score/CLSへ結び付けるのは[0001](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0001-static-layout-instability-verification.md)の責務。
 
-汎用の義務は`packages/css-verifier/src/`に、phaseをIsleの構造へ結び付ける処理は`lib/layout/`に置く。
+汎用の義務は`veriss: packages/veriss/src/`に、phaseをIsleの構造へ結び付ける処理は`lib/layout/`に置く。
 初版は検査用metadataのみで、`runtime/resource-owner.mjs`等の実行規則を変更しない。
 phaseを静的に導出できない外部setupは、閉じたモデルの前提を与えるかUnknownにする。
 

@@ -1,1 +1,0 @@
-{"framework": "vue", "intent": "A centered confirmation dialog over the page.", "planted": "a fixed 480px wide dialog: wider than phones, its buttons are cut off on the right", "expect": ["E_LAYOUT_PAGE_OVERFLOW"]}

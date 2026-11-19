@@ -1,9 +1,0 @@
-import { css } from '@linaria/core';
-
-const row = css`display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 12px; align-items: center; padding: 16px; background: #fff;`;
-const value = css`font-size: 16px; line-height: 24px; color: #111;`;
-const slider = css`display: block; height: 24px; margin: 0;`;
-
-export default function Price() {
-  return <div className={row}><span className={value}>Min $10</span><input className={slider} type="range" aria-label="Price" /><span className={value}>Max $500</span></div>;
-}

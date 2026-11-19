@@ -30,7 +30,7 @@
   "assumptions": [
     "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
     "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
-    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+    "Only horizontal-tb/ltr in-flow and explicitly sized local absolute geometry is checked; ink overflow and browser pixel rounding are outside the contract."
   ],
   "styleSources": [
     {
@@ -87,26 +87,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           },
           {
             "coefficient": "0",
@@ -123,6 +106,234 @@
         "viewportHeightExact": "260",
         "available": 140,
         "required": 200
+      },
+      "explanation": {
+        "version": 1,
+        "available": {
+          "facts": [
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-template-rows",
+              "value": "80px minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 15,
+                "selector": ".panel",
+                "specified": "80px minmax(0, 1fr)"
+              },
+              "dormant": [
+                {
+                  "css": {
+                    "file": "<css>",
+                    "line": 25,
+                    "selector": ".panel",
+                    "specified": "minmax(0, 1fr)",
+                    "conditions": [
+                      {
+                        "kind": "container",
+                        "name": "Shell",
+                        "params": "Shell (width >= 600px)",
+                        "css": {
+                          "file": "<css>",
+                          "line": 24
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "row-gap",
+              "value": "8px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 16,
+                "selector": ".panel",
+                "specified": "8px"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "grid-template-rows",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 5,
+                "selector": ".shell",
+                "specified": "minmax(0, 1fr)"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "row-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "100%",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 6,
+                "selector": ".shell",
+                "specified": "100%"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-top",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-bottom",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "kind": "viewport",
+              "axis": "block"
+            }
+          ]
+        },
+        "required": {
+          "facts": [
+            {
+              "kind": "contract",
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "minBlockSize",
+              "value": 200,
+              "selector": ".body",
+              "trusted": true
+            }
+          ]
+        }
       }
     },
     {
@@ -174,23 +385,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           },
           {
@@ -208,6 +403,234 @@
         "viewportHeightExact": "216",
         "available": 184,
         "required": 200
+      },
+      "explanation": {
+        "version": 1,
+        "available": {
+          "facts": [
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-template-rows",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 25,
+                "selector": ".panel",
+                "specified": "minmax(0, 1fr)",
+                "conditions": [
+                  {
+                    "kind": "container",
+                    "name": "Shell",
+                    "params": "Shell (width >= 600px)",
+                    "css": {
+                      "file": "<css>",
+                      "line": 24
+                    }
+                  }
+                ]
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "<css>",
+                    "line": 15,
+                    "selector": ".panel",
+                    "specified": "80px minmax(0, 1fr)"
+                  }
+                }
+              ]
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "row-gap",
+              "value": "8px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 16,
+                "selector": ".panel",
+                "specified": "8px"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "grid-template-rows",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 5,
+                "selector": ".shell",
+                "specified": "minmax(0, 1fr)"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "row-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "100%",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 6,
+                "selector": ".shell",
+                "specified": "100%"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-top",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-bottom",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "kind": "viewport",
+              "axis": "block"
+            }
+          ]
+        },
+        "required": {
+          "facts": [
+            {
+              "kind": "contract",
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "minBlockSize",
+              "value": 200,
+              "selector": ".body",
+              "trusted": true
+            }
+          ]
+        }
       }
     },
     {
@@ -259,23 +682,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           },
           {
@@ -292,6 +699,212 @@
         "viewportHeightExact": "400",
         "available": 392,
         "required": 400
+      },
+      "explanation": {
+        "version": 1,
+        "available": {
+          "facts": [
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "inline-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-template-columns",
+              "value": "200px minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 25,
+                "selector": ".panel",
+                "specified": "200px minmax(0, 1fr)",
+                "conditions": [
+                  {
+                    "kind": "container",
+                    "name": "Shell",
+                    "params": "Shell (width >= 600px)",
+                    "css": {
+                      "file": "<css>",
+                      "line": 24
+                    }
+                  }
+                ]
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "<css>",
+                    "line": 14,
+                    "selector": ".panel",
+                    "specified": "minmax(0, 1fr)"
+                  }
+                }
+              ]
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "column-gap",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 16,
+                "selector": ".panel",
+                "specified": "16px"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "grid-column",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "inline-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "grid-template-columns",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 4,
+                "selector": ".shell",
+                "specified": "minmax(0, 1fr)"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "column-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-column",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "inline-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-left",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-right",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "kind": "viewport",
+              "axis": "inline"
+            }
+          ]
+        },
+        "required": {
+          "facts": [
+            {
+              "kind": "contract",
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "minInlineSize",
+              "value": 400,
+              "selector": ".body",
+              "trusted": true
+            }
+          ]
+        }
       }
     },
     {
@@ -342,26 +955,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           },
           {
             "coefficient": "0",
@@ -378,6 +974,290 @@
         "viewportHeightExact": "260",
         "available": 140,
         "required": 200
+      },
+      "explanation": {
+        "version": 1,
+        "available": {
+          "facts": [
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "grid-template-rows",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 21,
+                "selector": ".body",
+                "specified": "minmax(0, 1fr)"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "row-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0/1/0",
+              "box": ".copy",
+              "owner": "QueryPanel",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-template-rows",
+              "value": "80px minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 15,
+                "selector": ".panel",
+                "specified": "80px minmax(0, 1fr)"
+              },
+              "dormant": [
+                {
+                  "css": {
+                    "file": "<css>",
+                    "line": 25,
+                    "selector": ".panel",
+                    "specified": "minmax(0, 1fr)",
+                    "conditions": [
+                      {
+                        "kind": "container",
+                        "name": "Shell",
+                        "params": "Shell (width >= 600px)",
+                        "css": {
+                          "file": "<css>",
+                          "line": 24
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "row-gap",
+              "value": "8px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 16,
+                "selector": ".panel",
+                "specified": "8px"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "grid-template-rows",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 5,
+                "selector": ".shell",
+                "specified": "minmax(0, 1fr)"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "row-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "100%",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 6,
+                "selector": ".shell",
+                "specified": "100%"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-top",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-bottom",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "kind": "viewport",
+              "axis": "block"
+            }
+          ]
+        },
+        "required": {
+          "facts": [
+            {
+              "path": "QueryPanel/0/1/0",
+              "box": ".copy",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1/0",
+              "box": ".copy",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "200px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 23,
+                "selector": ".copy",
+                "specified": "200px"
+              }
+            }
+          ]
+        }
       }
     },
     {
@@ -429,23 +1309,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           },
           {
@@ -463,6 +1327,290 @@
         "viewportHeightExact": "216",
         "available": 184,
         "required": 200
+      },
+      "explanation": {
+        "version": 1,
+        "available": {
+          "facts": [
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "grid-template-rows",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 21,
+                "selector": ".body",
+                "specified": "minmax(0, 1fr)"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "row-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0/1/0",
+              "box": ".copy",
+              "owner": "QueryPanel",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-template-rows",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 25,
+                "selector": ".panel",
+                "specified": "minmax(0, 1fr)",
+                "conditions": [
+                  {
+                    "kind": "container",
+                    "name": "Shell",
+                    "params": "Shell (width >= 600px)",
+                    "css": {
+                      "file": "<css>",
+                      "line": 24
+                    }
+                  }
+                ]
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "<css>",
+                    "line": 15,
+                    "selector": ".panel",
+                    "specified": "80px minmax(0, 1fr)"
+                  }
+                }
+              ]
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "row-gap",
+              "value": "8px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 16,
+                "selector": ".panel",
+                "specified": "8px"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "grid-template-rows",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 5,
+                "selector": ".shell",
+                "specified": "minmax(0, 1fr)"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "row-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "100%",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 6,
+                "selector": ".shell",
+                "specified": "100%"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-top",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-bottom",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "kind": "viewport",
+              "axis": "block"
+            }
+          ]
+        },
+        "required": {
+          "facts": [
+            {
+              "path": "QueryPanel/0/1/0",
+              "box": ".copy",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1/0",
+              "box": ".copy",
+              "owner": "QueryPanel",
+              "property": "block-size",
+              "value": "200px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 23,
+                "selector": ".copy",
+                "specified": "200px"
+              }
+            }
+          ]
+        }
       }
     },
     {
@@ -514,23 +1662,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           },
           {
@@ -547,6 +1679,260 @@
         "viewportHeightExact": "400",
         "available": 392,
         "required": 400
+      },
+      "explanation": {
+        "version": 1,
+        "available": {
+          "facts": [
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "grid-template-columns",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 20,
+                "selector": ".body",
+                "specified": "minmax(0, 1fr)"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "column-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0/1/0",
+              "box": ".copy",
+              "owner": "QueryPanel",
+              "property": "grid-column",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "inline-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-template-columns",
+              "value": "200px minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 25,
+                "selector": ".panel",
+                "specified": "200px minmax(0, 1fr)",
+                "conditions": [
+                  {
+                    "kind": "container",
+                    "name": "Shell",
+                    "params": "Shell (width >= 600px)",
+                    "css": {
+                      "file": "<css>",
+                      "line": 24
+                    }
+                  }
+                ]
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "<css>",
+                    "line": 14,
+                    "selector": ".panel",
+                    "specified": "minmax(0, 1fr)"
+                  }
+                }
+              ]
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "column-gap",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 16,
+                "selector": ".panel",
+                "specified": "16px"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1",
+              "box": ".body",
+              "owner": "QueryPanel",
+              "property": "grid-column",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "inline-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "grid-template-columns",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 4,
+                "selector": ".shell",
+                "specified": "minmax(0, 1fr)"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "column-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel/0",
+              "box": ".panel",
+              "owner": "QueryPanel",
+              "property": "grid-column",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "inline-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-left",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "path": "QueryPanel",
+              "box": ".shell",
+              "owner": "QueryPanel",
+              "property": "padding-right",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".shell",
+                "specified": "16px"
+              }
+            },
+            {
+              "kind": "viewport",
+              "axis": "inline"
+            }
+          ]
+        },
+        "required": {
+          "facts": [
+            {
+              "path": "QueryPanel/0/1/0",
+              "box": ".copy",
+              "owner": "QueryPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 1,
+                "selector": "*",
+                "specified": "border-box"
+              }
+            },
+            {
+              "path": "QueryPanel/0/1/0",
+              "box": ".copy",
+              "owner": "QueryPanel",
+              "property": "inline-size",
+              "value": "400px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 23,
+                "selector": ".copy",
+                "specified": "400px"
+              }
+            }
+          ]
+        }
       }
     }
   ],
@@ -680,17 +2066,6 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
             "strict": false
           }
@@ -740,17 +2115,6 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
             "strict": false
           }
@@ -800,23 +2164,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -865,23 +2213,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -930,23 +2262,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -995,23 +2311,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -1060,23 +2360,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -1125,23 +2409,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -1188,17 +2456,6 @@
           }
         ],
         "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
           {
             "coefficient": "-1",
             "constant": "632",
@@ -1249,17 +2506,6 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
@@ -1309,26 +2555,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -1375,26 +2604,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -1441,26 +2653,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -1507,26 +2702,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -1573,26 +2751,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -1639,26 +2800,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -1757,13 +2901,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -1816,19 +2954,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "1",
@@ -1883,17 +3009,6 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
             "strict": false
           }
@@ -1953,17 +3068,6 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
             "strict": false
           }
@@ -2020,17 +3124,6 @@
           }
         ],
         "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
           {
             "coefficient": "1",
             "constant": "-632",
@@ -2092,23 +3185,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2166,23 +3243,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2241,23 +3302,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2315,23 +3360,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2390,23 +3419,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2464,23 +3477,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2538,23 +3535,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2614,23 +3595,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2689,23 +3654,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2764,23 +3713,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2838,23 +3771,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2913,23 +3830,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -2987,23 +3888,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3062,23 +3947,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3136,23 +4005,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3210,23 +4063,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3284,23 +4121,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3358,23 +4179,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3433,23 +4238,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3507,23 +4296,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3581,23 +4354,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3655,23 +4412,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3731,23 +4472,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3806,23 +4531,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3880,23 +4589,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -3956,23 +4649,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -4030,23 +4707,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -4105,17 +4766,6 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
@@ -4175,17 +4825,6 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
@@ -4243,17 +4882,6 @@
           }
         ],
         "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
           {
             "coefficient": "-1",
             "constant": "632",
@@ -4314,17 +4942,6 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
@@ -4383,26 +5000,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -4459,26 +5059,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -4534,26 +5117,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -4609,26 +5175,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -4684,26 +5233,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -4759,26 +5291,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -4834,26 +5349,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -4909,26 +5407,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -4984,26 +5465,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5059,26 +5523,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5135,26 +5582,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5210,26 +5640,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5286,26 +5699,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5361,26 +5757,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5436,26 +5815,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5511,26 +5873,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5586,26 +5931,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5662,26 +5990,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5737,26 +6048,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5812,26 +6106,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5887,26 +6164,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -5964,26 +6224,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -6040,26 +6283,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -6115,26 +6341,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -6192,26 +6401,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -6267,26 +6459,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       },
@@ -6307,6 +6482,26 @@
     {
       "box": ".toolbar",
       "path": "QueryPanel/0/0",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "inlineSize": {
+          "coefficient": "0",
+          "constant": "200"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "-32",
+          "heightCoefficient": "1"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -6314,11 +6509,38 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
       "inlineSize": {
         "coefficient": "0",
         "constant": "200"
       },
+      "contentInlineSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
       "blockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "contentBlockSize": {
         "coefficient": "0",
         "constant": "-32",
         "heightCoefficient": "1"
@@ -6361,23 +6583,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -6386,6 +6592,25 @@
     {
       "box": ".copy",
       "path": "QueryPanel/0/1/0",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "232"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "inlineSize": {
+          "coefficient": "0",
+          "constant": "400"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "200"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -6393,11 +6618,36 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "0",
+        "constant": "400"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
       "inlineSize": {
         "coefficient": "0",
         "constant": "400"
       },
+      "contentInlineSize": {
+        "coefficient": "0",
+        "constant": "400"
+      },
       "blockSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "contentBlockSize": {
         "coefficient": "0",
         "constant": "200"
       },
@@ -6439,23 +6689,7 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -6464,6 +6698,26 @@
     {
       "box": ".body",
       "path": "QueryPanel/0/1",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "232"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "-248"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "-32",
+          "heightCoefficient": "1"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -6471,7 +6725,29 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
       "inlineSize": {
+        "coefficient": "1",
+        "constant": "-248"
+      },
+      "contentInlineSize": {
         "coefficient": "1",
         "constant": "-248"
       },
@@ -6480,81 +6756,7 @@
         "constant": "-32",
         "heightCoefficient": "1"
       },
-      "range": {
-        "min": 632,
-        "max": 1000,
-        "minInclusive": true,
-        "maxInclusive": true,
-        "minExact": "632",
-        "maxExact": "1000"
-      },
-      "heightRange": {
-        "min": 200,
-        "max": 600,
-        "minInclusive": true,
-        "maxInclusive": true,
-        "minExact": "200",
-        "maxExact": "600"
-      },
-      "region": {
-        "vertices": [
-          {
-            "width": "632",
-            "height": "200"
-          },
-          {
-            "width": "1000",
-            "height": "200"
-          },
-          {
-            "width": "1000",
-            "height": "600"
-          },
-          {
-            "width": "632",
-            "height": "600"
-          }
-        ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
-            "strict": false
-          }
-        ]
-      }
-    },
-    {
-      "box": ".panel",
-      "path": "QueryPanel/0",
-      "boxSizing": "border-box",
-      "boxSizingSource": {
-        "file": "<css>",
-        "line": 1,
-        "selector": "*",
-        "specified": "border-box"
-      },
-      "inlineSize": {
-        "coefficient": "1",
-        "constant": "-32"
-      },
-      "blockSize": {
+      "contentBlockSize": {
         "coefficient": "0",
         "constant": "-32",
         "heightCoefficient": "1"
@@ -6597,31 +6799,35 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
       }
     },
     {
-      "box": ".shell",
-      "path": "QueryPanel",
+      "box": ".panel",
+      "path": "QueryPanel/0",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "-32"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "-32",
+          "heightCoefficient": "1"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -6629,13 +6835,40 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
       "inlineSize": {
         "coefficient": "1",
-        "constant": "0"
+        "constant": "-32"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
       },
       "blockSize": {
         "coefficient": "0",
-        "constant": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
         "heightCoefficient": "1"
       },
       "range": {
@@ -6676,23 +6909,117 @@
         "constraints": [
           {
             "coefficient": "1",
-            "constant": "-32",
+            "constant": "-632",
             "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "box": ".shell",
+      "path": "QueryPanel",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "0"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "0",
+          "heightCoefficient": "1"
+        }
+      },
+      "boxSizing": "border-box",
+      "boxSizingSource": {
+        "file": "<css>",
+        "line": 1,
+        "selector": "*",
+        "specified": "border-box"
+      },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "inlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "blockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "range": {
+        "min": 632,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "632",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "632",
+            "height": "200"
           },
           {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
+            "width": "1000",
+            "height": "200"
           },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "632",
+            "height": "600"
+          }
+        ],
+        "constraints": [
           {
             "coefficient": "1",
             "constant": "-632",
-            "strict": false
-          },
-          {
-            "coefficient": "1",
-            "constant": "-248",
             "strict": false
           }
         ]
@@ -6701,6 +7028,25 @@
     {
       "box": ".toolbar",
       "path": "QueryPanel/0/0",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "-32"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "80"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -6708,11 +7054,35 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "80"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "80"
+      },
       "inlineSize": {
         "coefficient": "1",
         "constant": "-32"
       },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "blockSize": {
+        "coefficient": "0",
+        "constant": "80"
+      },
+      "contentBlockSize": {
         "coefficient": "0",
         "constant": "80"
       },
@@ -6753,26 +7123,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -6780,6 +7133,25 @@
     {
       "box": ".copy",
       "path": "QueryPanel/0/1/0",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "104"
+        },
+        "inlineSize": {
+          "coefficient": "0",
+          "constant": "400"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "200"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -6787,11 +7159,36 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "0",
+        "constant": "400"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "-120",
+        "heightCoefficient": "1"
+      },
       "inlineSize": {
         "coefficient": "0",
         "constant": "400"
       },
+      "contentInlineSize": {
+        "coefficient": "0",
+        "constant": "400"
+      },
       "blockSize": {
+        "coefficient": "0",
+        "constant": "200"
+      },
+      "contentBlockSize": {
         "coefficient": "0",
         "constant": "200"
       },
@@ -6832,26 +7229,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -6859,6 +7239,26 @@
     {
       "box": ".body",
       "path": "QueryPanel/0/1",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "104"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "-32"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "-120",
+          "heightCoefficient": "1"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -6866,11 +7266,38 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "-120",
+        "heightCoefficient": "1"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "-120",
+        "heightCoefficient": "1"
+      },
       "inlineSize": {
         "coefficient": "1",
         "constant": "-32"
       },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "blockSize": {
+        "coefficient": "0",
+        "constant": "-120",
+        "heightCoefficient": "1"
+      },
+      "contentBlockSize": {
         "coefficient": "0",
         "constant": "-120",
         "heightCoefficient": "1"
@@ -6912,26 +7339,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -6939,6 +7349,26 @@
     {
       "box": ".panel",
       "path": "QueryPanel/0",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "-32"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "-32",
+          "heightCoefficient": "1"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -6946,11 +7376,38 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
       "inlineSize": {
         "coefficient": "1",
         "constant": "-32"
       },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "blockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
+      "contentBlockSize": {
         "coefficient": "0",
         "constant": "-32",
         "heightCoefficient": "1"
@@ -6992,26 +7449,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -7019,6 +7459,26 @@
     {
       "box": ".shell",
       "path": "QueryPanel",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "0"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "0",
+          "heightCoefficient": "1"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -7026,13 +7486,40 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
       "inlineSize": {
         "coefficient": "1",
         "constant": "0"
       },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "blockSize": {
         "coefficient": "0",
         "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
         "heightCoefficient": "1"
       },
       "range": {
@@ -7072,26 +7559,9 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
-          },
-          {
-            "coefficient": "0",
-            "constant": "-120",
-            "heightCoefficient": "1",
-            "strict": false
           }
         ]
       }
@@ -7141,17 +7611,6 @@
           }
         ],
         "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
           {
             "coefficient": "1",
             "constant": "-632",
@@ -7204,17 +7663,6 @@
         ],
         "constraints": [
           {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          },
-          {
             "coefficient": "-1",
             "constant": "632",
             "strict": true
@@ -7223,5 +7671,205 @@
       }
     }
   ],
-  "subgrids": []
+  "subgrids": [],
+  "elements": [
+    {
+      "path": "QueryPanel",
+      "tag": "main",
+      "classes": [
+        "shell"
+      ],
+      "owner": "QueryPanel"
+    },
+    {
+      "path": "QueryPanel/0",
+      "tag": "section",
+      "classes": [
+        "panel"
+      ],
+      "owner": "QueryPanel"
+    },
+    {
+      "path": "QueryPanel/0/0",
+      "tag": "p",
+      "classes": [
+        "toolbar"
+      ],
+      "owner": "QueryPanel"
+    },
+    {
+      "path": "QueryPanel/0/1",
+      "tag": "section",
+      "classes": [
+        "body"
+      ],
+      "owner": "QueryPanel"
+    },
+    {
+      "path": "QueryPanel/0/1/0",
+      "tag": "p",
+      "classes": [
+        "copy"
+      ],
+      "owner": "QueryPanel"
+    }
+  ],
+  "layoutWarnings": [
+    {
+      "code": "W_LAYOUT_LINE_HEIGHT_FIXED",
+      "severity": "warning",
+      "box": ".toolbar",
+      "path": "QueryPanel/0/0",
+      "lineHeight": "24px",
+      "fontSize": "medium",
+      "message": ".toolbar has line-height: 24px but font-size: medium, which follows the user's default font size: with a larger default the text grows and the lines do not, so wrapped lines overlap. Use a unitless line-height (e.g. 1.5)",
+      "range": {
+        "min": 632,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "632",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "632",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "632",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-632",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "code": "W_LAYOUT_HEIGHT_FIXED_TEXT",
+      "severity": "warning",
+      "box": ".copy",
+      "path": "QueryPanel/0/1/0",
+      "blockSize": "200px",
+      "fontSize": "medium",
+      "message": ".copy has height: 200px but its text follows the user's default font size (font-size: medium): with a larger default the text outgrows the box and overflows it. Use min-height (or padding) instead",
+      "range": {
+        "min": 632,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "632",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "632",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "632",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-632",
+            "strict": false
+          }
+        ]
+      }
+    },
+    {
+      "code": "W_LAYOUT_LINE_HEIGHT_FIXED",
+      "severity": "warning",
+      "box": ".copy",
+      "path": "QueryPanel/0/1/0",
+      "lineHeight": "24px",
+      "fontSize": "medium",
+      "message": ".copy has line-height: 24px but font-size: medium, which follows the user's default font size: with a larger default the text grows and the lines do not, so wrapped lines overlap. Use a unitless line-height (e.g. 1.5)",
+      "range": {
+        "min": 632,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "632",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "632",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "632",
+            "height": "600"
+          }
+        ],
+        "constraints": [
+          {
+            "coefficient": "1",
+            "constant": "-632",
+            "strict": false
+          }
+        ]
+      }
+    }
+  ]
 }

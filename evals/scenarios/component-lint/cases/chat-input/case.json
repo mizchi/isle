@@ -1,1 +1,0 @@
-{"framework": "svelte", "intent": "A chat composer: a labelled text field and an icon send button.", "planted": "the send button shows only an icon and has no accessible name", "expect": ["E_A11Y_NAME"]}

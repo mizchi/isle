@@ -17,7 +17,7 @@ Use the npm API `isle` from `@isle/prototype/vite`, with the [layout configurati
 
 Your normal Vite build rejects violations and unknowns and emits `isle.layout.json`. In this checkout: `just example responsive-dynamic`, `just layout-dynamic`, `just layout-check`, and `just layout-dynamic-quality`. Remove the length guard to see the cardinality rejection. Change `.tile` to `min-width:280px` to see a narrow-width failure.
 
-The supported structure budget is32 repetitions and256 variants. Text-only state is excluded from the structural product. Content/font bounds remain trusted; browser rounding, arbitrary setup scripts, unknown native controls and positive scrollbar insets on shared subgrid axes remain outside this profile. Body overflow propagation needs explicit overflow on `html`. See [semantics](../../docs/layout-checking.md) and [results](../../evals/reports/layout-dynamic.md).
+The supported structure budget is32 repetitions and256 variants. Text-only state is excluded from the structural product. Content/font bounds remain trusted; browser rounding, arbitrary setup scripts, unknown native controls and positive scrollbar insets on shared subgrid axes remain outside this profile. Body overflow propagation needs explicit overflow on `html`. See [semantics](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md) and [results](../../evals/reports/layout-dynamic.md).
 
 ## 日本語
 
@@ -29,4 +29,4 @@ npm アプリでは `@isle/prototype/vite` の `isle` に[設定例](vite.config
 
 通常の Vite build で違反・解析不能を拒否し、`isle.layout.json` を生成する。この checkout では `just example responsive-dynamic`、`just layout-dynamic`、`just layout-check`、`just layout-dynamic-quality` を実行する。上限ガードを削除すると件数が解析不能になり、`.tile` を `min-width:280px` にすると狭い幅で拒否される。
 
-解析上限は繰り返し32件・構造256候補。text 更新だけの状態は構造の直積に含めない。内容/font の上界は信頼する契約で、丸め・任意 setup・未知の native control・共有 subgrid 軸への正の scrollbar inset 等は未対応。body の overflow 伝播には html の overflow 指定を要求する。[意味論](../../docs/layout-checking.md)・[検証結果](../../evals/reports/layout-dynamic.md)。
+解析上限は繰り返し32件・構造256候補。text 更新だけの状態は構造の直積に含めない。内容/font の上界は信頼する契約で、丸め・任意 setup・未知の native control・共有 subgrid 軸への正の scrollbar inset 等は未対応。body の overflow 伝播には html の overflow 指定を要求する。[意味論](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md)・[検証結果](../../evals/reports/layout-dynamic.md)。

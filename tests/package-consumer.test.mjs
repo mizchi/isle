@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, mkdir, readdir, rename, symlink, rm } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 test('the documented package exports resolve without private implementation imports', async () => {
@@ -33,6 +33,7 @@ test('a packed npm consumer builds the exact README app without MoonBit on PATH'
       assert.ok((await readFile(join(app, 'node_modules/@isle/prototype', entry.types), 'utf8')).length, 'Every public type entry must be included in the archive');
     }
     for (const name of Object.keys({ ...metadata.dependencies, ...metadata.peerDependencies })) {
+      await mkdir(dirname(join(app, `node_modules/${name}`)), { recursive: true }); // a scoped name (@mizchi/veriss)
       await symlink(fileURLToPath(new URL(`../node_modules/${name}`, import.meta.url)), join(app, `node_modules/${name}`), 'dir');
     }
     await writeFile(join(app, 'package.json'), '{"name":"consumer-app","private":true,"type":"module"}');

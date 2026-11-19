@@ -1,8 +1,8 @@
-import {analyzeLayout,type BoxTree,type LayoutOptions} from '../../packages/css-verifier/src/index.mjs';
-import {analyzeHTML} from '../../packages/css-verifier/src/html.mjs';
-import {verifyLayoutReport} from '../../packages/css-verifier/src/layout-z3-node.mjs';
-import {createNoShiftContract,createTransitionIR,createTransitionObligation,verifyTransitionObligation,type NoShiftProof} from '../../packages/css-verifier/src/transitions.mjs';
-import {verifyNoShift} from '../../packages/css-verifier/src/transitions-node.mjs';
+import {analyzeLayout,type BoxTree,type LayoutOptions} from '@mizchi/veriss/src/index.mjs';
+import {analyzeHTML} from '@mizchi/veriss/src/html.mjs';
+import {verifyLayoutReport} from '@mizchi/veriss/src/layout-z3-node.mjs';
+import {createNoShiftContract,createTransitionIR,createTransitionObligation,verifyTransitionObligation,type NoShiftProof} from '@mizchi/veriss/src/transitions.mjs';
+import {verifyNoShift} from '@mizchi/veriss/src/transitions-node.mjs';
 
 const tree={tag:'main',classes:['grid'],children:[{tag:'div'}]} as const satisfies BoxTree;
 const options={name:'Document',css:'*{box-sizing:border-box}',viewport:{min:320,max:1280}} satisfies LayoutOptions;

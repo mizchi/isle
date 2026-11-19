@@ -9,7 +9,7 @@ just layout-dynamic-quality
 moon run cmd/layout-dynamic-model --target js
 ```
 
-[利用者の設定とコード](../../examples/responsive-dynamic/)、[意味論と制限](../../docs/layout-checking.md)、[記述・読解課題](../scenarios/layout-dynamic/brief.md)。
+[利用者の設定とコード](../../examples/responsive-dynamic/)、[意味論と制限](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md)、[記述・読解課題](../scenarios/layout-dynamic/brief.md)。
 
 回帰検査は Node403件、MoonBit55件、layout Playwright16件、Pages Playwright24件、公開型の検査が成功した。静的/動的サンプルの vlmkit 固定7 gate はそれぞれ全て pass。
 

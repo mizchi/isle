@@ -25,9 +25,9 @@
     "./resources": { "types": "./runtime/resource-owner.d.mts", "import": "./runtime/resource-owner.mjs" }
   },
   "bin": { "isle": "./tools/isle.mjs" },
-  "files": ["packages/css-verifier/src/", "lib/", "runtime/", "_build/js/release/build/compiler/compiler.js", "_build/browser/preview-runtime.txt", "tools/isle.mjs", "README.md", "README.ja.md"],
+  "files": ["lib/", "runtime/", "_build/js/release/build/compiler/compiler.js", "_build/browser/preview-runtime.txt", "tools/isle.mjs", "README.md", "README.ja.md"],
   "peerDependencies": { "vite": "^8.3.5" },
-  "dependencies": { "postcss": "8.5.32", "parse5": "8.0.1", "css-tree": "3.2.1", "z3-solver": "5.3.3" },
+  "dependencies": { "@mizchi/veriss": "github:mizchi/veriss#8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed&path:packages/veriss", "postcss": "8.5.32", "parse5": "8.0.1", "css-tree": "3.2.1", "z3-solver": "5.3.3" },
   "packageManager": "pnpm@12.18.0",
   "engines": {
     "node": ">=24"
@@ -39,10 +39,10 @@
     "eval": "node tools/eval.mjs",
     "dev": "vite --config examples/counter/vite.config.mjs",
     "build": "pnpm build:compiler && vite build --config examples/counter/vite.config.mjs",
-    "test:e2e": "playwright test",
-    "css-lint": "node tools/css-lint.mjs"
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@mizchi/veriss-adapter-core": "github:mizchi/veriss#8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed&path:packages/adapter-core",
     "@mizchi/vlmkit": "0.24.0",
     "@playwright/test": "^1.64.1",
     "marked": "18.1.3",

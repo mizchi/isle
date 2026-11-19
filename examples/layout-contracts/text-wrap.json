@@ -20,7 +20,7 @@
   },
   "fonts": {
     "Noto Sans JP": {
-      "file": "../../packages/css-verifier/text-metrics/fixtures/japanese-variable.ttf"
+      "file": "../../node_modules/@mizchi/veriss/text-metrics/fixtures/japanese-variable.ttf"
     }
   },
   "boxes": {

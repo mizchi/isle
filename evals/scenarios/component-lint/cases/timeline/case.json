@@ -1,1 +1,0 @@
-{"framework": "vue", "intent": "A delivery timeline: a dot and a status line per step.", "planted": "the status text of the pending step is #bdbdbd on white (low contrast)", "expect": ["E_A11Y_CONTRAST"]}

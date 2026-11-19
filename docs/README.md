@@ -23,10 +23,10 @@ Isleは、Qwik型の事前コンパイルとresumeを基盤とするUIライブ�
 - [Qwikから移植するresume意味論](resume-semantics.md)：専用言語の根拠、現行の不足を測るeval、依存IR・live入力・局所復元の実装順。
 - [観測・片方向の分岐・record captureの最適化](semantic-optimizer.md)：不要な入口、初回専用factory、readonlyなフィールドの削減と再現結果。
 - [CSS略記と上書き](css-shorthands.md)：同一ルールのstrict検査、暗黙リセット、意図的なoverride、対応するカスケード。
-- [CSS 変数の解析](css-variables.md)：`var()`、継承・カスケード、循環、fallback と移植性の制約。
+- [CSS 変数の解析](https://github.com/mizchi/veriss/blob/HEAD/docs/css-variables.md)：`var()`、継承・カスケード、循環、fallback と移植性の制約。
 - [レイアウト契約の形式化](layout-contract-language.md)：ContractIR・LayoutIR・ObligationIR、被覆と適合、親子の要求。
 - [汎用CSS検証と静的モデルの方針](static-ui-verification.md)：独立コア、Isle adapter、動的寸法の前提と保証範囲。
-- [コンポーネントの CSS×DOM lint](component-lint.md)：Svelte・Vue・React（StyleX・Linaria）を状態ごとに検査する CLI、recommended ルール、ソース行。
+- [コンポーネントの CSS×DOM lint](https://github.com/mizchi/veriss/blob/HEAD/docs/component-lint.md)：Svelte・Vue・React（StyleX・Linaria）を状態ごとに検査する CLI、recommended ルール、ソース行。
 - [状態間のレイアウト契約](layout-transitions.md)：noshift/1、位置・寸法・存在の比較、被覆と反例、ブラウザーなしの検査。
 - [Form とアクセシビリティ](forms.md)：入力制約、非同期検証、エラー、pending、reset。
 - [チャンクとプロファイル](chunk-profiling.md)：イベント名、manifest、User Timing。
@@ -57,5 +57,5 @@ Isleは、Qwik型の事前コンパイルとresumeを基盤とするUIライブ�
 - [解決時期の最適化](resolution-optimizer.md): compiler による auto 計画、先読み予算、fetch / evaluate / activate / commit。
 
 - [CSS の解決](style-resolution.md): 非同期 CSS の準備・適用、owner と ShadowRoot、有限モデル。
-- [Grid の静的検査](layout-checking.md): 両軸の box model、親子契約、media/container と反例領域。
+- [Grid の静的検査](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md): 両軸の box model、親子契約、media/container と反例領域。
 - [リジェクト例を実行する](layout-rejections.md): violated / unknown の14例と対応版。

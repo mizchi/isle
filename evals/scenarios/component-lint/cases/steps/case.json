@@ -1,1 +1,0 @@
-{"framework": "svelte", "intent": "Checkout steps shown as a row of labelled circles.", "planted": "the current step is shown only by color (#1a73e8 vs #9e9e9e) and the step labels are nowrap in fixed 110px columns: wider than phones", "expect": ["E_LAYOUT_TRACKS", "W_A11Y_COLOR_ONLY_STATE"]}

@@ -43,7 +43,7 @@ static importが残っていないことを検査する。
 必須の先行ADRはないが、既存の依存・phase計画をguardとentryごとの需要へ拡張する作業を含む。
 [0008](0008-readonly-live-props.md)の完了は必須にしない。
 新しい取得待ちとcommitの観測点は[0005](0005-key-generations-and-frame-transitions.md)へ渡し、
-layoutへ影響する変換は[0001](0001-static-layout-instability-verification.md)の対象scopeと整合させる。
+layoutへ影響する変換は[0001](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0001-static-layout-instability-verification.md)の対象scopeと整合させる。
 
 主な対象は`lib/resume-plan.mjs`、`lib/region-codegen.mjs`、`lib/code-manifest.mjs`、
 `lib/loading-plan.mjs`、Vite adapter、runtimeの解決/commit部分。

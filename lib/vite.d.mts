@@ -5,7 +5,7 @@ import type { LoadingPolicy } from './code-contracts.d.ts';
 import type { SpeculationRules } from './speculation.mjs';
 import type { CostBudget } from './cost-contracts.d.ts';
 import type { CheckedLayoutBoxContract, LayoutScrollbarProfile, LayoutIntegrityOptions } from './layout-contracts.d.ts';
-import type { TextContract } from '../packages/css-verifier/src/text.d.mts';
+import type { TextContract } from '@mizchi/veriss/src/text.d.mts';
 /** Closed document profile: all author CSS is owned by this build. Unknown is an error. */
 export interface CheckedLayoutOptions {
   /** Local CSS path relative to the .isle entry. Delivered automatically. */

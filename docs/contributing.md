@@ -66,7 +66,7 @@ just widget-portable-dev # 別アプリを任意パスから配信する Node �
 - [チャンクとプロファイル](chunk-profiling.md)：名前付きイベント境界、source/manifest の対応、User Timing。
 - [解決時期の最適化](resolution-optimizer.md)：auto の先読み予算、依存閉包、取得・評価・活性化・commit。
 - [非同期 CSS の解決](style-resolution.md)：CSS-ready、cascade 順序、ShadowRoot、有限モデルとブラウザ検査。
-- [Grid の静的検査](layout-checking.md)：親子の両軸契約、overflow、media/container 分岐と反例。
+- [Grid の静的検査](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md)：親子の両軸契約、overflow、media/container 分岐と反例。
 - [デモのソース](../examples/counter/app.isle)：state、derive、server action、remote。
 - [評価シナリオ](../evals/README.md)：正解・実装・過去試行を隠した著者／読者評価。
 - [フレームワーク比較](../benchmarks/README.md)：共通シナリオ、測定条件、再実行手順と実測結果。

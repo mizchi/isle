@@ -1,1 +1,0 @@
-{"framework": "vue", "intent": "Help icon with a tooltip shown above it.", "planted": "the tooltip text is white on a translucent grey that blends with the page (low contrast)", "expect": ["E_A11Y_CONTRAST"]}

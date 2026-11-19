@@ -1,6 +1,6 @@
 # Grid の横幅契約を検査する
 
-2026-11-06。CSS の box model と Grid の親子関係を扱う、明示的な compiler CLI pass を実装した。実装の対象は horizontal-tb / ltr の横幅、閉じた CSS と静的 box tree、有限な viewport 区間である。[契約と使い方](../../docs/layout-checking.md)を参照。
+2026-11-06。CSS の box model と Grid の親子関係を扱う、明示的な compiler CLI pass を実装した。実装の対象は horizontal-tb / ltr の横幅、閉じた CSS と静的 box tree、有限な viewport 区間である。[契約と使い方](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md)を参照。
 
 本記録は横幅検査の導入段階を記す。後続の container query / 両軸対応と現行の検証結果は [追加評価](layout-axes.md)を参照する。
 

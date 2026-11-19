@@ -1,6 +1,6 @@
 {
   "status": "verified",
-  "variants": 18,
+  "variants": 9,
   "bounds": [
     {
       "component": "DynamicBoard",
@@ -172,5 +172,5 @@
     }
   ],
   "errors": [],
-  "scriptBytes": 11347
+  "scriptBytes": 11349
 }

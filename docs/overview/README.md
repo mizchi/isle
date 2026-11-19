@@ -8,7 +8,7 @@ Isle は、専用構文から SSR と再開可能な UI を生成する、UI 言
 
 Form、server action、Web Components widget を試せます。Grid / CSS 検査は独立した CLI で、指定されたサイズ・overflow・折り返し等の契約を検査します。認証・認可 policy はホスト側で実装し、有限モデルは独立した参照モデルです。任意 TypeScript、inline 構文、compiler IR からのモデル自動生成は今後の機能です。
 
-[はじめる](../getting-started.md) · [Form](../forms.md) · [widget](../widgets.md) · [CSS 検査と反例](../layout-checking.md) · [図の根拠](facts.md)
+[はじめる](../getting-started.md) · [Form](../forms.md) · [widget](../widgets.md) · [CSS 検査と反例](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md) · [図の根拠](facts.md)
 
 [English overview image](figures/isle-overview.en.desktop.png) · [English phone image](figures/isle-overview.en.mobile.png)。root README は [English](../../README.md) / [日本語](../../README.ja.md) を用意し、アプリへ npm パッケージを組み込む視点で説明する。
 

@@ -1,1 +1,0 @@
-{"framework": "vue", "intent": "Docs layout: a fixed sidebar on the left and the article and footer beside it.", "planted": "the content has no left offset, so the fixed sidebar covers the start of every line, footer included", "expect": ["E_A11Y_FIXED_HIDES_PART"]}

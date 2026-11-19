@@ -1,1 +1,0 @@
-{"framework": "svelte", "intent": "Breadcrumb trail of page links on one line.", "planted": "a nowrap flex row of fixed links wider than phones; the trail runs off the page", "expect": ["E_LAYOUT_TRACKS"]}

@@ -49,7 +49,7 @@ if (process.argv.slice(2).some(arg => ['--help', '-h'].includes(arg))) {
         let resolved = layoutOptions;
         if (fonts !== undefined) {
           if (!fonts || typeof fonts !== 'object' || Array.isArray(fonts) || Object.values(fonts).some(entry => typeof entry?.file !== 'string' || Object.keys(entry).some(key => !['file', 'weight'].includes(key)))) throw new Error('layout.json fonts must map a CSS family to {file, weight?}');
-          const {loadTextMetrics} = await import('../packages/css-verifier/src/text-node.mjs');
+          const {loadTextMetrics} = await import('@mizchi/veriss/src/text-node.mjs');
           const metrics = await loadTextMetrics({fonts: Object.fromEntries(Object.entries(fonts).map(([family, entry]) => [family, {...entry, file: resolve(directory, entry.file)}]))});
           resolved = metrics.resolveOptions(layoutOptions);
         }

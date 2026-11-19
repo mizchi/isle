@@ -1,5 +1,5 @@
-export type * from '../packages/css-verifier/src/layout-contracts.d.ts';
-import type {LayoutOptions as CSSOptions,LayoutSummary as CSSSummary,LayoutBuildCertificate as CSSCertificate,LayoutStructure as CSSStructure} from '../packages/css-verifier/src/layout-contracts.d.ts';
+export type * from '@mizchi/veriss/src/layout-contracts.d.ts';
+import type {LayoutOptions as CSSOptions,LayoutSummary as CSSSummary,LayoutBuildCertificate as CSSCertificate,LayoutStructure as CSSStructure} from '@mizchi/veriss/src/layout-contracts.d.ts';
 import type {DeclaredNoShiftProof} from './layout-noshift.mjs';
 import type {SourceSpan} from './contracts.d.ts';
 export interface LayoutTargetIdentity {owner:string;nodeId:string;id:string;keys:{site:string;value:string|number}[]}

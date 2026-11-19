@@ -1,1 +1,0 @@
-{"framework": "stylex", "intent": "Video card: a 16:9 thumbnail above a caption, three per row.", "planted": "three cards with a 280px minimum width per column: overflows below about 900px", "expect": ["E_LAYOUT_TRACKS"]}

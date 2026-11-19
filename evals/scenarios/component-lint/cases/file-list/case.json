@@ -1,1 +1,0 @@
-{"framework": "vue", "intent": "A file list: name, size and date in three columns.", "planted": "long nowrap file names in an auto column push the size and date columns off phones", "expect": ["E_LAYOUT_TRACKS"]}

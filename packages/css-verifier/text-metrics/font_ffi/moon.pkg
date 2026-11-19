@@ -1,8 +1,0 @@
-import {
-  "moonbitlang/core/json",
-  "mizchi/font",
-}
-
-options(
-  link: { "js": { "exports": [ "load_font", "font_info", "shape" ], "format": "esm" } },
-)

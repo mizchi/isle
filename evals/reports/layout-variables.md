@@ -24,5 +24,5 @@ Machine checks:
 
 No general proof of the CSS parser, variable resolver or browser is claimed.
 The emitted application has no variable-resolution runtime. See
-[the user guide](../../docs/css-variables.md) for the closed-world assumptions,
+[the user guide](https://github.com/mizchi/veriss/blob/HEAD/docs/css-variables.md) for the closed-world assumptions,
 limits and intentionally unsupported syntax.

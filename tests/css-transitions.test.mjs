@@ -1,4 +1,3 @@
-import '../packages/css-verifier/test/transitions.test.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {compile,requireIR} from '../lib/compiler.mjs';

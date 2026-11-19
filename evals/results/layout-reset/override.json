@@ -30,7 +30,7 @@
   "assumptions": [
     "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
     "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
-    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+    "Only horizontal-tb/ltr in-flow and explicitly sized local absolute geometry is checked; ink overflow and browser pixel rounding are outside the contract."
   ],
   "styleSources": [
     {
@@ -89,19 +89,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "witness": {
         "viewport": 620,
@@ -110,6 +98,235 @@
         "viewportHeightExact": "400",
         "available": 368,
         "required": 400
+      },
+      "explanation": {
+        "version": 1,
+        "available": {
+          "facts": [
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "grid-template-rows",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 5,
+                "selector": ".panel",
+                "layer": "app",
+                "specified": "minmax(0, 1fr)"
+              }
+            },
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "grid-auto-rows",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "row-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "ResetPanel/0",
+              "box": ".copy",
+              "owner": "ResetPanel",
+              "property": "grid-row",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "reset.css",
+                "line": 4,
+                "selector": "*",
+                "layer": "reset",
+                "specified": "inherit"
+              }
+            },
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "block-size",
+              "value": "100%",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 7,
+                "selector": ".panel",
+                "layer": "app",
+                "specified": "100%"
+              }
+            },
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "padding-top",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 6,
+                "selector": ".panel",
+                "layer": "app",
+                "specified": "16px"
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "reset.css",
+                    "line": 5,
+                    "selector": ":where(*)",
+                    "layer": "reset",
+                    "specified": "0"
+                  }
+                }
+              ]
+            },
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "padding-bottom",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 6,
+                "selector": ".panel",
+                "layer": "app",
+                "specified": "16px"
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "reset.css",
+                    "line": 5,
+                    "selector": ":where(*)",
+                    "layer": "reset",
+                    "specified": "0"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "viewport",
+              "axis": "block"
+            }
+          ]
+        },
+        "required": {
+          "facts": [
+            {
+              "path": "ResetPanel/0",
+              "box": ".copy",
+              "owner": "ResetPanel",
+              "property": "box-sizing",
+              "value": "content-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 13,
+                "selector": ".copy",
+                "layer": "app",
+                "specified": "content-box"
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "reset.css",
+                    "line": 4,
+                    "selector": "*",
+                    "layer": "reset",
+                    "specified": "inherit"
+                  }
+                }
+              ]
+            },
+            {
+              "path": "ResetPanel/0",
+              "box": ".copy",
+              "owner": "ResetPanel",
+              "property": "block-size",
+              "value": "100%",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 11,
+                "selector": ".copy",
+                "layer": "app",
+                "specified": "100%"
+              }
+            },
+            {
+              "path": "ResetPanel/0",
+              "box": ".copy",
+              "owner": "ResetPanel",
+              "property": "padding-top",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 11,
+                "selector": ".copy",
+                "layer": "app",
+                "specified": "16px"
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "reset.css",
+                    "line": 5,
+                    "selector": ":where(*)",
+                    "layer": "reset",
+                    "specified": "0"
+                  }
+                }
+              ]
+            },
+            {
+              "path": "ResetPanel/0",
+              "box": ".copy",
+              "owner": "ResetPanel",
+              "property": "padding-bottom",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 11,
+                "selector": ".copy",
+                "layer": "app",
+                "specified": "16px"
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "reset.css",
+                    "line": 5,
+                    "selector": ":where(*)",
+                    "layer": "reset",
+                    "specified": "0"
+                  }
+                }
+              ]
+            }
+          ]
+        }
       }
     },
     {
@@ -158,19 +375,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "witness": {
         "viewport": 620,
@@ -179,6 +384,220 @@
         "viewportHeightExact": "400",
         "available": 588,
         "required": 620
+      },
+      "explanation": {
+        "version": 1,
+        "available": {
+          "facts": [
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "grid-template-columns",
+              "value": "minmax(0, 1fr)",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 4,
+                "selector": ".panel",
+                "layer": "app",
+                "specified": "minmax(0, 1fr)"
+              }
+            },
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "column-gap",
+              "value": "normal",
+              "origin": "default"
+            },
+            {
+              "path": "ResetPanel/0",
+              "box": ".copy",
+              "owner": "ResetPanel",
+              "property": "grid-column",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "box-sizing",
+              "value": "border-box",
+              "origin": "author",
+              "css": {
+                "file": "reset.css",
+                "line": 4,
+                "selector": "*",
+                "layer": "reset",
+                "specified": "inherit"
+              }
+            },
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "inline-size",
+              "value": "auto",
+              "origin": "default"
+            },
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "padding-left",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 6,
+                "selector": ".panel",
+                "layer": "app",
+                "specified": "16px"
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "reset.css",
+                    "line": 5,
+                    "selector": ":where(*)",
+                    "layer": "reset",
+                    "specified": "0"
+                  }
+                }
+              ]
+            },
+            {
+              "path": "ResetPanel",
+              "box": ".panel",
+              "owner": "ResetPanel",
+              "property": "padding-right",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 6,
+                "selector": ".panel",
+                "layer": "app",
+                "specified": "16px"
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "reset.css",
+                    "line": 5,
+                    "selector": ":where(*)",
+                    "layer": "reset",
+                    "specified": "0"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "viewport",
+              "axis": "inline"
+            }
+          ]
+        },
+        "required": {
+          "facts": [
+            {
+              "path": "ResetPanel/0",
+              "box": ".copy",
+              "owner": "ResetPanel",
+              "property": "box-sizing",
+              "value": "content-box",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 13,
+                "selector": ".copy",
+                "layer": "app",
+                "specified": "content-box"
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "reset.css",
+                    "line": 4,
+                    "selector": "*",
+                    "layer": "reset",
+                    "specified": "inherit"
+                  }
+                }
+              ]
+            },
+            {
+              "path": "ResetPanel/0",
+              "box": ".copy",
+              "owner": "ResetPanel",
+              "property": "inline-size",
+              "value": "100%",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 11,
+                "selector": ".copy",
+                "layer": "app",
+                "specified": "100%"
+              }
+            },
+            {
+              "path": "ResetPanel/0",
+              "box": ".copy",
+              "owner": "ResetPanel",
+              "property": "padding-left",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 11,
+                "selector": ".copy",
+                "layer": "app",
+                "specified": "16px"
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "reset.css",
+                    "line": 5,
+                    "selector": ":where(*)",
+                    "layer": "reset",
+                    "specified": "0"
+                  }
+                }
+              ]
+            },
+            {
+              "path": "ResetPanel/0",
+              "box": ".copy",
+              "owner": "ResetPanel",
+              "property": "padding-right",
+              "value": "16px",
+              "origin": "author",
+              "css": {
+                "file": "<css>",
+                "line": 11,
+                "selector": ".copy",
+                "layer": "app",
+                "specified": "16px"
+              },
+              "overridden": [
+                {
+                  "css": {
+                    "file": "reset.css",
+                    "line": 5,
+                    "selector": ":where(*)",
+                    "layer": "reset",
+                    "specified": "0"
+                  }
+                }
+              ]
+            }
+          ]
+        }
       }
     }
   ],
@@ -309,19 +728,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       }
     },
     {
@@ -364,19 +771,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       }
     }
   ],
@@ -473,13 +868,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -532,19 +921,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "1",
@@ -596,19 +973,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -661,19 +1026,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "1",
@@ -725,19 +1078,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -790,19 +1131,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "1",
@@ -854,19 +1183,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "1",
@@ -918,19 +1235,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -984,19 +1289,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -1049,19 +1342,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "1",
@@ -1113,19 +1394,7 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       },
       "available": {
         "coefficient": "0",
@@ -1144,6 +1413,26 @@
     {
       "box": ".copy",
       "path": "ResetPanel/0",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "16"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "0"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "0",
+          "heightCoefficient": "1"
+        }
+      },
       "boxSizing": "content-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -1152,13 +1441,40 @@
         "layer": "app",
         "specified": "content-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
+        "heightCoefficient": "1"
+      },
       "inlineSize": {
         "coefficient": "1",
         "constant": "0"
       },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "blockSize": {
         "coefficient": "0",
         "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
         "heightCoefficient": "1"
       },
       "range": {
@@ -1196,24 +1512,32 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       }
     },
     {
       "box": ".panel",
       "path": "ResetPanel",
+      "position": "static",
+      "rect": {
+        "inlineStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "blockStart": {
+          "coefficient": "0",
+          "constant": "0"
+        },
+        "inlineSize": {
+          "coefficient": "1",
+          "constant": "0"
+        },
+        "blockSize": {
+          "coefficient": "0",
+          "constant": "0",
+          "heightCoefficient": "1"
+        }
+      },
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "reset.css",
@@ -1222,13 +1546,40 @@
         "layer": "reset",
         "specified": "inherit"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "paddingBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedBlockSize": {
+        "coefficient": "0",
+        "constant": "0",
+        "heightCoefficient": "1"
+      },
       "inlineSize": {
         "coefficient": "1",
         "constant": "0"
       },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "blockSize": {
         "coefficient": "0",
         "constant": "0",
+        "heightCoefficient": "1"
+      },
+      "contentBlockSize": {
+        "coefficient": "0",
+        "constant": "-32",
         "heightCoefficient": "1"
       },
       "range": {
@@ -1266,22 +1617,133 @@
             "height": "600"
           }
         ],
-        "constraints": [
-          {
-            "coefficient": "1",
-            "constant": "-32",
-            "strict": false
-          },
-          {
-            "coefficient": "0",
-            "constant": "-32",
-            "heightCoefficient": "1",
-            "strict": false
-          }
-        ]
+        "constraints": []
       }
     }
   ],
   "queries": [],
-  "subgrids": []
+  "subgrids": [],
+  "elements": [
+    {
+      "path": "ResetPanel",
+      "tag": "main",
+      "classes": [
+        "panel"
+      ],
+      "owner": "ResetPanel"
+    },
+    {
+      "path": "ResetPanel/0",
+      "tag": "p",
+      "classes": [
+        "copy"
+      ],
+      "owner": "ResetPanel"
+    }
+  ],
+  "layoutWarnings": [
+    {
+      "code": "W_CSS_PSEUDO_NO_CONTENT",
+      "severity": "warning",
+      "box": ".copy::before",
+      "path": "ResetPanel/0/-1",
+      "css": [
+        {
+          "property": "content",
+          "file": "reset.css",
+          "line": 4,
+          "selector": "*::before"
+        }
+      ],
+      "message": ".copy::before is styled (box-sizing) but has no content, so the browser never generates it. Add content: \"\" (or the text it should show)"
+    },
+    {
+      "code": "W_CSS_PSEUDO_NO_CONTENT",
+      "severity": "warning",
+      "box": ".copy::after",
+      "path": "ResetPanel/0/0",
+      "css": [
+        {
+          "property": "content",
+          "file": "reset.css",
+          "line": 4,
+          "selector": "*::after"
+        }
+      ],
+      "message": ".copy::after is styled (box-sizing) but has no content, so the browser never generates it. Add content: \"\" (or the text it should show)"
+    },
+    {
+      "code": "W_LAYOUT_LINE_HEIGHT_FIXED",
+      "severity": "warning",
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "lineHeight": "24px",
+      "fontSize": "medium",
+      "message": ".copy has line-height: 24px but font-size: medium, which follows the user's default font size: with a larger default the text grows and the lines do not, so wrapped lines overlap. Use a unitless line-height (e.g. 1.5)",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      },
+      "region": {
+        "vertices": [
+          {
+            "width": "240",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "200"
+          },
+          {
+            "width": "1000",
+            "height": "600"
+          },
+          {
+            "width": "240",
+            "height": "600"
+          }
+        ],
+        "constraints": []
+      }
+    },
+    {
+      "code": "W_LAYOUT_CONTENT_BOX_FULL",
+      "severity": "warning",
+      "box": ".copy",
+      "path": "ResetPanel/0",
+      "properties": [
+        "padding-left",
+        "padding-right"
+      ],
+      "message": ".copy is width: 100% with box-sizing: content-box, so its padding-left, padding-right come on top of the container's width and it overflows. Use box-sizing: border-box (or width: auto in a grid or flex parent)",
+      "range": {
+        "min": 240,
+        "max": 1000,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "240",
+        "maxExact": "1000"
+      },
+      "heightRange": {
+        "min": 200,
+        "max": 600,
+        "minInclusive": true,
+        "maxInclusive": true,
+        "minExact": "200",
+        "maxExact": "600"
+      }
+    }
+  ]
 }

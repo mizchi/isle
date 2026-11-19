@@ -14,21 +14,21 @@ GitHub Issueは未作成で、各文書の「Issue化」を承認後の起票に
 
 | ADR | 先の提案 | 実装すること | 必須の依存 |
 | --- | --- | --- | --- |
-| [0001](0001-static-layout-instability-verification.md) | 追加の上位方針 | 記号的レンダラによるLayout Instabilityの静的検証 | 段階ごとに0002〜0005を利用 |
-| [0002](0002-layout-counterexample-explanations.md) | 1 | 反例の可視化と原因追跡 | 既存LayoutIR・noshift |
+| [0001](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0001-static-layout-instability-verification.md) | 追加の上位方針 | 記号的レンダラによるLayout Instabilityの静的検証 | 段階ごとに0002〜0005を利用 |
+| [0002](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0002-layout-counterexample-explanations.md) | 1 | 反例の可視化と原因追跡 | 既存LayoutIR・noshift |
 | [0003](0003-dynamic-dimension-contracts.md) | 2 | 動的寸法の入力契約と前提の由来 | 既存CSS検証コア |
 | [0004](0004-async-layout-reservations.md) | 3 | 非同期表示の予約領域検査 | 0003 |
 | [0005](0005-key-generations-and-frame-transitions.md) | 4 | keyの世代、寿命、描画され得る遷移 | 既存key対応・owner/regionモデル |
 | [0006](0006-verification-result-cache.md) | 5 | 検証成功のキャッシュと失効 | 対象IRのversion・依存情報 |
-| [0007](0007-static-contrast-contracts.md) | 6 | 単色・不透明な色の静的コントラスト検査 | 既存CSSカスケード |
+| [0007](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0007-static-contrast-contracts.md) | 6 | 単色・不透明な色の静的コントラスト検査 | 既存CSSカスケード |
 | [0008](0008-readonly-live-props.md) | 7 | client境界を越える読み取り専用live入力 | 既存ValuePhasePlan・owner管理 |
 | [0009](0009-lazy-region-factory-chunks.md) | 8 | 分岐factoryのCodeRef化と遅延チャンク分割 | 既存resume計画・manifest |
-| [0010](0010-font-derived-text-metrics.md) | 追加の指示 | mizchi/fontによる1行テキストの幅・高さの導出 | 既存CSS検証コア |
-| [0011](0011-flex-and-contents-subsets.md) | 追加の指示 | flex(row/column・nowrap)と`display: contents`の安全なサブセット | 既存CSS検証コア、mizchi/cssの差分検査 |
-| [0012](0012-static-integrity-rules.md) | 追加の指示 | vlmkit の integrity 検査(ページ溢れ・突出・衝突・target 寸法・clip・入れ子スクロール)の静的版 | 既存CSS検証コア |
-| [0013](0013-static-accessibility-rules.md) | 追加の指示 | DOM と CSS を組み合わせた静的アクセシビリティ検査(名前・コントラスト・覆い・見出し・id・フォーカス・reflow など) | 0012 の geometry、0007 |
-| [0014](0014-component-style-language.md) | 追加の意見 | テンプレートの節点に結び付くスタイル言語(selector 照合と cascade を component の中で使わない)の設計案。Proposed、未実装 | 既存CSS検証コア、0013 までの検査 |
-| [0015](0015-checkable-style-languages-and-portable-layout.md) | 追加の意見 | 静的検査できるスタイル記述の 5 案(CSS サブセット、契約の at-rule、テンプレート言語、型付きの値、共有のレイアウト IR)の比較と、Web 以外のホストで動くレイアウトエンジン(mizchi/crater との三者照合)。Proposed、未実装 | 0014、既存CSS検証コア |
+| [0010](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0010-font-derived-text-metrics.md) | 追加の指示 | mizchi/fontによる1行テキストの幅・高さの導出 | 既存CSS検証コア |
+| [0011](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0011-flex-and-contents-subsets.md) | 追加の指示 | flex(row/column・nowrap)と`display: contents`の安全なサブセット | 既存CSS検証コア、mizchi/cssの差分検査 |
+| [0012](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0012-static-integrity-rules.md) | 追加の指示 | vlmkit の integrity 検査(ページ溢れ・突出・衝突・target 寸法・clip・入れ子スクロール)の静的版 | 既存CSS検証コア |
+| [0013](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0013-static-accessibility-rules.md) | 追加の指示 | DOM と CSS を組み合わせた静的アクセシビリティ検査(名前・コントラスト・覆い・見出し・id・フォーカス・reflow など) | 0012 の geometry、0007 |
+| [0014](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0014-component-style-language.md) | 追加の意見 | テンプレートの節点に結び付くスタイル言語(selector 照合と cascade を component の中で使わない)の設計案。Proposed、未実装 | 既存CSS検証コア、0013 までの検査 |
+| [0015](https://github.com/mizchi/veriss/blob/HEAD/docs/adr/0015-checkable-style-languages-and-portable-layout.md) | 追加の意見 | 静的検査できるスタイル記述の 5 案(CSS サブセット、契約の at-rule、テンプレート言語、型付きの値、共有のレイアウト IR)の比較と、Web 以外のホストで動くレイアウトエンジン(mizchi/crater との三者照合)。Proposed、未実装 | 0014、既存CSS検証コア |
 
 0001は上位の設計方針であり、残るADRの完了を一括して宣言するものではない。
 0006・0007は独立して進められる。0008・0009も互いの完了を必須条件にしない。

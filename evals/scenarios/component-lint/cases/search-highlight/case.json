@@ -1,1 +1,0 @@
-{"framework": "stylex", "intent": "Search results with the matched words highlighted.", "planted": "the highlight is light yellow text (#fdd663) on white instead of a background mark", "expect": ["E_A11Y_CONTRAST"]}

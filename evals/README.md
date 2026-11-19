@@ -6,7 +6,7 @@
 
 [意味論からの最適化の課題](scenarios/semantic-optimizer/brief.md)では、不要なイベント、片方向のShow、readonly recordのcaptureを予測して実行出力と照合する。サイズ報告とブラウザ受入検査があり、参加者評価は未実施。
 
-[コンポーネント lint の評価](scenarios/component-lint/README.md) は、崩れを仕込んだ Svelte、Vue、Linaria、StyleX のコンポーネントを lint にかけ、Chromium で実測した崩れと照合します(`just component-lint-eval`)。warning に従って直した版を `attempts/` に残し、見逃し、確認できない error、検査できなかった理由を集計します。1 回目の結果は [reports/component-lint.md](reports/component-lint.md) にあります。
+[コンポーネント lint の評価](https://github.com/mizchi/veriss/blob/HEAD/evals/scenarios/component-lint/README.md) は、崩れを仕込んだ Svelte、Vue、Linaria、StyleX のコンポーネントを lint にかけ、Chromium で実測した崩れと照合します(`just component-lint-eval`)。warning に従って直した版を `attempts/` に残し、見逃し、確認できない error、検査できなかった理由を集計します。1 回目の結果は [reports/component-lint.md](reports/component-lint.md) にあります。
 
 書きやすさは初回成功、修正回数、診断、参加者の具体的な迷いで記録します。読解はソースから推測した事実を非公開の期待値で採点します。主観的な「書きやすい」を自動で証明したとは扱いません。
 

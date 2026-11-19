@@ -1,1 +1,1 @@
-export * from '../packages/css-verifier/src/layout-contract-node.mjs';
+export * from '@mizchi/veriss/src/layout-contract-node.mjs';

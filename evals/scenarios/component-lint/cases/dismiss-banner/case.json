@@ -1,1 +1,0 @@
-{"framework": "stylex", "intent": "A dismissible notice with a close button at its right edge.", "planted": "the close button is absolutely positioned over the end of the message text, and it has no name", "expect": ["E_A11Y_NAME", "E_A11Y_TEXT_LINE_OBSCURED"]}

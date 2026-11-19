@@ -126,10 +126,10 @@ export default defineConfig({
 
 - `component Label(title: string)` は server/client 共通の純粋な component です。状態・イベントを使う場合は `client`、server に限定する場合は `server` を付けます。
 - [`event` と `on:click`](docs/events.md) で型付きの入力と DOM への接続を宣言します。`.preventDefault` は遅延読み込み前に実行され、本文に `inline(ts)` は不要です。
-- [テンプレート内 CSS](docs/inline-css.md) は静的な `<style>` をスコープします。チェック付きビルドは宣言した幅・高さ範囲を Z3 で検査し、playground は Z3 Wasm を必要時に読み込みます。[CSS 変数](docs/css-variables.md)も検査対象の部分集合で静的解決します。
+- [テンプレート内 CSS](docs/inline-css.md) は静的な `<style>` をスコープします。チェック付きビルドは宣言した幅・高さ範囲を Z3 で検査し、playground は Z3 Wasm を必要時に読み込みます。[CSS 変数](https://github.com/mizchi/veriss/blob/HEAD/docs/css-variables.md)も検査対象の部分集合で静的解決します。
 - [CSS略記の検査](docs/css-shorthands.md)で、同一ルール内の暗黙リセットを含む干渉を拒否します。意図的な上書きは別ルールに分けます。アプリのランタイムは増えません。
 - [`layout SafeGrid`](docs/layout-contract-language.md) で component の入力範囲と fit 保証を宣言します。Vite・CLI・playground が実際の割当を検査し、アプリのランタイムには追加しません。
-- CSS検証コアは独立した[`@mizchi/css-verifier`](packages/css-verifier/README.md)として分離しています。汎用box tree・静的HTMLからも検査でき、Isleはそのadapterです（パッケージは未公開）。
+- CSS検証コアは独立した[`@mizchi/veriss`](https://github.com/mizchi/veriss)として分離しています。汎用box tree・静的HTMLからも検査でき、Isleはそのadapterです（パッケージは未公開）。
 - [`noshift/1`](docs/layout-transitions.md) はDOM要素へ`@noshift`を付け、状態間のboxの存在・位置・寸法を検査します。環境はcomponentの`layout`で宣言し、Vite・CLI・playgroundが有限な候補を比較します。selector指定も維持し、CLS値や中間frameは保証に含めません。
 - [`layout PositionedGrid`](examples/layout-contracts/positioned.isle) で名前付きの局所座標系、absoluteの包含、overlay同士の非重複を検査します。[子契約](examples/layout-contracts/positioned-components.isle)では公開rootを接続し、privateな内部も再帰的に検査します。未対応のtransformやscrollはUnknownです。
 - [`Show`・`For`・`Switch` / `Match`・`ErrorBoundary`](docs/control-components.md) で構造を保って部分更新します。行のルート、または複数要素をまとめる `Fragment` に `key` を指定します。client component の props は不変の初期値です。
@@ -155,7 +155,7 @@ export default defineConfig({
 | `@isle/prototype/resources` | resource owner の API と型 |
 | `pnpm exec isle` | source・manifest・cost budget・layout 契約の検査 |
 
-詳しい使い方: [入れ子と children](docs/composition.md)・[Form](docs/forms.md)・[制御構文](docs/control-flow.md)・[読み込み](docs/resolution-optimizer.md)・[widget](docs/widgets.md)・[CSS 契約](docs/layout-checking.md)・[ドキュメント一覧](docs/README.md)。
+詳しい使い方: [入れ子と children](docs/composition.md)・[Form](docs/forms.md)・[制御構文](docs/control-flow.md)・[読み込み](docs/resolution-optimizer.md)・[widget](docs/widgets.md)・[CSS 契約](https://github.com/mizchi/veriss/blob/HEAD/docs/layout-checking.md)・[ドキュメント一覧](docs/README.md)。
 
 ## 現在の対応範囲
 
