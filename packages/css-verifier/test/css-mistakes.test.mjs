@@ -414,3 +414,16 @@ test('F40: place-items / place-content / place-self read as their align and just
   const block = codes(run('.x{place-items:center}', '<div class="x a"></div>'), 'W_LAYOUT_DECLARATION_INERT');
   assert.ok(block.some(w => w.properties.includes('align-items')));
 });
+
+test('F41: fill / stroke on an svg whose shapes all set their own fill / stroke attribute does nothing', () => {
+  const svg = inner => `<svg class="i" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">${inner}</svg>`;
+  const w = (css, inner) => codes(run(`.i{display:block}${css}`, svg(inner)), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.some(p => p === 'fill' || p === 'stroke'));
+  const [hit] = w('.i{fill:red}', '<path fill="#000" d="M0 0h20v20H0z"/>');
+  assert.ok(hit && /attribute/.test(hit.message) && hit.properties.includes('fill'));
+  assert.equal(w('.i{fill:red}', '<g fill="#000"><path d="M0 0h20v20H0z"/><path d="M0 0h2v2H0z"/></g>').length, 1);
+  assert.equal(w('.i{stroke:red}', '<path fill="none" stroke="#000" d="M2 2h16v16H2z"/>').length, 1);
+  assert.equal(w('.i{fill:red}', '<path d="M0 0h20v20H0z"/>').length, 0);
+  assert.equal(w('.i{fill:red}', '<path fill="#000" d="M0 0h20v20H0z"/><path d="M0 0h2v2H0z"/>').length, 0);
+  assert.equal(w('.i{fill:red}', '<path fill="inherit" d="M0 0h20v20H0z"/>').length, 0);
+  assert.equal(w('.i{fill:red}.i path{fill:blue}', '<path fill="#000" d="M0 0h20v20H0z"/>').length, 0);
+});

@@ -493,6 +493,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
     firstPseudoInert(box, style);
+      // F41: fill / stroke on an svg reach its shapes by inheritance only; a shape with its own fill / stroke attribute
+      // (or a g around it) keeps that (measured in Chromium, Firefox and WebKit). Not where a rule could style the shapes.
+    if (box.tag === 'svg' && !box.pseudo) {
+      const paint = box.svgSize?.paint ?? {};
+      const shapeRule = key => rules.some(rule => (rule.declarations ?? []).some(d => d.property === key) && (rule.selectors ?? []).some(sel => /(?:^|[\s>+~(,])(?:path|circle|rect|g|use|polygon|polyline|line|ellipse|text|tspan|symbol)\b|\*/.test(sel.source)));
+      const keys = ['fill', 'stroke'].filter(key => style.$sources?.[key] && paint[`${key}Set`] && !shapeRule(key));
+      if (keys.length && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(keys[0])))
+        layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: keys, css: keys.map(key => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
+          message: `${box.label}: ${keys.join(' and ')} on the svg ${keys.length === 1 ? 'has' : 'have'} no effect: every shape in it sets its own ${keys.join(' / ')} attribute, which wins over an inherited value. Remove the attribute${keys.length === 1 ? '' : 's'} (or set it to currentColor and use color), or style the shapes (.icon path { ${keys[0]}: … })` });
+    }
       // F38: auto margins of an absolutely positioned box centre it only when both insets and the size on that axis are
       // set (CSS 2.2 §10.3.7, §10.6.4: otherwise they are 0; measured in Chromium, Firefox and WebKit).
     if (!box.pseudo && (style.position === 'absolute' || style.$fixed) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_AUTO_MARGIN_ABSOLUTE' && w.path === box.path)) {

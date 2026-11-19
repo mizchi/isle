@@ -88,7 +88,10 @@ export function htmlBoxTree(html) {
         if(values.every(v=>v===undefined)) return undefined;
         return new Set(values).size===1 ? values[0] : 'mixed';
       };
-      return {...own,...(of('fill')!==undefined ? {shapeFill:of('fill')} : {}),...(of('stroke')!==undefined ? {shapeStroke:of('stroke')} : {}),shapes:shapes.length};
+      // F41: every shape sets this paint itself (an attribute on it or a g around it, not inherit): an inherited CSS value
+      // from the svg never reaches it. Not where a style attribute could set it.
+      const setByAll=key=>leaves.length>0 && !shapes.some(c=>c.attrs.some(a=>a.name==='style')) && leaves.every(chain=>{ const v=[...chain].reverse().map(c=>c.attrs.find(a=>a.name===key)?.value.trim().toLowerCase()).find(v=>v!==undefined); return v!==undefined && v!=='inherit'; });
+      return {...own,...(of('fill')!==undefined ? {shapeFill:of('fill')} : {}),...(of('stroke')!==undefined ? {shapeStroke:of('stroke')} : {}),...(setByAll('fill') ? {fillSet:true} : {}),...(setByAll('stroke') ? {strokeSet:true} : {}),shapes:shapes.length};
     })();
     if(inlineSvg) { const facts=accessibilityFacts('svg',attrs); facts.svgSize={...(facts.svgSize ?? {}),paint:svgPaint}; return {tag:'svg',attributes:attrs,...(attrs.id!==undefined ? {id:attrs.id} : {}),...facts,...(svgTitle ? {named:true} : {}),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),text:false,runs:[],children:[]}; }
     // (A table section or row the parser inserted — no start tag in the source — is marked implied: checklist F26.)

@@ -434,3 +434,17 @@ test('F40: place-items / place-content lay out as their longhands', async ({page
     expect(JSON.stringify(a.layoutWarnings ?? []), short).toBe(JSON.stringify(b.layoutWarnings ?? []).replaceAll(long.slice(3, -1), short.slice(3, -1)));
   }
 });
+
+test('F41: fill / stroke on an svg whose shapes set their own attributes', async ({page}) => {
+  const svg = inner => `<svg class="i" width="40" height="40" viewBox="0 0 20 20" aria-hidden="true">${inner}</svg>`;
+  for (const [css, inner, key] of [['.i{fill:rgb(255,0,0)}', '<path fill="#000" d="M0 0h20v20H0z"/>', 'fill'], ['.i{fill:rgb(255,0,0)}', '<path d="M0 0h20v20H0z"/>', 'fill'], ['.i{fill:rgb(255,0,0)}', '<path fill="inherit" d="M0 0h20v20H0z"/>', 'fill'],
+    ['.i{fill:rgb(255,0,0)}', '<g fill="#000"><path d="M0 0h20v20H0z"/></g>', 'fill'], ['.i{fill:rgb(255,0,0)}', '<path fill="#000" d="M0 0h10v20H0z"/><path d="M10 0h10v20H10z"/>', 'fill'],
+    ['.i{stroke:rgb(255,0,0)}', '<path fill="none" stroke="#000" stroke-width="4" d="M2 2h16v16H2z"/>', 'stroke'], ['.i{fill:rgb(255,0,0)}.i path{fill:rgb(0,0,255)}', '<path fill="#000" d="M0 0h20v20H0z"/>', 'fill']]) {
+    const shot = async extra => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}.i{display:block}${extra}</style></head><body>${svg(inner)}</body></html>`); return (await page.screenshot()).toString('base64'); };
+    const inert = await shot('') === await shot(css);
+    const own = css.replace(/\.i path\{[^}]*\}/, '');
+    const ownInert = css === own ? inert : await shot('') === await shot(own) && await shot(css.replace(own, '')) === await shot(css);
+    expect((analyzeHTML(`<html lang="en"><body>${svg(inner)}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.i{display:block}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes(key)), `${css} ${inner}`).toBe(css === own ? inert : false);
+    if (css !== own) expect(ownInert, 'the svg rule alone is inert there').toBe(true);
+  }
+});

@@ -228,6 +228,9 @@
   align-*・justify-* に分けて読む(CSS Box Alignment 3 §5.3。place-content の baseline 1 つは justify が start)。
   分けたあとは今までの検査がそのまま効く(ブロック容器の place-items は align-items が効かないと報告する)。3 つのブラウザーで、
   一括指定と個別指定の配置が同じことを確かめた。
+- [x] **F41. 図形が自分の属性を持つ svg の `fill`・`stroke`**(`W_LAYOUT_DECLARATION_INERT`): svg に書いた fill・stroke は継承で
+  図形に届くだけなので、すべての図形(か、それを囲む g)が fill・stroke 属性を持つと何も変わらない(3 つのブラウザーで測った。
+  属性が inherit のとき、属性のない図形があるとき、図形を直接選ぶ規則があるときは報告しない)。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 
