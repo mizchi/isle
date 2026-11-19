@@ -427,3 +427,16 @@ test('F41: fill / stroke on an svg whose shapes all set their own fill / stroke 
   assert.equal(w('.i{fill:red}', '<path fill="inherit" d="M0 0h20v20H0z"/>').length, 0);
   assert.equal(w('.i{fill:red}.i path{fill:blue}', '<path fill="#000" d="M0 0h20v20H0z"/>').length, 0);
 });
+
+test('F42: background, color, border and padding on a checkbox or radio of appearance auto do nothing', () => {
+  const html = '<label class="a"><input class="x" type="checkbox"> Accept</label>';
+  const w = css => codes(run(css, '<input class="x" type="checkbox" aria-label="q">'), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.some(p => /^(?:background-color|color|border|padding|border-.*-radius)/.test(p)));
+  const [hit] = w('.x{background-color:red;border:2px solid red}');
+  assert.ok(hit && /appearance: none/.test(hit.message) && /accent-color/.test(hit.message));
+  assert.ok(hit.properties.includes('background-color'));
+  assert.equal(w('.x{color:red}').length, 1);
+  assert.equal(w('.x{padding:4px}').length, 1);
+  assert.equal(w('.x{appearance:none;background-color:red;width:20px;height:20px}').length, 0);
+  assert.equal(w('.x{accent-color:red}').length, 0);
+  assert.equal(codes(run('.x{background-color:red}', '<input class="x" type="text" aria-label="q">'), 'W_LAYOUT_DECLARATION_INERT').length, 0);
+});

@@ -231,6 +231,10 @@
 - [x] **F41. 図形が自分の属性を持つ svg の `fill`・`stroke`**(`W_LAYOUT_DECLARATION_INERT`): svg に書いた fill・stroke は継承で
   図形に届くだけなので、すべての図形(か、それを囲む g)が fill・stroke 属性を持つと何も変わらない(3 つのブラウザーで測った。
   属性が inherit のとき、属性のない図形があるとき、図形を直接選ぶ規則があるときは報告しない)。
+- [x] **F42. ブラウザーが描く checkbox・radio の背景・色・線・内側の余白**(`W_LAYOUT_DECLARATION_INERT`): appearance: auto の
+  checkbox・radio は、background-color・color・border・padding で描画も大きさも変わらない(3 つのブラウザーで、画素も
+  大きさも後ろの要素の位置も同じ)。accent-color か appearance: none を勧める。あわせて、ブラウザーの checkbox の配置
+  (accessibility の検査)が padding・border のある書き方でも働くようにした。(box-shadow は WebKit だけ描かないので除いた。)
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

@@ -493,6 +493,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
     firstPseudoInert(box, style);
+      // F42: a checkbox or radio of appearance auto is drawn by the platform: background, color, border and padding
+      // change no pixel and not its size (measured in Chromium, Firefox and WebKit); accent-color colors it.
+    if (!box.pseudo && box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType) && style.appearance === 'auto') {
+      const keys = Object.keys(style.$sources ?? {}).filter(key => /^(?:background-color|color|padding-(?:top|right|bottom|left)|border-(?:top|right|bottom|left)(?:-width|-style|-color)?)$/.test(key));
+      const names = [...new Set(keys.map(key => key.replace(/-(?:top|right|bottom|left)(?=-|$)/g, '')))];
+      if (keys.length && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(keys[0])))
+        layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: keys, css: keys.slice(0, 4).map(key => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
+          message: `${box.label}: ${names.join(', ')} ${names.length === 1 ? 'has' : 'have'} no effect on a ${box.inputType} drawn by the browser (appearance: auto). Use accent-color to color it, or appearance: none to draw it yourself` });
+    }
       // F41: fill / stroke on an svg reach its shapes by inheritance only; a shape with its own fill / stroke attribute
       // (or a g around it) keeps that (measured in Chromium, Firefox and WebKit). Not where a rule could style the shapes.
     if (box.tag === 'svg' && !box.pseudo) {
@@ -923,10 +932,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const drawn = natural ?? (Number.isFinite(w) && Number.isFinite(hgt) && w > 0 && hgt > 0 ? { width: w, height: hgt } : null);
         if (box.tag === 'img' && drawn) style = { ...style, $imageRatio: { width: drawn.width, height: drawn.height, basis: natural ? 'file' : 'attributes', follows: /^auto\b/.test(style['aspect-ratio']) && (style['inline-size'] === 'auto' || style['block-size'] === 'auto') } };
       }
-      // A user-agent checkbox or radio (appearance auto, size, padding, border and minimum untouched): Chromium draws it
-      // 13×13 border-box (measured). Laid out at that size for the accessibility checks; SC 2.5.8/2.5.5 exempt it.
+      // A user-agent checkbox or radio (appearance auto, size and minimum untouched): Chromium draws it 13×13 border-box
+      // (measured). Laid out at that size for the accessibility checks; SC 2.5.8/2.5.5 exempt it. Padding and border do
+      // not change that box (F42, measured in Chromium, Firefox and WebKit: same size, same position after it).
       if (options.accessibility && !box.pseudo && box.tag === 'input' && ['checkbox', 'radio'].includes(box.inputType) && style.appearance === 'auto' && ['ua', 'inline-block', 'block'].includes(style.display)
-        && ['inline-size', 'block-size'].every(key => style[key] === 'auto') && ['left', 'right', 'top', 'bottom'].every(side => ['ua', '0', '0px'].includes(style[`padding-${side}`]) && ['ua', '0', '0px'].includes(style[`border-${side}`])) && ['min-inline-size', 'min-block-size'].every(key => ['ua', 'auto'].includes(style[key])))
+        && ['inline-size', 'block-size'].every(key => style[key] === 'auto') && ['min-inline-size', 'min-block-size'].every(key => ['ua', 'auto'].includes(style[key])))
         style = { ...style, appearance: 'none', display: 'block', 'box-sizing': 'border-box', 'inline-size': '13px', 'block-size': '13px', 'min-inline-size': 'auto', 'min-block-size': 'auto', ...Object.fromEntries(['left', 'right', 'top', 'bottom'].flatMap(side => [[`padding-${side}`, '0'], [`border-${side}`, '0']])), $uaControl: true };
       // F30 (emitted with or without emit: a display: none child is never laid out again): display: contents on a replaced element or form control computes to none (css.mjs): the control vanishes.
       if (style.$contentsRemoved && !layoutWarnings.some(w => w.code === 'W_LAYOUT_CONTENTS_REMOVED' && w.path === box.path))

@@ -448,3 +448,14 @@ test('F41: fill / stroke on an svg whose shapes set their own attributes', async
     if (css !== own) expect(ownInert, 'the svg rule alone is inert there').toBe(true);
   }
 });
+
+test('F42: background, color, border and padding on a checkbox or radio of appearance auto change nothing', async ({page}) => {
+  for (const type of ['checkbox', 'radio']) for (const [d, inert] of [['background-color:rgb(255,0,0)', true], ['color:rgb(255,0,0)', true], ['border:3px solid red', true], ['padding:5px', true], ['accent-color:rgb(255,0,0)', false], ['appearance:none;width:20px;height:20px;background-color:rgb(255,0,0)', false]]) {
+    const html = `<input class="x" type="${type}" checked aria-label="q"><span>after</span>`;
+    const shot = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:20px}${css}</style></head><body>${html}</body></html>`); return [(await page.screenshot()).toString('base64'), await page.evaluate(() => JSON.stringify([document.querySelector('.x').getBoundingClientRect(), document.querySelector('span').getBoundingClientRect().x]))]; };
+    const [a, b] = [await shot(''), await shot(`.x{${d}}`)];
+    expect(a[0] === b[0] && a[1] === b[1], `${type} ${d}`).toBe(inert);
+    const warned = (analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `.x{${d}}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path && /appearance: auto/.test(w.message));
+    expect(warned, `${type} ${d}`).toBe(inert);
+  }
+});
