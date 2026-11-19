@@ -167,8 +167,8 @@ importers:
   .:
     dependencies:
       '@mizchi/veriss':
-        specifier: github:mizchi/veriss#8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed&path:packages/veriss
-        version: https://codeload.github.com/mizchi/veriss/tar.gz/8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed#path:packages/veriss
+        specifier: github:mizchi/veriss#5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7&path:packages/veriss
+        version: https://codeload.github.com/mizchi/veriss/tar.gz/5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7#path:packages/veriss
       css-tree:
         specifier: 3.2.1
         version: 3.2.1
@@ -183,8 +183,8 @@ importers:
         version: 5.3.3
     devDependencies:
       '@mizchi/veriss-adapter-core':
-        specifier: github:mizchi/veriss#8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed&path:packages/adapter-core
-        version: https://codeload.github.com/mizchi/veriss/tar.gz/8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed#path:packages/adapter-core(@mizchi/veriss@https://codeload.github.com/mizchi/veriss/tar.gz/8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed#path:packages/veriss)
+        specifier: github:mizchi/veriss#5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7&path:packages/adapter-core
+        version: https://codeload.github.com/mizchi/veriss/tar.gz/5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7#path:packages/adapter-core(@mizchi/veriss@https://codeload.github.com/mizchi/veriss/tar.gz/5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7#path:packages/veriss)
       '@mizchi/vlmkit':
         specifier: 0.24.0
         version: 0.24.0(@playwright/test@1.64.1)(playwright@1.64.1)
@@ -747,14 +747,14 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@mizchi/veriss-adapter-core@https://codeload.github.com/mizchi/veriss/tar.gz/8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed#path:packages/adapter-core':
-    resolution: {gitHosted: true, integrity: sha512-9A2gI3YDtbjwtezh/hMh6gn4VB0FJVXi/y3w5BSEsJ1zyP/WxvuWX4tOiMfcMYwQ1Yzx1gvzWE/2mEpcW1V9ww==, path: packages/adapter-core, tarball: https://codeload.github.com/mizchi/veriss/tar.gz/8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed}
+  '@mizchi/veriss-adapter-core@https://codeload.github.com/mizchi/veriss/tar.gz/5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7#path:packages/adapter-core':
+    resolution: {gitHosted: true, integrity: sha512-EbfgOcBwYN8vR8Ygye16gz3r5FlwLS8eTeJ7U/ym5oUfFT5u4WeVLqTPq0EuUcQSuXTqFao3WPoSoAH0ncEBfQ==, path: packages/adapter-core, tarball: https://codeload.github.com/mizchi/veriss/tar.gz/5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7}
     version: 0.0.1
     peerDependencies:
       '@mizchi/veriss': '*'
 
-  '@mizchi/veriss@https://codeload.github.com/mizchi/veriss/tar.gz/8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed#path:packages/veriss':
-    resolution: {gitHosted: true, integrity: sha512-9A2gI3YDtbjwtezh/hMh6gn4VB0FJVXi/y3w5BSEsJ1zyP/WxvuWX4tOiMfcMYwQ1Yzx1gvzWE/2mEpcW1V9ww==, path: packages/veriss, tarball: https://codeload.github.com/mizchi/veriss/tar.gz/8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed}
+  '@mizchi/veriss@https://codeload.github.com/mizchi/veriss/tar.gz/5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7#path:packages/veriss':
+    resolution: {gitHosted: true, integrity: sha512-EbfgOcBwYN8vR8Ygye16gz3r5FlwLS8eTeJ7U/ym5oUfFT5u4WeVLqTPq0EuUcQSuXTqFao3WPoSoAH0ncEBfQ==, path: packages/veriss, tarball: https://codeload.github.com/mizchi/veriss/tar.gz/5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7}
     version: 0.0.1
     engines: {node: '>=24'}
 
@@ -2486,12 +2486,12 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  '@mizchi/veriss-adapter-core@https://codeload.github.com/mizchi/veriss/tar.gz/8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed#path:packages/adapter-core(@mizchi/veriss@https://codeload.github.com/mizchi/veriss/tar.gz/8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed#path:packages/veriss)':
+  '@mizchi/veriss-adapter-core@https://codeload.github.com/mizchi/veriss/tar.gz/5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7#path:packages/adapter-core(@mizchi/veriss@https://codeload.github.com/mizchi/veriss/tar.gz/5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7#path:packages/veriss)':
     dependencies:
-      '@mizchi/veriss': https://codeload.github.com/mizchi/veriss/tar.gz/8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed#path:packages/veriss
+      '@mizchi/veriss': https://codeload.github.com/mizchi/veriss/tar.gz/5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7#path:packages/veriss
       parse5: 8.0.1
 
-  '@mizchi/veriss@https://codeload.github.com/mizchi/veriss/tar.gz/8e438a5e6aa6d0a8513ef1d5f0193ad8ff51f2ed#path:packages/veriss':
+  '@mizchi/veriss@https://codeload.github.com/mizchi/veriss/tar.gz/5ea53a8d0e4eeff8b1dcbc5efa136b92d3a7cfb7#path:packages/veriss':
     dependencies:
       css-tree: 3.2.1
       parse5: 8.0.1
