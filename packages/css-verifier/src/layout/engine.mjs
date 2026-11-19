@@ -447,6 +447,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // walk where the layout did not run, so they are reported whether or not the layout is decided).
   // F9: a ::before or ::after styled but with no content is never generated.
   function pseudoWithoutContent(pbox, pstyle) {
+    // F32: content on a ::before / ::after of an element that renders none (css.mjs sets its content to none).
+    if (pstyle.$pseudoNotRendered !== undefined) {
+      if (!layoutWarnings.some(w => w.code === 'W_CSS_PSEUDO_NOT_RENDERED' && w.path === pbox.path)) {
+        const src = pstyle.$sources?.content;
+        layoutWarnings.push({ code: 'W_CSS_PSEUDO_NOT_RENDERED', severity: 'warning', box: pbox.label, path: pbox.path, css: src ? [{ property: 'content', file: src.file, line: src.line, selector: src.selector }] : [],
+          message: `${pbox.label} is never shown: <${pbox.tag}${pbox.tag === 'input' ? ` type=${pbox.inputType}` : ''}> has no ::${pbox.pseudo} box (an image, a text field or another replaced element renders no pseudo-elements). Put the ::${pbox.pseudo} on a wrapper or a label, or use a background image` });
+      }
+      return;
+    }
     if ((pstyle.content ?? 'none') !== 'none' || pstyle.display === 'none' || !Object.keys(pstyle.$sources ?? {}).some(key => key !== 'content') || layoutWarnings.some(w => w.code === 'W_CSS_PSEUDO_NO_CONTENT' && w.path === pbox.path)) return;
     const src = Object.values(pstyle.$sources).find(Boolean);
     layoutWarnings.push({ code: 'W_CSS_PSEUDO_NO_CONTENT', severity: 'warning', box: pbox.label, path: pbox.path, css: src ? [{ property: 'content', file: src.file, line: src.line, selector: src.selector }] : [],

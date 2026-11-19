@@ -60,6 +60,8 @@ export function px(text) {
 
 const aliases = { width: 'inline-size', 'min-width': 'min-inline-size', 'max-width': 'max-inline-size', height: 'block-size', 'min-height': 'min-block-size', 'max-height': 'max-block-size' };
 const insets = { 'inset-inline-start':'left', 'inset-inline-end':'right', 'inset-block-start':'top', 'inset-block-end':'bottom' };
+const textInputTypes = new Set(['text', 'email', 'password', 'search', 'tel', 'url', 'number']);
+export const noPseudoHost = box => ['img', 'select', 'textarea', 'iframe', 'video', 'br', 'canvas'].includes(box.tag) || (box.tag === 'input' && textInputTypes.has(box.inputType));
 const geometry = new Set(['aspect-ratio', 'display', 'appearance', 'box-sizing', 'inline-size', 'min-inline-size', 'max-inline-size', 'column-gap', 'grid-template-columns', 'grid-template-areas', 'grid-column', 'grid-row', 'overflow-x', 'overflow-y', 'scrollbar-gutter', 'scrollbar-width', 'white-space', 'overflow-wrap', 'float', 'position', 'writing-mode', 'direction', 'block-size', 'min-block-size', 'max-block-size', 'row-gap', 'grid-template-rows', 'grid-auto-rows', 'grid-auto-flow', 'container-type', 'container-name', 'align-items', 'align-self', 'align-content', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'order']);
 // Text/font metrics come from trusted caller contracts. Paint is not validated.
 // revert-layer (checklist C4) passes through every property like the other CSS-wide keywords; the cascade resolves it.
@@ -1184,6 +1186,10 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   const x = values['overflow-x'], y = values['overflow-y'];
   if (!nonscroll(y)) values['overflow-x'] = x === 'visible' ? 'auto' : x === 'clip' ? 'hidden' : x;
   if (!nonscroll(x)) values['overflow-y'] = y === 'visible' ? 'auto' : y === 'clip' ? 'hidden' : y;
+  // F32: ::before / ::after of an element that renders none (measured in Chromium, Firefox and WebKit: a loaded img, a
+  // text input, select, textarea, iframe, video, br, canvas) are not generated whatever their content. (A broken img
+  // shows them in Chromium and Firefox, and a checkbox or radio in Chromium and WebKit; those are left as they are.)
+  if ((box.pseudo === 'before' || box.pseudo === 'after') && (values.content ?? 'none') !== 'none' && noPseudoHost(box)) { values.$pseudoNotRendered = values.content; values.content = 'none'; }
   // overflow: auto or scroll on a table is used as visible (F31, measured in Chromium, Firefox and WebKit): the table
   // grows to its content and never scrolls. Mixed with hidden or clip on the other axis (not measured), it is left as is.
   if (!box.pseudo && (['table', 'inline-table'].includes(values.display) || (box.tag === 'table' && values.display === 'ua')) && ['overflow-x', 'overflow-y'].every(key => ['auto', 'scroll'].includes(String(values[key]))))

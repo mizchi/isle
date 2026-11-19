@@ -195,6 +195,11 @@
 - [x] **F31. 表の `overflow: auto`・`scroll`**(`W_LAYOUT_DECLARATION_INERT`): 表は中身に合わせて広がる(幅は最小値)ので、
   スクロールしない。3 つのブラウザーで visible と同じ(はみ出しも切られない。hidden・clip は切る)。解析も visible として扱う。
   スクロールさせるには、表を `overflow-x: auto` の div で包む。片方の軸が hidden・clip の組み合わせは測っていないので今までどおり。
+- [x] **F32. 擬似要素を描かない要素の `::before`・`::after`**(`W_CSS_PSEUDO_NOT_RENDERED`、以前は Unknown): 読み込んだ img、
+  文字欄の input(text・email・password・search・tel・url・number)、select・textarea・iframe・video・br・canvas は、content が
+  あっても `::before`・`::after` を描かない(3 つのブラウザーで、規則のあるときとないときの描画が同じ)。解析も生成しない。
+  読み込めなかった img(Chromium・Firefox は描く)と、appearance: auto の checkbox・radio(Chromium・WebKit は描く)は
+  ブラウザーで違うので今までどおり。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

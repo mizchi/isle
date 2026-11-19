@@ -323,3 +323,17 @@ test('F31: overflow: auto or scroll on a table does not scroll it', async ({page
     expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.some(p => p.startsWith('overflow'))), css).toBe(inert);
   }
 });
+
+test('F32: ::before on an img, a text field and other replaced elements is not rendered', async ({page}) => {
+  const gif = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+  const pseudo = '.x::before{content:"";display:inline-block;width:30px;height:30px;background:rgb(255,0,0)}';
+  const cases = [[`<img class="x" alt="" src="${gif}" width="40" height="40">`, true], ...['text', 'email', 'password', 'search', 'tel', 'url', 'number'].map(t => [`<input class="x" type="${t}" aria-label="q">`, true]),
+    ['<select class="x" aria-label="q"><option>a</option></select>', true], ['<textarea class="x" aria-label="q"></textarea>', true], ['<iframe class="x" title="f" width="60" height="40"></iframe>', true],
+    ['<video class="x" width="60" height="40"></video>', true], ['a<br class="x">b', true], ['<canvas class="x" width="40" height="40"></canvas>', true],
+    ['<div class="x">d</div>', false], ['<button class="x" type="button">b</button>', false], ['<input class="x" type="checkbox" aria-label="q" style="appearance:none;width:20px;height:20px;border:1px solid">', false]];
+  for (const [html, hidden] of cases) {
+    const shot = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:20px}${css}</style></head><body>${html}</body></html>`); await page.waitForTimeout(30); return (await page.screenshot()).toString('base64'); };
+    expect(await shot('') === await shot(pseudo), html).toBe(hidden);
+    expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: pseudo, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_CSS_PSEUDO_NOT_RENDERED'), html).toBe(hidden);
+  }
+});

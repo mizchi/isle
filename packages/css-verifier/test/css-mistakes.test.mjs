@@ -291,3 +291,18 @@ test('F31: overflow: auto or scroll on a table does nothing (the table grows; wr
   assert.equal(w('.t{display:block;overflow-x:auto}').length, 0);
   assert.equal(codes(run('.w{overflow-x:auto}', `<div class="w">${table}</div>`), 'W_LAYOUT_DECLARATION_INERT').length, 0);
 });
+
+test('F32: ::before / ::after on an element that does not render them (img, text input, select, textarea, iframe, video, br, canvas)', () => {
+  const pc = '::before{content:"";display:block;height:30px}';
+  const field = 'style="display:block;inline-size:100px;block-size:20px"';
+  const w = (html, css) => codes(run(css, html), 'W_CSS_PSEUDO_NOT_RENDERED');
+  const r = run(`.x${pc}`, `<input class="x" aria-label="q" ${field}>`);
+  const [hit] = codes(r, 'W_CSS_PSEUDO_NOT_RENDERED');
+  assert.ok(hit && /::before/.test(hit.message));
+  assert.equal(codes(r, 'W_CSS_PSEUDO_NO_CONTENT').length, 0);
+  assert.equal(w(`<img class="x" alt="" src="a.png" ${field}>`, `.x${pc}`).length, 1);
+  assert.equal(w(`<textarea class="x" aria-label="q" ${field}></textarea>`, '.x::after{content:"*"}').length, 1);
+  assert.equal(w('<div class="x"></div>', `.x${pc}`).length, 0);
+  assert.equal(w('<input class="x" type="checkbox" aria-label="q">', `.x${pc}`).length, 0);
+  assert.equal(w(`<button class="x" type="button" ${field}>b</button>`, `.x${pc}`).length, 0);
+});
