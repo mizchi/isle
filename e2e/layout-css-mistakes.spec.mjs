@@ -409,3 +409,15 @@ test('F38: margin: auto does not centre an absolutely positioned box with an aut
     expect(w?.axes ?? [], c).toEqual(missed);
   }
 });
+
+test('F39: object-position does nothing under object-fit: fill', async ({page}) => {
+  const src = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"><rect width="20" height="20" fill="red"/><rect x="20" width="20" height="20" fill="blue"/></svg>');
+  for (const fit of ['fill', 'contain', 'cover', 'none', 'scale-down']) {
+    const html = `<img class="x" alt="" src="${src}" width="40" height="20">`;
+    const css = `.x{display:block;width:100px;height:100px;object-fit:${fit}}`;
+    const shot = async extra => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}${css}${extra}</style></head><body>${html}</body></html>`); await page.waitForTimeout(50); return (await page.screenshot()).toString('base64'); };
+    const inert = await shot('') === await shot('.x{object-position:left top}');
+    expect(inert, fit).toBe(fit === 'fill');
+    expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${css}.x{object-position:left top}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('object-position')), fit).toBe(inert);
+  }
+});

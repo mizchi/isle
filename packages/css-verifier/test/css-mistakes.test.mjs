@@ -387,3 +387,14 @@ test('F38: margin: auto does not centre an absolutely positioned box with an aut
   assert.equal(w('left:0;right:0;margin:0 auto').length, 0);
   assert.equal(w('left:0;top:0').length, 0);
 });
+
+test('F39: object-position does nothing under object-fit: fill', () => {
+  const img = '<img class="x" alt="" src="a.png" width="40" height="40">';
+  const w = css => codes(run(`.x{display:block;width:100px;height:50px;${css}}`, img), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.includes('object-position'));
+  const [hit] = w('object-position:left top');
+  assert.ok(hit && /object-fit/.test(hit.message));
+  assert.equal(w('object-fit:fill;object-position:0 0').length, 1);
+  assert.equal(w('object-fit:cover;object-position:left top').length, 0);
+  assert.equal(w('object-fit:contain;object-position:right').length, 0);
+  assert.equal(w('object-fit:none;object-position:right').length, 0);
+});

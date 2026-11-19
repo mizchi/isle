@@ -222,6 +222,8 @@
 - [x] **F38. 中央に寄らない絶対配置の `margin: auto`**(`W_LAYOUT_AUTO_MARGIN_ABSOLUTE`): 絶対配置・固定配置の箱の auto の
   margin は、その軸の両方の inset(left と right、top と bottom)と大きさが決まっているときにだけ中央に寄せる。どれかが auto なら
   margin は 0 で、箱は流れの中にいたはずの位置に残る(CSS 2.2 §10.3.7・§10.6.4、3 つのブラウザーで測った)。寄らない軸を報告する。
+- [x] **F39. `object-fit: fill` の `object-position`**(`W_LAYOUT_DECLARATION_INERT`): fill(初期値)は画像を箱いっぱいに
+  引き伸ばすので、置く場所がない。contain・cover・none・scale-down では効く(3 つのブラウザーで、fill のときだけ描画が同じ)。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

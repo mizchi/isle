@@ -2111,6 +2111,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         const ownRatio = /^auto(?:\s|$)/.test(String(style['aspect-ratio'] ?? 'auto'));
         const follows = axis => style[`${axis}-size`] === 'auto' && ['auto', '0', '0px'].includes(String(style[`min-${axis}-size`])) && style[`max-${axis}-size`] === 'none';
         if (set('object-fit', 'fill') && box.tag === 'img' && ownRatio && (follows('block') || follows('inline'))) reasons.push(['object-fit', `its ${follows('block') ? 'height' : 'width'} follows the image's own ratio, so the image already fills its box exactly (object-fit needs a box of another shape: a fixed width and height, or aspect-ratio)`]);
+        // F39: object-position places the content inside the box when object-fit leaves room or crops (contain, cover,
+        // none, scale-down); with fill the content is stretched to the whole box, so there is nothing to place (measured
+        // in Chromium, Firefox and WebKit).
+        if (style.$sources?.['object-position'] && !['50% 50%', 'center', 'center center', 'initial', 'unset', 'revert', 'revert-layer', 'inherit'].includes(String(style['object-position'])) && ['img', 'video', 'canvas', 'iframe', 'embed', 'object', 'svg', 'input'].includes(box.tag) && String(style['object-fit']) === 'fill')
+          reasons.push(['object-position', 'object-fit is fill, so the image is stretched to the whole box and there is nothing to place; set object-fit: cover or contain']);
         // order reorders grid and flex items; children in block flow keep the source order.
         if (inFlow && parentDisplay === 'block' && set('order', '0')) reasons.push(['order', `its parent ${parents.at(-1).box.label} is display: block, not grid or flex, so the boxes keep the source order`]);
         // table-layout chooses the column algorithm of a table box.
