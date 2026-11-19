@@ -255,6 +255,10 @@
 - [x] **F48. `:link`・`:any-link` を読む・リンクでない要素**(`W_CSS_STATE_UNREACHABLE`、以前は Unknown): この 2 つは href の
   ある a・area にだけ当たる(空の href も。3 つのブラウザーで測った)。href のない a や button に書くと当たらないので報告する。
   解析はリンクを未訪問とみなすので :link は :any-link と同じに読むが、配置を変える :link の規則は訪問の履歴で変わるので Unknown。
+- [x] **F49. `:placeholder-shown` を読む・placeholder 属性のない欄**(`W_CSS_STATE_UNREACHABLE`、以前は Unknown): 文字の欄
+  (text・search・url・tel・email・password・number)と textarea で、placeholder 属性があり(空でも)、値が空のときに当たる
+  (3 つのブラウザーで測った)。属性のない欄では当たらない(浮く label の作り方で placeholder=" " を忘れる)ので報告する。
+  入力すると外れるので、配置を変える規則は Unknown。値が分からないとき(動的な value、空白だけの textarea)も Unknown。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

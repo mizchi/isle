@@ -804,6 +804,8 @@ export function parseLayoutCSS(sheets, diagnostic) {
         firstPseudo.push({ selectors, selector: node.selector, file: filename, line: node.source.start.line });
         continue;
       }
+      // F49: :placeholder-shown stops holding once the user types; a rule in it that changes the layout depends on that.
+      if (/:placeholder-shown(?![\w-])/i.test(node.selector) && (node.nodes ?? []).some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `${node.selector}: :placeholder-shown holds only until the user types, and this rule changes the layout`, node.source.start.line); continue; }
       // F48: :link matches only while the link is unvisited; a rule in it that changes the layout depends on the history.
       if (/:link(?![\w-])/i.test(node.selector) && (node.nodes ?? []).some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `${node.selector}: :link holds only while the link is unvisited, and this rule changes the layout (use :any-link for every link)`, node.source.start.line); continue; }
       // F47: in ::placeholder, margin, height, display and position are ignored by Chromium, Firefox and WebKit (measured

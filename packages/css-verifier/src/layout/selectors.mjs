@@ -56,6 +56,10 @@ function compileCompound(source, depth = 0) {
     if (enabledness) { parts.push({ kind: 'disabled', value: enabledness[1].toLowerCase() === 'disabled' }); specificity[1]++; rest = rest.slice(enabledness[0].length); continue; }
     // :any-link and :link: an a or area with href (measured in Chromium, Firefox and WebKit, an empty href too). Links are
     // taken as unvisited, so :link is :any-link; a :link rule that changes the layout is kept Unknown (parseLayoutCSS).
+    // :placeholder-shown: a text field or textarea with a placeholder attribute (an empty one too) and no value, in the
+    // initial state (typing hides it: a :placeholder-shown rule that changes the layout is kept Unknown, parseLayoutCSS).
+    const shown = rest.match(/^:placeholder-shown(?![\w-])/i);
+    if (shown) { parts.push({ kind: 'placeholder-shown' }); specificity[1]++; rest = rest.slice(shown[0].length); continue; }
     const link = rest.match(/^:(any-link|link)(?![\w-])/i);
     if (link) { parts.push({ kind: 'link', name: link[1].toLowerCase() }); specificity[1]++; rest = rest.slice(link[0].length); continue; }
     const root = rest.match(/^:root(?![\w-])/i);
@@ -182,13 +186,18 @@ export function neighbors(box, combinator) {
   const before = at > 0 ? siblings.slice(0, at) : [];
   return combinator === '+' ? before.slice(-1) : before.reverse();
 }
+const placeholderFieldTypes = new Set(['text', 'search', 'url', 'tel', 'email', 'password', 'number']);
+export const placeholderField = box => box.tag === 'textarea' || (box.tag === 'input' && placeholderFieldTypes.has(box.inputType));
+// The initial value is empty: an input with no value (or value=""), a textarea with no text (its one leading newline is
+// dropped by the parser; any other whitespace is a value, and is told apart by the engine).
+export const placeholderShown = box => placeholderField(box) && box.placeholderAttr === true && (box.tag === 'input' ? (box.value === undefined || box.value === '') : !box.text && !box.whitespace && !box.textContent && !(box.inline ?? []).length);
 export const isLink = box => (box.tag === 'a' && box.href !== undefined) || (box.tag === 'area' && (box.href !== undefined || box.attributes?.href !== undefined));
 /** The compound (tag, classes, id, :root, :is/:where) alone, ignoring states, pseudo-elements and combinators. */
 export function compoundMatches(selector, box) {
   if (box.anonymous) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
-    part.kind === 'root' ? box.documentRoot === true : part.kind === 'link' ? isLink(box) : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
+    part.kind === 'root' ? box.documentRoot === true : part.kind === 'link' ? isLink(box) : part.kind === 'placeholder-shown' ? placeholderShown(box) : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
     part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'structural' ? structuralMatches(part, box) : part.kind === 'has' ? hasMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
     part.choices.some(choice => matches(choice, box)));
 }

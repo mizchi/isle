@@ -524,3 +524,17 @@ test('F48: :link / :any-link match only a link with href', async ({page}) => {
     expect(r.diagnostics.some(d => /Unsupported selector/.test(d.message)), `${sel} ${html}`).toBe(false);
   }
 });
+
+test('F49: :placeholder-shown needs a placeholder attribute', async ({page}) => {
+  const base = '.x{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}';
+  for (const html of ['<input class="x" aria-label="q" placeholder="Search">', '<input class="x" aria-label="q">', '<input class="x" aria-label="q" placeholder="">', '<input class="x" aria-label="q" placeholder="x" value="v">', '<textarea class="x" aria-label="q" placeholder="x"></textarea>', '<textarea class="x" aria-label="q"></textarea>', '<input class="x" type="number" aria-label="q" placeholder="0">']) {
+    await page.setContent(`<!doctype html><html lang="en"><body>${html}</body></html>`);
+    const matched = await page.evaluate(() => document.querySelector('.x').matches(':placeholder-shown'));
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${base}.x:placeholder-shown{border-color:red}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    const warned = (r.layoutWarnings ?? []).some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.state === ':placeholder-shown');
+    // Warned exactly where the field has no placeholder attribute (it never matches, whatever is typed).
+    expect(warned, html).toBe(!/placeholder=/.test(html));
+    if (warned) expect(matched, html).toBe(false);
+    expect(r.diagnostics.some(d => /Unsupported selector/.test(d.message)), html).toBe(false);
+  }
+});

@@ -507,3 +507,17 @@ test('F48: :link / :any-link match a link with href; on anything else they never
   // :link stops matching once the link is visited: a layout change there depends on the history.
   assert.equal(run('.x:link{padding:4px}', link).status, 'unknown');
 });
+
+test('F49: :placeholder-shown needs a placeholder attribute (and an empty value); without one it never applies', () => {
+  const base = '.x{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}';
+  const field = attrs => `<input class="x" aria-label="q" ${attrs}>`;
+  assert.equal(run(base + '.x:placeholder-shown{border-color:red}', field('placeholder="Search"')).status, 'verified');
+  const w = (css, html) => codes(run(base + css, html), 'W_CSS_STATE_UNREACHABLE').filter(x => x.state === ':placeholder-shown');
+  const [hit] = w('.x:placeholder-shown{color:red}', field(''));
+  assert.ok(hit && /placeholder attribute/.test(hit.message));
+  assert.equal(w('.x:placeholder-shown{color:red}', field('placeholder=""')).length, 0);
+  assert.equal(w('.x:placeholder-shown{color:red}', field('placeholder="x" value="v"')).length, 0);
+  assert.equal(w('.x:placeholder-shown{color:red}', '<textarea class="x" aria-label="q"></textarea>').length, 1);
+  // Typing hides the placeholder: a layout change in :placeholder-shown depends on what the user types.
+  assert.equal(run(base + '.x:placeholder-shown{padding:4px}', field('placeholder="Search"')).status, 'unknown');
+});
