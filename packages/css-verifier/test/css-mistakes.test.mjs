@@ -684,3 +684,13 @@ test('F61: a tag selector for another element is not reported', () => {
   assert.equal(codes(r, 'W_CSS_STATE_UNREACHABLE').filter(x => x.state === ':read-write').length, 0);
   assert.equal(codes(run('div:read-write{color:red}', '<div class="a"></div>'), 'W_CSS_STATE_UNREACHABLE').filter(x => x.state === ':read-write').length, 1);
 });
+
+test('F62: :lang() matches by the inherited lang; a country code instead of a language code is reported', () => {
+  const page = (css, html, lang = 'ja-JP') => analyzeHTML(`<html lang="${lang}"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+  assert.equal(page('.a:lang(ja){color:red}', '<div class="a"></div>').status, 'verified');
+  const [hit] = (page('.a:lang(jp){color:red}', '<div class="a"></div>').layoutWarnings ?? []).filter(w => w.code === 'W_CSS_LANG_CODE');
+  assert.ok(hit && /ja/.test(hit.message));
+  assert.equal((page('.a:lang(ja){color:red}', '<div class="a"></div>').layoutWarnings ?? []).filter(w => w.code === 'W_CSS_LANG_CODE').length, 0);
+  // Extended matching (zh-TW against zh-Hant-TW) differs between browsers: Unknown.
+  assert.equal(page('.a:lang(zh-TW){color:red}', '<div class="a"></div>', 'zh-Hant-TW').status, 'unknown');
+});

@@ -5,7 +5,7 @@ import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea
 import { resolveUAProfile } from './ua-profile.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
-import { compileSelector, PARENT, dynamicAttributeTests, ignoringSiblings, placeholderField, requiredCapable, optionalDivergent, optionalDivergence, asFormField, readWriteKnown, asEditable } from './selectors.mjs';
+import { compileSelector, PARENT, dynamicAttributeTests, ignoringSiblings, placeholderField, requiredCapable, optionalDivergent, optionalDivergence, asFormField, readWriteKnown, asEditable, langMatches } from './selectors.mjs';
 import { selectorUsage } from './selector-usage.mjs';
 import { selectorScope } from './selector-scope.mjs';
 import { viewportFont, zoomShortfall } from './zoom-font.mjs';
@@ -336,6 +336,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const sized = markerSizing.find(note => boxes.some(box => !box.pseudo && note.selectors.some(sel => matches(sel, box, new Set(['::marker'])))));
     if (sized) unknown('U_LAYOUT_CSS', `::marker sets ${sized.property}, which sizes the list marker and can change the line's height: the marker box is not modeled`, sized.line, undefined, sized.file);
   }
+  // F62: a country code where a language code belongs (:lang(jp) for Japanese, which is ja): it matches no page.
+  { const country = { jp: 'ja (Japanese)', cn: 'zh (Chinese)', cz: 'cs (Czech)', gr: 'el (Greek)', dk: 'da (Danish)', ua: 'uk (Ukrainian)' };
+    const seen = new Set();
+    for (const rule of rules) for (const sel of rule.selectors ?? []) for (const part of (sel.parts ?? []).filter(p => p.kind === 'lang')) {
+      const code = part.value.split('-')[0];
+      if (!country[code] || seen.has(sel.source)) continue; seen.add(sel.source);
+      layoutWarnings.push({ code: 'W_CSS_LANG_CODE', severity: 'warning', selector: sel.source, css: [{ property: ':lang', file: rule.file, line: rule.line, selector: sel.source }],
+        message: `${sel.source}: ${code} is a country code, not a language code, so :lang(${part.value}) matches lang="${code}" only — the language is ${country[code]}. Write :lang(${country[code].split(' ')[0]})` });
+    } }
   for (const note of gridAreasInvalid) layoutWarnings.push({ code: 'W_CSS_GRID_AREAS_INVALID', severity: 'warning', selector: note.selector, property: 'grid-template-areas', css: [{ property: 'grid-template-areas', file: note.file, line: note.line, selector: note.selector }],
     message: `${note.selector}: grid-template-areas is invalid (${note.why}), so the browser drops the whole declaration and every grid-area name in it is unknown (items are auto-placed). Make each name one rectangle and give every row the same number of cells` });
   for (const note of placeholderIgnored) layoutWarnings.push({ code: 'W_CSS_PLACEHOLDER_IGNORED', severity: 'warning', selector: note.selector, property: note.property, css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],
@@ -687,6 +696,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: keys, ...(src ? { css: [{ property: keys[0], file: src.file, line: src.line, selector: src.selector }] } : {}),
             message: `${box.label}: ${style.$multicolInert.map(([key, value]) => `${key}: ${value}`).join(', ')} has no effect (it is display: ${style.display}; multi-column layout applies only to a block container). Use grid-template-columns (or flex-wrap with a flex-basis) for columns, or display: block for flowing columns` });
         }
+        // F62: :lang() where the language is not known is Unknown (the rule may or may not apply).
+        if (!box.pseudo) for (const rule of rules) for (const sel of rule.selectors ?? []) for (const part of (sel.parts ?? []).filter(p => p.kind === 'lang'))
+          if (langMatches(box, part.value) === 'unknown' && matches({ ...sel, parts: sel.parts.filter(p => p !== part) }, box, sel.pseudoElement ? new Set([...(state ?? []), `::${sel.pseudoElement}`]) : state)) unknown('U_LAYOUT_SELECTOR', `${sel.source}: the language of ${box.label} is not known here (or browsers match :lang(${part.value}) differently)`, rule.line, box, rule.file);
         // F61: :read-write on what can never be edited (not a text field or textarea, or a checkbox) never applies; where
         // editability is not known (contenteditable, a dynamic disabled, an unmeasured input type) it is Unknown.
         if (!box.pseudo) for (const rule of rules) for (const sel of rule.selectors ?? []) {

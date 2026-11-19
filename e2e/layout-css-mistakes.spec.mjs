@@ -693,3 +693,14 @@ test('F61: :read-write never matches what cannot be edited', async ({page}) => {
     expect(r.diagnostics.some(d => /Unsupported selector/.test(d.message)), html).toBe(false);
   }
 });
+
+test('F62: :lang() follows the inherited lang; :lang(jp) matches no Japanese page', async ({page}) => {
+  for (const [lang, sel, html] of [['ja-JP', ':lang(ja)', '<div class="a x"></div>'], ['ja-JP', ':lang(jp)', '<div class="a x"></div>'], ['ja', ':lang(en)', '<div class="a x" lang="en-US"></div>'], ['en', ':lang(ja)', '<div class="a x"></div>']]) {
+    await page.setContent(`<!doctype html><html lang="${lang}"><body>${html}</body></html>`);
+    const matched = await page.evaluate(s => document.querySelector('.x').matches(s), sel);
+    const r = analyzeHTML(`<html lang="${lang}"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}.x${sel}{color:red}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect(r.diagnostics.some(d => /Unsupported selector/.test(d.message)), sel).toBe(false);
+    expect(r.status, `${lang} ${sel}`).toBe('verified');
+    if (sel === ':lang(jp)') { expect(matched).toBe(false); expect((r.layoutWarnings ?? []).some(w => w.code === 'W_CSS_LANG_CODE')).toBe(true); }
+  }
+});

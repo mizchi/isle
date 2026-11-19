@@ -60,6 +60,10 @@ function compileCompound(source, depth = 0) {
     // initial state (typing hides it: a :placeholder-shown rule that changes the layout is kept Unknown, parseLayoutCSS).
     // :required / :optional (measured in Chromium, Firefox and WebKit): see requiredMatches.
     // :read-write / :read-only (measured in Chromium, Firefox and WebKit): see readWrite.
+    // :lang(tag): the element's language (the nearest lang attribute) is the tag or starts with tag- (case-insensitive;
+    // measured in Chromium, Firefox and WebKit). One plain tag only; extended matching (zh-TW against zh-Hant-TW) differs.
+    const lang = rest.match(/^:lang\(\s*([A-Za-z][A-Za-z0-9-]*)\s*\)/);
+    if (lang) { parts.push({ kind: 'lang', value: lang[1].toLowerCase() }); specificity[1]++; rest = rest.slice(lang[0].length); continue; }
     const rw = rest.match(/^:(read-write|read-only)(?![\w-])/i);
     if (rw) { parts.push({ kind: 'read-write', value: rw[1].toLowerCase() === 'read-write' }); specificity[1]++; rest = rest.slice(rw[0].length); continue; }
     const req = rest.match(/^:(required|optional)(?![\w-])/i);
@@ -233,13 +237,25 @@ export function readWrite(box) {
   const field = box.tag === 'textarea' || (box.tag === 'input' && editableTypes.has(box.inputType));
   return field && box.nativeStates?.readonly !== true && box.nativeStates?.disabled !== true && box.disabled !== true;
 }
+// The language of a box: its nearest lang attribute ('' for lang=""), or undefined where none is in the tree.
+export function languageOf(box) { for (let b = box; b; b = b[PARENT]) if (b.lang !== undefined) return b.lang; return undefined; }
+// true / false, or 'unknown' (a dynamic lang, no lang in the tree of a component, or extended matching).
+export function langMatches(box, tag) {
+  const lang = languageOf(box);
+  if (lang === '<dynamic>' || lang === 'dynamic') return 'unknown';
+  if (lang === undefined) { let root = box; while (root[PARENT]) root = root[PARENT]; return root.documentRoot ? false : 'unknown'; }
+  const l = lang.toLowerCase();
+  if (l === tag || l.startsWith(`${tag}-`)) return true;
+  if (tag.includes('-') && l.split('-')[0] === tag.split('-')[0]) return 'unknown';
+  return false;
+}
 export const isLink = box => (box.tag === 'a' && box.href !== undefined) || (box.tag === 'area' && (box.href !== undefined || box.attributes?.href !== undefined));
 /** The compound (tag, classes, id, :root, :is/:where) alone, ignoring states, pseudo-elements and combinators. */
 export function compoundMatches(selector, box) {
   if (box.anonymous) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
-    part.kind === 'root' ? box.documentRoot === true : part.kind === 'link' ? isLink(box) : part.kind === 'placeholder-shown' ? placeholderShown(box) : part.kind === 'required' ? requiredMatches(box, part.value) : part.kind === 'read-write' ? readWrite(box) === part.value : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
+    part.kind === 'root' ? box.documentRoot === true : part.kind === 'link' ? isLink(box) : part.kind === 'placeholder-shown' ? placeholderShown(box) : part.kind === 'required' ? requiredMatches(box, part.value) : part.kind === 'read-write' ? readWrite(box) === part.value : part.kind === 'lang' ? langMatches(box, part.value) === true : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
     part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'structural' ? structuralMatches(part, box) : part.kind === 'has' ? hasMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
     part.choices.some(choice => matches(choice, box)));
 }

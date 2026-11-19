@@ -303,6 +303,10 @@
   :read-write は readonly でも disabled(fieldset から受けるものも)でもない textarea と文字の input(text・search・url・tel・
   email・password・number・date)に当たり、ほかはすべて :read-only(3 つのブラウザーで測った)。div・button・checkbox・range に
   :read-write を書くと当たらないので報告する。contenteditable、動的な disabled、測っていない型(time など)は Unknown。
+- [x] **F62. `:lang()` を読む・国の符号を書いた `:lang`**(`W_CSS_LANG_CODE`、以前は Unknown): :lang(ja) は、いちばん近い lang
+  属性が ja か ja- で始まる要素に当たる(大文字小文字を区別しない。3 つのブラウザーで測った)。:lang(zh-TW) と lang="zh-Hant-TW"
+  のような拡張の一致は Chromium だけ違うので Unknown、動的な lang やコンポーネントで lang が木にないときも Unknown。
+  :lang(jp)・cn・cz・gr・dk・ua は国の符号で言語の符号でない(日本語は ja)ので報告する。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 
