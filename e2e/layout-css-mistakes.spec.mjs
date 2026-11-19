@@ -795,3 +795,15 @@ test('F70: :nth-child(An+B of S) — the analysed heights match the browser', as
     expect(r.sizes.filter(s => s.box.startsWith('.i')).map(s => Number(s.rect.blockSize.constant)), sel).toEqual(browser);
   }
 });
+
+test('visibility: collapse removes a table row: the analysis does not lay it out as hidden', async ({page}) => {
+  const t = '<table class="t"><tbody><tr><td class="c"></td></tr><tr class="x"><td class="c"></td></tr><tr><td class="c n"></td></tr></tbody></table>';
+  const css = '*{margin:0;padding:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.t{table-layout:fixed;inline-size:200px;border-spacing:0}.c{inline-size:200px;block-size:20px}';
+  for (const [v, y, status] of [['hidden', 40, 'verified'], ['collapse', 20, 'unknown']]) {
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}.x{visibility:${v}}</style></head><body>${t}</body></html>`);
+    expect(await page.evaluate(() => document.querySelector('.n').getBoundingClientRect().y), v).toBe(y);
+    const r = analyzeHTML(`<html lang="en"><body>${t}</body></html>`, {name: 'P', css: `${css}.x{visibility:${v}}`, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    expect(r.status, v).toBe(status);
+    if (status === 'verified') expect(Number(r.sizes.find(s => s.box.includes('.n')).rect.blockStart.constant)).toBe(y);
+  }
+});

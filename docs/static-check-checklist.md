@@ -331,6 +331,8 @@
 - [x] **F70. `:nth-child(An+B of S)` を読む**(以前は Unknown): of S のある :nth-child・:nth-last-child は、S に当たる兄弟だけを
   数える(3 つのブラウザーで測った)。詳細度は S のいちばん強いものを足す。S が状態や結合子を含むときは今までどおり Unknown。
   解析した高さがブラウザーと同じことを確かめた。
+- 健全さを直した: 表の行・行のまとまり・列の `visibility: collapse` を hidden(場所を取る)として配置していたが、3 つのブラウザーで
+  行はなくなる(次の行が上がる)。flex の項目の collapse は Firefox だけ詰める。どちらも Unknown にした(ほかの箱では hidden)。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

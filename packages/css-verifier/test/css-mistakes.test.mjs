@@ -771,3 +771,13 @@ test('F70: :nth-child(An+B of S) counts only the siblings that match S', () => {
   const last = run('.i{height:10px}.i:nth-last-child(1 of .v){height:30px}', html);
   assert.deepEqual(last.sizes.filter(s => s.box.startsWith('.i')).map(s => Number(s.rect.blockSize.constant)), [10, 10, 10, 30]);
 });
+
+test('visibility: collapse on a table row removes it (and differs on flex items): Unknown, not laid out as hidden', () => {
+  const t = '<table class="t"><tbody><tr><td class="c"></td></tr><tr class="x"><td class="c"></td></tr><tr><td class="c"></td></tr></tbody></table>';
+  const base = '*{margin:0;padding:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.t{table-layout:fixed;inline-size:200px;border-spacing:0}.c{inline-size:200px;block-size:20px}';
+  const page = (css, html) => analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: base + css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  assert.equal(page('.x{visibility:collapse}', t).status, 'unknown');
+  assert.equal(page('.x{visibility:hidden}', t).status, 'verified');
+  assert.equal(page('.f{display:flex;flex-direction:column}.f>div{height:20px}.x{visibility:collapse}', '<div class="f"><div></div><div class="x"></div></div>').status, 'unknown');
+  assert.equal(page('.x{visibility:collapse;height:20px}', '<div class="x"></div>').status, 'verified');
+});

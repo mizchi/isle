@@ -1285,6 +1285,10 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   // F68: input[type=hidden] { display: none !important } (UA): no author display shows it (measured in Chromium, Firefox
   // and WebKit, even with !important).
   if (!box.pseudo && box.tag === 'input' && box.inputType === 'hidden') { if (sources.display && values.display !== 'none') values.$hiddenInputDisplay = values.display; values.display = 'none'; }
+  // visibility: collapse removes a table row, row group or column (measured in Chromium, Firefox and WebKit: the next row
+  // moves up), and collapses a flex item in Firefox only: neither is modeled (on other boxes it is hidden).
+  if (!box.pseudo && String(values.visibility) === 'collapse' && (['tr', 'tbody', 'thead', 'tfoot', 'col', 'colgroup'].includes(box.tag) || /^table-(?:row|row-group|header-group|footer-group|column|column-group)$/.test(String(values.display)) || (['flex', 'inline-flex'].includes(inherited?.display) && !inherited?.$blockFlow)))
+    throw Object.assign(new Error(`${box.label}: visibility: collapse on a ${['flex', 'inline-flex'].includes(inherited?.display) ? 'flex item' : 'table row or column'} is not modeled`), { code: 'U_LAYOUT_ELEMENT' });
   // F32: ::before / ::after of an element that renders none (measured in Chromium, Firefox and WebKit: a loaded img, a
   // text input, select, textarea, iframe, video, br, canvas) are not generated whatever their content. (A broken img
   // shows them in Chromium and Firefox, and a checkbox or radio in Chromium and WebKit; those are left as they are.)
