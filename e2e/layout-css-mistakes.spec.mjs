@@ -704,3 +704,14 @@ test('F62: :lang() follows the inherited lang; :lang(jp) matches no Japanese pag
     if (sel === ':lang(jp)') { expect(matched).toBe(false); expect((r.layoutWarnings ?? []).some(w => w.code === 'W_CSS_LANG_CODE')).toBe(true); }
   }
 });
+
+test('F63: :dir() follows the dir attribute, not the CSS direction', async ({page}) => {
+  for (const [css, html, warn] of [['.x{direction:rtl}', '<div class="x a"></div>', true], ['', '<div class="x a" dir="rtl"></div>', false], ['', '<div dir="rtl"><div class="x a"></div></div>', false], ['', '<div class="x a"></div>', false]]) {
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const matched = await page.evaluate(() => document.querySelector('.x').matches(':dir(rtl)'));
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}${css}.x:dir(rtl){color:red}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect(r.diagnostics.some(d => /Unsupported selector/.test(d.message)), html).toBe(false);
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.state === ':dir'), `${css} ${html}`).toBe(warn);
+    if (warn) expect(matched).toBe(false);
+  }
+});

@@ -62,6 +62,9 @@ function compileCompound(source, depth = 0) {
     // :read-write / :read-only (measured in Chromium, Firefox and WebKit): see readWrite.
     // :lang(tag): the element's language (the nearest lang attribute) is the tag or starts with tag- (case-insensitive;
     // measured in Chromium, Firefox and WebKit). One plain tag only; extended matching (zh-TW against zh-Hant-TW) differs.
+    // :dir(ltr | rtl): the directionality from the dir attributes (not the CSS direction; measured in three browsers).
+    const dir = rest.match(/^:dir\(\s*(ltr|rtl)\s*\)/i);
+    if (dir) { parts.push({ kind: 'dir', value: dir[1].toLowerCase() }); specificity[1]++; rest = rest.slice(dir[0].length); continue; }
     const lang = rest.match(/^:lang\(\s*([A-Za-z][A-Za-z0-9-]*)\s*\)/);
     if (lang) { parts.push({ kind: 'lang', value: lang[1].toLowerCase() }); specificity[1]++; rest = rest.slice(lang[0].length); continue; }
     const rw = rest.match(/^:(read-write|read-only)(?![\w-])/i);
@@ -249,13 +252,20 @@ export function langMatches(box, tag) {
   if (tag.includes('-') && l.split('-')[0] === tag.split('-')[0]) return 'unknown';
   return false;
 }
+// 'ltr' / 'rtl' from the nearest dir attribute (ltr at the document root when there is none), or 'unknown' (dir=auto,
+// a dynamic dir, an invalid value — the engine leaves those Unknown — or no dir in a component's tree).
+export function directionality(box) {
+  for (let b = box; b; b = b[PARENT]) if (b.dirAttr !== undefined) return ['ltr', 'rtl'].includes(b.dirAttr) ? b.dirAttr : 'unknown';
+  let root = box; while (root[PARENT]) root = root[PARENT];
+  return root.documentRoot ? 'ltr' : 'unknown';
+}
 export const isLink = box => (box.tag === 'a' && box.href !== undefined) || (box.tag === 'area' && (box.href !== undefined || box.attributes?.href !== undefined));
 /** The compound (tag, classes, id, :root, :is/:where) alone, ignoring states, pseudo-elements and combinators. */
 export function compoundMatches(selector, box) {
   if (box.anonymous) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
-    part.kind === 'root' ? box.documentRoot === true : part.kind === 'link' ? isLink(box) : part.kind === 'placeholder-shown' ? placeholderShown(box) : part.kind === 'required' ? requiredMatches(box, part.value) : part.kind === 'read-write' ? readWrite(box) === part.value : part.kind === 'lang' ? langMatches(box, part.value) === true : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
+    part.kind === 'root' ? box.documentRoot === true : part.kind === 'link' ? isLink(box) : part.kind === 'placeholder-shown' ? placeholderShown(box) : part.kind === 'required' ? requiredMatches(box, part.value) : part.kind === 'read-write' ? readWrite(box) === part.value : part.kind === 'lang' ? langMatches(box, part.value) === true : part.kind === 'dir' ? directionality(box) === part.value : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
     part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'structural' ? structuralMatches(part, box) : part.kind === 'has' ? hasMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
     part.choices.some(choice => matches(choice, box)));
 }

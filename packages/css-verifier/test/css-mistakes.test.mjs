@@ -694,3 +694,12 @@ test('F62: :lang() matches by the inherited lang; a country code instead of a la
   // Extended matching (zh-TW against zh-Hant-TW) differs between browsers: Unknown.
   assert.equal(page('.a:lang(zh-TW){color:red}', '<div class="a"></div>', 'zh-Hant-TW').status, 'unknown');
 });
+
+test('F63: :dir() follows the dir attribute, not the CSS direction', () => {
+  assert.equal(run('.x:dir(rtl){color:red}', '<div class="x a" dir="rtl"></div>').status, 'verified');
+  const w = (css, html) => codes(run(css, html), 'W_CSS_STATE_UNREACHABLE').filter(x => x.state === ':dir');
+  const [hit] = w('.x{direction:rtl}.x:dir(rtl){color:red}', '<div class="x a"></div>');
+  assert.ok(hit && /dir="rtl"/.test(hit.message));
+  assert.equal(w('.x:dir(rtl){color:red}', '<div class="x a" dir="rtl"></div>').length, 0);
+  assert.equal(w('.x:dir(rtl){color:red}', '<div class="x a"></div>').length, 0);
+});

@@ -307,6 +307,9 @@
   属性が ja か ja- で始まる要素に当たる(大文字小文字を区別しない。3 つのブラウザーで測った)。:lang(zh-TW) と lang="zh-Hant-TW"
   のような拡張の一致は Chromium だけ違うので Unknown、動的な lang やコンポーネントで lang が木にないときも Unknown。
   :lang(jp)・cn・cz・gr・dk・ua は国の符号で言語の符号でない(日本語は ja)ので報告する。
+- [x] **F63. `:dir()` を読む・CSS の direction だけの rtl**(`W_CSS_STATE_UNREACHABLE`、以前は Unknown): :dir() は dir 属性
+  (継承、大文字小文字を区別しない)で決まり、CSS の direction では変わらない(3 つのブラウザーで測った)。direction: rtl だけで
+  dir="rtl" のない要素の :dir(rtl) は当たらないので報告する。dir=auto(文字で決まる)やコンポーネントで dir が木にないときは Unknown。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

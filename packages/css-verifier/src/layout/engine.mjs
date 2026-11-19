@@ -5,7 +5,7 @@ import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea
 import { resolveUAProfile } from './ua-profile.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
-import { compileSelector, PARENT, dynamicAttributeTests, ignoringSiblings, placeholderField, requiredCapable, optionalDivergent, optionalDivergence, asFormField, readWriteKnown, asEditable, langMatches } from './selectors.mjs';
+import { compileSelector, PARENT, dynamicAttributeTests, ignoringSiblings, placeholderField, requiredCapable, optionalDivergent, optionalDivergence, asFormField, readWriteKnown, asEditable, langMatches, directionality } from './selectors.mjs';
 import { selectorUsage } from './selector-usage.mjs';
 import { selectorScope } from './selector-scope.mjs';
 import { viewportFont, zoomShortfall } from './zoom-font.mjs';
@@ -695,6 +695,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           const keys = style.$multicolInert.map(([key]) => key), src = style.$sources?.[keys[0]];
           layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: keys, ...(src ? { css: [{ property: keys[0], file: src.file, line: src.line, selector: src.selector }] } : {}),
             message: `${box.label}: ${style.$multicolInert.map(([key, value]) => `${key}: ${value}`).join(', ')} has no effect (it is display: ${style.display}; multi-column layout applies only to a block container). Use grid-template-columns (or flex-wrap with a flex-basis) for columns, or display: block for flowing columns` });
+        }
+        // F63: :dir() follows the dir attributes; where the directionality is not known it is Unknown, and a rule that
+        // misses only because the direction comes from CSS (direction: rtl, not dir="rtl") is reported.
+        if (!box.pseudo) for (const rule of rules) for (const sel of rule.selectors ?? []) for (const part of (sel.parts ?? []).filter(p => p.kind === 'dir')) {
+          const st = sel.pseudoElement ? new Set([...(state ?? []), `::${sel.pseudoElement}`]) : state;
+          const rest = matches({ ...sel, parts: sel.parts.filter(p => p !== part) }, box, st);
+          if (!rest) continue;
+          const d = directionality(box);
+          if (d === 'unknown') { unknown('U_LAYOUT_SELECTOR', `${sel.source}: the directionality of ${box.label} is not known here (dir=auto or no dir in the tree)`, rule.line, box, rule.file); continue; }
+          if (d !== part.value && String(style.direction) === part.value && !layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source))
+            layoutWarnings.push({ code: 'W_CSS_STATE_UNREACHABLE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, state: ':dir', css: [{ property: ':dir', file: rule.file, line: rule.line, selector: sel.source }],
+              message: `${sel.source} does not apply to ${box.label}: :dir(${part.value}) follows the dir attribute, and ${box.label} is direction: ${part.value} only by CSS. Set dir="${part.value}" on it (or an ancestor) instead of the CSS direction` });
         }
         // F62: :lang() where the language is not known is Unknown (the rule may or may not apply).
         if (!box.pseudo) for (const rule of rules) for (const sel of rule.selectors ?? []) for (const part of (sel.parts ?? []).filter(p => p.kind === 'lang'))
