@@ -256,7 +256,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], placeholderIgnored = [], gridAreasInvalid = [], userSelectNone = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], placeholderIgnored = [], gridAreasInvalid = [], radiusRules = [], userSelectNone = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -530,6 +530,15 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     firstPseudoInert(box, style);
     inlineOverflow(box, style);
     decorationNone(box, style, ancestors);
+    // F59: in the collapsing border model the table's border is not rounded by border-radius (measured in Chromium,
+    // Firefox and WebKit: same pixels without a background; a background is clipped to the curve, the border is not).
+    if (!box.pseudo && (box.tag === 'table' || ['table', 'inline-table'].includes(String(style.display))) && String(style['border-collapse']) === 'collapse'
+      && ['top', 'right', 'bottom', 'left'].some(side => !['0', '0px', 'ua', undefined].includes(String(style[`border-${side}`]))) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('border-radius'))) {
+      const hits = radiusRules.filter(r => r.selectors.some(sel => matches(sel, box, state))), rule = hits.find(r => !r.zero);
+      if (rule && !hits.some(r => r.zero))
+        layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['border-radius'], css: [{ property: 'border-radius', file: rule.file, line: rule.line, selector: rule.selector }],
+          message: `${box.label}: border-radius does not round the table's border with border-collapse: collapse (the cells share the border; only a background is clipped). Use border-collapse: separate with border-spacing: 0, or wrap the table in a rounded div with overflow: hidden` });
+    }
     if (style.$clearInert && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('clear')))
       layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['clear'], ...(style.$sources?.clear ? { css: [{ property: 'clear', file: style.$sources.clear.file, line: style.$sources.clear.line, selector: style.$sources.clear.selector }] } : {}),
         message: `${box.label}: clear: ${style.$clearInert} has no effect on a ${String(inherited?.display ?? '').includes('grid') ? 'grid' : 'flex'} item (floats do not apply there, so there is nothing to clear). Remove it, or use the container's wrapping (flex-wrap, grid rows) to start a new line` });

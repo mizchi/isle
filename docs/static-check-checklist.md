@@ -291,6 +291,9 @@
 - [x] **F58. 先祖の線を消せない `text-decoration: none`**(`W_LAYOUT_DECLARATION_INERT`): text-decoration: none は自分の線だけを
   消すので、自分に線がなく(リンクの UA の下線や、ほかの規則を上書きしていない)、先祖が線を引いているとき(`a span {
   text-decoration: none }` など)は何も変わらない(3 つのブラウザーで、inline・inline-block・block の子のどれでも描画が同じ)。
+- [x] **F59. 線を重ねた表の `border-radius`**(`W_LAYOUT_DECLARATION_INERT`): border-collapse: collapse の表では、border-radius で
+  表の線は丸くならない(3 つのブラウザーで、背景のない表の描画が同じ。背景だけは丸く切られる)。separate と border-spacing: 0
+  にするか、丸い div で包むことを勧める。同じ表に radius 0 の規則があれば報告しない。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

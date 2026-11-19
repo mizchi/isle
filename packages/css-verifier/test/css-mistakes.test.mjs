@@ -638,3 +638,13 @@ test('F58: text-decoration: none cannot remove a line an ancestor draws', () => 
   assert.equal(w('.c{text-decoration:none}', '<p class="a">t <span class="c">s</span></p>').length, 0);
   assert.equal(w('.l{text-decoration:underline}.c{text-decoration:underline}.l .c{text-decoration:none}', '<p class="a l">t <span class="c">s</span></p>').length, 0);
 });
+
+test('F59: border-radius does not round the border of a border-collapse: collapse table', () => {
+  const t = '<table class="t"><tbody><tr><td class="c"></td></tr></tbody></table>';
+  const w = css => codes(run('td{padding:0;height:20px}' + css, t), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.includes('border-radius'));
+  const [hit] = w('.t{border-collapse:collapse;border:2px solid red;border-radius:8px}');
+  assert.ok(hit && /collapse/.test(hit.message));
+  assert.equal(w('.t{border-collapse:separate;border:2px solid red;border-radius:8px}').length, 0);
+  assert.equal(w('.t{border-collapse:collapse;border-radius:8px}').length, 0);
+  assert.equal(w('.t{border-collapse:collapse;border:2px solid red;border-radius:0}').length, 0);
+});

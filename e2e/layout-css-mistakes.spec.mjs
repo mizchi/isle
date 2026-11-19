@@ -657,3 +657,15 @@ test('F58: text-decoration: none on a descendant does not remove an ancestor lin
     expect(warned, css).toBe(inert);
   }
 });
+
+test('F59: border-radius does not round the border of a collapsed table', async ({page}) => {
+  const t = '<table class="t"><tbody><tr><td>a</td><td>b</td></tr></tbody></table>';
+  for (const collapse of ['collapse', 'separate']) {
+    const css = `.t{border-collapse:${collapse};border:3px solid red}td{padding:10px}`;
+    const shot = async extra => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:10px}${css}${extra}</style></head><body>${t}</body></html>`); return (await page.screenshot()).toString('base64'); };
+    const inert = await shot('') === await shot('.t{border-radius:12px}');
+    expect(inert, collapse).toBe(collapse === 'collapse');
+    const warned = (analyzeHTML(`<html lang="en"><body>${t}</body></html>`, {name: 'P', css: `${css}.t{border-radius:12px}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('border-radius'));
+    expect(warned, collapse).toBe(inert);
+  }
+});

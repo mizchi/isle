@@ -626,7 +626,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], placeholderIgnored = [], gridAreasInvalid = [], userSelectNone = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
+  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], placeholderIgnored = [], gridAreasInvalid = [], radiusRules = [], userSelectNone = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -825,6 +825,10 @@ export function parseLayoutCSS(sheets, diagnostic) {
       if (/:placeholder-shown(?![\w-])/i.test(node.selector) && (node.nodes ?? []).some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `${node.selector}: :placeholder-shown holds only until the user types, and this rule changes the layout`, node.source.start.line); continue; }
       // F48: :link matches only while the link is unvisited; a rule in it that changes the layout depends on the history.
       if (/:link(?![\w-])/i.test(node.selector) && (node.nodes ?? []).some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `${node.selector}: :link holds only while the link is unvisited, and this rule changes the layout (use :any-link for every link)`, node.source.start.line); continue; }
+      // F59: border-radius is paint (not cascaded here); the rules that round a box are kept for the engine, which tells
+      // a collapsed table (whose border it does not round) apart. A rule that sets it to 0 for the box keeps it unreported.
+      if (selectors.length && selectors.every(sel => !sel.state && !sel.pseudoElement)) for (const d of node.nodes ?? []) if (d.type === 'decl' && /^border-(?:(?:top|bottom)-(?:left|right)-)?radius$/i.test(d.prop))
+        radiusRules.push({ selectors, selector: node.selector, file: filename, line: d.source.start.line, ...(/^\s*0(?:px)?\s*$/.test(d.value) ? { zero: true } : {}) });
       // F52: an invalid grid-template-areas (rows of different lengths, a name that does not make one rectangle) is
       // dropped by the browser (measured: CSS.supports is false in Chromium, Firefox and WebKit): dropped here too.
       for (const d of [...(node.nodes ?? [])]) if (d.type === 'decl' && d.prop.toLowerCase() === 'grid-template-areas') {
@@ -928,7 +932,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
     return 'none';
   }).join(', ');
-  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, firstPseudo, selectionIgnored, placeholderIgnored, gridAreasInvalid, userSelectNone, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, firstPseudo, selectionIgnored, placeholderIgnored, gridAreasInvalid, radiusRules, userSelectNone, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author
