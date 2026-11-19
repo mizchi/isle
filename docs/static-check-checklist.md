@@ -337,9 +337,10 @@
   canvas を配置する。canvas は width・height 属性(ない・不正なら 300×150)の bitmap を object-fit(初期値 fill)で箱に描くので、
   箱の形が bitmap と違うと絵が伸びる(3 つのブラウザーで、contain と描画が違うのは形が違うときだけ)。測るとき、setContent は
   ページの大域を残すので、script の const はブロックに入れた。
-- [x] **F72. 先祖の後ろに回る負の `z-index`**(`W_LAYOUT_NEGATIVE_Z_BEHIND`): 位置指定の箱の z-index: -1 は、間に重なりの文脈
-  (stacking context)を作る先祖がないと、すべての先祖の下に描かれ(背景に隠れる)、クリックも先祖に当たる(3 つのブラウザーで、
-  中心の当たり判定が先祖になる。isolation: isolate・position と z-index・opacity の先祖があると当たる)。filter など文脈を作り
+- [x] **F72. 先祖の後ろに回る負の `z-index`**(`W_LAYOUT_NEGATIVE_Z_BEHIND`): 位置指定の箱の z-index: -1 は、親が重なりの文脈
+  (stacking context)を作らないと、いちばん近い文脈までの先祖の下に描かれ(背景に隠れる)、クリックもその先祖に当たる(3 つの
+  ブラウザーで、中心の当たり判定が先祖になる。親が isolation: isolate・position と z-index・opacity を持つと当たる。祖父母の
+  opacity では親の下に回る)。filter など文脈を作り
   うる宣言を解析が捨てたときは報告しない。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。

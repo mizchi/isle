@@ -799,7 +799,9 @@ test('F72: z-index below 0 with no stacking context above puts the box behind it
   assert.ok(hit && /stacking context/.test(hit.message));
   assert.equal(w('.p{background:#fff;isolation:isolate}').length, 0);
   assert.equal(w('.p{background:#fff;position:relative;z-index:0}').length, 0);
-  assert.equal(w('.w{opacity:.9}').length, 0);
+  // A stacking context on the grandparent still leaves .p between: behind .p (measured).
+  assert.equal(w('.w{opacity:.9}').length, 1);
+  assert.equal(w('.p{opacity:.9}').length, 0);
   assert.equal(w('.p{filter:blur(1px)}').length, 0);
   assert.equal(codes(run('.c{position:relative;z-index:1;height:20px}', html), 'W_LAYOUT_NEGATIVE_Z_BEHIND').length, 0);
 });
