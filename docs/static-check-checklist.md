@@ -317,6 +317,8 @@
 - [x] **F65. 取らない要素の `disabled`・`checked`・`selected`**(`W_HTML_ATTRIBUTE_NOT_HTML`、selected は以前 Unknown): disabled は
   button・input・select・textarea・option・optgroup・fieldset にしか効かず、a や div に書いてもフォーカスでき押せる(:disabled にも
   ならない)。checked は checkbox・radio に、selected は option にしか効かない(3 つのブラウザーで測った)。
+- [x] **F66. 文字を入れない部品の `readonly`**(`W_HTML_ATTRIBUTE_NOT_HTML`): readonly は文字の編集を止めるだけで、checkbox・
+  radio・select はクリックや選択で変わる(3 つのブラウザーで測った。文字の input・textarea では止まる)。disabled を勧める。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

@@ -736,3 +736,14 @@ test('F65: disabled on a link or div, checked on a text field, selected on a div
     expect((r.layoutWarnings ?? []).some(w => w.code === 'W_HTML_ATTRIBUTE_NOT_HTML'), html).toBe(warn);
   }
 });
+
+test('F66: readonly on a checkbox, radio or select does not stop changes', async ({page}) => {
+  for (const [html, act, warn] of [['<input class="x" type="checkbox" aria-label="q" readonly>', 'click', true], ['<input class="x" type="radio" name="g" aria-label="q" readonly>', 'click', true], ['<select class="x" aria-label="q" readonly><option>a</option><option>b</option></select>', 'select', true], ['<input class="x" aria-label="q" readonly value="v">', 'type', false]]) {
+    await page.setContent(`<!doctype html><html lang="en"><body>${html}</body></html>`);
+    if (act === 'click') await page.click('.x'); else if (act === 'select') await page.selectOption('.x', 'b'); else { await page.click('.x'); await page.keyboard.type('zz'); }
+    const changed = await page.evaluate(() => { const x = document.querySelector('.x'); return x.type === 'checkbox' || x.type === 'radio' ? x.checked : x.tagName === 'SELECT' ? x.value === 'b' : x.value !== 'v'; });
+    expect(changed, html).toBe(warn);
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: '', viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_HTML_ATTRIBUTE_NOT_HTML'), html).toBe(warn);
+  }
+});

@@ -75,6 +75,9 @@ export function htmlBoxTree(html) {
       if(!attr.namespace && attr.name==='disabled' && !['button','input','select','textarea','optgroup','option','fieldset','link','style'].includes(node.tagName)) (node.notAttributes ??= []).push('disabled');
       if(!attr.namespace && attr.name==='checked' && !(node.tagName==='input' && ['checkbox','radio'].includes(String(attrs.type ?? '').trim().toLowerCase()))) (node.notAttributes ??= []).push('checked');
       if(!attr.namespace && attr.name==='selected' && node.tagName!=='option') { (node.notAttributes ??= []).push('selected'); continue; }
+      // F66: readonly only stops editing text (a textarea or a text-like input); a checkbox, radio or select still changes
+      // (measured in Chromium, Firefox and WebKit).
+      if(!attr.namespace && attr.name==='readonly' && !(node.tagName==='textarea' || (node.tagName==='input' && /^(?:|text|search|url|tel|email|password|number|date|month|week|time|datetime-local)$/.test(String(attrs.type ?? '').trim().toLowerCase())))) (node.notAttributes ??= []).push('readonly');
       if(attr.namespace || !/^(?:class|id|style|dir|target|title|role|lang|tabindex|href|disabled|alt|src|type|for|name|value|placeholder|required|readonly|checked|autocomplete|headers|scope|controls|autoplay|muted|loop|playsinline|poster|kind|srclang|label|accesskey|ismap|colspan|rowspan|hidden|inert|autofocus|popover|popovertarget|popovertargetaction|aria-[\w-]+|data-[\w-]+)$/.test(attr.name)) unknown(`HTML rendering attribute needs an adapter: ${attr.name}`);
     }
     // An inline svg is one replaced box: its content is SVG, not CSS boxes, so its children are not converted.
