@@ -271,6 +271,9 @@
 - [x] **F52. 無効な `grid-template-areas`**(`W_CSS_GRID_AREAS_INVALID`、以前は Unknown): 行ごとに区画の数が違う、または同じ名前が
   1 つの長方形にならない値は、宣言ごと捨てられる(3 つのブラウザーで CSS.supports が false、配置が宣言のないときと同じ)。
   解析も読むときに捨て、そこで名付けた grid-area は分からなくなる(自動で並ぶ)と報告する。
+- [x] **F53. ブロックの流れの中の縦の `margin: auto`**(`W_LAYOUT_DECLARATION_INERT`、以前は Unknown): 流れの中のブロックの
+  margin-top・margin-bottom の auto は 0 で、縦に中央へ寄せない(CSS 2.2 §10.6.3。3 つのブラウザーで、flow-root・
+  overflow: hidden の親でも同じ。flex・grid では寄る)。解析も 0 として配置し、位置がブラウザーと同じことを確かめた。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

@@ -567,3 +567,13 @@ test('F52: an invalid grid-template-areas (rows of different lengths, an area th
   assert.ok(!JSON.stringify(r.diagnostics).includes('is not a rectangle'));
   assert.equal(r.status, run(base, items).status);
 });
+
+test('F53: margin-top / margin-bottom: auto in block flow are 0 (no vertical centring)', () => {
+  const html = '<div class="p"><div class="c"></div></div>';
+  const r = run('.p{display:block;height:200px}.c{margin:auto 0;height:20px}', html);
+  assert.equal(r.status, 'verified');
+  const [hit] = codes(r, 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.some(p => /^margin-(?:top|bottom)$/.test(p)));
+  assert.ok(hit && /block/.test(hit.message) && /flex|grid/.test(hit.message));
+  assert.equal(codes(run('.p{display:flex;flex-direction:column;height:200px}.c{margin-top:auto;height:20px}', html), 'W_LAYOUT_DECLARATION_INERT').length, 0);
+  assert.equal(codes(run('.p{display:block;height:200px}.c{margin:0 auto;width:20px;height:20px}', html), 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.some(p => /^margin/.test(p))).length, 0);
+});

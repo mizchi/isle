@@ -574,3 +574,18 @@ test('F52: an invalid grid-template-areas is dropped (the layout is as without i
     expect(warned, v).toBe(invalid);
   }
 });
+
+test('F53: auto margin-top / margin-bottom are 0 in block flow; the analysed positions match', async ({page}) => {
+  const html = '<div class="p"><div class="s"></div><div class="c"></div><div class="n"></div></div>';
+  for (const [parent, child] of [['display:block', 'margin:auto 0'], ['display:block', 'margin-top:auto'], ['display:block', 'margin-bottom:auto']]) {
+    const css = `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.p{${parent};height:200px}.s{height:30px}.c{${child};height:20px}.n{height:10px}`;
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const browser = await page.evaluate(() => ['.c', '.n'].map(s => document.querySelector(s).getBoundingClientRect().y));
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    expect(r.status, child).toBe('verified');
+    const at = sel => Number(r.sizes.find(s => s.box === sel).rect.blockStart.constant);
+    expect([at('.c'), at('.n')], `${parent} ${child}`).toEqual(browser);
+    expect(r.layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.some(p => /^margin-(?:top|bottom)$/.test(p))), child).toBe(true);
+  }
+});

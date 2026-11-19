@@ -3145,6 +3145,9 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       };
       for (const state of styles(box, region, parents, inherited, emit, !available.root).flatMap(tableStates)) {
         let { style } = state;
+        // F53: an in-flow child of a block-flow parent has auto margin-top / margin-bottom of 0 (see the collect step).
+        if (inherited?.$blockFlow && !available.root && !['absolute', 'fixed'].includes(style.position) && !style.$fixed && ['margin-top', 'margin-bottom'].some(key => String(style[key]) === 'auto'))
+          style = { ...style, ...Object.fromEntries(['margin-top', 'margin-bottom'].filter(key => String(style[key]) === 'auto').map(key => [key, '0'])) };
         // A grid container whose only content is text (a chat bubble: display: grid on the p) has one anonymous grid
         // item holding it. With one minmax(0, 1fr) column, no row tracks and no item or content alignment, that item
         // fills the content box and its row is the text's height: the same as a block text leaf, which it is laid out as.
@@ -3398,6 +3401,17 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                     if (child.tableCell || child.tableCaption) c = { ...c, style: tablePlacement(child, c.style) };
                     if (child.tablePart && ['table-row-group', 'table-header-group', 'table-footer-group', 'table-row'].includes(c.style.display)) c = { ...c, style: { ...c.style, display: 'contents' } };
                     if (c.style.display === 'none') return [{ region: c.region, children: s.children }];
+                    // F53: in block flow, an in-flow box's auto margin-top / margin-bottom are 0 (CSS 2.2 §10.6.3; measured in
+                    // Chromium, Firefox and WebKit, also in a flow-root or overflow: hidden parent): no vertical centring.
+                    if (style.$blockFlow && !['absolute', 'fixed'].includes(c.style.position) && !c.style.$fixed && c.style.display !== 'contents') {
+                      const autos = ['margin-top', 'margin-bottom'].filter(key => String(c.style[key]) === 'auto');
+                      if (autos.length) {
+                        c = { ...c, style: { ...c.style, ...Object.fromEntries(autos.map(key => [key, '0'])) } };
+                        if (!child.pseudo && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === child.path && w.properties.includes(autos[0])))
+                          layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: child.label, path: child.path, properties: autos, css: autos.filter(key => c.style.$sources?.[key]).map(key => ({ property: key, file: c.style.$sources[key].file, line: c.style.$sources[key].line, selector: c.style.$sources[key].selector })),
+                            message: `${child.label}: ${autos.join(' and ')}: auto ${autos.length === 1 ? 'is' : 'are'} 0 in block flow (its parent ${box.label} is display: block), so it is not centred or pushed down vertically. Make the parent display: flex (or grid) for auto margins to take the free space` });
+                      }
+                    }
                     if (c.style.display !== 'contents') return [{ region: c.region, children: [...s.children, { box: child, style: c.style, inherited: inheritedStyle }] }];
                     if (child.text || child.contract || child.targets?.length) throw new Error('display: contents with text, contracts or noshift targets needs anonymous or absent boxes');
                     if (emit) contentsInert(child, c.style, c.region);
