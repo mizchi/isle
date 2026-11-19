@@ -761,3 +761,13 @@ test('F69: a datalist is display: none (its options show only in a field popup)'
   assert.equal(run(base, html).status, 'verified');
   assert.equal(run(base + 'datalist{display:block}', html).status, 'unknown');
 });
+
+test('F70: :nth-child(An+B of S) counts only the siblings that match S', () => {
+  const html = '<div class="w"><div class="i v"></div><div class="i"></div><div class="i v"></div><div class="i v"></div></div>';
+  const r = run('.i{height:10px}.i:nth-child(2 of .v){height:30px}', html);
+  assert.equal(r.status, 'verified');
+  const heights = r.sizes.filter(s => s.box.startsWith('.i')).map(s => Number(s.rect.blockSize.constant));
+  assert.deepEqual(heights, [10, 10, 30, 10]);
+  const last = run('.i{height:10px}.i:nth-last-child(1 of .v){height:30px}', html);
+  assert.deepEqual(last.sizes.filter(s => s.box.startsWith('.i')).map(s => Number(s.rect.blockSize.constant)), [10, 10, 10, 30]);
+});

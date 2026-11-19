@@ -782,3 +782,16 @@ test('F69: a datalist is not rendered; the analysis lays out the page around it'
   expect(r.status).toBe('verified');
   expect(Number(r.sizes.find(s => s.box === '.n').rect.blockStart.constant)).toBe(y);
 });
+
+test('F70: :nth-child(An+B of S) — the analysed heights match the browser', async ({page}) => {
+  const html = '<div class="w"><div class="i v"></div><div class="i"></div><div class="i v"></div><div class="i v"></div><div class="i"></div></div>';
+  for (const sel of [':nth-child(2 of .v)', ':nth-child(odd of .v)', ':nth-last-child(1 of .v)', ':nth-child(-n+2 of .v)']) {
+    const css = `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.i{height:10px}.i${sel}{height:30px}`;
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const browser = await page.evaluate(() => [...document.querySelectorAll('.i')].map(e => e.getBoundingClientRect().height));
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    expect(r.status, sel).toBe('verified');
+    expect(r.sizes.filter(s => s.box.startsWith('.i')).map(s => Number(s.rect.blockSize.constant)), sel).toEqual(browser);
+  }
+});

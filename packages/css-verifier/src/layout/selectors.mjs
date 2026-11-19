@@ -98,9 +98,16 @@ function compileCompound(source, depth = 0) {
     if (structural) { parts.push({ kind: 'structural', name: structural[1].toLowerCase() }); specificity[1]++; rest = rest.slice(structural[0].length); continue; }
     const nth = rest.match(/^:(nth-child|nth-last-child|nth-of-type|nth-last-of-type)\(\s*([^()]*?)\s*\)/i);
     if (nth) {
-      const formula = parseNth(nth[2]);
-      if (!formula) throw new Error(`Unsupported selector: ${source}`);
-      parts.push({ kind: 'structural', name: nth[1].toLowerCase(), ...formula }); specificity[1]++; rest = rest.slice(nth[0].length); continue;
+      // F70: An+B of S (nth-child / nth-last-child): only the siblings matching S are counted (measured in Chromium,
+      // Firefox and WebKit); the specificity adds S's most specific selector.
+      const [, an, of] = nth[2].match(/^(.*?)(?:\s+of\s+(.+))?$/i);
+      const formula = parseNth(an);
+      if (!formula || (of && !/^nth-(?:last-)?child$/i.test(nth[1]))) throw new Error(`Unsupported selector: ${source}`);
+      const ofList = of ? of.split(',').map(x => compileSelector(x.trim())) : undefined;
+      if (ofList?.some(x => x.state || x.pseudoElement || x.chain)) throw new Error(`Unsupported selector: ${source}`);
+      parts.push({ kind: 'structural', name: nth[1].toLowerCase(), ...formula, ...(ofList ? { of: ofList } : {}) }); specificity[1]++;
+      if (ofList) { const top = ofList.map(x => x.specificity).sort((a, b) => b[0] - a[0] || b[1] - a[1] || b[2] - a[2])[0]; specificity = specificity.map((v, i) => v + top[i]); }
+      rest = rest.slice(nth[0].length); continue;
     }
     // :has(relative list): an argument is one compound with an optional leading combinator (descendant by default).
     const has = rest.match(/^:has\(/i);
@@ -291,7 +298,8 @@ function structuralMatches(part, box) {
   if (part.name === 'empty') return !box.text && !box.whitespace && !(box.children ?? []).some(c => !c.pseudo) && !(box.inline ?? []).length;
   const all = siblingsOf(box);
   if (!all) return false; // reported by unknownMatches
-  const list = /of-type/.test(part.name) ? all.filter(s => s.tag === box.tag) : all;
+  if (part.of && !part.of.some(sel => matches(sel, box))) return false;
+  const list = /of-type/.test(part.name) ? all.filter(s => s.tag === box.tag) : part.of ? all.filter(s => part.of.some(sel => matches(sel, s))) : all;
   const at = list.findIndex(s => s === box || s.path === box.path), from = at + 1, fromEnd = list.length - at;
   switch (part.name) {
     case 'first-child': case 'first-of-type': return from === 1;
