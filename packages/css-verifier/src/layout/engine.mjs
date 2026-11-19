@@ -462,6 +462,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         message: `${sel.source} never applies to ${box.label}: it is ${replaced ? `a <${box.tag}>` : `display: ${style.display}`}, not a block container, so it has no ${pe}. ${style.display === 'inline' ? 'Make it display: inline-block or block' : 'Put the rule on the item that holds the text'}` });
     }
   }
+  // F45: text-align / text-indent / text-align-last on an inline element (no child elements) do nothing: they align and
+  // indent the lines of a block container (measured in Chromium, Firefox and WebKit).
+  function inlineTextAlignment(box, style) {
+    if (box.pseudo || style.display !== 'inline' || (box.children ?? []).some(c => !c.anonymous) || (box.inline ?? []).length) return;
+    const found = [...(style.$inlineTextInert ?? [])];
+    if (style.$sources?.['text-align'] && !['start', 'initial', 'unset', 'inherit', 'revert', 'revert-layer'].includes(String(style.$sources['text-align'].specified ?? style['text-align']))) found.unshift(['text-align', style['text-align']]);
+    if (!found.length || layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(found[0][0]))) return;
+    layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: found.map(([key]) => key), css: found.filter(([key]) => style.$sources?.[key]).map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
+      message: `${box.label}: ${found.map(([key, value]) => `${key}: ${value}`).join(', ')} ${found.length === 1 ? 'has' : 'have'} no effect on a display: inline element (they align and indent the lines of a block). Put ${found.length === 1 ? 'it' : 'them'} on the paragraph, or make ${box.label} display: block` });
+  }
   function inlineStateTransforms(box, style) {
         // F36: a :hover / :focus / :active transform on a non-replaced inline box (a link or span in text) does nothing,
         // as a static one does (CSS Transforms 1 §1; measured in Chromium, Firefox and WebKit): the hover lift never shows.
@@ -1810,6 +1820,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // measured: width, height, min/max-width, margin-top and aspect-ratio on a span change no pixel), nor do
       // transforms (CSS Transforms 1 §1: only block-level and atomic inline boxes are transformable; measured too).
       inlineStateTransforms(child, style);
+      inlineTextAlignment(child, style);
       firstPseudoInert(child, style);
       if (!['img', 'video', 'canvas', 'iframe', 'svg', 'input', 'button', 'select', 'textarea'].includes(child.tag) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === child.path)) {
         const initial = { 'inline-size': ['auto'], 'block-size': ['auto'], 'min-inline-size': ['auto', '0', '0px'], 'min-block-size': ['auto', '0', '0px'], 'max-inline-size': ['none'], 'max-block-size': ['none'], 'margin-top': ['0', '0px', 'auto'], 'margin-bottom': ['0', '0px', 'auto'], 'aspect-ratio': ['auto'], transform: ['none'], translate: ['none'], rotate: ['none'], scale: ['none'] };
@@ -3840,6 +3851,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         let c; try { [c] = styles(child, initial, chain, parentStyle, false, false); } catch { return; }
         if (!c || c.style.display === 'none') return;
         try { inlineStateTransforms(child, c.style); } catch { /* the rest still runs */ }
+        try { inlineTextAlignment(child, c.style); } catch { /* the rest still runs */ }
         try { firstPseudoInert(child, c.style); } catch { /* the rest still runs */ }
         for (const grand of child.inline ?? child.children ?? []) walkInline(grand, [...chain, { box: child, style: c.style, names: [] }], c.style);
       };

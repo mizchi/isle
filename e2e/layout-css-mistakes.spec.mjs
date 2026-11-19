@@ -479,3 +479,15 @@ test('F44: an element with pointer-events: none is never under the pointer, so i
     expect(warned, css).toBe(!hit);
   }
 });
+
+test('F45: text-align / text-indent / text-align-last on an inline element do nothing', async ({page}) => {
+  const html = '<p class="a">before <span class="x">span text here</span> after more words to wrap the line around</p>';
+  for (const [d, disp] of [['text-align:center', 'inline'], ['text-indent:40px', 'inline'], ['text-align-last:center', 'inline'], ['text-align:center', 'block'], ['text-indent:40px', 'block']]) {
+    const css = `.a{width:300px}.x{display:${disp};${d}}`;
+    const shot = async extra => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:10px;font:16px sans-serif}.a{width:300px}.x{display:${disp}}${extra}</style></head><body>${html}</body></html>`); return (await page.screenshot()).toString('base64'); };
+    const inert = await shot('') === await shot(`.x{${d}}`);
+    expect(inert, `${disp} ${d}`).toBe(disp === 'inline');
+    const warned = (analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.some(p => /^text-(?:align|indent|align-last)$/.test(p)));
+    expect(warned, `${disp} ${d}`).toBe(inert);
+  }
+});

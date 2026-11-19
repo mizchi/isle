@@ -241,6 +241,10 @@
 - [x] **F44. `pointer-events: none` の要素の `cursor`**(`W_LAYOUT_DECLARATION_INERT`): 出るカーソルはポインターの下の要素の
   もので、pointer-events: none(継承も)の要素はポインターに当たらないので、その cursor は出ない(子の要素がなく、
   pointer-events を取り戻せないとき)。3 つのブラウザーで、その要素の中心の当たり判定が下の要素になることを測った。
+- [x] **F45. inline の要素の `text-align`・`text-indent`・`text-align-last`**(`W_LAYOUT_DECLARATION_INERT`、後ろの 2 つは以前
+  Unknown): これらはブロック容器の行を揃え・字下げするので、子の要素のない display: inline の要素(span・a)では何も
+  変わらない(3 つのブラウザーで描画が同じ)。text-indent・text-align-last はそのときだけ捨てて配置し、ブロックでは今までどおり
+  Unknown。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

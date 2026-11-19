@@ -470,7 +470,7 @@ function expand(property, value) {
   const neutral = {
     'word-break': ['normal'], 'text-wrap-mode': ['wrap'],
     'font-variant-numeric': ['normal'], 'font-variant-ligatures': ['normal'], 'font-feature-settings': ['normal'], 'font-variation-settings': ['normal'], 'text-rendering': ['auto'],
-    'text-indent': ['0', '0px'], 'tab-size': ['8'], 'box-decoration-break': ['slice'], '-webkit-box-decoration-break': ['slice'], 'field-sizing': ['fixed'],
+    'tab-size': ['8'], 'box-decoration-break': ['slice'], '-webkit-box-decoration-break': ['slice'], 'field-sizing': ['fixed'],
     'text-size-adjust': ['none', '100%'], '-webkit-text-size-adjust': ['none', '100%'],
     filter: ['none'], 'mix-blend-mode': ['normal'], contain: ['none', 'style'], perspective: ['none'],
   };
@@ -506,6 +506,9 @@ function expand(property, value) {
     const justify = parts[1] ?? (kind === 'content' && /baseline$/.test(parts[0]) ? 'start' : parts[0]);
     return [...expand(`align-${kind}`, parts[0]), ...expand(`justify-${kind}`, justify)];
   }
+  // F45: text-indent and text-align-last are kept so an inline element (where they do nothing) is told apart; on any
+  // other box they are not modeled (Unknown in computeStyle).
+  if (property === 'text-indent' || property === 'text-align-last') return [[property, value.trim().toLowerCase()]];
   // Multi-column properties are kept so a flex or grid container (which ignores them, F34) is told apart from a block
   // container, where multi-column layout is not modeled (Unknown in computeStyle).
   if (['columns', 'column-count', 'column-width'].includes(property)) {
@@ -1226,6 +1229,13 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   // text input, select, textarea, iframe, video, br, canvas) are not generated whatever their content. (A broken img
   // shows them in Chromium and Firefox, and a checkbox or radio in Chromium and WebKit; those are left as they are.)
   if ((box.pseudo === 'before' || box.pseudo === 'after') && (values.content ?? 'none') !== 'none' && noPseudoHost(box)) { values.$pseudoNotRendered = values.content; values.content = 'none'; }
+  // F45: text-indent and text-align-last apply to block containers. On an inline element with no child elements they do
+  // nothing (measured in Chromium, Firefox and WebKit); elsewhere they move the lines, which is not modeled.
+  for (const [key, idle] of [['text-indent', ['0', '0px', 'initial', 'unset', 'revert', 'revert-layer']], ['text-align-last', ['auto', 'initial', 'unset', 'revert', 'revert-layer']]]) {
+    if (values[key] === undefined || idle.includes(String(values[key]))) continue;
+    if (!box.pseudo && values.display === 'inline' && !(box.children ?? []).some(c => !c.anonymous) && !(box.inline ?? []).length) { (values.$inlineTextInert ??= []).push([key, values[key]]); delete values[key]; }
+    else throw new Error(`Unsupported ${key}: ${values[key]} (it changes line breaking, shaping, containing blocks or paint, which are not modeled)`);
+  }
   // F34: multi-column properties on a flex or grid container do nothing (measured in Chromium, Firefox and WebKit: the
   // items are laid out as without them); on another box multi-column layout is not modeled.
   const multicol = ['column-count', 'column-width'].filter(key => values[key] !== undefined && !['auto', 'initial', 'unset', 'revert', 'revert-layer', 'inherit'].includes(String(values[key])));

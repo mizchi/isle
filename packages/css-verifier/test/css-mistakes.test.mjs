@@ -463,3 +463,13 @@ test('F44: cursor on an element with pointer-events: none never shows', () => {
   assert.equal(w('.x{pointer-events:none;cursor:pointer}', '<div class="x"><div class="a"></div></div>').length, 0);
   assert.equal(w('.x{pointer-events:none;cursor:auto}').length, 0);
 });
+
+test('F45: text-align / text-indent / text-align-last on an inline element do nothing', () => {
+  const w = (css, html = '<p class="a">before <span class="x">s</span> after</p>') => codes(run(css, html), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.some(p => /^text-(?:align|indent|align-last)$/.test(p)));
+  const [hit] = w('.x{text-align:center}');
+  assert.ok(hit && /display: inline/.test(hit.message) && hit.properties.includes('text-align'));
+  assert.equal(w('.x{text-indent:2em}', '<p class="a">t <a class="x" href="/y">y</a></p>').length, 1);
+  assert.equal(w('.x{display:block;text-align:center}').length, 0);
+  assert.equal(w('.x{text-align:center}', '<p class="x a">t</p>').length, 0);
+  assert.equal(w('.x{text-align:center}', '<p class="a">t <span class="x">a <b>b</b></span></p>').length, 0);
+});
