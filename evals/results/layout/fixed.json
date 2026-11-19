@@ -21,7 +21,7 @@
   "assumptions": [
     "The supplied CSS is the complete author cascade and the selected root has no external query-container ancestors; host provides the declared containing sizes without unmodeled scrollbar gutters.",
     "Each minInlineSize/minBlockSize is a trusted sufficient content-size bound; intrinsicBlockSize is a trusted exact auto-height profile for the permitted content/fonts.",
-    "Only horizontal-tb/ltr in-flow geometry is checked; ink overflow and browser pixel rounding are outside the contract."
+    "Only horizontal-tb/ltr in-flow and explicitly sized local absolute geometry is checked; ink overflow and browser pixel rounding are outside the contract."
   ],
   "styleSources": [
     {
@@ -748,6 +748,7 @@
     {
       "box": ".side",
       "path": "Board/0",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -755,7 +756,19 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "0",
+        "constant": "240"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "0",
+        "constant": "240"
+      },
       "inlineSize": {
+        "coefficient": "0",
+        "constant": "240"
+      },
+      "contentInlineSize": {
         "coefficient": "0",
         "constant": "240"
       },
@@ -771,6 +784,7 @@
     {
       "box": ".copy",
       "path": "Board/1/0",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -778,7 +792,19 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-288"
+      },
       "inlineSize": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "contentInlineSize": {
         "coefficient": "0",
         "constant": "320"
       },
@@ -794,6 +820,7 @@
     {
       "box": ".body",
       "path": "Board/1",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -801,7 +828,19 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-288"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-288"
+      },
       "inlineSize": {
+        "coefficient": "1",
+        "constant": "-288"
+      },
+      "contentInlineSize": {
         "coefficient": "1",
         "constant": "-288"
       },
@@ -817,6 +856,7 @@
     {
       "box": ".board",
       "path": "Board",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -824,9 +864,21 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
       "inlineSize": {
         "coefficient": "1",
         "constant": "0"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
       },
       "range": {
         "min": 608,
@@ -840,6 +892,7 @@
     {
       "box": ".side",
       "path": "Board/0",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -847,7 +900,19 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "contentInlineSize": {
         "coefficient": "1",
         "constant": "-32"
       },
@@ -863,6 +928,7 @@
     {
       "box": ".copy",
       "path": "Board/1/0",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -870,7 +936,19 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "inlineSize": {
+        "coefficient": "0",
+        "constant": "320"
+      },
+      "contentInlineSize": {
         "coefficient": "0",
         "constant": "320"
       },
@@ -886,6 +964,7 @@
     {
       "box": ".body",
       "path": "Board/1",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -893,7 +972,19 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
       "inlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
+      },
+      "contentInlineSize": {
         "coefficient": "1",
         "constant": "-32"
       },
@@ -909,6 +1000,7 @@
     {
       "box": ".board",
       "path": "Board",
+      "position": "static",
       "boxSizing": "border-box",
       "boxSizingSource": {
         "file": "<css>",
@@ -916,9 +1008,21 @@
         "selector": "*",
         "specified": "border-box"
       },
+      "paddingInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
+      "allocatedInlineSize": {
+        "coefficient": "1",
+        "constant": "0"
+      },
       "inlineSize": {
         "coefficient": "1",
         "constant": "0"
+      },
+      "contentInlineSize": {
+        "coefficient": "1",
+        "constant": "-32"
       },
       "range": {
         "min": 352,
@@ -931,5 +1035,39 @@
     }
   ],
   "queries": [],
-  "subgrids": []
+  "subgrids": [],
+  "elements": [
+    {
+      "path": "Board",
+      "tag": "main",
+      "classes": [
+        "board"
+      ],
+      "owner": "Board"
+    },
+    {
+      "path": "Board/0",
+      "tag": "aside",
+      "classes": [
+        "side"
+      ],
+      "owner": "Board"
+    },
+    {
+      "path": "Board/1",
+      "tag": "section",
+      "classes": [
+        "body"
+      ],
+      "owner": "Board"
+    },
+    {
+      "path": "Board/1/0",
+      "tag": "p",
+      "classes": [
+        "copy"
+      ],
+      "owner": "Board"
+    }
+  ]
 }
