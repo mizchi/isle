@@ -818,3 +818,14 @@ test('F71: a canvas box of another shape than its bitmap stretches the drawing',
     expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_IMAGE_DISTORTED'), `${attrs} ${css}`).toBe(stretched);
   }
 });
+
+test('F72: a negative z-index with no stacking context above puts the box behind its ancestors', async ({page}) => {
+  const html = '<div class="w"><div class="p"><div class="c" id="c"></div></div></div>';
+  for (const css of ['.p{background:#fff}', '', '.p{background:#fff;isolation:isolate}', '.p{background:#fff;position:relative;z-index:0}', '.w{opacity:.9}']) {
+    const sheet = `.p{padding:20px}.c{position:relative;z-index:-1;width:50px;height:50px;background:red}${css}`;
+    await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}${sheet}</style></head><body>${html}</body></html>`);
+    const behind = await page.evaluate(() => document.elementFromPoint(30, 30)?.id !== 'c');
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${sheet}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_NEGATIVE_Z_BEHIND'), css || 'none').toBe(behind);
+  }
+});

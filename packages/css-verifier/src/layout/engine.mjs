@@ -544,6 +544,32 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
     firstPseudoInert(box, style);
+    // F72: a positioned box with a negative z-index is painted below its stacking context's in-flow boxes. With no
+    // stacking context between it and the root, every ancestor paints over it (a background hides it) and is hit first,
+    // so it cannot be clicked (measured in Chromium, Firefox and WebKit). Not where an ancestor might make one.
+    if (!box.pseudo && ['relative', 'absolute', 'sticky'].includes(String(style.position)) && /^-\d+$/.test(String(style['z-index'])) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_NEGATIVE_Z_BEHIND' && w.path === box.path)) {
+      const chain = (ancestors ?? []).filter(a => a.box && a.style);
+      const stacks = (a, i) => {
+        const st = a.style, parent = chain[i - 1]?.style;
+        if (a.box.tag === 'html' || st.$stacks || st.$fixed) return true;
+        if (st.position !== 'static' && st.position !== undefined && !['auto', undefined].includes(String(st['z-index']))) return true;
+        if (parent && ['flex', 'inline-flex', 'grid', 'inline-grid'].includes(String(parent.display)) && !parent.$blockFlow && !['auto', undefined].includes(String(st['z-index']))) return true;
+        if (st.opacity !== undefined && Number(st.opacity) < 1) return true;
+        if (!['none', undefined].includes(String(st.transform)) || ['translate', 'rotate', 'scale'].some(key => !['none', undefined].includes(String(st[key])))) return true;
+        if (String(st.isolation) === 'isolate' || /transform|opacity|filter/.test(String(st['will-change'] ?? ''))) return true;
+        // Properties that also make one, not tracked here: treated as making one (not reported).
+        return ['filter', 'backdrop-filter', 'mix-blend-mode', 'mask', 'mask-image', 'clip-path', 'contain', 'perspective', 'container-type'].some(key => st.$sources?.[key] && !['none', 'normal', undefined].includes(String(st[key])));
+      };
+      const above = chain.slice().reverse();
+      const nearest = above.find((a, j) => stacks(a, chain.length - 1 - j));
+      // A declaration dropped as unsupported may have been one that makes a stacking context: not judged then.
+      const dropped = diagnostics.some(d => /Unsupported (?:layout property: )?(?:filter|backdrop-filter|mix-blend-mode|mask|clip-path|contain|perspective|will-change|isolation|opacity|transform|z-index)/.test(String(d.message)));
+      if (!dropped && nearest?.box.tag === 'html' && above.some(a => a.box.tag !== 'html')) {
+        const covering = above.find(a => a.box.tag !== 'html' && !['transparent', 'rgba(0,0,0,0)', 'ua', undefined, 'none'].includes(String(a.style['background-color'])));
+        layoutWarnings.push({ code: 'W_LAYOUT_NEGATIVE_Z_BEHIND', severity: 'warning', box: box.label, path: box.path, ...(style.$sources?.['z-index'] ? { css: [{ property: 'z-index', file: style.$sources['z-index'].file, line: style.$sources['z-index'].line, selector: style.$sources['z-index'].selector }] } : {}),
+          message: `${box.label}: z-index: ${style['z-index']} puts it behind its ancestors — no ancestor makes a stacking context, so it is painted below them${covering ? ` (${covering.box.label}'s background hides it)` : ''} and a click lands on them, not on it. Give its parent isolation: isolate (or position: relative; z-index: 0)` });
+      }
+    }
     // F71: a canvas draws its bitmap (width × height attributes, 300×150 by default) into its box with object-fit (fill
     // by default): a box of another shape stretches the drawing (measured in Chromium, Firefox and WebKit).
     if (!box.pseudo && box.tag === 'canvas' && String(style['object-fit'] ?? 'fill') === 'fill' && !layoutWarnings.some(w => w.code === 'W_LAYOUT_IMAGE_DISTORTED' && w.path === box.path)) {

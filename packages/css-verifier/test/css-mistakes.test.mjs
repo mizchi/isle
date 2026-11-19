@@ -791,3 +791,15 @@ test('F71: a canvas sized by CSS is laid out; a CSS shape other than its bitmap 
   assert.deepEqual(w('width="400" height="200"', 'width:300px;height:300px;object-fit:contain'), ['verified', 0]);
   assert.equal(run('.x{display:block}', '<canvas class="x"></canvas>').status, 'unknown');
 });
+
+test('F72: z-index below 0 with no stacking context above puts the box behind its ancestors', () => {
+  const html = '<div class="w"><div class="p"><div class="c"></div></div></div>';
+  const w = css => codes(run('.c{position:relative;z-index:-1;height:20px}' + css, html), 'W_LAYOUT_NEGATIVE_Z_BEHIND');
+  const [hit] = w('.p{background:#fff}');
+  assert.ok(hit && /stacking context/.test(hit.message));
+  assert.equal(w('.p{background:#fff;isolation:isolate}').length, 0);
+  assert.equal(w('.p{background:#fff;position:relative;z-index:0}').length, 0);
+  assert.equal(w('.w{opacity:.9}').length, 0);
+  assert.equal(w('.p{filter:blur(1px)}').length, 0);
+  assert.equal(codes(run('.c{position:relative;z-index:1;height:20px}', html), 'W_LAYOUT_NEGATIVE_Z_BEHIND').length, 0);
+});
