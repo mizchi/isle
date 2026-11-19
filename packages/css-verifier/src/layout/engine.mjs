@@ -256,7 +256,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     anonymous.forEach((child, k) => { if (runs[k]) { child.contract = runs[k]; child.contractSelector = `${box.contractSelector} text ${k}`; } });
   }
   const styleSources = [...(options.reset ?? []).map((sheet, index) => ({ ...sheet, kind: 'reset', file: sheet.file ?? `<reset:${index}>` })), { css: options.css, kind: 'app', file: options.cssFile ?? '<css>' },...inlineSheets];
-  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], userSelectNone = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
+  const { rules, layers, keyframes: keyframeNames = new Set(), missingKeyframes = [], duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], userSelectNone = [], keyframeFrames, fontFaces, transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [] } = parseLayoutCSS(styleSources, (code, message, line, file, detail) => {
     if(detail) diagnostics.push({code,message,...detail});
     else unknown(code,message,line,undefined,file);
   });
@@ -336,6 +336,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     const sized = markerSizing.find(note => boxes.some(box => !box.pseudo && note.selectors.some(sel => matches(sel, box, new Set(['::marker'])))));
     if (sized) unknown('U_LAYOUT_CSS', `::marker sets ${sized.property}, which sizes the list marker and can change the line's height: the marker box is not modeled`, sized.line, undefined, sized.file);
   }
+  for (const note of selectionIgnored) layoutWarnings.push({ code: 'W_CSS_SELECTION_IGNORED', severity: 'warning', selector: note.selector, property: note.property, css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],
+    message: `${note.selector}: ${note.property} is ignored — ::selection paints the selected text (color, background-color, text-decoration, text-shadow) and does not change its size or box. Remove it, or style the element itself` });
   for (const note of visitedIgnored) layoutWarnings.push({ code: 'W_CSS_VISITED_IGNORED', severity: 'warning', selector: note.selector, property: note.property, css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],
     message: `${note.selector}: ${note.property} is ignored — in a :visited rule browsers apply only colors (color, background-color, border and outline colors, …), so that a page cannot read which links were visited. Style the visited state with a color, or move ${note.property} to the link itself` });
   for (const note of noDurationTransitions) layoutWarnings.push({ code: 'W_CSS_TRANSITION_NO_DURATION', severity: 'warning', selector: note.selector, property: note.item.split(/\s+/)[0], css: [{ property: 'transition', file: note.file, line: note.line, selector: note.selector }],

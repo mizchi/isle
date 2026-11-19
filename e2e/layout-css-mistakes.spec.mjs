@@ -491,3 +491,15 @@ test('F45: text-align / text-indent / text-align-last on an inline element do no
     expect(warned, `${disp} ${d}`).toBe(inert);
   }
 });
+
+test('F46: ::selection ignores box properties (font-size, padding, border, margin, outline) and the analysis reads it', async ({page}) => {
+  for (const [d, ignored] of [['font-size:30px', true], ['font-weight:bold', true], ['letter-spacing:5px', true], ['opacity:0.2', true], ['padding:10px', true], ['border:2px solid red', true], ['margin:10px', true], ['outline:2px solid red', true], ['color:rgb(255,0,0)', false], ['background-color:rgb(255,255,0)', false]]) {
+    const shot = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:10px;font:16px sans-serif}${css}</style></head><body><p class="x">Select this text</p></body></html>`);
+      await page.evaluate(() => { const r = document.createRange(); r.selectNodeContents(document.querySelector('.x')); getSelection().removeAllRanges(); getSelection().addRange(r); }); await page.waitForTimeout(150); return (await page.screenshot()).toString('base64'); };
+    // Against a ::selection rule without the property (WebKit paints the selection differently once any rule exists).
+    expect(await shot('.x::selection{--z:1}') === await shot(`.x::selection{--z:1;${d}}`), d).toBe(ignored);
+    const r = analyzeHTML('<html lang="en"><body><div class="x"></div></body></html>', {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.x{height:20px}.x::selection{${d}}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect(r.status, d).toBe('verified');
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_CSS_SELECTION_IGNORED'), d).toBe(ignored);
+  }
+});

@@ -609,7 +609,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], userSelectNone = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
+  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], userSelectNone = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -788,6 +788,15 @@ export function parseLayoutCSS(sheets, diagnostic) {
           else if (!/^(?:color|animation(?:-.*)?|transition(?:-.*)?|--.*)$/.test(prop)) markerSizing.push({ selectors, property: prop, file: filename, line: d.source.start.line });
         }
       }
+      // F46: ::selection paints the selected text only (a user action, not a modeled state): kept out of the cascade. The
+      // box properties in it are ignored by Chromium, Firefox and WebKit alike (measured against a ::selection rule without
+      // them: font-size, font-weight, letter-spacing, opacity, padding, border, margin and outline change no pixel) — reported.
+      if (selectors.some(sel => sel.pseudoElement === 'selection')) {
+        if (!selectors.every(sel => sel.pseudoElement === 'selection')) { problem('U_LAYOUT_SELECTOR', `${node.selector}: a selector list mixing ::selection with other selectors is not modeled`, node.source.start.line); continue; }
+        for (const d of node.nodes ?? []) if (d.type === 'decl' && /^(?:font-size|font-weight|letter-spacing|opacity|padding(?:-.*)?|margin(?:-.*)?|border(?:-(?:top|right|bottom|left))?(?:-(?:width|style|color))?|outline(?:-.*)?)$/i.test(d.prop))
+          selectionIgnored.push({ selector: node.selector, property: d.prop.toLowerCase(), file: filename, line: d.source.start.line });
+        continue;
+      }
       // F37: ::first-letter / ::first-line are kept out of the cascade: the engine reports them where they never apply (a
       // box that is not a block container) and keeps the rest Unknown (the restyled first letter or line is not modeled).
       if (selectors.some(sel => ['first-letter', 'first-line'].includes(sel.pseudoElement))) {
@@ -888,7 +897,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
     return 'none';
   }).join(', ');
-  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, firstPseudo, userSelectNone, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, firstPseudo, selectionIgnored, userSelectNone, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author

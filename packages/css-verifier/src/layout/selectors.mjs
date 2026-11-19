@@ -64,7 +64,7 @@ function compileCompound(source, depth = 0) {
     // :checked::before / :checked::after: the generated check mark of a custom checkbox.
     const checkedMark = rest.match(/^:checked::?(before|after)$/i);
     if (checkedMark) { state = 'checked'; pseudoElement = checkedMark[1].toLowerCase(); specificity[1]++; specificity[2]++; rest = ''; continue; }
-    const pseudo = rest.match(/^::?(before|after)$/i) ?? rest.match(/^::(placeholder|marker|first-letter|first-line)$/i);
+    const pseudo = rest.match(/^::?(before|after)$/i) ?? rest.match(/^::(placeholder|marker|first-letter|first-line|selection)$/i);
     if (pseudo) { pseudoElement = pseudo[1].toLowerCase(); specificity[2]++; rest = ''; continue; }
     // Attribute selectors: [a], [a=v], [a~=v], [a|=v], [a^=v], [a$=v], [a*=v], with the i/s flags.
     const attribute = rest.match(/^\[\s*([a-zA-Z_][\w:-]*)\s*(?:([~|^$*]?=)\s*(?:"([^"]*)"|'([^']*)'|([^\s\]"']+))\s*([iIsS])?\s*)?\]/);

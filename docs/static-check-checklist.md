@@ -245,6 +245,10 @@
   Unknown): これらはブロック容器の行を揃え・字下げするので、子の要素のない display: inline の要素(span・a)では何も
   変わらない(3 つのブラウザーで描画が同じ)。text-indent・text-align-last はそのときだけ捨てて配置し、ブロックでは今までどおり
   Unknown。
+- [x] **F46. `::selection` を読む・効かない宣言**(`W_CSS_SELECTION_IGNORED`、以前は Unknown): ::selection は選んだ文字に色を
+  塗るだけで、配置を変えない(利用者の操作で、解析する状態ではない)ので、カスケードから外して読む。その中の font-size・
+  font-weight・letter-spacing・opacity・padding・border・margin・outline は 3 つのブラウザーで何も変えないので報告する
+  (測るとき、WebKit は ::selection の規則があるだけで選択の塗りが変わるので、性質のない ::selection の規則と比べた)。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

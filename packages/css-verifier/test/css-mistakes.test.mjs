@@ -473,3 +473,14 @@ test('F45: text-align / text-indent / text-align-last on an inline element do no
   assert.equal(w('.x{text-align:center}', '<p class="x a">t</p>').length, 0);
   assert.equal(w('.x{text-align:center}', '<p class="a">t <span class="x">a <b>b</b></span></p>').length, 0);
 });
+
+test('F46: ::selection is read (it styles only the selected text, not the layout); its box properties are ignored', () => {
+  const r = run('::selection{background:#ff0;color:#000}', '<div class="a"></div>');
+  assert.equal(r.status, 'verified');
+  const w = css => codes(run(css), 'W_CSS_SELECTION_IGNORED');
+  const [hit] = w('.a::selection{padding:4px;font-size:20px;color:red}');
+  assert.ok(hit && /::selection/.test(hit.message));
+  assert.deepEqual(w('.a::selection{padding:4px;font-size:20px;color:red}').map(x => x.property).sort(), ['font-size', 'padding']);
+  assert.equal(w('.a::selection{color:red;background-color:#ff0}').length, 0);
+  assert.equal(run('.a::selection{margin:10px}').status, 'verified');
+});
