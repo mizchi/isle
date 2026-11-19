@@ -510,6 +510,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: [note.property], css: [{ property: note.property, file: note.file, line: note.line, selector: note.selector }],
             message: `${box.label}: ${note.property}: ${note.value} has no effect (its ${needed} is ${idle}: ${needed === 'background-image' ? 'there is no background image to size or place' : 'the element draws no decoration line of its own'}). Set ${needed}, or remove it`, ...ranges(r) });
         }
+        // F29: :empty does not match an element with whitespace in it (measured in Chromium, Firefox and WebKit: a space or
+        // a line break is content; a comment is not): a rule that would match it but for that whitespace never applies.
+        if (box.whitespace) for (const rule of rules) for (const sel of rule.selectors ?? []) {
+          if (!JSON.stringify(sel.parts ?? []).includes('"name":"empty"') || matches(sel, box, state) || !matches(sel, { ...box, whitespace: false }, state) || layoutWarnings.some(w => w.code === 'W_CSS_EMPTY_WHITESPACE' && w.path === box.path && w.selector === sel.source)) continue;
+          layoutWarnings.push({ code: 'W_CSS_EMPTY_WHITESPACE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, css: [{ property: ':empty', file: rule.file, line: rule.line, selector: sel.source }],
+            message: `${sel.source} does not match ${box.label}: it holds only whitespace (a space or a line break), and whitespace is content to :empty. Remove the whitespace in the markup, or use :not(:has(*)) for "no child elements"` });
+        }
         // F17, F18: a state rule that can never apply here: :focus / :focus-visible on an element that cannot take focus
         // (no tabindex, not a control or link), :hover on an element with pointer-events: none and no children (the
         // pointer never hits it).

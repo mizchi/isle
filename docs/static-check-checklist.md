@@ -186,6 +186,8 @@
   セル・埋め込みなどにしか、`bgcolor` は body と表の要素にしか、`border` は画像・表などにしか効かない(HTML rendering §15)。
   div などのそれは何もしないので、Unknown にせず報告する(当てはまる要素では今までどおり Unknown)。3 つのブラウザーで描画が
   属性のないときと同じ。
+- [x] **F29. 空白だけの要素に `:empty`**(`W_CSS_EMPTY_WHITESPACE`): `:empty` は空白(スペースや改行)を中身として数えるので、
+  `<div class="x"> </div>` には当たらない。コメントだけなら当たる。3 つのブラウザーで同じ結果を測った。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

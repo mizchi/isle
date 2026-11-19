@@ -261,3 +261,11 @@ test('F28: presentational attributes on elements they do not map to', () => {
   assert.equal(codes(run('', '<div class="a" align="center"></div>'), 'W_HTML_ATTRIBUTE_INERT').length, 0);
   assert.equal(codes(run('', '<table width="300"><tr><td>x</td></tr></table>'), 'W_HTML_ATTRIBUTE_INERT').length, 0);
 });
+
+test('F29: :empty does not match an element holding whitespace', () => {
+  const w = html => codes(run('.x:empty{display:none}', html), 'W_CSS_EMPTY_WHITESPACE');
+  assert.equal(w('<div class="x"> </div>').length, 1);
+  assert.equal(w('<div class="x">\n  </div>').length, 1);
+  assert.equal(w('<div class="x"></div>').length, 0);
+  assert.equal(w('<div class="x"><!-- c --></div>').length, 0);
+});
