@@ -602,3 +602,15 @@ test('F55: a percentage top / bottom on a relative box in an auto-height block d
   // .p a stretched grid item (its parent is a grid): its height is definite, so the percentage resolves — not judged.
   assert.equal(codes(run('.p{display:block}.s{height:30px}.c{position:relative;top:50%;height:20px}', '<div class="p"><div class="s"></div><div class="c"></div></div>'), 'W_LAYOUT_DECLARATION_INERT').length, 0);
 });
+
+test('F56: a percentage height in an auto-height block (itself in block flow) is auto', () => {
+  const html = '<div class="g"><div class="p"><div class="s"></div><div class="c"><div class="i"></div></div></div></div>';
+  const base = '.g,.p{display:block}.s{height:30px}.i{height:20px}';
+  const r = run(base + '.c{height:100%}', html);
+  assert.equal(r.status, 'verified');
+  const [hit] = codes(r, 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.includes('block-size'));
+  assert.ok(hit && /height/.test(hit.message));
+  assert.equal(Number(r.sizes.find(s => s.box === '.c').rect.blockSize.constant), 20);
+  assert.equal(codes(run(base + '.c{min-height:50%}', html), 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.includes('min-block-size')).length, 1);
+  assert.equal(codes(run(base + '.p{height:200px}.c{height:50%}', html), 'W_LAYOUT_DECLARATION_INERT').length, 0);
+});

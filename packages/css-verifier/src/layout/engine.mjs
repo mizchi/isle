@@ -3163,6 +3163,20 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
             style = { ...style, ...Object.fromEntries(pct.map(key => [key, 'auto'])) };
           }
         }
+        // F56: a percentage height (or min / max height) refers to the containing block's height; in a block-flow parent
+        // of auto height that is itself in block flow it is not definite, so height is auto, min-height 0, max-height none
+        // (CSS 2.2 §10.5; measured in Chromium, Firefox and WebKit — under a grid the parent's height is definite).
+        if (inherited?.$blockFlow && parentInBlockFlow && !available.root && !['absolute', 'fixed'].includes(style.position) && !style.$fixed && String(inherited['block-size'] ?? 'auto') === 'auto') {
+          const idle = { 'block-size': 'auto', 'min-block-size': 'auto', 'max-block-size': 'none' };
+          const pct = Object.keys(idle).filter(key => /%$/.test(String(style[key] ?? '')));
+          if (pct.length) {
+            const names = { 'block-size': 'height', 'min-block-size': 'min-height', 'max-block-size': 'max-height' };
+            if (emit && !box.pseudo && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(pct[0])))
+              layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: pct, css: pct.filter(key => style.$sources?.[key]).map(key => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
+                message: `${box.label}: ${pct.map(key => `${names[key]}: ${style[key]}`).join(', ')} does nothing: a percentage height refers to the parent's height, and ${parents.at(-1)?.box?.label ?? 'its parent'} has none (auto), so it is ignored. Give the parent a height, or make it a flex or grid container and stretch this box` });
+            style = { ...style, ...Object.fromEntries(pct.map(key => [key, idle[key]])) };
+          }
+        }
         // F53: an in-flow child of a block-flow parent has auto margin-top / margin-bottom of 0 (see the collect step).
         if (inherited?.$blockFlow && !available.root && !['absolute', 'fixed'].includes(style.position) && !style.$fixed && ['margin-top', 'margin-bottom'].some(key => String(style[key]) === 'auto'))
           style = { ...style, ...Object.fromEntries(['margin-top', 'margin-bottom'].filter(key => String(style[key]) === 'auto').map(key => [key, '0'])) };

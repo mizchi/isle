@@ -281,6 +281,10 @@
   高さに対する値で、ブロックの流れの中の高さ auto の親では決まらないので auto になり、箱は動かない(3 つのブラウザーで同じ)。
   解析も auto として配置し、位置がブラウザーと同じことを確かめた。親が伸びる grid・flex の項目なら高さが決まり、Chromium・
   Firefox は % を解く(WebKit は解かない)ので、親自身がブロックの流れの中にあるときだけ扱う。
+- [x] **F56. 高さのない親の中の `height` の %**(`W_LAYOUT_DECLARATION_INERT`、以前は Unknown): height・min-height・max-height の %
+  は親の高さに対する値で、ブロックの流れの中の高さ auto の親(min-height があっても)では決まらないので、height は auto、
+  min-height は 0、max-height は none になる(CSS 2.2 §10.5。3 つのブラウザーで、大きさと後ろの要素の位置が解析と同じ)。
+  F55 と同じく、親自身がブロックの流れの中にあるときだけ扱う(grid の中では親の高さが決まって % が効く)。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

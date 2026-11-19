@@ -621,3 +621,17 @@ test('F55: a percentage top / bottom of a relative box in an auto-height block d
   expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('top'))).toBe(false);
   expect(r.status).toBe('unknown');
 });
+
+test('F56: a percentage height in an auto-height block (itself in block flow) is auto; the analysed sizes match', async ({page}) => {
+  const html = '<div class="g"><div class="p"><div class="s"></div><div class="c"><div class="i"></div></div><div class="n"></div></div></div>';
+  for (const [pcss, c] of [['', 'height:100%'], ['', 'height:50%'], ['', 'min-height:50%'], ['', 'max-height:10%'], ['min-height:300px', 'height:50%']]) {
+    const css = `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.g,.p{display:block}.p{${pcss}}.s{height:30px}.i{height:20px}.n{height:10px}.c{${c}}`;
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const browser = await page.evaluate(() => [document.querySelector('.c').getBoundingClientRect().height, document.querySelector('.n').getBoundingClientRect().y]);
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    expect(r.status, `${pcss} ${c}`).toBe('verified');
+    const size = sel => r.sizes.find(s => s.box === sel).rect;
+    expect([Number(size('.c').blockSize.constant), Number(size('.n').blockStart.constant)], `${pcss} ${c}`).toEqual(browser);
+  }
+});
