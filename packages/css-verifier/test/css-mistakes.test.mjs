@@ -494,3 +494,16 @@ test('F47: margin, height, display and position in ::placeholder are ignored', (
   assert.equal(w('.x::placeholder{position:absolute}').length, 1);
   assert.equal(w('.x::placeholder{color:#555;font-size:14px}').length, 0);
 });
+
+test('F48: :link / :any-link match a link with href; on anything else they never apply', () => {
+  const link = '<a class="x a" href="/y" style="display:block"></a>';
+  assert.equal(run('.x:any-link{color:red}', link).status, 'verified');
+  assert.equal(run('a:link{color:red}', link).status, 'verified');
+  const w = (css, html) => codes(run(css, html), 'W_CSS_STATE_UNREACHABLE').filter(x => /link/.test(x.state ?? ''));
+  const [hit] = w('.x:any-link{color:red}', '<a class="x a" style="display:block"></a>');
+  assert.ok(hit && /href/.test(hit.message));
+  assert.equal(w('.x:link{color:red}', '<button class="x a" type="button"></button>').length, 1);
+  assert.equal(w('.x:link{color:red}', link).length, 0);
+  // :link stops matching once the link is visited: a layout change there depends on the history.
+  assert.equal(run('.x:link{padding:4px}', link).status, 'unknown');
+});

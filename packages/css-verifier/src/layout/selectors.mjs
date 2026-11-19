@@ -54,6 +54,10 @@ function compileCompound(source, depth = 0) {
     // :disabled / :enabled (a form control's own disabled attribute, or a disabled fieldset around it: box.disabled).
     const enabledness = rest.match(/^:(disabled|enabled)(?![\w-])/i);
     if (enabledness) { parts.push({ kind: 'disabled', value: enabledness[1].toLowerCase() === 'disabled' }); specificity[1]++; rest = rest.slice(enabledness[0].length); continue; }
+    // :any-link and :link: an a or area with href (measured in Chromium, Firefox and WebKit, an empty href too). Links are
+    // taken as unvisited, so :link is :any-link; a :link rule that changes the layout is kept Unknown (parseLayoutCSS).
+    const link = rest.match(/^:(any-link|link)(?![\w-])/i);
+    if (link) { parts.push({ kind: 'link', name: link[1].toLowerCase() }); specificity[1]++; rest = rest.slice(link[0].length); continue; }
     const root = rest.match(/^:root(?![\w-])/i);
     if (root) { parts.push({ kind: 'root' }); specificity[1]++; rest = rest.slice(root[0].length); continue; }
     // A trailing user-action state (paint-only rules; see parseLayoutCSS).
@@ -178,12 +182,13 @@ export function neighbors(box, combinator) {
   const before = at > 0 ? siblings.slice(0, at) : [];
   return combinator === '+' ? before.slice(-1) : before.reverse();
 }
+export const isLink = box => (box.tag === 'a' && box.href !== undefined) || (box.tag === 'area' && (box.href !== undefined || box.attributes?.href !== undefined));
 /** The compound (tag, classes, id, :root, :is/:where) alone, ignoring states, pseudo-elements and combinators. */
 export function compoundMatches(selector, box) {
   if (box.anonymous) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
-    part.kind === 'root' ? box.documentRoot === true : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
+    part.kind === 'root' ? box.documentRoot === true : part.kind === 'link' ? isLink(box) : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
     part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'structural' ? structuralMatches(part, box) : part.kind === 'has' ? hasMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
     part.choices.some(choice => matches(choice, box)));
 }

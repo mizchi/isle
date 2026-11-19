@@ -252,6 +252,9 @@
 - [x] **F47. `::placeholder` の効かない宣言**(`W_CSS_PLACEHOLDER_IGNORED`): 入力欄の中に描く placeholder には margin・height・
   display・position が効かない(3 つのブラウザーで、性質のない ::placeholder の規則と比べて画素も欄の大きさも同じ)。
   padding・border・width はブラウザーで違う(Chromium・WebKit は padding を描く)ので報告しない。
+- [x] **F48. `:link`・`:any-link` を読む・リンクでない要素**(`W_CSS_STATE_UNREACHABLE`、以前は Unknown): この 2 つは href の
+  ある a・area にだけ当たる(空の href も。3 つのブラウザーで測った)。href のない a や button に書くと当たらないので報告する。
+  解析はリンクを未訪問とみなすので :link は :any-link と同じに読むが、配置を変える :link の規則は訪問の履歴で変わるので Unknown。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

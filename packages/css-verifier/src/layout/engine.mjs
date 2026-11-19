@@ -638,6 +638,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: keys, ...(src ? { css: [{ property: keys[0], file: src.file, line: src.line, selector: src.selector }] } : {}),
             message: `${box.label}: ${style.$multicolInert.map(([key, value]) => `${key}: ${value}`).join(', ')} has no effect (it is display: ${style.display}; multi-column layout applies only to a block container). Use grid-template-columns (or flex-wrap with a flex-basis) for columns, or display: block for flowing columns` });
         }
+        // F48: :link / :any-link on an element that is not a link (an a without href, a button): the rule would select it
+        // were it a link, but never applies.
+        if (!box.pseudo && !((box.tag === 'a' && box.href !== undefined) || box.tag === 'area')) for (const rule of rules) for (const sel of rule.selectors ?? []) {
+          const name = JSON.stringify([sel.parts, sel.chain ?? []]).match(/"kind":"link","name":"([a-z-]+)"/)?.[1];
+          if (!name || matches(sel, box, state) || !matches(sel, { ...box, tag: 'a', href: '#' }, state) || layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source)) continue;
+          layoutWarnings.push({ code: 'W_CSS_STATE_UNREACHABLE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, state: `:${name}`, css: [{ property: `:${name}`, file: rule.file, line: rule.line, selector: sel.source }],
+            message: `${sel.source} never applies to ${box.label}: ${box.tag === 'a' ? 'an <a> without href' : `a <${box.tag}>`} is not a link, so :${name} does not match it. ${box.tag === 'a' ? 'Give it an href (or use a button for an action)' : 'Select it with its class'}` });
+        }
         // F17, F18: a state rule that can never apply here: :focus / :focus-visible on an element that cannot take focus
         // (no tabindex, not a control or link), :hover on an element with pointer-events: none and no children (the
         // pointer never hits it).

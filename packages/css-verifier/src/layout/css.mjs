@@ -804,6 +804,8 @@ export function parseLayoutCSS(sheets, diagnostic) {
         firstPseudo.push({ selectors, selector: node.selector, file: filename, line: node.source.start.line });
         continue;
       }
+      // F48: :link matches only while the link is unvisited; a rule in it that changes the layout depends on the history.
+      if (/:link(?![\w-])/i.test(node.selector) && (node.nodes ?? []).some(d => d.type === 'decl' && !d.prop.startsWith('--') && !statePaint.test(d.prop.toLowerCase()))) { problem('U_LAYOUT_SELECTOR', `${node.selector}: :link holds only while the link is unvisited, and this rule changes the layout (use :any-link for every link)`, node.source.start.line); continue; }
       // F47: in ::placeholder, margin, height, display and position are ignored by Chromium, Firefox and WebKit (measured
       // against a ::placeholder rule without them: same pixels, same field size) — reported and dropped.
       if (selectors.length && selectors.every(sel => sel.pseudoElement === 'placeholder'))

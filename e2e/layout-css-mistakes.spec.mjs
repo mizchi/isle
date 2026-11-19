@@ -514,3 +514,13 @@ test('F47: margin, height, display and position in ::placeholder are ignored', a
     expect(warned, d).toBe(ignored);
   }
 });
+
+test('F48: :link / :any-link match only a link with href', async ({page}) => {
+  for (const [sel, html] of [['.x:any-link', '<a class="x a">no href</a>'], ['.x:link', '<a class="x a">no href</a>'], ['.x:link', '<button class="x a" type="button">b</button>'], ['.x:any-link', '<a class="x a" href="/y">y</a>'], ['.x:link', '<a class="x a" href="">e</a>']]) {
+    await page.setContent(`<!doctype html><html lang="en"><body>${html}</body></html>`);
+    const matched = await page.evaluate(s => document.querySelector('.x').matches(s), sel);
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{display:block;height:20px}${sel}{color:red}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && /link/.test(w.state ?? '')), `${sel} ${html}`).toBe(!matched);
+    expect(r.diagnostics.some(d => /Unsupported selector/.test(d.message)), `${sel} ${html}`).toBe(false);
+  }
+});
