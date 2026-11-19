@@ -635,3 +635,14 @@ test('F56: a percentage height in an auto-height block (itself in block flow) is
     expect([Number(size('.c').blockSize.constant), Number(size('.n').blockStart.constant)], `${pcss} ${c}`).toEqual(browser);
   }
 });
+
+test('F57: overflow, text-overflow and resize on an inline element do nothing', async ({page}) => {
+  const html = '<p class="a">before <span class="x">a long span of text here</span> after</p>';
+  for (const [d, disp] of [['overflow:hidden;text-overflow:ellipsis', 'inline'], ['overflow:auto', 'inline'], ['resize:both;overflow:auto', 'inline'], ['overflow:hidden', 'inline-block']]) {
+    const shot = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:10px;font:16px sans-serif}.a{width:120px;white-space:nowrap}.x{display:${disp}}${css}</style></head><body>${html}</body></html>`); return (await page.screenshot()).toString('base64'); };
+    const inert = await shot('') === await shot(`.x{${d}}`);
+    expect(inert, `${disp} ${d}`).toBe(disp === 'inline');
+    const warned = (analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `.a{width:120px;white-space:nowrap}.x{display:${disp};${d}}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.some(p => /^(?:overflow-[xy]|text-overflow|resize)$/.test(p)));
+    expect(warned, `${disp} ${d}`).toBe(inert);
+  }
+});

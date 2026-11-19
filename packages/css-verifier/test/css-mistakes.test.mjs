@@ -614,3 +614,18 @@ test('F56: a percentage height in an auto-height block (itself in block flow) is
   assert.equal(codes(run(base + '.c{min-height:50%}', html), 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.includes('min-block-size')).length, 1);
   assert.equal(codes(run(base + '.p{height:200px}.c{height:50%}', html), 'W_LAYOUT_DECLARATION_INERT').length, 0);
 });
+
+test('F57: overflow, text-overflow and resize on an inline element do nothing', () => {
+  const w = (css, html = '<p class="a">before <span class="x">s</span> after</p>') => codes(run(css, html), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.some(p => /^(?:overflow-[xy]|text-overflow|resize)$/.test(p)));
+  const [hit] = w('.x{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}');
+  assert.ok(hit && /inline/.test(hit.message) && hit.properties.includes('text-overflow'));
+  assert.equal(w('.x{overflow:auto}').length, 1);
+  assert.equal(w('.x{display:inline-block;overflow:hidden}').length, 0);
+  assert.equal(w('.x{overflow:hidden}', '<p class="a">t <img class="x" alt="" src="a.png" width="10" height="10"></p>').length, 0);
+});
+
+test('F57: not on a blockified inline element (absolutely positioned, or a flex item)', () => {
+  const w = (css, html) => codes(run(css, html), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.some(p => /^(?:overflow-[xy]|text-overflow)$/.test(p)));
+  assert.equal(w('.x{position:absolute;width:1px;height:1px;overflow:hidden}', '<p class="a">t <span class="x">s</span></p>').length, 0);
+  assert.equal(w('.f{display:flex}.x{overflow:hidden;width:20px;height:20px}', '<div class="f"><span class="x"></span></div>').length, 0);
+});

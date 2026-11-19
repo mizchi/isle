@@ -1261,6 +1261,14 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   values.$overridden = overridden;
   values.$invalid = invalid;
   values.$variables = environment;
+  // F57: overflow, text-overflow and resize apply to block containers (and replaced elements): on a display: inline
+  // element they do nothing (measured in Chromium, Firefox and WebKit). Used as their initial values here.
+  // (Not an absolutely positioned or floated box, nor a flex or grid item: those are blockified, and overflow applies.)
+  const blockified = ['absolute', 'fixed'].includes(String(values.position)) || values.$fixed || !['none', undefined].includes(values.float) || (['flex', 'inline-flex', 'grid', 'inline-grid'].includes(inherited?.display) && !inherited?.$blockFlow);
+  if (!box.pseudo && values.display === 'inline' && !blockified && !['img', 'video', 'canvas', 'iframe', 'svg', 'input', 'button', 'select', 'textarea', 'embed', 'object'].includes(box.tag)) {
+    const found = [['overflow-x', 'visible'], ['overflow-y', 'visible'], ['text-overflow', 'clip'], ['resize', 'none']].filter(([key, idle]) => sources[key] && values[key] !== undefined && String(values[key]) !== idle);
+    if (found.length) { values.$inlineOverflowInert = found.map(([key]) => [key, values[key]]); for (const [key, idle] of found) values[key] = idle; }
+  }
   const nonscroll = value => ['visible', 'clip'].includes(value);
   const x = values['overflow-x'], y = values['overflow-y'];
   if (!nonscroll(y)) values['overflow-x'] = x === 'visible' ? 'auto' : x === 'clip' ? 'hidden' : x;

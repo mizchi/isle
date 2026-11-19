@@ -285,6 +285,9 @@
   は親の高さに対する値で、ブロックの流れの中の高さ auto の親(min-height があっても)では決まらないので、height は auto、
   min-height は 0、max-height は none になる(CSS 2.2 §10.5。3 つのブラウザーで、大きさと後ろの要素の位置が解析と同じ)。
   F55 と同じく、親自身がブロックの流れの中にあるときだけ扱う(grid の中では親の高さが決まって % が効く)。
+- [x] **F57. inline の要素の `overflow`・`text-overflow`・`resize`**(`W_LAYOUT_DECLARATION_INERT`): これらはブロック容器(と置き換え
+  要素)にしか効かないので、display: inline の span・a では切り取りも省略記号もスクロールも起きない(3 つのブラウザーで描画が
+  同じ。inline-block では効く)。解析も初期値として扱う。絶対配置・float・flex や grid の項目は block になるので除く。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

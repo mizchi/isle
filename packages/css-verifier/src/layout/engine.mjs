@@ -478,6 +478,13 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: found.map(([key]) => key), css: found.filter(([key]) => style.$sources?.[key]).map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
       message: `${box.label}: ${found.map(([key, value]) => `${key}: ${value}`).join(', ')} ${found.length === 1 ? 'has' : 'have'} no effect on a display: inline element (they align and indent the lines of a block). Put ${found.length === 1 ? 'it' : 'them'} on the paragraph, or make ${box.label} display: block` });
   }
+  function inlineOverflow(box, style) {
+    const found = style.$inlineOverflowInert;
+    if (!found?.length || box.pseudo || layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(found[0][0]))) return;
+    const shown = [...new Map(found.map(([key, value]) => [key.startsWith('overflow') ? 'overflow' : key, value])).entries()];
+    layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: found.map(([key]) => key), css: found.filter(([key]) => style.$sources?.[key]).map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
+      message: `${box.label}: ${shown.map(([key, value]) => `${key}: ${value}`).join(', ')} ${shown.length === 1 ? 'has' : 'have'} no effect on a display: inline element (it neither clips nor scrolls, and has no line box of its own to cut with an ellipsis). Make it display: inline-block or block (with a width) for that` });
+  }
   function inlineStateTransforms(box, style) {
         // F36: a :hover / :focus / :active transform on a non-replaced inline box (a link or span in text) does nothing,
         // as a static one does (CSS Transforms 1 §1; measured in Chromium, Firefox and WebKit): the hover lift never shows.
@@ -509,6 +516,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
     firstPseudoInert(box, style);
+    inlineOverflow(box, style);
     if (style.$clearInert && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('clear')))
       layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['clear'], ...(style.$sources?.clear ? { css: [{ property: 'clear', file: style.$sources.clear.file, line: style.$sources.clear.line, selector: style.$sources.clear.selector }] } : {}),
         message: `${box.label}: clear: ${style.$clearInert} has no effect on a ${String(inherited?.display ?? '').includes('grid') ? 'grid' : 'flex'} item (floats do not apply there, so there is nothing to clear). Remove it, or use the container's wrapping (flex-wrap, grid rows) to start a new line` });
@@ -1878,6 +1886,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // transforms (CSS Transforms 1 §1: only block-level and atomic inline boxes are transformable; measured too).
       inlineStateTransforms(child, style);
       inlineTextAlignment(child, style);
+      inlineOverflow(child, style);
       firstPseudoInert(child, style);
       if (!['img', 'video', 'canvas', 'iframe', 'svg', 'input', 'button', 'select', 'textarea'].includes(child.tag) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === child.path)) {
         const initial = { 'inline-size': ['auto'], 'block-size': ['auto'], 'min-inline-size': ['auto', '0', '0px'], 'min-block-size': ['auto', '0', '0px'], 'max-inline-size': ['none'], 'max-block-size': ['none'], 'margin-top': ['0', '0px', 'auto'], 'margin-bottom': ['0', '0px', 'auto'], 'aspect-ratio': ['auto'], transform: ['none'], translate: ['none'], rotate: ['none'], scale: ['none'] };
@@ -3952,6 +3961,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (!c || c.style.display === 'none') return;
         try { inlineStateTransforms(child, c.style); } catch { /* the rest still runs */ }
         try { inlineTextAlignment(child, c.style); } catch { /* the rest still runs */ }
+        try { inlineOverflow(child, c.style); } catch { /* the rest still runs */ }
         try { firstPseudoInert(child, c.style); } catch { /* the rest still runs */ }
         for (const grand of child.inline ?? child.children ?? []) walkInline(grand, [...chain, { box: child, style: c.style, names: [] }], c.style);
       };
