@@ -372,3 +372,16 @@ test('F35: :focus-within with nothing focusable inside; F17: tabindex="-1" takes
     expect(warnings.some(w => w.state === 'focus'), html).toBe(!self);
   }
 });
+
+test('F36: a :hover transform on an inline link does not move it', async ({page}) => {
+  for (const [css, html, inert] of [['.x:hover{transform:translateY(-8px)}', '<p class="a">text <a class="x" href="/y">link</a></p>', true], ['.x:hover{scale:2}', '<p class="a">text <span class="x" tabindex="0">s</span></p>', true],
+    ['.x{display:inline-block}.x:hover{transform:translateY(-8px)}', '<p class="a">text <a class="x" href="/y">link</a></p>', false], ['.x:hover{transform:translateY(-8px)}', '<div class="x a">block</div>', false]]) {
+    await page.mouse.move(0, 0);
+    await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:40px}${css}</style></head><body>${html}</body></html>`);
+    const before = await page.evaluate(() => JSON.stringify(document.querySelector('.x').getBoundingClientRect()));
+    await page.hover('.x'); await page.waitForTimeout(30);
+    const after = await page.evaluate(() => JSON.stringify(document.querySelector('.x').getBoundingClientRect()));
+    expect(before === after, css).toBe(inert);
+    expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.state === 'hover'), css).toBe(inert);
+  }
+});

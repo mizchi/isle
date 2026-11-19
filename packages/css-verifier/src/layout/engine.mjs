@@ -447,6 +447,20 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // walk where the layout did not run, so they are reported whether or not the layout is decided).
   // F9: a ::before or ::after styled but with no content is never generated.
   const neverRendered = new Set(['template', 'script', 'style', 'link', 'meta']);
+  function inlineStateTransforms(box, style) {
+        // F36: a :hover / :focus / :active transform on a non-replaced inline box (a link or span in text) does nothing,
+        // as a static one does (CSS Transforms 1 §1; measured in Chromium, Firefox and WebKit): the hover lift never shows.
+    if (!box.pseudo && style.display === 'inline' && !['img', 'video', 'canvas', 'iframe', 'svg', 'input', 'button', 'select', 'textarea'].includes(box.tag)) for (const rule of rules) {
+          const moves = (rule.declarations ?? []).filter(d => ['transform', 'translate', 'rotate', 'scale'].includes(d.property) && !['none', 'initial', 'unset', 'revert', 'revert-layer', 'inherit'].includes(String(d.value)));
+          if (!moves.length || (rule.declarations ?? []).some(d => d.property === 'display')) continue;
+          for (const sel of rule.selectors ?? []) {
+            if (!['hover', 'focus', 'focus-visible', 'focus-within', 'active'].includes(sel.state) || sel.pseudoElement || !matches(sel, box, new Set([sel.state])) || layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.state === sel.state)) continue;
+            const keys = [...new Set(moves.map(d => d.property))];
+            layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: keys, state: sel.state, selector: sel.source, css: moves.map(d => ({ property: d.property, file: d.file ?? rule.file, line: d.line ?? rule.line, selector: sel.source })),
+              message: `${sel.source}: ${keys.join(', ')} ${keys.length === 1 ? 'has' : 'have'} no effect on ${box.label}, a display: inline box (transforms apply only to block-level and inline-block boxes), so the :${sel.state} effect never shows. Add display: inline-block to ${box.label}` });
+          }
+        }
+  }
   function pseudoWithoutContent(pbox, pstyle) {
     // F32: content on a ::before / ::after of an element that renders none (css.mjs sets its content to none).
     if (pstyle.$pseudoNotRendered !== undefined) {
@@ -1727,6 +1741,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       // Sizes, vertical margins and aspect-ratio do not apply to a non-replaced inline box (CSS 2.2 §10.3.1, §10.6.1;
       // measured: width, height, min/max-width, margin-top and aspect-ratio on a span change no pixel), nor do
       // transforms (CSS Transforms 1 §1: only block-level and atomic inline boxes are transformable; measured too).
+      inlineStateTransforms(child, style);
       if (!['img', 'video', 'canvas', 'iframe', 'svg', 'input', 'button', 'select', 'textarea'].includes(child.tag) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === child.path)) {
         const initial = { 'inline-size': ['auto'], 'block-size': ['auto'], 'min-inline-size': ['auto', '0', '0px'], 'min-block-size': ['auto', '0', '0px'], 'max-inline-size': ['none'], 'max-block-size': ['none'], 'margin-top': ['0', '0px', 'auto'], 'margin-bottom': ['0', '0px', 'auto'], 'aspect-ratio': ['auto'], transform: ['none'], translate: ['none'], rotate: ['none'], scale: ['none'] };
         const written = Object.keys(initial).filter(key => style.$sources?.[key] && !initial[key].includes(String(style[key])));
@@ -3746,6 +3761,14 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       } catch { /* the rest still runs */ }
       if (state.style.display === 'none') return;
       for (const child of box.children ?? []) walkStyles(child, [...ancestors, { box, style: state.style, names: [] }], state.style);
+      // The inline elements of a text leaf (links, spans): the checks that hold for an inline box (F36).
+      const walkInline = (child, chain, parentStyle) => {
+        let c; try { [c] = styles(child, initial, chain, parentStyle, false, false); } catch { return; }
+        if (!c || c.style.display === 'none') return;
+        try { inlineStateTransforms(child, c.style); } catch { /* the rest still runs */ }
+        for (const grand of child.inline ?? child.children ?? []) walkInline(grand, [...chain, { box: child, style: c.style, names: [] }], c.style);
+      };
+      for (const child of box.inline ?? []) walkInline(child, [...ancestors, { box, style: state.style, names: [] }], state.style);
     };
     try { walkStyles(root, [], undefined); } catch { /* best effort */ }
   }

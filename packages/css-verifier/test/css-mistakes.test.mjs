@@ -352,3 +352,13 @@ test('F17: :focus on a tabindex="-1" element is reachable (a click or focus() fo
   assert.equal(w('<div class="x a" tabindex="-1"></div>').length, 0);
   assert.equal(w('<div class="x a"></div>').length, 1);
 });
+
+test('F36: a :hover / :focus transform on an inline box does nothing', () => {
+  const w = (css, html) => codes(run(css, html), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.state);
+  const [hit] = w('.x:hover{transform:translateY(-2px)}', '<p class="a">t <a class="x" href="/y">y</a></p>');
+  assert.ok(hit && hit.state === 'hover' && /inline/.test(hit.message));
+  assert.equal(w('.x:focus-visible{scale:1.1}', '<p class="a">t <a class="x" href="/y">y</a></p>').length, 1);
+  assert.equal(w('.x:hover{transform:translateY(-2px)}', '<div class="x a"></div>').length, 0);
+  assert.equal(w('.x{display:inline-block}.x:hover{transform:translateY(-2px)}', '<p class="a">t <a class="x" href="/y">y</a></p>').length, 0);
+  assert.equal(w('.x:hover{transform:translateY(-2px)}', '<p class="a">t <img class="x" alt="" src="a.png" width="10" height="10"></p>').length, 0);
+});

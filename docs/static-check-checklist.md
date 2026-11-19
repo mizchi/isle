@@ -211,6 +211,10 @@
   リンク・フォーム部品・tabindex がなければ、何もフォーカスを持たないので当たらない(外から渡される slot・children が
   あれば報告しない)。あわせて F17 を直した: `tabindex="-1"` の要素はクリックや focus() でフォーカスを持つ(3 つのブラウザーで
   測った)ので、その `:focus` は報告しない。
+- [x] **F36. inline の要素の `:hover`・`:focus` の transform**(`W_LAYOUT_DECLARATION_INERT`、state 付き): 文の中のリンクや
+  span(display: inline)には transform・translate・rotate・scale が効かないので、`a:hover { transform: translateY(-2px) }` の
+  持ち上げは見えない(3 つのブラウザーで、hover しても位置が同じ)。同じ規則で display を変えるもの、inline-block・置き換え
+  要素は報告しない。配置が Unknown でも、文の中の要素まで見て報告する。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 
