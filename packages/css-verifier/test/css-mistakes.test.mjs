@@ -375,3 +375,15 @@ test('F37: ::first-letter / ::first-line on a box that is not a block container 
   assert.equal(w('.x::first-letter{font-size:2em}', '<p class="x a">text</p>').length, 0);
   assert.equal(run('.y::first-letter{font-size:2em}', '<div class="x a"></div>').status, 'verified');
 });
+
+test('F38: margin: auto does not centre an absolutely positioned box with an auto inset or size', () => {
+  const w = c => codes(run(`.w{position:relative;height:300px}.m{position:absolute;width:200px;height:50px;${c}}`, '<div class="w"><div class="m"></div></div>'), 'W_LAYOUT_AUTO_MARGIN_ABSOLUTE');
+  const [hit] = w('margin:auto');
+  assert.ok(hit && /inset: 0/.test(hit.message));
+  assert.deepEqual(hit.axes, ['horizontal', 'vertical']);
+  assert.deepEqual(w('left:0;margin:0 auto')[0]?.axes, ['horizontal']);
+  assert.deepEqual(w('inset:0 auto 0 0;margin:auto')[0]?.axes, ['horizontal']);
+  assert.equal(w('inset:0;margin:auto').length, 0);
+  assert.equal(w('left:0;right:0;margin:0 auto').length, 0);
+  assert.equal(w('left:0;top:0').length, 0);
+});

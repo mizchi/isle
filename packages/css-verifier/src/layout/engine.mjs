@@ -493,6 +493,21 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
     firstPseudoInert(box, style);
+      // F38: auto margins of an absolutely positioned box centre it only when both insets and the size on that axis are
+      // set (CSS 2.2 §10.3.7, §10.6.4: otherwise they are 0; measured in Chromium, Firefox and WebKit).
+    if (!box.pseudo && (style.position === 'absolute' || style.$fixed) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_AUTO_MARGIN_ABSOLUTE' && w.path === box.path)) {
+      // The authored value (the computed one may have dropped an over-constrained inset).
+      const authored = key => String(style.$sources?.[key] ? (style.$sources[key].specified ?? style[key]) : (style[key] ?? 'auto')).trim();
+      const axes = [['horizontal', 'margin-left', 'margin-right', 'left', 'right', 'inline-size', 'width'], ['vertical', 'margin-top', 'margin-bottom', 'top', 'bottom', 'block-size', 'height']]
+        .filter(([, m1, m2]) => [m1, m2].some(m => style.$sources?.[m] && authored(m) === 'auto'))
+        .filter(([, , , i1, i2, size]) => [i1, i2, size].some(key => authored(key) === 'auto'));
+      if (axes.length) {
+        const src = style.$sources?.[axes[0][1]] ?? style.$sources?.[axes[0][2]];
+        const missing = axes.map(([, , , i1, i2, size, name]) => [i1, i2, size].filter(key => authored(key) === 'auto').map(key => key === size ? name : key)).flat();
+        layoutWarnings.push({ code: 'W_LAYOUT_AUTO_MARGIN_ABSOLUTE', severity: 'warning', box: box.label, path: box.path, axes: axes.map(([axis]) => axis), ...(src ? { css: [{ property: 'margin', file: src.file, line: src.line, selector: src.selector }] } : {}),
+          message: `${box.label}: margin: auto does not centre this ${style.$fixed ? 'fixed' : 'absolutely positioned'} box ${axes.map(([axis]) => axis).join(' and ')}ly: ${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} auto, and then auto margins are 0 (it stays where it would be in flow). Set inset: 0 (both insets) with a width and height, or use translate(-50%, -50%)` });
+      }
+    }
       // F3: a declaration whose var() has no value and no fallback is invalid at computed-value time: the property is
       // unset (inherited or initial), silently — a warning where it is written.
     for (const entry of style.$invalid ?? []) if (!layoutWarnings.some(w => w.code === 'W_CSS_VAR_INVALID' && w.css?.[0]?.line === entry.line && w.css?.[0]?.file === entry.file && w.property === entry.property))

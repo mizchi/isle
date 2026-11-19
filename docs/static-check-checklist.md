@@ -219,6 +219,9 @@
   ブロック容器(block・inline-block・list-item・表のセルなど)にしかない。display: inline・flex・grid の要素では何も変わらない
   (3 つのブラウザーで、規則のあるときとないときの描画が同じ)。その要素だけなら報告して配置を続ける。ブロック容器に当たる
   ときは、変わる最初の文字・行を解析しないので今までどおり Unknown。
+- [x] **F38. 中央に寄らない絶対配置の `margin: auto`**(`W_LAYOUT_AUTO_MARGIN_ABSOLUTE`): 絶対配置・固定配置の箱の auto の
+  margin は、その軸の両方の inset(left と right、top と bottom)と大きさが決まっているときにだけ中央に寄せる。どれかが auto なら
+  margin は 0 で、箱は流れの中にいたはずの位置に残る(CSS 2.2 §10.3.7・§10.6.4、3 つのブラウザーで測った)。寄らない軸を報告する。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

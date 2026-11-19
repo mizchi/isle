@@ -397,3 +397,15 @@ test('F37: ::first-letter / ::first-line on an inline, flex or grid box never ap
     }
   }
 });
+
+test('F38: margin: auto does not centre an absolutely positioned box with an auto inset', async ({page}) => {
+  for (const c of ['margin:auto', 'left:0;margin:0 auto', 'right:0;margin:auto', 'inset:0;margin:auto', 'left:0;right:0;margin:0 auto', 'top:0;bottom:0;margin:auto 0', 'inset:0 auto 0 0;margin:auto']) {
+    const css = `.w{position:relative;height:300px;width:400px}.m{position:absolute;width:200px;height:50px;${c}}`;
+    await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}${css}</style></head><body><div class="w"><div class="m"></div></div></body></html>`);
+    const [cx, cy] = await page.evaluate(() => { const r = document.querySelector('.m').getBoundingClientRect(); return [r.x === 100, r.y === 125]; });
+    const m = c.match(/margin:([^;]+)/)[1].trim().split(/\s+/), wantsY = m[0] === 'auto', wantsX = (m[1] ?? m[0]) === 'auto';
+    const missed = ['horizontal', 'vertical'].filter((axis, i) => (i === 0 ? wantsX : wantsY) && !(i === 0 ? cx : cy));
+    const w = (analyzeHTML('<html lang="en"><body><div class="w"><div class="m"></div></div></body></html>', {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).find(x => x.code === 'W_LAYOUT_AUTO_MARGIN_ABSOLUTE');
+    expect(w?.axes ?? [], c).toEqual(missed);
+  }
+});
