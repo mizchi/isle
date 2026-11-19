@@ -224,6 +224,10 @@
   margin は 0 で、箱は流れの中にいたはずの位置に残る(CSS 2.2 §10.3.7・§10.6.4、3 つのブラウザーで測った)。寄らない軸を報告する。
 - [x] **F39. `object-fit: fill` の `object-position`**(`W_LAYOUT_DECLARATION_INERT`): fill(初期値)は画像を箱いっぱいに
   引き伸ばすので、置く場所がない。contain・cover・none・scale-down では効く(3 つのブラウザーで、fill のときだけ描画が同じ)。
+- [x] **F40. `place-items`・`place-content`・`place-self` を読む**(以前は Unknown): `<align> [<justify>]` の一括指定を
+  align-*・justify-* に分けて読む(CSS Box Alignment 3 §5.3。place-content の baseline 1 つは justify が start)。
+  分けたあとは今までの検査がそのまま効く(ブロック容器の place-items は align-items が効かないと報告する)。3 つのブラウザーで、
+  一括指定と個別指定の配置が同じことを確かめた。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

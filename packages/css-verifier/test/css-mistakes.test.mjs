@@ -398,3 +398,19 @@ test('F39: object-position does nothing under object-fit: fill', () => {
   assert.equal(w('object-fit:contain;object-position:right').length, 0);
   assert.equal(w('object-fit:none;object-position:right').length, 0);
 });
+
+test('F40: place-items / place-content / place-self read as their align and justify longhands', () => {
+  const items = '<div class="x"><div class="a"></div><div class="a"></div></div>';
+  const same = (short, long) => {
+    const a = run(`.x{display:grid;grid-template-columns:100px 100px;height:100px;${short}}`, items), b = run(`.x{display:grid;grid-template-columns:100px 100px;height:100px;${long}}`, items);
+    assert.equal(a.status, b.status, short);
+    assert.deepEqual((a.layoutWarnings ?? []).map(w => w.code), (b.layoutWarnings ?? []).map(w => w.code), short);
+  };
+  same('place-items:center', 'align-items:center;justify-items:center');
+  same('place-items:start stretch', 'align-items:start;justify-items:stretch');
+  same('place-content:center', 'align-content:center;justify-content:center');
+  same('place-content:start space-between', 'align-content:start;justify-content:space-between');
+  assert.notEqual(run('.x{display:grid;place-items:center}', items).layoutWarnings?.[0]?.message?.includes('Unsupported'), true);
+  const block = codes(run('.x{place-items:center}', '<div class="x a"></div>'), 'W_LAYOUT_DECLARATION_INERT');
+  assert.ok(block.some(w => w.properties.includes('align-items')));
+});

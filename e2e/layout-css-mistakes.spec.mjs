@@ -421,3 +421,16 @@ test('F39: object-position does nothing under object-fit: fill', async ({page}) 
     expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${css}.x{object-position:left top}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('object-position')), fit).toBe(inert);
   }
 });
+
+test('F40: place-items / place-content lay out as their longhands', async ({page}) => {
+  const items = '<div class="x"><div class="a">a</div><div class="a">b</div></div>';
+  const base = '.x{display:grid;grid-template-columns:100px 100px;width:300px;height:100px}.a{height:20px;width:40px}';
+  const rects = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}${base}${css}</style></head><body>${items}</body></html>`); return page.evaluate(() => [...document.querySelectorAll('.a')].map(e => JSON.stringify(e.getBoundingClientRect()))); };
+  const analyse = css => analyzeHTML(`<html lang="en"><body>${items}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${base}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+  for (const [short, long] of [['.x{place-items:center}', '.x{align-items:center;justify-items:center}'], ['.x{place-items:end start}', '.x{align-items:end;justify-items:start}'], ['.x{place-content:center}', '.x{align-content:center;justify-content:center}'], ['.x{place-content:end space-between}', '.x{align-content:end;justify-content:space-between}']]) {
+    expect(await rects(short), short).toEqual(await rects(long));
+    const a = analyse(short), b = analyse(long);
+    expect(a.status, short).toBe(b.status);
+    expect(JSON.stringify(a.layoutWarnings ?? []), short).toBe(JSON.stringify(b.layoutWarnings ?? []).replaceAll(long.slice(3, -1), short.slice(3, -1)));
+  }
+});

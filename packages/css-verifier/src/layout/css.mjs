@@ -494,6 +494,18 @@ function expand(property, value) {
     if (['balance', 'pretty'].includes(v)) return [['text-wrap-style', v]];
     throw new Error(`Unsupported ${property}: ${value}`);
   }
+  // F40: place-items / place-content / place-self are <align> [<justify>] (CSS Box Alignment 3 §5.3), read as their
+  // longhands (each validated as written). A baseline value with its first / last keyword keeps the two words together.
+  if (['place-items', 'place-content', 'place-self'].includes(property)) {
+    const kind = property.slice(6), v = value.trim().toLowerCase();
+    if (wide.has(v)) return [...expand(`align-${kind}`, v), ...expand(`justify-${kind}`, v)];
+    const words = v.split(/\s+/), parts = [];
+    for (let i = 0; i < words.length; i++) parts.push(['first', 'last', 'safe', 'unsafe'].includes(words[i]) && words[i + 1] ? `${words[i]} ${words[++i]}` : words[i]);
+    if (!parts.length || parts.length > 2) throw new Error(`Unsupported ${property}: ${value}`);
+    // A lone baseline in place-content gives justify-content: start (§5.3).
+    const justify = parts[1] ?? (kind === 'content' && /baseline$/.test(parts[0]) ? 'start' : parts[0]);
+    return [...expand(`align-${kind}`, parts[0]), ...expand(`justify-${kind}`, justify)];
+  }
   // Multi-column properties are kept so a flex or grid container (which ignores them, F34) is told apart from a block
   // container, where multi-column layout is not modeled (Unknown in computeStyle).
   if (['columns', 'column-count', 'column-width'].includes(property)) {
