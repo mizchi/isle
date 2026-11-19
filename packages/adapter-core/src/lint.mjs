@@ -69,6 +69,7 @@ export const recommended = {
   W_CSS_PLACEHOLDER_IGNORED: ['warning', 'style the field itself: ::placeholder ignores margin, height, display and position'],
   W_CSS_GRID_AREAS_INVALID: ['warning', 'give every row the same number of cells and make each area one rectangle'],
   W_CSS_LANG_CODE: ['warning', 'use the language code (ja, zh, cs, el, da, uk), not the country code'],
+  W_HTML_ATTRIBUTE_NOT_HTML: ['warning', 'set the DOM property in script (indeterminate), or use the HTML form (textarea content, option selected, value, checked)'],
   W_CSS_EMPTY_WHITESPACE: ['warning', 'remove the whitespace in the element, or use :not(:has(*))'],
   W_CSS_MEDIA_NEVER: ['warning', 'check the order of the bounds: min-width below max-width'],
   W_LAYOUT_SCROLLBAR_SHIFT: ['warning', 'keep the scrollbar gutter with html { scrollbar-gutter: stable }'],

@@ -715,3 +715,13 @@ test('F63: :dir() follows the dir attribute, not the CSS direction', async ({pag
     if (warn) expect(matched).toBe(false);
   }
 });
+
+test('F64: DOM properties written as HTML attributes do nothing', async ({page}) => {
+  for (const [html, prop, idle] of [['<input class="x" type="checkbox" aria-label="q" indeterminate>', 'indeterminate', false], ['<textarea class="x" aria-label="q" value="hi"></textarea>', 'value', ''],
+    ['<select class="x" aria-label="q" value="b"><option value="a">a</option><option value="b">b</option></select>', 'value', 'a'], ['<input class="x" aria-label="q" defaultValue="x">', 'value', '']]) {
+    await page.setContent(`<!doctype html><html lang="en"><body>${html}</body></html>`);
+    expect(await page.evaluate(p => document.querySelector('.x')[p], prop), html).toBe(idle);
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: '.x{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}', viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_HTML_ATTRIBUTE_NOT_HTML'), html).toBe(true);
+  }
+});

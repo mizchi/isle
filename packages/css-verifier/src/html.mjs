@@ -67,6 +67,9 @@ export function htmlBoxTree(html) {
       // Checklist F28: a presentational attribute on an element it does not map to (HTML rendering §15) does nothing:
       // width/height on a div, bgcolor on a span… Recorded for a warning instead of Unknown.
       if(!attr.namespace && presentationalInert(node.tagName,attr.name)) { (node.inertAttributes ??= []).push(attr.name); continue; }
+      // F64: names that are DOM properties, not HTML attributes (indeterminate; value on a textarea or select; React's
+      // defaultValue / defaultChecked) do nothing in markup (measured in Chromium, Firefox and WebKit). Recorded for a warning.
+      if(!attr.namespace && (['indeterminate','defaultvalue','defaultchecked'].includes(attr.name) || (attr.name==='value' && ['textarea','select'].includes(node.tagName)))) { (node.notAttributes ??= []).push(attr.name); continue; }
       if(attr.namespace || !/^(?:class|id|style|dir|target|title|role|lang|tabindex|href|disabled|alt|src|type|for|name|value|placeholder|required|readonly|checked|autocomplete|headers|scope|controls|autoplay|muted|loop|playsinline|poster|kind|srclang|label|accesskey|ismap|colspan|rowspan|hidden|inert|autofocus|popover|popovertarget|popovertargetaction|aria-[\w-]+|data-[\w-]+)$/.test(attr.name)) unknown(`HTML rendering attribute needs an adapter: ${attr.name}`);
     }
     // An inline svg is one replaced box: its content is SVG, not CSS boxes, so its children are not converted.
@@ -102,7 +105,7 @@ export function htmlBoxTree(html) {
     const html5=node.namespaceURI==='http://www.w3.org/1999/xhtml';
     const optionalEnd=new Set(['html','head','body','p','li','dt','dd','option','optgroup','rt','rp','tr','td','th','thead','tbody','tfoot','colgroup','caption']);
     const restructured=node.fostered ? 'fostered' : node.nestedForm ? 'nested-form' : !html5 || !node.sourceCodeLocation && ['tbody','tr','colgroup','html','head','body'].includes(node.tagName) ? undefined : !node.sourceCodeLocation ? 'implied' : node.sourceCodeLocation.startTag && !node.sourceCodeLocation.endTag && !optionalEnd.has(node.tagName) && !voidTags.has(node.tagName) ? 'unclosed' : undefined;
-    return {...(node.inertAttributes ? {inertAttributes:[...node.inertAttributes]} : {}),...(['tbody','tr','colgroup'].includes(node.tagName) && !node.sourceCodeLocation ? {implied:true} : {}),...(restructured ? {restructured} : {}),tag:node.tagName,attributes:attrs,...(attrs.id!==undefined ? {id:attrs.id} : {}),...(attrs.lang!==undefined ? {lang:attrs.lang.trim()} : {}),...accessibilityFacts(node.tagName,attrs),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),
+    return {...(node.notAttributes ? {notAttributes:[...node.notAttributes]} : {}),...(node.inertAttributes ? {inertAttributes:[...node.inertAttributes]} : {}),...(['tbody','tr','colgroup'].includes(node.tagName) && !node.sourceCodeLocation ? {implied:true} : {}),...(restructured ? {restructured} : {}),tag:node.tagName,attributes:attrs,...(attrs.id!==undefined ? {id:attrs.id} : {}),...(attrs.lang!==undefined ? {lang:attrs.lang.trim()} : {}),...accessibilityFacts(node.tagName,attrs),classes:(attrs.class ?? '').split(/\s+/).filter(Boolean),
       text:node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)),
       ...(node.childNodes.some(n=>n.nodeName==='#text' && /[^\t\n\r ]/.test(n.value)) ? {textContent:node.childNodes.filter(n=>n.nodeName==='#text').map(n=>n.value).join(' ').replace(/[\t\n\r ]+/g,' ').trim()} : {}),
       ...(node.childNodes.some(n=>n.nodeName==='#text' && n.value && !/[^\t\n\r ]/.test(n.value)) ? {whitespace:true} : {}),

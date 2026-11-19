@@ -311,6 +311,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // :disabled / :enabled where an element's disabled attribute is dynamic (an adapter's expression): whether the rule
   // applies is not known.
   if (rules.some(rule => rule.selectors.some(sel => JSON.stringify(sel).includes('"kind":"disabled"'))) && boxes.some(box => box.disabled === 'dynamic')) unknown('U_LAYOUT_ATTRIBUTE', `${boxes.find(box => box.disabled === 'dynamic').label}: a :disabled or :enabled rule depends on a disabled state that is dynamic, or that browsers decide differently (an option in a disabled select)`);
+  // F64: DOM properties written as HTML attributes.
+  for (const b of boxes) if (b.notAttributes?.length) {
+    const how = { indeterminate: 'set input.indeterminate = true in script', value: b.tag === 'textarea' ? 'put the text inside <textarea>…</textarea>' : 'put selected on the <option>', defaultvalue: 'write value="…"', defaultchecked: 'write checked' };
+    layoutWarnings.push({ code: 'W_HTML_ATTRIBUTE_NOT_HTML', severity: 'warning', box: b.label, path: b.path, attributes: b.notAttributes,
+      message: `${b.label}: ${b.notAttributes.map(a => a === 'defaultvalue' ? 'defaultValue' : a === 'defaultchecked' ? 'defaultChecked' : a).join(', ')} on <${b.tag}> does nothing: it is a DOM property (or a framework prop), not an HTML attribute here. ${b.notAttributes.map(a => how[a]).join('; ')}` });
+  }
   // F28: presentational attributes on elements they do not map to.
   for (const b of boxes) if (b.inertAttributes?.length) layoutWarnings.push({ code: 'W_HTML_ATTRIBUTE_INERT', severity: 'warning', box: b.label, path: b.path, attributes: b.inertAttributes,
     message: `${b.label}: the ${b.inertAttributes.join(', ')} attribute${b.inertAttributes.length > 1 ? 's do' : ' does'} nothing on <${b.tag}> (only some elements — images, tables and their cells, embedded content — take ${b.inertAttributes.length > 1 ? 'them' : 'it'}). Use CSS (${b.inertAttributes.map(a => a === 'bgcolor' ? 'background-color' : a === 'border' ? 'border' : a).join(', ')})` });

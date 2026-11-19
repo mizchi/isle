@@ -310,6 +310,10 @@
 - [x] **F63. `:dir()` を読む・CSS の direction だけの rtl**(`W_CSS_STATE_UNREACHABLE`、以前は Unknown): :dir() は dir 属性
   (継承、大文字小文字を区別しない)で決まり、CSS の direction では変わらない(3 つのブラウザーで測った)。direction: rtl だけで
   dir="rtl" のない要素の :dir(rtl) は当たらないので報告する。dir=auto(文字で決まる)やコンポーネントで dir が木にないときは Unknown。
+- [x] **F64. HTML の属性にした DOM の性質**(`W_HTML_ATTRIBUTE_NOT_HTML`、indeterminate は以前 Unknown): checkbox の indeterminate、
+  textarea・select の value、React の defaultValue・defaultChecked は、HTML に書いても何もしない(3 つのブラウザーで、
+  indeterminate は false、textarea は空、select は最初の option)。script で性質を設定するか、HTML の書き方(textarea の中身、
+  option の selected、value、checked)を勧める。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

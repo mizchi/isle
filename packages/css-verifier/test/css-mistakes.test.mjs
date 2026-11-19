@@ -703,3 +703,16 @@ test('F63: :dir() follows the dir attribute, not the CSS direction', () => {
   assert.equal(w('.x:dir(rtl){color:red}', '<div class="x a" dir="rtl"></div>').length, 0);
   assert.equal(w('.x:dir(rtl){color:red}', '<div class="x a"></div>').length, 0);
 });
+
+test('F64: attributes that are only DOM properties (indeterminate, value on textarea and select, defaultValue) do nothing in HTML', () => {
+  const base = '.x{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}';
+  const w = html => codes(run(base, html), 'W_HTML_ATTRIBUTE_NOT_HTML');
+  const r = run(base, '<input class="x" type="checkbox" aria-label="q" indeterminate>');
+  assert.ok(!JSON.stringify(r.diagnostics).includes('needs an adapter: indeterminate'));
+  const [hit] = w('<input class="x" type="checkbox" aria-label="q" indeterminate>');
+  assert.ok(hit && /property/.test(hit.message));
+  assert.equal(w('<textarea class="x" aria-label="q" value="hi"></textarea>').length, 1);
+  assert.equal(w('<select class="x" aria-label="q" value="b"><option>a</option></select>').length, 1);
+  assert.equal(w('<input class="x" aria-label="q" defaultValue="x">').length, 1);
+  assert.equal(w('<input class="x" aria-label="q" value="x">').length, 0);
+});
