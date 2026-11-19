@@ -1081,6 +1081,9 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   // position: fixed is laid out as absolute against the viewport; the engine admits it for the accessibility and
   // integrity checks only (at scroll position 0) and keeps every other proof Unknown.
   if (values.position === 'fixed') { values.position = 'absolute'; values.$fixed = true; }
+  // display: contents on a replaced element or form control computes to none (CSS Display Appendix B): it has no
+  // children to promote (measured: 0x0 in Chromium, Firefox and WebKit for each of these).
+  if (values.display === 'contents' && !box.pseudo && ['img', 'input', 'textarea', 'select', 'video', 'audio', 'iframe', 'canvas', 'progress', 'meter', 'br', 'wbr', 'object', 'embed', 'frame', 'frameset'].includes(box.tag)) { values.display = 'none'; values.$contentsRemoved = true; }
   // position: sticky with top: 0 is laid out in flow (as relative, unshifted at scroll 0); the accessibility scroll rules
   // treat it as a bar stuck to the viewport top while its parent is in view.
   // The winning text-wrap-mode folds into white-space (nowrap ↔ normal, pre ↔ pre-wrap); pre-line and break-spaces

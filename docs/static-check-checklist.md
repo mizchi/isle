@@ -188,6 +188,10 @@
   属性のないときと同じ。
 - [x] **F29. 空白だけの要素に `:empty`**(`W_CSS_EMPTY_WHITESPACE`): `:empty` は空白(スペースや改行)を中身として数えるので、
   `<div class="x"> </div>` には当たらない。コメントだけなら当たる。3 つのブラウザーで同じ結果を測った。
+- [x] **F30. 置き換え要素・フォーム部品の `display: contents`**(`W_LAYOUT_CONTENTS_REMOVED`): img・input・textarea・select・
+  video・iframe・canvas・progress・meter・br・audio・object・embed などは、子を代わりに出せないので `display: none` になる
+  (CSS Display 付録 B)。解析もそのとおり none として配置する。3 つのブラウザーで 0×0 を測った(button・fieldset・ul・li・
+  details・table は子が出るので報告しない)。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

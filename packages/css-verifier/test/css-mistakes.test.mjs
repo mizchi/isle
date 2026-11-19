@@ -269,3 +269,14 @@ test('F29: :empty does not match an element holding whitespace', () => {
   assert.equal(w('<div class="x"></div>').length, 0);
   assert.equal(w('<div class="x"><!-- c --></div>').length, 0);
 });
+
+test('F30: display: contents on a replaced element or form control removes it', () => {
+  const w = (html, css = '.x{display:contents}') => codes(run(css, html), 'W_LAYOUT_CONTENTS_REMOVED');
+  const [hit] = w('<input class="x" aria-label="q">');
+  assert.ok(hit && /display: none/.test(hit.message));
+  assert.equal(w('<img class="x" alt="" src="a.png" width="20" height="20">').length, 1);
+  assert.equal(w('<textarea class="x" aria-label="q"></textarea>').length, 1);
+  assert.equal(w('<button class="x" type="button"><span class="a"></span></button>').length, 0);
+  assert.equal(w('<ul class="x"><li class="a"></li></ul>').length, 0);
+  assert.equal(w('<input class="x" aria-label="q">', '.x{display:block;inline-size:100px;block-size:20px}').length, 0);
+});
