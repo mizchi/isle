@@ -478,6 +478,18 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
     layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: found.map(([key]) => key), css: found.filter(([key]) => style.$sources?.[key]).map(([key]) => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
       message: `${box.label}: ${found.map(([key, value]) => `${key}: ${value}`).join(', ')} ${found.length === 1 ? 'has' : 'have'} no effect on a display: inline element (they align and indent the lines of a block). Put ${found.length === 1 ? 'it' : 'them'} on the paragraph, or make ${box.label} display: block` });
   }
+  // F58: text-decoration: none removes only the element's own line. Where it overrides nothing (not a link's UA underline,
+  // not another rule on the element) and an ancestor draws a line, it does nothing: the ancestor's line is drawn across
+  // its descendants (measured in Chromium, Firefox and WebKit, inline, inline-block and block children alike).
+  function decorationNone(box, style, ancestors) {
+    if (box.pseudo || !style.$sources?.['text-decoration-line'] || String(style['text-decoration-line']) !== 'none') return;
+    if ((box.tag === 'a' && box.focusable !== false) || (style.$overridden?.['text-decoration-line'] ?? []).length) return;
+    const from = [...(ancestors ?? [])].reverse().find(a => a.style && a.box && !['none', 'ua', undefined].includes(String(a.style['text-decoration-line'])));
+    if (!from || layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('text-decoration-line'))) return;
+    const src = style.$sources['text-decoration-line'];
+    layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['text-decoration-line'], css: [{ property: 'text-decoration', file: src.file, line: src.line, selector: src.selector }],
+      message: `${box.label}: text-decoration: none does nothing here — it removes only the element's own line, and it has none; the ${from.style['text-decoration-line']} comes from ${from.box.label} and is drawn across its descendants. Remove the line on ${from.box.label} (and put it on the parts that need it), or make ${box.label} display: inline-block` });
+  }
   function inlineOverflow(box, style) {
     const found = style.$inlineOverflowInert;
     if (!found?.length || box.pseudo || layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(found[0][0]))) return;
@@ -517,6 +529,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
     firstPseudoInert(box, style);
     inlineOverflow(box, style);
+    decorationNone(box, style, ancestors);
     if (style.$clearInert && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('clear')))
       layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['clear'], ...(style.$sources?.clear ? { css: [{ property: 'clear', file: style.$sources.clear.file, line: style.$sources.clear.line, selector: style.$sources.clear.selector }] } : {}),
         message: `${box.label}: clear: ${style.$clearInert} has no effect on a ${String(inherited?.display ?? '').includes('grid') ? 'grid' : 'flex'} item (floats do not apply there, so there is nothing to clear). Remove it, or use the container's wrapping (flex-wrap, grid rows) to start a new line` });
@@ -1887,6 +1900,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       inlineStateTransforms(child, style);
       inlineTextAlignment(child, style);
       inlineOverflow(child, style);
+      decorationNone(child, style, parents);
       firstPseudoInert(child, style);
       if (!['img', 'video', 'canvas', 'iframe', 'svg', 'input', 'button', 'select', 'textarea'].includes(child.tag) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === child.path)) {
         const initial = { 'inline-size': ['auto'], 'block-size': ['auto'], 'min-inline-size': ['auto', '0', '0px'], 'min-block-size': ['auto', '0', '0px'], 'max-inline-size': ['none'], 'max-block-size': ['none'], 'margin-top': ['0', '0px', 'auto'], 'margin-bottom': ['0', '0px', 'auto'], 'aspect-ratio': ['auto'], transform: ['none'], translate: ['none'], rotate: ['none'], scale: ['none'] };
@@ -3962,6 +3976,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         try { inlineStateTransforms(child, c.style); } catch { /* the rest still runs */ }
         try { inlineTextAlignment(child, c.style); } catch { /* the rest still runs */ }
         try { inlineOverflow(child, c.style); } catch { /* the rest still runs */ }
+        try { decorationNone(child, c.style, chain); } catch { /* the rest still runs */ }
         try { firstPseudoInert(child, c.style); } catch { /* the rest still runs */ }
         for (const grand of child.inline ?? child.children ?? []) walkInline(grand, [...chain, { box: child, style: c.style, names: [] }], c.style);
       };

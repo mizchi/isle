@@ -646,3 +646,14 @@ test('F57: overflow, text-overflow and resize on an inline element do nothing', 
     expect(warned, `${disp} ${d}`).toBe(inert);
   }
 });
+
+test('F58: text-decoration: none on a descendant does not remove an ancestor line', async ({page}) => {
+  for (const [css, html, inert] of [['.c{text-decoration:none}', '<p class="a">t <a href="/y">link <span class="c">child</span></a></p>', true], ['.l{text-decoration:underline}.c{text-decoration:none}', '<p class="a l">text <span class="c">child</span></p>', true],
+    ['.c{text-decoration:none}', '<p class="a">t <a class="c" href="/y">link</a></p>', false]]) {
+    const shot = async extra => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:10px;font:16px sans-serif}${extra}</style></head><body>${html}</body></html>`); return (await page.screenshot()).toString('base64'); };
+    const base = css.replace(/\.c\{text-decoration:none\}/, '');
+    expect(await shot(base) === await shot(css), css).toBe(inert);
+    const warned = (analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('text-decoration-line'));
+    expect(warned, css).toBe(inert);
+  }
+});

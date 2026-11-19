@@ -629,3 +629,12 @@ test('F57: not on a blockified inline element (absolutely positioned, or a flex 
   assert.equal(w('.x{position:absolute;width:1px;height:1px;overflow:hidden}', '<p class="a">t <span class="x">s</span></p>').length, 0);
   assert.equal(w('.f{display:flex}.x{overflow:hidden;width:20px;height:20px}', '<div class="f"><span class="x"></span></div>').length, 0);
 });
+
+test('F58: text-decoration: none cannot remove a line an ancestor draws', () => {
+  const w = (css, html) => codes(run(css, html), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.includes('text-decoration-line'));
+  const [hit] = w('.l{text-decoration:underline}.c{text-decoration:none}', '<p class="a l">link <span class="c">child</span></p>');
+  assert.ok(hit && /ancestor|\.l/.test(hit.message));
+  assert.equal(w('.c{text-decoration:none}', '<p class="a">t <a class="c" href="/y">link</a></p>').length, 0);
+  assert.equal(w('.c{text-decoration:none}', '<p class="a">t <span class="c">s</span></p>').length, 0);
+  assert.equal(w('.l{text-decoration:underline}.c{text-decoration:underline}.l .c{text-decoration:none}', '<p class="a l">t <span class="c">s</span></p>').length, 0);
+});
