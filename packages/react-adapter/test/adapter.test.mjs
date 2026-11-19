@@ -42,8 +42,8 @@ test('Linaria: css`` and styled classes, cx() conditions and nesting; markup equ
   const {code} = await compileLinaria(source);
   // Attribute order and class order do not change what the CSS matches.
   const canon = html => html.replace(/<(\w+)((?:\s+[\w-]+(?:="[^"]*")?)*)\s*>/g, (m, tag, attrs) => `<${tag}${[...attrs.matchAll(/\s+([\w-]+)(?:="([^"]*)")?/g)].map(([, k, v]) => k === 'class' ? ` class="${v.split(' ').sort().join(' ')}"` : ` ${k}${v === undefined ? '' : `="${v}"`}`).sort().join('')}>`);
-  // Linaria's build hashes class names (ours are lx-name): generated classes compare as '#', literal ones as themselves.
-  const generated = html => html.replace(/class="([^"]*)"/g, (m, list) => `class="${list.split(' ').map(c => /^lx-/.test(c) || /^[a-z][a-z0-9]{6,8}$/.test(c) && c !== 'active' ? '#' : c).join(' ')}"`);
+  // Linaria's build hashes class names (ours are lx-name; a hash is 6 to 9 characters): generated classes compare as '#', literal ones as themselves.
+  const generated = html => html.replace(/class="([^"]*)"/g, (m, list) => `class="${list.split(' ').map(c => /^lx-/.test(c) || /^[a-z][a-z0-9]{5,8}$/.test(c) && c !== 'active' ? '#' : c).join(' ')}"`);
   for (const s of states) assert.equal(canon(generated(await render(code, propsOf(s.choices)))), canon(generated(s.html)), JSON.stringify(s.choices));
   const report = analyzeReact(source, {pageCSS, viewport, selectors: true});
   assert.deepEqual(report.states.filter(s => s.report.status === 'violated').map(s => s.choices.big), report.states.filter(s => s.report.status === 'violated').map(() => true));
