@@ -84,7 +84,7 @@ export function htmlBoxTree(html) {
       // F66: readonly only stops editing text (a textarea or a text-like input); a checkbox, radio or select still changes
       // (measured in Chromium, Firefox and WebKit).
       if(!attr.namespace && attr.name==='readonly' && !(node.tagName==='textarea' || (node.tagName==='input' && /^(?:|text|search|url|tel|email|password|number|date|month|week|time|datetime-local)$/.test(String(attrs.type ?? '').trim().toLowerCase())))) (node.notAttributes ??= []).push('readonly');
-      if(attr.namespace || !/^(?:class|id|style|dir|target|title|role|lang|tabindex|href|disabled|alt|src|type|for|name|value|placeholder|required|readonly|checked|autocomplete|headers|scope|controls|autoplay|muted|loop|playsinline|poster|kind|srclang|label|accesskey|ismap|colspan|rowspan|hidden|inert|autofocus|popover|popovertarget|popovertargetaction|aria-[\w-]+|data-[\w-]+)$/.test(attr.name)) unknown(`HTML rendering attribute needs an adapter: ${attr.name}`);
+      if(attr.namespace || !/^(?:list|class|id|style|dir|target|title|role|lang|tabindex|href|disabled|alt|src|type|for|name|value|placeholder|required|readonly|checked|autocomplete|headers|scope|controls|autoplay|muted|loop|playsinline|poster|kind|srclang|label|accesskey|ismap|colspan|rowspan|hidden|inert|autofocus|popover|popovertarget|popovertargetaction|aria-[\w-]+|data-[\w-]+)$/.test(attr.name)) unknown(`HTML rendering attribute needs an adapter: ${attr.name}`);
     }
     // An inline svg is one replaced box: its content is SVG, not CSS boxes, so its children are not converted.
     const inlineSvg=node.tagName==='svg' && node.namespaceURI==='http://www.w3.org/2000/svg';
@@ -128,7 +128,8 @@ export function htmlBoxTree(html) {
       // Component boundaries an adapter marks (<!--isle-boundary:component Item-->, slot, children, html): content
       // rendered here comes from another component or the caller.
       ...(node.childNodes.some(n=>n.nodeName==='#comment' && /^isle-boundary:/.test(n.data)) ? {boundaries:node.childNodes.filter(n=>n.nodeName==='#comment' && /^isle-boundary:/.test(n.data)).map(n=>{ const m=/^isle-boundary:(\w+)(?: ([^\s=]+))?/.exec(n.data); return {kind:m?.[1] ?? 'component',...(m?.[2] ? {name:m[2]} : {})}; })} : {}),
-      children:node.childNodes.filter(n=>n.tagName).map(child=>convert(child,depth+1))};
+      // A datalist's options are never laid out (it is display: none; they show in a field's popup): not converted.
+      children:node.tagName==='datalist' ? [] : node.childNodes.filter(n=>n.tagName).map(child=>convert(child,depth+1))};
   }
   const tree=convert(roots[0]);
   if(asHtml && metaViewport!==undefined) tree.metaViewport=metaViewport;

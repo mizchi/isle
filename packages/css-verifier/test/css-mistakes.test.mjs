@@ -754,3 +754,10 @@ test('F68: input type=hidden is never rendered (display: none the author cannot 
   const [hit] = codes(r, 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.includes('display'));
   assert.ok(hit && /hidden/.test(hit.message));
 });
+
+test('F69: a datalist is display: none (its options show only in a field popup)', () => {
+  const html = '<div class="a"></div><input class="f" list="d" aria-label="q"><datalist id="d"><option value="a"></option></datalist>';
+  const base = '.f{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}';
+  assert.equal(run(base, html).status, 'verified');
+  assert.equal(run(base + 'datalist{display:block}', html).status, 'unknown');
+});

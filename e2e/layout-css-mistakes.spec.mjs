@@ -771,3 +771,14 @@ test('F68: input type=hidden is not rendered whatever the author display', async
     expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('display')), css).toBe(css !== '');
   }
 });
+
+test('F69: a datalist is not rendered; the analysis lays out the page around it', async ({page}) => {
+  const html = '<div class="a"></div><input class="f" list="d" aria-label="q"><datalist id="d"><option value="a">a</option><option value="b">b</option></datalist><div class="n"></div>';
+  const css = '*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}.n{height:10px}.f{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}';
+  await page.setViewportSize({width: 400, height: 300});
+  await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+  const y = await page.evaluate(() => document.querySelector('.n').getBoundingClientRect().y);
+  const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  expect(r.status).toBe('verified');
+  expect(Number(r.sizes.find(s => s.box === '.n').rect.blockStart.constant)).toBe(y);
+});

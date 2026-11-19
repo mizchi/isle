@@ -325,6 +325,9 @@
 - [x] **F68. `input type=hidden` を読む・その display**(`W_LAYOUT_DECLARATION_INERT`、以前はページごと Unknown): hidden の input
   は UA の display: none !important で、author の display(!important でも)では出ない(3 つのブラウザーで測った)。解析も常に
   display: none として扱い(フォームの CSRF トークンなどでページが Unknown にならない)、display を書いたら報告する。
+- [x] **F69. `datalist` を読む**(以前はページごと Unknown): datalist は UA の display: none で、option は欄の候補にだけ出る
+  (3 つのブラウザーで、後ろの要素の位置が datalist のないときと同じ)。解析も描かない箱として扱い、`list` 属性も受け付ける。
+  author が display を書いたときは今までどおり Unknown。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 
