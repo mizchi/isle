@@ -5,7 +5,7 @@ import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea
 import { resolveUAProfile } from './ua-profile.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
-import { compileSelector, PARENT, dynamicAttributeTests } from './selectors.mjs';
+import { compileSelector, PARENT, dynamicAttributeTests, ignoringSiblings } from './selectors.mjs';
 import { selectorUsage } from './selector-usage.mjs';
 import { selectorScope } from './selector-scope.mjs';
 import { viewportFont, zoomShortfall } from './zoom-font.mjs';
@@ -446,6 +446,7 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   // Checklist F: CSS mistakes on one box's computed style (called from the styles of the layout pass, and from a style
   // walk where the layout did not run, so they are reported whether or not the layout is decided).
   // F9: a ::before or ::after styled but with no content is never generated.
+  const neverRendered = new Set(['template', 'script', 'style', 'link', 'meta']);
   function pseudoWithoutContent(pbox, pstyle) {
     // F32: content on a ::before / ::after of an element that renders none (css.mjs sets its content to none).
     if (pstyle.$pseudoNotRendered !== undefined) {
@@ -525,6 +526,16 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           if (!JSON.stringify(sel.parts ?? []).includes('"name":"empty"') || matches(sel, box, state) || !matches(sel, { ...box, whitespace: false }, state) || layoutWarnings.some(w => w.code === 'W_CSS_EMPTY_WHITESPACE' && w.path === box.path && w.selector === sel.source)) continue;
           layoutWarnings.push({ code: 'W_CSS_EMPTY_WHITESPACE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, css: [{ property: ':empty', file: rule.file, line: rule.line, selector: sel.source }],
             message: `${sel.source} does not match ${box.label}: it holds only whitespace (a space or a line break), and whitespace is content to :empty. Remove the whitespace in the markup, or use :not(:has(*)) for "no child elements"` });
+        }
+        // F33: :first-child, :last-child, :only-child, :nth-child and :nth-last-child count every element sibling, also
+        // one that never renders (template, script, style, link, meta: display: none, measured in Chromium, Firefox and
+        // WebKit): a rule that would match without such a sibling silently misses.
+        const hiddenSiblings = (box[PARENT]?.children ?? []).filter(c => neverRendered.has(c.tag));
+        if (hiddenSiblings.length && !box.pseudo) for (const rule of rules) for (const sel of rule.selectors ?? []) {
+          if (!/"name":"(?:first-child|last-child|only-child|nth-child|nth-last-child)"/.test(JSON.stringify(sel.parts ?? [])) || matches(sel, box, state) || !ignoringSiblings(neverRendered, () => matches(sel, box, state)) || layoutWarnings.some(w => w.code === 'W_CSS_CHILD_INDEX_HIDDEN_SIBLING' && w.path === box.path && w.selector === sel.source)) continue;
+          const tags = [...new Set(hiddenSiblings.map(c => `<${c.tag}>`))].join(', ');
+          layoutWarnings.push({ code: 'W_CSS_CHILD_INDEX_HIDDEN_SIBLING', severity: 'warning', box: box.label, path: box.path, selector: sel.source, css: [{ property: 'selector', file: rule.file, line: rule.line, selector: sel.source }],
+            message: `${sel.source} does not match ${box.label}: its parent also holds ${tags}, which is never shown but still counts as a child for :first-child, :last-child and :nth-child. Use :first-of-type / :last-of-type / :nth-of-type, or move the ${tags} out of the list` });
         }
         // F17, F18: a state rule that can never apply here: :focus / :focus-visible on an element that cannot take focus
         // (no tabindex, not a control or link), :hover on an element with pointer-events: none and no children (the

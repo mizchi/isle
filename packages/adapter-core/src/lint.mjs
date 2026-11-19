@@ -63,6 +63,7 @@ export const recommended = {
   W_HTML_ATTRIBUTE_INERT: ['warning', 'set it in CSS (width, height, background-color, border)'],
   W_LAYOUT_CONTENTS_REMOVED: ['warning', 'use display: block or inline-block; display: contents removes a replaced element or form control'],
   W_CSS_PSEUDO_NOT_RENDERED: ['warning', 'put the ::before / ::after on a wrapper or label; images and text fields render no pseudo-elements'],
+  W_CSS_CHILD_INDEX_HIDDEN_SIBLING: ['warning', 'use :first-of-type / :last-of-type / :nth-of-type, or move the template or script out of the list'],
   W_CSS_EMPTY_WHITESPACE: ['warning', 'remove the whitespace in the element, or use :not(:has(*))'],
   W_CSS_MEDIA_NEVER: ['warning', 'check the order of the bounds: min-width below max-width'],
   W_LAYOUT_SCROLLBAR_SHIFT: ['warning', 'keep the scrollbar gutter with html { scrollbar-gutter: stable }'],

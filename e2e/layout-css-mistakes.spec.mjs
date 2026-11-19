@@ -337,3 +337,15 @@ test('F32: ::before on an img, a text field and other replaced elements is not r
     expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: pseudo, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_CSS_PSEUDO_NOT_RENDERED'), html).toBe(hidden);
   }
 });
+
+test('F33: :last-child and :nth-child miss because of a template or script sibling', async ({page}) => {
+  const cases = [['.a:last-child', '<template><b></b></template>', 'last'], ['.a:last-child', '<script>1</script>', 'last'], ['.a:first-child', '<template></template>', 'first'],
+    ['.a:nth-child(2)', '<template></template>', 'first'], ['.a:last-of-type', '<template></template>', 'last'], ['.a:last-child', '', 'last']];
+  for (const [sel, hidden, where] of cases) {
+    const html = where === 'last' ? `<div class="w"><div class="a" id="p"></div><div class="a" id="t"></div>${hidden}</div>` : `<div class="w">${hidden}<div class="a" id="t"></div><div class="a" id="p"></div></div>`;
+    await page.setContent(`<!doctype html><html lang="en"><body>${html}</body></html>`);
+    const browser = await page.evaluate(s => { const items = [...document.querySelectorAll('.a')], before = items.map(e => e.matches(s)); document.querySelectorAll('.w > template, .w > script').forEach(e => e.remove()); return items.filter((e, i) => !before[i] && e.matches(s)).length; }, sel);
+    expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}${sel}{height:50px}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).filter(w => w.code === 'W_CSS_CHILD_INDEX_HIDDEN_SIBLING').length, `${sel} ${hidden}`).toBe(browser);
+  }
+  expect(await page.evaluate(() => { document.body.innerHTML = '<template id="x"><b>t</b></template>'; return document.getElementById('x').getBoundingClientRect().height; })).toBe(0);
+});

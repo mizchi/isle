@@ -306,3 +306,20 @@ test('F32: ::before / ::after on an element that does not render them (img, text
   assert.equal(w('<input class="x" type="checkbox" aria-label="q">', `.x${pc}`).length, 0);
   assert.equal(w(`<button class="x" type="button" ${field}>b</button>`, `.x${pc}`).length, 0);
 });
+
+test('F33: :last-child / :first-child / :nth-child miss because of a sibling that never renders (template, script)', () => {
+  const list = tail => `<div class="w"><div class="a"></div><div class="a"></div>${tail}</div>`;
+  const w = (css, html) => codes(run(css, html), 'W_CSS_CHILD_INDEX_HIDDEN_SIBLING');
+  const r = run('.a:last-child{height:50px}', list('<template><b></b></template>'));
+  assert.equal(r.status, 'verified');
+  const [hit] = codes(r, 'W_CSS_CHILD_INDEX_HIDDEN_SIBLING');
+  assert.ok(hit && /<template>/.test(hit.message) && hit.selector === '.a:last-child');
+  assert.equal(w('.a:last-child{height:50px}', list('<script>1</script>')).length, 1);
+  assert.equal(w('.a:first-child{height:50px}', '<div class="w"><template></template><div class="a"></div></div>').length, 1);
+  assert.equal(w('.a:nth-child(2){height:50px}', '<div class="w"><template></template><div class="a"></div><div class="a"></div></div>').length, 1);
+  assert.equal(w('.a:last-of-type{height:50px}', list('<template></template>')).length, 0);
+  assert.equal(w('.a:last-child{height:50px}', list('')).length, 0);
+  assert.equal(run('', list('<template></template>')).status, 'verified');
+  assert.equal(run('', list('<template shadowrootmode="open"><b></b></template>')).status, 'unknown');
+  assert.equal(run('template{display:block}', list('<template></template>')).status, 'unknown');
+});

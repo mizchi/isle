@@ -200,6 +200,10 @@
   あっても `::before`・`::after` を描かない(3 つのブラウザーで、規則のあるときとないときの描画が同じ)。解析も生成しない。
   読み込めなかった img(Chromium・Firefox は描く)と、appearance: auto の checkbox・radio(Chromium・WebKit は描く)は
   ブラウザーで違うので今までどおり。
+- [x] **F33. 描かれない兄弟で外れる `:last-child`・`:nth-child`**(`W_CSS_CHILD_INDEX_HIDDEN_SIBLING`): template・script・style・
+  link・meta は描かれない(display: none)が、`:first-child`・`:last-child`・`:only-child`・`:nth-child` の数には入る。それらが
+  なければ当たる規則を報告する(`-of-type` は別の要素名なので影響しない)。また `template`(shadowrootmode のないもの)を
+  UA の display: none として扱い、Unknown にしない(author の display は今までどおり Unknown)。3 つのブラウザーで測った。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

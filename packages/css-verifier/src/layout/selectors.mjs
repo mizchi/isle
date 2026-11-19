@@ -159,7 +159,12 @@ export function matches(selector, box, state) {
   if (selector.state && !state?.has(selector.state)) return false;
   return compoundMatches(selector, box) && (!selector.chain || related(selector.chain, 0, box));
 }
-const elementSiblings = box => (box[PARENT]?.children ?? []).filter(child => !child.anonymous && !child.pseudo);
+// Tags left out of the sibling lists while `ignoringSiblings` runs (F33: would the selector match without them?).
+let skippedTags = null;
+/** Runs fn with siblings of these tags left out of :nth-child / :first-child / :last-child / + / ~ (a what-if). */
+export function ignoringSiblings(tags, fn) { const before = skippedTags; skippedTags = tags; try { return fn(); } finally { skippedTags = before; } }
+const kept = child => !child.anonymous && !child.pseudo && !skippedTags?.has(child.tag);
+const elementSiblings = box => (box[PARENT]?.children ?? []).filter(kept);
 function related(chain, i, box) {
   if (i >= chain.length) return true;
   const { compound, combinator } = chain[i];
@@ -198,7 +203,7 @@ function siblingsOf(box) {
   const parent = box[PARENT];
   if (!parent) return box.documentRoot ? [box] : null;
   const list = (parent.children ?? []).some(c => c === box || c.path === box.path) ? parent.children : (parent.inline ?? []);
-  return list.filter(child => !child.anonymous && !child.pseudo);
+  return list.filter(kept);
 }
 function structuralMatches(part, box) {
   if (part.name === 'empty') return !box.text && !box.whitespace && !(box.children ?? []).some(c => !c.pseudo) && !(box.inline ?? []).length;

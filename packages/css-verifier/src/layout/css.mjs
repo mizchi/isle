@@ -864,7 +864,7 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   const values = {
     // Media: track/source never render; audio renders only with controls.
     // ::before/::after are inline by default (CSS Pseudo-Elements 4), whatever their element's tag.
-    display: ['before', 'after'].includes(box.pseudo) ? 'inline' : ['track', 'source'].includes(box.tag) || (box.tag === 'audio' && !box.controls) ? 'none' : ['span', 'a', 'strong', 'em', 'b', 'i', 'small', 'output', 'label', 'img', 'picture', 'iframe', 'video', 'audio'].includes(box.tag) ? 'inline' : 'block',
+    display: ['before', 'after'].includes(box.pseudo) ? 'inline' : ['track', 'source', 'template'].includes(box.tag) || (box.tag === 'audio' && !box.controls) ? 'none' : ['span', 'a', 'strong', 'em', 'b', 'i', 'small', 'output', 'label', 'img', 'picture', 'iframe', 'video', 'audio'].includes(box.tag) ? 'inline' : 'block',
     'aspect-ratio': 'auto', 'box-sizing': 'content-box', 'inline-size': 'auto', 'min-inline-size': 'auto', 'max-inline-size': 'none',
     'padding-left': '0', 'padding-right': '0', 'border-left': '0', 'border-right': '0',
     'padding-top': '0', 'padding-bottom': '0', 'border-top': '0', 'border-bottom': '0', 'border-top-color': 'currentcolor', 'border-right-color': 'currentcolor', 'border-bottom-color': 'currentcolor', 'border-left-color': 'currentcolor',
@@ -1083,6 +1083,9 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   // position: fixed is laid out as absolute against the viewport; the engine admits it for the accessibility and
   // integrity checks only (at scroll position 0) and keeps every other proof Unknown.
   if (values.position === 'fixed') { values.position = 'absolute'; values.$fixed = true; }
+  // template { display: none } (UA): its content is a fragment, never rendered; an author display would draw an empty
+  // box (not measured), so it is left Unknown.
+  if (box.tag === 'template' && values.display !== 'none') throw Object.assign(new Error(`${box.label}: display: ${values.display} on a template is not modeled`), { code: 'U_LAYOUT_ELEMENT' });
   // display: contents on a replaced element or form control computes to none (CSS Display Appendix B): it has no
   // children to promote (measured: 0x0 in Chromium, Firefox and WebKit for each of these).
   if (values.display === 'contents' && !box.pseudo && ['img', 'input', 'textarea', 'select', 'video', 'audio', 'iframe', 'canvas', 'progress', 'meter', 'br', 'wbr', 'object', 'embed', 'frame', 'frameset'].includes(box.tag)) { values.display = 'none'; values.$contentsRemoved = true; }
