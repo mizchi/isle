@@ -760,3 +760,14 @@ test('F67: placeholder where no placeholder shows, maxlength on a number input',
   expect(await page.evaluate(() => document.querySelector('.x').value)).toBe('12345');
   expect((analyzeHTML('<html lang="en"><body><input class="x" type="number" aria-label="q" maxlength="2"></body></html>', {name: 'P', css: '', viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_HTML_ATTRIBUTE_NOT_HTML')).toBe(true);
 });
+
+test('F68: input type=hidden is not rendered whatever the author display', async ({page}) => {
+  const html = '<div class="a"></div><input class="x" type="hidden" name="t" value="1">';
+  for (const css of ['', '.x{display:block;inline-size:50px;block-size:20px}', '.x{display:block !important;width:50px;height:20px}']) {
+    await page.setContent(`<!doctype html><html lang="en"><head><style>.a{height:20px}${css}</style></head><body>${html}</body></html>`);
+    expect(await page.evaluate(() => getComputedStyle(document.querySelector('.x')).display), css).toBe('none');
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect(r.status, css).toBe('verified');
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('display')), css).toBe(css !== '');
+  }
+});

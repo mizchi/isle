@@ -322,6 +322,9 @@
 - [x] **F67. 出ない `placeholder`、数の欄の `maxlength`**(`W_HTML_ATTRIBUTE_NOT_HTML`、maxlength は以前 Unknown): placeholder は
   文字の欄・number・textarea にしか出ず、select・checkbox・date・range では何も出ない。maxlength は文字の欄にしか効かず、
   number の欄には何桁でも入る(3 つのブラウザーで測った)。label・最初の option、number には max を勧める。
+- [x] **F68. `input type=hidden` を読む・その display**(`W_LAYOUT_DECLARATION_INERT`、以前はページごと Unknown): hidden の input
+  は UA の display: none !important で、author の display(!important でも)では出ない(3 つのブラウザーで測った)。解析も常に
+  display: none として扱い(フォームの CSRF トークンなどでページが Unknown にならない)、display を書いたら報告する。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

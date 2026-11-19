@@ -745,3 +745,12 @@ test('F67: placeholder on a select, checkbox, date or range, and maxlength on a 
   assert.equal(w('<input class="a" type="number" aria-label="q" placeholder="0">').length, 0);
   assert.ok(!JSON.stringify(run('', '<input class="a" aria-label="q" maxlength="2">').diagnostics).includes('maxlength'));
 });
+
+test('F68: input type=hidden is never rendered (display: none the author cannot override)', () => {
+  const html = '<div class="a"></div><input class="x" type="hidden" name="t" value="1">';
+  assert.equal(run('', html).status, 'verified');
+  const r = run('.x{display:block;inline-size:50px;block-size:20px}', html);
+  assert.equal(r.status, 'verified');
+  const [hit] = codes(r, 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.includes('display'));
+  assert.ok(hit && /hidden/.test(hit.message));
+});

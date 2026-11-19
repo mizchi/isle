@@ -1106,6 +1106,10 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       if (style.$contentsRemoved && !layoutWarnings.some(w => w.code === 'W_LAYOUT_CONTENTS_REMOVED' && w.path === box.path))
       layoutWarnings.push({ code: 'W_LAYOUT_CONTENTS_REMOVED', severity: 'warning', box: box.label, path: box.path, ...(style.$sources?.display ? { css: [{ property: 'display', file: style.$sources.display.file, line: style.$sources.display.line, selector: style.$sources.display.selector }] } : {}),
         message: `${box.label}: display: contents on <${box.tag}> acts as display: none (a replaced element or form control has no children to show in its place), so it is not rendered at all. Use display: block (or inline-block), or put display: contents on a wrapper` });
+      // F68 (emitted with or without emit, as F30: a display: none box is never laid out).
+      if (style.$hiddenInputDisplay && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('display')))
+      layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['display'], ...(style.$sources?.display ? { css: [{ property: 'display', file: style.$sources.display.file, line: style.$sources.display.line, selector: style.$sources.display.selector }] } : {}),
+        message: `${box.label}: display: ${style.$hiddenInputDisplay} has no effect on an input type=hidden (the browser's display: none !important always wins). Use another input type to show a field` });
       if (emit) cssMistakes(box, style, ancestors, inherited, gridItem, r, state);
       if (emit) for (const entry of style.$invalid) invalidSubstitutions.push({ box: box.label, path: box.path, property: entry.property, longhands: entry.longhands, css: { file: entry.file, line: entry.line }, reason: entry.code === 'U_LAYOUT_VARIABLE_CYCLE' ? 'cycle' : 'guaranteed-invalid', message: entry.message, resolution: 'unset', ...ranges(r) });
       if (emit) for (const [condition, compiled] of contexts) if (condition.kind === 'container') {

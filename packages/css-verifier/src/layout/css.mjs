@@ -1279,6 +1279,9 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   const x = values['overflow-x'], y = values['overflow-y'];
   if (!nonscroll(y)) values['overflow-x'] = x === 'visible' ? 'auto' : x === 'clip' ? 'hidden' : x;
   if (!nonscroll(x)) values['overflow-y'] = y === 'visible' ? 'auto' : y === 'clip' ? 'hidden' : y;
+  // F68: input[type=hidden] { display: none !important } (UA): no author display shows it (measured in Chromium, Firefox
+  // and WebKit, even with !important).
+  if (!box.pseudo && box.tag === 'input' && box.inputType === 'hidden') { if (sources.display && values.display !== 'none') values.$hiddenInputDisplay = values.display; values.display = 'none'; }
   // F32: ::before / ::after of an element that renders none (measured in Chromium, Firefox and WebKit: a loaded img, a
   // text input, select, textarea, iframe, video, br, canvas) are not generated whatever their content. (A broken img
   // shows them in Chromium and Firefox, and a checkbox or radio in Chromium and WebKit; those are left as they are.)
