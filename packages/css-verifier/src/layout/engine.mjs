@@ -568,6 +568,12 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         if (['table', 'inline-table'].includes(String(style.display)) || box.tag === 'table') {
           const inert = [];
           if (String(style['table-layout']) === 'fixed' && style.$sources?.['table-layout'] && String(style['inline-size'] ?? 'auto') === 'auto') inert.push(['table-layout', 'table-layout: fixed has no effect on a table of width: auto (the fixed layout needs a width): its columns are sized by their content. Give the table a width']);
+          // F31: overflow: auto or scroll on a table is visible (measured in Chromium, Firefox and WebKit): the table
+          // grows to its content (its width is a minimum) and never scrolls; hidden and clip do clip.
+          const keys = Object.keys(style.$tableOverflow ?? {}), name = keys.length === 2 ? 'overflow' : keys[0];
+          if (keys.length && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(keys[0])))
+            layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: keys, css: at(keys[0]),
+              message: `${box.label}: ${name}: ${style.$tableOverflow[keys[0]]} has no effect on a table (it grows to fit its content and never scrolls). Wrap the table in a div with ${name === 'overflow-y' ? 'overflow-y' : 'overflow-x'}: auto to scroll it`, ...ranges(r) });
           if (String(style['border-collapse']) === 'collapse' && style.$sources?.['border-spacing'] && !/^0(?:px)?(?:\s+0(?:px)?)?$/.test(String(style['border-spacing']))) inert.push(['border-spacing', 'border-spacing has no effect with border-collapse: collapse (the cells share their borders). Use border-collapse: separate for spacing, or remove it']);
           for (const [prop, text] of inert) if (!layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(prop)))
             layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: [prop], css: at(prop), message: `${box.label}: ${text}`, ...ranges(r) });

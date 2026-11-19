@@ -280,3 +280,14 @@ test('F30: display: contents on a replaced element or form control removes it', 
   assert.equal(w('<ul class="x"><li class="a"></li></ul>').length, 0);
   assert.equal(w('<input class="x" aria-label="q">', '.x{display:block;inline-size:100px;block-size:20px}').length, 0);
 });
+
+test('F31: overflow: auto or scroll on a table does nothing (the table grows; wrap it to scroll)', () => {
+  const table = '<table class="t"><tbody><tr><td class="a"></td></tr></tbody></table>';
+  const w = css => codes(run(css, table), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.some(p => p.startsWith('overflow')));
+  const [hit] = w('.t{overflow-x:auto}');
+  assert.ok(hit && /wrap/i.test(hit.message));
+  assert.equal(w('.t{overflow:scroll}').length, 1);
+  assert.equal(w('.t{overflow:hidden}').length, 0);
+  assert.equal(w('.t{display:block;overflow-x:auto}').length, 0);
+  assert.equal(codes(run('.w{overflow-x:auto}', `<div class="w">${table}</div>`), 'W_LAYOUT_DECLARATION_INERT').length, 0);
+});

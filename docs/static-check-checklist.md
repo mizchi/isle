@@ -192,6 +192,9 @@
   video・iframe・canvas・progress・meter・br・audio・object・embed などは、子を代わりに出せないので `display: none` になる
   (CSS Display 付録 B)。解析もそのとおり none として配置する。3 つのブラウザーで 0×0 を測った(button・fieldset・ul・li・
   details・table は子が出るので報告しない)。
+- [x] **F31. 表の `overflow: auto`・`scroll`**(`W_LAYOUT_DECLARATION_INERT`): 表は中身に合わせて広がる(幅は最小値)ので、
+  スクロールしない。3 つのブラウザーで visible と同じ(はみ出しも切られない。hidden・clip は切る)。解析も visible として扱う。
+  スクロールさせるには、表を `overflow-x: auto` の div で包む。片方の軸が hidden・clip の組み合わせは測っていないので今までどおり。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

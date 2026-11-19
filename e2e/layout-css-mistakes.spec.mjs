@@ -313,3 +313,13 @@ test('F30: display: contents on a replaced element or form control removes it', 
     expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: '.x{display:contents}', viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_CONTENTS_REMOVED'), html).toBe(removed);
   }
 });
+
+test('F31: overflow: auto or scroll on a table does not scroll it', async ({page}) => {
+  const table = '<table class="t" style="width:100px"><tbody><tr><td style="padding:0"><div style="width:300px;height:10px"></div></td></tr></tbody></table>';
+  for (const [css, html, inert] of [['.t{overflow:auto}', table, true], ['.t{overflow-x:scroll}', table, true], ['.w{overflow-x:auto;width:100px}', `<div class="w">${table}</div>`, false], ['.t{display:block;overflow-x:auto}', table, false]]) {
+    await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}${css}</style></head><body>${html}</body></html>`);
+    const scrolls = await page.evaluate(() => { const e = document.querySelector('.w') ?? document.querySelector('.t'); e.scrollLeft = 50; return e.scrollLeft > 0; });
+    expect(scrolls, css).toBe(!inert);
+    expect((analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.some(p => p.startsWith('overflow'))), css).toBe(inert);
+  }
+});

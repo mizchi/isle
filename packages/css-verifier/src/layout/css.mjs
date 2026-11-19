@@ -1184,6 +1184,10 @@ export function computeStyle(rules, box, active, inherited = {}, {spend, state, 
   const x = values['overflow-x'], y = values['overflow-y'];
   if (!nonscroll(y)) values['overflow-x'] = x === 'visible' ? 'auto' : x === 'clip' ? 'hidden' : x;
   if (!nonscroll(x)) values['overflow-y'] = y === 'visible' ? 'auto' : y === 'clip' ? 'hidden' : y;
+  // overflow: auto or scroll on a table is used as visible (F31, measured in Chromium, Firefox and WebKit): the table
+  // grows to its content and never scrolls. Mixed with hidden or clip on the other axis (not measured), it is left as is.
+  if (!box.pseudo && (['table', 'inline-table'].includes(values.display) || (box.tag === 'table' && values.display === 'ua')) && ['overflow-x', 'overflow-y'].every(key => ['auto', 'scroll'].includes(String(values[key]))))
+    for (const key of ['overflow-x', 'overflow-y']) { if (sources[key] || sources.overflow) (values.$tableOverflow ??= {})[key] = values[key]; values[key] = 'visible'; }
   // A logical side was taken as ltr; in an rtl box cascade again with the sides flipped.
   if (!rtl && flipped && values.direction === 'rtl') return computeStyle(rules, box, active, inherited, {spend, state, rtl: true});
   return values;
