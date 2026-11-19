@@ -4,7 +4,7 @@ import {analyzeHTML} from '../src/html.mjs';
 import {compileSelector} from '../src/layout/selectors.mjs';
 
 // Structural pseudo-classes: :first-child, :last-child, :only-child, :nth-child(An+B), :nth-last-child, the *-of-type
-// forms and :empty, over the element siblings. A component root's siblings are not known: Unknown there.
+// forms (and of S, F70) and :empty, over the element siblings. A component root's siblings are not known: Unknown there.
 const g = 'display:grid;grid-template-columns:minmax(0,1fr)';
 const analyze = (inner, css) => analyzeHTML(`<html lang="en"><body><main class="page">${inner}</main></body></html>`, {name: 'P', css: `*{box-sizing:border-box;margin:0}html,body,.page{${g}}${css}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
 const heights = (inner, css) => {
@@ -42,6 +42,7 @@ test('a component root\'s siblings are not known', () => {
   const r = analyzeHTML('<div class="c"><div class="k"></div></div>', {name: 'C', css: `*{box-sizing:border-box;margin:0}.c{${g}}.k{height:1px}.c:first-child{padding:4px}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}});
   assert.equal(r.status, 'unknown');
   assert.equal(analyzeHTML('<div class="c"><div class="k"></div></div>', {name: 'C', css: `*{box-sizing:border-box;margin:0}.c{${g}}.k{height:1px}.k:first-child{width:50%}`, viewport: {min: 320, max: 800, height: {min: 600, max: 900}}}).status, 'verified');
-  // of S, and unparsable arguments, are not modeled.
-  assert.equal(analyze(five, '.page>*{height:1px}:nth-child(2 of .i2){height:2px}').status, 'unknown');
+  // of S is read (F70); an unparsable argument is not modeled.
+  assert.equal(analyze(five, '.page>*{height:1px}:nth-child(2 of .i2){height:2px}').status, 'verified');
+  assert.equal(analyze(five, '.page>*{height:1px}:nth-child(foo){height:2px}').status, 'unknown');
 });
