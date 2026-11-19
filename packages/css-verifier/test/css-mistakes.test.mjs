@@ -540,3 +540,15 @@ test('F50: label:required (a tag selector) is reported too', () => {
   const r = run('label:required::after{content:"*"}', '<label class="a">Name</label>');
   assert.equal(codes(r, 'W_CSS_STATE_UNREACHABLE').filter(x => x.state === ':required').length, 1);
 });
+
+test('F51: html and body both with overflow make body a scroll container, so a sticky header stops sticking', () => {
+  const page = css => analyzeHTML('<html lang="en"><body><header class="h"></header><main class="m"></main></body></html>', {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.h{position:sticky;top:0;height:40px}.m{height:2000px}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}, accessibility: true});
+  const w = css => (page(css).layoutWarnings ?? []).filter(x => x.code === 'W_LAYOUT_STICKY_SCROLLER');
+  const [hit] = w('html,body{overflow-x:hidden}');
+  assert.ok(hit && /body/.test(hit.scroller), JSON.stringify(hit));
+  assert.ok(/html/.test(hit.message));
+  assert.equal(w('html{overflow:auto}body{overflow:hidden}').length, 1);
+  assert.equal(w('body{overflow-x:hidden}').length, 0);
+  assert.equal(w('html{overflow-x:hidden}').length, 0);
+  assert.equal(w('html,body{overflow-x:clip}').length, 0);
+});

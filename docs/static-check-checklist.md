@@ -264,6 +264,10 @@
   input・select・textarea に当たる(3 つのブラウザーで測った)。label や div、required を無視する型(range・color・hidden・
   ボタン)に書くと当たらないので報告する(`label:required::after { content: "*" }` の書き間違い)。required を取らない型の
   input と button の :optional は Firefox だけ当たらないので Unknown。
+- [x] **F51. html と body の両方の overflow で止まる sticky**(`W_LAYOUT_STICKY_SCROLLER`): body の overflow は html の overflow が
+  visible のときだけ viewport に移る。`html, body { overflow-x: hidden }` のように両方に書くと、body が内容と同じ高さの
+  スクロール容器になり、sticky の見出しは body に貼り付いてページと一緒に流れる(3 つのブラウザーで、500px 送ると見出しが
+  上に消える。clip はスクロール容器を作らないので貼り付く)。配置が Unknown でも報告する。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

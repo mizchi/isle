@@ -507,6 +507,19 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
     firstPseudoInert(box, style);
+    // F51: body's overflow goes to the viewport only while html's is visible. With overflow on both (overflow-x: hidden on
+    // html and body, the usual guard against a horizontal scrollbar), body is a scroll container of its own that does not
+    // scroll (it is as tall as its content): a sticky box in it sticks to body and scrolls away with the page (measured
+    // in Chromium, Firefox and WebKit; overflow: clip makes no scroll container and keeps it sticking).
+    if (!box.pseudo && style.$sticky && !['left', 'right'].some(side => style[side] !== undefined && style[side] !== 'auto')) {
+      const html = (ancestors ?? []).find(a => a.box?.tag === 'html'), body = (ancestors ?? []).find(a => a.box?.tag === 'body');
+      const scrolls = st => st && !(st['overflow-x'] === 'clip' && st['overflow-y'] === 'visible') && ['overflow-x', 'overflow-y'].some(key => !['visible', 'clip'].includes(String(st[key])));
+      const others = (ancestors ?? []).filter(a => a !== html && a !== body && scrolls(a.style));
+      const still = st => ['overflow-x', 'overflow-y'].every(key => st[key] === 'hidden') || (st['block-size'] === 'auto' && ['none', undefined].includes(st['max-block-size']) && st['overflow-y'] !== 'scroll');
+      if (html && body && !others.length && ['overflow-x', 'overflow-y'].some(key => String(html.style?.[key] ?? 'visible') !== 'visible') && scrolls(body.style) && still(body.style) && !layoutWarnings.some(w => w.code === 'W_LAYOUT_STICKY_SCROLLER' && w.path === box.path))
+        layoutWarnings.push({ code: 'W_LAYOUT_STICKY_SCROLLER', severity: 'warning', box: box.label, path: box.path, scroller: body.box.label,
+          message: `${box.label} is position: sticky, but html and body both set overflow (html: ${html.style['overflow-x']} / ${html.style['overflow-y']}, body: ${body.style['overflow-x']} / ${body.style['overflow-y']}): body's overflow then does not go to the viewport, body becomes a scroll container as tall as the page, and the sticky box sticks to it and scrolls away. Set the overflow on html only, or use overflow-x: clip` });
+    }
     // F44: the cursor shown is that of the element under the pointer; one with pointer-events: none is never hit (and,
     // with no child element that could take pointer-events back, nothing of it is), so its cursor never shows.
     if (!box.pseudo && String(style['pointer-events']) === 'none' && style.$sources?.cursor && !['auto', 'initial', 'unset', 'inherit', 'revert', 'revert-layer'].includes(String(style.cursor)) && !(box.children ?? []).some(c => !c.anonymous) && !(box.inline ?? []).length && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('cursor')))

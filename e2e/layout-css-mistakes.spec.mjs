@@ -551,3 +551,15 @@ test('F50: :required / :optional match form fields only', async ({page}) => {
     if (warn) expect(matched, `${sel} ${html}`).toBe(false); else expect(matched, `${sel} ${html}`).toBe(true);
   }
 });
+
+test('F51: overflow on both html and body stops a sticky header from sticking', async ({page}) => {
+  const html = '<header class="h"></header><main class="m"></main>';
+  for (const css of ['', 'body{overflow-x:hidden}', 'html{overflow-x:hidden}', 'html,body{overflow-x:hidden}', 'html{overflow:auto}body{overflow:hidden}', 'html,body{overflow-x:clip}']) {
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}.h{position:sticky;top:0;height:40px;background:red}.m{height:2000px}${css}</style></head><body>${html}</body></html>`);
+    await page.evaluate(() => window.scrollTo(0, 500)); await page.waitForTimeout(50);
+    const sticks = await page.evaluate(() => Math.round(document.querySelector('.h').getBoundingClientRect().top) === 0);
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.h{position:sticky;top:0;height:40px}.m{height:2000px}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}, accessibility: true});
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_STICKY_SCROLLER'), css || 'none').toBe(!sticks);
+  }
+});
