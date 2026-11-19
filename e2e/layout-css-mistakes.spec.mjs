@@ -503,3 +503,14 @@ test('F46: ::selection ignores box properties (font-size, padding, border, margi
     expect((r.layoutWarnings ?? []).some(w => w.code === 'W_CSS_SELECTION_IGNORED'), d).toBe(ignored);
   }
 });
+
+test('F47: margin, height, display and position in ::placeholder are ignored', async ({page}) => {
+  const field = '<input class="x" placeholder="Search here" aria-label="q">';
+  const base = '.x{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}';
+  for (const [d, ignored] of [['margin:10px', true], ['height:40px', true], ['display:block', true], ['position:absolute', true], ['color:rgb(255,0,0)', false], ['font-size:30px', false]]) {
+    const shot = async css => { await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:10px;font:16px sans-serif}${base}${css}</style></head><body>${field}</body></html>`); await page.waitForTimeout(50); return (await page.screenshot()).toString('base64') + await page.evaluate(() => JSON.stringify(document.querySelector('.x').getBoundingClientRect())); };
+    expect(await shot('.x::placeholder{--z:1}') === await shot(`.x::placeholder{--z:1;${d}}`), d).toBe(ignored);
+    const warned = (analyzeHTML(`<html lang="en"><body>${field}</body></html>`, {name: 'P', css: `${base}.x::placeholder{${d}}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_CSS_PLACEHOLDER_IGNORED');
+    expect(warned, d).toBe(ignored);
+  }
+});

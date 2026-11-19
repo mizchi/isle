@@ -609,7 +609,7 @@ function flexShorthand(value) {
 }
 
 export function parseLayoutCSS(sheets, diagnostic) {
-  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], userSelectNone = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
+  const duplicateDeclarations = [], noDurationTransitions = [], dependentDeclarations = [], visitedIgnored = [], markerIgnored = [], markerSizing = [], firstPseudo = [], selectionIgnored = [], placeholderIgnored = [], userSelectNone = [], rules = [], layers = [], keyframes = new Set(), keyframeFrames = new Map(), fontFaces = [], transitionNotes = [], keyframeImportant = [], importIgnored = [], registered = new Map(), defaultNamespace = [], startingRules = [];
   const layerIndex = name => { if (!layers.includes(name)) layers.push(name); return layers.indexOf(name); };
   let count = 0, scope = null;
   const visit = (nodes, contexts, layer, filename, depth = 0, preferences = []) => {
@@ -804,6 +804,10 @@ export function parseLayoutCSS(sheets, diagnostic) {
         firstPseudo.push({ selectors, selector: node.selector, file: filename, line: node.source.start.line });
         continue;
       }
+      // F47: in ::placeholder, margin, height, display and position are ignored by Chromium, Firefox and WebKit (measured
+      // against a ::placeholder rule without them: same pixels, same field size) — reported and dropped.
+      if (selectors.length && selectors.every(sel => sel.pseudoElement === 'placeholder'))
+        for (const d of [...(node.nodes ?? [])]) if (d.type === 'decl' && /^(?:margin(?:-(?:top|right|bottom|left))?|height|display|position)$/i.test(d.prop)) { placeholderIgnored.push({ selector: node.selector, property: d.prop.toLowerCase(), file: filename, line: d.source.start.line }); d.remove(); }
       // Checklist F6: one property declared twice in a rule — the earlier declaration never applies (the later wins, or
       // the !important one). A later value the browser may not support (a newer function, unit or keyword, or a
       // vendor-prefixed one) is the progressive-enhancement fallback pattern and is left alone.
@@ -897,7 +901,7 @@ export function parseLayoutCSS(sheets, diagnostic) {
     if (!missingKeyframes.some(m => m.name === name && m.line === declaration.line && m.file === declaration.file)) missingKeyframes.push({ name, file: declaration.file, line: declaration.line, selector: rule.selectors?.[0]?.source });
     return 'none';
   }).join(', ');
-  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, firstPseudo, selectionIgnored, userSelectNone, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
+  return { rules, layers, keyframes, missingKeyframes, duplicateDeclarations, noDurationTransitions, dependentDeclarations, visitedIgnored, markerIgnored, markerSizing, firstPseudo, selectionIgnored, placeholderIgnored, userSelectNone, keyframeFrames, fontFaces, transitionNotes, keyframeImportant, importIgnored, registered, defaultNamespace, startingRules };
 }
 
 // The UA default family and the user's default font size are not author

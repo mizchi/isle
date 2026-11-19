@@ -484,3 +484,13 @@ test('F46: ::selection is read (it styles only the selected text, not the layout
   assert.equal(w('.a::selection{color:red;background-color:#ff0}').length, 0);
   assert.equal(run('.a::selection{margin:10px}').status, 'verified');
 });
+
+test('F47: margin, height, display and position in ::placeholder are ignored', () => {
+  const field = '<input class="x" placeholder="Search" aria-label="q">';
+  const base = '.x{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}';
+  const w = css => codes(run(base + css, field), 'W_CSS_PLACEHOLDER_IGNORED');
+  assert.deepEqual(w('.x::placeholder{margin:10px;height:40px;color:#555}').map(x => x.property).sort(), ['height', 'margin']);
+  assert.ok(/::placeholder/.test(w('.x::placeholder{display:block}')[0]?.message));
+  assert.equal(w('.x::placeholder{position:absolute}').length, 1);
+  assert.equal(w('.x::placeholder{color:#555;font-size:14px}').length, 0);
+});

@@ -249,6 +249,9 @@
   塗るだけで、配置を変えない(利用者の操作で、解析する状態ではない)ので、カスケードから外して読む。その中の font-size・
   font-weight・letter-spacing・opacity・padding・border・margin・outline は 3 つのブラウザーで何も変えないので報告する
   (測るとき、WebKit は ::selection の規則があるだけで選択の塗りが変わるので、性質のない ::selection の規則と比べた)。
+- [x] **F47. `::placeholder` の効かない宣言**(`W_CSS_PLACEHOLDER_IGNORED`): 入力欄の中に描く placeholder には margin・height・
+  display・position が効かない(3 つのブラウザーで、性質のない ::placeholder の規則と比べて画素も欄の大きさも同じ)。
+  padding・border・width はブラウザーで違う(Chromium・WebKit は padding を描く)ので報告しない。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

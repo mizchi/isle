@@ -66,6 +66,7 @@ export const recommended = {
   W_CSS_CHILD_INDEX_HIDDEN_SIBLING: ['warning', 'use :first-of-type / :last-of-type / :nth-of-type, or move the template or script out of the list'],
   W_LAYOUT_AUTO_MARGIN_ABSOLUTE: ['warning', 'set both insets (inset: 0) and a size for margin: auto to centre the box'],
   W_CSS_SELECTION_IGNORED: ['warning', '::selection takes only paint (color, background-color, text-decoration, text-shadow): remove the box properties'],
+  W_CSS_PLACEHOLDER_IGNORED: ['warning', 'style the field itself: ::placeholder ignores margin, height, display and position'],
   W_CSS_EMPTY_WHITESPACE: ['warning', 'remove the whitespace in the element, or use :not(:has(*))'],
   W_CSS_MEDIA_NEVER: ['warning', 'check the order of the bounds: min-width below max-width'],
   W_LAYOUT_SCROLLBAR_SHIFT: ['warning', 'keep the scrollbar gutter with html { scrollbar-gutter: stable }'],
