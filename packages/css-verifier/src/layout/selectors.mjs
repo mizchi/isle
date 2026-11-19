@@ -58,6 +58,9 @@ function compileCompound(source, depth = 0) {
     // taken as unvisited, so :link is :any-link; a :link rule that changes the layout is kept Unknown (parseLayoutCSS).
     // :placeholder-shown: a text field or textarea with a placeholder attribute (an empty one too) and no value, in the
     // initial state (typing hides it: a :placeholder-shown rule that changes the layout is kept Unknown, parseLayoutCSS).
+    // :required / :optional (measured in Chromium, Firefox and WebKit): see requiredMatches.
+    const req = rest.match(/^:(required|optional)(?![\w-])/i);
+    if (req) { parts.push({ kind: 'required', value: req[1].toLowerCase() === 'required' }); specificity[1]++; rest = rest.slice(req[0].length); continue; }
     const shown = rest.match(/^:placeholder-shown(?![\w-])/i);
     if (shown) { parts.push({ kind: 'placeholder-shown' }); specificity[1]++; rest = rest.slice(shown[0].length); continue; }
     const link = rest.match(/^:(any-link|link)(?![\w-])/i);
@@ -191,13 +194,31 @@ export const placeholderField = box => box.tag === 'textarea' || (box.tag === 'i
 // The initial value is empty: an input with no value (or value=""), a textarea with no text (its one leading newline is
 // dropped by the parser; any other whitespace is a value, and is told apart by the engine).
 export const placeholderShown = box => placeholderField(box) && box.placeholderAttr === true && (box.tag === 'input' ? (box.value === undefined || box.value === '') : !box.text && !box.whitespace && !box.textContent && !(box.inline ?? []).length);
+// :required holds for a select, a textarea or an input of a type that takes required, with the attribute (readonly and
+// disabled ones too). :optional holds for the other inputs, selects and textareas — except that on an input of a type
+// that ignores required (hidden, range, color and the buttons) and on a button Firefox does not match it and Chromium and
+// WebKit do: those are 'divergent', matched only while the engine asks what would match there (optionalDivergence).
+const requiredBarred = new Set(['hidden', 'range', 'color', 'submit', 'reset', 'button', 'image']);
+export const requiredCapable = box => ['select', 'textarea'].includes(box.tag) || (box.tag === 'input' && !requiredBarred.has(box.inputType));
+export const optionalDivergent = box => box.tag === 'button' || (box.tag === 'input' && requiredBarred.has(box.inputType));
+let divergentOptional = false;
+export function optionalDivergence(fn) { const before = divergentOptional; divergentOptional = true; try { return fn(); } finally { divergentOptional = before; } }
+// What would match were the box a form field (required or not as asked): the engine's F50 what-if, keeping tag selectors.
+let fieldWhatIf = false;
+export function asFormField(fn) { const before = fieldWhatIf; fieldWhatIf = true; try { return fn(); } finally { fieldWhatIf = before; } }
+function requiredMatches(box, required) {
+  if (fieldWhatIf) return true;
+  if (required) return requiredCapable(box) && box.nativeStates?.required === true;
+  if (optionalDivergent(box)) return divergentOptional;
+  return requiredCapable(box) && box.nativeStates?.required !== true;
+}
 export const isLink = box => (box.tag === 'a' && box.href !== undefined) || (box.tag === 'area' && (box.href !== undefined || box.attributes?.href !== undefined));
 /** The compound (tag, classes, id, :root, :is/:where) alone, ignoring states, pseudo-elements and combinators. */
 export function compoundMatches(selector, box) {
   if (box.anonymous) return false;
   return selector.parts.every(part => part.kind === 'tag' ? part.value === '*' || box.tag === part.value :
     part.kind === 'class' ? box.classes.includes(part.value) : part.kind === 'id' ? box.id === part.value :
-    part.kind === 'root' ? box.documentRoot === true : part.kind === 'link' ? isLink(box) : part.kind === 'placeholder-shown' ? placeholderShown(box) : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
+    part.kind === 'root' ? box.documentRoot === true : part.kind === 'link' ? isLink(box) : part.kind === 'placeholder-shown' ? placeholderShown(box) : part.kind === 'required' ? requiredMatches(box, part.value) : part.kind === 'disabled' ? ['button', 'input', 'select', 'textarea', 'fieldset', 'option', 'optgroup'].includes(box.tag) && (box.disabled === true) === part.value : part.kind === 'path' ? box.path === part.value :
     part.kind === 'attribute' ? attributeMatches(part, box) : part.kind === 'structural' ? structuralMatches(part, box) : part.kind === 'has' ? hasMatches(part, box) : part.kind === 'not' ? !part.choices.some(choice => matches(choice, box)) :
     part.choices.some(choice => matches(choice, box)));
 }

@@ -538,3 +538,16 @@ test('F49: :placeholder-shown needs a placeholder attribute', async ({page}) => 
     expect(r.diagnostics.some(d => /Unsupported selector/.test(d.message)), html).toBe(false);
   }
 });
+
+test('F50: :required / :optional match form fields only', async ({page}) => {
+  const base = '.x{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}';
+  for (const [sel, html, warn] of [['label:required', '<label class="x">Name</label>', true], ['.x:required', '<input class="x" type="range" aria-label="q" required>', true], ['.x:required', '<input class="x" type="color" aria-label="q" required>', true],
+    ['.x:required', '<input class="x" aria-label="q" required>', false], ['.x:optional', '<input class="x" aria-label="q">', false], ['.x:required', '<select class="x" aria-label="q" required><option>a</option></select>', false], ['.x:optional', '<div class="x"></div>', true]]) {
+    await page.setContent(`<!doctype html><html lang="en"><body>${html}</body></html>`);
+    const matched = await page.evaluate(s => document.querySelector('.x').matches(s), sel);
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${base}${sel}{border-color:red}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    const warned = (r.layoutWarnings ?? []).some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && /^:(?:required|optional)$/.test(w.state ?? ''));
+    expect(warned, `${sel} ${html}`).toBe(warn);
+    if (warn) expect(matched, `${sel} ${html}`).toBe(false); else expect(matched, `${sel} ${html}`).toBe(true);
+  }
+});

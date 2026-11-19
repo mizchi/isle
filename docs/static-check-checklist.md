@@ -259,6 +259,11 @@
   (text・search・url・tel・email・password・number)と textarea で、placeholder 属性があり(空でも)、値が空のときに当たる
   (3 つのブラウザーで測った)。属性のない欄では当たらない(浮く label の作り方で placeholder=" " を忘れる)ので報告する。
   入力すると外れるので、配置を変える規則は Unknown。値が分からないとき(動的な value、空白だけの textarea)も Unknown。
+- [x] **F50. `:required`・`:optional` を読む・フォームの欄でない要素**(`W_CSS_STATE_UNREACHABLE`、以前は Unknown): :required は
+  required 属性のある select・textarea・input(required を取る型。readonly・disabled でも)に、:optional はそれ以外の
+  input・select・textarea に当たる(3 つのブラウザーで測った)。label や div、required を無視する型(range・color・hidden・
+  ボタン)に書くと当たらないので報告する(`label:required::after { content: "*" }` の書き間違い)。required を取らない型の
+  input と button の :optional は Firefox だけ当たらないので Unknown。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

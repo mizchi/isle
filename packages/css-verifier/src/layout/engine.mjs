@@ -5,7 +5,7 @@ import { parseLayoutCSS, computeStyle, matches, px, setRootFontSize, setSafeArea
 import { resolveUAProfile } from './ua-profile.mjs';
 import { parseCondition } from './conditions.mjs';
 import { tracks, tracks as gridTracks, place, parseAreas, expandTracks } from './grid.mjs';
-import { compileSelector, PARENT, dynamicAttributeTests, ignoringSiblings, placeholderField } from './selectors.mjs';
+import { compileSelector, PARENT, dynamicAttributeTests, ignoringSiblings, placeholderField, requiredCapable, optionalDivergent, optionalDivergence, asFormField } from './selectors.mjs';
 import { selectorUsage } from './selector-usage.mjs';
 import { selectorScope } from './selector-scope.mjs';
 import { viewportFont, zoomShortfall } from './zoom-font.mjs';
@@ -638,12 +638,27 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
           layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: keys, ...(src ? { css: [{ property: keys[0], file: src.file, line: src.line, selector: src.selector }] } : {}),
             message: `${box.label}: ${style.$multicolInert.map(([key, value]) => `${key}: ${value}`).join(', ')} has no effect (it is display: ${style.display}; multi-column layout applies only to a block container). Use grid-template-columns (or flex-wrap with a flex-basis) for columns, or display: block for flowing columns` });
         }
+        // F50: :required / :optional on what is not a form field (a label, a div) or on an input type that ignores required
+        // never apply; :optional where browsers differ (Firefox) is Unknown.
+        if (!box.pseudo) for (const rule of rules) for (const sel of rule.selectors ?? []) {
+          const name = JSON.stringify([sel.parts, sel.chain ?? []]).match(/"kind":"required","value":(true|false)/)?.[1];
+          const st = sel.pseudoElement ? new Set([...(state ?? []), `::${sel.pseudoElement}`]) : state;
+          if (!name || matches(sel, box, st)) continue;
+          if (optionalDivergent(box) && optionalDivergence(() => matches(sel, box, st))) { unknown('U_LAYOUT_SELECTOR', `${sel.source}: browsers differ on whether :optional matches ${box.label} (Firefox does not on a ${box.tag === 'button' ? 'button' : `type=${box.inputType} input`})`, rule.line, box, rule.file); continue; }
+          const required = name === 'true';
+          if (requiredCapable(box) && !(required && box.nativeStates?.required === true)) continue; // a field that may simply not be required
+          if (!asFormField(() => matches(sel, box, st)) || layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source)) continue;
+          const pc = required ? ':required' : ':optional';
+          layoutWarnings.push({ code: 'W_CSS_STATE_UNREACHABLE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, state: pc, css: [{ property: pc, file: rule.file, line: rule.line, selector: sel.source }],
+            message: `${sel.source} never applies to ${box.label}: ${pc} matches only a form field (input, select, textarea)${box.tag === 'input' ? `, and a type=${box.inputType} input ignores required` : `, not a <${box.tag}>`}. ${box.tag === 'label' ? 'Select the label from the field (input:required + label) or with a class' : 'Select it with a class'}` });
+        }
         // F49: :placeholder-shown on a field with no placeholder attribute never applies; where the value is not known (a
         // dynamic value, a textarea holding whitespace) whether it applies is Unknown.
         if (!box.pseudo && placeholderField(box)) for (const rule of rules) for (const sel of rule.selectors ?? []) {
           if (!JSON.stringify([sel.parts, sel.chain ?? []]).includes('"kind":"placeholder-shown"')) continue;
           const empty = { ...box, placeholderAttr: true, value: undefined, text: false, whitespace: false, textContent: undefined, inline: [] };
-          if (matches(sel, box, state) || !matches(sel, empty, state)) continue;
+          const st = sel.pseudoElement ? new Set([...(state ?? []), `::${sel.pseudoElement}`]) : state;
+          if (matches(sel, box, st) || !matches(sel, empty, st)) continue;
           if (box.placeholderAttr && (box.value === 'dynamic' || (box.tag === 'textarea' && box.whitespace))) { unknown('U_LAYOUT_SELECTOR', `${sel.source}: whether ${box.label} shows its placeholder depends on its value, which is not known`, rule.line, box, rule.file); continue; }
           if (box.placeholderAttr || layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source)) continue;
           layoutWarnings.push({ code: 'W_CSS_STATE_UNREACHABLE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, state: ':placeholder-shown', css: [{ property: ':placeholder-shown', file: rule.file, line: rule.line, selector: sel.source }],
@@ -653,7 +668,8 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
         // were it a link, but never applies.
         if (!box.pseudo && !((box.tag === 'a' && box.href !== undefined) || box.tag === 'area')) for (const rule of rules) for (const sel of rule.selectors ?? []) {
           const name = JSON.stringify([sel.parts, sel.chain ?? []]).match(/"kind":"link","name":"([a-z-]+)"/)?.[1];
-          if (!name || matches(sel, box, state) || !matches(sel, { ...box, tag: 'a', href: '#' }, state) || layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source)) continue;
+          const st = sel.pseudoElement ? new Set([...(state ?? []), `::${sel.pseudoElement}`]) : state;
+          if (!name || matches(sel, box, st) || !matches(sel, { ...box, tag: 'a', href: '#' }, st) || layoutWarnings.some(w => w.code === 'W_CSS_STATE_UNREACHABLE' && w.path === box.path && w.selector === sel.source)) continue;
           layoutWarnings.push({ code: 'W_CSS_STATE_UNREACHABLE', severity: 'warning', box: box.label, path: box.path, selector: sel.source, state: `:${name}`, css: [{ property: `:${name}`, file: rule.file, line: rule.line, selector: sel.source }],
             message: `${sel.source} never applies to ${box.label}: ${box.tag === 'a' ? 'an <a> without href' : `a <${box.tag}>`} is not a link, so :${name} does not match it. ${box.tag === 'a' ? 'Give it an href (or use a button for an action)' : 'Select it with its class'}` });
         }

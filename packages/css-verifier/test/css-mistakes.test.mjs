@@ -521,3 +521,22 @@ test('F49: :placeholder-shown needs a placeholder attribute (and an empty value)
   // Typing hides the placeholder: a layout change in :placeholder-shown depends on what the user types.
   assert.equal(run(base + '.x:placeholder-shown{padding:4px}', field('placeholder="Search"')).status, 'unknown');
 });
+
+test('F50: :required / :optional match form fields; on anything else they never apply', () => {
+  const base = '.x{display:block;inline-size:200px;block-size:30px;box-sizing:border-box;appearance:none;padding:0;border:0;min-inline-size:0;min-block-size:0}';
+  assert.equal(run(base + '.x:required{border-color:red}', '<input class="x" aria-label="q" required>').status, 'verified');
+  assert.equal(run(base + '.x:optional{border-color:red}', '<input class="x" aria-label="q">').status, 'verified');
+  const w = (css, html) => codes(run(base + css, html), 'W_CSS_STATE_UNREACHABLE').filter(x => /^:(?:required|optional)$/.test(x.state ?? ''));
+  const [hit] = w('.x:required::after{content:"*"}', '<label class="x">Name</label>');
+  assert.ok(hit && /form field/.test(hit.message));
+  assert.equal(w('.x:required{color:red}', '<input class="x" type="range" aria-label="q" required>').length, 1);
+  assert.equal(w('.x:required{color:red}', '<input class="x" aria-label="q" required>').length, 0);
+  assert.equal(w('.x:required{color:red}', '<input class="x" aria-label="q">').length, 0);
+  // Firefox does not match :optional on a range input or a button (Chromium and WebKit do): Unknown there.
+  assert.equal(run(base + '.x:optional{border-color:red}', '<input class="x" type="range" aria-label="q">').status, 'unknown');
+});
+
+test('F50: label:required (a tag selector) is reported too', () => {
+  const r = run('label:required::after{content:"*"}', '<label class="a">Name</label>');
+  assert.equal(codes(r, 'W_CSS_STATE_UNREACHABLE').filter(x => x.state === ':required').length, 1);
+});
