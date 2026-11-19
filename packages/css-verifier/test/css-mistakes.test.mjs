@@ -453,3 +453,13 @@ test('F43: min-height / max-height on a table cell do nothing; min-width / max-w
   assert.equal(w('.t{table-layout:fixed;width:300px}.c{max-width:60px}').length, 1);
   assert.equal(w('.c{max-width:60px}').length, 0);
 });
+
+test('F44: cursor on an element with pointer-events: none never shows', () => {
+  const w = (css, html = '<div class="x a"></div>') => codes(run(css, html), 'W_LAYOUT_DECLARATION_INERT').filter(x => x.properties.includes('cursor'));
+  const [hit] = w('.x{pointer-events:none;cursor:pointer}');
+  assert.ok(hit && /pointer-events: none/.test(hit.message));
+  assert.equal(w('.p{pointer-events:none}.x{cursor:not-allowed}', '<div class="p"><div class="x a"></div></div>').length, 1);
+  assert.equal(w('.x{cursor:pointer}').length, 0);
+  assert.equal(w('.x{pointer-events:none;cursor:pointer}', '<div class="x"><div class="a"></div></div>').length, 0);
+  assert.equal(w('.x{pointer-events:none;cursor:auto}').length, 0);
+});

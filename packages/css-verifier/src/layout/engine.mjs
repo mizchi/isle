@@ -493,6 +493,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
   }
   function cssMistakes(box, style, ancestors, inherited, gridItem, r, state) {
     firstPseudoInert(box, style);
+    // F44: the cursor shown is that of the element under the pointer; one with pointer-events: none is never hit (and,
+    // with no child element that could take pointer-events back, nothing of it is), so its cursor never shows.
+    if (!box.pseudo && String(style['pointer-events']) === 'none' && style.$sources?.cursor && !['auto', 'initial', 'unset', 'inherit', 'revert', 'revert-layer'].includes(String(style.cursor)) && !(box.children ?? []).some(c => !c.anonymous) && !(box.inline ?? []).length && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes('cursor')))
+      layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: ['cursor'], css: [{ property: 'cursor', file: style.$sources.cursor.file, line: style.$sources.cursor.line, selector: style.$sources.cursor.selector }],
+        message: `${box.label}: cursor: ${style.cursor} never shows: the element is pointer-events: none${style.$sources?.['pointer-events'] ? '' : ' (inherited)'}, so the pointer passes through it and shows the cursor of what is beneath. Remove pointer-events: none, or put the cursor on the element that takes the pointer` });
     // F43: min-width / max-width on a cell of a fixed table (table-layout: fixed with a width) do nothing (measured in
     // three browsers): the first row's widths size the columns. Reported; the layout stays Unknown there.
     if (!box.pseudo && ['td', 'th'].includes(box.tag)) {

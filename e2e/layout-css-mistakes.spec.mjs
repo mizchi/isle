@@ -470,3 +470,12 @@ test('F43: min-height / max-height on a table cell, and min-width / max-width in
     expect(warned, `${layout} ${d}`).toBe(inert);
   }
 });
+
+test('F44: an element with pointer-events: none is never under the pointer, so its cursor never shows', async ({page}) => {
+  for (const [css, html] of [['.x{pointer-events:none;cursor:pointer}', '<div class="x a"></div>'], ['.p{pointer-events:none}.x{cursor:not-allowed}', '<div class="p"><div class="x a"></div></div>'], ['.x{cursor:pointer}', '<div class="x a"></div>']]) {
+    await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}.a{height:20px}${css}</style></head><body>${html}</body></html>`);
+    const hit = await page.evaluate(() => { const r = document.querySelector('.x').getBoundingClientRect(); return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)?.classList.contains('x') ?? false; });
+    const warned = (analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('cursor'));
+    expect(warned, css).toBe(!hit);
+  }
+});
