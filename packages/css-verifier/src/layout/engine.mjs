@@ -3148,6 +3148,21 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
       };
       for (const state of styles(box, region, parents, inherited, emit, !available.root).flatMap(tableStates)) {
         let { style } = state;
+        // F55: a percentage top / bottom of a relative box refers to its containing block's height; in a block-flow parent
+        // of auto height that is not definite, so it is auto: the box does not move (measured in Chromium, Firefox and
+        // WebKit; a grid area resolves it, differently in WebKit, so only block flow).
+        // The parent's auto height is indefinite only where the parent is itself in block flow (a stretched grid or flex
+        // item has a definite height, against which Chromium and Firefox resolve the percentage: measured).
+        const grand = parents.at(-2), parentInBlockFlow = !!grand && (grand.style?.$blockFlow || (grand.style?.display === 'block' && !grand.box?.text)) && !['absolute', 'fixed'].includes(String(parents.at(-1)?.style?.position)) && !parents.at(-1)?.style?.$fixed;
+        if (inherited?.$blockFlow && parentInBlockFlow && !available.root && style.position === 'relative' && String(inherited['block-size'] ?? 'auto') === 'auto') {
+          const pct = ['top', 'bottom'].filter(key => /%$/.test(String(style[key] ?? '')));
+          if (pct.length) {
+            if (emit && !box.pseudo && !layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.path === box.path && w.properties.includes(pct[0])))
+              layoutWarnings.push({ code: 'W_LAYOUT_DECLARATION_INERT', severity: 'warning', box: box.label, path: box.path, properties: pct, css: pct.filter(key => style.$sources?.[key]).map(key => ({ property: key, file: style.$sources[key].file, line: style.$sources[key].line, selector: style.$sources[key].selector })),
+                message: `${box.label}: ${pct.map(key => `${key}: ${style[key]}`).join(', ')} does nothing: a percentage ${pct.length === 1 ? pct[0] : 'top / bottom'} refers to the containing block's height, and its parent has no height (auto), so it is treated as auto. Give the parent a height, or use transform: translateY(${style[pct[0]]}) (a percentage of the box itself)` });
+            style = { ...style, ...Object.fromEntries(pct.map(key => [key, 'auto'])) };
+          }
+        }
         // F53: an in-flow child of a block-flow parent has auto margin-top / margin-bottom of 0 (see the collect step).
         if (inherited?.$blockFlow && !available.root && !['absolute', 'fixed'].includes(style.position) && !style.$fixed && ['margin-top', 'margin-bottom'].some(key => String(style[key]) === 'auto'))
           style = { ...style, ...Object.fromEntries(['margin-top', 'margin-bottom'].filter(key => String(style[key]) === 'auto').map(key => [key, '0'])) };

@@ -277,6 +277,10 @@
 - [x] **F54. flex・grid の項目の `clear`**(`W_LAYOUT_DECLARATION_INERT`、以前は Unknown): 項目には float が効かないので、
   clear で避けるものがない(3 つのブラウザーで、横に float があってもなくても配置が同じ)。捨てて配置する。ブロックの流れの
   clear は float を解析しないので今までどおり Unknown。
+- [x] **F55. 高さのない親の中の relative の `top`・`bottom` の %**(`W_LAYOUT_DECLARATION_INERT`、以前は Unknown): % は包含ブロックの
+  高さに対する値で、ブロックの流れの中の高さ auto の親では決まらないので auto になり、箱は動かない(3 つのブラウザーで同じ)。
+  解析も auto として配置し、位置がブラウザーと同じことを確かめた。親が伸びる grid・flex の項目なら高さが決まり、Chromium・
+  Firefox は % を解く(WebKit は解かない)ので、親自身がブロックの流れの中にあるときだけ扱う。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

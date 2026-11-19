@@ -588,3 +588,17 @@ test('F54: clear on a flex or grid item does nothing', () => {
   assert.equal(run('.p{display:block}.x{clear:both;height:20px}', html).status, 'unknown');
   assert.equal(run('.p{display:flex}.x{clear:none;height:20px;width:20px}', html).status, 'verified');
 });
+
+test('F55: a percentage top / bottom on a relative box in an auto-height block does nothing', () => {
+  // .g is display: block, so .p is in block flow and its auto height is indefinite (a grid item's would be definite).
+  const html = '<div class="g"><div class="p"><div class="s"></div><div class="c"></div></div></div>';
+  const r = run('.g,.p{display:block}.s{height:30px}.c{position:relative;top:50%;height:20px}', html);
+  assert.equal(r.status, 'verified');
+  const [hit] = codes(r, 'W_LAYOUT_DECLARATION_INERT').filter(w => w.properties.includes('top'));
+  assert.ok(hit && /height/.test(hit.message));
+  assert.equal(Number(r.sizes.find(s => s.box === '.c').rect.blockStart.constant), 30);
+  assert.equal(run('.g,.p{display:block}.p{height:200px}.s{height:30px}.c{position:relative;top:50%;height:20px}', html).status, 'unknown');
+  assert.equal(codes(run('.g,.p{display:block}.s{height:30px}.c{position:relative;top:5px;height:20px}', html), 'W_LAYOUT_DECLARATION_INERT').length, 0);
+  // .p a stretched grid item (its parent is a grid): its height is definite, so the percentage resolves — not judged.
+  assert.equal(codes(run('.p{display:block}.s{height:30px}.c{position:relative;top:50%;height:20px}', '<div class="p"><div class="s"></div><div class="c"></div></div>'), 'W_LAYOUT_DECLARATION_INERT').length, 0);
+});

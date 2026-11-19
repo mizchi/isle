@@ -601,3 +601,23 @@ test('F54: clear on a flex or grid item does nothing', async ({page}) => {
     expect(r.diagnostics.some(d => /clear/.test(d.message)), parent).toBe(false);
   }
 });
+
+test('F55: a percentage top / bottom of a relative box in an auto-height block does not move it', async ({page}) => {
+  const html = '<div class="g"><div class="p"><div class="s"></div><div class="c"></div><div class="n"></div></div></div>';
+  for (const c of ['top:50%', 'bottom:20%', 'top:-30%']) {
+    const css = `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.g,.p{display:block}.s{height:30px}.c{position:relative;height:20px;${c}}.n{height:10px}`;
+    await page.setViewportSize({width: 400, height: 300});
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const browser = await page.evaluate(() => ['.c', '.n'].map(s => document.querySelector(s).getBoundingClientRect().y));
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+    expect(r.status, c).toBe('verified');
+    expect(['.c', '.n'].map(sel => Number(r.sizes.find(s => s.box === sel).rect.blockStart.constant)), c).toEqual(browser);
+    expect(r.layoutWarnings.some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.some(p => p === 'top' || p === 'bottom')), c).toBe(true);
+  }
+  // .p a stretched grid item (body is a grid): Chromium and Firefox resolve the percentage there; not reported.
+  const gridHtml = '<div class="p"><div class="s"></div><div class="c"></div></div>';
+  const gridCss = '*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.p{display:block}.s{height:30px}.c{position:relative;height:20px;top:50%}';
+  const r = analyzeHTML(`<html lang="en"><body>${gridHtml}</body></html>`, {name: 'P', css: gridCss, viewport: {min: 400, max: 400, height: {min: 300, max: 300}}});
+  expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_DECLARATION_INERT' && w.properties.includes('top'))).toBe(false);
+  expect(r.status).toBe('unknown');
+});
