@@ -3768,6 +3768,11 @@ export function analyzeBoxTree(root, options, scrollbarProfile, budget, inlineSh
                         const theirs = outward(edge.box, edge.style, childOf, side, 1);
                         if (theirs === null) return;
                         if (cmp(theirs, zero) <= 0) continue;
+                        // F73: the grandchild's margin goes out through the child, so with a background on the child the space
+                        // shows above (below) the background, not inside it (CSS 2.2 §8.3.1; measured in three browsers).
+                        if (!['transparent', 'rgba(0,0,0,0)', 'ua', undefined, 'none'].includes(String(child.style['background-color'])) && !child.box.pseudo && !layoutWarnings.some(w => w.code === 'W_LAYOUT_MARGIN_COLLAPSE_THROUGH' && w.path === child.box.path && w.side === side))
+                          layoutWarnings.push({ code: 'W_LAYOUT_MARGIN_COLLAPSE_THROUGH', severity: 'warning', box: child.box.label, path: child.box.path, side,
+                            message: `${child.box.label}: the margin-${side} of ${edge.box.label} (${number(theirs)}px) collapses through it — it has no padding-${side} or border-${side} — so the space shows ${side === 'top' ? 'above' : 'below'} ${child.box.label}'s background, not inside it. Give ${child.box.label} a padding-${side} (or display: flow-root), or use padding on ${edge.box.label}` });
                         const total = cmp(theirs, mv(child, side)) > 0 ? theirs : mv(child, side);
                         updates[`margin-${side}`] = cmp(total, zero) === 0 ? '0' : `${number(total)}px`; updates[side === 'top' ? '$collapsedTop' : '$collapsedBottom'] = true;
                       }

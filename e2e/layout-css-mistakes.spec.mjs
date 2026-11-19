@@ -829,3 +829,15 @@ test('F72: a negative z-index with no stacking context above puts the box behind
     expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_NEGATIVE_Z_BEHIND'), css || 'none').toBe(behind);
   }
 });
+
+test('F73: a first child margin collapsing through a parent with a background', async ({page}) => {
+  const html = '<div class="w"><div class="card"><div class="t"></div></div></div>';
+  for (const [css, warn] of [['.card{background:#eee}', true], ['.card{background:#eee;padding-top:1px}', false], ['.card{background:#eee;display:flow-root}', false], ['', false]]) {
+    const sheet = `.w{display:block}.t{height:20px;margin-top:20px}${css}`;
+    await page.setContent(`<!doctype html><html lang="en"><head><style>body{margin:0}${sheet}</style></head><body>${html}</body></html>`);
+    const through = await page.evaluate(() => document.querySelector('.card').getBoundingClientRect().y === document.querySelector('.t').getBoundingClientRect().y);
+    if (warn) expect(through, css).toBe(true);
+    const r = analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}${sheet}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}});
+    expect((r.layoutWarnings ?? []).some(w => w.code === 'W_LAYOUT_MARGIN_COLLAPSE_THROUGH'), css || 'none').toBe(warn);
+  }
+});

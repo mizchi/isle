@@ -805,3 +805,14 @@ test('F72: z-index below 0 with no stacking context above puts the box behind it
   assert.equal(w('.p{filter:blur(1px)}').length, 0);
   assert.equal(codes(run('.c{position:relative;z-index:1;height:20px}', html), 'W_LAYOUT_NEGATIVE_Z_BEHIND').length, 0);
 });
+
+test('F73: a first child\'s margin-top that collapses through a parent with a background shows outside it', () => {
+  const html = '<div class="w"><div class="card"><div class="t"></div></div></div>';
+  const base = '.w{display:block}.t{height:20px;margin-top:20px}';
+  const w = css => codes(run(base + css, html), 'W_LAYOUT_MARGIN_COLLAPSE_THROUGH');
+  const [hit] = w('.card{background:#eee}');
+  assert.ok(hit && /padding-top/.test(hit.message));
+  assert.equal(w('.card{background:#eee;padding-top:1px}').length, 0);
+  assert.equal(w('.card{background:#eee;display:flow-root}').length, 0);
+  assert.equal(w('').length, 0);
+});

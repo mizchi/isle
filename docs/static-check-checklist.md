@@ -342,6 +342,9 @@
   ブラウザーで、中心の当たり判定が先祖になる。親が isolation: isolate・position と z-index・opacity を持つと当たる。祖父母の
   opacity では親の下に回る)。filter など文脈を作り
   うる宣言を解析が捨てたときは報告しない。
+- [x] **F73. 背景のある親を突き抜ける子の margin**(`W_LAYOUT_MARGIN_COLLAPSE_THROUGH`): padding・border のない親の、最初
+  (最後)の子の margin-top(bottom)は親の外へ相殺されて出るので、親に背景があると、余白が背景の内側でなく外側に出る(CSS 2.2
+  §8.3.1。3 つのブラウザーで、親の上端と子の上端が同じ)。padding か display: flow-root を勧める。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

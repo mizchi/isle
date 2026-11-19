@@ -71,6 +71,7 @@ export const recommended = {
   W_CSS_LANG_CODE: ['warning', 'use the language code (ja, zh, cs, el, da, uk), not the country code'],
   W_HTML_ATTRIBUTE_NOT_HTML: ['warning', 'set the DOM property in script (indeterminate), or use the HTML form (textarea content, option selected, value, checked)'],
   W_LAYOUT_NEGATIVE_Z_BEHIND: ['warning', 'give the parent isolation: isolate so a negative z-index stays inside it'],
+  W_LAYOUT_MARGIN_COLLAPSE_THROUGH: ['warning', 'give the parent padding (or display: flow-root) so the child margin stays inside its background'],
   W_CSS_EMPTY_WHITESPACE: ['warning', 'remove the whitespace in the element, or use :not(:has(*))'],
   W_CSS_MEDIA_NEVER: ['warning', 'check the order of the bounds: min-width below max-width'],
   W_LAYOUT_SCROLLBAR_SHIFT: ['warning', 'keep the scrollbar gutter with html { scrollbar-gutter: stable }'],
