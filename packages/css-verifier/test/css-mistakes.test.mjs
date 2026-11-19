@@ -252,3 +252,12 @@ test('F27: the HTML parser changed the structure written in the source', () => {
   assert.deepEqual(re('<form action="/a"><form action="/b"><input aria-label="x"></form></form>'), ['form']);
   for (const html of ['<table><tr><td><div>ok</div></td></tr></table>', '<form action="/a"></form><form action="/b"></form>', '<p>a</p><p>b</p>', '<ul><li>a<li>b</ul>', '<svg width="10" height="10"><path d="M0 0"/></svg>', '<table><tr><td>x</td></tr></table>', '<img src="a.png" alt="">']) assert.deepEqual(re(html), [], html);
 });
+
+test('F28: presentational attributes on elements they do not map to', () => {
+  const r = run('.a{height:20px}', '<div class="a" width="100" height="50" bgcolor="red" border="2"></div>');
+  assert.deepEqual(codes(r, 'W_HTML_ATTRIBUTE_INERT')[0]?.attributes, ['width', 'height', 'bgcolor', 'border']);
+  assert.notEqual(r.status, 'unknown');
+  // Where they map (a table's width, a div's align) they still need an adapter: Unknown, no warning.
+  assert.equal(codes(run('', '<div class="a" align="center"></div>'), 'W_HTML_ATTRIBUTE_INERT').length, 0);
+  assert.equal(codes(run('', '<table width="300"><tr><td>x</td></tr></table>'), 'W_HTML_ATTRIBUTE_INERT').length, 0);
+});

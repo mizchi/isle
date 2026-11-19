@@ -60,6 +60,7 @@ export const recommended = {
   W_A11Y_SUMMARY_INDICATOR: ['warning', 'show the open state: a ::before that turns with details[open], or an icon'],
   W_CSS_SELECTOR_IMPLIED_PARENT: ['warning', 'write the implied element in the selector (table > tbody > tr), or use a descendant combinator'],
   W_HTML_RESTRUCTURED: ['warning', 'fix the nesting: only phrasing content in <p>, no link in a link, no block in a button'],
+  W_HTML_ATTRIBUTE_INERT: ['warning', 'set it in CSS (width, height, background-color, border)'],
   W_CSS_MEDIA_NEVER: ['warning', 'check the order of the bounds: min-width below max-width'],
   W_LAYOUT_SCROLLBAR_SHIFT: ['warning', 'keep the scrollbar gutter with html { scrollbar-gutter: stable }'],
   W_LAYOUT_BALANCE_LINES: ['warning', 'bound the text length (data-text-max-length), or use text-wrap: pretty'],
