@@ -207,6 +207,10 @@
 - [x] **F34. flex・grid の容器の `columns`**(`W_LAYOUT_DECLARATION_INERT`、以前は Unknown): 段組みはブロック容器にしか
   効かない。flex・grid の容器の `columns`・`column-count`・`column-width` は、3 つのブラウザーで項目の位置がないときと同じ。
   解析はそれを捨てて配置する(ブロック容器の段組みは今までどおり Unknown)。
+- [x] **F35. フォーカスできるもののない要素の `:focus-within`**(`W_CSS_STATE_UNREACHABLE`): その要素にも中にも、href のある
+  リンク・フォーム部品・tabindex がなければ、何もフォーカスを持たないので当たらない(外から渡される slot・children が
+  あれば報告しない)。あわせて F17 を直した: `tabindex="-1"` の要素はクリックや focus() でフォーカスを持つ(3 つのブラウザーで
+  測った)ので、その `:focus` は報告しない。
 - 試して当てはまらなかったもの: `progress`・`input[type=range]` の `appearance: none` は、3 つのブラウザーとも何かを描く
   (消えない)ので報告しない。
 

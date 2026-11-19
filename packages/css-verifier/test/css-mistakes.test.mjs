@@ -336,3 +336,19 @@ test('F34: columns on a flex or grid container do nothing', () => {
   assert.equal(w('.x{display:flex}').length, 0);
   assert.equal(run('.x{columns:2}', items).status, 'unknown');
 });
+
+test('F35: :focus-within on an element with nothing focusable inside', () => {
+  const w = (css, html) => codes(run(css, html), 'W_CSS_STATE_UNREACHABLE').filter(x => x.state === 'focus-within');
+  const [hit] = w('.x:focus-within{outline:2px solid}', '<div class="x"><p class="a">t</p></div>');
+  assert.ok(hit && /focusable/.test(hit.message));
+  assert.equal(w('.x:focus-within{outline:2px solid}', '<div class="x"><button class="a" type="button">b</button></div>').length, 0);
+  assert.equal(w('.x:focus-within{outline:2px solid}', '<div class="x"><p class="a">t <a href="/y">y</a></p></div>').length, 0);
+  assert.equal(w('.x:focus-within{outline:2px solid}', '<div class="x" tabindex="-1"><p class="a">t</p></div>').length, 0);
+  assert.equal(w('.x:focus-within{outline:2px solid}', '<div class="x"><div class="a" tabindex="0"></div></div>').length, 0);
+});
+
+test('F17: :focus on a tabindex="-1" element is reachable (a click or focus() focuses it)', () => {
+  const w = html => codes(run('.x:focus{outline:2px solid}', html), 'W_CSS_STATE_UNREACHABLE');
+  assert.equal(w('<div class="x a" tabindex="-1"></div>').length, 0);
+  assert.equal(w('<div class="x a"></div>').length, 1);
+});

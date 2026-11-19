@@ -360,3 +360,15 @@ test('F34: columns on a flex or grid container do nothing', async ({page}) => {
     if (!inert) expect(r.status).toBe('unknown');
   }
 });
+
+test('F35: :focus-within with nothing focusable inside; F17: tabindex="-1" takes focus', async ({page}) => {
+  const css = '.x:focus-within{outline:2px solid}.x:focus{color:red}';
+  for (const html of ['<div class="x"><p class="a">t</p></div>', '<div class="x"><button class="a" type="button">b</button></div>', '<div class="x"><p class="a">t <a href="/y">y</a></p></div>',
+    '<div class="x" tabindex="-1"><p class="a">t</p></div>', '<div class="x"><div class="a" tabindex="0"></div></div>', '<div class="x"><a class="a">no href</a></div>']) {
+    await page.setContent(`<!doctype html><html lang="en"><head><style>${css}</style></head><body>${html}</body></html>`);
+    const [within, self] = await page.evaluate(() => { const x = document.querySelector('.x'); const all = [x, ...x.querySelectorAll('*')]; const within = all.some(e => { e.focus(); const m = x.matches(':focus-within'); document.activeElement?.blur(); return m; }); x.focus(); return [within, x.matches(':focus')]; });
+    const warnings = (analyzeHTML(`<html lang="en"><body>${html}</body></html>`, {name: 'P', css: `*{margin:0}html,body{display:grid;grid-template-columns:minmax(0,1fr)}.a{height:20px}${css}`, viewport: {min: 320, max: 1200, height: {min: 300, max: 900}}}).layoutWarnings ?? []).filter(w => w.code === 'W_CSS_STATE_UNREACHABLE');
+    expect(warnings.some(w => w.state === 'focus-within'), html).toBe(!within);
+    expect(warnings.some(w => w.state === 'focus'), html).toBe(!self);
+  }
+});
